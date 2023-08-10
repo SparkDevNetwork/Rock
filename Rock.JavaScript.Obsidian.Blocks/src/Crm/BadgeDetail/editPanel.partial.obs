@@ -1,0 +1,144 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-3">
+                <EntityTypePicker v-model="entityType"
+                                  label="Entity Type"
+                                  :multiple="false"
+                                  showBlankItem
+                                  :includeGlobalOption="false" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <ComponentPicker label="Badge Type"
+                                 rules="required"
+                                 v-model="badgeComponentEntityType"
+                                 :containerType="containerType" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="entityTypeQualifierColumn" label="Qualifier Column" />
+            </div>
+
+            <div class="col-md-6">
+                <TextBox v-model="entityTypeQualifierValue" label="Qualifier Value" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showCategoryLabel="false" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { BadgeBag } from "@Obsidian/ViewModels/Blocks/Crm/BadgeDetail/badgeBag";
+    import { BadgeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/BadgeDetail/badgeDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<BadgeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<BadgeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: BadgeBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const badgeComponentEntityType = propertyRef(props.modelValue.badgeComponentEntityType ?? {}, "BadgeComponentEntityTypeId");
+    const containerType = ref("Rock.Badge.BadgeContainer");
+    const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
+    const entityTypeQualifierColumn = propertyRef(props.modelValue.entityTypeQualifierColumn ?? "", "EntityTypeQualifierColumn");
+    const entityTypeQualifierValue = propertyRef(props.modelValue.entityTypeQualifierValue ?? "", "EntityTypeQualifierValue");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, badgeComponentEntityType, entityType, entityTypeQualifierColumn, entityTypeQualifierValue];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(badgeComponentEntityType, props.modelValue.badgeComponentEntityType ?? {});
+        updateRefValue(entityType, props.modelValue.entityType ?? {});
+        updateRefValue(entityTypeQualifierColumn, props.modelValue.entityTypeQualifierColumn ?? "");
+        updateRefValue(entityTypeQualifierValue, props.modelValue.entityTypeQualifierValue ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: BadgeBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            badgeComponentEntityType: badgeComponentEntityType.value,
+            entityType: entityType.value,
+            entityTypeQualifierColumn: entityTypeQualifierColumn.value,
+            entityTypeQualifierValue: entityTypeQualifierValue.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

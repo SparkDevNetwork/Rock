@@ -1,0 +1,50 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="btn-group btn-group-xs mb-2" role="group">
+        <button v-for="item in items" :class="getButtonClass(item)" :key="item.value ?? undefined" type="button" @click="onItemClick(item)">{{ item.text }}</button>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        items: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    /**
+     * Gets the classes to apply to the button.
+     *
+     * @param item The ListItem that represents the button.
+     *
+     * @returns A collection of CSS class names.
+     */
+    function getButtonClass(item: ListItemBag): string[] {
+        return ["btn", item.value === internalValue.value ? "btn-primary" : "btn-default"];
+    }
+
+    /**
+     * Event handler for then a button item is clicked.
+     *
+     * @param item The ListItem that represents the button that was clicked.
+     */
+    function onItemClick(item: ListItemBag): void {
+        internalValue.value = item.value ?? "";
+    }
+</script>

@@ -36,7 +36,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Badges" )]
-    [Category( "Obsidian > CRM > Person Detail" )]
+    [Category( "CRM > Person Detail" )]
     [Description( "Handles displaying badges for a person." )]
     [IconCssClass( "fa fa-certificate" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
@@ -107,9 +107,6 @@ namespace Rock.Blocks.Crm.PersonDetail
         }
 
         #endregion
-
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 

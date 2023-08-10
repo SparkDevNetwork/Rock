@@ -1,0 +1,276 @@
+<template>
+    <Panel title="Notifications">
+        <template #subheaderRight>
+            <div class="d-flex">
+                <div class="ml-3">
+                    <DropDownContent>
+                        <template #anchor>
+                            <span class="clickable text-sm filter-button" :class="{ 'active': isFilterActive }">
+                                <i class="fa fa-filter"></i> Filter
+                            </span>
+                        </template>
+
+                        <div class="p-3" style="min-width: 320px; max-width: 480px;">
+                            <DropDownList v-if="messageComponentFilterItems.length > 0"
+                                          label="Message Types"
+                                          v-model="messageComponentFilter"
+                                          :items="messageComponentFilterItems"
+                                          multiple
+                                          :showBlankItem="false" />
+
+                            <DropDownList label="Status"
+                                           v-model="showReadFilter"
+                                           :items="showReadFilterItems"
+                                           :showBlankItem="false" />
+
+                            <SlidingDateRangePicker label="Date Range"
+                                                    v-model="dateRangeFilter" />
+                        </div>
+                    </DropDownContent>
+                </div>
+
+                <div class="ml-3 clickable" @click="onMarkAllReadClick">
+                    <span class="text-sm">
+                        <i class="fa fa-check"></i> Mark All Read
+                    </span>
+                </div>
+            </div>
+        </template>
+
+        <div ref="messagesContainerElement">
+            <ListGroupTransition :disable="disableAnimation" @beginAnimation="animationRunning = true" @endAnimation="animationRunning = false">
+                <div v-for="message in visibleMessages"
+                     :key="message.idKey!"
+                     class="notification-item"
+                     :data-key="message.idKey">
+                    <MessageComponent :message="message"
+                                      :disableInteraction="animationRunning"
+                                      @remove="onRemoveMessage(message)" />
+                </div>
+            </ListGroupTransition>
+        </div>
+    </Panel>
+</template>
+
+<style scoped>
+.notification-item {
+    margin-bottom: 18px;
+}
+
+.notification-item:last-child {
+    margin-bottom: 0;
+}
+
+.filter-button {
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.filter-button.active {
+    background-color: #eee;
+}
+</style>
+
+<script setup lang="ts">
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ListGroupTransition from "./NotificationMessageList/listGroupTransition.partial.obs";
+    import MessageComponent from "./NotificationMessageList/message.partial.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { computed, nextTick, reactive, ref, watch } from "vue";
+    import { SlidingDateRange, calculateSlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { MarkMessagesAsReadRequestBag } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/markMessagesAsReadRequestBag";
+    import { MarkMessagesAsReadResponseBag } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/markMessagesAsReadResponseBag";
+    import { NotificationMessageListInitializationBox } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/notificationMessageListInitializationBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { NotificationMessageBag } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/notificationMessageBag";
+
+    const config = useConfigurationValues<NotificationMessageListInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const disableAnimation = ref(false);
+
+    const messagesContainerElement = ref<HTMLElement>();
+    const allMessages = reactive<NotificationMessageBag[]>(config.messages ?? []);
+    const showReadFilter = ref<"" | "read" | "unread">("");
+    const messageComponentFilter = ref<string[]>([]);
+    const messageComponentFilterItems = ref(config.componentTypes ?? []);
+    const dateRangeFilter = ref<SlidingDateRange | null>(null);
+
+    const showReadFilterItems: ListItemBag[] = [
+        {
+            value: "",
+            text: ""
+        },
+        {
+            value: "read",
+            text: "Read"
+        },
+        {
+            value: "unread",
+            text: "Unread"
+        }
+    ];
+
+    const animationRunning = ref(false);
+    const visibleMessages = ref<NotificationMessageBag[]>([]);
+    let disableUpdate = false;
+
+    const isFilterActive = computed((): boolean => {
+        return !!showReadFilter.value
+            || messageComponentFilter.value.length > 0
+            || !!dateRangeDates.value;
+    });
+
+    const dateRangeDates = computed((): { start: RockDateTime | null, end: RockDateTime | null } | null => {
+        if (!dateRangeFilter.value) {
+            return null;
+        }
+
+        const dates = calculateSlidingDateRange(dateRangeFilter.value);
+
+        if (dates.start === null && dates.end === null) {
+            return null;
+        }
+
+        return dates;
+    });
+
+    // #region Functions
+
+    /**
+     * Get the messages that match the current filter settings.
+     *
+     * @returns An array of matching notification messages.
+     */
+    function getFilteredMessages(): NotificationMessageBag[] {
+        return allMessages.filter(m => {
+            if (showReadFilter.value === "read" && !m.isRead) {
+                return false;
+            }
+            else if (showReadFilter.value === "unread" && m.isRead) {
+                return false;
+            }
+
+            if (messageComponentFilter.value.length > 0) {
+                if (!m.componentIdKey) {
+                    return false;
+                }
+
+                if (!messageComponentFilter.value.includes(m.componentIdKey)) {
+                    return false;
+                }
+            }
+
+            if (dateRangeDates.value) {
+                const md = RockDateTime.parseISO(m.dateTime ?? "")?.localDateTime;
+
+                if (!md) {
+                    return false;
+                }
+
+                if (dateRangeDates.value.start && md.isEarlierThan(dateRangeDates.value.start)) {
+                    return false;
+                }
+
+                if (dateRangeDates.value.end && md.isLaterThan(dateRangeDates.value.end)) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when a child component is informing us that the
+     * message should be removed from the list.
+     *
+     * @param message The message that is being removed.
+     */
+    function onRemoveMessage(message: NotificationMessageBag): void {
+        const messageIndex = allMessages.findIndex(m => m.idKey === message.idKey);
+
+        if (messageIndex === -1) {
+            return;
+        }
+
+        allMessages.splice(messageIndex, 1);
+    }
+
+    /**
+     * Event handler for when the "mark all as read" button has been clicked.
+     * Marks all messages matching the current filter as read.
+     */
+    async function onMarkAllReadClick(): Promise<void> {
+        // Find all messages to mark as read.
+        const messages = visibleMessages.value.filter(m => !m.isRead);
+
+        var confirmed = await confirm(`Mark ${messages.length} ${pluralize("notification", messages.length)} as read?`);
+        if (!confirmed) {
+            return;
+        }
+
+        var request: MarkMessagesAsReadRequestBag = {
+            idKeys: messages.map(m => m.idKey ?? ""),
+            isRead: true
+        };
+
+        const result = await invokeBlockAction<MarkMessagesAsReadResponseBag>("MarkMessagesAsRead", { request });
+
+        if (!result.isSuccess || !result.data) {
+            return await alert(result.errorMessage || "Unable to mark messages as read.");
+        }
+
+        // Disable updates while we do this so we aren't refreshing the
+        // display after every modification.
+        disableUpdate = true;
+        for (let i = 0; i < messages.length; i++) {
+            const key = messages[i].idKey;
+
+            if (key && result.data.isDeleted && result.data.isDeleted[key]) {
+                const messageIndex = allMessages.findIndex(m => m.idKey === key);
+
+                if (messageIndex === -1) {
+                    continue;
+                }
+
+                allMessages.splice(messageIndex, 1);
+            }
+            else {
+                messages[i].isRead = true;
+            }
+        }
+        disableUpdate = false;
+
+        visibleMessages.value = getFilteredMessages();
+    }
+
+    // #endregion
+
+    watch([messageComponentFilter, showReadFilter, dateRangeFilter], () => {
+        disableAnimation.value = true;
+        visibleMessages.value = getFilteredMessages();
+        nextTick(() => disableAnimation.value = false);
+    });
+
+    watch(allMessages, () => {
+        if (disableUpdate) {
+            return;
+        }
+
+        visibleMessages.value = getFilteredMessages();
+    }, { deep: true });
+
+    visibleMessages.value = getFilteredMessages();
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

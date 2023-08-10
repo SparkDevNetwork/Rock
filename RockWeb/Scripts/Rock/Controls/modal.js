@@ -59,7 +59,7 @@
             var $modalPopupIFrame = $modalPopup.find('iframe');
 
             // Use the anchor tag's title attribute as the title of the dialog box
-            if (sender.attr('title') != undefined) {
+            if (sender && sender.attr('title') != undefined) {
                 $('#modal-popup_panel h3').html(sender.attr('title') + ' <small></small>');
             }
 

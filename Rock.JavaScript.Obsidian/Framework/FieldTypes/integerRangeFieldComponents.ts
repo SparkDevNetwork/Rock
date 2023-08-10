@@ -17,7 +17,8 @@
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import NumberRangeBox, { NumberRangeModelValue } from "@Obsidian/Controls/numberRangeBox";
+import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
+import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
 
 export const EditComponent = defineComponent({
     name: "IntegerRangeField.Edit",
@@ -31,7 +32,7 @@ export const EditComponent = defineComponent({
     data() {
         return {
             /** The user input value as a number of null if it isn't valid. */
-            internalValue: {} as NumberRangeModelValue
+            internalValue: undefined as NumberRangeModelValue | undefined
         };
     },
 
@@ -41,7 +42,7 @@ export const EditComponent = defineComponent({
          * the consuming component.
          */
         internalValue(): void {
-            const value = `${this.internalValue.lower ?? ""},${this.internalValue.upper ?? ""}`;
+            const value = `${this.internalValue?.lower ?? ""},${this.internalValue?.upper ?? ""}`;
 
             this.$emit("update:modelValue", value !== "," ? value : "");
         },
@@ -57,7 +58,10 @@ export const EditComponent = defineComponent({
                 const lower = toNumberOrNull(values[0]);
                 const upper = values.length >= 2 ? toNumberOrNull(values[1]) : null;
 
-                if (lower !== this.internalValue.lower || upper !== this.internalValue.upper) {
+                if (lower === null && upper === null) {
+                    this.internalValue = undefined;
+                }
+                else if (lower !== (this.internalValue?.lower ?? null) || upper !== (this.internalValue?.upper ?? null)) {
                     this.internalValue = {
                         lower: lower,
                         upper: upper

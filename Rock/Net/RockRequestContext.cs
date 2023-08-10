@@ -358,7 +358,7 @@ namespace Rock.Net
                 {
                     IEntity entity = null;
 
-                    if ( int.TryParse( entityKey, out int entityId ) )
+                    if ( _siteCache?.DisablePredictableIds != true && int.TryParse( entityKey, out int entityId ) )
                     {
                         entity = Reflection.GetIEntityForEntityType( type, entityId );
                     }
@@ -391,12 +391,24 @@ namespace Rock.Net
                     continue;
                 }
 
-                int? contextId = GetPageParameter( pageContext.Value ).AsIntegerOrNull();
-                if ( contextId.HasValue )
+                var contextId = GetPageParameter( pageContext.Value );
+
+                if ( contextId.IsNullOrWhiteSpace() )
                 {
+                    continue;
+                }
+
+                if ( int.TryParse( contextId, out var id ) )
+                {
+                    // Load from plain integer Id, but only if not disabled by site.
                     ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
                     {
-                        var entity = Reflection.GetIEntityForEntityType( entityType, contextId.Value );
+                        if ( _siteCache?.DisablePredictableIds == true )
+                        {
+                            return null;
+                        }
+
+                        var entity = Reflection.GetIEntityForEntityType( entityType, id );
 
                         if ( entity != null && entity is IHasAttributes attributedEntity )
                         {
@@ -406,13 +418,27 @@ namespace Rock.Net
                         return entity;
                     } ) );
                 }
-
-                Guid? contextGuid = GetPageParameter( pageContext.Value ).AsGuidOrNull();
-                if ( contextGuid.HasValue )
+                else if ( Guid.TryParse( contextId, out var guid ) )
                 {
+                    // Load from Guid.
                     ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
                     {
-                        var entity = Reflection.GetIEntityForEntityType( entityType, contextGuid.Value );
+                        var entity = Reflection.GetIEntityForEntityType( entityType, guid );
+
+                        if ( entity != null && entity is IHasAttributes attributedEntity )
+                        {
+                            Helper.LoadAttributes( attributedEntity );
+                        }
+
+                        return entity;
+                    } ) );
+                }
+                else
+                {
+                    // Load from IdKey.
+                    ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
+                    {
+                        var entity = Reflection.GetIEntityForEntityType( entityType, contextId );
 
                         if ( entity != null && entity is IHasAttributes attributedEntity )
                         {

@@ -3,7 +3,7 @@
     <Modal v-model="isVisible"
            title="Filters"
            saveText="Apply"
-           :saveButtonDisabled="isBusy"
+           :isSaveButtonDisabled="isBusy"
            @save="onSave">
 
         <div class="new-group-scheduler">
@@ -15,7 +15,15 @@
                 {{ warningMessage }}
             </NotificationBox>
 
-            <GroupPicker v-model="selectedGroups"
+            <div v-if="disallowGroupSelection" class="form-group">
+                <RockLabel>{{ groupsTextLabel }}</RockLabel>
+                <div>
+                    {{ groupsText }}
+                </div>
+            </div>
+
+            <GroupPicker v-else
+                         v-model="selectedGroups"
                          label="Groups"
                          :multiple="true"
                          :limitToSchedulingEnabled="true"
@@ -53,15 +61,17 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import GroupPicker from "@Obsidian/Controls/groupPicker";
-    import Modal from "@Obsidian/Controls/modal";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { pluralConditional } from "@Obsidian/Utility/stringUtils";
     import { GroupSchedulerAppliedFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerAppliedFiltersBag";
     import { GroupSchedulerFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerFiltersBag";
     import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
@@ -78,6 +88,11 @@
         filters: {
             type: Object as PropType<GroupSchedulerFiltersBag | null | undefined>,
             required: true
+        },
+
+        disallowGroupSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false,
         }
     });
 
@@ -110,6 +125,16 @@
     // #endregion
 
     // #region Computed Values
+
+    const groupsTextLabel = computed((): string => {
+        return pluralConditional(selectedGroups.value.length, "Group", "Groups");
+    });
+
+    const groupsText = computed((): string => {
+        return selectedGroups.value.length
+            ? selectedGroups.value.map(g => g.text).join(", ")
+            : "No groups selected";
+    });
 
     const selectedLocationValues = computed<string[]>({
         get() {

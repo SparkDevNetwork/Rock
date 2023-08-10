@@ -45,7 +45,7 @@ namespace Rock.Blocks.Engagement.SignUp
     /// <seealso cref="Rock.Blocks.IHasCustomActions" />
 
     [DisplayName( "Sign-Up Finder" )]
-    [Category( "Obsidian > Engagement > Sign-Up" )]
+    [Category( "Engagement > Sign-Up" )]
     [Description( "Block used for finding a sign-up group/project." )]
     [IconCssClass( "fa fa-clipboard-check" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
@@ -404,8 +404,6 @@ namespace Rock.Blocks.Engagement.SignUp
         #endregion
 
         #region Properties
-
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         public bool IsAuthenticated
         {

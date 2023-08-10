@@ -25,9 +25,9 @@
 <script setup lang="ts">
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, nextTick, PropType, ref, watch } from "vue";
-    import RegistrationTemplatePicker from "./registrationTemplatePicker";
+    import RegistrationTemplatePicker from "./registrationTemplatePicker.obs";
     import RegistrationInstanceBasePicker from "./registrationInstanceBasePicker.obs";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { Guid } from "@Obsidian/Types";
     import { useHttp } from "@Obsidian/Utility/http";

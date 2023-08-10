@@ -18,16 +18,17 @@
 import { defineComponent, inject } from "vue";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import RockButton from "@Obsidian/Controls/rockButton";
-import TextBox from "@Obsidian/Controls/textBox";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 import { RegistrationEntryBlockViewModel, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 
 type CheckDiscountCodeResult = {
     discountCode: string;
-    usagesRemaining: number | null;
+    registrationUsagesRemaining: number | null;
     discountAmount: number;
     discountPercentage: number;
+    discountMaxRegistrants: number;
 };
 
 export default defineComponent({
@@ -47,7 +48,7 @@ export default defineComponent({
         };
     },
     mounted() {
-        this.tryDiscountCode();
+        this.tryDiscountCode(true);
     },
     data() {
         return {
@@ -66,6 +67,8 @@ export default defineComponent({
         discountCodeSuccessMessage(): string {
             const discountAmount = this.registrationEntryState.discountAmount;
             const discountPercent = this.registrationEntryState.discountPercentage;
+            const discountMaxRegistrants = this.registrationEntryState.discountMaxRegistrants ?? 0;
+            const registrantCount = this.registrationEntryState.registrants.length;
 
             if (!discountPercent && !discountAmount) {
                 return "";
@@ -74,6 +77,11 @@ export default defineComponent({
             const discountText = discountPercent ?
                 `${asFormattedString(discountPercent * 100, 0)}%` :
                 `$${asFormattedString(discountAmount, 2)}`;
+
+            if(discountMaxRegistrants != 0 && registrantCount > discountMaxRegistrants) {
+                const registrantTerm = discountMaxRegistrants == 1 ? "registrant" : "registrants";
+                return `Your ${discountText} discount code was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
+            }
 
             return `Your ${discountText} discount code for all registrants was successfully applied.`;
         },
@@ -101,18 +109,24 @@ export default defineComponent({
     methods: {
         /** Send a user input discount code to the server so the server can check and send back
          *  the discount amount. */
-        async tryDiscountCode(): Promise<void> {
+        async tryDiscountCode(isAutoApply: boolean): Promise<void> {
             this.loading = true;
             try {
                 const result = await this.invokeBlockAction<CheckDiscountCodeResult>("CheckDiscountCode", {
                     code: this.discountCodeInput,
                     registrantCount: this.registrationEntryState.registrants.length,
-                    registrationGuid: this.registrationEntryState.viewModel.session?.registrationGuid
+                    registrationGuid: this.viewModel.session?.registrationGuid ?? null,
+                    isAutoApply: isAutoApply ?? false
                 });
 
                 if (result.isError || !result.data) {
-                    if (this.discountCodeInput != "") {
-                        this.discountCodeWarningMessage = `'${this.discountCodeInput}' is not a valid Discount Code.`;
+                    if(!isAutoApply) {
+                        if(result.errorMessage != null && result.errorMessage !="") {
+                            this.discountCodeWarningMessage = result.errorMessage;
+                        }
+                        else if (this.discountCodeInput != "") {
+                            this.discountCodeWarningMessage = `'${this.discountCodeInput}' is not a valid Discount Code.`;
+                        }
                     }
                 }
                 else {
@@ -121,6 +135,7 @@ export default defineComponent({
                     this.registrationEntryState.discountAmount = result.data.discountAmount;
                     this.registrationEntryState.discountPercentage = result.data.discountPercentage;
                     this.registrationEntryState.discountCode = result.data.discountCode;
+                    this.registrationEntryState.discountMaxRegistrants = result.data.discountMaxRegistrants;
                 }
             }
             finally {
@@ -144,7 +159,7 @@ export default defineComponent({
         <label class="control-label">Discount Code</label>
         <div class="input-group">
             <input type="text" :disabled="loading || !isDiscountCodeAllowed" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
-            <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode">
+            <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode(false)">
                 Apply
             </RockButton>
         </div>

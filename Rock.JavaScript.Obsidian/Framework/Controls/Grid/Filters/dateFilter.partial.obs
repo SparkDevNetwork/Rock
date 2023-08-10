@@ -19,7 +19,7 @@
 <script setup lang="ts">
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import { ref, watch, computed } from "vue";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DateFilterMethod, DateFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/dateFilterMethod";
     import { standardFilterProps } from "@Obsidian/Core/Controls/grid";

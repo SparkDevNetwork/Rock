@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <LocationItemPicker v-if="selectedOption == '0'" v-model="itemValue" v-model:showPopup="popupStatus">
         <template #pickerContentSuperHeader>
@@ -58,10 +59,10 @@
 </template>
 
 <script lang="ts" setup>
-    import LocationItemPicker from "./locationItemPicker";
+    import LocationItemPicker from "./locationItemPicker.obs";
     import LocationAddressPicker from "./locationAddressPicker.obs";
     import GeoPicker from "./geoPicker.obs";
-    import RadioButtonList from "./radioButtonList";
+    import RadioButtonList from "./radioButtonList.obs";
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";

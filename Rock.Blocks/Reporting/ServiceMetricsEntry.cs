@@ -198,9 +198,6 @@ namespace Rock.Blocks.Reporting
 
         #region Properties
 
-        /// <inheritdoc />
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         /// <summary>
         /// Gets the metric categories block setting.
         /// </summary>

@@ -37,7 +37,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Group
 {
     [DisplayName( "Group Attendance Detail" )]
-    [Category( "Obsidian > Group" )]
+    [Category( "Group" )]
     [Description( "Lists the group members for a specific occurrence date time and allows selecting if they attended or not." )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
@@ -474,9 +474,6 @@ namespace Rock.Blocks.Group
         #endregion
 
         #region IRockObsidianBlockType Implementation
-
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()

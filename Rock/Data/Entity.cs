@@ -472,7 +472,7 @@ namespace Rock.Data
 
                     if ( propValue is Guid )
                     {
-                        return ( (Guid)propValue ).ToString();
+                        return ( ( Guid ) propValue ).ToString();
                     }
                     else
                     {

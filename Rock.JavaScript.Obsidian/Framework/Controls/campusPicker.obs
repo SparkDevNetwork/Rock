@@ -19,7 +19,7 @@
     import { CampusPickerGetCampusesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/campusPickerGetCampusesOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, ref } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
 
     const props = defineProps({
         /** The currently selected campus value(s). */
@@ -88,7 +88,7 @@
             return standardProps.displayStyle;
         }
 
-        return standardProps.multiple  ? PickerDisplayStyle.List : PickerDisplayStyle.Auto;
+        return standardProps.multiple ? PickerDisplayStyle.List : PickerDisplayStyle.Auto;
     });
 
     const isPickerVisible = computed((): boolean => {

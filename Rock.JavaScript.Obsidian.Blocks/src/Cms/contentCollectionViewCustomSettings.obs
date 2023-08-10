@@ -148,17 +148,17 @@
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
-    import Modal from "@Obsidian/Controls/modal";
-    import NumberBox from "@Obsidian/Controls/numberBox";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockFormFieldError from "@Obsidian/Controls/rockFormFieldError";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockFormFieldError from "@Obsidian/Controls/rockFormFieldError.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
     import { CustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/customSettingsBag";

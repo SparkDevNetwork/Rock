@@ -15,8 +15,8 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { DidAttendFilter, IAttendanceFilter, NoFilter } from "./utils.partial";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LiteralUnion } from "@Obsidian/Types/Utility/support";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";

@@ -18,10 +18,11 @@
 import { Guid } from "@Obsidian/Types";
 import { defineComponent, PropType } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import CheckBox from "@Obsidian/Controls/checkBox";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import NumberUpDown from "@Obsidian/Controls/numberUpDown";
-import NumberUpDownGroup, { NumberUpDownGroupOption } from "@Obsidian/Controls/numberUpDownGroup";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+import NumberUpDownGroup from "@Obsidian/Controls/numberUpDownGroup.obs";
+import { NumberUpDownGroupOption } from "@Obsidian/Types/Controls/numberUpDownGroup";
 import Number from "@Obsidian/Utility/numberUtils";
 import GuidHelper from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

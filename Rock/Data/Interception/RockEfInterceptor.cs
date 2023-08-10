@@ -279,32 +279,29 @@ namespace Rock.Data.Interception
             */
                         
             // Create observability activity
-            ObservabilityHelper.StartActivity( "Database Command", ActivityKind.Client );
-            
+            var activity = ObservabilityHelper.StartActivity( "Database Command", ActivityKind.Client );
+
             // Check if there is an activity before we make calls to get observability information. If there is no observability configuration
             // then there will not be an activity.
-            if ( Activity.Current != null )
+            if ( activity != null )
             {
                 var observabilityInfo = DbCommandObservabilityCache.Get( command.CommandText );
-                var queryHash = command.CommandText.XxHash();
-                Activity.Current.DisplayName = $"DB: {observabilityInfo.Prefix} ({observabilityInfo.CommandHash})";
 
-                Activity.Current.AddTag( "db.system", "mssql" );
-                Activity.Current.AddTag( "db.query", command.CommandText );
-                Activity.Current.AddTag( "rock-otel-type", "rock-db" );
-                Activity.Current.AddTag( "rock-db-hash", queryHash );
+                activity.DisplayName = $"DB: {observabilityInfo.Prefix} ({observabilityInfo.CommandHash})";
+                activity.AddTag( "db.system", "mssql" );
+                activity.AddTag( "db.query", command.CommandText );
+                activity.AddTag( "rock-otel-type", "rock-db" );
+                activity.AddTag( "rock-db-hash", observabilityInfo.CommandHash );
 
                 // Check if this query should get additional observability telemetry
-                if (DbCommandObservabilityCache.TargetedQueryHashes.Contains( queryHash ) )
+                if ( DbCommandObservabilityCache.TargetedQueryHashes.Contains( observabilityInfo.CommandHash ) )
                 {
-                    Activity.Current.AddTag( "rock-db-stacktrace", System.Environment.StackTrace );
+                    activity.AddTag( "rock-db-stacktrace", System.Environment.StackTrace );
                 }
             }
 
-            if ( context is RockContext )
+            if ( context is RockContext rockContext )
             {
-                var rockContext = ( RockContext ) context;
-
                 if ( rockContext.QueryMetricDetailLevel != QueryMetricDetailLevel.Off )
                 {
                     _commandStartTimes.TryAdd( command, _stopwatch.ElapsedTicks );
@@ -349,12 +346,17 @@ namespace Rock.Data.Interception
         /// <param name="context">The context.</param>
         private void EndTiming( DbCommand command, System.Data.Entity.DbContext context )
         {
-            if ( context is RockContext )
+            if ( context is RockContext rockContext )
             {
-                // Complete the observability activity
-                Activity.Current?.Dispose();
+                var queryHash = command.CommandText.XxHash();
+                var activity = Activity.Current;
 
-                var rockContext = ( RockContext ) context;
+                // Complete the observability activity if it is the correct
+                // activity.
+                if ( activity != null && activity.GetTagItem( "rock-db-hash" ) is string activityHash && queryHash == activityHash )
+                {
+                    activity.Dispose();
+                }
 
                 if ( rockContext.QueryMetricDetailLevel != QueryMetricDetailLevel.Off )
                 {

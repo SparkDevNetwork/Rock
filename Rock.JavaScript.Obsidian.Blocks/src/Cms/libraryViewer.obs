@@ -1,0 +1,224 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="library-viewer-container">
+        <NotificationBox v-if="config.errorMessage" alertType="danger">
+            {{ config.errorMessage }}
+        </NotificationBox>
+        <Panel v-else class="styled-scroll" title="Library Viewer" :hasFullscreen="true">
+            <template #preBody>
+                <div class="library-viewer-toolbar">
+                    <ItemListSort :items="filteredItems"
+                          @sortedItems="(i) => sortedItems = i" />
+                    <ItemListFilters :areFiltersAppliedOnClose="true"
+                             :items="items"
+                             @filteredItems="(i) => filteredItems = i" />
+                </div>
+                <div class="library-viewer-body">
+                    <ItemList v-if="sortedItems"
+                                            :items="sortedItems"
+                                            :selectedItem="selectedItem"
+                                            @select="onSelected" />
+                    <template v-if="selectedItem">
+                        <ItemPreview :contentChannelIdKey="config.contentChannelIdKey"
+                                     :disabled="isDownloading"
+                                     :errorMessage="errorMessage"
+                                     :isLoadingDetails="isLoadingDetails"
+                                     :isDownloadDateShown="config.isDownloadDateShown"
+                                     :isDownloadDateShownAsDateRange="config.isDownloadDateShownAsDateRange"
+                                     :isDownloadDateShownWithTime="config.isDownloadDateShownWithTime"
+                                     :isDownloadStatusShown="config.isDownloadStatusShown"
+                                     :item="selectedItem"
+                                     :validationResults="config.validationResults"
+                                     :warningMessage="warningMessage"
+                                     @downloadArticle="onDownloadItem"
+                                     @loadDetails="onLoadDetails(selectedItem)" />
+                    </template>
+                </div>
+            </template>
+        </Panel>
+    </div>
+</template>
+
+<style scoped>
+.library-viewer-container {
+    height: calc(100vh - var(--top-header-height, 80px) - 2px);
+    max-height: calc(100vh - var(--top-header-height, 80px) - 2px);
+    display: flex;
+    color: var(--theme-colors-dark, #725E4F);
+}
+
+.library-viewer-container :deep(> div) {
+    /* Use :deep to target first child div of container */
+    display: flex;
+    flex: 1;
+}
+
+.library-viewer-container :deep(.panel) {
+    /* Use :deep to target panel */
+    flex: 1;
+}
+
+.library-viewer-container :deep(.panel-body) {
+    /* Use :deep to target panel body */
+    padding: 0;
+}
+
+.library-viewer-toolbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 8px 24px;
+
+    border-top: 1px solid var(--toremove-border-color, #F2E3D9);
+    border-bottom: 1px solid var(--toremove-border-color, #F2E3D9);
+    background: var(--theme-colors-lightest, #FAF7F5);
+}
+
+.library-viewer-toolbar :deep(> *) {
+    /* Using .library-viewer-toolbar :deep(> * + *) { margin-left: 8px; } causes sketchy page reflows. */
+    margin-right: 8px;
+}
+
+:deep(.library-viewer-toolbar-button) {
+    border-radius: 4px;
+    border: 0 solid var(--toremove-text-secondary-muted, #725E4F);
+    background: var(--theme-colors-light, #F2E3D9);
+}
+
+.library-viewer-body {
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    height: 100%;
+}
+
+.library-viewer-item-list {
+    width: 479px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--toremove-border-color, #F2E3D9);
+    background: #FFF;
+}
+
+:deep(.styled-scroll *::-webkit-scrollbar),
+:deep(.styled-scroll *::-webkit-scrollbar-thumb) {
+    /* Transitions don't work for visibility
+       and opacity doesn't work for scrollbars. */
+    visibility: visible;
+}
+
+:deep(.styled-scroll *:active::-webkit-scrollbar),
+:deep(.styled-scroll *:focus::-webkit-scrollbar),
+:deep(.styled-scroll *:hover::-webkit-scrollbar),
+:deep(.styled-scroll *:active::-webkit-scrollbar-thumb),
+:deep(.styled-scroll *:focus::-webkit-scrollbar-thumb),
+:deep(.styled-scroll *:hover::-webkit-scrollbar-thumb) {
+    visibility: visible;
+}
+
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import ItemList from "./LibraryViewer/itemList.partial.obs";
+    import ItemListFilters from "./LibraryViewer/itemListFilters.partial.obs";
+    import ItemListSort from "./LibraryViewer/itemListSort.partial.obs";
+    import ItemPreview from "./LibraryViewer/itemPreview.partial.obs";
+    import { updateItemProperties } from "./LibraryViewer/utils.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { LibraryViewerDownloadItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerDownloadItemBag";
+    import { LibraryViewerInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerInitializationBox";
+    import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";
+
+    const config = useConfigurationValues<LibraryViewerInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    //#region Values
+
+    const items = ref<LibraryViewerItemBag[]>(config.items ?? []);
+    const filteredItems = ref<LibraryViewerItemBag[]>(items.value);
+    const sortedItems = ref<LibraryViewerItemBag[]>(items.value);
+    const selectedItem = ref<LibraryViewerItemBag | null | undefined>();
+    const isDownloading = ref<boolean>(false);
+    const isLoadingDetails = ref<boolean>(false);
+    const errorMessage = ref<string>();
+    const warningMessage = ref<string>();
+
+    //#endregion
+
+    //#region Functions
+
+    function onSelected(item: LibraryViewerItemBag): void {
+        selectedItem.value = item;
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    async function onLoadDetails(item: LibraryViewerItemBag | null | undefined): Promise<void> {
+        try {
+            isLoadingDetails.value = true;
+            errorMessage.value = undefined;
+            warningMessage.value = undefined;
+
+            if (!item) {
+                return;
+            }
+
+            const response = await invokeBlockAction<LibraryViewerItemBag>(`GetItemDetails?contentLibraryItemId=${item.guid}`);
+
+            if (response.data) {
+                updateItemProperties(item, response.data);
+
+                if (response.data.warningMessage) {
+                    warningMessage.value = response.data.warningMessage;
+                }
+            }
+
+            if (response.errorMessage) {
+                errorMessage.value = response.errorMessage ?? "An unexpected error occurred while loading the item.";
+            }
+        }
+        finally {
+            isLoadingDetails.value = false;
+        }
+    }
+
+    async function onDownloadItem(bag: LibraryViewerDownloadItemBag): Promise<void> {
+        try {
+            isDownloading.value = true;
+            errorMessage.value = undefined;
+            warningMessage.value = undefined;
+
+            if (!bag) {
+                return;
+            }
+
+            const response = await invokeBlockAction<LibraryViewerItemBag>("DownloadItem", { bag });
+
+            if (response.data) {
+                const item = items.value.find(i => i.guid === bag.contentLibraryItemGuid);
+
+                if (item) {
+                    updateItemProperties(item, response.data);
+                }
+
+                if (response.data.warningMessage) {
+                    warningMessage.value = response.data.warningMessage;
+                }
+            }
+
+            if (response.errorMessage) {
+                errorMessage.value = response.errorMessage ?? "An unexpected error occurred while downloading the item.";
+            }
+        }
+        finally {
+            isDownloading.value = false;
+        }
+    }
+
+    //#endregion
+</script>

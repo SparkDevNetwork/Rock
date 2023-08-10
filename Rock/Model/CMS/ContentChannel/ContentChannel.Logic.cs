@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using Rock.Web.Cache;
@@ -58,6 +57,27 @@ namespace Rock.Model
             get
             {
                 return this.ContentChannelType != null ? this.ContentChannelType : base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the content library configuration.
+        /// </summary>
+        /// <value>
+        /// The content library configuration.
+        /// </value>
+        [NotMapped]
+        public ContentLibraryConfiguration ContentLibraryConfiguration { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the content library is enabled for this content channel.
+        /// </summary>
+        [NotMapped]
+        public bool IsContentLibraryEnabled
+        {
+            get
+            {
+                return this.ContentLibraryConfiguration?.IsEnabled == true;
             }
         }
     }

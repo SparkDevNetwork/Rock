@@ -16,10 +16,10 @@
 //
 import { computed, defineComponent, ref, watch, SetupContext } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
-import CheckBox from "@Obsidian/Controls/checkBox";
-import NumberBox from "@Obsidian/Controls/numberBox";
-import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
+import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationValueKey } from "./groupTypesField.partial";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";

@@ -1,0 +1,104 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { QueueBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueDetail/queueBag";
+    import { QueueDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueDetail/queueDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<QueueBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<QueueDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.timeToLiveSeconds) {
+            valueBuilder.addTextValue("Time To Live", `${props.modelValue.timeToLiveSeconds.toString()} seconds`);
+        }
+
+        if (props.modelValue.messagesConsumedLastMinute != null) {
+            valueBuilder.addTextValue("Messages Last Minute", props.modelValue.messagesConsumedLastMinute.toString());
+        }
+
+        if (props.modelValue.messagesConsumedLastHour != null) {
+            valueBuilder.addTextValue("Messages Last Hour", props.modelValue.messagesConsumedLastHour.toString());
+        }
+
+        if (props.modelValue.messagesConsumedLastDay != null) {
+            valueBuilder.addTextValue("Messages Last Day", props.modelValue.messagesConsumedLastDay.toString());
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

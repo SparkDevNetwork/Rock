@@ -1,0 +1,259 @@
+<template>
+    <div class="message" :style="additionalMessageStyles" @click="onMessageClick">
+        <div class="message-icon">
+            <img v-if="message.photoUrl" class="image" :src="message.photoUrl" />
+            <div v-else class="image no-image"></div>
+
+            <div v-if="message.count > 1" class="count">{{ message.count }}</div>
+            <div v-else class="count">
+                <i :class="message.iconCssClass"></i>
+            </div>
+        </div>
+
+        <div class="message-body">
+            <div class="message-content">
+                <strong v-if="message.title" class="mr-1">{{ message.title }}</strong>
+                <span>{{ message.description }}</span>
+            </div>
+            <div class="message-date" v-if="relativeTime">
+                <span :title="dateTimeText">{{ relativeTime }}</span>
+            </div>
+        </div>
+
+        <div class="message-actions">
+            <div class="mark-as-read-button">
+                <RockButton class="btn btn-default btn-sm" type="button" autoDisable @click.prevent.stop="onMarkAsReadClick">
+                    <i class="fa fa-check-square-o"></i>
+                </RockButton>
+            </div>
+
+            <div class="unread-indicator" :class="additionalIndicatorClasses"></div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.message {
+    display: flex;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s linear;
+}
+
+.message:hover {
+    background-color: #faf7f5;
+}
+
+.message-icon {
+    position: relative;
+    margin-right: 1rem;
+}
+
+.message-icon > .image {
+    background: #eee;
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+    margin-right: 16px;
+    margin-bottom: 16px;
+}
+
+.message-icon > .count {
+    background: var(--message-light-color, #009ce3);
+    color: var(--message-dark-color, #fff);
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    border: 3px solid #fff;
+    text-align: center;
+}
+
+.message-body {
+    flex-grow: 1;
+}
+
+.message-actions {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.mark-as-read-button {
+    margin-left: 16px;
+    opacity: 0;
+    transition: opacity 0.15s linear;
+}
+
+.message:hover .mark-as-read-button {
+    opacity: 1;
+}
+
+.unread-indicator {
+    align-self: center;
+    margin-left: 16px;
+    width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    background-color: var(--color-danger, #d4442e);
+    transition: opacity 0.15s linear;
+}
+
+.unread-indicator.read {
+    opacity: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { computed, PropType } from "vue";
+    import { MarkMessageAsReadRequestBag } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/markMessageAsReadRequestBag";
+    import { MarkMessageAsReadResponseBag } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/markMessageAsReadResponseBag";
+    import { GetMessageActionRequestBag } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/getMessageActionRequestBag";
+    import { GetMessageActionResponseBag } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/getMessageActionResponseBag";
+    import { NotificationMessageActionType } from "@Obsidian/Enums/Core/notificationMessageActionType";
+    import { NotificationMessageBag } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/notificationMessageBag";
+
+    const props = defineProps({
+        message: {
+            type: Object as PropType<NotificationMessageBag>,
+            required: true
+        },
+
+        disableInteraction: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "remove");
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Computed Values
+
+    /**
+     * The relative amount of time that has passed since the notification
+     * was sent.
+     */
+    const relativeTime = computed((): string => {
+        if (!props.message.dateTime) {
+            return "";
+        }
+
+        const date = RockDateTime.parseISO(props.message.dateTime);
+
+        return date?.localDateTime.humanizeElapsed() ?? "";
+    });
+
+    /**
+     * The absolute date and time that the notification was sent. This is
+     * in the local browser time zone so that it coincides with the relative
+     * time displayed.
+     */
+    const dateTimeText = computed((): string => {
+        if (!props.message.dateTime) {
+            return "";
+        }
+
+        const date = RockDateTime.parseISO(props.message.dateTime);
+
+        return date?.localDateTime.toASPString("yyyy-MM-dd h:mm:ss tt") ?? "";
+    });
+
+    const additionalMessageStyles = computed((): Record<string, string> => {
+        const styles: Record<string, string> = {};
+
+        if (props.message.color) {
+            const color = new RockColor(props.message.color);
+            const pair = RockColor.calculateColorPair(color);
+
+            styles["--message-light-color"] = pair.backgroundColor.toRgba();
+            styles["--message-dark-color"] = pair.foregroundColor.toRgba();
+        }
+
+        return styles;
+    });
+
+    const additionalIndicatorClasses = computed((): string => {
+        return props.message.isRead ? "read" : "";
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the message has been clicked by the person
+     * and the associated action should be performed.
+     */
+    async function onMessageClick(): Promise<void> {
+        if (props.disableInteraction) {
+            return;
+        }
+
+        const request: GetMessageActionRequestBag = {
+            idKey: props.message.idKey,
+            isRead: true
+        };
+
+        const result = await invokeBlockAction<GetMessageActionResponseBag>("GetMessageAction", { request });
+
+        if (!result.isSuccess || !result.data) {
+            return await alert(result.errorMessage || "Unable to interact with the action.");
+        }
+
+        props.message.isRead = request.isRead;
+
+        if (result.data?.isDeleted) {
+            emit("remove");
+        }
+
+        if (result.data.action?.type === NotificationMessageActionType.ShowMessage) {
+            await alert(result.data.action.message ?? "");
+        }
+        else if (result.data.action?.type === NotificationMessageActionType.LinkToPage) {
+            window.location.href = result.data.action.url ?? "";
+        }
+        else {
+            await alert("This action is not supported.");
+        }
+    }
+
+    /**
+     * Event handler for when the "mark as read" button is clicked. Toggle the
+     * read state of the message.
+     */
+    async function onMarkAsReadClick(): Promise<void> {
+        if (props.disableInteraction) {
+            return;
+        }
+
+        const request: MarkMessageAsReadRequestBag = {
+            idKey: props.message.idKey,
+            isRead: !props.message.isRead
+        };
+
+        const result = await invokeBlockAction<MarkMessageAsReadResponseBag>("MarkMessageAsRead", { request });
+
+        if (!result.isSuccess || !result.data) {
+            return await alert(result.errorMessage || "Unable to mark message as read.");
+        }
+
+        props.message.isRead = request.isRead;
+
+        if (result.data?.isDeleted) {
+            emit("remove");
+        }
+    }
+
+    // #endregion
+</script>

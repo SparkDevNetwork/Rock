@@ -1,0 +1,80 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible">
+        <RockForm v-model:submit="submitForm" @submit="onSubmitForm">
+            <div ref="contentTextBox">
+                <TextBox v-model="internalValue" label="Content" textMode="multiline" />
+            </div>
+        </RockForm>
+
+        <template #customButtons>
+            <RockButton btnType="primary" @click="onStartSave">Save</RockButton>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { nextTick, PropType, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        isVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "save"): void;
+        (e: "update:modelValue", value: string): void;
+        (e: "update:isVisible", value: boolean): void;
+    }>();
+
+    /** The internal value as displayed in the UI. */
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    /** True if the modal is currently visible. */
+    const isVisible = useVModelPassthrough(props, "isVisible", emit);
+
+    /** True if the form should start processing. */
+    const submitForm = ref(false);
+
+    /** Reference to the element containing the content text box. */
+    const contentTextBox = ref<HTMLElement | null>(null);
+
+    /**
+     * Event handler called when the user clicks the save button.
+     */
+    function onStartSave(): void {
+        // Start the form processing.
+        submitForm.value = true;
+    }
+
+    /**
+     * Event handler when the form has passed validation and is ready to
+     * submit.
+     */
+    function onSubmitForm(): void {
+        emit("save");
+    }
+
+    // When we become visible, make the text box have focus.
+    watch(isVisible, () => {
+        nextTick(() => {
+            if (contentTextBox.value) {
+                const input = contentTextBox.value.querySelector("textarea");
+
+                input?.focus();
+            }
+        });
+    });
+</script>

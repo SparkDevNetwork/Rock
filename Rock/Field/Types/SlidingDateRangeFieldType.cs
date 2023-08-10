@@ -22,6 +22,9 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Enums.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -29,7 +32,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save a sliding date range. Last X (Hours, Days, etc)
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SLIDING_DATE_RANGE )]
     public class SlidingDateRangeFieldType : FieldType
     {
@@ -44,6 +47,40 @@ namespace Rock.Field.Types
         /// Enabled SlidingDateRangeUnits
         /// </summary>
         protected const string ENABLED_SLIDING_DATE_RANGE_UNITS = "enabledSlidingDateRangeUnits";
+
+        private const string TIME_UNIT_TYPES_PROPERTY_KEY = "timeUnitTypes";
+        private const string SLIDING_DATE_RANGE_TYPES_PROPERTY_KEY = "slidingDateRangeTypes";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var configurationProperties = new Dictionary<string, string>();
+
+                var typesList = Enum.GetValues( typeof( SlidingDateRangePicker.SlidingDateRangeType ) )
+                    .Cast<SlidingDateRangePicker.SlidingDateRangeType>()
+                    .Where( a => a != SlidingDateRangePicker.SlidingDateRangeType.All )
+                    .Select( a => new ListItemBag
+                    {
+                        Text = a.ConvertToString(),
+                        Value = a.ConvertToInt().ToString()
+                    } ).ToList();
+
+                var unitList = Enum.GetValues( typeof( SlidingDateRangePicker.TimeUnitType ) )
+                    .Cast<SlidingDateRangePicker.TimeUnitType>()
+                    .Select( a => new ListItemBag
+                    {
+                        Text = a.ConvertToString(),
+                        Value = a.ConvertToInt().ToString()
+                    } ).ToList();
+
+                configurationProperties[SLIDING_DATE_RANGE_TYPES_PROPERTY_KEY] = typesList.ToCamelCaseJson( false, true );
+                configurationProperties[TIME_UNIT_TYPES_PROPERTY_KEY] = unitList.ToCamelCaseJson( false, true );
+
+                return configurationProperties;
+            }
+        }
 
         #endregion
 

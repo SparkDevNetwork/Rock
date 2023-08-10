@@ -14,8 +14,8 @@
 <script setup lang="ts">
     import { ComputedRef, PropType, UnwrapNestedRefs, computed, onMounted, ref, watch } from "vue";
     import { StepperController } from "./types.partial";
-    import Loading from "@Obsidian/Controls/loading";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

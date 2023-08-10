@@ -15,12 +15,15 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.Model
 {
     /// <summary>
     /// Represents the approval status of a note
     /// </summary>
     [Enums.EnumDomain( "Core" )]
+    [Obsolete( "This enum is no longer used and will be removed in the future." )]
     public enum NoteApprovalStatus
     {
         /// <summary>

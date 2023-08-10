@@ -1,0 +1,123 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <NotificationBox v-if="isSystem" alertType="info">
+            <strong>Note</strong> Because this service job is used by Rock, editing is not enabled.
+        </NotificationBox>
+        <NotificationBox v-if="jobTypeErrorMessage" alertType="danger">{{ jobTypeErrorMessage }}</NotificationBox>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { ServiceJobBag } from "@Obsidian/ViewModels/Blocks/Core/ServiceJobDetail/serviceJobBag";
+    import { ServiceJobDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ServiceJobDetail/serviceJobDetailOptionsBag";
+    import { areEqual } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ServiceJobBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<ServiceJobDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+    const jobTypeOptions = props.options.jobTypeOptions ?? [];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.class) {
+            valueBuilder.addTextValue("Job Type", props.modelValue.class);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.cronDescription) {
+            valueBuilder.addTextValue("Cron Description", props.modelValue.cronDescription);
+        }
+
+        return valueBuilder.build();
+    });
+
+    const jobTypeErrorMessage = computed((): string => {
+        const errorMessage = ref("");
+        if (props.modelValue?.class && !jobTypeOptions.some(l => areEqual(l.value, props.modelValue?.class))) {
+            errorMessage.value = "Unable to find Job Type: " + props.modelValue.class;
+        }
+
+        return errorMessage.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

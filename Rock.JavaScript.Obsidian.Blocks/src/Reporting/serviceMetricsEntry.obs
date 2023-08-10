@@ -81,12 +81,12 @@
     import MetricItemTree from "./ServiceMetricsEntry/metricItemTree.obs";
     import MetricParametersStepper from "./ServiceMetricsEntry/metricParametersStepper.partial.obs";
     import { StepperController } from "./ServiceMetricsEntry/types.partial";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { ServiceMetricsEntryGetMetricsRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryGetMetricsRequestBag";

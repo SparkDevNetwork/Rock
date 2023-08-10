@@ -1,0 +1,222 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+
+            <div class="col-md-12">
+                <TextBox v-model="description"
+                    label="Description"
+                    textMode="multiline" />
+            </div>
+
+            <div class="col-md-6">
+                <DatePicker v-model="startDate"
+                    label="Start Date"
+                    rules="required"
+                    :disabled="!isAddMode"
+                    help="This defines the first day (or week) that a person could engage with this Streak Type and receive an affirmative mark towards their streak.
+                        The start date cannot be changed once the Streak Type is created except when rebuilding the entire Streak Type." />
+            </div>
+
+            <div class="col-sm-3 col-xs-6">
+                <CheckBox v-model="enableAttendance"
+                    label="Sync Linked Activity"
+                    help="If enabled, this streak type will create linked activity records (interaction or attendance) when the Mark Engagement API endpoints are used.
+                        Furthermore, when linked activity records are added, this streak type will mark the appropriate engagement bit." />
+            </div>
+
+            <div class="col-sm-3 col-xs-6">
+                <CheckBox v-model="requiresEnrollment"
+                    label="Require Enrollment"
+                    help="If enabled, this Streak Type will not allow new Streaks to be tracked unless the person has been explicitly enrolled. Implicit enrollment
+                        occurs when Sync Linked Activity is enabled, and a linked activity record is created." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="structureType"
+                    label="Linked Activity"
+                    :items="streakStructureTypes"
+                    blankValue="None"
+                    help="This specifies what linked activity types this Streak Type may interface with. Something very broad like “Attendance: Any” could
+                        help measure general engagement with the church. Alternatively, something narrower like a Group Type Purpose could measure more specific engagement points." />
+
+                <GroupTypePicker label="Group Type" v-if="modelValue.structureType == StreakStructureType.GroupType" v-model="structureEntity" :isSortedByName="true"/>
+
+                <GroupPicker label="Group" v-if="modelValue.structureType == StreakStructureType.Group" v-model="structureEntity" />
+
+                <DefinedValuePicker label="Group Type Purpose" v-if="modelValue.structureType == StreakStructureType.GroupTypePurpose" v-model="structureEntity" :definedTypeGuid="DefinedType.GrouptypePurpose" showBlankItem />
+
+                <GroupTypePicker label="Check-In Configuration" v-if="modelValue.structureType == StreakStructureType.CheckInConfig" v-model="structureEntity" :isSortedByName="true" :groupTypes="options?.attendanceCheckInConfigGroupTypesGuids"/>
+
+                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionChannel" v-model="structureEntity"  />
+
+                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="interactionComponentInteractionChannel"  />
+
+                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="structureEntity" :interactionChannelGuid="interactionComponentInteractionChannel?.value ?? ''" />
+
+                <DefinedValuePicker label="Interaction Medium" v-if="modelValue.structureType == StreakStructureType.InteractionMedium" v-model="structureEntity" :definedTypeGuid="DefinedType.InteractionChannelMedium" showBlankItem />
+
+                <div class="col-sm-6 col-xs-12">
+                    <AccountPicker label="Account" v-if="modelValue.structureType == StreakStructureType.FinancialTransaction" v-model="structureEntity" enhanceForLongLists :multiple="false" />
+                </div>
+
+                <div class="col-sm-6 col-xs-12">
+                    <CheckBox label="Include Child Accounts" v-if="modelValue.structureType == StreakStructureType.FinancialTransaction" v-model="includeChildAccounts" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <DropDownList v-model="occurrenceFrequency"
+                    label="Frequency"
+                    :items="streakOccurrenceFrequencies ?? []"
+                    :disabled="!isAddMode"
+                    :blankValue="streakOccurrenceFrequencies?.[0].value ?? ''"
+                    help="Daily measuring is great for something like Bible Reading where the ideal is daily engagement. Weekly measurements are better suited for activities
+                        such as a small group where the ideal is weekly engagement." />
+                <DayOfWeekPicker v-if="canUpdateDayOfWeekPicker" label="Day of the Week" v-model="firstDayOfWeek" :showBlankItem="false"
+                    help="Allows this weekly streak type to calculate streaks based off a custom first day of the week setting. Leave this blank to use the system setting." />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch, computed } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
+    import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker.obs";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { StreakStructureType, StreakStructureTypeDescription } from "@Obsidian/Enums/Engagement/streakStructureType";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
+    import { StreakTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { StreakOccurrenceFrequencyDescription } from "@Obsidian/Enums/Engagement/streakOccurrenceFrequency";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<StreakTypeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<StreakTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: StreakTypeBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const startDate = propertyRef(props.modelValue.startDate, "StartDate");
+    const requiresEnrollment = propertyRef(props.modelValue.requiresEnrollment ?? "", "RequiresEnrollment");
+    const enableAttendance = propertyRef(props.modelValue.enableAttendance, "EnableAttendance");
+    const firstDayOfWeek = propertyRef(props.modelValue?.firstDayOfWeek?.toString() ?? null, "FirstDayOfWeek");
+    const occurrenceFrequency = propertyRef(props.modelValue?.occurrenceFrequency?.toString() ?? null, "OccurrenceFrequency");
+    const structureType = propertyRef(props.modelValue?.structureType?.toString() ?? "None", "StructureType");
+    const structureEntity = propertyRef(props.modelValue?.structureEntity ?? {}, "StructureEntity");
+    const includeChildAccounts = propertyRef(props.modelValue?.includeChildAccounts ?? {}, "IncludeChildAccounts");
+    const interactionComponentInteractionChannel = ref(props.modelValue.interactionComponentInteractionChannel);
+    const streakStructureTypes = ref<ListItemBag[]>(enumToListItemBag(StreakStructureTypeDescription));
+    const streakOccurrenceFrequencies = ref<ListItemBag[]>(enumToListItemBag(StreakOccurrenceFrequencyDescription));
+
+    const isAddMode = computed((): boolean => props.modelValue?.idKey == "");
+
+    // update Day of the Week picker only if the streak occurrence frequency is set to Weekly
+    const canUpdateDayOfWeekPicker = computed((): boolean => props.modelValue?.occurrenceFrequency == 1);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, startDate, requiresEnrollment, enableAttendance, firstDayOfWeek, occurrenceFrequency, structureType, structureEntity, includeChildAccounts];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(startDate, props.modelValue.startDate ?? "");
+        updateRefValue(requiresEnrollment, props.modelValue.requiresEnrollment);
+        updateRefValue(enableAttendance, props.modelValue.enableAttendance);
+        updateRefValue(firstDayOfWeek, props.modelValue?.firstDayOfWeek?.toString() ?? null);
+        updateRefValue(occurrenceFrequency, props.modelValue?.occurrenceFrequency.toString() ?? null);
+        updateRefValue(structureType, props.modelValue?.structureType?.toString() ?? "");
+        updateRefValue(structureEntity, props.modelValue?.structureEntity ?? {});
+        updateRefValue(includeChildAccounts, props.modelValue?.includeChildAccounts ?? false);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: StreakTypeBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            startDate: startDate.value,
+            requiresEnrollment: requiresEnrollment.value,
+            enableAttendance: enableAttendance.value,
+            firstDayOfWeek: parseInt(firstDayOfWeek.value ?? "0"),
+            occurrenceFrequency: toNumber(occurrenceFrequency.value),
+            structureType: toNumber(structureType.value),
+            structureEntity: props.modelValue?.structureType?.toString() == structureType.value ? structureEntity.value: {},
+            includeChildAccounts: includeChildAccounts.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

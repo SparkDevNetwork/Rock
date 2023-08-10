@@ -499,6 +499,11 @@ namespace Rock.SystemGuid
         public const string METRICS = "3AF9AD35-9F3E-4497-BFDE-60C6C1827653";
 
         /// <summary>
+        /// Media Selector field type
+        /// </summary>
+        public const string MEDIA_SELECTOR = "243E40FC-04D0-48AD-B379-25A400CB0CAC";
+
+        /// <summary>
         /// Month Day field type
         /// </summary>
         public const string MONTH_DAY = "8BED8DD8-8167-4052-B807-A1E72C133611";

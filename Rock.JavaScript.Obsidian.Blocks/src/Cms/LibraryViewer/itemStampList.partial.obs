@@ -1,0 +1,32 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span class="library-viewer-item-stamp-list">
+        <span v-if="item.isPopular" title="Popular" class="library-viewer-item-stamp stamp-popular text-warning"><i class="fa fa-star"></i></span>
+        <span v-if="item.isNew" title="New" class="library-viewer-item-stamp stamp-new text-info"><i class="fa fa-calendar-alt"></i></span>
+        <span v-if="item.isUploaded" title="Uploaded" class="library-viewer-item-stamp stamp-uploaded text-info"><i class="fa fa-upload"></i></span>
+        <span v-if="item.isDownloaded" title="Downloaded" class="library-viewer-item-stamp stamp-downloaded text-success"><i class="fa fa-download"></i></span>
+        <span v-if="item.isTrending" title="Trending" class="library-viewer-item-stamp stamp-trending text-primary"><i class="fa fa-fire-alt"></i></span>
+    </span>
+</template>
+
+<style scoped>
+    .library-viewer-item-stamp-list {
+        flex-shrink: 0;
+    }
+
+    .library-viewer-item-stamp + .library-viewer-item-stamp {
+        margin-left: 6px;
+    }
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";
+
+    defineProps({
+        item: {
+            type: Object as PropType<LibraryViewerItemBag>,
+            required: true
+        }
+    });
+</script>

@@ -16,7 +16,8 @@
 //
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
-import DateRangePicker, { DateRangeParts } from "@Obsidian/Controls/dateRangePicker";
+import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
 
 export const EditComponent = defineComponent({
     name: "DateRangeField.Edit",
@@ -29,7 +30,7 @@ export const EditComponent = defineComponent({
 
     data() {
         return {
-            internalValue: {} as DateRangeParts
+            internalValue: undefined as DateRangeParts | undefined
         };
     },
 
@@ -40,7 +41,7 @@ export const EditComponent = defineComponent({
 
     watch: {
         internalValue(): void {
-            if (!this.internalValue.lowerValue && !this.internalValue.upperValue) {
+            if (!this.internalValue?.lowerValue && !this.internalValue?.upperValue) {
                 this.$emit("update:modelValue", "");
             }
             else {

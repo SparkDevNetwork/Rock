@@ -74,12 +74,13 @@
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import KeyValueList, { KeyValueItem } from "@Obsidian/Controls/keyValueList";
-    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
-    import Modal from "@Obsidian/Controls/modal";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
     import { CustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/customSettingsBag";

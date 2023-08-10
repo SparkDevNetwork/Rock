@@ -17,7 +17,7 @@
 
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./timeZoneField.partial";
 

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Web;
 using System.Web.Routing;
 
@@ -61,6 +62,12 @@ namespace Rock.Web
             private readonly HttpRequestBase _request;
 
             /// <summary>
+            /// An empty dictionary to take place of normal context items.
+            /// This prevents NotImplementedExceptions from ImageResizer library.
+            /// </summary>
+            private readonly IDictionary _items = new System.Collections.Generic.Dictionary<string, object>();
+
+            /// <summary>
             /// Initializes a new instance of the <see cref="InternalHttpContext"/> class.
             /// </summary>
             /// <param name="uri">The URI.</param>
@@ -81,6 +88,9 @@ namespace Rock.Web
                     return _request;
                 }
             }
+
+            /// <inheritdoc/>
+            public override IDictionary Items => _items;
         }
 
         /// <summary>

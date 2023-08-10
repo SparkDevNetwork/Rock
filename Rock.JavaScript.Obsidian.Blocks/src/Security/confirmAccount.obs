@@ -1,0 +1,271 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <AccountConfirmation v-if="view.type === ConfirmAccountViewType.AccountConfirmation"
+        v-model:code="code"
+        :disabled="isProcessing"
+        :options="view.options"
+        @confirmAccount="onConfirmAccount"
+        @showChangePasswordView="onShowChangePasswordView"
+        @showDeleteConfirmationView="onShowDeleteConfirmationView"></AccountConfirmation>
+
+    <ChangePassword v-else-if="view.type === ConfirmAccountViewType.ChangePassword"
+        :disabled="isProcessing"
+        :options="view.options"
+        @changePassword="onChangePassword"></ChangePassword>
+
+    <DeleteConfirmation v-else-if="view.type === ConfirmAccountViewType.DeleteConfirmation"
+        :disabled="isProcessing"
+        :options="view.options"
+        @deleteAccount="onDeleteAccount"></DeleteConfirmation>
+
+    <ConfirmAccountAlert v-else-if="view.type === ConfirmAccountViewType.Alert"
+        :alert="view.options.alert"></ConfirmAccountAlert>
+
+    <div v-else-if="view.type === ConfirmAccountViewType.Content" v-html="view.options.content"></div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import AccountConfirmation from "./ConfirmAccount/accountConfirmation.partial.obs";
+    import ChangePassword from "./ConfirmAccount/changePassword.partial.obs";
+    import ConfirmAccountAlert from "./ConfirmAccount/confirmAccountAlert.partial.obs";
+    import DeleteConfirmation from "./ConfirmAccount/deleteConfirmation.partial.obs";
+    import { ChangePasswordEvent, ConfirmAccountEvent, DeleteAccountEvent, ShowChangePasswordViewEvent, ShowDeleteConfirmationViewEvent } from "./ConfirmAccount/events";
+    import { ConfirmAccountView } from "./ConfirmAccount/views.partial";
+    import { ConfirmAccountViewType, ConfirmAccountViewTypeDescription } from "@Obsidian/Enums/Blocks/Security/ConfirmAccount/confirmAccountViewType";
+    import { HttpResult } from "@Obsidian/Types/Utility/http";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ConfirmAccountChangePasswordRequestBag } from "@Obsidian/ViewModels/Blocks/Security/ConfirmAccount/confirmAccountChangePasswordRequestBag";
+    import { ConfirmAccountConfirmRequestBag } from "@Obsidian/ViewModels/Blocks/Security/ConfirmAccount/confirmAccountConfirmRequestBag";
+    import { ConfirmAccountDeleteRequestBag } from "@Obsidian/ViewModels/Blocks/Security/ConfirmAccount/confirmAccountDeleteRequestBag";
+    import { ConfirmAccountInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/ConfirmAccount/confirmAccountInitializationBox";
+    import { ConfirmAccountShowChangePasswordViewRequestBag } from "@Obsidian/ViewModels/Blocks/Security/ConfirmAccount/confirmAccountShowChangePasswordViewRequestBag";
+    import { ConfirmAccountShowDeleteConfirmationRequestBag } from "@Obsidian/ViewModels/Blocks/Security/ConfirmAccount/confirmAccountShowDeleteConfirmationRequestBag";
+    import { ConfirmAccountViewBox } from "@Obsidian/ViewModels/Blocks/Security/ConfirmAccount/confirmAccountViewBox";
+
+    const config = useConfigurationValues<ConfirmAccountInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    //#region Values
+
+    const isProcessing = ref<boolean>(false);
+    const viewBox = ref<ConfirmAccountViewBox>(config.view ?? getDefaultViewBox());
+
+    const code = ref<string>("");
+
+    //#endregion
+
+    //#region Computed Values
+
+    /** The child view for this component. */
+    const view = computed<ConfirmAccountView>(() => getView(viewBox.value));
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler invoked when the password is being changed.
+     */
+    function onChangePassword({ code, password }: ChangePasswordEvent): Promise<void> {
+        return processBlockActionAndUpdateView(() =>
+            invokeConfirmAccountBlockAction<ConfirmAccountChangePasswordRequestBag>(
+                config.actionNames?.changePassword,
+                {
+                    code,
+                    password
+                }
+            )
+        );
+    }
+
+    /**
+     * Event handler invoked when the account is being confirmed.
+     *
+     * @param code The confirmation code.
+     */
+    function onConfirmAccount({ code }: ConfirmAccountEvent): Promise<void> {
+        return processBlockActionAndUpdateView(async () => {
+            clearErrors();
+
+            return await invokeConfirmAccountBlockAction<ConfirmAccountConfirmRequestBag>(
+                config.actionNames?.confirmAccount,
+                {
+                    code
+                }
+            );
+        });
+    }
+
+    /**
+     * Event handler invoked when the account is being deleted.
+     */
+    function onDeleteAccount({ code }: DeleteAccountEvent): Promise<void> {
+        return processBlockActionAndUpdateView(() =>
+            invokeConfirmAccountBlockAction<ConfirmAccountDeleteRequestBag>(
+                config.actionNames?.deleteAccount,
+                {
+                    code
+                }
+            )
+        );
+    }
+
+    /**
+     * Event handler invoked when the change password view is being shown.
+     *
+     * @param code The confirmation code.
+     */
+    function onShowChangePasswordView({ code }: ShowChangePasswordViewEvent): Promise<void> {
+        return processBlockActionAndUpdateView(async () => {
+            clearErrors();
+
+            return await invokeConfirmAccountBlockAction<ConfirmAccountShowChangePasswordViewRequestBag>(
+                config.actionNames?.showChangePasswordView,
+                {
+                    code
+                }
+            );
+        });
+    }
+
+    /**
+     * Event handler invoked when the delete confirmation view is being shown.
+     *
+     * @param code The confirmation code.
+     */
+    function onShowDeleteConfirmationView({ code }: ShowDeleteConfirmationViewEvent): Promise<void> {
+        return processBlockActionAndUpdateView(async () => {
+            clearErrors();
+
+            return await invokeConfirmAccountBlockAction<ConfirmAccountShowDeleteConfirmationRequestBag>(
+                config.actionNames?.showDeleteConfirmationView,
+                {
+                    code
+                }
+            );
+        });
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Clears the errors.
+     */
+    function clearErrors(): void {
+        if (view.value.type === ConfirmAccountViewType.AccountConfirmation) {
+            view.value.options.errorCaption = null;
+        }
+    }
+
+    /**
+     * Gets the default view.
+     */
+    function getDefaultView(): ConfirmAccountView {
+        return {
+            type: ConfirmAccountViewType.AccountConfirmation,
+            options: {
+                errorCaption: null
+            }
+        };
+    }
+
+    /**
+     * Gets the default view box.
+     *
+     * @param errorCaption The error caption for the default view.
+     */
+    function getDefaultViewBox(errorCaption?: string): ConfirmAccountViewBox {
+        return {
+            viewType: ConfirmAccountViewType.AccountConfirmation,
+            accountConfirmationViewOptions: {
+                errorCaption
+            }
+        };
+    }
+
+    /**
+     * Gets the view for the view box.
+     *
+     * @param viewBox The view box.
+     */
+    function getView(viewBox: ConfirmAccountViewBox): ConfirmAccountView {
+        if (viewBox.viewType === ConfirmAccountViewType.AccountConfirmation) {
+            return {
+                type: viewBox.viewType,
+                options: viewBox.accountConfirmationViewOptions ?? {}
+            };
+        }
+        else if (viewBox.viewType === ConfirmAccountViewType.Alert) {
+            return {
+                type: viewBox.viewType,
+                options: viewBox.alertViewOptions ?? {}
+            };
+        }
+        else if (viewBox.viewType === ConfirmAccountViewType.DeleteConfirmation) {
+            return {
+                type: viewBox.viewType,
+                options: viewBox.deleteConfirmationViewOptions ?? {}
+            };
+        }
+        else if (viewBox.viewType === ConfirmAccountViewType.ChangePassword) {
+            return {
+                type: viewBox.viewType,
+                options: viewBox.changePasswordViewOptions ?? {}
+            };
+        }
+        else if (viewBox.viewType === ConfirmAccountViewType.Content) {
+            return {
+                type: viewBox.viewType,
+                options: viewBox.contentViewOptions ?? {}
+            };
+        }
+        else {
+            // By default, return the default view but inform that the view type is unknown.
+            console.error(`Returning default view as "${ConfirmAccountViewTypeDescription[viewBox.viewType]}" is unknown.`);
+            return getDefaultView();
+        }
+    }
+
+    /**
+     * Invokes Confirm Account block actions by name and returns the common ConfirmAccountViewBox result.
+     *
+     * @param actionName The name of the action.
+     * @param bag The request bag.
+     */
+    function invokeConfirmAccountBlockAction<T>(actionName: string | null | undefined, bag: T): Promise<HttpResult<ConfirmAccountViewBox>> {
+        if (!actionName) {
+            throw "The action name is not configured properly.";
+        }
+        return invokeBlockAction<ConfirmAccountViewBox>(actionName, { bag });
+    }
+
+    /**
+     * Processes a ConfirmAccountViewBox-returning block action,
+     * and updates the view with the result.
+     *
+     * @param processRequest The awaitable block action.
+     */
+    async function processBlockActionAndUpdateView(processRequest: () => Promise<HttpResult<ConfirmAccountViewBox>>): Promise<void> {
+        try {
+            isProcessing.value = true;
+
+            const result = await processRequest();
+
+            if (result.isSuccess && result.data) {
+                viewBox.value = result.data;
+            }
+            else {
+                const fallbackViewBox = getDefaultViewBox(result.errorMessage || "An unexpected error occurred. Please try your request again.");
+                viewBox.value = fallbackViewBox;
+            }
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    //#endregion
+</script>

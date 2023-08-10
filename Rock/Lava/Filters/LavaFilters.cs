@@ -3765,6 +3765,25 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// This is an undocumented internal filter to add an object to the merge fields. This will be used by the
+        /// Lava class to help formulate examples for the students to use. This will allow the class creators to
+        /// wire up merge fields to be used by the debug filter.
+        /// </summary>
+        /// <param name="context">The Lava context.</param>
+        /// <param name="input">The object to be added to the merge field.</param>
+        /// <param name="key">The key to use to add the object.</param>
+        public static void AddToMergeFields( ILavaRenderContext context, object input, string key )
+        {
+            // Make sure we have a key
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            context.SetMergeField( key, input );
+        }
+
+        /// <summary>
         /// Xamls the wrap.
         /// </summary>
         /// <param name="input">The input.</param>

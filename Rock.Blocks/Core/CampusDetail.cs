@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Campus Detail" )]
-    [Category( "Obsidian > Core" )]
+    [Category( "Core" )]
     [Description( "Displays the details of a particular campus." )]
     [IconCssClass( "fa fa-building" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
@@ -65,9 +65,6 @@ namespace Rock.Blocks.Core
         }
 
         #endregion Keys
-
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -435,7 +432,7 @@ namespace Rock.Blocks.Core
                 //CampusTopics = entity.CampusTopics.ToListItemBagList(),
                 CampusTypeValue = entity.CampusTypeValue.ToListItemBag(),
                 Description = entity.Description,
-                IsActive = entity.IsActive,
+                IsActive = !entity.IsActive.HasValue || entity.IsActive.Value,
                 IsSystem = entity.IsSystem,
                 LeaderPersonAlias = entity.LeaderPersonAlias.ToListItemBag(),
                 Location = entity.Location.ToListItemBag(),

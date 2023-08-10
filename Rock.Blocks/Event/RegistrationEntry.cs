@@ -49,7 +49,7 @@ namespace Rock.Blocks.Event
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Registration Entry" )]
-    [Category( "Obsidian > Event" )]
+    [Category( "Event" )]
     [Description( "Block used to register for a registration instance." )]
     [IconCssClass( "fa fa-clipboard-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
@@ -176,6 +176,9 @@ namespace Rock.Blocks.Event
 
         #region Obsidian Block Type Overrides
 
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => base.ObsidianFileUrl.ReplaceIfEndsWith( ".obs", string.Empty );
+
         /// <summary>
         /// Gets the property values that will be sent to the browser.
         /// </summary>
@@ -201,7 +204,7 @@ namespace Rock.Blocks.Event
         /// <param name="code">The code.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult CheckDiscountCode( string code, int registrantCount, Guid? registrationGuid )
+        public BlockActionResult CheckDiscountCode( string code, int registrantCount, Guid? registrationGuid, bool isAutoApply )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -210,7 +213,7 @@ namespace Rock.Blocks.Event
                 RegistrationTemplateDiscountWithUsage discount = null;
                 var registration = registrationGuid != null ? new RegistrationService( rockContext ).Get( registrationGuid.ToString() ) : null;
 
-                if ( code.IsNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
+                if ( isAutoApply && code.IsNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
                 {
                     // if no code is provided and there is no code already saved in the registration check for an auto apply discount, if there are none discount will be null which returns ActionNotFound
                     var registrationTemplateDiscountCodes = registrationTemplateDiscountService
@@ -220,11 +223,18 @@ namespace Rock.Blocks.Event
                         .Select( d => d.Code )
                         .ToList();
 
-                    foreach( var registrationTemplateDiscountCode in registrationTemplateDiscountCodes )
+                    foreach ( var registrationTemplateDiscountCode in registrationTemplateDiscountCodes )
                     {
                         discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, registrationTemplateDiscountCode );
 
-                        if ( discount == null || ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value ) )
+                        // This means the date is outside the defined date range, or the max usages has already been hit.
+                        if ( discount == null )
+                        {
+                            continue;
+                        }
+
+                        // Check if the registration meets the discount's minimum required registrants
+                        if (  discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value )
                         {
                             continue;
                         }
@@ -249,24 +259,37 @@ namespace Rock.Blocks.Event
                     return ActionOk( new
                     {
                         DiscountCode = registration.DiscountCode,
-                        UsagesRemaining = (int?) null,
+                        RegistrationUsagesRemaining = (int?) null,
                         DiscountAmount = registration.DiscountAmount,
-                        DiscountPercentage = registration.DiscountPercentage
+                        DiscountPercentage = registration.DiscountPercentage,
+                        DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants.Value
                     } );
                 }
 
-                if ( discount == null )
+                if ( discount == null || discount.RegistrationUsagesRemaining < 1 )
                 {
                     // The code is not found
+                    return ActionNotFound();
+                }
+
+                if ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value )
+                {
+                    // Do not show an error if the discount is being auto applied.
+                    if ( !isAutoApply || discount.RegistrationTemplateDiscount.AutoApplyDiscount == false )
+                    {
+                        return ActionForbidden( $"The discount requires a minimum of {discount.RegistrationTemplateDiscount.MinRegistrants.Value} registrants" );
+                    }
+
                     return ActionNotFound();
                 }
 
                 return ActionOk( new
                 {
                     DiscountCode = discount.RegistrationTemplateDiscount.Code,
-                    UsagesRemaining = discount.UsagesRemaining,
+                    RegistrationUsagesRemaining = discount.RegistrationUsagesRemaining,
                     DiscountAmount = discount.RegistrationTemplateDiscount.DiscountAmount,
-                    DiscountPercentage = discount.RegistrationTemplateDiscount.DiscountPercentage
+                    DiscountPercentage = discount.RegistrationTemplateDiscount.DiscountPercentage,
+                    DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants
                 } );
             }
         }
@@ -1722,7 +1745,7 @@ namespace Rock.Blocks.Event
                   * any time it is called. This prevents us from creating duplicate Person entities for
                   * both the Registrar and first Registrant who are the same person in this scenario.
                 */
-                if ( isCreatedAsRegistrant )
+                if ( isCreatedAsRegistrant && registrar != null )
                 {
                     person = registrar;
                 }
@@ -1783,6 +1806,18 @@ namespace Rock.Blocks.Event
                 {
                     switch ( field.PersonFieldType )
                     {
+                        case RegistrationPersonFieldType.Email:
+                            // Only update the person's email if they are in the same family as the logged in person (not the registrar)
+                            var currentPersonId = GetCurrentPerson()?.Id;
+                            var isFamilyMember = currentPersonId.HasValue && person.GetFamilies().ToList().Select( f => f.ActiveMembers().Where( m => m.PersonId == currentPersonId ) ).Any();
+                            if ( isFamilyMember )
+                            {
+                                string email = fieldValue.ToString().Trim();
+                                History.EvaluateChange( personChanges, "Email", person.Email, email );
+                                person.Email = email;
+                            }
+                            break;
+
                         case RegistrationPersonFieldType.Campus:
                             var campusGuid = fieldValue.ToString().AsGuidOrNull();
                             updateExistingCampus = campusGuid.HasValue;
@@ -2048,23 +2083,21 @@ namespace Rock.Blocks.Event
                 registrant.Guid = registrantInfo.Guid;
                 registrantService.Add( registrant );
                 registrant.RegistrationId = context.Registration.Id;
+                registrant.Cost = context.RegistrationSettings.PerRegistrantCost;
             }
 
             registrant.OnWaitList = isWaitlist;
             registrant.PersonAliasId = person.PrimaryAliasId;
-            registrant.Cost = context.RegistrationSettings.PerRegistrantCost;
 
             // Check if discount applies
             var maxRegistrants = context.Discount?.RegistrationTemplateDiscount.MaxRegistrants;
             var isWithinMaxRegistrants = !maxRegistrants.HasValue || index < maxRegistrants.Value;
-            var usesRemaining = context.Discount?.UsagesRemaining ?? int.MaxValue;
-            var isWithinUsageCap = usesRemaining >= 1;
-            registrant.DiscountApplies = isWithinMaxRegistrants && isWithinUsageCap;
+            registrant.DiscountApplies = isWithinMaxRegistrants;
 
-            if ( registrant.DiscountApplies && context.Discount?.UsagesRemaining != null )
-            {
-                context.Discount.UsagesRemaining--;
-            }
+            /*
+                2023-08-07 edrotnign
+                Do not check the value RegistrationTemplateDiscount.MaxUsage here. That is a registration level value and this is a registrant level operation.
+             */
 
             var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
             var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );

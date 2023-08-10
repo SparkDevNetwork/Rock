@@ -1,0 +1,169 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ComponentPicker v-model="suggestionType"
+                                 label="Suggestion Type"
+                                 containerType="Rock.Follow.SuggestionContainer"
+                                 rules="required"/>
+
+                <TextBox v-model="reasonNote"
+                         label="Reason Note"
+                         help="Short note to describe to the recipient why a following was suggested."
+                         rules="required" />
+
+                <NumberBox v-model="reminderDays"
+                           label="Reminded Days"
+                           help="The number of days to wait before notifying person of this suggestion again if they have not followed or ignored the suggestion. Leave blank if person should never be reminded." />
+            </div>
+
+            <div class="col-md-6">
+                    <AttributeValuesContainer v-model="attributeValues"
+                                              :showCategoryLabel="false"
+                                              :attributes="entityAttributes"
+                                              isEditMode
+                                              showEmptyValues
+                                              :numberOfColumns="1"
+                                              :entityTypeName="entityTypeName" />
+            </div>
+        </div>
+
+        <CodeEditor v-model="entityNotificationFormatLava"
+                    theme="rock"
+                    label="Notification Format"
+                    mode="lava"
+                    :editorHeight="200"
+                    help="How the entity should be formatted in the following suggestion notification email when this suggestion is made for the entity. The entity is available to Lava as an 'Entity' object." />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { SuggestionDetailBag } from "@Obsidian/ViewModels/Blocks/Core/SuggestionDetail/suggestionDetailBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<SuggestionDetailBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: SuggestionDetailBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const suggestionType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
+    const reasonNote = propertyRef(props.modelValue.reasonNote ?? "", "ReasonNote");
+    const reminderDays = propertyRef(props.modelValue.reminderDays ?? null, "ReminderDays");
+    const entityNotificationFormatLava = propertyRef(props.modelValue.entityNotificationFormatLava ?? "", "EntityNotificationFormatLava");
+    const entityAttributes = ref<Record<string, PublicAttributeBag>>({});
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, suggestionType, reasonNote, reminderDays, entityNotificationFormatLava];
+
+    // #endregion
+
+    // #region Computed Values
+    const entityTypeName = computed((): string => {
+        return suggestionType.value.text ?? "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch(() => suggestionType.value, async () => {
+        if (!suggestionType.value.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<SuggestionDetailBag>("GetEntityAttributes", {
+            entityTypeGuid: suggestionType.value.value,
+            IdKey: props.modelValue.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            entityAttributes.value = result.data.attributes ?? {};
+            attributeValues.value = result.data.attributeValues ?? {};
+        }
+    }, { immediate: true });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(suggestionType, props.modelValue.entityType ?? {});
+        updateRefValue(reasonNote, props.modelValue.reasonNote ?? "");
+        updateRefValue(reminderDays, props.modelValue.reminderDays ?? null);
+        updateRefValue(entityNotificationFormatLava, props.modelValue.entityNotificationFormatLava ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: SuggestionDetailBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            entityType: suggestionType.value,
+            reasonNote: reasonNote.value,
+            reminderDays: reminderDays.value,
+            entityNotificationFormatLava: entityNotificationFormatLava.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

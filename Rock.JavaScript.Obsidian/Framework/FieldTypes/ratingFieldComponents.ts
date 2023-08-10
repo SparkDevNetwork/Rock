@@ -17,8 +17,8 @@
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import Rating from "@Obsidian/Controls/rating";
-import NumberBox from "@Obsidian/Controls/numberBox";
+import Rating from "@Obsidian/Controls/rating.obs";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import { ConfigurationValueKey, RatingValue } from "./ratingField.partial";
 
 export const EditComponent = defineComponent({
@@ -131,7 +131,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

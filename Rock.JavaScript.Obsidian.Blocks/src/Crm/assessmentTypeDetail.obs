@@ -7,10 +7,11 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.AssessmentType"
-                 entityTypeName="AssessmentType"
+                 entityTypeName="Assessment Type"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -83,7 +84,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return assessmentTypeViewBag.value?.title ?? "";
+        return assessmentTypeViewBag.value?.title ?? "Add Assessment Type";
     });
 
     /**
@@ -103,14 +104,7 @@
             return undefined;
         }
 
-        if (assessmentTypeViewBag.value?.isActive === true) {
-            labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "success"
-            });
-        }
-        else {
+        if (assessmentTypeViewBag.value?.isActive !== true) {
             labels.push({
                 iconCssClass: "far fa-lightbulb",
                 title: "Inactive",

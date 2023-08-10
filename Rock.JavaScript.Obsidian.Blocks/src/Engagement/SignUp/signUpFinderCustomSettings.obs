@@ -10,8 +10,7 @@
 
         <div v-else>
 
-            <PanelWidget :isDefaultOpen="true">
-                <template #header>Layout / Initial Page Load</template>
+            <Panel title="Layout / Initial Page Load" :modelValue="true" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
                         <CheckBox v-model="hideOvercapacityProjects"
@@ -36,10 +35,9 @@
                                       rules="required" />
                     </div>
                 </div>
-            </PanelWidget>
+            </Panel>
 
-            <PanelWidget :isDefaultOpen="true">
-                <template #header>Project Filters</template>
+            <Panel title="Project Filters" :modelValue="true" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
                         <GroupTypePicker v-model="projectTypes"
@@ -61,10 +59,9 @@
                                       :items="availableDisplayAttributeFilters" />
                     </div>
                 </div>
-            </PanelWidget>
+            </Panel>
 
-            <PanelWidget v-if="displayCampusFilterSettings" :isDefaultOpen="false">
-                <template #header>Campus Filters</template>
+            <Panel v-if="displayCampusFilterSettings" title="Campus Filters" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
                         <CheckBox v-model="displayCampusFilter"
@@ -87,10 +84,9 @@
                                             :multiple="true" />
                     </div>
                 </div>
-            </PanelWidget>
+            </Panel>
 
-            <PanelWidget :isDefaultOpen="true">
-                <template #header>Schedule Filters</template>
+            <Panel title="Schedule Filters" :modelValue="true" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
                         <CheckBox v-model="displayNamedScheduleFilter"
@@ -116,10 +112,9 @@
                                         :securityGrantToken="securityGrantToken" />
                     </div>
                 </div>
-            </PanelWidget>
+            </Panel>
 
-            <PanelWidget :isDefaultOpen="true">
-                <template #header>Location Filters</template>
+            <Panel title="Location Filters" :modelValue="true" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
                         <CheckBox v-model="displayLocationSort"
@@ -143,10 +138,9 @@
                         &nbsp;
                     </div>
                 </div>
-            </PanelWidget>
+            </Panel>
 
-            <PanelWidget :isDefaultOpen="false">
-                <template #header>Additional Filters</template>
+            <Panel title="Additional Filters" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
                         <CheckBox v-model="displayDateRange"
@@ -159,10 +153,9 @@
                                   help='When enabled allows the individual to find projects with "at least" or "no more than" the provided spots available.' />
                     </div>
                 </div>
-            </PanelWidget>
+            </Panel>
 
-            <PanelWidget :isDefaultOpen="true">
-                <template #header>Lava</template>
+            <Panel title="Lava" :modelValue="true" hasCollapse>
                 <CodeEditor v-model="resultsLavaTemplate"
                             label="Results Lava Template"
                             help="The Lava template to show with the results of the search."
@@ -172,10 +165,9 @@
                             label="Results Header Lava Template"
                             help="The Lava Template to use to show the results header."
                             mode="lava" />
-            </PanelWidget>
+            </Panel>
 
-            <PanelWidget :isDefaultOpen="true">
-                <template #header>Linked Pages</template>
+            <Panel title="Linked Pages" :modelValue="true" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
                         <PagePicker v-model="projectDetailPage"
@@ -194,7 +186,7 @@
                                     :securityGrantToken="securityGrantToken" />
                     </div>
                 </div>
-            </PanelWidget>
+            </Panel>
 
         </div>
 
@@ -203,20 +195,20 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
-    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
-    import Modal from "@Obsidian/Controls/modal";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
-    import PanelWidget from "@Obsidian/Controls/panelWidget";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";

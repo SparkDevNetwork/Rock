@@ -80,8 +80,8 @@
 </style>
 
 <script setup lang="ts">
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { computed, ref, watch } from "vue";
     import { actionProps } from "./util.partial";

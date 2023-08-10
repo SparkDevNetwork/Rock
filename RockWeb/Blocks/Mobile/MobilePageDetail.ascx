@@ -103,6 +103,14 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbRoute" runat="server"
+                                Label="Route"
+                                Help="The page route is used to match mobile pages with the web equivalent." />
+                        </div>
+                    </div>
+
                     <asp:Panel ID="pnlNativePageAdvancedSettings" runat="server">
                         <div class="row">
                             <div class="col-md-6">

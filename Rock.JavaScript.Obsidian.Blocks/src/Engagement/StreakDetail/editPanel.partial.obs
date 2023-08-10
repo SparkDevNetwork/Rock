@@ -1,0 +1,116 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-12">
+                <NotificationBox v-if="!modelValue?.streakType" alertType="info" >A streak type is required.</NotificationBox>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6 col-md-4">
+                <PersonPicker v-if="isCreatingStreak" v-model="personAlias"
+                              label="Person"
+                              rules="required" />
+                <template v-else>
+                    <RockLabel>Person</RockLabel> <br> {{ personAlias?.text }}
+                </template>
+            </div>
+            <div class="col-sm-6 col-md-4">
+                <LocationPicker v-model="location"
+                              label="Location" />
+            </div>
+            <div class="col-sm-6 col-md-4">
+                <DatePicker v-model="enrollmentDate"
+                              label="Enrollment Date"
+                              rules="required" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import LocationPicker from "@Obsidian/Controls/locationItemPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { StreakBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakDetail/streakBag";
+    import { StreakDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakDetail/streakDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<StreakBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<StreakDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: StreakBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const personAlias = propertyRef(props.modelValue.personAlias ?? undefined, "PersonAliasId");
+    const location = propertyRef(props.modelValue.location ?? undefined, "LocationId");
+    const enrollmentDate = propertyRef(props.modelValue.enrollmentDate ?? undefined, "EnrollmentDate");
+    const isCreatingStreak = props.modelValue?.personAlias == null;
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [personAlias, location, enrollmentDate];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(personAlias, props.modelValue.personAlias ?? undefined);
+        updateRefValue(location, props.modelValue.location ?? undefined);
+        updateRefValue(enrollmentDate, props.modelValue.enrollmentDate ?? undefined);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: StreakBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            personAlias: personAlias.value,
+            location: location.value,
+            enrollmentDate: enrollmentDate.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -199,6 +199,8 @@ export const FieldType = {
     Matrix: "F16FC460-DC1E-4821-9012-5F21F974C677",
     /** Media Element field type */
     MediaElement: "A17D5AAC-B7AE-4587-B703-A0FC3625F0F8",
+    /** Media Selector field type */
+    MediaSelector: "243E40FC-04D0-48AD-B379-25A400CB0CAC",
     /** Media Watch field type */
     MediaWatch: "98180C6F-5167-45E1-8ADE-E1A31EC4930D",
     /** Memo field type */

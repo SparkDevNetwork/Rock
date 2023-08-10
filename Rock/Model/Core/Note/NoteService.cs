@@ -15,9 +15,14 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 
+using AngleSharp.Dom;
+
 using Rock.Data;
+using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -76,6 +81,36 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the reply depth of the specified note identifier. If this note
+        /// is not a reply then <c>0</c> will be returned. If it is the first level of
+        /// replies then <c>1</c> will be returned, and so on.
+        /// </summary>
+        /// <param name="noteId">The note whose depth is to be determined.</param>
+        /// <returns>The reply depth of the note.</returns>
+        public int GetReplyDepth( int noteId )
+        {
+            return Context.Database
+                .SqlQuery<int>( @"
+WITH [NoteCte] ([Id], [ParentNoteId], [Depth])
+AS
+(
+    SELECT [Id], [ParentNoteId], 0 AS [Depth]
+    FROM [Note]
+    WHERE [Id] = @NoteId
+ 
+    UNION ALL
+ 
+    SELECT [P].[Id], [P].[ParentNoteId], Depth + 1
+    FROM [Note] AS [P]
+    INNER JOIN [NoteCte] AS [C] ON [C].[ParentNoteId] = [P].[Id]
+)
+SELECT MAX([Depth])
+FROM [NoteCte];
+", new SqlParameter( "NoteId", noteId ) )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Deletes the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -122,6 +157,153 @@ namespace Rock.Model
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Checks if the note can have any replies made to it.
+        /// </summary>
+        /// <param name="note">The note will be replied to.</param>
+        /// <param name="errorMessage">On <c>false </c>return will contain the error message.</param>
+        /// <returns><c>true</c> if the note can have replies; otherwise <c>false</c>.</returns>
+        public bool CanReplyToNote( Note note, out string errorMessage )
+        {
+            var noteType = NoteTypeCache.Get( note.NoteTypeId );
+
+            if ( !noteType.AllowsReplies )
+            {
+                errorMessage = "Note type does not allow replies.";
+
+                return false;
+            }
+
+            if ( noteType.MaxReplyDepth.HasValue )
+            {
+                var depth = GetReplyDepth( note.Id );
+
+                if ( depth >= noteType.MaxReplyDepth.Value )
+                {
+                    errorMessage = "Note type does not allow replies this deep.";
+
+                    return false;
+                }
+            }
+
+            errorMessage = null;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets any mention identifier keys found in the note content.
+        /// </summary>
+        /// <param name="content">The content to be searched.</param>
+        /// <returns>A list of <see cref="PersonAlias"/> <see cref="IEntity.IdKey"/> values.</returns>
+        public static List<string> GetMentionIdKeysFromContent( string content )
+        {
+            if ( string.IsNullOrEmpty( content ) )
+            {
+                return new List<string>();
+            }
+
+            var mentions = new List<string>();
+
+            var parseOptions = new AngleSharp.Html.Parser.HtmlParserOptions();
+            var parser = new AngleSharp.Html.Parser.HtmlParser( parseOptions );
+            var dom = parser.ParseDocument( string.Empty );
+            var nodes = parser.ParseFragment( content, dom.Body );
+
+            foreach ( var node in nodes )
+            {
+                if ( !( node is IElement element ) )
+                {
+                    continue;
+                }
+
+                var isMention = element.TagName.ToLower() == "span"
+                    && element.HasAttribute( "class" )
+                    && element.HasAttribute( "data-identifier" )
+                    && element.GetAttribute( "class" ).ToLower() == "mention";
+
+                if ( isMention )
+                {
+                    mentions.Add( element.GetAttribute( "data-identifier" ) );
+                }
+            }
+
+            return mentions;
+        }
+
+        /// <summary>
+        /// Gets the person identifiers that are mentioned in <paramref name="content"/>
+        /// but were not mentioned in <paramref name="oldContent"/>.
+        /// </summary>
+        /// <param name="content">The new content to be searched.</param>
+        /// <param name="oldContent">The old content to be searched.</param>
+        /// <returns>A list of <see cref="Person"/> <see cref="IEntity.Id"/> values.</returns>
+        public List<int> GetNewPersonIdsMentionedInContent( string content, string oldContent )
+        {
+            var oldMentionIdKeys = GetMentionIdKeysFromContent( oldContent );
+            var newMentionIdKeys = GetMentionIdKeysFromContent( content );
+
+            // Remove any id keys we already knew about.
+            newMentionIdKeys = newMentionIdKeys.Except( oldMentionIdKeys ).ToList();
+
+            // If we don't have anything new then we are done.
+            if ( !newMentionIdKeys.Any() )
+            {
+                return new List<int>();
+            }
+
+            // At this point we have some possibly new mentions. Because these
+            // are PersonAlias IdKey values, we might have a new mention for
+            // a person that was already mentioned with a different PersonAlias.
+
+            // Get the person alias identifiers from the mention keys.
+            var oldMentionPersonAliasIds = oldMentionIdKeys
+                .Select( k => IdHasher.Instance.GetId( k ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var newMentionPersonAliasIds = newMentionIdKeys
+                .Select( k => IdHasher.Instance.GetId( k ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            // Get all the unique person alias ids between the old and new content.
+            var allMentionPersonAliasIds = oldMentionPersonAliasIds
+                .Union( newMentionPersonAliasIds )
+                .Distinct()
+                .ToList();
+
+            // Get all the person identifiers for any of these aliases.
+            var personIds = new PersonAliasService( ( RockContext ) Context )
+                .Queryable()
+                .Where( pa => allMentionPersonAliasIds.Contains( pa.Id ) )
+                .Select( pa => new
+                {
+                    PersonAliasId = pa.Id,
+                    pa.PersonId
+                } )
+                .ToList();
+
+            // Get the person identifiers that were mentioned in the old content.
+            var oldMentionPersonIds = personIds
+                .Where( p => oldMentionPersonAliasIds.Contains( p.PersonAliasId ) )
+                .Select( p => p.PersonId )
+                .ToList();
+
+            // Get the person identifiers that were mentioned in the new content.
+            var newMentionPersonIds = personIds
+                .Where( p => newMentionPersonAliasIds.Contains( p.PersonAliasId ) )
+                .Select( p => p.PersonId )
+                .ToList();
+
+            // Get the new person identifiers that were not previously mentioned.
+            return newMentionPersonIds
+                .Except( oldMentionPersonIds )
+                .ToList();
         }
     }
 }

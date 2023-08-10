@@ -305,6 +305,7 @@ namespace RockWeb.Blocks.Communication
             gIndividualRecipients.GridRebind += gIndividualRecipients_GridRebind;
             gIndividualRecipients.Actions.ShowAdd = false;
             gIndividualRecipients.ShowActionRow = false;
+            gIndividualRecipients.RowItemText = "Recipient";
 
             gRecipientList.DataKeyNames = new string[] { "Id" };
             gRecipientList.GridRebind += gRecipientList_GridRebind;
@@ -1051,7 +1052,7 @@ function onTaskCompleted( resultData )
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gIndividualRecipients_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            var recipientPerson = e.Row.DataItem as Person;
+            var recipientPerson = e.Row.DataItem as IndividualRecipientListInfo;
             var lRecipientAlert = e.Row.FindControl( "lRecipientAlert" ) as Literal;
             var lRecipientAlertEmail = e.Row.FindControl( "lRecipientAlertEmail" ) as Literal;
             var lRecipientAlertSMS = e.Row.FindControl( "lRecipientAlertSMS" ) as Literal;
@@ -1062,7 +1063,7 @@ function onTaskCompleted( resultData )
                 string alertClassEmail = string.Empty;
                 string alertMessageEmail = recipientPerson.Email;
                 string alertClassSMS = string.Empty;
-                string alertMessageSMS = string.Format( "{0}", recipientPerson.PhoneNumbers.FirstOrDefault( a => a.IsMessagingEnabled ) );
+                string alertMessageSMS = string.Format( "{0}", recipientPerson.SmsPhoneNumber );
 
                 // General alert info about recipient
                 if ( recipientPerson.IsDeceased )
@@ -1107,7 +1108,7 @@ function onTaskCompleted( resultData )
                 }
 
                 // SMS Related
-                if ( !recipientPerson.PhoneNumbers.Any( a => a.IsMessagingEnabled ) )
+                if ( recipientPerson.SmsPhoneNumber.IsNullOrWhiteSpace() )
                 {
                     // No SMS Number
                     alertClassSMS = "text-danger";
@@ -1127,6 +1128,7 @@ function onTaskCompleted( resultData )
         {
             List<int> recipientIdList = this.IndividualRecipientPersonIds;
 
+            // Apply sort parameters.
             using ( var rockContext = new RockContext() )
             {
                 var personService = new PersonService( rockContext );
@@ -1135,8 +1137,31 @@ function onTaskCompleted( resultData )
                     .AsNoTracking()
                     .Where( a => recipientIdList.Contains( a.Id ) )
                     .Include( a => a.PhoneNumbers )
-                    .OrderBy( a => a.LastName )
-                    .ThenBy( a => a.NickName );
+                    .Select( p => new IndividualRecipientListInfo
+                    {
+                        Id = p.Id,
+                        NickName = p.NickName,
+                        LastName = p.LastName,
+                        FullName = ( p.NickName + " " + p.LastName ).Trim(),
+                        Email = p.Email,
+                        EmailNote = p.EmailNote,
+                        IsEmailActive = p.IsEmailActive,
+                        SmsPhoneNumber = p.PhoneNumbers
+                            .Where( a => a.IsMessagingEnabled )
+                            .Select( pn => pn.NumberFormatted )
+                            .FirstOrDefault(),
+                        IsDeceased = p.IsDeceased,
+                        EmailPreference = p.EmailPreference
+                    } );
+
+                if ( gIndividualRecipients.SortProperty != null )
+                {
+                    qryPersons = qryPersons.Sort( gIndividualRecipients.SortProperty );
+                }
+                else
+                {
+                    qryPersons = qryPersons.OrderBy( a => a.LastName ).ThenBy( r => r.NickName );
+                }
 
                 // Bind the list items to the grid.
                 gIndividualRecipients.SetLinqDataSource( qryPersons );
@@ -3464,6 +3489,27 @@ function onTaskCompleted( resultData )
 
             return recipient;
         }
+
+        #region Support Classes
+
+        /// <summary>
+        /// Information about an individual recipient that is displayed in the recipient list.
+        /// </summary>
+        private class IndividualRecipientListInfo
+        {
+            public int Id { get; set; }
+            public string NickName { get; set; }
+            public string LastName { get; set; }
+            public string FullName { get; set; }
+            public string Email { get; set; }
+            public string EmailNote { get; set; }
+            public bool IsEmailActive { get; set; }
+            public EmailPreference EmailPreference { get; set; }
+            public string SmsPhoneNumber { get; set; }
+            public bool IsDeceased { get; set; }
+        }
+
+        #endregion
 
         #region Service Classes
 

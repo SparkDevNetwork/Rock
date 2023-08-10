@@ -41,7 +41,7 @@ namespace Rock.Blocks.Security
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Account Entry" )]
-    [Category( "Obsidian > Security" )]
+    [Category( "Security" )]
     [Description( "Allows the user to register." )]
     [IconCssClass( "fa fa-user-lock" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
@@ -335,9 +335,6 @@ namespace Rock.Blocks.Security
         #endregion
 
         #region IRockObsidianBlockType Implementation
-
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()

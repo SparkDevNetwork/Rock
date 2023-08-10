@@ -276,6 +276,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     .GetAllDescendents( campusLocationId.Value )
                     .Join( groupLocations, l => l.Id, gl => gl.LocationId, ( l, gl ) => l )
                     .Where( l => l.IsActive == true )
+                    .Distinct()
                     .OrderBy( l => l.Name )
                     .ToList();
             }
@@ -285,6 +286,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     .Queryable()
                     .Join( groupLocations, l => l.Id, gl => gl.LocationId, ( l, gl ) => l )
                     .Where( l => l.IsActive == true )
+                    .Distinct()
                     .OrderBy( l => l.Name )
                     .ToList();
             }

@@ -40,6 +40,8 @@ export const PageRoute = {
     FinancialAccountSearch: "76A96F05-5B89-407B-A72E-5CB4FA64A11A",
     /** Gets the Campus Detail &gt; Group Member Detail page route guid */
     GroupMemberDetailCampusDetail: "9660B9FB-C90F-4AFE-9D58-C0EC271C1377",
+    /** The library viewer route 'admin/cms/content-library'. */
+    LibraryViewer: "36648CBD-A1F6-4DF4-81FB-D36DB0932919",
     /** The oidc authorize route. */
     OidcAuthorize: "E35CD82E-C162-444E-AC5F-E42F20DA79F3",
     /** The oidc logout route. */

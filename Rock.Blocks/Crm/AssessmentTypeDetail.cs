@@ -36,7 +36,7 @@ namespace Rock.Blocks.Crm
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
     [DisplayName( "Assessment Type Detail" )]
-    [Category( "CRM" )]
+    [Category( "Assessments" )]
     [Description( "Displays the details of a particular assessment type." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
@@ -62,9 +62,6 @@ namespace Rock.Blocks.Crm
         }
 
         #endregion Keys
-
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -185,9 +182,9 @@ namespace Rock.Blocks.Crm
                 AssessmentPath = entity.AssessmentPath,
                 AssessmentResultsPath = entity.AssessmentResultsPath,
                 Description = entity.Description,
-                IsActive = entity.IsActive,
+                IsActive = entity.Id == 0 || entity.IsActive,
                 IsSystem = entity.IsSystem,
-                MinimumDaysToRetake = entity.MinimumDaysToRetake,
+                MinimumDaysToRetake = entity.MinimumDaysToRetake == 0 ? ( int? ) null : entity.MinimumDaysToRetake,
                 RequiresRequest = entity.RequiresRequest,
                 Title = entity.Title,
                 ValidDuration = entity.ValidDuration
@@ -267,7 +264,7 @@ namespace Rock.Blocks.Crm
                 () => entity.IsActive = box.Entity.IsActive );
 
             box.IfValidProperty( nameof( box.Entity.MinimumDaysToRetake ),
-                () => entity.MinimumDaysToRetake = box.Entity.MinimumDaysToRetake );
+                () => entity.MinimumDaysToRetake = box.Entity.MinimumDaysToRetake.GetValueOrDefault() );
 
             box.IfValidProperty( nameof( box.Entity.RequiresRequest ),
                 () => entity.RequiresRequest = box.Entity.RequiresRequest );

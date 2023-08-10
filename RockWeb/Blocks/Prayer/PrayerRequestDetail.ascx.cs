@@ -525,14 +525,15 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="prayerRequest">The prayer request.</param>
         private void DeleteAllRelatedNotes( PrayerRequest prayerRequest, RockContext rockContext )
         {
-            var noteTypeService = new NoteTypeService( rockContext );
-            var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
+            var prayerRequestEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PRAYER_REQUEST.AsGuid() ).Id;
+            var noteTypeIdsForPrayerRequest = EntityNoteTypesCache.Get()
+                .EntityNoteTypes
+                .First( a => a.EntityTypeId.Equals( prayerRequestEntityTypeId ) )
+                .NoteTypeIds;
             var noteService = new NoteService( rockContext );
-            var prayerComments = noteService.Get( noteType.Id, prayerRequest.Id );
-            foreach ( Note prayerComment in prayerComments )
-            {
-                noteService.Delete( prayerComment );
-            }
+            var prayerRequestComments = noteService.Queryable()
+                .Where( n => noteTypeIdsForPrayerRequest.Contains( n.NoteTypeId ) && n.EntityId == prayerRequest.Id );
+            rockContext.BulkDelete( prayerRequestComments );
         }
 
         /// <summary>

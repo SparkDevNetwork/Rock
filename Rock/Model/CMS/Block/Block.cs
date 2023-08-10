@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -123,7 +123,7 @@ namespace Rock.Model
         public string Zone { get; set; }
 
         /// <summary>
-        /// Gets or sets the order that this Block appears in the <see cref="Page"/>/Layout zone that the Block is implemented in.  Blocks are 
+        /// Gets or sets the order that this Block appears in the <see cref="Rock.Model.Page"/>/Layout zone that the Block is implemented in.  Blocks are 
         /// displayed/rendered in Ascending (1,2,3,...) order. The lower the number the higher in the Zone the Block will appear.  <see cref="Rock.Model.Page"/> Blocks have
         /// priority over layout Blocks, so they will appear higher in the Zone than <see cref="Rock.Model.Site"/>/Layout Blocks. This property is required
         /// </summary>

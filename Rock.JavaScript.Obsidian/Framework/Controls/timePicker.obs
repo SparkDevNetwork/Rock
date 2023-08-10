@@ -22,7 +22,7 @@
     import BasicTimePicker from "./basicTimePicker.obs";
     import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue.d";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
 
     const props = defineProps({
         modelValue: {

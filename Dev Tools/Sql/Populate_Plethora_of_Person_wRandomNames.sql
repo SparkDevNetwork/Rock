@@ -12013,6 +12013,7 @@ BEGIN
     DECLARE @recordStatusValueId INT;
     DECLARE @ageClassificationAdult INT = 1;
     DECLARE @ageClassificationChild INT = 2;
+    DECLARE @isMessagingEnabled BIT = 1;
 
     WHILE @personCounter < @maxPerson
     BEGIN
@@ -12108,6 +12109,13 @@ BEGIN
 
         SET @phoneNumber = cast(convert(BIGINT, ROUND(rand() * 0095551212, 0) + 6230000000) AS NVARCHAR(20));
         SET @phoneNumberFormatted = '(' + substring(@phoneNumber, 1, 3) + ') ' + substring(@phoneNumber, 4, 3) + '-' + substring(@phoneNumber, 7, 4);
+        SET @isMessagingEnabled = ( 
+            SELECT 
+            CASE 
+		        WHEN 100*rand() > 30 THEN 1
+            ELSE 0
+            END
+        )
 
         INSERT INTO [PhoneNumber] (
             IsSystem
@@ -12156,7 +12164,7 @@ BEGIN
             ,@phoneNumber
             ,concat(@countryCode, @phoneNumber)
             ,@phoneNumberFormatted
-            ,1
+            ,@isMessagingEnabled
             ,0
             ,newid()
             ,@mobilePhone

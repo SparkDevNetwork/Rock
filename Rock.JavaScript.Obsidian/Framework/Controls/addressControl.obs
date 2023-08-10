@@ -36,16 +36,16 @@
 
 <script lang="ts" setup>
     import { PropType, reactive, ref, watch } from "vue";
-    import RockFormField from "./rockFormField";
-    import DropDownList from "./dropDownList";
-    import TextBox from "./textBox";
+    import RockFormField from "./rockFormField.obs";
+    import DropDownList from "./dropDownList.obs";
+    import TextBox from "./textBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { AddressControlGetConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/addressControlGetConfigurationOptionsBag";
     import { AddressControlConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/addressControlConfigurationBag";
     import { RequirementLevel } from "@Obsidian/Enums/Controls/requirementLevel";
     import { post } from "@Obsidian/Utility/http";
-    import Loading from "./loading";
+    import Loading from "./loading.obs";
 
 
     type FullAddress = Required<{

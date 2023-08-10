@@ -58,7 +58,7 @@ namespace Rock
         /// <returns></returns>
         public static int GetDateKeyMonth( this int dateKey )
         {
-            return (dateKey % _yearMultiple) / _monthMultiple;
+            return ( dateKey % _yearMultiple ) / _monthMultiple;
         }
 
         /// <summary>

@@ -165,7 +165,8 @@ namespace Rock.Jobs
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var jobMigration = new JobMigration( rockContext, commandTimeout );
+                    rockContext.Database.CommandTimeout = commandTimeout;
+                    var jobMigration = new JobMigration( rockContext );
                     var migrationHelper = new MigrationHelper( jobMigration );
                     ReplaceBlocksOfOneBlockTypeWithBlocksOfAnotherBlockType( blockTypeGuidPair.Key, blockTypeGuidPair.Value, rockContext, migrationHelper );
                 }

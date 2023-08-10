@@ -74,6 +74,17 @@ const galleries: FieldComponent[] = [
         selectiontype: "Color Picker"
     }),
 
+    getFieldTypeGalleryComponent("CommunicationPreference", "1", FieldTypeGuids.CommunicationPreferenceType, {
+        options: JSON.stringify(
+            [
+                { value: "", text: "None"},
+                { value: "1", text: "Email" },
+                { value: "2", text: "SMS"},
+            ]
+        ),
+        repeatColumns: "2"
+    }),
+
     getFieldTypeGalleryComponent("Currency", "4.70", FieldTypeGuids.Currency, {
     }),
 

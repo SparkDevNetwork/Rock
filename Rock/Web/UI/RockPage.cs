@@ -1412,6 +1412,16 @@ Rock.settings.initialize({{
                                 isAnonymousVisitor = true;
                             }
 
+                            // Prevent XSS attacks in page parameters.
+                            var sanitizedPageParameters = new Dictionary<string, string>();
+                            foreach ( var pageParam in PageParameters() )
+                            {
+                                var sanitizedKey = pageParam.Key.Replace( "</", "<\\/" );
+                                var sanitizedValue = pageParam.Value.ToStringSafe().Replace( "</", "<\\/" );
+
+                                sanitizedPageParameters.AddOrReplace( sanitizedKey, sanitizedValue );
+                            }
+
                             var script = $@"
 Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
@@ -1419,7 +1429,7 @@ Obsidian.onReady(() => {{
             executionStartTime: new Date().getTime(),
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
-            pageParameters: {PageParameters().ToJson()},
+            pageParameters: {sanitizedPageParameters.ToJson()},
             currentPerson: {currentPersonJson},
             isAnonymousVisitor: {(isAnonymousVisitor ? "true" : "false")},
             loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
@@ -1813,11 +1823,22 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     continue;
                 }
 
-                // Look for Id first.
-                int? contextId = PageParameter( type.Name + "Id" ).AsIntegerOrNull();
-                if ( contextId.HasValue )
+                // Look for Id first, this can be either integer, guid or IdKey.
+                var contextId = PageParameter( type.Name + "Id" );
+                if ( contextId.IsNotNullOrWhiteSpace() )
                 {
-                    keyEntityDictionary.AddOrReplace( modelContextName, new Data.KeyEntity( contextId.Value ) );
+                    if ( !Site.DisablePredictableIds && int.TryParse( contextId, out var id ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( modelContextName, new KeyEntity( id ) );
+                    }
+                    else if ( Guid.TryParse( contextId, out var guid ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( modelContextName, new KeyEntity( guid ) );
+                    }
+                    else if ( IdHasher.Instance.TryGetId( contextId, out id ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( modelContextName, new KeyEntity( id ) );
+                    }
                 }
 
                 // If Guid is present, it will override Id.
@@ -1834,16 +1855,21 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
             // code block immediately preceeding this one).
             foreach ( var pageContext in _pageCache.PageContexts )
             {
-                int? contextId = PageParameter( pageContext.Value ).AsIntegerOrNull();
-                if ( contextId.HasValue )
+                var contextId = PageParameter( pageContext.Value );
+                if ( contextId.IsNotNullOrWhiteSpace() )
                 {
-                    keyEntityDictionary.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextId.Value ) );
-                }
-
-                Guid? contextGuid = PageParameter( pageContext.Value ).AsGuidOrNull();
-                if ( contextGuid.HasValue )
-                {
-                    keyEntityDictionary.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextGuid.Value ) );
+                    if ( !Site.DisablePredictableIds && int.TryParse( contextId, out var id ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( pageContext.Key, new KeyEntity( id ) );
+                    }
+                    else if ( Guid.TryParse( contextId, out var guid ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( pageContext.Key, new KeyEntity( guid ) );
+                    }
+                    else if ( IdHasher.Instance.TryGetId( contextId, out id ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( pageContext.Key, new KeyEntity( id ) );
+                    }
                 }
             }
 

@@ -857,8 +857,8 @@ namespace Rock.Web.UI.Controls
             _dvpPersonMaritalStatus.Label = AddLabelPrefix( "Marital Status" );
             _ebPersonEmail.Label = AddLabelPrefix( "Email" );
             _pnbMobilePhoneNumber.Label = AddLabelPrefix( "Mobile Phone" );
-            _rpRace.Label = AddLabelPrefix( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" ) );
-            _epEthnicity.Label = AddLabelPrefix( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" ) );
+            _rpRace.Label = AddLabelPrefix( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL ) );
+            _epEthnicity.Label = AddLabelPrefix( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL ) );
         }
 
         /// <summary>

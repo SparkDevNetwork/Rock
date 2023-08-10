@@ -1,0 +1,160 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name" label="Name" rules="required" />
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="isActive" label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description" label="Description" textMode="multiline" />
+
+        <CodeEditor v-if="isApplicationJsVisible" v-model="applicationJavascript" label="Application Javascript" theme="rock" mode="text" :editorHeight="600" />
+
+        <CodeEditor v-model="applicationStyles" label="Application Styles" theme="rock" mode="text" :editorHeight="400" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox v-model="enablePageViews"
+                          label="Enable Page Views"
+                          help="Determines if interaction records should be written for page views" />
+
+                <NumberBox v-if="enablePageViews"
+                           v-model="pageViewRetentionPeriod"
+                           label="Page View Retention Period"
+                           help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
+
+                <div class="row">
+                    <div class="col-md-6 col-sm-6">
+                        <PagePicker v-model="loginPage"
+                                    :multiple="false"
+                                    label="Authentication Page"
+                                    help="The page on your public website that will be used in the authentication process." />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <TextBox v-model="apiKey"
+                         label="API Key"
+                         rules="required"
+                         help="The API key that will be used to secure your TV application." />
+
+                <CheckBox v-model="enablePageViewGeoTracking"
+                          label="Enable Page View Geo Tracking"
+                          help="Enabling this feature will allow the PopulateInteractionSessionData job to begin performing geolocation lookup on the IP addresses in the Interaction Session data. This also requires setting up a IP Address Location Service found under System Settings." />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AppleTvAppBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvAppDetail/appleTvAppBag";
+    import { AppleTvAppDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvAppDetail/appleTvAppDetailOptionsBag";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AppleTvAppBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AppleTvAppDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AppleTvAppBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive, "IsActive");
+    const enablePageViews = propertyRef(props.modelValue.enablePageViews, "EnablePageViews");
+    const enablePageViewGeoTracking = propertyRef(props.modelValue.enablePageViewGeoTracking, "EnablePageViewGeoTracking");
+    const loginPage = propertyRef(props.modelValue.loginPage ?? {}, "LoginPageId");
+    const applicationStyles = ref(props.modelValue.applicationStyles ?? "");
+    const applicationJavascript = ref(props.modelValue.applicationJavascript ?? "");
+    const pageViewRetentionPeriod = ref(props.modelValue.pageViewRetentionPeriod ?? null);
+    const apiKey = ref(props.modelValue.apiKey ?? "");
+    const isApplicationJsVisible = ref(props.modelValue.showApplicationJavascript);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, description, isActive, enablePageViews, loginPage, enablePageViewGeoTracking];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive);
+        updateRefValue(enablePageViews, props.modelValue.enablePageViews);
+        updateRefValue(enablePageViewGeoTracking, props.modelValue.enablePageViewGeoTracking);
+        updateRefValue(loginPage, props.modelValue.loginPage ?? {});
+        updateRefValue(applicationStyles, props.modelValue.applicationStyles ?? "");
+        updateRefValue(applicationJavascript, props.modelValue.applicationJavascript ?? "");
+        updateRefValue(pageViewRetentionPeriod, props.modelValue.pageViewRetentionPeriod ?? null);
+        updateRefValue(apiKey, props.modelValue.apiKey ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, applicationStyles, pageViewRetentionPeriod, apiKey, ...propRefs], () => {
+        const newValue: AppleTvAppBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            name: name.value,
+            description: description.value,
+            isActive: isActive.value,
+            enablePageViews: enablePageViews.value,
+            enablePageViewGeoTracking: enablePageViewGeoTracking.value,
+            loginPage: loginPage.value,
+            applicationStyles: applicationStyles.value,
+            applicationJavascript: applicationJavascript.value,
+            pageViewRetentionPeriod: pageViewRetentionPeriod.value,
+            apiKey: apiKey.value,
+        };
+
+        emit("update:modelValue", newValue);
+    }, { deep: true });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

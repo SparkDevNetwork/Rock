@@ -1,0 +1,114 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   v-model="validationValue"
+                   formGroupClasses="number-range-editor"
+                   name="number-range-box"
+                   :rules="computedRules">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="form-control-group">
+                    <input
+                           :id="uniqueId + '_lower'"
+                           @change="onChange"
+                           type="number"
+                           class="input-width-md form-control"
+                           :class="inputClasses"
+                           v-model="internalValue.lower"
+                           :step="internalStep" />
+                    <span class="to">to</span>
+                    <input
+                           :id="uniqueId + '_upper'"
+                           @change="onChange"
+                           type="number"
+                           class="input-width-md form-control"
+                           :class="inputClasses"
+                           v-model="internalValue.upper"
+                           :step="internalStep" />
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
+    import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
+    import RockFormField from "./rockFormField.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<NumberRangeModelValue>,
+            required: false
+        },
+
+        /** The number of decimal places allowed. */
+        decimalCount: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        inputClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        rules: rulesPropType
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: NumberRangeModelValue | undefined): void;
+    }>();
+
+    const internalValue = ref<{ lower: string | null, upper: string | null }>({ lower: null, upper: null });
+
+    const computedValue = computed((): NumberRangeModelValue | undefined => {
+        const value = {
+            lower: toNumberOrNull(internalValue.value.lower),
+            upper: toNumberOrNull(internalValue.value.upper)
+        };
+
+        return value.lower !== null || value.upper !== null ? value : undefined;
+    });
+
+    const internalStep = computed((): string => {
+        return props.decimalCount === null ? "any" : (1 / Math.pow(10, props.decimalCount)).toString();
+    });
+
+    const computedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        return rules;
+    });
+
+    const validationValue = computed((): string => {
+        const value = `${internalValue.value?.lower ?? ""},${internalValue.value?.upper ?? ""}`;
+
+        return value !== "," ? value : "";
+    });
+
+    function onChange(): void {
+        internalValue.value = {
+            lower: asFormattedString(props.modelValue?.lower ?? null, props.decimalCount ?? undefined, { useGrouping: false }),
+            upper: asFormattedString(props.modelValue?.upper ?? null, props.decimalCount ?? undefined, { useGrouping: false })
+        };
+    }
+
+    watch(computedValue, () => {
+        emit("update:modelValue", computedValue.value);
+    });
+
+    watch(() => props.modelValue, () => {
+        // Model is stored as numbers and internal value is strings, so we need to determine if they're
+        // any different when converted to the same type. If they're different, update our internal value.
+        // Otherwise don't update because it can unintentionally end up deleting characters from the input box.
+        if ((props.modelValue?.lower ?? null) !== toNumberOrNull(internalValue.value.lower) || (props.modelValue?.upper ?? null) !== toNumberOrNull(internalValue.value.upper)) {
+            internalValue.value = {
+                lower: props.modelValue && props.modelValue.lower != null ? props.modelValue.lower.toString() : "",
+                upper: props.modelValue && props.modelValue.upper != null ? props.modelValue.upper.toString() : ""
+            };
+        }
+    }, { immediate: true });
+</script>

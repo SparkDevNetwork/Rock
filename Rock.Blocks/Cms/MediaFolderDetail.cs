@@ -38,7 +38,7 @@ namespace Rock.Blocks.Cms
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Media Folder Detail" )]
-    [Category( "Cms" )]
+    [Category( "CMS" )]
     [Description( "Displays the details of a particular media folder." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
@@ -65,9 +65,6 @@ namespace Rock.Blocks.Cms
         }
 
         #endregion Keys
-
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -204,7 +201,7 @@ namespace Rock.Blocks.Cms
             {
                 IdKey = entity.IdKey,
                 ContentChannel = entity.ContentChannel.ToListItemBag(),
-                ContentChannelAttribute = entity.ContentChannelAttribute.ToListItemBag(),
+                ContentChannelAttribute = new ListItemBag() { Text = entity.ContentChannelAttribute?.Name, Value = entity.ContentChannelAttribute?.Guid.ToString() },
                 MediaAccount = entity.MediaAccount.ToListItemBag(),
                 Description = entity.Description,
                 IsContentChannelSyncEnabled = entity.IsContentChannelSyncEnabled,
@@ -230,6 +227,7 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
+            bag.MetricData = entity.MediaAccount.GetMediaAccountComponent()?.GetFolderHtmlSummary( entity );
 
             if ( loadAttributes )
             {
