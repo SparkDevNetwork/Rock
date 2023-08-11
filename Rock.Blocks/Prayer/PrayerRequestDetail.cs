@@ -39,7 +39,7 @@ namespace Rock.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Displays the details of a particular prayer request." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
