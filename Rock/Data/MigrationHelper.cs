@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using Rock.Jobs;
@@ -8276,6 +8277,45 @@ END
         }
 
         /// <summary>
+        /// Adds/Overwrites the ServiceJob attribute value.
+        /// This would throw an exception if the Attribute Key does not exist on the Service Job Entity. So please ensure the prior migrations add the attribute.
+        /// </summary>
+        /// <param name="serviceJobGuid">The service job unique identifier.</param>
+        /// <param name="key">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
+        public void AddOrUpdatePostUpdateJobAttributeValue( string serviceJobGuid, string key, string value )
+        {
+            Migration.Sql( $@" 
+                DECLARE @ServiceJobEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.ServiceJob' )
+                DECLARE @ServiceJobId int
+                DECLARE @ServiceJobClass varchar(100)
+                SELECT @ServiceJobId = [Id], @ServiceJobClass = [Class]  FROM [ServiceJob] WHERE [Guid] = '{serviceJobGuid}'
+
+                -- Get the Attribute Id For Service Job by the key
+                DECLARE @AttributeId int
+                SET @AttributeId = (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] = @ServiceJobEntityTypeId
+                        AND [EntityTypeQualifierColumn] = 'Class'
+                        AND [EntityTypeQualifierValue] = @ServiceJobClass
+                        AND [Key] = '{key}' )
+
+                
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId AND [EntityId] = @ServiceJobId
+
+                -- Insert the Attribute Value
+                -- Intentionally not checking if the Attribute Id is null as we expect the SQL to throw an exception if so.
+                INSERT INTO [AttributeValue]
+                    ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
+                VALUES
+                    (1, @AttributeId, @ServiceJobId, N'{value.Replace( "'", "''" )}', NEWID())"
+            );
+        }
+
+        /// <summary>
         /// Creates a new Post Update Job <see cref="Rock.Jobs.PostUpdateJobs.PostUpdateJob" /> to be run on Rock Start Up.
         /// By default all Post Update Jobs need to be marked active and are system jobs so that they are not accidentally deleted by the admins.
         /// </summary>
@@ -8308,6 +8348,48 @@ END
             ,'{guid}'
             );
     END" );
+        }
+
+        /// <summary>
+        /// Creates a Service Job to Replace webforms blocks with corresponding obsidian blocks.
+        /// </summary>
+        /// <param name="name">The name of the Job. For instance the list of block types it would be replacing.
+        /// In the front end the name would be prefixed with : "Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks -"
+        /// </param>
+        /// <param name="blockTypeReplacements">A key value pair of the webforms block type GUID to be replaced with the corresponding obsidian block type GUID</param>
+        /// <param name="migrationStrategy">The Migration Strategy to be used to replace the block. It can be either "Chop" or "Swap"</param>
+        /// <param name="jobGuid">The GUID of the job</param>
+        public void ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid )
+        {
+            // note: the cronExpression is chosen at random. It is provided as it is mandatory in the Service Job
+            AddPostUpdateServiceJob(
+                name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks - { name }",
+                description: "This job will replace the  WebForms blocks with their Obsidian blocks on all sites, pages, and layouts.",
+                jobType: "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", cronExpression: "0 0 21 1/1 * ? *", guid: jobGuid);
+
+            AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "BlockTypeGuidReplacementPairs", SerializeDictionary( blockTypeReplacements ) );
+            AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "MigrationStrategy", migrationStrategy );
+        }
+
+        private string SerializeDictionary( Dictionary<string, string> dictionary )
+        {
+            const string keyValueSeparator = "^";
+
+            if ( dictionary?.Any() != true )
+            {
+                return string.Empty;
+            }
+
+            var sb = new StringBuilder();
+            var first = dictionary.First();
+            sb.Append( $"{first.Key}{keyValueSeparator}{first.Value}" );
+
+            foreach ( var kvp in dictionary.Skip( 1 ) )
+            {
+                sb.Append( $"|{kvp.Key}{keyValueSeparator}{kvp.Value}" );
+            }
+
+            return sb.ToString();
         }
 
         #endregion

@@ -214,8 +214,6 @@ namespace Rock.Jobs
 
             try
             {
-                // Creating and saving the blocks outside the rockContext.wrapTransaction as we need to ensure the rockContext writes the blocks to the database before the SQL to update the Attributes and Auth are run
-
                 rockContext.WrapTransaction( () =>
                 {
                     var copiedBlockMappings = AddCopiesOfBlocksInSameLocationsButWithNewBlockType( oldBlockTypeGuid, newBlockTypeId.Value, rockContext );
