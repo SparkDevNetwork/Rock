@@ -11,7 +11,7 @@
                 </h1>
 
                 <div class="panel-labels">
-                    <Rock:BootstrapButton ID="bDownloadFromLibrary" runat="server" CssClass="btn btn-xs label-success" OnClick="bDownloadFromLibrary_Click"><i class="fa fa-download"></i> Download from Library</Rock:BootstrapButton>
+                    <Rock:BootstrapButton ID="bDownloadFromLibrary" runat="server" CssClass="btn btn-xs btn-default" OnClick="bDownloadFromLibrary_Click"><i class="fa fa-download"></i> Download from Library</Rock:BootstrapButton>
                 </div>
             </div>
             
