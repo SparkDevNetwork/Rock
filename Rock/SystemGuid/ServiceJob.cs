@@ -277,10 +277,14 @@ namespace Rock.SystemGuid
         public const string UPDATE_PERSISTED_ATTRIBUTE_VALUE = "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70";
 
         /// <summary>
-        /// The Job to run data migration on Schedule Detail, Short Link Detail, Asset Storage Provider,
-        /// Streak Type Detial, Batch Detail, Event Detail, Prayer Request Detail, Streak Detail
-        /// Webforms blocks to chop them to obsidian blocks.
+        /// The Post Update Data Migration Job to swap the Notes Block
         /// </summary>
-        public const string DATA_MIGRATIONS_160_REPLACE_8_BLOCKS_WITH_OBSIDIAN_BLOCKS = "7EF9B02B-8FA5-4424-93B2-BABB819DC4B9";
+        public const string DATA_MIGRATIONS_SWAP_NOTES_BLOCK = "8390C1AC-88D6-474A-AC05-8FFBD358F75D";
+
+        /// <summary>
+        /// The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
+        /// Following Event Type Detail, Financial Batch Detail
+        /// </summary>
+        public const string DATA_MIGRATIONS_CHOP_BLOCKS_GROUP_1 = "54FACAE5-2175-4FE0-AC9F-5CDA957BCFB5";
     }
 }

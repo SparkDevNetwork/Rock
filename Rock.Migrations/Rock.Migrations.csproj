@@ -192,6 +192,10 @@
     <Compile Include="Migrations\202308101807007_CodeGenerated_20230810.designer.cs">
       <DependentUpon>202308101807007_CodeGenerated_20230810.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202308112104015_ReplaceWeformsBlocksWithObsidianBlocks.cs" />
+    <Compile Include="Migrations\202308112104015_ReplaceWeformsBlocksWithObsidianBlocks.designer.cs">
+      <DependentUpon>202308112104015_ReplaceWeformsBlocksWithObsidianBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1841,6 +1845,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202308101807007_CodeGenerated_20230810.resx">
       <DependentUpon>202308101807007_CodeGenerated_20230810.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202308112104015_ReplaceWeformsBlocksWithObsidianBlocks.resx">
+      <DependentUpon>202308112104015_ReplaceWeformsBlocksWithObsidianBlocks.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
