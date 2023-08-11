@@ -99,41 +99,6 @@ namespace Rock.Model
             return true;
         }
 
-        /// <summary>
-        /// Get a list of all inherited Attributes that should be applied to this entity.
-        /// </summary>
-        /// <returns>A list of all inherited AttributeCache objects.</returns>
-        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
-        {
-            var connectionTypeId = ConnectionTypeId;
-
-            // If this instance hasn't been saved yet, it might not have this
-            // auto generated value set yet.
-            if ( connectionTypeId == 0 )
-            {
-                if ( ConnectionOpportunity == null )
-                {
-                    connectionTypeId = new ConnectionOpportunityService( rockContext ).Queryable()
-                        .Where( co => co.Id == ConnectionOpportunityId )
-                        .Select( co => co.ConnectionTypeId )
-                        .FirstOrDefault();
-                }
-                else
-                {
-                    connectionTypeId = ConnectionOpportunity.ConnectionTypeId;
-                }
-            }
-
-            if ( connectionTypeId == 0 )
-            {
-                return null;
-            }
-
-            var connectionTypeCache = ConnectionTypeCache.Get( connectionTypeId );
-
-            return connectionTypeCache?.GetInheritedAttributesForQualifier( TypeId, "ConnectionTypeId" );
-        }
-
         #endregion
     }
 }
