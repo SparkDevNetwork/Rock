@@ -19,6 +19,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Security.RestKeyDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class RestKeyBag : EntityBagBase
     {
         /// <summary>

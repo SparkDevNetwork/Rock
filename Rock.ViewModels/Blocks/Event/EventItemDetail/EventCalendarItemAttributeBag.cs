@@ -21,6 +21,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Event.EventItemDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class EventCalendarItemAttributeBag
     {
         /// <summary>

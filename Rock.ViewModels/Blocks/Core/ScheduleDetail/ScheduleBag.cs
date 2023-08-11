@@ -21,6 +21,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.ScheduleDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ScheduleBag : EntityBagBase
     {
         /// <summary>

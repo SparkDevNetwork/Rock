@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.ServiceJobDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ServiceJobDetailOptionsBag
     {
         /// <summary>

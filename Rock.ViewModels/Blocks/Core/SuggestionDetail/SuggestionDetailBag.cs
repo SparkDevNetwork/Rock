@@ -20,6 +20,10 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.SuggestionDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class SuggestionDetailBag : EntityBagBase
     {
         /// <summary>

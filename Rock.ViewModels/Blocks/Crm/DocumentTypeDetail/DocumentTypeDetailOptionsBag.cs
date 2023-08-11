@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Crm.DocumentTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DocumentTypeDetailOptionsBag
     {
     }

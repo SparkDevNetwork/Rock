@@ -127,6 +127,8 @@ namespace Rock.Model
             target.ChildItemsManuallyOrdered = source.ChildItemsManuallyOrdered;
             target.ContentChannelTypeId = source.ContentChannelTypeId;
             target.ContentControlType = source.ContentControlType;
+            target.ContentLibraryConfiguration = source.ContentLibraryConfiguration;
+            target.ContentLibraryConfigurationJson = source.ContentLibraryConfigurationJson;
             target.Description = source.Description;
             target.EnablePersonalization = source.EnablePersonalization;
             target.EnableRss = source.EnableRss;

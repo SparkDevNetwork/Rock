@@ -19,6 +19,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.Notes
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class NotesInitializationBox
     {
         /// <summary>

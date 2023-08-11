@@ -22,6 +22,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class WebFarmNodeBag : EntityBagBase
     {
         /// <summary>

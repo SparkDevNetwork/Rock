@@ -17,6 +17,10 @@
 
 namespace Rock.ViewModels.Blocks.Groups.GroupRegistration
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Blocks.BlockBox" />
     public class GroupRegistrationBlockBox : BlockBox
     {
         /// <summary>

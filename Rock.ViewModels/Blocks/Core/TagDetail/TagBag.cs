@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.TagDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class TagBag : EntityBagBase
     {
         /// <summary>

@@ -22,6 +22,9 @@ using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Cms.LavaShortcodeDetail
 {
+    /// <summary>
+    /// The Lava Short Code Bag
+    /// </summary>
     public class LavaShortcodeBag : EntityBagBase
     {
         /// <summary>

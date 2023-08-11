@@ -19,11 +19,41 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialBatchDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FinancialBatchDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the currency types.
+        /// </summary>
+        /// <value>
+        /// The currency types.
+        /// </value>
         public List<FinancialBatchCurrencyTotalsBag> CurrencyTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the accounts.
+        /// </summary>
+        /// <value>
+        /// The accounts.
+        /// </value>
         public List<FinancialBatchAccountTotalsBag> Accounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transaction item count.
+        /// </summary>
+        /// <value>
+        /// The transaction item count.
+        /// </value>
         public int TransactionItemCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transaction amount.
+        /// </summary>
+        /// <value>
+        /// The transaction amount.
+        /// </value>
         public decimal TransactionAmount { get; set; }
 
         /// <summary>

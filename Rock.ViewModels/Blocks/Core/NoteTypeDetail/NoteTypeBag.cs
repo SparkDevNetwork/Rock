@@ -20,6 +20,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class NoteTypeBag : EntityBagBase
     {
         /// <summary>

@@ -21,8 +21,17 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.LocationDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class LocationDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the printer device options.
+        /// </summary>
+        /// <value>
+        /// The printer device options.
+        /// </value>
         public List<ListItemBag> PrinterDeviceOptions { get; set; }
     }
 }

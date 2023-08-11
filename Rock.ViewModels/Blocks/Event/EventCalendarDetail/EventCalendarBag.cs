@@ -20,6 +20,10 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Event.EventCalendarDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class EventCalendarBag : EntityBagBase
     {
         /// <summary>

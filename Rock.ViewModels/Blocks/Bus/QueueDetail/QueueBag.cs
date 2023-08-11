@@ -19,6 +19,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Bus.QueueDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class QueueBag
     {
         /// <summary>

@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.SignatureDocumentTemplateDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SignatureDocumentTemplateDetailOptionsBag
     {
         /// <summary>
