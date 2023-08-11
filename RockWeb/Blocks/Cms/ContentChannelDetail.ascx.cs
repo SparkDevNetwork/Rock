@@ -1169,7 +1169,7 @@ namespace RockWeb.Blocks.Cms
                     selectedValues.Remove( value );
                     cblControl.SetValues( selectedValues );
                 }
-            } 
+            }
         }
 
         /// <summary>
@@ -1291,7 +1291,7 @@ namespace RockWeb.Blocks.Cms
             foreach ( var licenseGuid in availableLicenseGuids )
             {
                 var license = DefinedValueCache.Get( licenseGuid );
-                
+
                 if ( license != null )
                 {
                     rblLicenseType.Items.Add( new ListItem { Text = license.Value, Value = license.Guid.ToString() } );
