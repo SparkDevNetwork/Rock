@@ -15,12 +15,15 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Data.Common;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -2609,6 +2612,49 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         }
 
         #endregion
+
+        private static readonly ConcurrentDictionary<Type, MethodInfo> _attributeViewSetMethods = new ConcurrentDictionary<Type, MethodInfo>();
+
+        public static List<QueryableAttributeValue> LoadAttributes<T>( int id, RockContext rockContext )
+        {
+            var entityType = typeof( T );
+
+            var sw1 = System.Diagnostics.Stopwatch.StartNew();
+            var setMethod = _attributeViewSetMethods.GetOrAdd( entityType, t =>
+            {
+                try
+                {
+                    var genericHasEntityAttributes = typeof( IHasQueryableAttributes<> );
+                    var hasEntityAttributes = entityType
+                       .GetInterfaces()
+                       .FirstOrDefault( i => i.IsGenericType && i.GetGenericTypeDefinition() == genericHasEntityAttributes );
+
+                    if ( hasEntityAttributes == null )
+                    {
+                        return null;
+                    }
+
+
+                    var entityAttributeValueType = hasEntityAttributes.GetGenericArguments()[0];
+
+                    var method = rockContext.GetType().GetMethod( "Set", BindingFlags.Public | BindingFlags.Instance, null, new Type[0], null );
+                    method = method.MakeGenericMethod( entityAttributeValueType );
+
+                    return method;
+                }
+                catch
+                {
+                    return null;
+                }
+            } );
+            sw1.Stop();
+
+            var dbSet = ( IQueryable<QueryableAttributeValue> ) setMethod.Invoke( rockContext, new object[0] );
+            var values = dbSet.Where( v => v.EntityId == id ).ToList();
+
+            return values;
+        }
+
 
         /// <summary>
         /// Copies the attributes from one entity to another
