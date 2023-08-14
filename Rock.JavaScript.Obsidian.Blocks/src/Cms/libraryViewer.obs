@@ -4,20 +4,24 @@
         <NotificationBox v-if="config.errorMessage" alertType="danger">
             {{ config.errorMessage }}
         </NotificationBox>
-        <Panel v-else class="styled-scroll" title="Library Viewer" :hasFullscreen="true">
+        <Panel v-else
+               class="styled-scroll"
+               :hasFullscreen="true"
+               title="Library Viewer">
             <template #preBody>
                 <div class="library-viewer-toolbar">
                     <ItemListSort :items="filteredItems"
-                          @sortedItems="(i) => sortedItems = i" />
+                                  @sortedItems="(i) => sortedItems = i" />
                     <ItemListFilters :areFiltersAppliedOnClose="true"
-                             :items="items"
-                             @filteredItems="(i) => filteredItems = i" />
+                                     :contentChannelIdKey="config.contentChannelIdKey"
+                                     :items="items"
+                                     @filteredItems="(i) => filteredItems = i" />
                 </div>
                 <div class="library-viewer-body">
                     <ItemList v-if="sortedItems"
-                                            :items="sortedItems"
-                                            :selectedItem="selectedItem"
-                                            @select="onSelected" />
+                              :items="sortedItems"
+                              :selectedItem="selectedItem"
+                              @select="onSelected" />
                     <template v-if="selectedItem">
                         <ItemPreview :contentChannelIdKey="config.contentChannelIdKey"
                                      :disabled="isDownloading"
