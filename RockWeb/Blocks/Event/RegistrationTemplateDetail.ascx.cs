@@ -1020,6 +1020,7 @@ The logged-in person's information will be used to complete the registrar inform
             // RegistrationTemplate.SignatureDocumentAction should be embed, if not then defer to the user's choice.
             registrationTemplate.SignatureDocumentAction = documentTemplate?.IsLegacy == false || cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
             registrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
+            registrationTemplate.ShowSmsOptIn = cbShowSmsOptIn.Checked;
             registrationTemplate.RegistrarOption = ddlRegistrarOption.SelectedValueAsEnum<RegistrarOption>();
 
             registrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
@@ -2617,6 +2618,7 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             cbWaitListEnabled.Checked = registrationTemplate.WaitListEnabled;
+            cbShowSmsOptIn.Checked = registrationTemplate.ShowSmsOptIn;
             cbAddPersonNote.Checked = registrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = registrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;
