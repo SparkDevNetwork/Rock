@@ -51,7 +51,7 @@
         /** Any elements (or child elements) that match these selectors will not cause the drop-down content to close when clicked. */
         preventCloseOnClickSelectors: {
             type: Object as PropType<string[]>,
-            default: [ ".datepicker" ]
+            default: [".datepicker"]
         }
     });
 
@@ -68,12 +68,40 @@
 
     const { floatingStyles, middlewareData } = useFloating(anchorElement, dropdownElement, {
         middleware: [
-            shift(),
+            shift({
+                // Add 1 pixel padding to handle partial DPI zoom jitter.
+                // Otherwise the position will be at a partial pixel boundary
+                // which works for rending but not scrolling so it can cause
+                // loops where the scroll bar appears, we adjust postition, and
+                // then the scroll bar vanishes and we adjust position again.
+                padding: 1
+            }),
             arrow({
                 element: arrowElement
             })
         ],
-        whileElementsMounted: autoUpdate
+        whileElementsMounted: (r, f, u) => {
+            // This chunk of code fixes an issue with the ANT select, and
+            // possibly other elements. When you click on an ANT select it
+            // briefly renders an element out of position. Possibly to calculate
+            // size information, and then hides it/fixes the position. Since we
+            // normally update instantly, this causes the popup to jitter
+            // briefly. So we add a 25ms delay to the position update to give
+            // a chance for the DOM to settle.
+            let first = true;
+
+            function delayUpdate(): void {
+                if (first) {
+                    first = false;
+                    u();
+                }
+                else {
+                    setTimeout(u, 25);
+                }
+            }
+
+            return autoUpdate(r, f, delayUpdate);
+        }
     });
 
     // #endregion
