@@ -599,8 +599,8 @@ namespace RockWeb.Blocks.Administration
                 gSiteBlocks.DataSource = siteBlocks.Select( b => new
                     {
                         b.Id,
-                        Name = AddIconIfObsidianBlock( b.EntityTypeId, b.Name ),
-                        b.BlockTypeName,
+                        b.Name,
+                        BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
                         b.BlockTypePath,
                         b.BlockTypeCategory
                     } )
@@ -623,8 +623,8 @@ namespace RockWeb.Blocks.Administration
                 gLayoutBlocks.DataSource = layoutBlocks.Select( b => new
                     {
                         b.Id,
-                        Name = AddIconIfObsidianBlock( b.EntityTypeId, b.Name ),
-                        b.BlockTypeName,
+                        b.Name,
+                        BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
                         b.BlockTypePath,
                         b.BlockTypeCategory
                     } )
@@ -647,8 +647,8 @@ namespace RockWeb.Blocks.Administration
                 gPageBlocks.DataSource = pageBlocks.Select( b => new
                 {
                     b.Id,
-                    Name = AddIconIfObsidianBlock( b.EntityTypeId, b.Name ),
-                    b.BlockTypeName,
+                    b.Name,
+                    BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
                     b.BlockTypePath,
                     b.BlockTypeCategory
                 } )

@@ -916,11 +916,11 @@ namespace RockWeb.Blocks.Cms
                 var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '>' } );
                 if ( parts.Length > 1 )
                 {
-                    tbNewBlockName.Text = parts[parts.Length - 1].Trim();
+                    tbNewBlockName.Text = parts[parts.Length - 1].Trim().Replace( " \U0001f389", string.Empty );
                 }
                 else
                 {
-                    tbNewBlockName.Text = ddlBlockType.SelectedItem.Text;
+                    tbNewBlockName.Text = ddlBlockType.SelectedItem.Text.Replace( " \U0001f389", string.Empty );
                 }
             }
         }
