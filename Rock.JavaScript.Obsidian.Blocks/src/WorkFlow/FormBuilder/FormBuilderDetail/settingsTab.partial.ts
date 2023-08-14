@@ -67,7 +67,7 @@ export default defineComponent({
         const completionSettings = useVModelPassthrough(props, "completion", emit);
         const formSubmit = ref(false);
 
-        const isConfirmationForced = computed((): boolean => props.templateOverrides?.isConfirmationEmailConfigured ?? false);
+        const isCompletionForced = computed((): boolean => props.templateOverrides?.isCompletionActionConfigured ?? false);
 
         /**
          * Event handler for when the validation state of the form has changed.
@@ -90,7 +90,7 @@ export default defineComponent({
             completionSettings,
             formSubmit,
             generalSettings,
-            isConfirmationForced,
+            isCompletionForced,
             onValidationChanged
         };
     },
@@ -101,9 +101,9 @@ export default defineComponent({
         <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged">
             <GeneralSettings v-model="generalSettings" :templateOverrides="templateOverrides" />
 
-            <CompletionSettings v-if="!isConfirmationForced" v-model="completionSettings" />
+            <CompletionSettings v-if="!isCompletionForced" v-model="completionSettings" />
             <NotificationBox v-else alertType="info">
-                <h4 class="alert-heading">Confirmation Email</h4>
+                <h4 class="alert-heading">Completion Settings</h4>
                 <p>
                     The completion action is defined on the template and cannot be changed.
                 </p>
