@@ -562,6 +562,10 @@
             setPropertiesBoxValue(request, "isPrivate", editNoteBag.value.isPrivate);
             setPropertiesBoxValue(request, "attributeValues", editNoteBag.value.attributeValues);
 
+            if (editNoteBag.value.createdDateTime) {
+                setPropertiesBoxValue(request, "createdDateTime", editNoteBag.value.createdDateTime);
+            }
+
             const result = await invokeBlockAction<NoteBag>("SaveNote", { request });
 
             // Make sure we can actually display the note. If we can't find the
