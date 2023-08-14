@@ -58,7 +58,7 @@
 
     const assetStorageProviderViewBag = ref(config.entity);
 
-    // open the edit bag populated with the Asset Storage Entities if available. Else initialize the bag with no values
+    // Open the edit bag populated with the Asset Storage Entities if available. Else initialize the bag with no values.
     const assetStorageProviderEditBag = ref(config.entity ?? ({} as AssetStorageProviderBag));
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
