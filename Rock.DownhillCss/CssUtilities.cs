@@ -1985,10 +1985,6 @@ formfield .required-indicator {
     -xf-spacing: 8;
 }
 
-.recipient-name-and-communication {
-    -xf-spacing: 0;
-}
-
 .recipients-layout {
     -xf-spacing: 0;
 }
