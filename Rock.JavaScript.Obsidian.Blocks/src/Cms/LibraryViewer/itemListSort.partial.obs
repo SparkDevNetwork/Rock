@@ -66,7 +66,7 @@
     const sortOptions: SortOption[] = [
         {
             title: "Publish Date - Newest to Oldest",
-            sortButtonText: "Sort Applied: Publish Date",
+            sortButtonText: "Sort: Publish Date",
             sort(item1, item2) {
                 // Multiply by -1 to sort Newest to Oldest.
                 return compareDateStrings(item1?.publishedDateTime, item2?.publishedDateTime) * -1;
@@ -74,7 +74,7 @@
         },
         {
             title: "Downloads - Most to Fewest",
-            sortButtonText: "Sort Applied: Downloads",
+            sortButtonText: "Sort: Downloads",
             sort(item1, item2) {
                 // Multiply by -1 to sort Most to Fewest.
                 return compareNumbers(item1?.downloads, item2?.downloads) * -1;
@@ -82,7 +82,7 @@
         },
         {
             title: "Organization",
-            sortButtonText: "Sort Applied: Organization",
+            sortButtonText: "Sort: Organization",
             sort(item1, item2) {
                 return compareStrings(item1?.sourcePublisherName, item2?.sourcePublisherName);
             }

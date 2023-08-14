@@ -3,60 +3,72 @@
     <div class="library-viewer-item-list-filters">
         <DropDownContent v-model="internalModelValue">
             <template #anchor>
-                <RockButton btnType="default" btnSize="xs" class="library-viewer-toolbar-button"><i class="fa fa-filter" /> {{ appliedFilterOptions.filterButtonText }}</RockButton>
+                <RockButton btnType="tool" btnSize="xs"><i class="fa fa-filter" /> {{ appliedFilterOptions.filterButtonText }}</RockButton>
             </template>
 
             <div class="library-viewer-item-list-filters-container p-3">
-                <div class="container-fluid">
-                    <DropDownList v-model="internalTopics"
-                                :enhanceForLongLists="true"
-                                :grouped="false"
-                                :items="topicOptions"
-                                label="Topics"
-                                :multiple="true"
-                                :showBlankItem="true" />
+                <DropDownList v-model="internalTopics"
+                            :enhanceForLongLists="true"
+                            :grouped="false"
+                            :items="topicOptions"
+                            label="Topics"
+                            :multiple="true"
+                            :showBlankItem="true" />
 
-                    <DropDownList v-model="internalOrganizations"
-                                :enhanceForLongLists="true"
-                                :grouped="false"
-                                :items="organizationOptions"
-                                label="Organizations"
-                                :multiple="true"
-                                :showBlankItem="true" />
+                <DropDownList v-model="internalOrganizations"
+                            :enhanceForLongLists="true"
+                            :grouped="false"
+                            :items="organizationOptions"
+                            label="Organizations"
+                            :multiple="true"
+                            :showBlankItem="true" />
 
-                    <CheckBoxList v-model="internalDownloads"
-                                :horizontal="true"
-                                :items="downloadOptions"
-                                label="Downloads" />
+                <CheckBoxList v-model="internalDownloads"
+                            :horizontal="true"
+                            :items="downloadOptions"
+                            label="Downloads" />
 
-                    <CheckBoxList v-model="internalLicenseTypes"
-                                :horizontal="true"
-                                :items="licenseTypeOptions"
-                                label="License Type" />
+                <CheckBoxList v-model="internalLicenseTypes"
+                            :horizontal="true"
+                            :items="licenseTypeOptions"
+                            label="License Type" />
 
-                    <CheckBoxList v-model="internalExperienceLevels"
-                                :horizontal="true"
-                                :items="experienceLevelOptions"
-                                label="Experience Level" />
+                <CheckBoxList v-model="internalExperienceLevels"
+                            :horizontal="true"
+                            :items="experienceLevelOptions"
+                            label="Experience Level" />
 
-                    <SlidingDateRangePicker v-model="internalPublishedDate"
-                                            label="Publish Date"
-                                            previewLocation="Top" />
+                <SlidingDateRangePicker v-model="internalPublishedDate"
+                                        label="Publish Date"
+                                        previewLocation="Top" />
 
-                    <RockButton v-if="!areFiltersAppliedOnClose" @click="onApplyClicked" btnSize="xs">Apply Filters</RockButton>
-                    <RockButton @click="onClearAllClicked" btnSize="xs" class="ml-1">Clear All</RockButton>
-                </div>
+                <RockButton v-if="!areFiltersAppliedOnClose" @click="onApplyClicked" btnSize="xs" class="mr-1">Apply Filters</RockButton>
+                <RockButton @click="onClearAllClicked" btnSize="xs">Clear All</RockButton>
             </div>
         </DropDownContent>
     </div>
 </template>
 
-<style scoped>
-    .library-viewer-item-list-filters-container {
-        border-radius: 6px;
-        border: 1px solid var(--theme-colors-light, #F2E3D9);
-        background: var(--theme-colors-lightest, #FAF7F5);
-    }
+<style>
+
+.library-viewer-item-list-filters-container {
+    width: 410px;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.library-viewer-item-list-filters-container .rc-virtual-list-holder {
+    max-height: 200px;
+    overflow-y: hidden;
+}
+
+.library-viewer-item-list-filters-container .ant-select-loading {
+    display: none;
+}
+
+.ant-select {
+    position: relative !important;
+}
 </style>
 
 <script setup lang="ts">
