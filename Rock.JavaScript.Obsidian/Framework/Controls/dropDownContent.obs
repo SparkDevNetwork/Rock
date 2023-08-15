@@ -7,7 +7,7 @@
     </span>
 
     <div v-if="isDropDownOpen" ref="dropdownElement" :style="floatingStyles" class="floating-dropdown">
-        <svg ref="arrowElement" class="arrow">
+        <svg v-if="showArrow" ref="arrowElement" class="arrow">
             <path d="M0,7L5,0L10,7"></path>
         </svg>
         <div class="body">
@@ -44,6 +44,12 @@
 
     const props = defineProps({
         modelValue: {
+            type: Boolean,
+            default: false
+        },
+
+        /** If true then the arrow will be visible pointing to the anchor. */
+        showArrow: {
             type: Boolean,
             default: false
         },
