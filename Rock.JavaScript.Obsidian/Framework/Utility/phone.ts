@@ -35,10 +35,25 @@ async function fetchPhoneNumberConfiguration(): Promise<PhoneNumberBoxGetConfigu
 }
 
 /**
+ * Fetch the configuration for phone numbers and their possible formats for different countries
+ */
+async function fetchPhoneNumberAndSmsConfiguration(): Promise<PhoneNumberBoxGetConfigurationResultsBag> {
+    const result = await http.post<PhoneNumberBoxGetConfigurationResultsBag>("/api/v2/Controls/PhoneNumberBoxGetConfiguration", undefined, null);
+
+    if (result.isSuccess && result.data) {
+        return result.data;
+    }
+
+    throw new Error(result.errorMessage ?? "Error fetching phone number configuration");
+}
+
+/**
  * Fetch the configuration for phone numbers and their possible formats for different countries.
  * Cacheable version of fetchPhoneNumberConfiguration cacheable
  */
 export const getPhoneNumberConfiguration = Cache.cachePromiseFactory("phoneNumberConfiguration", fetchPhoneNumberConfiguration);
+
+export const getPhoneNumberAndSmsConfiguration = Cache.cachePromiseFactory("phoneNumberConfiguration", fetchPhoneNumberAndSmsConfiguration);
 
 const defaultRulesConfig = [
     {

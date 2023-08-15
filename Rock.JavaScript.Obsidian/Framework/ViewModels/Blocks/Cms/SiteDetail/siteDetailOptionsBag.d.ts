@@ -25,7 +25,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 
 export type SiteDetailOptionsBag = {
+    /** The site Attributes */
     siteAttributes?: PublicEditableAttributeBag[] | null;
 
+    /** The themes */
     themes?: ListItemBag[] | null;
 };

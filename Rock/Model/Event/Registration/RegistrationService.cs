@@ -457,17 +457,6 @@ namespace Rock.Model
             ShowSmsOptIn = template.ShowSmsOptIn;
             SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
 
-            if( ShowSmsOptIn )
-            {
-                foreach( var templateForm in Forms )
-                {
-                    foreach ( var field in templateForm.Fields )
-                    {
-                        // Look for mobile number, if found insert a field for the SMS checkbox
-                    }
-                }
-            }
-
             // Workflow type ids
             WorkflowTypeIds = new List<int>();
 

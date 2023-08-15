@@ -4898,7 +4898,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "PhoneNumberBoxGetConfiguration" )]
         [Rock.SystemGuid.RestActionGuid( "2f15c4a2-92c7-4bd3-bf48-7eb11a644142" )]
-        public IHttpActionResult PhoneNumberBoxGetConfiguration()
+        public IHttpActionResult PhoneNumberBoxGetConfiguration([FromBody] PhoneNumberBoxGetConfigurationOptionsBag options )
         {
             var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
@@ -4929,6 +4929,16 @@ namespace Rock.Rest.v2
 
                     countryCodeRules.Add( countryCode, rules );
                 }
+            }
+
+            if ( showSmsOptIn )
+            {
+                return Ok( new PhoneNumberBoxGetConfigurationResultsBag
+                {
+                    Rules = countryCodeRules,
+                    DefaultCountryCode = defaultCountryCode,
+                    SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL )
+                } );
             }
 
             return Ok( new PhoneNumberBoxGetConfigurationResultsBag
