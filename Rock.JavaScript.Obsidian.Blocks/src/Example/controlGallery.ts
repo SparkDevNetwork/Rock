@@ -1026,7 +1026,7 @@ const dropDownListGallery = defineComponent({
             { text: "A Text", value: "a", category: "First" },
             { text: "B Text", value: "b", category: "First" },
             { text: "C Text", value: "c", category: "Second" },
-            { text: "D Text", value: "d", category: "Second" }
+            { text: "D Text", value: "d", category: "Second", disabled: true }
         ];
 
         // This function can be used to demonstrate lazy loading of items.
@@ -1043,7 +1043,7 @@ const dropDownListGallery = defineComponent({
             grouped: ref(false),
             multiple: ref(false),
             value: ref(null),
-            options: options,
+            options,
             importCode: getControlImportPath("dropDownList"),
             exampleCode: `<DropDownList label="Select" v-model="value" :items="options" :showBlankItem="true" :enhanceForLongLists="false" :grouped="false" :multiple="false" />`
         };
@@ -1056,7 +1056,7 @@ const dropDownListGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <DropDownList label="Select" v-model="value" :items="[]" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
+    <DropDownList label="Select" v-model="value" :items="options" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
 
     <template #settings>
         <div class="row">

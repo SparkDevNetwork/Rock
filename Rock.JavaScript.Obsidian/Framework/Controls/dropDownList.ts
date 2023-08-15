@@ -25,9 +25,8 @@ import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
 /** The type definition for a select option, since the ones from the library are wrong. */
 export type SelectOption = {
     value?: string;
-
     label: string;
-
+    disabled?: boolean;
     options?: SelectOption[];
 };
 
@@ -138,7 +137,8 @@ export default defineComponent({
                 return props.items.map((o): SelectOption => {
                     return {
                         value: o.value ?? "",
-                        label: o.text ?? ""
+                        label: o.text ?? "",
+                        disabled: o.disabled ?? false
                     };
                 });
             }
@@ -152,7 +152,8 @@ export default defineComponent({
                 if (!o.category) {
                     groupedOptions.push({
                         value: o.value ?? "",
-                        label: o.text ?? ""
+                        label: o.text ?? "",
+                        disabled: o.disabled ?? false
                     });
                     continue;
                 }
@@ -164,7 +165,8 @@ export default defineComponent({
                 if (matchedGroups.length >= 1 && !!matchedGroups[0].options) {
                     matchedGroups[0].options.push({
                         value: o.value ?? "",
-                        label: o.text ?? ""
+                        label: o.text ?? "",
+                        disabled: o.disabled ?? false
                     });
                 }
                 else {
@@ -172,7 +174,8 @@ export default defineComponent({
                         label: o.category,
                         options: [{
                             value: o.value ?? "",
-                            label: o.text ?? ""
+                            label: o.text ?? "",
+                            disabled: o.disabled ?? false
                         }]
                     });
                 }
