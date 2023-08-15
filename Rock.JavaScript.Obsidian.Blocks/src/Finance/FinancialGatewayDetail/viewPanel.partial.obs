@@ -1,0 +1,123 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { FinancialGatewayBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialGatewayDetail/financialGatewayBag";
+    import { FinancialGatewayDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialGatewayDetail/financialGatewayDetailOptionsBag";
+    import { DayOfWeekDescription } from "@Obsidian/Enums/Controls/dayOfWeek";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { padLeft } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FinancialGatewayBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<FinancialGatewayDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("", props.modelValue.description);
+        }
+
+        if (props.modelValue.entityType?.text) {
+            valueBuilder.addTextValue("Gateway Type", props.modelValue.entityType.text);
+        }
+
+        if (props.modelValue.batchStartDay) {
+            valueBuilder.addTextValue("Batched Weekly", DayOfWeekDescription[props.modelValue.batchStartDay]);
+        }
+
+        if (props.modelValue.batchTimeOffsetTicks) {
+            const values = /^(\d+):(\d+)/.exec(props.modelValue.batchTimeOffsetTicks ?? "");
+
+            if (values !== null) {
+                let hour = toNumber(values[1]);
+                const minute = toNumber(values[2]);
+                const meridiem = hour >= 12 ? "PM" : "AM";
+
+                if (hour > 12) {
+                    hour -= 12;
+                }
+
+                const timeSpan = `${hour}:${padLeft(minute.toString(), 2, "0")} ${meridiem}`;
+                valueBuilder.addTextValue("Batch Time Offset", timeSpan);
+            }
+            else {
+                valueBuilder.addTextValue("Batch Time Offset", props.modelValue.batchTimeOffsetTicks);
+            }
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+                            // #endregion
+
+                            // #region Functions
+
+                            // #endregion
+
+                            // #region Event Handlers
+
+                            // #endregion
+</script>

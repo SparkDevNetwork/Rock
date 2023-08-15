@@ -60,6 +60,8 @@
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayDetailOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
@@ -238,7 +240,7 @@
     <Compile Include="Blocks\Communication\SystemPhoneNumberDetail\SystemPhoneNumberBag.cs" />
     <Compile Include="Blocks\Communication\SystemPhoneNumberDetail\SystemPhoneNumberDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusList\CampusListOptionsBag.cs" />
-	<Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
+    <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
     <Compile Include="Blocks\Core\CategoryDetail\CategoryBag.cs" />
