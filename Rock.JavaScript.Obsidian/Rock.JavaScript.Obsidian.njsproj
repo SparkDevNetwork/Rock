@@ -204,6 +204,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\Notes\" />
@@ -247,6 +248,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Finance\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\" />
@@ -754,6 +756,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetTypeDetail\snippetTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\systemPhoneNumberBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\systemPhoneNumberDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
@@ -861,6 +865,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchCurrencyTotalsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\financialGatewayBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\financialGatewayDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailAddPersonRequestBag.d.ts" />

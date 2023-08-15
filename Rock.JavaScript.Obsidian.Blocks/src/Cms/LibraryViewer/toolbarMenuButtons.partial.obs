@@ -1,0 +1,75 @@
+<template>
+    <ul :class="`dropdown-menu dropdown-menu-${dropDownMenuAlignment}`">
+        <li v-for="item of items">
+            <RockButton btnType="link"
+                        :class="itemCssClass"
+                        @click="onItemClicked(item)">
+                {{ item.title }}
+                <template v-if="item.subTitle">
+                    &nbsp;
+                    <small class="text-muted">{{ item.subTitle }}</small>
+                </template>
+            </RockButton>
+        </li>
+    </ul>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { MenuButton, ToolbarMenuDropDownAlignment } from "./types.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+
+    defineProps({
+        /** The last clicked menu button. */
+        modelValue: {
+            type: Object as PropType<MenuButton>,
+        },
+
+        /** The icon CSS class. */
+        iconCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /** The CSS class to add to each item. */
+        itemCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /** The menu buttons. */
+        items: {
+            type: Object as PropType<MenuButton[]>,
+            required: true
+        },
+
+        dropDownMenuAlignment: {
+            type: String as PropType<ToolbarMenuDropDownAlignment>,
+            default: "left"
+        },
+
+        /** The text for the menu when collapsed. */
+        title: {
+            type: String as PropType<string | undefined>,
+            required: false
+        },
+
+        /** Overrides the `title`. */
+        getTitle: {
+            type: Object as PropType<(() => string) | undefined>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: MenuButton): void
+    }>();
+
+    //#region Event Handlers
+
+    function onItemClicked(item: MenuButton): void {
+        emit("update:modelValue", item);
+    }
+
+    //#endregion
+</script>

@@ -3,65 +3,78 @@
     <div class="library-viewer-item-list-filters">
         <DropDownContent v-model="internalModelValue">
             <template #anchor>
-                <RockButton btnType="default" btnSize="xs" class="library-viewer-toolbar-button"><i class="fa fa-filter" /> {{ appliedFilterOptions.filterButtonText }}</RockButton>
+                <RockButton btnType="tool" btnSize="xs"><i class="fa fa-filter" /> {{ appliedFilterOptions.filterButtonText }}</RockButton>
             </template>
 
             <div class="library-viewer-item-list-filters-container p-3">
-                <div class="container-fluid">
-                    <DropDownList v-model="internalTopics"
-                                :enhanceForLongLists="true"
-                                :grouped="false"
-                                :items="topicOptions"
-                                label="Topics"
-                                :multiple="true"
-                                :showBlankItem="true" />
+                <DropDownList v-model="internalTopics"
+                            :enhanceForLongLists="true"
+                            :grouped="false"
+                            :items="topicOptions"
+                            label="Topics"
+                            :multiple="true"
+                            :showBlankItem="true" />
 
-                    <DropDownList v-model="internalOrganizations"
-                                :enhanceForLongLists="true"
-                                :grouped="false"
-                                :items="organizationOptions"
-                                label="Organizations"
-                                :multiple="true"
-                                :showBlankItem="true" />
+                <DropDownList v-model="internalOrganizations"
+                            :enhanceForLongLists="true"
+                            :grouped="false"
+                            :items="organizationOptions"
+                            label="Organizations"
+                            :multiple="true"
+                            :showBlankItem="true" />
 
-                    <CheckBoxList v-model="internalDownloads"
-                                :horizontal="true"
-                                :items="downloadOptions"
-                                label="Downloads" />
+                <CheckBoxList v-model="internalDownloads"
+                            :horizontal="true"
+                            :items="downloadOptions"
+                            label="Downloads" />
 
-                    <CheckBoxList v-model="internalLicenseTypes"
-                                :horizontal="true"
-                                :items="licenseTypeOptions"
-                                label="License Type" />
+                <CheckBoxList v-model="internalLicenseTypes"
+                            :horizontal="true"
+                            :items="licenseTypeOptions"
+                            label="License Type" />
 
-                    <CheckBoxList v-model="internalExperienceLevels"
-                                :horizontal="true"
-                                :items="experienceLevelOptions"
-                                label="Experience Level" />
+                <CheckBoxList v-model="internalExperienceLevels"
+                            :horizontal="true"
+                            :items="experienceLevelOptions"
+                            label="Experience Level" />
 
-                    <SlidingDateRangePicker v-model="internalPublishedDate"
-                                            label="Publish Date"
-                                            previewLocation="Top" />
+                <SlidingDateRangePicker v-model="internalPublishedDate"
+                                        label="Publish Date"
+                                        previewLocation="Top" />
 
-                    <RockButton v-if="!areFiltersAppliedOnClose" @click="onApplyClicked" btnSize="xs">Apply Filters</RockButton>
-                    <RockButton @click="onClearAllClicked" btnSize="xs" class="ml-1">Clear All</RockButton>
-                </div>
+                <RockButton v-if="!areFiltersAppliedOnClose" @click="onApplyClicked" btnSize="xs" class="mr-1">Apply Filters</RockButton>
+                <RockButton @click="onClearAllClicked" btnSize="xs">Clear All</RockButton>
             </div>
         </DropDownContent>
     </div>
 </template>
 
-<style scoped>
-    .library-viewer-item-list-filters-container {
-        border-radius: 6px;
-        border: 1px solid var(--theme-colors-light, #F2E3D9);
-        background: var(--theme-colors-lightest, #FAF7F5);
-    }
+<style>
+
+.library-viewer-item-list-filters-container {
+    width: 410px;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.library-viewer-item-list-filters-container .rc-virtual-list-holder {
+    max-height: 200px;
+    overflow-y: hidden;
+}
+
+.library-viewer-item-list-filters-container .ant-select-loading {
+    display: none;
+}
+
+.ant-select {
+    position: relative !important;
+}
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
-    import { compareStrings } from "./utils.partial";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { PersonPreferenceKey } from "./types.partial";
+    import { compareStrings, getPersonPreference, setPersonPreference } from "./utils.partial";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -69,6 +82,7 @@
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { ContentLibraryItemExperienceLevel, ContentLibraryItemExperienceLevelDescription } from "@Obsidian/Enums/Cms/contentLibraryItemExperienceLevel";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { usePersonPreferences } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { SlidingDateRange, RangeType, calculateSlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
@@ -80,6 +94,11 @@
         filterButtonText: string;
         filter(item: LibraryViewerItemBag): boolean;
     };
+
+    enum DownloadItem {
+        Trending = "Trending",
+        Popular = "Popular"
+    }
 
     const props = defineProps({
         modelValue: {
@@ -93,7 +112,12 @@
         },
         areFiltersAppliedOnClose: {
             type: Boolean as PropType<boolean>,
-            default: true
+            default: true,
+            required: false
+        },
+        contentChannelIdKey: {
+            type: String as PropType<string | null | undefined>,
+            required: false
         }
     });
 
@@ -102,10 +126,7 @@
         (e: "filteredItems", value: LibraryViewerItemBag[]): void
     }>();
 
-    enum DownloadItem {
-        Trending = "Trending",
-        Popular = "Popular"
-    }
+    const preferences = usePersonPreferences().blockPreferences;
 
     const downloadOptions: ListItemBag[] = [
         {
@@ -118,23 +139,16 @@
         },
     ];
 
-    const defaultFilterOption: FilterOptions = {
+    const noFilter: FilterOptions = {
         filterButtonText: "Filter",
-        filter(_item) {
-            return true;
-        }
+        filter: (_) => true
     };
 
     //#region Values
 
     const internalModelValue = useVModelPassthrough(props, "modelValue", emit);
-
-    const pendingFilters = ref<LibraryViewerItemFiltersBag>({
-        mustBePopular: false,
-        mustBeTrending: false
-    });
-
-    const appliedFilterOptions = ref<FilterOptions>(defaultFilterOption);
+    const pendingFilters = ref<LibraryViewerItemFiltersBag>(getFiltersPersonPreference());
+    const appliedFilterOptions = ref<FilterOptions>(noFilter);
 
     //#endregion
 
@@ -143,6 +157,7 @@
     const licenseTypeOptions = computed<ListItemBag[]>(() => {
         const distinctLicenseTypes: Record<string, ListItemBag> = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         for (let licenseType of props.items.filter(item => !!item.licenseType).map(item => item.licenseType!)) {
             if (licenseType.value && !distinctLicenseTypes[licenseType.value]) {
                 distinctLicenseTypes[licenseType.value] = licenseType;
@@ -156,7 +171,9 @@
             DefinedValue.LibraryLicenseTypeOrganizationAttribution.toLowerCase()
         ];
         return Object.values(distinctLicenseTypes).sort((licenseType1, licenseType2) => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const index1 = licenseTypePreferredOrder.indexOf(licenseType1.value!);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const index2 = licenseTypePreferredOrder.indexOf(licenseType2.value!);
 
             if (index1 === -1 && index2 === -1) {
@@ -192,6 +209,7 @@
     const experienceLevelOptions = computed<ListItemBag[]>(() => {
         const distinctExperienceLevels: Record<string, ListItemBag> = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         for (let experienceLevel of props.items.filter(item => !!item.experienceLevel).map(item => item.experienceLevel!)) {
             if (experienceLevel.value && !distinctExperienceLevels[experienceLevel.value]) {
                 distinctExperienceLevels[experienceLevel.value] = experienceLevel;
@@ -217,6 +235,7 @@
     const organizationOptions = computed<ListItemBag[]>(() => {
         const distinctOrganizations: Record<string, ListItemBag> = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         for (let organizationName of props.items.filter(item => !!item.sourcePublisherName).map(item => item.sourcePublisherName!)) {
             if (!distinctOrganizations[organizationName]) {
                 distinctOrganizations[organizationName] = {
@@ -313,32 +332,19 @@
 
     //#region Functions
 
-    /** Gets the license type name for a license type guid. */
-    function getLicenseTypeName(licenseTypeGuid: string | null | undefined): string | null | undefined {
-        return licenseTypeOptions.value.find(o => o.value?.toLowerCase() === licenseTypeGuid?.toLowerCase())?.text;
-    }
-
     /** Emits the `filteredItems` event. */
-    function onFilteredItemsChanged(): void {
+    function emitFilteredItemsChanged(): void {
         emit("filteredItems", props.items.filter(appliedFilterOptions.value.filter));
+
+        // Save the filters person preference.
+        // No need to wait for it to succeed.
+        setFiltersPersonPreference(pendingFilters.value);
+        preferences.save();
     }
 
-    /** Gets the topic name for a topic guid. */
-    function getTopicName(topicGuid: string | null | undefined): string | null | undefined {
-        return topicOptions.value.find(o => o.value?.toLowerCase() === topicGuid?.toLowerCase())?.text;
-    }
-
-    //#endregion
-
-    //#region Event Handlers
-
-    /**
-     * Event handler for the Apply button being clicked.
-     */
-    function onApplyClicked(): void {
+    /** Gets the selected filters as filter options. */
+    function getSelectedFilters(): FilterOptions {
         const selectedFilters: FilterOptions[] = [];
-
-        // Build the filter options.
 
         const experienceLevels = pendingFilters.value.experienceLevels;
         if (experienceLevels?.length) {
@@ -438,11 +444,8 @@
             }
         }
 
-        // Update the `appliedFilterOptions` value with the selected filters.
-        // There is a watcher observing this value. When the value is changed,
-        // the `filteredItems` event is emitted.
         if (selectedFilters.length) {
-            appliedFilterOptions.value = {
+            return {
                 filterButtonText: selectedFilters.length === 1 ? `Filter: ${selectedFilters[0].filterButtonText}` : `Filters Applied: ${selectedFilters.length}`,
                 filter(item) {
                     return selectedFilters.some(f => f.filter(item));
@@ -450,8 +453,55 @@
             };
         }
         else {
-            appliedFilterOptions.value = defaultFilterOption;
+            // No filters are selected.
+            return noFilter;
         }
+    }
+
+    /** Gets the person preference key for the content channel ID key. */
+    function getContentChannelPersonPreferenceKey(key: PersonPreferenceKey): string {
+        return `${props.contentChannelIdKey}-${key}`;
+    }
+
+    /** Gets the filters person preferences. */
+    function getFiltersPersonPreference(): LibraryViewerItemFiltersBag {
+        const key = props.contentChannelIdKey ? getContentChannelPersonPreferenceKey(PersonPreferenceKey.Filters) : PersonPreferenceKey.Filters;
+
+        // Return the filters from the person preferences and fallback to the default filters.
+        return getPersonPreference<LibraryViewerItemFiltersBag>(preferences, key) ?? {
+            mustBePopular: false,
+            mustBeTrending: false
+        };
+    }
+
+    /** Sets the filters from person preferences for the content channel ID key. */
+    function setFiltersPersonPreference(filters: LibraryViewerItemFiltersBag): void {
+        const key = props.contentChannelIdKey ? getContentChannelPersonPreferenceKey(PersonPreferenceKey.Filters) : PersonPreferenceKey.Filters;
+        setPersonPreference<LibraryViewerItemFiltersBag>(preferences, key, filters);
+    }
+
+    /** Gets the license type name for a license type guid. */
+    function getLicenseTypeName(licenseTypeGuid: string | null | undefined): string | null | undefined {
+        return licenseTypeOptions.value.find(o => o.value?.toLowerCase() === licenseTypeGuid?.toLowerCase())?.text;
+    }
+
+    /** Gets the topic name for a topic guid. */
+    function getTopicName(topicGuid: string | null | undefined): string | null | undefined {
+        return topicOptions.value.find(o => o.value?.toLowerCase() === topicGuid?.toLowerCase())?.text;
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the Apply button being clicked.
+     */
+    function onApplyClicked(): void {
+        // Update the `appliedFilterOptions` value with the selected filters.
+        // There is a watcher observing this value. When the value is changed,
+        // the `filteredItems` event is emitted.
+        appliedFilterOptions.value = getSelectedFilters();
     }
 
     /**
@@ -469,7 +519,7 @@
     //#region Watchers
 
     watch(() => [props.items, appliedFilterOptions.value], () => {
-        onFilteredItemsChanged();
+        emitFilteredItemsChanged();
     });
 
     watch(() => internalModelValue.value, (wasOpen, isOpen) => {
@@ -477,9 +527,13 @@
         // AND if applyFiltersOnClose is true,
         // then apply the filters.
         if (!wasOpen && isOpen && props.areFiltersAppliedOnClose) {
-            onApplyClicked();
+            appliedFilterOptions.value = getSelectedFilters();
         }
     });
 
     //#endregion
+
+    onMounted(() => {
+        appliedFilterOptions.value = getSelectedFilters();
+    });
 </script>

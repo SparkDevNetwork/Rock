@@ -25,7 +25,7 @@
 
                 <div class="settings clearfix">
                     <div v-if="showDate" class="createDate">
-                        <DateTimePicker label="Note Created Date" />
+                        <DateTimePicker v-model="createdDateTime" label="Note Created Date" />
                     </div>
 
                     <select v-if="noteTypeItems.length > 1"
@@ -186,6 +186,7 @@
     const noteText = ref(props.modelValue?.text ?? "");
     const isAlert = ref(props.modelValue?.isAlert ?? false);
     const isPrivate = ref(props.modelValue?.isPrivate ?? false);
+    const createdDateTime = ref(props.modelValue?.createdDateTime ?? "");
     const attributes = ref<Record<string, PublicAttributeBag>>({});
     const attributeValues = ref<Record<string, string>>(props.modelValue?.attributeValues ?? {});
 
@@ -409,17 +410,19 @@
         updateRefValue(noteText, props.modelValue?.text ?? "");
         updateRefValue(isAlert, props.modelValue?.isAlert ?? false);
         updateRefValue(isPrivate, props.modelValue?.isPrivate ?? false);
+        updateRefValue(createdDateTime, props.modelValue?.createdDateTime ?? "");
         updateRefValue(attributeValues, props.modelValue?.attributeValues ?? {});
     });
 
     // Watch for changes in the UI and update the model value.
-    watch([noteTypeIdKey, noteText, isAlert, isPrivate, attributeValues], () => {
+    watch([noteTypeIdKey, noteText, isAlert, isPrivate, createdDateTime, attributeValues], () => {
         const newBag: NoteEditBag = {
             ...(props.modelValue ?? {}),
             noteTypeIdKey: noteTypeIdKey.value,
             text: noteText.value,
             isAlert: isAlert.value,
             isPrivate: isPrivate.value,
+            createdDateTime: createdDateTime.value || null,
             attributeValues: attributeValues.value
         };
 

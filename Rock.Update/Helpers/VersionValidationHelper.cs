@@ -156,6 +156,12 @@ namespace Rock.Update.Helpers
             {
                 throw new VersionValidationException( $"Version {targetVersion} requires a Lava Support Level of 'NoLegacy'." );
             }
+
+            var isTargetVersionGreaterThan16 = targetVersion.Major > 1 || targetVersion.Minor > 16;
+            if ( isTargetVersionGreaterThan16 && RockInstanceConfig.LavaEngineName != "Fluid" )
+            {
+                throw new VersionValidationException( $"Version {targetVersion} requires the 'Fluid' Lava Engine Liquid Framework." );
+            }
         }
 
         /// <summary>

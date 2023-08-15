@@ -1,23 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <span class="library-viewer-item-badge-list">
-        <span v-for="item of items" :class="['library-viewer-item-badge', 'badge', theme === 'medium' ? 'library-viewer-item-badge-medium' : '']">{{ item }}</span>
+        <span v-for="item of items" :class="['badge badge-default', theme === 'medium' ? 'font-weight-medium' : '']">{{ item }}</span>
     </span>
 </template>
 
 <style scoped>
-    .library-viewer-item-badge + .library-viewer-item-badge {
-        margin-left: 8px;
-    }
-
-    .library-viewer-item-badge {
-        background: var(--theme-colors-lightest, #FAF7F5);
-        color: var(--theme-colors-dark, #725E4F);
-    }
-
-    .library-viewer-item-badge-medium {
-        background: var(--theme-colors-medium, #A79386);
-        color: var(--theme-colors-lightest, #FAF7F5);
+    .library-viewer-item-badge-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
     }
 </style>
 

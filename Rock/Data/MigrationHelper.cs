@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Rock.Jobs;
 using Rock.Model;
 
 namespace Rock.Data
@@ -5216,29 +5215,6 @@ END
         /// <summary>
         /// Adds the security authentication for rest action.
         /// </summary>
-        /// <remarks>
-        /// This method should not be used for new code, but we have not yet
-        /// deprecated it. Instead use the version that takes a string Guid
-        /// value to identify the rest action. This method will break if we
-        /// change the C# signature of the method which would then cause the
-        /// default security on a new install to not set correctly.
-        /// </remarks>
-        /// <param name="restActionMethod">The rest action method.</param>
-        /// <param name="restActionPath">The rest action path.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="action">The action.</param>
-        /// <param name="allow">if set to <c>true</c> [allow].</param>
-        /// <param name="groupGuid">The group unique identifier.</param>
-        /// <param name="specialRole">The special role.</param>
-        /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForRestAction( string restActionMethod, string restActionPath, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
-        {
-            AddSecurityAuthForEntityBase( "Rock.Model.RestAction", "RestAction", $"{restActionMethod}{restActionPath}", order, action, allow, groupGuid, specialRole, authGuid, "ApiId" );
-        }
-
-        /// <summary>
-        /// Adds the security authentication for rest action.
-        /// </summary>
         /// <param name="restActionGuid">The rest action unique identifier.</param>
         /// <param name="order">The order.</param>
         /// <param name="action">The action.</param>
@@ -5249,6 +5225,36 @@ END
         public void AddSecurityAuthForRestAction( string restActionGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
             AddSecurityAuthForEntityBase( "Rock.Model.RestAction", "RestAction", restActionGuid, order, action, allow, groupGuid, specialRole, authGuid );
+        }
+
+        /// <summary>
+        /// Adds the security authentication for rest action.
+        /// </summary>
+        /// <remarks>
+        /// This method should not be used for new code, and is deprecated.
+        /// This method will break if we change the C# signature of the method
+        /// which would then cause the default security on a new install to not set correctly.
+        /// Instead you should use <see cref="AddSecurityAuthForRestAction(string, int, string, bool, string, SpecialRole, string)"/>,
+        /// which takes a string Guid that represents the Rest Action (the <see cref="Rock.SystemGuid.RestActionGuidAttribute"/>).
+        /// </remarks>
+        /// <param name="restActionMethod">The rest action method.</param>
+        /// <param name="restActionPath">The rest action path.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        [Obsolete( "1.15.2" )]
+        public void AddSecurityAuthForRestAction( string restActionMethod, string restActionPath, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            /*
+             * BC - 08/23
+             * This method can never be removed.  
+             * Old versions of plugins could be referencing this API. 
+             */
+
+            AddSecurityAuthForEntityBase( "Rock.Model.RestAction", "RestAction", $"{restActionMethod}{restActionPath}", order, action, allow, groupGuid, specialRole, authGuid, "ApiId" );
         }
 
         #endregion
@@ -7658,12 +7664,52 @@ END
         /// <summary>
         /// Adds the rest action.
         /// </summary>
+        /// <param name="restActionGuid">The rest action unique identifier.</param>
+        /// <param name="controllerName">Name of the controller.</param>
+        /// <param name="controllerClass">The controller class.</param>
+        public void AddRestAction( string restActionGuid, string controllerName, string controllerClass )
+        {
+            AddRestController( controllerName, controllerClass );
+
+            var sql = string.Format( @"
+    DECLARE @ControllerId int = ( SELECT TOP 1 [Id] FROM [RestController] WHERE [ClassName] = '{0}' )
+    DECLARE @ActionId int = ( SELECT TOP 1 [Id] FROM [RestAction] WHERE [Guid] = '{1}' )
+    IF @ActionId IS NULL
+    BEGIN
+
+	    INSERT INTO [RestAction] ( [ControllerId], [Guid] )
+	    VALUES ( @ControllerId, '{1}' )
+    END
+
+",
+                controllerClass,
+                restActionGuid
+                );
+
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// Adds the rest action.
+        /// </summary>
+        /// <remarks>
+        /// This method should not be used for new code, and is deprecated.
+        /// This method will break if we change the C# signature of the Rest Action.
+        /// Instead you should use <see cref="AddRestAction(string, string, string)" />,
+        /// which takes a string Guid that represents the Rest Action (the <see cref="Rock.SystemGuid.RestActionGuidAttribute"/>).
+        /// </remarks>
         /// <param name="controllerName">Name of the controller.</param>
         /// <param name="controllerClass">The controller class.</param>
         /// <param name="actionMethod">The action method.</param>
         /// <param name="actionPath">The action path.</param>
+        [Obsolete( message: "1.15.2" )]
         public void AddRestAction( string controllerName, string controllerClass, string actionMethod, string actionPath )
         {
+            /*
+             * BC - 08/23
+             * This method can never be removed.  
+             * Old versions of plugins could be referencing this API. 
+             */
             AddRestController( controllerName, controllerClass );
 
             Migration.Sql( string.Format( @"
@@ -8361,12 +8407,21 @@ END
         /// <param name="jobGuid">The GUID of the job</param>
         public void ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid )
         {
-            // note: the cronExpression is chosen at random. It is provided as it is mandatory in the Service Job
+            // note: the cronExpression was chosen at random. It is provided as it is mandatory in the Service Job. Feel free to change it if needed.
             AddPostUpdateServiceJob(
                 name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks - { name }",
                 description: "This job will replace the  WebForms blocks with their Obsidian blocks on all sites, pages, and layouts.",
                 jobType: "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", cronExpression: "0 0 21 1/1 * ? *", guid: jobGuid);
 
+            // Adding the Attributes for the Job in case they happen to not be present in the database before
+
+            // Attribute: Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks: Block Type Guid Replacement Pairs
+            AddOrUpdateEntityAttribute( "Rock.Model.ServiceJob", Rock.SystemGuid.FieldType.KEY_VALUE_LIST, "Class", "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", "Block Type Guid Replacement Pairs", "Block Type Guid Replacement Pairs", "The key-value pairs of replacement BlockType.Guid values, where the key is the existing BlockType.Guid and the value is the new BlockType.Guid. Blocks of BlockType.Guid == key will be replaced by blocks of BlockType.Guid == value in all sites, pages, and layouts.", 1, "", "CDDB8075-E559-499F-B12F-B8DC8CCD73B5", "BlockTypeGuidReplacementPairs" );
+
+            // Attribute: Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks: Migration 
+            AddOrUpdateEntityAttribute( "Rock.Model.ServiceJob", Rock.SystemGuid.FieldType.SINGLE_SELECT, "Class", "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", "Migration Strategy", "Migration Strategy", "Determines if the blocks should be chopped instead of swapped. By default,the old blocks are swapped with the new ones.", 2, "Swap", "FA99E828-2388-4CDF-B69B-DBC36332D6A4", "MigrationStrategy" );
+
+            // Adding the values to the Attributes for the job
             AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "BlockTypeGuidReplacementPairs", SerializeDictionary( blockTypeReplacements ) );
             AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "MigrationStrategy", migrationStrategy );
         }

@@ -46,6 +46,9 @@
     <Content Include="src\Cms\LibraryViewer\itemListSort.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemPreview.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
+    <Content Include="src\Core\binaryFileDetail.obs" />
+    <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
+    <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
     <Content Include="src\Core\categoryDetail.vue" />
     <Content Include="src\Core\categoryDetailCustomSettings.vue" />
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
@@ -98,6 +101,9 @@
     <Content Include="src\Finance\financialBatchDetail.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\editPanel.partial.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\viewPanel.partial.vue" />
+    <Content Include="src\Finance\financialGatewayDetail.obs" />
+    <Content Include="src\Finance\FinancialGatewayDetail\editPanel.partial.obs" />
+    <Content Include="src\Finance\FinancialGatewayDetail\viewPanel.partial.obs" />
     <Content Include="src\Prayer\prayerRequestDetail.obs" />
     <Content Include="src\Prayer\PrayerRequestDetail\editPanel.partial.obs" />
     <Content Include="src\Prayer\PrayerRequestDetail\viewPanel.partial.obs" />
@@ -233,6 +239,7 @@
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
+    <Folder Include="src\Core\BinaryFileDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
@@ -259,6 +266,7 @@
     <Folder Include="src\Event\EventItemDetail\" />
     <Folder Include="src\Finance\BusinessDetail\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
+    <Folder Include="src\Finance\FinancialGatewayDetail\" />
     <Folder Include="src\Prayer\" />
     <Folder Include="src\Prayer\PrayerRequestDetail\" />
     <Folder Include="src\Finance\FinancialPledgeDetail\" />
@@ -362,6 +370,7 @@
     <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
+    <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\types.partial.ts" />
@@ -399,6 +408,7 @@
     <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventItemDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Prayer\PrayerRequestDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Bus\QueueDetail\types.partial.ts" />

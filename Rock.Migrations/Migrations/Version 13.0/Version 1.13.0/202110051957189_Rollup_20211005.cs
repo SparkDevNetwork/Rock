@@ -171,10 +171,10 @@ namespace Rock.Migrations
                 "standard-template.svg",
                 "image/svg+xml" );
 
-            // Configure the new REST API.
-            var prayedApiId = "PrayerRequests^IHttpActionResult Prayed(Guid, Nullable`1[Guid], Boolean)";
-            RockMigrationHelper.AddRestAction( "PrayerRequests", "Rock.Rest.Controllers.PrayerRequestsController", "PUT", prayedApiId );
-            RockMigrationHelper.AddSecurityAuthForRestAction( "PUT", prayedApiId,
+            // Adds the All Authenticated Users -> Edit -> Allow security to the Prayed endpoint.
+            // This references the old Guid that is generated in CreateDatabase. 
+            RockMigrationHelper.AddRestAction( "81913C24-8C7C-4308-BC2D-12759E5F26EE", "PrayerRequests", "Rock.Rest.Controllers.PrayerRequestsController" );
+            RockMigrationHelper.AddSecurityAuthForRestAction( "81913C24-8C7C-4308-BC2D-12759E5F26EE",
                 0,
                 Rock.Security.Authorization.EDIT,
                 true,

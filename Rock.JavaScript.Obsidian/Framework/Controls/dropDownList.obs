@@ -65,9 +65,8 @@
     /** The type definition for a select option, since the ones from the library are wrong. */
     type SelectOption = {
         value?: string;
-
         label: string;
-
+        disabled?: boolean;
         options?: SelectOption[];
     };
 
@@ -170,7 +169,8 @@
             return props.items.map((o): SelectOption => {
                 return {
                     value: o.value ?? "",
-                    label: o.text ?? ""
+                    label: o.text ?? "",
+                    disabled: o.disabled ?? false
                 };
             });
         }
@@ -184,7 +184,8 @@
             if (!o.category) {
                 groupedOptions.push({
                     value: o.value ?? "",
-                    label: o.text ?? ""
+                    label: o.text ?? "",
+                    disabled: o.disabled ?? false
                 });
                 continue;
             }
@@ -196,7 +197,8 @@
             if (matchedGroups.length >= 1 && !!matchedGroups[0].options) {
                 matchedGroups[0].options.push({
                     value: o.value ?? "",
-                    label: o.text ?? ""
+                    label: o.text ?? "",
+                    disabled: o.disabled ?? false
                 });
             }
             else {
@@ -204,7 +206,8 @@
                     label: o.category,
                     options: [{
                         value: o.value ?? "",
-                        label: o.text ?? ""
+                        label: o.text ?? "",
+                        disabled: o.disabled ?? false
                     }]
                 });
             }

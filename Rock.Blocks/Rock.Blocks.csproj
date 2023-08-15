@@ -62,6 +62,7 @@
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Cms\SiteList.cs" />
+    <Compile Include="Core\BinaryFileDetail.cs" />
     <Compile Include="Core\CampusList.cs" />
     <Compile Include="Communication\EmailPreferenceEntry.cs" />
     <Compile Include="Core\Notes.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
+    <Compile Include="Finance\FinancialGatewayDetail.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
     <Compile Include="Tv\AppleTvAppDetail.cs" />

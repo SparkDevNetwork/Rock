@@ -417,6 +417,23 @@ namespace RockWeb.Blocks.Mobile
         }
 
         /// <summary>
+        /// Removes the mobile category prefix.
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <returns>System.String.</returns>
+        private string RemoveMobileCategoryPrefix( string category )
+        {
+            var text = category;
+
+            if ( text.StartsWith( "Mobile >" ) )
+            {
+                text = category.Replace( "Mobile >", string.Empty ).Trim();
+            }
+
+            return text;
+        }
+
+        /// <summary>
         /// Binds the block type repeater.
         /// </summary>
         private void BindBlockTypeRepeater()
@@ -427,7 +444,7 @@ namespace RockWeb.Blocks.Mobile
             // Find all mobile block types and build the component repeater.
             //
             var blockTypes = BlockTypeCache.All()
-                .Where( t => t.Category == ddlBlockTypeCategory.SelectedValue )
+                .Where( t => RemoveMobileCategoryPrefix( t.Category ) == ddlBlockTypeCategory.SelectedValue )
                 .OrderBy( t => t.Name );
 
             foreach ( var blockType in blockTypes )
@@ -516,7 +533,7 @@ namespace RockWeb.Blocks.Mobile
                             {
                                 p.Id,
                                 Name = p.InternalName
-                            });
+                            } );
 
             ddlPageList.DataSource = pageList;
             ddlPageList.DataValueField = "Id";
@@ -653,9 +670,12 @@ namespace RockWeb.Blocks.Mobile
                         }
                     }
 
-                    if ( !categories.Contains( blockType.Category ) )
+                    var category = RemoveMobileCategoryPrefix( blockType.Category );
+
+
+                    if ( !categories.Contains( category ) )
                     {
-                        categories.Add( blockType.Category );
+                        categories.Add( category );
                     }
                 }
                 catch
@@ -666,11 +686,7 @@ namespace RockWeb.Blocks.Mobile
             ddlBlockTypeCategory.Items.Clear();
             foreach ( var c in categories.OrderBy( c => c ) )
             {
-                var text = c;
-                if ( c.StartsWith( "Mobile >" ) )
-                {
-                    text = c.Replace( "Mobile >", string.Empty ).Trim();
-                }
+                var text = RemoveMobileCategoryPrefix( c );
                 ddlBlockTypeCategory.Items.Add( new ListItem( text, c ) );
             }
             ddlBlockTypeCategory.SetValue( selectedCategory );
