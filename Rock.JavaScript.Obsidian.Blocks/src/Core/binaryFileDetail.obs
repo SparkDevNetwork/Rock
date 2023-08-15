@@ -1,0 +1,329 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+
+        <Panel :title="panelName" :headerSecondaryActions="headerSecondaryActions" type="block">
+
+            <template #default>
+                <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
+
+                <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+
+                <ViewPanel v-if="panelMode === DetailPanelMode.View"
+                           v-model="binaryFileViewBag"
+                           :options="options" />
+
+                <EditPanel v-else
+                           v-model="binaryFileEditBag"
+                           :options="options"
+                           :isEditable="isEditable"
+                           @propertyChanged="onPropertyChanged"
+                           @isLabelFileChanged="onIsLabelFileChanged" />
+
+                <Modal v-model="showAuditDetailsModal" title="Audit Details">
+                    <AuditDetail :entityTypeGuid="EntityType.BinaryFile" :entityKey="entityKey" />
+                </Modal>
+
+            </template>
+
+            <template #footerActions>
+                <div v-if="panelMode !== DetailPanelMode.View">
+                    <RockButton v-if="isEditable"
+                                btnType="primary"
+                                :disabled="isSaving"
+                                @click="onSaveClick">Save</RockButton>
+                    <RockButton btnType="link" @click="onCancelEdit">{{ cancelButtonText }}</RockButton>
+                </div>
+                <div v-else>
+                    <RockButton v-if="isEditable"
+                                btnType="primary"
+                                @click="onEdit">Edit</RockButton>
+                </div>
+            </template>
+
+            <template #footerSecondaryActions v-if="panelMode !== DetailPanelMode.View">
+                <RockButton v-if="isLabelFile" btnType="default" @click="onEditLabelClick">Edit Label Contents</RockButton>
+                <RockButton v-if="showWorkflowButton" btnType="default" @click="onRerunWorkflowClick">{{ workflowButtonText }}</RockButton>
+            </template>
+        </Panel>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import EditPanel from "./BinaryFileDetail/editPanel.partial.obs";
+    import ViewPanel from "./BinaryFileDetail/viewPanel.partial.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { getSecurityGrant, provideSecurityGrant, onConfigurationValuesChanged, useReloadBlock, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { NavigationUrlKey } from "./BinaryFileDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { BinaryFileBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileDetail/binaryFileBag";
+    import { BinaryFileDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileDetail/binaryFileDetailOptionsBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+
+    const config = useConfigurationValues<DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const isSaving = ref(false);
+    const isNavigating = ref(false);
+    const submitForm = ref(false);
+    const beginRerunWorkflow = ref(false);
+    const showAuditDetailsModal = ref(false);
+    const resetKey = ref("");
+
+    const binaryFileViewBag = ref(config.entity);
+    const binaryFileEditBag = ref(config.entity ?? {} as BinaryFileBag);
+    const workflowButtonText = ref(binaryFileEditBag.value.workflowButtonText ?? "");
+    const isLabelFile = ref(binaryFileEditBag.value.isLabelFile);
+    const showWorkflowButton = ref(binaryFileEditBag.value.showWorkflowButton);
+    const entityKey = ref(binaryFileEditBag.value.idKey ?? "");
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+
+    // The properties that are being edited in the UI. This is used to
+    // inform the server which incoming values have valid data in them.
+    const validProperties = [
+        "attributeValues",
+        "binaryFileTypeId",
+        "description",
+        "document",
+        "fileName",
+        "mimeType"
+    ];
+
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(binaryFileEditBag, validProperties, invokeBlockAction), undefined, true);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const cancelButtonText = computed((): string => {
+        return config.isEditable === true ? "Cancel" : "Close";
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        if (config.isEditable === true && panelMode.value !== DetailPanelMode.View) {
+            const binaryFileTypeName = binaryFileEditBag.value?.binaryFileType?.text ?? "Binary File";
+            return panelMode.value == DetailPanelMode.Add ? `Add ${binaryFileTypeName}` : `Edit ${binaryFileTypeName}`;
+        }
+        else {
+            return "View Binary File";
+        }
+    });
+
+    const options = computed((): BinaryFileDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    const headerSecondaryActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [];
+
+        if (binaryFileEditBag.value.idKey) {
+            actions.push({
+                type: "default",
+                title: "Audit Details",
+                handler: onAuditClick
+            });
+        }
+
+        return actions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    const onAuditClick = (): void => {
+        showAuditDetailsModal.value = true;
+    };
+
+    /**
+     * Event handler for the ReRunWorkflow button being clicked.
+     * Sends a request to the server to re run the attached workflow run when a file is uploaded.
+     *
+     */
+    async function reRunWorkflow(): Promise<void> {
+        if (isEditable.value === true && binaryFileEditBag.value.file?.value) {
+
+            const result = await invokeBlockAction<BinaryFileBag>("RerunWorkflow", {
+                bag: binaryFileEditBag.value
+            });
+
+            if (result.isSuccess && result.data) {
+                binaryFileEditBag.value = result.data;
+            }
+        }
+    }
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Redirects to parent page after saving changes.
+     *
+     */
+    async function onCancelEdit(): Promise<void> {
+        isNavigating.value = true;
+
+        await invokeBlockAction<string>("RemoveOrphanedFiles", {
+            orphanedBinaryFileIdList: binaryFileEditBag.value.orphanedBinaryFileIdList ?? []
+        });
+
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+        }
+        else {
+            isNavigating.value = false;
+        }
+    }
+
+    /**
+     * Event handler for the the file isLabelFile status change.
+     * If true will display the Edit Label File button.
+     */
+    function onIsLabelFileChanged(isLabelFileValue: boolean): void {
+        isLabelFile.value = isLabelFileValue;
+    }
+
+    /**
+     * Event handler for when a value has changed that has an associated
+     * C# property name. This is used to detect changes to values that
+     * might cause qualified attributes to either show up or not show up.
+     *
+     * @param propertyName The name of the C# property that was changed.
+     */
+    function onPropertyChanged(propertyName: string): void {
+        // If we don't have any qualified attribute properties or this property
+        // is not one of them then do nothing.
+        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+            return;
+        }
+
+        refreshAttributesDebounce();
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     */
+    async function onEdit(): Promise<void> {
+        const result = await invokeBlockAction<DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag>>("Edit", {
+            key: binaryFileViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.entity) {
+            binaryFileEditBag.value = result.data.entity;
+
+            panelMode.value = DetailPanelMode.Edit;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<void> {
+
+        if (beginRerunWorkflow.value) {
+            await reRunWorkflow();
+            beginRerunWorkflow.value = false;
+        }
+        else {
+            errorMessage.value = "";
+            isSaving.value = true;
+
+            const data: DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag> = {
+                entity: binaryFileEditBag.value,
+                isEditable: true,
+                validProperties: validProperties
+            };
+
+            const result = await invokeBlockAction<string>("Save", {
+                box: data
+            });
+
+            if (result.isSuccess && result.data) {
+                window.location.href = makeUrlRedirectSafe(result.data);
+            }
+            else {
+                isSaving.value = false;
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to save binary file.";
+            }
+        }
+    }
+
+    /**
+     * Event handler for the Edit Label button being clicked.
+     * Redirects the user to the Edit Label page is the page has been configured via the block settings.
+     */
+    function onEditLabelClick(): void {
+        if (isEditable.value === true && binaryFileEditBag.value.file?.value) {
+            if (config.navigationUrls?.[NavigationUrlKey.EditLabelPage]) {
+                window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.EditLabelPage]);
+            }
+        }
+    }
+
+    /**
+     * Event handler for the Save button being clicked.
+     * Alerts the form to begin validation and submit form if no errors are found
+     */
+    const onSaveClick = (): void => {
+        beginRerunWorkflow.value = false;
+        submitForm.value = true;
+    };
+
+    /**
+     * Event handler for the ReRun Workflow button being clicked.
+     * Alerts the form to begin validation and sends a request to the server to re-run the assigned FileUploaded workflow.
+     */
+    const onRerunWorkflowClick = (): void => {
+        beginRerunWorkflow.value = true;
+        submitForm.value = true;
+    };
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified binary file could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        binaryFileEditBag.value = config.entity;
+        panelMode.value = DetailPanelMode.Add;
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

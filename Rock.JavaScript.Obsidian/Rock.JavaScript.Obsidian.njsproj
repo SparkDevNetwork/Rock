@@ -204,6 +204,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\Notes\" />
@@ -755,6 +756,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetTypeDetail\snippetTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\systemPhoneNumberBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\systemPhoneNumberDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
