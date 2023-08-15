@@ -359,7 +359,7 @@ namespace Rock.Mobile
             }
 
             // Run Lava on CSS to enable color utilities
-            cssStyles = cssStyles.ResolveMergeFields( Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } ) );
+            cssStyles = cssStyles.ResolveMergeFields( Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() ) );
 
             // Get the Rock organization time zone. If not found back to the
             // OS time zone. If not found just use Greenwich.

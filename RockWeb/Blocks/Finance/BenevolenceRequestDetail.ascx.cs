@@ -1627,7 +1627,7 @@ namespace RockWeb.Blocks.Finance
                 var benevolenceTypeTemplate = benevolenceRequest.BenevolenceType.RequestLavaTemplate;
                 if ( benevolenceTypeTemplate.IsNotNullOrWhiteSpace() )
                 {
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions() );
                     mergeFields.Add( "BenevolenceRequest", benevolenceRequest );
                     lViewBenevolenceTypeLava.Text = benevolenceTypeTemplate.ResolveMergeFields( mergeFields );
                 }

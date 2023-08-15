@@ -992,7 +992,7 @@ namespace Rock.Rest.v2
 
                 foreach ( var account in accountsList )
                 {
-                    var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions() );
                     mergeFields.Add( "Account", account );
                     var accountAmountLabel = accountHeaderTemplate.ResolveMergeFields( mergeFields );
                     items.Add(new CampusAccountAmountPickerGetAccountsResultItemBag

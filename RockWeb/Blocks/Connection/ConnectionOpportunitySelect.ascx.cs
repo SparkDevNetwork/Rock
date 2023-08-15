@@ -307,7 +307,7 @@ namespace RockWeb.Blocks.Connection
         {
             var template = GetAttributeValue( AttributeKey.OpportunitySummaryTemplate );
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
 
             mergeFields.Add( "OpportunitySummary", opportunitySummary );
 

@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Fundraising
                 RockPage.Header.Title = group.GetAttributeValue( "OpportunityTitle" );
             }
 
-            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
             mergeFields.Add( "Block", this.BlockCache );
             mergeFields.Add( "Group", group );
 

@@ -377,11 +377,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
                 var lavaTemplate = CreateLavaTemplate();
 
-                var commonMergeFields = new CommonMergeFieldsOptions
-                {
-                    GetLegacyGlobalMergeFields = false
-                };
-
+                var commonMergeFields = new CommonMergeFieldsOptions();
                 var mergeFields = RequestContext.GetCommonMergeFields( null, commonMergeFields );
                 mergeFields.Add( "Items", occurrences.ToList() );
 

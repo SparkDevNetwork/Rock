@@ -933,7 +933,7 @@ mission. We are so grateful for your commitment.</p>
                 throw;
             }
 
-            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
             var finishLavaTemplate = this.GetAttributeValue( AttributeKey.FinishLavaTemplate );
 
             // re-fetch financialScheduledTransaction with a new RockContext from database to ensure that lazy loaded fields will be populated

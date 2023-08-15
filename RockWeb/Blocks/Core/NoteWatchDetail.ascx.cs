@@ -501,7 +501,7 @@ namespace RockWeb.Blocks.Core
             lWatchedNote.Visible = false;
             if ( noteWatch.Note != null )
             {
-                var mergefields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var mergefields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions() );
                 mergefields.Add( "Note", noteWatch.Note );
                 var lavaTemplate = this.GetAttributeValue( "WatchedNoteLavaTemplate" );
 

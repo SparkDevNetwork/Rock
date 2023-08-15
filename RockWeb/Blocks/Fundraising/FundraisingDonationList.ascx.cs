@@ -258,7 +258,6 @@ namespace RockWeb.Blocks.Fundraising
                 // Get the merge fields to be available.
                 //
                 var options = new CommonMergeFieldsOptions();
-                options.GetLegacyGlobalMergeFields = false;
                 var mergeFields = LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson, options );
                 mergeFields.AddOrReplace( "Group", item.GetPropertyValue( "Group" ) );
                 mergeFields.AddOrReplace( "Donor", item.GetPropertyValue( "Donor" ) );

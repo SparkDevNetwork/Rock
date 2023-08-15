@@ -590,14 +590,6 @@ namespace Rock
                     mergeObjects = new Dictionary<string, object>();
                 }
 
-                if ( GlobalAttributesCache.Get().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
-                {
-                    if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
-                    {
-                        Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ), System.Web.HttpContext.Current );
-                    }
-                }
-
                 var context = LavaService.NewRenderContext( mergeObjects );
 
                 if ( enabledLavaCommands != null )

@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.CheckIn
             var personSelectLavaTemplate = CurrentCheckInState.CheckInType.PersonSelectAdditionalInfoLavaTemplate;
             if ( personSelectLavaTemplate.IsNotNullOrWhiteSpace() )
             {
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions() );
                 mergeFields.Add( "Person", person );
                 buttonText += string.Format( "<br /><span class='text-light'>{0}</span>", personSelectLavaTemplate.ResolveMergeFields( mergeFields ) );
             }
