@@ -65,9 +65,8 @@
     /** The type definition for a select option, since the ones from the library are wrong. */
     type SelectOption = {
         value?: string;
-
         label: string;
-
+        disabled?: boolean;
         options?: SelectOption[];
     };
 
