@@ -174,6 +174,15 @@ namespace Rock.Blocks.Event
 
         #endregion Keys
 
+        #region Properties
+
+        /// <summary>
+        /// A diagnostic collection of missing fields, grouped by form ID.
+        /// </summary>
+        public Dictionary<int, Dictionary<int, string>> MissingFieldsByFormId { get; set; }
+
+        #endregion Properties
+
         #region Obsidian Block Type Overrides
 
         /// <inheritdoc/>
@@ -718,6 +727,36 @@ namespace Rock.Blocks.Event
         /// <exception cref="Exception">There was a problem with the payment</exception>
         private Registration SubmitRegistration( RockContext rockContext, RegistrationContext context, RegistrationEntryBlockArgs args, out string errorMessage )
         {
+            /*
+                8/15/2023 - JPH
+
+                In order to successfully save the registration form values that were provided by the registrar, we must
+                have each [RegistrationTemplateForm].[Fields] collection loaded into memory below. Several individuals have
+                reported seeing missing registrant data within completed registrations, so it's possible that these Fields
+                collections are somehow empty.
+
+                The TryLoadMissingFields() method is a failsafe to ensure we have the data we need to properly save the
+                registration. This method will:
+                    1) Attempt to load any missing Fields collections;
+                    2) Return a list of any Form IDs that were actually missing Fields so we can log them to prove that
+                       this was a likely culprit for failed, past registration attempts (and so we can know to look into
+                       the issue further from this angle).
+
+                Reason: Registration entries are sometimes missing registration form data.
+                https://github.com/SparkDevNetwork/Rock/issues/5091
+             */
+            var logInstanceOrTemplateName = context?.RegistrationSettings?.Name;
+            var logCurrentPersonDetails = $"Current Person Name: {this.RequestContext.CurrentPerson?.FullName} (Person ID: {this.RequestContext.CurrentPerson?.Id});";
+            var logMsgPrefix = $"Obsidian{( logInstanceOrTemplateName.IsNotNullOrWhiteSpace() ? $@" ""{logInstanceOrTemplateName}""" : string.Empty )} Registration; {logCurrentPersonDetails}{Environment.NewLine}";
+
+            var ( wereFieldsMissing, missingFieldsDetails ) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( context?.RegistrationSettings?.Forms );
+            if ( wereFieldsMissing )
+            {
+                var logMissingFieldsMsg = $"{logMsgPrefix}RegistrationTemplateForm(s) missing Fields data when trying to save Registration.{Environment.NewLine}{missingFieldsDetails}";
+
+                ExceptionLogService.LogException( new RegistrationTemplateFormFieldException( logMissingFieldsMsg ) );
+            }
+
             errorMessage = string.Empty;
             var currentPerson = GetCurrentPerson();
 
@@ -975,6 +1014,8 @@ namespace Rock.Blocks.Event
                     var forceWaitlist = context.SpotsRemaining < 1 && ( isNewRegistration == true || registrantInfo.IsOnWaitList == true );
                     bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
+                    MissingFieldsByFormId = new Dictionary<int, Dictionary<int, string>>();
+
                     UpsertRegistrant(
                         rockContext,
                         context,
@@ -990,6 +1031,37 @@ namespace Rock.Blocks.Event
                         postSaveActions );
 
                     index++;
+
+                    if ( MissingFieldsByFormId?.Any() == true )
+                    {
+                        /*
+                            8/15/2023 - JPH
+
+                            Several individuals have reported seeing missing registrant data within completed registrations. This registrant
+                            is missing required, non-conditional Field value(s) that should have been enforced by the UI. Log an exception so
+                            we know which values were missing during the saving of this registrant's data (and so we can know to look into
+                            the issue further from this angle).
+
+                            Reason: Registration entries are sometimes missing registration form data.
+                            https://github.com/SparkDevNetwork/Rock/issues/5091
+                         */
+                        var logAllMissingFieldsSb = new StringBuilder();
+                        logAllMissingFieldsSb.AppendLine( $"{logMsgPrefix}Registrant {index} of {args.Registrants.Count}: The following required (non-conditional) Field values were missing:" );
+
+                        foreach ( var missingFormFields in MissingFieldsByFormId )
+                        {
+                            var logMissingFormFieldsSb = new StringBuilder( $"[Form ID: {missingFormFields.Key} -" );
+
+                            foreach ( var missingField in missingFormFields.Value )
+                            {
+                                logMissingFormFieldsSb.Append( $" {missingField.Value} (Field ID: {missingField.Key});" );
+                            }
+
+                            logAllMissingFieldsSb.AppendLine( $"{logMissingFormFieldsSb}]" );
+                        }
+
+                        ExceptionLogService.LogException( new RegistrationTemplateFormFieldException( logAllMissingFieldsSb.ToString() ) );
+                    }
                 }
 
                 rockContext.SaveChanges();
@@ -1656,6 +1728,44 @@ namespace Rock.Blocks.Event
             var birthday = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerBag>().ToDateTime();
             var mobilePhone = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
 
+            /*
+                8/15/2023 - JPH
+
+                Several individuals have reported seeing missing registrant data within completed registrations. Check
+                each person field type to see if it was required, non-conditional & missing, so we know whether to look
+                into the issue further from this angle.
+
+                Reason: Registration entries are sometimes missing registration form data.
+                https://github.com/SparkDevNetwork/Rock/issues/5091
+            */
+            if ( MissingFieldsByFormId != null )
+            {
+                void NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType personFieldType, object fieldValue )
+                {
+                    var field = context.RegistrationSettings
+                        ?.Forms
+                        ?.SelectMany( f => f.Fields
+                            .Where( ff =>
+                                ff.FieldSource == RegistrationFieldSource.PersonField
+                                && ff.PersonFieldType == personFieldType
+                            )
+                        ).FirstOrDefault();
+
+                    if ( field == null )
+                    {
+                        return;
+                    }
+
+                    field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
+                }
+
+                NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType.FirstName, firstName );
+                NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType.LastName, lastName );
+                NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType.Email, email );
+                NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType.Birthdate, birthday );
+                NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType.MobilePhone, mobilePhone );
+            }
+
             registrant = context.Registration.Registrants.FirstOrDefault( r => r.Guid == registrantInfo.Guid );
 
             if ( registrant != null )
@@ -1943,6 +2053,8 @@ namespace Rock.Blocks.Event
                             }
                     }
                 }
+
+                field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
             }
 
             return (campusId, location, updateExistingCampus);
@@ -2000,6 +2112,8 @@ namespace Rock.Blocks.Event
                         }
                     }
                 }
+
+                field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
             }
 
             return isChanged;
@@ -2317,6 +2431,8 @@ namespace Rock.Blocks.Event
                     isChanged = true;
                     History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
                 }
+
+                field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, newValue );
             }
 
             return isChanged;
