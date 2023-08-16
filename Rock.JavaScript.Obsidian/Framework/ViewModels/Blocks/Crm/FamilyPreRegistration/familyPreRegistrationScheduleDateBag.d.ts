@@ -28,6 +28,9 @@ export type FamilyPreRegistrationScheduleDateBag = {
     /** Gets or sets the category for this item. */
     category?: string | null;
 
+    /** Gets or sets disabled for this item. */
+    disabled?: boolean | null;
+
     /** The schedule times associated with this schedule date. */
     scheduleTimes?: ListItemBag[] | null;
 

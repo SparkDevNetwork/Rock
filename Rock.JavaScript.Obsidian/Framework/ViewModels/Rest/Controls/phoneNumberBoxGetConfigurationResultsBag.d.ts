@@ -30,4 +30,6 @@ export type PhoneNumberBoxGetConfigurationResultsBag = {
 
     /** The list of validation/formatting rules for each country code */
     rules?: Record<string, PhoneNumberCountryCodeRulesConfigurationBag[]> | null;
+
+    smsOptInText?: string | null;
 };

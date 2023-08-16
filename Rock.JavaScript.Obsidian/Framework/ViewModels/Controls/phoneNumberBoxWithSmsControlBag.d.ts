@@ -21,6 +21,14 @@
 // </copyright>
 //
 
-/** The Site List Options Bag */
-export type SiteListOptionsBag = {
+/** Address Control View Model */
+export type PhoneNumberBoxWithSmsControlBag = {
+    /** Gets or sets the country code. */
+    countryCode?: string | null;
+
+    /** Gets or sets a value indicating whether this instance is messaging enbabled. */
+    isMessagingEnbabled: boolean;
+
+    /** Gets or sets the numbers. */
+    number?: string | null;
 };

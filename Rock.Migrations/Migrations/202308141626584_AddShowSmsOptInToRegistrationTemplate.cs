@@ -14,29 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System.Collections.Generic;
-using Rock.ViewModels.Utility;
-
-namespace Rock.ViewModels.Rest.Controls
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// The results from the GetConfiguration API action of the PhoneNumberBox control.
+    ///
     /// </summary>
-    public class PhoneNumberBoxGetConfigurationResultsBag
+    public partial class AddShowSmsOptInToRegistrationTemplate : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// The default country code
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        public string DefaultCountryCode { get; set; }
-
+        public override void Up()
+        {
+            AddColumn("dbo.RegistrationTemplate", "ShowSmsOptIn", c => c.Boolean(nullable: false));
+        }
+        
         /// <summary>
-        /// The list of validation/formatting rules for each country code
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        public Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>> Rules { get; set; }
-
-        //public bool ShowSmsOptIn { get; set; } = false;
-
-        public string SmsOptInText { get; set; } = string.Empty;
+        public override void Down()
+        {
+            DropColumn("dbo.RegistrationTemplate", "ShowSmsOptIn");
+        }
     }
 }

@@ -15,28 +15,37 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Rest.Controls
+namespace Rock.ViewModels.Controls
 {
     /// <summary>
-    /// The results from the GetConfiguration API action of the PhoneNumberBox control.
+    /// Address Control View Model
     /// </summary>
-    public class PhoneNumberBoxGetConfigurationResultsBag
+    public sealed class PhoneNumberBoxWithSmsControlBag : IViewModel
     {
         /// <summary>
-        /// The default country code
+        /// Gets or sets the numbers.
         /// </summary>
-        public string DefaultCountryCode { get; set; }
+        /// <value>
+        /// The numbers.
+        /// </value>
+        public string Number { get; set; }
 
         /// <summary>
-        /// The list of validation/formatting rules for each country code
+        /// Gets or sets a value indicating whether this instance is messaging enbabled.
         /// </summary>
-        public Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>> Rules { get; set; }
+        /// <value>
+        ///   <c>true</c> if this instance is messaging enbabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsMessagingEnbabled { get; set; }
 
-        //public bool ShowSmsOptIn { get; set; } = false;
-
-        public string SmsOptInText { get; set; } = string.Empty;
+        /// <summary>
+        /// Gets or sets the country code.
+        /// </summary>
+        /// <value>
+        /// The country code.
+        /// </value>
+        public string CountryCode { get; set; }
     }
 }

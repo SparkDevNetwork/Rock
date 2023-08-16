@@ -25,11 +25,13 @@ import { FinancialBatchAccountTotalsBag } from "@Obsidian/ViewModels/Blocks/Fina
 import { FinancialBatchCurrencyTotalsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchCurrencyTotalsBag";
 
 export type FinancialBatchDetailOptionsBag = {
+    /** Gets or sets the accounts. */
     accounts?: FinancialBatchAccountTotalsBag[] | null;
 
     /** The message to be shown on the frontend if the batch is automated. */
     automatedToolTip?: string | null;
 
+    /** Gets or sets the currency types. */
     currencyTypes?: FinancialBatchCurrencyTotalsBag[] | null;
 
     /** The message to be displayed if the batch is not editable. */
@@ -45,7 +47,9 @@ export type FinancialBatchDetailOptionsBag = {
     /** The flag which the frontend should use to determine if the status can be edited */
     isStatusChangeDisabled: boolean;
 
+    /** Gets or sets the transaction amount. */
     transactionAmount: number;
 
+    /** Gets or sets the transaction item count. */
     transactionItemCount: number;
 };

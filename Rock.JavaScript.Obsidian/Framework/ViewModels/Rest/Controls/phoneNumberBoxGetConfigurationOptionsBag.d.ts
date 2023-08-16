@@ -21,6 +21,6 @@
 // </copyright>
 //
 
-/** The Site List Options Bag */
-export type SiteListOptionsBag = {
+export type PhoneNumberBoxGetConfigurationOptionsBag = {
+    showSmsOptIn: boolean;
 };
