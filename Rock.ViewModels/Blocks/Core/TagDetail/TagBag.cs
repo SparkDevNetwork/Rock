@@ -77,5 +77,13 @@ namespace Rock.ViewModels.Blocks.Core.TagDetail
         /// Gets or sets the owner person alias.
         /// </summary>
         public ListItemBag OwnerPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current user has Administrate Authorization.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can administrate; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanAdministrate { get; set; }
     }
 }

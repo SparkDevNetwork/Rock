@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a particular note type." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -54,6 +54,7 @@ namespace Rock.Blocks.Core
         private static class PageParameterKey
         {
             public const string NoteTypeId = "NoteTypeId";
+            public const string EntityTypeId = "EntityTypeId";
         }
 
         private static class NavigationUrlKey
@@ -127,6 +128,11 @@ namespace Rock.Blocks.Core
                 return;
             }
 
+            if ( entity.Id == 0 )
+            {
+                entity.FormatType = Enums.Core.NoteFormatType.Structured;
+            }
+
             var isViewable = entity.IsAuthorized(Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
@@ -150,7 +156,7 @@ namespace Rock.Blocks.Core
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity );
+                    box.Entity = GetEntityBagForEdit( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -181,14 +187,15 @@ namespace Rock.Blocks.Core
                 AutoWatchAuthors = entity.AutoWatchAuthors,
                 BinaryFileType = entity.BinaryFileType.ToListItemBag(),
                 Color = entity.Color,
-                EntityType = entity.EntityType.ToListItemBag(),
+                EntityType = new ViewModels.Utility.ListItemBag() { Text = entity.EntityType?.FriendlyName, Value = entity.EntityType?.Guid.ToString() },
                 FormatType = entity.FormatType,
                 IconCssClass = entity.IconCssClass,
                 IsMentionEnabled = entity.IsMentionEnabled,
                 IsSystem = entity.IsSystem,
                 MaxReplyDepth = entity.MaxReplyDepth,
                 Name = entity.Name,
-                UserSelectable = entity.UserSelectable
+                UserSelectable = entity.UserSelectable,
+                ShowEntityTypePicker = true
             };
         }
 
@@ -216,7 +223,7 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="NoteTypeBag"/> that represents the entity.</returns>
-        private NoteTypeBag GetEntityBagForEdit( NoteType entity )
+        private NoteTypeBag GetEntityBagForEdit( NoteType entity, RockContext rockContext )
         {
             if ( entity == null )
             {
@@ -226,6 +233,35 @@ namespace Rock.Blocks.Core
             var bag = GetCommonEntityBag( entity );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+
+            int? noteTypeId = this.PageParameter( PageParameterKey.NoteTypeId ).AsIntegerOrNull();
+            if ( noteTypeId.HasValue )
+            {
+                int? entityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsIntegerOrNull();
+
+                if ( entityTypeId.HasValue )
+                {
+                    var entityType = EntityTypeCache.Get( entityTypeId.Value );
+                    bag.EntityType = new ViewModels.Utility.ListItemBag() { Text = entityType?.FriendlyName, Value = entityType?.Guid.ToString() };
+                    bag.ShowEntityTypePicker = false;
+                }
+            }
+
+            if ( entity.IsSystem )
+            {
+                bag.ShowEntityTypePicker = false;
+            }
+            else
+            {
+                if ( entity.Id > 0 )
+                {
+                    bool hasNotes = new NoteService( rockContext ).Queryable().Any( a => a.NoteTypeId == entity.Id );
+                    if ( hasNotes )
+                    {
+                        bag.ShowEntityTypePicker = true;
+                    }
+                }
+            }
 
             return bag;
         }
@@ -413,7 +449,7 @@ namespace Rock.Blocks.Core
 
                 var box = new DetailBlockBox<NoteTypeBag, NoteTypeDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 return ActionOk( box );
@@ -535,7 +571,7 @@ namespace Rock.Blocks.Core
 
                 var refreshedBox = new DetailBlockBox<NoteTypeBag, NoteTypeDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();

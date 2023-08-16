@@ -74,6 +74,9 @@ export type NoteTypeBag = {
     /** Gets or sets the Name of the NoteType. This property is required. */
     name?: string | null;
 
+    /** Gets or sets a value indicating whether to show the entity type picker to allow user selection. */
+    showEntityTypePicker: boolean;
+
     /** Gets or sets a value indicating whether the type is user selectable. */
     userSelectable: boolean;
 };

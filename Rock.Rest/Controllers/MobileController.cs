@@ -390,6 +390,14 @@ namespace Rock.Rest.Controllers
                 {
                     foreach ( var mobileSession in sessions )
                     {
+                        // Skip any invalid Guids since the session record is
+                        // created with a direct SQL insert which bypasses the
+                        // normal validation logic.
+                        if ( mobileSession.Guid == Guid.Empty )
+                        {
+                            continue;
+                        }
+
                         var interactionGuids = mobileSession.Interactions.Select( i => i.Guid ).ToList();
                         var existingInteractionGuids = interactionService.Queryable()
                             .Where( i => interactionGuids.Contains( i.Guid ) )

@@ -32,6 +32,9 @@ export type EventCalendarBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** Gets or sets a value indicating whether the current user has Administrate Authorization. */
+    canAdministrate: boolean;
+
     /** Gets or sets the content channels. */
     contentChannels?: ListItemBag[] | null;
 

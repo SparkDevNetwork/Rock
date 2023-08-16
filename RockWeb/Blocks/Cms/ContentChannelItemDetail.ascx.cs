@@ -1321,7 +1321,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     pnlStatus.Visible = true;
 
-                    PendingCss = contentItem.Status == ContentChannelItemStatus.PendingApproval ? "btn-default active" : "btn-default";
+                    PendingCss = contentItem.Status == ContentChannelItemStatus.PendingApproval ? "btn-warning active" : "btn-default";
                     ApprovedCss = contentItem.Status == ContentChannelItemStatus.Approved ? "btn-success active" : "btn-default";
                     DeniedCss = contentItem.Status == ContentChannelItemStatus.Denied ? "btn-danger active" : "btn-default";
                 }

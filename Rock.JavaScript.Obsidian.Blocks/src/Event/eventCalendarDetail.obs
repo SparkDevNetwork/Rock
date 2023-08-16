@@ -13,10 +13,10 @@
                  :entityTypeName="panelName"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
-                 :isEditVisible="isEditable"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
+                 :isDeleteVisible="canAdministrate"
+                 :isEditVisible="canAdministrate"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="!canAdministrate"
                  :headerActions="headerActions"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -80,6 +80,10 @@
     // #endregion
 
     // #region Computed Values
+
+    const canAdministrate = computed((): boolean => {
+        return eventCalendarViewBag.value?.canAdministrate === true;
+    });
 
     /**
      * The entity name to display in the block panel.

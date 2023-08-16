@@ -56,6 +56,9 @@
     <Content Include="src\Core\followingEventTypeDetail.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\interactionChannelDetail.obs" />
+    <Content Include="src\Core\InteractionChannelDetail\editPanel.partial.obs" />
+    <Content Include="src\Core\InteractionChannelDetail\viewPanel.partial.obs" />
     <Content Include="src\Core\suggestionDetail.obs" />
     <Content Include="src\Core\SuggestionDetail\editPanel.partial.obs" />
     <Content Include="src\Core\scheduleDetail.obs" />
@@ -243,6 +246,7 @@
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
+    <Folder Include="src\Core\InteractionChannelDetail\" />
     <Folder Include="src\Core\SuggestionDetail\" />
     <Folder Include="src\Core\ScheduleDetail\" />
     <Folder Include="src\Core\TaggedItemDetail\" />
@@ -377,6 +381,7 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SuggestionDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\ScheduleDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\TaggedItemDetail\types.partial.ts" />

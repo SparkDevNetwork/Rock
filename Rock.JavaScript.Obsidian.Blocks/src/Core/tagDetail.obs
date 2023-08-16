@@ -101,7 +101,7 @@
     });
 
     const isSecurityVisible = computed((): boolean => {
-        return !tagViewBag.value?.ownerPersonAlias?.value;
+        return !tagViewBag.value?.ownerPersonAlias?.value && tagViewBag.value?.canAdministrate === true;
     });
 
     /**

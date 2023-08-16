@@ -916,6 +916,13 @@ namespace Rock.UI {
                 PageId: (Rock as any).settings.get("pageId")
             }
 
+            if (typeof navigator.sendBeacon !== "undefined" && !async) {
+                var beaconData = new Blob([JSON.stringify(data)], { type: 'application/json; charset=UTF-8' });
+
+                navigator.sendBeacon("/api/MediaElements/WatchInteraction", beaconData);
+                return;
+            }
+
             // Initialize the API request.
             const xmlRequest = new XMLHttpRequest();
             const self = this;

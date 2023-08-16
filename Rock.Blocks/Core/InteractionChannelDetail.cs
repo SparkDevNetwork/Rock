@@ -24,43 +24,85 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Core.TagDetail;
-using Rock.ViewModels.Utility;
+using Rock.ViewModels.Blocks.Core.InteractionChannelDetail;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Core
 {
     /// <summary>
-    /// Displays the details of a particular tag.
+    /// Displays the details of a particular interaction channel.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
-    [DisplayName( "Tag Detail" )]
-    [Category( "Core" )]
-    [Description( "Displays the details of a particular tag." )]
+    [DisplayName( "Interaction Channel Detail" )]
+    [Category( "Reporting" )]
+    [Description( "Displays the details of a particular interaction channel." )]
     [IconCssClass( "fa fa-question" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
+    [CodeEditorField( "Default Template",
+        Key = AttributeKey.DefaultTemplate,
+        Description = "Lava template to use to display content",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = false,
+        DefaultValue = @"
+<div class='row'>
+    {% if InteractionChannel.Name != '' %}
+        <div class='col-md-6'>
+            <dl><dt>Name</dt><dd>{{ InteractionChannel.Name }}<dd/></dl>
+        </div>
+    {% endif %}
+    {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}
+        <div class='col-md-6'>
+            <dl><dt>Medium</dt><dd>{{ InteractionChannel.ChannelTypeMediumValue.Value }}<dd/></dl>
+        </div>
+    {% endif %}
+    {% if InteractionChannel.EngagementStrength != null and InteractionChannel.EngagementStrength != '' %}
+      <div class='col-md-6'>
+          <dl><dt>Engagement Strength</dt><dd>{{ InteractionChannel.EngagementStrength }}<dd/></dl>
+       </div>
+    {% endif %}
+    {% if InteractionChannel.RetentionDuration != null %}
+        <div class='col-md-6'>
+            <dl><dt>Retention Duration</dt><dd>{{ InteractionChannel.RetentionDuration }}<dd/></dl>
+        </div>
+    {% endif %}
+    {% if InteractionChannel.ComponentCacheDuration != null %}
+        <div class='col-md-6'>
+            <dl><dt>Component Cache Duration</dt><dd>{{ InteractionChannel.ComponentCacheDuration }}<dd/></dl>
+        </div>
+    {% endif %}
+</div>
+",
+       Order = 0 )]
+
     #endregion
 
-    [Rock.SystemGuid.EntityTypeGuid( "919345d6-6e20-4501-b956-ebcb35d0b16e" )]
-    [Rock.SystemGuid.BlockTypeGuid( "b150e767-e964-460c-9ed1-b293474c5f5d" )]
-    public class TagDetail : RockDetailBlockType
+    [Rock.SystemGuid.EntityTypeGuid( "9438e0fe-f7ab-48d5-8ab8-d54336d30fbd" )]
+    [Rock.SystemGuid.BlockTypeGuid( "2efa1f9d-7062-466a-a8f3-9dcdbff054e9" )]
+    public class InteractionChannelDetail : RockDetailBlockType
     {
         #region Keys
 
         private static class PageParameterKey
         {
-            public const string TagId = "TagId";
-            public const string EntityTypeId = "EntityTypeId";
+            public const string InteractionChannelId = "ChannelId";
         }
 
         private static class NavigationUrlKey
         {
             public const string ParentPage = "ParentPage";
+        }
+
+        private static class AttributeKey
+        {
+            public const string DefaultTemplate = "DefaultTemplate";
         }
 
         #endregion Keys
@@ -72,13 +114,13 @@ namespace Rock.Blocks.Core
         {
             using ( var rockContext = new RockContext() )
             {
-                var box = new DetailBlockBox<TagBag, TagDetailOptionsBag>();
+                var box = new DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag>();
 
                 SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Tag>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<InteractionChannel>();
 
                 return box;
             }
@@ -91,46 +133,24 @@ namespace Rock.Blocks.Core
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private TagDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private InteractionChannelDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
-            var options = new TagDetailOptionsBag();
+            var options = new InteractionChannelDetailOptionsBag();
 
             return options;
         }
 
         /// <summary>
-        /// Validates the Tag for any final information that might not be
+        /// Validates the InteractionChannel for any final information that might not be
         /// valid after storing all the data from the client.
         /// </summary>
-        /// <param name="tag">The Tag to be validated.</param>
+        /// <param name="interactionChannel">The InteractionChannel to be validated.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
-        /// <returns><c>true</c> if the Tag is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateTag( Tag tag, RockContext rockContext, out string errorMessage )
+        /// <returns><c>true</c> if the InteractionChannel is valid, <c>false</c> otherwise.</returns>
+        private bool ValidateInteractionChannel( InteractionChannel interactionChannel, RockContext rockContext, out string errorMessage )
         {
             errorMessage = null;
-
-            var entityService = new TagService( rockContext );
-            var tagExists = entityService.Queryable()
-                    .Where( t =>
-                        t.Id != tag.Id &&
-                        t.Name == tag.Name &&
-                        (
-                            ( t.OwnerPersonAlias == null && !tag.OwnerPersonAliasId.HasValue ) ||
-                            ( t.OwnerPersonAlias != null && tag.OwnerPersonAliasId.HasValue && t.OwnerPersonAliasId == tag.OwnerPersonAliasId.Value )
-                        ) &&
-                        ( !t.EntityTypeId.HasValue || (
-                            t.EntityTypeId.Value == tag.EntityTypeId &&
-                            t.EntityTypeQualifierColumn == tag.EntityTypeQualifierColumn &&
-                            t.EntityTypeQualifierValue == tag.EntityTypeQualifierValue )
-                        ) )
-                    .Any();
-
-            if ( tagExists )
-            {
-                errorMessage = $"A '{tag.Name}' tag already exists for the selected scope, owner, and entity type.";
-                return false;
-            }
 
             return true;
         }
@@ -141,20 +161,18 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="box">The box to be populated.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<TagBag, TagDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag> box, RockContext rockContext )
         {
             var entity = GetInitialEntity( rockContext );
 
             if ( entity == null )
             {
-                box.ErrorMessage = $"The {Tag.FriendlyTypeName} was not found.";
+                box.ErrorMessage = $"The {InteractionChannel.FriendlyTypeName} was not found.";
                 return;
             }
 
-            var canConfigure = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, GetCurrentPerson() );
-
-            var isViewable = canConfigure || entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = canConfigure || entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -165,35 +183,19 @@ namespace Rock.Blocks.Core
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                    box.Entity.CanAdministrate = canConfigure || entity.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetCurrentPerson() );
+                    box.Entity.CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) || entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
                 }
                 else
                 {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( Tag.FriendlyTypeName );
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( InteractionChannel.FriendlyTypeName );
                 }
             }
             else
             {
                 // New entity is being created, prepare for edit mode by default.
-                if ( box.IsEditable )
-                {
-                    box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-
-                    if ( entity.Id == 0 )
-                    {
-                        var entityType = EntityTypeCache.Get( PageParameter( PageParameterKey.EntityTypeId ).AsInteger() );
-
-                        if ( entityType != null )
-                        {
-                            box.Entity.EntityType = new ListItemBag() { Text = entityType.FriendlyName, Value = entityType.Guid.ToString() };
-                        }
-                    }
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Tag.FriendlyTypeName );
-                }
+                box.ErrorMessage = @"
+<strong>Missing Channel Information </strong>
+<p>Make sure you have navigated to this page from Channel Listing page.</p>";
             }
         }
 
@@ -201,27 +203,32 @@ namespace Rock.Blocks.Core
         /// Gets the entity bag that is common between both view and edit modes.
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
-        /// <returns>A <see cref="TagBag"/> that represents the entity.</returns>
-        private TagBag GetCommonEntityBag( Tag entity )
+        /// <returns>A <see cref="InteractionChannelBag"/> that represents the entity.</returns>
+        private InteractionChannelBag GetCommonEntityBag( InteractionChannel entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            return new TagBag
+            return new InteractionChannelBag
             {
                 IdKey = entity.IdKey,
-                BackgroundColor = entity.BackgroundColor,
-                Category = entity.Category.ToListItemBag(),
-                Description = entity.Description,
-                EntityType = entity.EntityType.ToListItemBag(),
-                EntityTypeQualifierColumn = entity.EntityTypeQualifierColumn,
-                EntityTypeQualifierValue = entity.EntityTypeQualifierValue,
-                IconCssClass = entity.IconCssClass,
+                ChannelDetailTemplate = entity.ChannelDetailTemplate,
+                ChannelListTemplate = entity.ChannelListTemplate,
+                ComponentCacheDuration = entity.ComponentCacheDuration,
+                ComponentDetailTemplate = entity.ComponentDetailTemplate,
+                ComponentListTemplate = entity.ComponentListTemplate,
+                EngagementStrength = entity.EngagementStrength,
+                InteractionCustom1Label = entity.InteractionCustom1Label,
+                InteractionCustom2Label = entity.InteractionCustom2Label,
+                InteractionCustomIndexed1Label = entity.InteractionCustomIndexed1Label,
+                InteractionDetailTemplate = entity.InteractionDetailTemplate,
+                InteractionListTemplate = entity.InteractionListTemplate,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
-                OwnerPersonAlias = entity.Id == 0 ? GetCurrentPerson().PrimaryAlias.ToListItemBag() : entity.OwnerPersonAlias.ToListItemBag()
+                RetentionDuration = entity.RetentionDuration,
+                SessionListTemplate = entity.SessionListTemplate
             };
         }
 
@@ -229,8 +236,8 @@ namespace Rock.Blocks.Core
         /// Gets the bag for viewing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="TagBag"/> that represents the entity.</returns>
-        private TagBag GetEntityBagForView( Tag entity )
+        /// <returns>A <see cref="InteractionChannelBag"/> that represents the entity.</returns>
+        private InteractionChannelBag GetEntityBagForView( InteractionChannel entity )
         {
             if ( entity == null )
             {
@@ -241,6 +248,18 @@ namespace Rock.Blocks.Core
 
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, GetCurrentPerson() );
+            mergeFields.AddOrIgnore( "CurrentPerson", GetCurrentPerson() );
+            mergeFields.Add( "InteractionChannel", entity );
+
+            string template = GetAttributeValue( AttributeKey.DefaultTemplate );
+            if ( !string.IsNullOrEmpty( entity.ChannelDetailTemplate ) )
+            {
+                template = entity.ChannelDetailTemplate;
+            }
+
+            bag.Content = template.ResolveMergeFields( mergeFields );
+
             return bag;
         }
 
@@ -248,8 +267,8 @@ namespace Rock.Blocks.Core
         /// Gets the bag for editing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="TagBag"/> that represents the entity.</returns>
-        private TagBag GetEntityBagForEdit( Tag entity )
+        /// <returns>A <see cref="InteractionChannelBag"/> that represents the entity.</returns>
+        private InteractionChannelBag GetEntityBagForEdit( InteractionChannel entity )
         {
             if ( entity == null )
             {
@@ -270,33 +289,45 @@ namespace Rock.Blocks.Core
         /// <param name="box">The box containing the information to be updated.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( Tag entity, DetailBlockBox<TagBag, TagDetailOptionsBag> box, RockContext rockContext )
+        private bool UpdateEntityFromBox( InteractionChannel entity, DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag> box, RockContext rockContext )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.BackgroundColor ),
-                () => entity.BackgroundColor = box.Entity.BackgroundColor );
+            box.IfValidProperty( nameof( box.Entity.ChannelDetailTemplate ),
+                () => entity.ChannelDetailTemplate = box.Entity.ChannelDetailTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
+            box.IfValidProperty( nameof( box.Entity.ChannelListTemplate ),
+                () => entity.ChannelListTemplate = box.Entity.ChannelListTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Entity.ComponentCacheDuration ),
+                () => entity.ComponentCacheDuration = box.Entity.ComponentCacheDuration );
 
-            box.IfValidProperty( nameof( box.Entity.EntityType ),
-                () => entity.EntityTypeId = box.Entity.EntityType.GetEntityId<EntityType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Entity.ComponentDetailTemplate ),
+                () => entity.ComponentDetailTemplate = box.Entity.ComponentDetailTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.EntityTypeQualifierColumn ),
-                () => entity.EntityTypeQualifierColumn = box.Entity.EntityTypeQualifierColumn );
+            box.IfValidProperty( nameof( box.Entity.ComponentListTemplate ),
+                () => entity.ComponentListTemplate = box.Entity.ComponentListTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.EntityTypeQualifierValue ),
-                () => entity.EntityTypeQualifierValue = box.Entity.EntityTypeQualifierValue );
+            box.IfValidProperty( nameof( box.Entity.EngagementStrength ),
+                () => entity.EngagementStrength = box.Entity.EngagementStrength );
 
-            box.IfValidProperty( nameof( box.Entity.IconCssClass ),
-                () => entity.IconCssClass = box.Entity.IconCssClass );
+            box.IfValidProperty( nameof( box.Entity.InteractionCustom1Label ),
+                () => entity.InteractionCustom1Label = box.Entity.InteractionCustom1Label );
+
+            box.IfValidProperty( nameof( box.Entity.InteractionCustom2Label ),
+                () => entity.InteractionCustom2Label = box.Entity.InteractionCustom2Label );
+
+            box.IfValidProperty( nameof( box.Entity.InteractionCustomIndexed1Label ),
+                () => entity.InteractionCustomIndexed1Label = box.Entity.InteractionCustomIndexed1Label );
+
+            box.IfValidProperty( nameof( box.Entity.InteractionDetailTemplate ),
+                () => entity.InteractionDetailTemplate = box.Entity.InteractionDetailTemplate );
+
+            box.IfValidProperty( nameof( box.Entity.InteractionListTemplate ),
+                () => entity.InteractionListTemplate = box.Entity.InteractionListTemplate );
 
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );
@@ -304,8 +335,11 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
 
-            box.IfValidProperty( nameof( box.Entity.OwnerPersonAlias ),
-                () => entity.OwnerPersonAliasId = box.Entity.OwnerPersonAlias.GetEntityId<PersonAlias>( rockContext ) );
+            box.IfValidProperty( nameof( box.Entity.RetentionDuration ),
+                () => entity.RetentionDuration = box.Entity.RetentionDuration );
+
+            box.IfValidProperty( nameof( box.Entity.SessionListTemplate ),
+                () => entity.SessionListTemplate = box.Entity.SessionListTemplate );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -323,10 +357,10 @@ namespace Rock.Blocks.Core
         /// if page parameters requested creation.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="Tag"/> to be viewed or edited on the page.</returns>
-        private Tag GetInitialEntity( RockContext rockContext )
+        /// <returns>The <see cref="InteractionChannel"/> to be viewed or edited on the page.</returns>
+        private InteractionChannel GetInitialEntity( RockContext rockContext )
         {
-            return GetInitialEntity<Tag, TagService>( rockContext, PageParameterKey.TagId );
+            return GetInitialEntity<InteractionChannel, InteractionChannelService>( rockContext, PageParameterKey.InteractionChannelId );
         }
 
         /// <summary>
@@ -362,7 +396,7 @@ namespace Rock.Blocks.Core
         /// this block to ensure they have the proper permissions.
         /// </summary>
         /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( Tag entity )
+        private string GetSecurityGrantToken( InteractionChannel entity )
         {
             var securityGrant = new Rock.Security.SecurityGrant();
 
@@ -379,9 +413,9 @@ namespace Rock.Blocks.Core
         /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
         /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
         /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out Tag entity, out BlockActionResult error )
+        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out InteractionChannel entity, out BlockActionResult error )
         {
-            var entityService = new TagService( rockContext );
+            var entityService = new InteractionChannelService( rockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -394,19 +428,19 @@ namespace Rock.Blocks.Core
             else
             {
                 // Create a new entity.
-                entity = new Tag();
+                entity = new InteractionChannel();
                 entityService.Add( entity );
             }
 
             if ( entity == null )
             {
-                error = ActionBadRequest( $"{Tag.FriendlyTypeName} not found." );
+                error = ActionBadRequest( $"{InteractionChannel.FriendlyTypeName} not found." );
                 return false;
             }
 
-            if ( !entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Tag.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit ${InteractionChannel.FriendlyTypeName}." );
                 return false;
             }
 
@@ -435,7 +469,7 @@ namespace Rock.Blocks.Core
 
                 entity.LoadAttributes( rockContext );
 
-                var box = new DetailBlockBox<TagBag, TagDetailOptionsBag>
+                var box = new DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag>
                 {
                     Entity = GetEntityBagForEdit( entity )
                 };
@@ -450,11 +484,11 @@ namespace Rock.Blocks.Core
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<TagBag, TagDetailOptionsBag> box )
+        public BlockActionResult Save( DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag> box )
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new TagService( rockContext );
+                var entityService = new InteractionChannelService( rockContext );
 
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -468,7 +502,7 @@ namespace Rock.Blocks.Core
                 }
 
                 // Ensure everything is valid before saving.
-                if ( !ValidateTag( entity, rockContext, out var validationMessage ) )
+                if ( !ValidateInteractionChannel( entity, rockContext, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
                 }
@@ -485,7 +519,7 @@ namespace Rock.Blocks.Core
                 {
                     return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                     {
-                        [PageParameterKey.TagId] = entity.IdKey
+                        [PageParameterKey.InteractionChannelId] = entity.IdKey
                     } ) );
                 }
 
@@ -507,11 +541,16 @@ namespace Rock.Blocks.Core
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new TagService( rockContext );
+                var entityService = new InteractionChannelService( rockContext );
 
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
                     return actionError;
+                }
+
+                if ( !entity.IsAuthorized( Authorization.EDIT, this.GetCurrentPerson() ) )
+                {
+                    return ActionBadRequest( "You are not authorized to delete this interaction channel." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -533,7 +572,7 @@ namespace Rock.Blocks.Core
         /// <param name="box">The box that contains all the information about the entity being edited.</param>
         /// <returns>A box that contains the entity and attribute information.</returns>
         [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<TagBag, TagDetailOptionsBag> box )
+        public BlockActionResult RefreshAttributes( DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag> box )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -551,7 +590,7 @@ namespace Rock.Blocks.Core
                 // Reload attributes based on the new property values.
                 entity.LoadAttributes( rockContext );
 
-                var refreshedBox = new DetailBlockBox<TagBag, TagDetailOptionsBag>
+                var refreshedBox = new DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag>
                 {
                     Entity = GetEntityBagForEdit( entity )
                 };

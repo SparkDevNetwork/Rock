@@ -1336,6 +1336,7 @@ $(document).ready(function() {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
             filterField.ValidationGroup = this.BlockValidationGroup;
+            filterField.IsFilterTypeEnhancedForLongLists = true;
             filterField.DataViewFilterGuid = Guid.NewGuid();
             filterField.DeleteClick += filterControl_DeleteClick;
             groupControl.Controls.Add( filterField );

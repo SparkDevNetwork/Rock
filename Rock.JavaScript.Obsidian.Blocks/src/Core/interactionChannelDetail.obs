@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -10,11 +10,11 @@
                  :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
-                 :entityTypeGuid="EntityType.PersonalLinkSection"
-                 entityTypeName="PersonalLinkSection"
-                 :isAuditHidden="isAuditHidden"
+                 :entityTypeGuid="entityTypeGuid"
+                 entityTypeName="InteractionChannel"
+                 :isAuditHidden="true"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="false"
+                 :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="isSecurityHidden"
@@ -23,11 +23,11 @@
                  @edit="onEdit"
                  @save="onSave">
         <template #view>
-            <ViewPanel :modelValue="personalLinkSectionViewBag" :options="options" />
+            <ViewPanel :modelValue="interactionChannelViewBag" :options="options" />
         </template>
 
         <template #edit>
-            <EditPanel v-model="personalLinkSectionEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="interactionChannelEditBag" :options="options" @propertyChanged="onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -39,16 +39,16 @@
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-    import EditPanel from "./PersonalLinkSectionDetail/editPanel.partial.obs";
-    import ViewPanel from "./PersonalLinkSectionDetail/viewPanel.partial.obs";
+    import EditPanel from "./InteractionChannelDetail/editPanel.partial.obs";
+    import ViewPanel from "./InteractionChannelDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./PersonalLinkSectionDetail/types.partial";
+    import { NavigationUrlKey } from "./InteractionChannelDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-    import { PersonalLinkSectionBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinkSectionDetail/personalLinkSectionBag";
-    import { PersonalLinkSectionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinkSectionDetail/personalLinkSectionDetailOptionsBag";
+    import { InteractionChannelBag } from "@Obsidian/ViewModels/Blocks/Core/InteractionChannelDetail/interactionChannelBag";
+    import { InteractionChannelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/InteractionChannelDetail/interactionChannelDetailOptionsBag";
 
-    const config = useConfigurationValues<DetailBlockBox<PersonalLinkSectionBag, PersonalLinkSectionDetailOptionsBag>>();
+    const config = useConfigurationValues<DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
 
@@ -57,8 +57,10 @@
     const blockError = ref("");
     const errorMessage = ref("");
 
-    const personalLinkSectionViewBag = ref(config.entity);
-    const personalLinkSectionEditBag = ref<PersonalLinkSectionBag>({} as PersonalLinkSectionBag);
+    const interactionChannelViewBag = ref(config.entity);
+    const interactionChannelEditBag = ref<InteractionChannelBag>({} as InteractionChannelBag);
+
+    const entityTypeGuid = EntityType.InteractionChannel;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
@@ -66,35 +68,46 @@
     // inform the server which incoming values have valid data in them.
     const validProperties = [
         "attributeValues",
-        "name"
+        "channelDetailTemplate",
+        "channelListTemplate",
+        "componentCacheDuration",
+        "componentDetailTemplate",
+        "componentListTemplate",
+        "engagementStrength",
+        "interactionCustom1Label",
+        "interactionCustom2Label",
+        "interactionCustomIndexed1Label",
+        "interactionDetailTemplate",
+        "interactionListTemplate",
+        "isActive",
+        "name",
+        "retentionDuration",
+        "sessionListTemplate"
     ];
 
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(personalLinkSectionEditBag, validProperties, invokeBlockAction), undefined, true);
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(interactionChannelEditBag, validProperties, invokeBlockAction), undefined, true);
 
     // #endregion
 
     // #region Computed Values
 
     const isSecurityHidden = computed((): boolean => {
-        return !config.entity || config.entity?.canAdministrate === false;
+        return interactionChannelViewBag.value?.canAdministrate === false;
     });
 
-    const isAuditHidden = computed((): boolean => {
-        return !personalLinkSectionViewBag.value?.idKey;
-    });
 
     /**
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return (personalLinkSectionViewBag.value?.name ?? "Add") + " Link Section";
+        return interactionChannelViewBag.value?.name ?? "";
     });
 
     /**
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return personalLinkSectionViewBag.value?.idKey ?? "";
+        return interactionChannelViewBag.value?.idKey ?? "";
     });
 
     /**
@@ -107,10 +120,18 @@
             return undefined;
         }
 
-        if (personalLinkSectionViewBag.value?.isShared) {
+        if (interactionChannelViewBag.value?.isActive === true) {
             labels.push({
-                title: "Shared",
-                type: "info"
+                iconCssClass: "fa fa-lightbulb",
+                title: "Active",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "far fa-lightbulb",
+                title: "Inactive",
+                type: "danger"
             });
         }
 
@@ -121,7 +142,7 @@
         return config.isEditable === true;
     });
 
-    const options = computed((): PersonalLinkSectionDetailOptionsBag => {
+    const options = computed((): InteractionChannelDetailOptionsBag => {
         return config.options ?? {};
     });
 
@@ -140,7 +161,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!personalLinkSectionEditBag.value?.idKey) {
+        if (!interactionChannelEditBag.value?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -161,14 +182,14 @@
         errorMessage.value = "";
 
         const result = await invokeBlockAction<string>("Delete", {
-            key: personalLinkSectionViewBag.value?.idKey
+            key: interactionChannelViewBag.value?.idKey
         });
 
         if (result.isSuccess && result.data) {
             return result.data;
         }
         else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete personal link section.";
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete interaction channel.";
 
             return false;
         }
@@ -181,12 +202,12 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<PersonalLinkSectionBag, PersonalLinkSectionDetailOptionsBag>>("Edit", {
-            key: personalLinkSectionViewBag.value?.idKey
+        const result = await invokeBlockAction<DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag>>("Edit", {
+            key: interactionChannelViewBag.value?.idKey
         });
 
         if (result.isSuccess && result.data && result.data.entity) {
-            personalLinkSectionEditBag.value = result.data.entity;
+            interactionChannelEditBag.value = result.data.entity;
 
             return true;
         }
@@ -221,19 +242,19 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<PersonalLinkSectionBag, PersonalLinkSectionDetailOptionsBag> = {
-            entity: personalLinkSectionEditBag.value,
+        const data: DetailBlockBox<InteractionChannelBag, InteractionChannelDetailOptionsBag> = {
+            entity: interactionChannelEditBag.value,
             isEditable: true,
             validProperties: validProperties
         };
 
-        const result = await invokeBlockAction<PersonalLinkSectionBag | string>("Save", {
+        const result = await invokeBlockAction<InteractionChannelBag | string>("Save", {
             box: data
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                personalLinkSectionViewBag.value = result.data;
+                interactionChannelViewBag.value = result.data;
 
                 return true;
             }
@@ -242,7 +263,7 @@
             }
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save personal link section.";
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save interaction channel.";
 
         return false;
     }
@@ -256,10 +277,10 @@
         blockError.value = config.errorMessage;
     }
     else if (!config.entity) {
-        blockError.value = "The specified personal link section could not be viewed.";
+        blockError.value = "The specified interaction channel could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        personalLinkSectionEditBag.value = config.entity;
+        interactionChannelEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

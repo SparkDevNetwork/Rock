@@ -50,6 +50,12 @@ registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefined
 import { ColorFieldType } from "./colorField.partial";
 registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 
+import { ConnectionTypeField } from "./connectionTypeField.partial";
+registerFieldType(FieldTypeGuids.ConnectionType, new ConnectionTypeField());
+
+import { ConnectionTypesField } from "./connectionTypesField.partial";
+registerFieldType(FieldTypeGuids.ConnectionTypes, new ConnectionTypesField());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
@@ -85,6 +91,9 @@ registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldTy
 
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
+
+import { FinancialAccountFieldType  } from "./financialAccountField.partial";
+registerFieldType(FieldTypeGuids.FinancialAccount, new FinancialAccountFieldType());
 
 import { FileFieldType } from "./fileField.partial";
 registerFieldType(FieldTypeGuids.File, new FileFieldType());
