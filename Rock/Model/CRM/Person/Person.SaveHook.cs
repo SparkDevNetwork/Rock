@@ -17,6 +17,7 @@
 
 using System;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -287,7 +288,7 @@ namespace Rock.Model
                                 HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Property, "Photo" );
                             }
 
-                            if ( Entry.OriginalValues[nameof( Person.Email)].ToStringSafe() != Entity.Email )
+                            if ( Entry.OriginalValues[nameof( Person.Email )].ToStringSafe() != Entity.Email )
                             {
                                 var currentEmail = Entry.OriginalValues[nameof( Person.Email )].ToStringSafe();
                                 if ( !string.IsNullOrEmpty( currentEmail ) )
@@ -308,7 +309,7 @@ namespace Rock.Model
                                 }
                             }
 
-                            if ( Entry.OriginalValues[nameof(Person.RecordStatusValueId)].ToStringSafe().AsIntegerOrNull() != Entity.RecordStatusValueId )
+                            if ( Entry.OriginalValues[nameof( Person.RecordStatusValueId )].ToStringSafe().AsIntegerOrNull() != Entity.RecordStatusValueId )
                             {
                                 Entity.RecordStatusLastModifiedDateTime = RockDateTime.Now;
 
@@ -372,7 +373,7 @@ namespace Rock.Model
                     PersonService.UpdatePrimaryAlias( this.Entity.Id, this.Entity.PrimaryAliasId.Value, RockContext );
                 }
 
-                if ( this.Entity.Age.HasValue && this.Entity.Age != Entry.OriginalValues[nameof( Person.Age )].ToStringSafe().AsIntegerOrNull() )
+                if ( this.Entity.Age.HasValue && ( this.PreSaveState == EntityContextState.Added || this.Entity.Age != Entry.OriginalValues[nameof( Person.Age )].ToStringSafe().AsIntegerOrNull() ) )
                 {
                     PersonService.UpdateFamilyMemberRoleByAge( this.Entity.Id, this.Entity.Age.Value, RockContext );
                 }
