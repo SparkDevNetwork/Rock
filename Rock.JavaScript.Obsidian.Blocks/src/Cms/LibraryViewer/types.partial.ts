@@ -1,6 +1,12 @@
 export enum PersonPreferenceKey {
+    FilterExperienceLevels = "filter-experience-levels-preference",
+    FilterLicenseTypes = "filter-license-types-preference",
+    FilterMustBeTrending = "filter-must-be-trending-preference",
+    FilterMustBePopular = "filter-must-be-popular-preference",
+    FilterOrganizations = "filter-organizations-preference",
+    FilterPublishedDate = "filter-published-date-preference",
+    FilterTopics = "filter-topics-preference",
     Sort = "sort-preference",
-    Filters = "filters-preference"
 }
 
 export type MenuButton = {

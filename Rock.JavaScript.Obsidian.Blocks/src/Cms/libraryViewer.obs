@@ -11,16 +11,17 @@
                title="Library Viewer">
             <template #preBody>
                 <div class="panel-toolbar justify-content-end">
-                    <ItemListSort :items="filteredItems"
-                                  @sortedItems="(i) => sortedItems = i" />
+                    <ItemListSort :contentChannelIdKey="config.contentChannelIdKey"
+                                  :items="filteredItems"
+                                  @sortedItems="(i) => filteredAndSortedItems = i" />
                     <ItemListFilters :areFiltersAppliedOnClose="true"
                                      :contentChannelIdKey="config.contentChannelIdKey"
                                      :items="items"
                                      @filteredItems="(i) => filteredItems = i" />
                 </div>
                 <div class="library-viewer-body">
-                    <ItemList v-if="sortedItems"
-                              :items="sortedItems"
+                    <ItemList v-if="filteredAndSortedItems"
+                              :items="filteredAndSortedItems"
                               :selectedItem="selectedItem"
                               @select="onSelected" />
                     <template v-if="selectedItem">
@@ -99,8 +100,8 @@
     //#region Values
 
     const items = ref<LibraryViewerItemBag[]>(config.items ?? []);
-    const filteredItems = ref<LibraryViewerItemBag[]>(items.value);
-    const sortedItems = ref<LibraryViewerItemBag[]>(items.value);
+    const filteredItems = ref<LibraryViewerItemBag[]>([]);
+    const filteredAndSortedItems = ref<LibraryViewerItemBag[]>([]);
     const selectedItem = ref<LibraryViewerItemBag | null | undefined>();
     const isDownloading = ref<boolean>(false);
     const isLoadingDetails = ref<boolean>(false);
