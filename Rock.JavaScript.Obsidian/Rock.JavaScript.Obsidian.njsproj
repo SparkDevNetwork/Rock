@@ -211,6 +211,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CategoryDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\FollowingEventTypeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentList\" />
@@ -787,6 +788,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\FollowingEventTypeDetail\followingEventTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\FollowingEventTypeDetail\followingEventTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\scheduleExclusionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\scheduleBag.d.ts" />
