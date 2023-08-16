@@ -1,9 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="internalValue"
-                   :formGroupClasses="'person-picker ' + formGroupClasses"
-                   name="personpicker">
+    <RockFormField :modelValue="internalValue" :formGroupClasses="'person-picker ' + formGroupClasses" name="personpicker">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <div class="picker picker-select person-picker">
@@ -18,14 +15,39 @@
 
                     <Panel v-if="showPopup" isFullscreen isFullscreenPageOnly title="Person Search">
                         <template #headerActions>
-                            <span class="action" @click.prevent.stop="onCancel">
-                                <i class="fa fa-times"></i>
-                            </span>
+                            <RockButton class="btn-square mr-2" :btnSize="BtnSize.ExtraSmall" aria-label="Select Self" title="Select Self" v-if="enableSelfSelection">
+                                <i class="fa fa-user" aria-hidden></i>
+                            </RockButton>
+                            <RockButton class="btn-square mr-2" :btnSize="BtnSize.ExtraSmall" aria-label="Advanced Search" title="Advanced Search" @click.prevent="isAdvancedSearch = !isAdvancedSearch">
+                                <i class="fa fa-search-plus" aria-hidden></i>
+                            </RockButton>
+                            <button class="action btn-link" @click.prevent.stop="onCancel" type="button" aria-label="Close" title="Close">
+                                <i class="fa fa-times" aria-hidden></i>
+                            </button>
                         </template>
 
                         <div @keydown="onPopupKeyDown" tabindex="0">
-                            <div ref="searchTextBox">
-                                <TextBox v-model="searchText" label="Search" />
+                            <div ref="nameSearchTextBox" class="personpicker-search-panel" :class="{ 'row': isAdvancedSearch }">
+                                <TextBox v-model="nameSearchText" :formGroupClasses="isAdvancedSearch ? 'col-sm-6' : ''" disableLabel>
+                                    <template #inputGroupPrepend>
+                                        <span class="input-group-addon">Name</span>
+                                    </template>
+                                </TextBox>
+                                <TextBox v-if="isAdvancedSearch" v-model="phoneSearchText" formGroupClasses="col-sm-6" disableLabel>
+                                    <template #inputGroupPrepend>
+                                        <span class="input-group-addon">Phone</span>
+                                    </template>
+                                </TextBox>
+                                <TextBox v-if="isAdvancedSearch" v-model="addressSearchText" formGroupClasses="col-sm-6" disableLabel>
+                                    <template #inputGroupPrepend>
+                                        <span class="input-group-addon">Address</span>
+                                    </template>
+                                </TextBox>
+                                <TextBox v-if="isAdvancedSearch" v-model="emailSearchText" formGroupClasses="col-sm-6" disableLabel>
+                                    <template #inputGroupPrepend>
+                                        <span class="input-group-addon">Email</span>
+                                    </template>
+                                </TextBox>
                             </div>
 
                             <div style="display: flex;">
@@ -54,61 +76,42 @@
     import RockFormField from "./rockFormField.obs";
     import Panel from "./panel.obs";
     import TextBox from "./textBox.obs";
+    import RockButton from "./rockButton.obs";
     import { nextTick } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
     import { sleep } from "@Obsidian/Utility/promiseUtils";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 
     const enum AgeClassification {
         Unknown = 0,
-
         Adult = 1,
-
         Child = 2
     }
 
     type PersonSearchResult = {
         guid?: string | null;
-
         primaryAliasGuid?: string | null;
-
         name?: string | null;
-
         isActive?: boolean;
-
         isDeceased?: boolean;
-
         isBusiness?: boolean;
-
         imageUrl?: string | null;
-
         age?: number | null;
-
         formattedAge?: string | null;
-
         ageClassification?: AgeClassification;
-
         gender?: string | null;
-
         connectionStatus?: string | null;
-
         recordStatus?: string | null;
-
         email?: string | null;
-
         spouseName?: string | null;
-
         spouseNickName?: string | null;
-
         address?: string | null;
-
         phoneNumbers?: PersonSearchPhoneNumber[] | null;
     };
 
     type PersonSearchPhoneNumber = {
         type?: string | null;
-
         number?: string | null;
-
         isUnlisted?: boolean;
     };
 
@@ -127,6 +130,11 @@
             type: String as PropType<string>,
             default: ""
         },
+
+        enableSelfSelection: {
+            type: Boolean,
+            default: false
+        }
     });
 
     const emit = defineEmits<{
@@ -142,11 +150,14 @@
     /** True if the popup person picker should be visible. */
     const showPopup = ref(false);
 
-    /** The current text typed in the search box. */
-    const searchText = ref("");
-
     /** A reference to the container element for the search box. */
-    const searchTextBox = ref<HTMLElement | null>(null);
+    const nameSearchTextBox = ref<HTMLElement | null>(null);
+
+    /** The current text typed in the search boxes. */
+    const nameSearchText = ref("");
+    const addressSearchText = ref("");
+    const phoneSearchText = ref("");
+    const emailSearchText = ref("");
 
     /** The currently displayed search results. */
     const searchResults = ref<PersonSearchResult[]>([]);
@@ -159,6 +170,9 @@
 
     /** The currently selected name to display in the picker. */
     const selectedName = computed((): string => internalValue.value?.text ?? "");
+
+    /** Whether we're using additional search filters or not */
+    const isAdvancedSearch = ref(false);
 
     /**
      * Updates the search results. This is called as soon as the search text
@@ -188,7 +202,7 @@
         };
 
         // Make the API call to get the search results.
-        const result = await http.doApiCall<PersonSearchResult[]>("POST", "/api/v2/Controls/PersonPickerSearch", undefined, options);
+        const result = await http.post<PersonSearchResult[]>("/api/v2/Controls/PersonPickerSearch", undefined, options);
 
         // Check again if we have been cancelled before we do the update.
         if (cancellationToken.value) {
@@ -281,13 +295,13 @@
         showPopup.value = !showPopup.value;
 
         if (showPopup.value) {
-            searchText.value = "";
+            nameSearchText.value = "";
             selectedSearchResult.value = "";
             searchResults.value = [];
 
             nextTick(() => {
-                if (searchTextBox.value) {
-                    const input = searchTextBox.value.querySelector("input");
+                if (nameSearchTextBox.value) {
+                    const input = nameSearchTextBox.value.querySelector("input");
 
                     input?.focus();
                 }
@@ -394,9 +408,17 @@
         }
     }
 
-    // Watch for changes to what the user has typed and update the search
-    // results.
-    watch(searchText, () => {
+    // When leaving advanced search, clear the advanced search fields
+    watch(isAdvancedSearch, () => {
+        if (!isAdvancedSearch.value) {
+            addressSearchText.value = "";
+            phoneSearchText.value = "";
+            emailSearchText.value = "";
+        }
+    });
+
+    // Watch for changes to what the user has typed and update the search results.
+    watch([nameSearchText, addressSearchText, phoneSearchText, emailSearchText], () => {
         // If a search is in progress, cancel it.
         if (searchCancelToken) {
             searchCancelToken.value = true;
@@ -406,7 +428,7 @@
         // continues to type in the search box.
         searchCancelToken = ref(false);
 
-        updateSearchResults(searchText.value, searchCancelToken);
+        updateSearchResults(nameSearchText.value, searchCancelToken);
     });
 
     // Watch for changes in our provided value and update the UI.

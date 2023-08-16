@@ -2094,6 +2094,7 @@ const personPickerGallery = defineComponent({
         return {
             value: ref(null),
             includeBusinesses: ref(false),
+            enableSelf: ref(false),
             importCode: getControlImportPath("personPicker"),
             exampleCode: `<PersonPicker v-model="value" label="Person" />`
         };
@@ -2104,11 +2105,14 @@ const personPickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <PersonPicker v-model="value" label="Person" :includeBusinesses="includeBusinesses" />
+    <PersonPicker v-model="value" label="Person" :includeBusinesses="includeBusinesses" :enableSelfSelection="enableSelf" />
     <template #settings>
         <div class="row">
             <div class="col-md-4">
                 <CheckBox label="Include Businesses" v-model="includeBusinesses" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enable Self Selection" v-model="enableSelf" />
             </div>
         </div>
 
