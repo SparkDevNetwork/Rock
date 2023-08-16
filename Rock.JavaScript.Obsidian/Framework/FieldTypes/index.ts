@@ -92,6 +92,9 @@ registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldTy
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
 
+import { FinancialAccountFieldType  } from "./financialAccountField.partial";
+registerFieldType(FieldTypeGuids.FinancialAccount, new FinancialAccountFieldType());
+
 import { FileFieldType } from "./fileField.partial";
 registerFieldType(FieldTypeGuids.File, new FileFieldType());
 
