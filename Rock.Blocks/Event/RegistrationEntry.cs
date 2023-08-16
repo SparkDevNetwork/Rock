@@ -1438,9 +1438,14 @@ namespace Rock.Blocks.Event
 
         private PhoneNumberBoxWithSmsControlBag CreatePhoneNumberBoxWithSmsControlBag( Rock.Model.PhoneNumber phone )
         {
-            if ( phone != null )
+            if ( phone == null )
             {
-                return null;
+                return new PhoneNumberBoxWithSmsControlBag
+                {
+                    Number = string.Empty,
+                    IsMessagingEnbabled = false,
+                    CountryCode = string.Empty
+                };
             }
 
             return new PhoneNumberBoxWithSmsControlBag
