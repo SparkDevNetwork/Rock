@@ -53,6 +53,9 @@ registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 import { ConnectionTypeField } from "./connectionTypeField.partial";
 registerFieldType(FieldTypeGuids.ConnectionType, new ConnectionTypeField());
 
+import { ConnectionTypesField } from "./connectionTypesField.partial";
+registerFieldType(FieldTypeGuids.ConnectionTypes, new ConnectionTypesField());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 

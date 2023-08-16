@@ -15,16 +15,16 @@
 // </copyright>
 //
 import { defineComponent, inject } from "vue";
-import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./connectionTypeField.partial";
+import { ConfigurationValueKey } from "./noteTypesField.partial";
 import { getFieldEditorProps } from "./utils";
 
 export const EditComponent = defineComponent({
-    name: "ConnectionTypeField.Edit",
+    name: "ConnectionTypesField.Edit",
 
     components: {
-        DropDownList
+        CheckBoxList
     },
 
     props: getFieldEditorProps(),
@@ -37,7 +37,7 @@ export const EditComponent = defineComponent({
 
     data() {
         return {
-            internalValue: this.modelValue ?? ""
+            internalValue: this.modelValue ? this.modelValue.split(",") : []
         };
     },
 
@@ -55,24 +55,22 @@ export const EditComponent = defineComponent({
             catch {
                 return [];
             }
+        },
+
+        repeatColumns(): number {
+            return Number(this.configurationValues[ConfigurationValueKey.RepeatColumns]) ?? 1;
         }
     },
 
     watch: {
         internalValue() {
-            this.$emit("update:modelValue", this.internalValue);
-        },
-        modelValue: {
-            immediate: true,
-            handler() {
-                this.internalValue = this.modelValue || "";
-            }
+            this.$emit("update:modelValue", this.internalValue.join(","));
         }
     },
 
     template: `
-        <DropDownList v-model="internalValue" :items="options" :repeatColumns="repeatColumns" horizontal />
-    `
+<CheckBoxList v-model="internalValue" :items="options" :repeatColumns="repeatColumns" horizontal />
+`
 });
 
 export const ConfigurationComponent = defineComponent({
