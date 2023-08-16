@@ -40,7 +40,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular personal link section." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -151,6 +151,7 @@ namespace Rock.Blocks.Cms
                     {
                         box.Entity = GetEntityBagForView( entity, loadAttributes );
                         box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                        box.Entity.CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
                     }
                     else
                     {

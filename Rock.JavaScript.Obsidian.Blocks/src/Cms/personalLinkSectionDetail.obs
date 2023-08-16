@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
 
-    <NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -12,12 +12,12 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.PersonalLinkSection"
                  entityTypeName="PersonalLinkSection"
-                 :isAuditHidden="false"
+                 :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="isSecurityHidden"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -74,6 +74,14 @@
     // #endregion
 
     // #region Computed Values
+
+    const isSecurityHidden = computed((): boolean => {
+        return !config.entity || config.entity?.canAdministrate === false;
+    });
+
+    const isAuditHidden = computed((): boolean => {
+        return !personalLinkSectionViewBag.value?.idKey;
+    });
 
     /**
      * The entity name to display in the block panel.

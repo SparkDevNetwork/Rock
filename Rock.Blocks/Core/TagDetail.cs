@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.TagDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
@@ -39,7 +40,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a particular tag." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -54,6 +55,7 @@ namespace Rock.Blocks.Core
         private static class PageParameterKey
         {
             public const string TagId = "TagId";
+            public const string EntityTypeId = "EntityTypeId";
         }
 
         private static class NavigationUrlKey
@@ -149,8 +151,10 @@ namespace Rock.Blocks.Core
                 return;
             }
 
-            var isViewable = entity.IsAuthorized(Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var canConfigure = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, GetCurrentPerson() );
+
+            var isViewable = canConfigure || entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = canConfigure || entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -161,6 +165,7 @@ namespace Rock.Blocks.Core
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity.CanAdministrate = canConfigure || entity.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetCurrentPerson() );
                 }
                 else
                 {
@@ -174,6 +179,16 @@ namespace Rock.Blocks.Core
                 {
                     box.Entity = GetEntityBagForEdit( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
+
+                    if ( entity.Id == 0 )
+                    {
+                        var entityType = EntityTypeCache.Get( PageParameter( PageParameterKey.EntityTypeId ).AsInteger() );
+
+                        if ( entityType != null )
+                        {
+                            box.Entity.EntityType = new ListItemBag() { Text = entityType.FriendlyName, Value = entityType.Guid.ToString() };
+                        }
+                    }
                 }
                 else
                 {
