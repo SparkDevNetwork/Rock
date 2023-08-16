@@ -50,13 +50,33 @@
                                 </TextBox>
                             </div>
 
-                            <div style="display: flex;">
-                                <div v-for="result in searchResults" :key="result.primaryAliasGuid!" class="well cursor-pointer" :style="getCardStyle(result)" tabindex="0" @click="onCardClick(result)" @focus="onCardFocus(result)" @blur="onCardBlur(result)" @keypress="onCardKeyPress(result, $event)">
-                                    <div style="display: flex; min-width: 250px;">
-                                        <div class="person-image" :style="getPersonImageStyle(result)"></div>
-                                        <div>
-                                            <div>{{ result.name }}</div>
-                                            <div v-if="getNameAdditionalText(result)" class="text-muted"><small>{{ getNameAdditionalText(result) }}</small></div>
+                            <div>
+                                <div v-for="result in searchResults"
+                                     :key="result.primaryAliasGuid!"
+                                     class="well cursor-pointer"
+                                     :style="getCardStyle(result)"
+                                     tabindex="0"
+                                     @click="onCardClick(result)"
+                                     @focus="onCardFocus(result)"
+                                     @blur="onCardBlur(result)"
+                                     @keypress="onCardKeyPress(result, $event)"
+                                     role="button">
+                                    <div class="d-flex text-xs" :class="{ 'o-60': !result.isActive }">
+                                        <div class="person-image" :style="getPersonImageStyle(result)" :alt="'Profile image for ' + result.name"></div>
+                                        <div style="width:200px">
+                                            <div class="leading-snug"><span class="text-md font-weight-semibold">{{ result.name }}</span> <i class="fa fa-child text-primary" v-if="result.ageClassification == AgeClassification.Child" aria-label="Child" title="Child"></i> <span v-if="result.formattedAge" class="text-muted">{{ result.formattedAge }}</span></div>
+                                            <div v-if="getSubInformation(result)" class="text-muted"><small v-html="getSubInformation(result)" /></div>
+                                            <a href="/Person/" @click.stop>Profile</a>
+                                        </div>
+                                        <div style="width:275px;">
+                                            <div>{{ result.address }}</div>
+                                            <div>{{ result.email }}</div>
+                                        </div>
+                                        <ul style="width:150px;" class="list-unstyled">
+                                            <li v-for="phone in result.phoneNumbers" :key="phone.type ?? '' + phone.number ?? ''">{{ phone.number }} <small v-if="phone.type" class="text-muted">{{ phone.type }}</small></li>
+                                        </ul>
+                                        <div class="ml-auto">
+                                            <!-- <Tag v-for="" /> -->
                                         </div>
                                     </div>
                                 </div>
@@ -77,6 +97,7 @@
     import Panel from "./panel.obs";
     import TextBox from "./textBox.obs";
     import RockButton from "./rockButton.obs";
+    import Tag from "./tag.obs";
     import { nextTick } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
     import { sleep } from "@Obsidian/Utility/promiseUtils";
@@ -134,6 +155,11 @@
         enableSelfSelection: {
             type: Boolean,
             default: false
+        },
+
+        excludeDeceased: {
+            type:Boolean,
+            default: false
         }
     });
 
@@ -178,12 +204,12 @@
      * Updates the search results. This is called as soon as the search text
      * value changes.
      *
-     * @param text The text to be searched for.
+     * @param name The name text to be searched for.
      * @param cancellationToken The token that indicates if we should abort our search.
      */
-    async function updateSearchResults(text: string, cancellationToken: Ref<boolean>): Promise<void> {
+    async function updateSearchResults(name: string, address: string, phone: string, email: string, cancellationToken: Ref<boolean>): Promise<void> {
         // Only search if we have 3 or more characters.
-        if (text.length < 3) {
+        if (name.length < 3 && address.length < 3) {
             return;
         }
 
@@ -196,9 +222,13 @@
         }
 
         const options: Partial<PersonPickerSearchOptionsBag> = {
-            name: text,
+            name: name,
+            address: address || undefined,
+            email: email || undefined,
+            phone: phone || undefined,
             includeDetails: true,
-            includeBusinesses: props.includeBusinesses
+            includeBusinesses: props.includeBusinesses,
+            includeDeceased: !props.excludeDeceased
         };
 
         // Make the API call to get the search results.
@@ -215,7 +245,7 @@
             selectedSearchResult.value = "";
         }
         else {
-            console.warn(result.errorMessage);
+            console.error("Error fetching person picker search results: ", result.errorMessage);
         }
     }
 
@@ -224,19 +254,25 @@
      *
      * @param result The details of the person.
      */
-    function getNameAdditionalText(result: PersonSearchResult): string {
-        if (result.spouseNickName && result.formattedAge) {
-            return `Age: ${result.formattedAge}; Spouse: ${result.spouseNickName}`;
+    function getSubInformation(result: PersonSearchResult): string {
+        const text: string[] = [];
+        if (result.spouseName) {
+            text.push(`Spouse: ${result.spouseName}`);
         }
-        else if (result.formattedAge) {
-            return `Age: ${result.formattedAge}`;
+
+        if (result.isBusiness) {
+            text.push("Business");
         }
-        else if (result.spouseNickName) {
-            return `Spouse: ${result.spouseNickName}`;
+
+        if (!result.isActive && result.recordStatus) {
+            text.push("(" + result.recordStatus + ")");
         }
-        else {
-            return "";
+
+        if (result.isDeceased) {
+            text.push(`<span class="text-danger">(Deceased)</span>`);
         }
+
+        return text.join(" ");
     }
 
     /**
@@ -248,16 +284,25 @@
         if (result.imageUrl) {
             return {
                 backgroundImage: `url(${result.imageUrl})`,
-                width: "70px",
-                height: "70px",
+                width: "48px",
+                height: "48px",
                 backgroundSize: "cover",
                 marginRight: "8px",
-                border: "1px solid #dfe0e1"
+                borderRadius: "48px"
             };
         }
         else {
             return {};
         }
+    }
+
+    /**
+     * Gets a list of tags to show for the person.
+     */
+    function getTags(result: PersonSearchResult): Record<string, string>[] {
+        return [{
+
+        }];
     }
 
     /**
@@ -267,14 +312,12 @@
      */
     function getCardStyle(result: PersonSearchResult): Record<string, string> {
         const styles: Record<string, string> = {
-            margin: "0px 20px 20px 0px"
+            margin: "0px 20px 8px 0px",
+            padding: "8px"
         };
 
         if (result.primaryAliasGuid === selectedSearchResult.value) {
-            styles["border"] = "2px solid var(--color-primary)";
-        }
-        else {
-            styles["border"] = "2px solid transparent";
+            styles["border"] = "1px solid var(--color-primary)";
         }
 
         return styles;
@@ -428,7 +471,7 @@
         // continues to type in the search box.
         searchCancelToken = ref(false);
 
-        updateSearchResults(nameSearchText.value, searchCancelToken);
+        updateSearchResults(nameSearchText.value, addressSearchText.value, phoneSearchText.value, emailSearchText.value, searchCancelToken);
     });
 
     // Watch for changes in our provided value and update the UI.
