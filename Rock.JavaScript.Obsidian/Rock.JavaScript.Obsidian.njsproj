@@ -1018,6 +1018,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthDayValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthYearValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\noteMentionItemBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\phoneNumberBoxWithSmsControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheability.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\attributeFieldDefinitionBag.d.ts" />
@@ -1144,6 +1145,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pageRouteValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personLinkGetPopupHtmlOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personPickerSearchOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\phoneNumberBoxGetConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\phoneNumberBoxGetConfigurationResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\phoneNumberCountryCodeRulesConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\racePickerGetRacesResultsBag.d.ts" />

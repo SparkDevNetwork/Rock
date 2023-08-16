@@ -35,6 +35,9 @@ export type SavedFinancialAccountListItemBag = {
      */
     description?: string | null;
 
+    /** Gets or sets disabled for this item. */
+    disabled?: boolean | null;
+
     /** Gets or sets the image to be displayed to help identify the card. */
     image?: string | null;
 

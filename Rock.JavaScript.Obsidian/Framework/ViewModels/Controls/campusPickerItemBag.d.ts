@@ -37,6 +37,9 @@ export type CampusPickerItemBag = {
     /** Gets or sets the category for this item. */
     category?: string | null;
 
+    /** Gets or sets disabled for this item. */
+    disabled?: boolean | null;
+
     /** Gets or sets a value indicating whether this campus is active. */
     isActive: boolean;
 

@@ -18,6 +18,7 @@ import Cache from "./cache";
 import { useHttp } from "./http";
 import { PhoneNumberBoxGetConfigurationResultsBag } from "@Obsidian/ViewModels/Rest/Controls/phoneNumberBoxGetConfigurationResultsBag";
 import { PhoneNumberCountryCodeRulesConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/phoneNumberCountryCodeRulesConfigurationBag";
+import { PhoneNumberBoxGetConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/phoneNumberBoxGetConfigurationOptionsBag";
 
 const http = useHttp();
 
@@ -35,10 +36,13 @@ async function fetchPhoneNumberConfiguration(): Promise<PhoneNumberBoxGetConfigu
 }
 
 /**
- * Fetch the configuration for phone numbers and their possible formats for different countries
+ * Fetch the configuration for phone numbers, SMS option, and possible phone number formats for different countries
  */
 async function fetchPhoneNumberAndSmsConfiguration(): Promise<PhoneNumberBoxGetConfigurationResultsBag> {
-    const result = await http.post<PhoneNumberBoxGetConfigurationResultsBag>("/api/v2/Controls/PhoneNumberBoxGetConfiguration", undefined, null);
+    const options: Partial<PhoneNumberBoxGetConfigurationOptionsBag> = {
+        showSmsOptIn: true
+    };
+    const result = await http.post<PhoneNumberBoxGetConfigurationResultsBag>("/api/v2/Controls/PhoneNumberBoxGetConfiguration", undefined, options);
 
     if (result.isSuccess && result.data) {
         return result.data;

@@ -1288,8 +1288,7 @@ namespace Rock.Blocks.Event
 
                     if ( ( familySelection || f.ShowCurrentValue ) && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
-                        return f.PersonFieldType == RegistrationPersonFieldType.FirstName
-                            || f.PersonFieldType == RegistrationPersonFieldType.LastName;
+                        return f.PersonFieldType == RegistrationPersonFieldType.FirstName || f.PersonFieldType == RegistrationPersonFieldType.LastName;
                     }
 
                     if ( f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
@@ -1328,8 +1327,10 @@ namespace Rock.Blocks.Event
             {
                 case RegistrationFieldSource.PersonField:
                     return GetPersonCurrentFieldValue( rockContext, person, field );
+
                 case RegistrationFieldSource.PersonAttribute:
                     return GetEntityCurrentClientAttributeValue( rockContext, person, field );
+
                 case RegistrationFieldSource.RegistrantAttribute:
                     return GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
             }
@@ -1420,16 +1421,34 @@ namespace Rock.Blocks.Event
                     }
 
                 case RegistrationPersonFieldType.HomePhone:
-                    return person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() )?.Number;
+                    var homePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
+                    return CreatePhoneNumberBoxWithSmsControlBag( homePhone );
 
                 case RegistrationPersonFieldType.WorkPhone:
-                    return person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() )?.Number;
+                    var workPhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+                    return CreatePhoneNumberBoxWithSmsControlBag( workPhone );
 
                 case RegistrationPersonFieldType.MobilePhone:
-                    return person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )?.Number;
+                    var mobilePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                    return CreatePhoneNumberBoxWithSmsControlBag( mobilePhone );
             }
 
             return null;
+        }
+
+        private PhoneNumberBoxWithSmsControlBag CreatePhoneNumberBoxWithSmsControlBag( Rock.Model.PhoneNumber phone )
+        {
+            if ( phone != null )
+            {
+                return null;
+            }
+
+            return new PhoneNumberBoxWithSmsControlBag
+            {
+                Number = phone.Number,
+                IsMessagingEnbabled = phone.IsMessagingEnabled,
+                CountryCode = phone.CountryCode
+            };
         }
 
         /// <summary>
@@ -1599,38 +1618,47 @@ namespace Rock.Blocks.Event
         /// <param name="changes">The changes.</param>
         private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, History.HistoryChangeList changes )
         {
-            var phoneNumber = fieldValue as string;
-            if ( phoneNumber != null )
+            var phoneData = fieldValue.ToStringSafe().FromJsonOrNull<PhoneNumberBoxWithSmsControlBag>();
+            if ( phoneData == null )
             {
-                string cleanNumber = PhoneNumber.CleanNumber( phoneNumber );
-                if ( !string.IsNullOrWhiteSpace( cleanNumber ) )
-                {
-                    var numberType = DefinedValueCache.Get( phoneTypeGuid );
-                    if ( numberType != null )
-                    {
-                        var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
-                        string oldPhoneNumber = string.Empty;
-                        if ( phone == null )
-                        {
-                            phone = new PhoneNumber();
-                            person.PhoneNumbers.Add( phone );
-                            phone.NumberTypeValueId = numberType.Id;
-                        }
-                        else
-                        {
-                            oldPhoneNumber = phone.NumberFormattedWithCountryCode;
-                        }
-
-                        phone.Number = cleanNumber;
-
-                        History.EvaluateChange(
-                            changes,
-                            string.Format( "{0} Phone", numberType.Value ),
-                            oldPhoneNumber,
-                            phone.NumberFormattedWithCountryCode );
-                    }
-                }
+                return;
             }
+
+            var phoneNumber = phoneData.Number;
+            var isMessagingEnabled = phoneData.IsMessagingEnbabled;
+            string cleanNumber = PhoneNumber.CleanNumber( phoneNumber );
+            var numberType = DefinedValueCache.Get( phoneTypeGuid );
+
+            if ( string.IsNullOrWhiteSpace( cleanNumber ) || numberType == null )
+            {
+                return;
+            }
+
+            string oldPhoneNumber = string.Empty;
+            bool oldIsMessagingEnabled = false;
+            var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
+
+            if ( phone == null )
+            {
+                phone = new PhoneNumber
+                {
+                    NumberTypeValueId = numberType.Id,
+                    IsMessagingEnabled = isMessagingEnabled
+                };
+
+                person.PhoneNumbers.Add( phone );
+            }
+            else
+            {
+                oldPhoneNumber = phone.NumberFormattedWithCountryCode;
+                oldIsMessagingEnabled = phone.IsMessagingEnabled;
+            }
+
+            phone.Number = cleanNumber;
+            phone.IsMessagingEnabled = isMessagingEnabled;
+
+            History.EvaluateChange( changes, $"{numberType.Value} Phone", oldPhoneNumber, phone.NumberFormattedWithCountryCode );
+            History.EvaluateChange( changes, $"{numberType.Value} IsMessagingEnabled", oldIsMessagingEnabled, phone.IsMessagingEnabled );
         }
 
         /// <summary>

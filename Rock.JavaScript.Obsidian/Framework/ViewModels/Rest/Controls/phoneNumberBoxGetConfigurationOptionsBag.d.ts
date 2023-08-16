@@ -21,28 +21,6 @@
 // </copyright>
 //
 
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-
-/**
- * Identifies a single visualizer type that can be used to configure
- * visualizers for an action by the individual.
- */
-export type InteractiveExperienceVisualizerTypeBag = {
-    /** Gets or sets the attributes that are available on this visualizer type. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the category for this item. */
-    category?: string | null;
-
-    /** Gets or sets the default attribute values. */
-    defaultAttributeValues?: Record<string, string> | null;
-
-    /** Gets or sets disabled for this item. */
-    disabled?: boolean | null;
-
-    /** Gets or sets the text. */
-    text?: string | null;
-
-    /** Gets or sets the value. */
-    value?: string | null;
+export type PhoneNumberBoxGetConfigurationOptionsBag = {
+    showSmsOptIn: boolean;
 };

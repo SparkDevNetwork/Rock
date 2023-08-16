@@ -24,7 +24,7 @@ import EmailBox from "@Obsidian/Controls/emailBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
-import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType, RegistrationEntryState } from "./types.partial";
 
@@ -90,13 +90,13 @@ export default defineComponent({
                     return DropDownList;
 
                 case RegistrationPersonFieldType.HomePhone:
-                    return PhoneNumberBox;
+                    return PhoneNumberBoxWithSms;
 
                 case RegistrationPersonFieldType.WorkPhone:
-                    return PhoneNumberBox;
+                    return PhoneNumberBoxWithSms;
 
                 case RegistrationPersonFieldType.MobilePhone:
-                    return PhoneNumberBox;
+                    return PhoneNumberBoxWithSms;
 
                 case RegistrationPersonFieldType.Race:
                     return DropDownList;
