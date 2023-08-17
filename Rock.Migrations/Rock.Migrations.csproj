@@ -200,6 +200,10 @@
     <Compile Include="Migrations\202308141626584_AddShowSmsOptInToRegistrationTemplate.designer.cs">
       <DependentUpon>202308141626584_AddShowSmsOptInToRegistrationTemplate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202308171724425_AddRemoteSettlementBatchUrlToFinancialBatch.cs" />
+    <Compile Include="Migrations\202308171724425_AddRemoteSettlementBatchUrlToFinancialBatch.designer.cs">
+      <DependentUpon>202308171724425_AddRemoteSettlementBatchUrlToFinancialBatch.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.cs" />
     <Compile Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.designer.cs">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
@@ -1855,6 +1859,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202308141626584_AddShowSmsOptInToRegistrationTemplate.resx">
       <DependentUpon>202308141626584_AddShowSmsOptInToRegistrationTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202308171724425_AddRemoteSettlementBatchUrlToFinancialBatch.resx">
+      <DependentUpon>202308171724425_AddRemoteSettlementBatchUrlToFinancialBatch.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 15.0\Version 1.15.0\202302071940522_AddPasswordlessAuthentication.resx">
       <DependentUpon>202302071940522_AddPasswordlessAuthentication.cs</DependentUpon>
