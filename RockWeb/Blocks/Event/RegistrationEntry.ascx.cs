@@ -4050,21 +4050,8 @@ namespace RockWeb.Blocks.Event
                     }
 
                     // Get the batch
-                    var batch = batchService.Get(
-                        batchPrefix,
-                        currencyType,
-                        creditCardType,
-                        transaction.TransactionDateTime.Value,
-                        RegistrationTemplate.FinancialGateway.GetBatchTimeOffset() );
-
-                    if ( batch.Id == 0 )
-                    {
-                        batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                        History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                        History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                        History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                        History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-                    }
+                    var batch = batchService.GetForNewTransaction( transaction, batchPrefix );
+                    FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
 
                     var financialTransactionService = new FinancialTransactionService( rockContext );
 

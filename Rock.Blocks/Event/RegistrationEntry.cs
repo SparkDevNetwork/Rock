@@ -3269,21 +3269,8 @@ namespace Rock.Blocks.Event
                     context.RegistrationSettings.BatchNamePrefix;
 
                 // Get the batch
-                var batch = batchService.Get(
-                batchPrefix,
-                currencyTypeValue,
-                creditCardTypeValue,
-                transaction.TransactionDateTime.Value,
-                financialGateway.GetBatchTimeOffset() );
-
-                if ( batch.Id == 0 )
-                {
-                    batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                    History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                    History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                    History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                    History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-                }
+                var batch = batchService.GetForNewTransaction( transaction, batchPrefix );
+                FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
 
                 var financialTransactionService = new FinancialTransactionService( rockContext );
 

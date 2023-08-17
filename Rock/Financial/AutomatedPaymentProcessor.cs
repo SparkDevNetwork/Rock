@@ -902,14 +902,7 @@ namespace Rock.Financial
 
             if ( !financialTransaction.BatchId.HasValue )
             {
-                batch = _financialBatchService.Get(
-                    _automatedPaymentArgs.BatchNamePrefix ?? "Online Giving",
-                    string.Empty,
-                    _referencePaymentInfo.CurrencyTypeValue,
-                    _referencePaymentInfo.CreditCardTypeValue,
-                    financialTransaction.TransactionDateTime ?? financialTransaction.FutureProcessingDateTime.Value,
-                    _financialGateway.GetBatchTimeOffset(),
-                    _financialGateway.BatchDayOfWeek );
+                batch = _financialBatchService.GetForNewTransaction( financialTransaction, _automatedPaymentArgs.BatchNamePrefix ?? "Online Giving" );
             }
             else
             {
@@ -923,11 +916,7 @@ namespace Rock.Financial
             // add history entries about the batch creation
             if ( isNewBatch )
             {
-                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
 
                 _rockContext.SaveChanges();
             }

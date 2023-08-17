@@ -616,14 +616,7 @@ namespace Rock.Model
 
                             // Get the batch
                             var batchService = new FinancialBatchService( rockContext );
-                            var batch = batchService.Get(
-                                batchNamePrefix,
-                                string.Empty,
-                                currencyTypeValue,
-                                creditCardTypevalue,
-                                transaction.TransactionDateTime.Value,
-                                gateway.GetBatchTimeOffset(),
-                                gateway.BatchDayOfWeek );
+                            var batch = batchService.GetForNewTransaction( transaction, batchNamePrefix );
 
                             if ( batch.Id == 0 )
                             {
