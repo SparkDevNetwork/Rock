@@ -517,7 +517,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the entity identifiers for the set of entity keys.
+        /// Gets the entity ids for a entity type from a list of entity guids, idkeys or ids as strings.
         /// </summary>
         /// <param name="entityType">The entity type cache, this represents the model to use when mapping the <paramref name="entityKeys"/> to a identifiers.</param>
         /// <param name="entityKeys">The entity identifier keys to be converted to integer identifiers.</param>
