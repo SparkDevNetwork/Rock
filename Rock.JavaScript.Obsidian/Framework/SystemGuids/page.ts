@@ -1088,6 +1088,11 @@ export const Page = {
      * ParentPage: Manage
      */
     NewFamily: "6A11A13D-05AB-4982-A4C2-67A8B1950C74",
+    /**
+     * Notification List page
+     * ParentPage: My Dashboard
+     */
+    NotificationList: "586A8827-5C22-4624-A5E3-1B1D6CD0E5B7",
     /** The oidc client detail page. */
     OidcClientDetail: "41E6A833-1697-4463-9962-01DFD123D4C9",
     /** The oidc clients page. */
