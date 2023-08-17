@@ -68,16 +68,26 @@
 
         if (reminderCount > 0 || notificationCount > 0) {
             remindersButton.addClass('active has-reminders');
-            buttonHtml = buttonHtml + `<span class="indicator-bottom" style="position: absolute; bottom: 2px; right: 2px; background-color: var(--color-info); width: calc(var(--size) * 0.25); height: calc(var(--size) * 0.25); border-radius: calc(var(--size) * 0.125);"></span>`;
+            buttonHtml = buttonHtml + `<span class="indicator-bottom"></span>`;
         }
 
         remindersButton.html(buttonHtml);
 
         var viewRemindersButton = $('#<%= btnViewReminders.ClientID %>');
-        viewRemindersButton.html(`View Reminders <span class="badge badge-info" style="font-size: 10px; margin-bottom: 2px;">${reminderCount || 0}</span>`);
+        if (reminderCount > 0) {
+            viewRemindersButton.html(`View Reminders <span class="badge badge-info">${reminderCount}</span>`);
+        }
+        else {
+            viewRemindersButton.html(`View Reminders <span class="badge badge-default">0</span>`);
+        }
 
         var viewNotificationsButton = $('#<%= btnViewNotifications.ClientID %>');
-        viewNotificationsButton.html(`View Notifications <span class="badge badge-info" style="font-size: 10px; margin-bottom: 2px;">${notificationCount || 0}</span>`);
+        if ( notificationCount > 0 ) {
+            viewNotificationsButton.html(`View Notifications <span class="badge badge-info">${notificationCount}</span>`);
+        }
+        else {
+            viewNotificationsButton.html(`View Notifications <span class="badge badge-default">0</span>`);
+        }
     }
 
     function readCounts() {
@@ -152,9 +162,9 @@
 <div class="dropdown js-rock-reminders">
     <%-- LinkButton inner html is updated by updateReminders() function. --%>
     <asp:LinkButton runat="server" ID="btnReminders" Visible="false" CssClass="rock-bookmark" href="#" data-toggle="dropdown"><i class="fa fa-bell"></i></asp:LinkButton>
-    <asp:Panel ID="pnlReminders" runat="server" CssClass="dropdown-menu js-reminders-container">
+    <asp:Panel ID="pnlReminders" runat="server" CssClass="dropdown-menu dropdown-menu-reminders js-reminders-container">
         <li class="js-add-reminder d-none">
-            <asp:LinkButton runat="server" ID="btnAddReminder" CssClass="" OnClick="btnAddReminder_Click">Add Reminder</asp:LinkButton>
+            <asp:LinkButton runat="server" ID="btnAddReminder" OnClick="btnAddReminder_Click">Add Reminder</asp:LinkButton>
         </li>
         <li>
             <asp:LinkButton runat="server" ID="btnViewReminders" OnClick="btnViewReminders_Click">View Reminders</asp:LinkButton>
@@ -187,7 +197,7 @@
 
                             <p>
                                 <asp:Literal ID="lExistingReminderTextTemplate" runat="server" Visible="false">
-                                    You currently have {REMINDER_QUANTITY_TEXT_1} for this {ENTITY_TYPE}. The most {REMINDER_QUANTITY_TEXT_2} listed below. 
+                                    You currently have {REMINDER_QUANTITY_TEXT_1} for this {ENTITY_TYPE}. The most {REMINDER_QUANTITY_TEXT_2} listed below.
                                 </asp:Literal>
                                 <asp:Literal ID="lExistingReminderText" runat="server" />
                                 <asp:LinkButton runat="server" ID="btnViewReminders2" OnClick="btnViewReminders_Click" Visible="false">See your reminders settings for a complete list</asp:LinkButton>
