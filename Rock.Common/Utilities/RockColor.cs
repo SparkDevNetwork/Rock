@@ -633,7 +633,7 @@ namespace Rock.Utility
             // more like the original (which would be gray).
             if ( color.Saturation <= .15 )
             {
-                recipeSaturation = .15;
+                recipeSaturation = color.Saturation;
             }
 
             recipeColor.Saturation = recipeSaturation;

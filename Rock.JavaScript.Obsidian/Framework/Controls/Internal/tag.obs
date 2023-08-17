@@ -20,6 +20,7 @@
             required: true
         },
 
+        /** Disable interactivity (delete button) */
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
