@@ -15,16 +15,12 @@
 // </copyright>
 //
 
-using System;
-
-using Rock.ViewModels.Utility;
-
 namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
 {
     /// <summary>
     /// RegistrationEntryBlockSuccessViewModel
     /// </summary>
-    public sealed class RegistrationEntryBlockSuccessViewModel : IViewModel
+    public sealed class RegistrationEntryBlockSuccessViewModel
     {
         /// <summary>
         /// Gets or sets the title HTML.

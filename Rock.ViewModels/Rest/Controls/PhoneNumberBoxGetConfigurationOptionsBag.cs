@@ -15,13 +15,13 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Utility
+
+using System;
+
+namespace Rock.ViewModels.Rest.Controls
 {
-    /// <summary>
-    /// View Model
-    /// </summary>
-    public interface IViewModel
+    public class PhoneNumberBoxGetConfigurationOptionsBag
     {
-        /* This interface is intentionally empty. */
+        public bool ShowSmsOptIn { get; set; }
     }
 }

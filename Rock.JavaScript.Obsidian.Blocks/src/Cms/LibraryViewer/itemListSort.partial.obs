@@ -25,15 +25,18 @@
 </style>
 
 <script setup lang="ts">
-    import { onMounted, PropType, ref, watch } from "vue";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
     import ToolbarMenu from "./toolbarMenu.partial.obs";
     import ToolbarMenuButtons from "./toolbarMenuButtons.partial.obs";
     import { PersonPreferenceKey, MenuButton } from "./types.partial";
-    import { compareDateStrings, compareNumbers, compareStrings, getPersonPreference, setPersonPreference } from "./utils.partial";
+    import { compareDateStrings, compareNumbers, compareStrings } from "./utils.partial";
     import { usePersonPreferences } from "@Obsidian/Utility/block";
     import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";
 
+    type SortKey = "default" | "publish-date-descending" | "downloads-descending" | "organization-ascending";
+
     type SortOption = MenuButton & {
+        key: SortKey;
         sortButtonText: string;
         sort: (item1: LibraryViewerItemBag, item2: LibraryViewerItemBag) => number;
     };
@@ -56,6 +59,7 @@
     const preferences = usePersonPreferences().blockPreferences;
 
     const defaultSortOption: SortOption = {
+        key: "default",
         sortButtonText: "Sort",
         sort(item1, item2) {
             // Multiply by -1 to sort Newest to Oldest.
@@ -65,6 +69,7 @@
 
     const sortOptions: SortOption[] = [
         {
+            key: "publish-date-descending",
             title: "Publish Date - Newest to Oldest",
             sortButtonText: "Sort: Publish Date",
             sort(item1, item2) {
@@ -73,6 +78,7 @@
             }
         },
         {
+            key: "downloads-descending",
             title: "Downloads - Most to Fewest",
             sortButtonText: "Sort: Downloads",
             sort(item1, item2) {
@@ -81,6 +87,7 @@
             }
         },
         {
+            key: "organization-ascending",
             title: "Organization",
             sortButtonText: "Sort: Organization",
             sort(item1, item2) {
@@ -91,35 +98,48 @@
 
     //#region Values
 
-    const appliedSortOption = ref<SortOption>(getSortPersonPreference());
+    const appliedSortOption = ref<SortOption>(defaultSortOption);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const personPreferenceKeyResolver = computed<(key: PersonPreferenceKey) => string>(() => {
+        if (props.contentChannelIdKey) {
+            return (key: PersonPreferenceKey) => `${props.contentChannelIdKey}-${key}`;
+        }
+        else {
+            return (key: PersonPreferenceKey) => key;
+        }
+    });
 
     //#endregion
 
     //#region Functions
 
     /** Emits the `sortedItems` event. */
-    function emitSortedItems(): void {
-        emit("sortedItems", [...props.items].sort(appliedSortOption.value.sort));
+    function applySort(): void {
+        const sortedItems = [...props.items].sort(appliedSortOption.value.sort);
+        emit("sortedItems", sortedItems);
     }
 
     /** Gets the sort person preference. */
     function getSortPersonPreference(): SortOption {
-        return getPersonPreference<SortOption>(preferences, getSortPersonPreferenceKey()) ?? defaultSortOption;
-    }
+        const keyResolver = personPreferenceKeyResolver.value;
 
-    /** Gets the sort person preference key. */
-    function getSortPersonPreferenceKey(): string {
-        if (props.contentChannelIdKey) {
-            return `${props.contentChannelIdKey}-${PersonPreferenceKey.Sort}`;
-        }
-        else {
-            return PersonPreferenceKey.Sort;
-        }
+        const sortKey = preferences.getValue(keyResolver(PersonPreferenceKey.Sort));
+        return sortOptions.find(sortOption => sortOption.key === sortKey) ?? defaultSortOption;
     }
 
     /** Sets the sort person preference. */
-    function setSortPersonPreference(sort: SortOption): void {
-        setPersonPreference<SortOption>(preferences, getSortPersonPreferenceKey(), sort);
+    function saveSortPersonPreference(sort: SortOption): void {
+        const keyResolver = personPreferenceKeyResolver.value;
+
+        preferences.setValue(keyResolver(PersonPreferenceKey.Sort), sort.key);
+
+        // There is no need to wait for the preferences to save,
+        // so just fire and forget.
+        preferences.save();
     }
 
     function getSortTitle(): string {
@@ -135,23 +155,26 @@
     //#region Watchers
 
     watch(() => props.items, () => {
-        emitSortedItems();
+        // Whenever the items are changed
+        // they should be sorted with the current sort.
+        applySort();
     });
 
     watch(() => appliedSortOption.value, () => {
+        // Whenever the sort selection is changed
+        // the person preference should be updated
+        // and the items should be re-sorted.
+
         // Save the sort person preference.
         // No need to wait for it to succeed.
-        setSortPersonPreference(appliedSortOption.value);
-        preferences.save();
+        saveSortPersonPreference(appliedSortOption.value);
 
-        emitSortedItems();
-
+        applySort();
     });
 
     //#endregion
 
     onMounted(() => {
-        // Emit the sorted items right away.
-        emitSortedItems();
+        appliedSortOption.value = getSortPersonPreference();
     });
 </script>

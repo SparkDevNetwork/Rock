@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-import { IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -284,23 +283,4 @@ export function toDateString(date: string | null | undefined): string | null | u
 /** Updates item properties. Used for updating an item when details are retrieved or when an item is downloaded. */
 export function updateItemProperties(item: LibraryViewerItemBag, newProperties: Partial<LibraryViewerItemBag>): void {
     Object.assign(item, newProperties);
-}
-
-/** Gets a typed person preference. */
-export function getPersonPreference<T>(preferences: IPersonPreferenceCollection, key: string): T | null | undefined {
-    if (!key) {
-        return null;
-    }
-
-    try {
-        return JSON.parse(preferences.getValue(key)) as T;
-    }
-    catch {
-        return undefined;
-    }
-}
-
-/** Sets a typed person preference. */
-export function setPersonPreference<T>(preferences: IPersonPreferenceCollection, key: string, value: T): void {
-    preferences.setValue(key, JSON.stringify(value));
 }

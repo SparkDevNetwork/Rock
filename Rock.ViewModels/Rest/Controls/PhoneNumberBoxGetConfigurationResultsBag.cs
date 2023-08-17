@@ -34,5 +34,9 @@ namespace Rock.ViewModels.Rest.Controls
         /// The list of validation/formatting rules for each country code
         /// </summary>
         public Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>> Rules { get; set; }
+
+        //public bool ShowSmsOptIn { get; set; } = false;
+
+        public string SmsOptInText { get; set; } = string.Empty;
     }
 }

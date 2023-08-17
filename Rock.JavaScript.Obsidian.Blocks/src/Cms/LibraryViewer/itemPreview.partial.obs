@@ -12,8 +12,8 @@
                 <h1>{{ item.title }}</h1>
                 <div class="summary">{{ item.summary }}</div>
                 <div class="library-viewer-item-preview-author-and-stamps">
-                    <div class="author" v-if="item.authorName">By {{ item.authorName }}</div>
-                    <ItemStampList :item="item" />
+                    <div class="author">{{ authorLabelAndName }}</div>
+                    <ItemStampList :item="item" :showLabelsForStamps="['downloaded', 'uploaded']" />
                 </div>
             </div>
             <div class="library-viewer-item-preview-meta-and-download">
@@ -45,72 +45,71 @@
             </div>
             <div class="library-viewer-item-preview-content" v-html="item.htmlContent"></div>
         </div>
-            <Modal v-model="isDownloadModalShown"
-                   :isSaveButtonDisabled="!isDownloadTermsAndConditionsChecked"
-                   saveText="Download"
-                   title="Article Download"
-                   @save="emitDownloadArticleEvent">
-                <div class="row">
-                    <div class="col-sm-6">
-                        <StaticFormControl label="Article" :modelValue="item.title ?? ''" />
-                    </div>
-                    <div class="col-sm-6">
-                        <StaticFormControl label="Organization" :modelValue="item.sourcePublisherName ?? ''" />
-                    </div>
+        <Modal v-model="isDownloadModalShown"
+               :isSaveButtonDisabled="!isDownloadTermsAndConditionsChecked"
+               saveText="Download"
+               title="Article Download"
+               @save="emitDownloadArticleEvent">
+            <div class="row">
+                <div class="col-sm-6">
+                    <StaticFormControl label="Article" :modelValue="item.title ?? ''" />
                 </div>
-                <div v-if="isDownloadDateShown || isDownloadStatusShown"
-                     class="row">
-                    <div class="col-xs-6 col-sm-3">
-                        <template v-if="isDownloadDateShown">
-                            <DateTimePicker v-if="isDownloadDateShownWithTime" :label="downloadStartDateLabel" v-model="downloadedItemStartDateTime" />
-                            <DatePicker v-else :label="downloadStartDateLabel" v-model="downloadedItemStartDateTime" />
-                        </template>
-                    </div>
-                    <div class="col-xs-6 col-sm-3">
-                        <template v-if="isDownloadDateShown && isDownloadDateShownAsDateRange">
-                            <DateTimePicker v-if="isDownloadDateShownWithTime" label="Expire" v-model="downloadedItemEndDateTime" />
-                            <DatePicker v-else label="Expire" v-model="downloadedItemEndDateTime" />
-                        </template>
-                    </div>
-                    <div class="col-xs-12 col-sm-6">
-                        <RockFormField v-if="isDownloadStatusShown" label="Status"
-                                       :modelValue="downloadedItemStatus"
-                                       name="statusButtonGroup">
-                            <div>
-                                <div name="statusButtonGroup" class="btn-group btn-toggle">
-                                    <RockButton btnSize="xs"
-                                                :btnType="getButtonGroupButtonType(ContentChannelItemStatus.PendingApproval, downloadedItemStatus, BtnType.Warning)"
-                                                :class="getButtonGroupActiveClass(ContentChannelItemStatus.PendingApproval, downloadedItemStatus)"
-                                                @click="downloadedItemStatus = ContentChannelItemStatus.PendingApproval">Pending</RockButton>
-                                    <RockButton btnSize="xs"
-                                                :btnType="getButtonGroupButtonType(ContentChannelItemStatus.Approved, downloadedItemStatus, BtnType.Success)"
-                                                :class="getButtonGroupActiveClass(ContentChannelItemStatus.Approved, downloadedItemStatus)"
-                                                @click="downloadedItemStatus = ContentChannelItemStatus.Approved">Approved</RockButton>
-                                    <RockButton btnSize="xs"
-                                                :btnType="getButtonGroupButtonType(ContentChannelItemStatus.Denied, downloadedItemStatus, BtnType.Danger)"
-                                                :class="getButtonGroupActiveClass(ContentChannelItemStatus.Denied, downloadedItemStatus)"
-                                                @click="downloadedItemStatus = ContentChannelItemStatus.Denied">Denied</RockButton>
-                                </div>
+                <div class="col-sm-6">
+                    <StaticFormControl label="Organization" :modelValue="item.sourcePublisherName ?? ''" />
+                </div>
+            </div>
+            <div v-if="isDownloadDateShown || isDownloadStatusShown"
+                 class="row">
+                <div class="col-xs-6 col-sm-3">
+                    <template v-if="isDownloadDateShown">
+                        <DateTimePicker v-if="isDownloadDateShownWithTime" :label="downloadStartDateLabel" v-model="downloadedItemStartDateTime" />
+                        <DatePicker v-else :label="downloadStartDateLabel" v-model="downloadedItemStartDateTime" />
+                    </template>
+                </div>
+                <div class="col-xs-6 col-sm-3">
+                    <template v-if="isDownloadDateShown && isDownloadDateShownAsDateRange">
+                        <DateTimePicker v-if="isDownloadDateShownWithTime" label="Expire" v-model="downloadedItemEndDateTime" />
+                        <DatePicker v-else label="Expire" v-model="downloadedItemEndDateTime" />
+                    </template>
+                </div>
+                <div class="col-xs-12 col-sm-6">
+                    <RockFormField v-if="isDownloadStatusShown" label="Status"
+                                   :modelValue="downloadedItemStatus"
+                                   name="statusButtonGroup">
+                        <div>
+                            <div name="statusButtonGroup" class="btn-group btn-toggle">
+                                <RockButton btnSize="xs"
+                                            :btnType="getButtonGroupButtonType(ContentChannelItemStatus.PendingApproval, downloadedItemStatus, BtnType.Warning)"
+                                            :class="getButtonGroupActiveClass(ContentChannelItemStatus.PendingApproval, downloadedItemStatus)"
+                                            @click="downloadedItemStatus = ContentChannelItemStatus.PendingApproval">Pending</RockButton>
+                                <RockButton btnSize="xs"
+                                            :btnType="getButtonGroupButtonType(ContentChannelItemStatus.Approved, downloadedItemStatus, BtnType.Success)"
+                                            :class="getButtonGroupActiveClass(ContentChannelItemStatus.Approved, downloadedItemStatus)"
+                                            @click="downloadedItemStatus = ContentChannelItemStatus.Approved">Approved</RockButton>
+                                <RockButton btnSize="xs"
+                                            :btnType="getButtonGroupButtonType(ContentChannelItemStatus.Denied, downloadedItemStatus, BtnType.Danger)"
+                                            :class="getButtonGroupActiveClass(ContentChannelItemStatus.Denied, downloadedItemStatus)"
+                                            @click="downloadedItemStatus = ContentChannelItemStatus.Denied">Denied</RockButton>
                             </div>
-                        </RockFormField>
-                    </div>
-                </div>
-                <div v-if="downloadNotes.length" class="row">
-                    <div class="col-xs-12">
-                        <NotificationBox v-for="downloadNote of downloadNotes" :alertType="downloadNote.alertType" heading="Note: ">{{ downloadNote.content }}</NotificationBox>
-                    </div>
-                </div>
-                <div v-if="item.licenseType?.text && item.licenseType.value" class="row">
-                    <div class="col-xs-12">
-                        <div class="checkbox">
-                            <label title="">
-                                <input type="checkbox" v-model="isDownloadTermsAndConditionsChecked" />
-                                <span class="label-text">By downloading this work, you agree to comply with the terms of the <a target="_blank" :href="`https://www.rockrms.com/library/license/${item.licenseType.value}?utm_source=rock-item-download`">{{ item.licenseType.text }} License <i class="fa fa-external-link small"></i></a> for the Spark Development Network Content Library.</span>
-                            </label>
                         </div>
+                    </RockFormField>
+                </div>
+            </div>
+            <div v-if="downloadNotes.length" class="row">
+                <div class="col-xs-12">
+                    <NotificationBox v-for="downloadNote of downloadNotes" :alertType="downloadNote.alertType" heading="Note: ">{{ downloadNote.content }}</NotificationBox>
+                </div>
+            </div>
+            <div v-if="item.licenseType?.text && item.licenseType.value" class="row">
+                <div class="col-xs-12">
+                    <div class="checkbox">
+                        <label title="">
+                            <input type="checkbox" v-model="isDownloadTermsAndConditionsChecked" />
+                            <span class="label-text">By downloading this work, you agree to comply with the terms of the <a :href="`https://www.rockrms.com/library/licenses?utm_source=rock-item-download`" target="_blank" rel="noopener noreferrer">{{ item.licenseType.text }} License</a> for the Spark Development Network Content Library.</span>
+                        </label>
                     </div>
                 </div>
-
+            </div>
         </Modal>
         <Modal v-model="isRedownloadModalShown"
                saveText="Download"
@@ -309,14 +308,23 @@
     const isAttributionMisconfiguredModalShown = ref<boolean>(false);
 
     // Download values.
-    const downloadedItemStartDateTime = ref<string | null | undefined>(props.isDownloadDateShownWithTime ? RockDateTime.now().toISOString() : RockDateTime.now().date.toISOString());
+    const downloadedItemStartDateTime = ref<string | null | undefined>(getDefaultDownloadStartDate());
     const downloadedItemEndDateTime = ref<string | null | undefined>();
-    const downloadedItemStatus = ref<ContentChannelItemStatus>(ContentChannelItemStatus.Approved);
+    const downloadedItemStatus = ref<ContentChannelItemStatus | null | undefined>(getDefaultDownloadStatus());
     const isDownloadTermsAndConditionsChecked = ref<boolean>(false);
 
     //#endregion
 
     //#region Computed Values
+
+    const authorLabelAndName = computed<string>(() => {
+        if (props.item.authorName) {
+            return `By ${props.item.authorName}`;
+        }
+        else {
+            return "";
+        }
+    });
 
     const badges = computed<string[]>(() => {
         return getItemCategories(props.item, props.item.topic ? [props.item.topic] : []);
@@ -390,12 +398,14 @@
 
     //#region Functions
 
+    /** Emits the loadDetails event if the item details are not loaded. */
     function ensureDetailsLoaded(): void {
         if (!props.item?.htmlContent) {
             emit("loadDetails");
         }
     }
 
+    /** Gets the button type. */
     function getButtonGroupButtonType<T>(expectedValue: T, actualValue: T, successButtonType: BtnType): BtnType {
         if (expectedValue === actualValue) {
             return successButtonType;
@@ -405,6 +415,7 @@
         }
     }
 
+    /** Gets the button active CSS class if selected. */
     function getButtonGroupActiveClass<T>(expectedValue: T, actualValue: T): string {
         if (expectedValue === actualValue) {
             return "active";
@@ -414,14 +425,38 @@
         }
     }
 
+    /** Gets the default status for the item download based on the current item. */
+    function getDefaultDownloadStatus(): ContentChannelItemStatus | null | undefined {
+        if (props.item.isDownloaded) {
+            return null;
+        }
+        else {
+            return ContentChannelItemStatus.Approved;
+        }
+    }
+
+    /** Gets the default start date for the item download based on the current item. */
+    function getDefaultDownloadStartDate(): string | null | undefined {
+        if (props.item.isDownloaded) {
+            return null;
+        }
+        else if (props.isDownloadDateShownWithTime) {
+            return RockDateTime.now().toISOString();
+        }
+        else {
+            return RockDateTime.now().date.toISOString();
+        }
+    }
+
     /** Resets the download modal fields. */
     function resetItemDownloadModal(): void {
-        downloadedItemStartDateTime.value = undefined;
+        downloadedItemStartDateTime.value = getDefaultDownloadStartDate();
         downloadedItemEndDateTime.value = undefined;
-        downloadedItemStatus.value = ContentChannelItemStatus.Approved;
+        downloadedItemStatus.value = getDefaultDownloadStatus();
         isDownloadTermsAndConditionsChecked.value = false;
     }
 
+    /** Emits the downloadArticle event and closes the download modal. */
     function emitDownloadArticleEvent(): void {
         emit("downloadArticle", {
             contentLibraryItemGuid: props.item.guid,
@@ -437,6 +472,7 @@
 
     //#region Event Handlers
 
+    /** Event handler for the download button being clicked. */
     function onDownloadArticleClicked(): void {
         // Validate if we can download (the only way we can't currently is if attribution isn't configured).
         const validationResults = props.validationResults;
@@ -471,10 +507,13 @@
 
     watch(() => props.item, () => {
         ensureDetailsLoaded();
+
+        // Reset the download modals whenever the item changes.
+        resetItemDownloadModal();
     });
 
-    watch(isDownloadModalShown, () => {
-        if (!isDownloadModalShown.value) {
+    watch([isDownloadModalShown, isRedownloadModalShown], () => {
+        if (!isDownloadModalShown.value && !isRedownloadModalShown.value) {
             // Reset the item download modal when it is closed.
             resetItemDownloadModal();
         }

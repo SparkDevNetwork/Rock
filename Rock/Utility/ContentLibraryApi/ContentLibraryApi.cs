@@ -156,7 +156,7 @@ namespace Rock.Utility.ContentLibraryApi
         /// </summary>
         private RestClient GetRestClient()
         {
-            return new RestClient( $"{ConfigurationManager.AppSettings["RockApiUrl"].EnsureTrailingForwardslash()}api/org.sparkdevnetwork/ContentLibrary" );
+            return new RestClient( $"{ ConfigurationManager.AppSettings["SparkApiUrl"].EnsureTrailingForwardslash() }api/org.sparkdevnetwork/ContentLibrary" );
         }
 
         /// <summary>

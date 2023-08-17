@@ -1000,6 +1000,7 @@
     <Compile Include="Field\Types\ReminderTypesFieldType.cs" />
     <Compile Include="Field\Types\SecondaryAuthsFieldType.cs" />
     <Compile Include="Field\Types\SystemPhoneNumberFieldType.cs" />
+    <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
@@ -1115,6 +1116,8 @@
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.Logic.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperienceService.cs" />
     <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormFieldException.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateFormService.cs" />
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
     <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />

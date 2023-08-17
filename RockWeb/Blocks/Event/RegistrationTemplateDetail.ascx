@@ -97,6 +97,7 @@
                                             <asp:ListItem Value="2" Text="Use First Registrant" />
                                             <asp:ListItem Value="3" Text="Use Logged In Person" />
                                         </Rock:RockDropDownList>
+                                        <Rock:RockCheckBox ID="cbShowSmsOptIn" runat="server" Label="Show SMS Opt-In" Text="Yes" Help="When enabled a checkbox will be shown next to each mobile phone number for registrants allowing the registrar to enable SMS messaging for this number." />
                                     </div>
                                 </div>
                             </div>

@@ -21,10 +21,7 @@
 // </copyright>
 //
 
-/**
- * AddressStandardizationResultBag
- * Implements the Rock.ViewModels.Utility.IViewModel
- */
+/** AddressStandardizationResultBag */
 export type FinancialBatchCurrencyTotalsBag = {
     /** Gets or sets the name of the currency to be displayed in the Accounts Total section in the view mode */
     currency: number;

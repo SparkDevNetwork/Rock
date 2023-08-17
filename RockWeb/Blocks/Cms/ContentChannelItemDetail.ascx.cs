@@ -1209,7 +1209,7 @@ namespace RockWeb.Blocks.Cms
 
                         lContentLibraryDownloadedOn.Text = downloadedOn;
                         lContentLibraryDownloadedBy.Text = downloadedBy;
-                        aContentLibraryDownloadedLicense.HRef = $"https://rockrms.com/library/license/{license?.Guid}?utm_source=rock-item-uploaded";
+                        aContentLibraryDownloadedLicense.HRef = $"https://rockrms.com/library/licenses?utm_source=rock-item-uploaded";
                         aContentLibraryDownloadedLicense.InnerText = $"{license?.Value} License";
                     }
 

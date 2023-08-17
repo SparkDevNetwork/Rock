@@ -37,6 +37,9 @@ export type InteractiveExperienceVisualizerTypeBag = {
     /** Gets or sets the default attribute values. */
     defaultAttributeValues?: Record<string, string> | null;
 
+    /** Gets or sets disabled for this item. */
+    disabled?: boolean | null;
+
     /** Gets or sets the text. */
     text?: string | null;
 

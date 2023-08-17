@@ -21,10 +21,8 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
 {
     /// <summary>
     /// AddressStandardizationResultBag
-    /// Implements the <see cref="IViewModel" />
     /// </summary>
-    /// <seealso cref="IViewModel" />
-    public sealed class AddressStandardizationResultBag : IViewModel
+    public sealed class AddressStandardizationResultBag
     {
         /// <summary>
         /// Gets or sets the address fields.

@@ -48,8 +48,11 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
-            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+            // Commenting out the below call to the super class as currently, Note Types Field Type is inheriting from Category Field Type. This was causing errors.
+            // this may be changed in future if needed.
+            // var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
+            var publicConfigurationValues = new Dictionary<string, string>( privateConfigurationValues );
             if ( usage == ConfigurationValueUsage.Configure )
             {
                 publicConfigurationValues[ENTITY_TYPES] = new EntityTypeService( new RockContext() )
@@ -59,6 +62,13 @@ namespace Rock.Field.Types
                     .ToList()
                     .Select( e => e.ToListItemBag() )
                     .ToCamelCaseJson( false, true );
+
+                var entityTypeName = publicConfigurationValues[ENTITY_TYPE_NAME_KEY];
+                var entityType = EntityTypeCache.Get( entityTypeName );
+                if ( entityType != null )
+                {
+                    publicConfigurationValues[ENTITY_TYPE_NAME_KEY] = entityType.Guid.ToString();
+                }
             }
 
             using ( var rockContext = new RockContext() )
@@ -122,6 +132,18 @@ namespace Rock.Field.Types
                 }
             }
             return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return publicValue;
         }
 
         #endregion Configuration
