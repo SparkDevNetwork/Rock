@@ -235,6 +235,7 @@
     async function updateSearchResults(name: string, address: string, phone: string, email: string, cancellationToken: Ref<boolean>): Promise<void> {
         // Only search if we have 3 or more characters.
         if (name.length < 3 && address.length < 3 && phone.length < 3 && email.length < 3) {
+            // If we have search results, but no longer have good search criteria, clear results
             if (searchResults.value) {
                 // Wait 200ms to see if the user has continued to type.
                 await sleep(200);
@@ -524,11 +525,6 @@
 
     // Watch for changes to what the user has typed and update the search results.
     watch([nameSearchText, addressSearchText, phoneSearchText, emailSearchText], () => {
-        // Make sure there's a value to search for
-        if (!nameSearchText.value && !addressSearchText.value && !phoneSearchText.value && !emailSearchText.value) {
-            return;
-        }
-
         // If a search is in progress, cancel it.
         if (searchCancelToken) {
             searchCancelToken.value = true;
