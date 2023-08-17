@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
 using Rock.ViewModels.Utility;
@@ -26,8 +27,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockViewModel
     /// </summary>
-    /// <seealso cref="Rock.ViewModels.Utility.IViewModel" />
-    public sealed class RegistrationEntryBlockViewModel : IViewModel
+    public sealed class RegistrationEntryBlockViewModel
     {
         /// <summary>
         /// Gets or sets the current person family unique identifier.

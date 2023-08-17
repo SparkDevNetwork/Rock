@@ -25,7 +25,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockArgs Interface
     /// </summary>
-    public interface IRegistrationEntryBlockArgs : IViewModel
+    public interface IRegistrationEntryBlockArgs
     {
         /// <summary>
         /// Gets or sets the registration unique identifier.

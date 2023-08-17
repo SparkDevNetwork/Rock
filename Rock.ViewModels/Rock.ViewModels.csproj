@@ -551,7 +551,6 @@
     <Compile Include="Controls\BirthdayPickerBag.cs" />
     <Compile Include="Controls\AddressControlBag.cs" />
     <Compile Include="Controls\GatewayControlBag.cs" />
-    <Compile Include="Utility\IViewModel.cs" />
     <Compile Include="Utility\IViewModelWithAttributes.cs" />
     <Compile Include="Utility\PublicEditableAttributeBag.cs" />
     <Compile Include="Utility\ListItemBag.cs" />

@@ -14,17 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.ViewModels.Utility;
-
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialBatchDetail
 {
     /// <summary>
     /// AddressStandardizationResultBag
-    /// Implements the <see cref="IViewModel" />
     /// </summary>
-    /// <seealso cref="IViewModel" />
-    public class FinancialBatchAccountTotalsBag: IViewModel
+    public class FinancialBatchAccountTotalsBag
     {
         /// <summary>
         /// Gets or sets the name of the account to be displayed in the Accounts Total section in the view mode

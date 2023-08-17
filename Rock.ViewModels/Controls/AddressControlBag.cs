@@ -15,14 +15,12 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Utility;
-
 namespace Rock.ViewModels.Controls
 {
     /// <summary>
     /// Address Control View Model
     /// </summary>
-    public sealed class AddressControlBag : IViewModel
+    public sealed class AddressControlBag
     {
         /// <summary>
         /// Gets or sets the street1.

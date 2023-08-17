@@ -15,14 +15,12 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Utility;
-
 namespace Rock.ViewModels.Controls
 {
     /// <summary>
     /// Address Control View Model
     /// </summary>
-    public sealed class PhoneNumberBoxWithSmsControlBag : IViewModel
+    public sealed class PhoneNumberBoxWithSmsControlBag
     {
         /// <summary>
         /// Gets or sets the numbers.

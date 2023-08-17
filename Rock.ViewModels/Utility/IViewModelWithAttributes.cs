@@ -22,7 +22,7 @@ namespace Rock.ViewModels.Utility
     /// <summary>
     /// View Model with Attributes
     /// </summary>
-    public interface IViewModelWithAttributes : IViewModel
+    public interface IViewModelWithAttributes
     {
         /// <summary>
         /// Gets or sets the attributes.

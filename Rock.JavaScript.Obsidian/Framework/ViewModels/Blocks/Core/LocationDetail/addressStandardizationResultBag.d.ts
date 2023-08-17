@@ -23,10 +23,7 @@
 
 import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 
-/**
- * AddressStandardizationResultBag
- * Implements the Rock.ViewModels.Utility.IViewModel
- */
+/** AddressStandardizationResultBag */
 export type AddressStandardizationResultBag = {
     /** Gets or sets the address fields. */
     addressFields?: AddressControlBag | null;

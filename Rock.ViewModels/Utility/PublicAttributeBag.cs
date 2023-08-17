@@ -24,7 +24,7 @@ namespace Rock.ViewModels.Utility
     /// A slimmed down version of an attribute that includes enough detail to
     /// view and edit a value, but not enough to edit the attribute itself.
     /// </summary>
-    public class PublicAttributeBag : IViewModel
+    public class PublicAttributeBag
     {
         /// <summary>
         /// Gets or sets the field type unique identifier.
