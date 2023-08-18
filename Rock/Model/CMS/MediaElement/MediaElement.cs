@@ -161,7 +161,6 @@ namespace Rock.Model
 
         /// <summary>
         /// Transcripts Text
-        /// the database.
         /// </summary>
         /// <value>
         /// The Transcription Text
@@ -171,7 +170,6 @@ namespace Rock.Model
 
         /// <summary>
         /// The close captioning data for the media element. This should be in the format of WebVTT for use by Rock.
-        /// the database.
         /// </summary>
         /// <value>
         /// The Closed Caption
