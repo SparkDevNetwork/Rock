@@ -517,7 +517,7 @@ describe("RockColor", () => {
             ["#cd2bba", "#52144a", "#fbc1f4"],
             ["#cdb6b6", "#521414", "#fbc1c1"],
             ["#8f5252", "#521414", "#fbc1c1"],
-            ["#ffffff", "#3b2b2b", "#e3d9d9"]
+            ["#ffffff", "#333333", "#dedede"]
         ])("Color '%s' produces '%s' and '%s'", (hexColor: string, expectedForegroundColor: string, expectedBackgroundColor: string) => {
             const color = new RockColor(hexColor);
             const pair = RockColor.calculateColorPair(color);

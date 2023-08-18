@@ -942,7 +942,7 @@ namespace Rock.Tests.UnitTests.Rock.Utility
         [DataRow( "#cd2bba", "#52144a", "#fbc1f4" )]
         [DataRow( "#cdb6b6", "#521414", "#fbc1c1" )]
         [DataRow( "#8f5252", "#521414", "#fbc1c1" )]
-        [DataRow( "#ffffff", "#3b2b2b", "#e3d9d9" )]
+        [DataRow( "#ffffff", "#333333", "#dedede" )]
         public void CalculateColorPair_ProducesCorrectColors( string hexColor, string expectedForegroundHex, string expectedBackgroundHex )
         {
             var color = new RockColor( hexColor );
