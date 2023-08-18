@@ -474,29 +474,26 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();
             string script = string.Format( @"
-   function SetBackgroundColor( checkboxControl ){{
-                if ( checkboxControl.prop( 'checked' ) )
-                {{
-                    checkboxControl.closest('.js-media-selector-item').addClass( 'well-message-danger' );
-                }}
-                else
-                {{
-                    checkboxControl.closest('.js-media-selector-item').removeClass( 'well-message-danger' );
-                }}
+    function setBackgroundColor(checkboxControl){{
+        if (checkboxControl.prop('checked')) {{
+            checkboxControl.closest('.js-media-selector-item').addClass( 'well-message-danger' );
+        }}
+        else {{
+            checkboxControl.closest('.js-media-selector-item').removeClass( 'well-message-danger' );
+        }}
+    }}
 
-            }}
+    $( "".js-media-selector-item input[type=checkbox]"").on('click', function() {{
+            setBackgroundColor($(this));
+    }})
 
-        $( "".js-media-selector-item input[type=checkbox]"").on('click', function() {{
-                SetBackgroundColor($( this ) );
-            }})
+    var checkboxes = $(""input[id^='{0}']:checked"");
 
-            var checkboxes = $(""input[id ^= '{0}']:checked"");
-
-            for ( var i = 0; i < checkboxes.length; i++ )
-            {{
-                    SetBackgroundColor( $(checkboxes[i]) );
-            }}
-", this.ClientID );
+    for (var i = 0; i < checkboxes.length; i++)
+    {{
+        setBackgroundColor($(checkboxes[i]));
+    }}
+    ", this.ClientID );
 
             ScriptManager.RegisterStartupScript( this, typeof( MediaSelector ), "MediaSelectorScript_" + this.ClientID, script, true );
         }

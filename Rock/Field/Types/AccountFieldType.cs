@@ -117,13 +117,21 @@ namespace Rock.Field.Types
         {
             if ( Guid.TryParse( privateValue, out Guid guid ) )
             {
+                var displayPublicName = true;
+
+                if ( privateConfigurationValues != null &&
+                     privateConfigurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+                {
+                    displayPublicName = privateConfigurationValues[DISPLAY_PUBLIC_NAME].AsBoolean();
+                }
+
                 var account = FinancialAccountCache.Get( guid );
                 if ( account != null )
                 {
                     return new ListItemBag()
                     {
                         Value = account.Guid.ToString(),
-                        Text = account.Name,
+                        Text = displayPublicName ? account.PublicName : account.Name,
                     }.ToCamelCaseJson( false, true );
                 }
             }

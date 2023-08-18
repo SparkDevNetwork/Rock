@@ -64,7 +64,7 @@
                                         <div style="width:200px;" class="flex-shrink-0">
                                             <div class="leading-snug"><span class="text-md font-weight-semibold">{{ result.name }}</span> <i class="fa fa-child text-primary" v-if="result.ageClassification == AgeClassification.Child" aria-label="Child" title="Child"></i> <span v-if="result.formattedAge" class="text-muted">{{ result.formattedAge }}</span></div>
                                             <div v-if="getSubInformation(result)" class="text-muted"><small v-html="getSubInformation(result)" /></div>
-                                            <a :href="`/Person/${result.guid}`" @click.stop>Profile</a>
+                                            <a :href="`/Person/${result.guid}`" @click.stop target="_blank" rel="noreferrer noopener">Profile</a>
                                         </div>
                                         <div style="width:275px;" class="flex-shrink-0">
                                             <div>{{ result.address }}</div>

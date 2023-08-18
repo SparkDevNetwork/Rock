@@ -159,6 +159,24 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Transcripts Text
+        /// </summary>
+        /// <value>
+        /// The Transcription Text
+        /// </value>
+        [DataMember]
+        public string TranscriptionText { get; set; }
+
+        /// <summary>
+        /// The close captioning data for the media element. This should be in the format of WebVTT for use by Rock.
+        /// </summary>
+        /// <value>
+        /// The Closed Caption
+        /// </value>
+        [DataMember]
+        public string CloseCaption { get; set; }
+
         #endregion
 
         #region Navigation Properties
