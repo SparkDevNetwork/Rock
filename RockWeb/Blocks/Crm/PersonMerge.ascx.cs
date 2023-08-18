@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Crm
             public const string ViewAllAttributes = "ViewAllAttributes";
         }
 
-        #endregion
+        #endregion Security Actions
 
         #region Constants
 
@@ -112,15 +112,15 @@ namespace RockWeb.Blocks.Crm
             FAMILY_VALUES,
             BUSINESS_INFORMATION,
             BUSINESS_ATTRIBUTES
-    };
+        };
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
         private MergeData MergeData { get; set; }
 
-        #endregion
+        #endregion Properties
 
         #region Base Control Methods
 
@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Crm
             return base.SaveViewState();
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
@@ -730,6 +730,26 @@ namespace RockWeb.Blocks.Crm
 
                         rockContext.SaveChanges();
 
+                        // Merge Reminders on merge
+                        logger.Write( $"Merging Reminders..." );
+
+                        var personEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) );
+                        var personReminderTypesQry = new ReminderTypeService( rockContext ).Queryable()
+                            .Where( t => t.EntityTypeId == personEntityTypeId.Value );
+
+                        foreach ( var p in MergeData.People.Where( p => p.Id != primaryPerson.Id) )
+                        {
+                            var personReminders = new ReminderService( rockContext ).Queryable()
+                                .Where( r => personReminderTypesQry.Contains( r.ReminderType ) && r.EntityId == p.Id ).ToList();
+
+                            foreach ( var personReminder in personReminders )
+                            {
+                                personReminder.EntityId = primaryPerson.Id;
+                            }
+
+                            rockContext.SaveChanges();
+                        }
+
                         // Merge search keys on merge
                         logger.Write( $"Merging Search Keys..." );
 
@@ -850,7 +870,6 @@ namespace RockWeb.Blocks.Crm
 		                }
 
                         // Run scripts to merge non-primary person data.
-                        var personEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) );
                         foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
                         {
                             var parms = new Dictionary<string, object>();
@@ -1147,7 +1166,7 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
@@ -1692,7 +1711,7 @@ namespace RockWeb.Blocks.Crm
             return nonPrimarySystemAccount;
         }
 
-        #endregion
+        #endregion Methods
 
         /// <summary>
         /// Executes a merge script that is equivalent to the stored procedure "spCrm_PersonMerge".
