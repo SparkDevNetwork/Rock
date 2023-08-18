@@ -172,7 +172,6 @@ namespace Rock.Jobs
 
                 var reminderService = new ReminderService( rockContext );
                 var activeReminders = reminderService.GetActiveReminders( currentDate, _includedReminderTypeIds, _excludedReminderTypeIds );
-                var reminderEntities = reminderService.GetReminderEntities( activeReminders );
 
                 ProcessWorkflowNotifications( activeReminders, rockContext );
                 ProcessCommunicationNotifications( notificationSystemCommunication, activeReminders, rockContext );
@@ -294,6 +293,11 @@ namespace Rock.Jobs
                 if ( !workflowReminder.ReminderType.NotificationWorkflowTypeId.HasValue )
                 {
                     WriteError( $"Notification workflow for reminder {workflowReminder.Id} aborted:  The reminder type is incorrectly configured." );
+                    continue;
+                }
+                else if ( !reminderEntities.ContainsKey( workflowReminder.Id ) )
+                {
+                    ReportMissingEntity( workflowReminder );
                     continue;
                 }
 
@@ -435,6 +439,12 @@ namespace Rock.Jobs
 
             foreach ( var reminder in personReminderList )
             {
+                if ( !reminderEntities.ContainsKey( reminder.Id ) )
+                {
+                    ReportMissingEntity( reminder );
+                    continue;
+                }
+
                 var person = reminderEntities[reminder.Id] as Person;
                 var photoUrl = person.PhotoUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );
                 var reminderData = new ReminderViewModel( reminder, person, photoUrl );
@@ -443,6 +453,12 @@ namespace Rock.Jobs
 
             foreach ( var reminder in groupReminderList )
             {
+                if ( !reminderEntities.ContainsKey( reminder.Id ) )
+                {
+                    ReportMissingEntity( reminder );
+                    continue;
+                }
+
                 var group = reminderEntities[reminder.Id] as Group;
                 var reminderData = new ReminderViewModel( reminder, group );
                 reminderDataObjects.Add( reminderData );
@@ -450,6 +466,12 @@ namespace Rock.Jobs
 
             foreach ( var reminder in otherReminderList )
             {
+                if ( !reminderEntities.ContainsKey( reminder.Id ) )
+                {
+                    ReportMissingEntity( reminder );
+                    continue;
+                }
+
                 var entity = reminderEntities[reminder.Id];
                 var reminderData = new ReminderViewModel( reminder, entity );
                 reminderDataObjects.Add( reminderData );
@@ -517,6 +539,15 @@ namespace Rock.Jobs
             {
                 WriteError( $"Failed to create SystemCommunication for Reminders for recipient {recipient.Id}: {ex.Message}", ex );
             }
+        }
+
+        /// <summary>
+        /// Report a reminder with a missing entity in the job error output.
+        /// </summary>
+        /// <param name="reminder"></param>
+        private void ReportMissingEntity( Reminder reminder )
+        {
+            _jobErrors.Add( $"Reminder {reminder.Id} is attached to a non-existent entity ({reminder.ReminderType.EntityType.FriendlyName} {reminder.EntityId})." );
         }
 
         /// <summary>
