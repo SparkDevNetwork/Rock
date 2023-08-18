@@ -4894,30 +4894,12 @@ namespace Rock.Rest.v2
         /// Get the phone number configuration related to country codes and number formats
         /// </summary>
         /// <returns>The configurations in the form of <see cref="ViewModels.Rest.Controls.PhoneNumberBoxGetConfigurationResultsBag"/>.</returns>
-        //[Authenticate]
-        //[HttpPost]
-        //[System.Web.Http.Route( "PhoneNumberBoxGetConfiguration" )]
-        //[Rock.SystemGuid.RestActionGuid( "2f15c4a2-92c7-4bd3-bf48-7eb11a644142" )]
-        //public IHttpActionResult PhoneNumberBoxGetConfiguration()
-        //{
-        //    return PhoneNumberBoxGetConfiguration( false );
-        //}
-
-        /// <summary>
-        /// Get the phone number configuration related to country codes and number formats
-        /// </summary>
-        /// <returns>The configurations in the form of <see cref="ViewModels.Rest.Controls.PhoneNumberBoxGetConfigurationResultsBag"/>.</returns>
         [Authenticate]
         [HttpPost]
         [System.Web.Http.Route( "PhoneNumberBoxGetConfiguration" )]
         [Rock.SystemGuid.RestActionGuid( "2f15c4a2-92c7-4bd3-bf48-7eb11a644142" )]
         public IHttpActionResult PhoneNumberBoxGetConfiguration([FromBody] PhoneNumberBoxGetConfigurationOptionsBag options )
         {
-        //    return PhoneNumberBoxGetConfiguration( options?.ShowSmsOptIn ?? false );
-        //}
-
-        //private IHttpActionResult PhoneNumberBoxGetConfiguration( bool showSmsOptIn )
-        //{
             var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             string defaultCountryCode = null;
