@@ -13,9 +13,9 @@
                         <b class="fa fa-caret-down"></b>
                     </a>
 
-                    <Panel v-if="showPopup" isFullscreen isFullscreenPageOnly title="Person Search">
+                    <Panel v-if="showPopup" isFullscreen isFullscreenPageOnly title="Person Search" @keydown.esc.stop="onCancel">
                         <template #headerActions>
-                            <RockButton class="btn-square mr-2" v-if="isSelfSelectionEnabled" @click.prevent="onSelfSelect" :btnSize="BtnSize.ExtraSmall" aria-label="Select Self" title="Select Self">
+                            <RockButton class="btn-square mr-2" v-if="isSelfSelectionEnabled" @click.prevent="selectSelf" :btnSize="BtnSize.ExtraSmall" aria-label="Select Self" title="Select Self">
                                 <i class="fa fa-user" aria-hidden></i>
                             </RockButton>
                             <RockButton class="btn-square mr-2" @click.prevent="isAdvancedSearch = !isAdvancedSearch" :btnSize="BtnSize.ExtraSmall" aria-label="Advanced Search" title="Advanced Search">
@@ -26,7 +26,7 @@
                             </button>
                         </template>
 
-                        <div @keydown="onPopupKeyDown" tabindex="0">
+                        <div tabindex="0">
                             <div ref="nameSearchTextBox" class="personpicker-search-panel" :class="{ 'row': isAdvancedSearch }">
                                 <TextBox v-model="nameSearchText" :formGroupClasses="isAdvancedSearch ? 'col-sm-6' : ''" disableLabel>
                                     <template #inputGroupPrepend>
@@ -53,13 +53,11 @@
                             <div>
                                 <div v-for="result in searchResults"
                                      :key="result.primaryAliasGuid!"
-                                     class="well cursor-pointer"
-                                     :style="getCardStyle(result)"
+                                     class="well cursor-pointer mb-2 p-2"
+                                     :style="{ borderColor: internalValue?.value == result.primaryAliasGuid ? 'var(--color-primary)' : undefined }"
                                      tabindex="0"
-                                     @click="onCardClick(result)"
-                                     @focus="onCardFocus(result)"
-                                     @blur="onCardBlur(result)"
-                                     @keypress="onCardKeyPress(result, $event)"
+                                     @click="selectPerson(result)"
+                                     @keypress.enter="selectPerson(result)"
                                      role="button">
                                     <div class="d-flex text-xs flex-wrap gap" :class="{ 'o-60': !result.isActive }">
                                         <div class="person-image flex-shrink-0" :style="getPersonImageStyle(result)" :alt="'Profile image for ' + result.name"></div>
@@ -73,7 +71,7 @@
                                             <div>{{ result.email }}</div>
                                         </div>
                                         <ul style="width:150px;" class="list-unstyled flex-shrink-0">
-                                            <li v-for="phone in result.phoneNumbers" :key="phone.type ?? '' + phone.number ?? ''">{{ phone.number }} <small v-if="phone.type" class="text-muted">{{ phone.type }}</small></li>
+                                            <li v-for="phone in result.phoneNumbers" :key="phone.type ?? '' + phone.number ?? ''">{{ phone.isUnlisted ? 'Unlisted' : phone.number }} <small v-if="phone.type" class="text-muted">{{ phone.type }}</small></li>
                                         </ul>
                                         <div class="ml-auto flex-shrink-0">
                                             <div class="taglist">
@@ -205,9 +203,6 @@
     /** The currently displayed search results. */
     const searchResults = ref<PersonSearchResult[]>([]);
 
-    /** The currently selected search result. */
-    const selectedSearchResult = ref("");
-
     /** The cancellation token used to cancel a previous search API call. */
     let searchCancelToken: Ref<boolean> | null = null;
 
@@ -280,7 +275,6 @@
         // Update the search results if we didn't get back an error.
         if (result.isSuccess && result.data) {
             searchResults.value = result.data;
-            selectedSearchResult.value = "";
         }
         else {
             console.error("Error fetching person picker search results: ", result.errorMessage);
@@ -359,24 +353,6 @@
     }
 
     /**
-     * Gets the card container style attribute values.
-     *
-     * @param result The details of the person.
-     */
-    function getCardStyle(result: PersonSearchResult): Record<string, string> {
-        const styles: Record<string, string> = {
-            margin: "0 0 8px 0",
-            padding: "8px"
-        };
-
-        if (result.primaryAliasGuid === selectedSearchResult.value) {
-            styles["border"] = "1px solid var(--color-primary)";
-        }
-
-        return styles;
-    }
-
-    /**
      * Event handler for when the clear button is clicked by the user.
      */
     function onClear(): void {
@@ -391,6 +367,7 @@
         showPopup.value = !showPopup.value;
 
         if (showPopup.value) {
+            // After popup is shown, focus on the first search input
             nextTick(() => {
                 if (nameSearchTextBox.value) {
                     const input = nameSearchTextBox.value.querySelector("input");
@@ -401,115 +378,29 @@
         }
     }
 
-    /**
-     * Event handler for when the user clicks the cancel button. Hide the
-     * popup.
-     */
+    /** Hide the popup. */
     function onCancel(): void {
         showPopup.value = false;
     }
 
-    /**
-     * Event handler for when the user presses a key anywhere inside the
-     * popup body. If it is the escape key then close the popup.
-     *
-     * @param ev The event details about the key press.
-     */
-    function onPopupKeyDown(ev: KeyboardEvent): void {
-        if (ev.keyCode === 27 && showPopup.value) {
-            ev.stopImmediatePropagation();
-            onCancel();
-        }
+    function selectSelf(): void {
+        selectPerson({ primaryAliasGuid: currentPerson?.idKey, name: currentPerson?.fullName });
     }
 
-    /**
-     * Event handler for when a card is clicked. If the card is not selected
-     * them mark it selected. If it is already selected then close the
-     * popup and emit the new selection.
-     *
-     * @param result The result object that contains the details about the person.
-     */
-    function onCardClick(result: PersonSearchResult): void {
-        if (!result.primaryAliasGuid || !result.name) {
+    /** Set a given search result as the selected person */
+    function selectPerson(person: PersonSearchResult): void {
+        if (!person.primaryAliasGuid || !person.name) {
             return;
         }
 
         internalValue.value = {
-            value: selectedSearchResult.value,
-            text: result.name
+            value: person.primaryAliasGuid,
+            text: person.name
         };
 
         // Emit the new value and close the popup.
         emit("update:modelValue", internalValue.value);
         showPopup.value = false;
-    }
-
-    /** Event handler for clicking the Select Self button */
-    function onSelfSelect(): void {
-        internalValue.value = {
-            value: currentPerson?.idKey,
-            text: currentPerson?.fullName
-        };
-
-        // Emit the new value and close the popup.
-        emit("update:modelValue", internalValue.value);
-        showPopup.value = false;
-    }
-
-    /**
-     * Event handler for when a card gains focus. This allows keyboard
-     * navigation through the cards.
-     *
-     * @param result The result object that contains the details about the person.
-     */
-    function onCardFocus(result: PersonSearchResult): void {
-        if (!result.primaryAliasGuid || !result.name) {
-            return;
-        }
-
-        selectedSearchResult.value = result.primaryAliasGuid;
-    }
-
-    /**
-     * Event handler for when a card loses focus. This allows keyboard
-     * navigation through the cards.
-     *
-     * @param result The result object that contains the details about the person.
-     */
-    function onCardBlur(result: PersonSearchResult): void {
-        if (!result.primaryAliasGuid || !result.name) {
-            return;
-        }
-
-        if (selectedSearchResult.value === result.primaryAliasGuid) {
-            selectedSearchResult.value = "";
-        }
-    }
-
-    /**
-     * Event handler for when a key is pressed while a card has focus. If
-     * it is the enter key and the card is selected then emit the new value
-     * and close the popup.
-     *
-     * @param result The result object that contains the details about the person.
-     */
-    function onCardKeyPress(result: PersonSearchResult, ev: KeyboardEvent): void {
-        if (!result.primaryAliasGuid || !result.name) {
-            return;
-        }
-
-        const isEnterKey = ev.keyCode === 10 || ev.keyCode === 13;
-
-        if (selectedSearchResult.value === result.primaryAliasGuid && isEnterKey) {
-            internalValue.value = {
-                value: selectedSearchResult.value,
-                text: result.name
-            };
-
-            // Emit the new value and close the popup.
-            emit("update:modelValue", internalValue.value);
-            showPopup.value = false;
-        }
     }
 
     // When leaving advanced search, clear the advanced search fields
@@ -520,8 +411,6 @@
             emailSearchText.value = "";
         }
     });
-
-    // When the popup
 
     // Watch for changes to what the user has typed and update the search results.
     watch([nameSearchText, addressSearchText, phoneSearchText, emailSearchText], () => {
