@@ -20,8 +20,17 @@ using System;
 
 namespace Rock.ViewModels.Rest.Controls
 {
+    /// <summary>
+    /// Used for configuration options for the PhoneNumberBox
+    /// </summary>
     public class PhoneNumberBoxGetConfigurationOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether [show SMS opt in].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
+        /// </value>
         public bool ShowSmsOptIn { get; set; }
     }
 }

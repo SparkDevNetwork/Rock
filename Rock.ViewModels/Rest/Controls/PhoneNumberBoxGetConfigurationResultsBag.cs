@@ -35,8 +35,13 @@ namespace Rock.ViewModels.Rest.Controls
         /// </summary>
         public Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>> Rules { get; set; }
 
-        //public bool ShowSmsOptIn { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets the SMS opt in text.
+        /// </summary>
+        /// <value>
+        /// The SMS opt in text.
+        /// </value>
         public string SmsOptInText { get; set; } = string.Empty;
     }
 }

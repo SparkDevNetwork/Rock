@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string CloseCaption { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -78,6 +81,9 @@ namespace Rock.Client
         /// <summary />
         public string ThumbnailDataJson { get; set; } = @"[]";
 
+        /// <summary />
+        public string TranscriptionText { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -111,6 +117,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( MediaElement source )
         {
             this.Id = source.Id;
+            this.CloseCaption = source.CloseCaption;
             this.Description = source.Description;
             this.DurationSeconds = source.DurationSeconds;
             this.FileDataJson = source.FileDataJson;
@@ -125,6 +132,7 @@ namespace Rock.Client
             this.SourceKey = source.SourceKey;
             this.SourceModifiedDateTime = source.SourceModifiedDateTime;
             this.ThumbnailDataJson = source.ThumbnailDataJson;
+            this.TranscriptionText = source.TranscriptionText;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

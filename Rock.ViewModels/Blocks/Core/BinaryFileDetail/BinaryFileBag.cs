@@ -21,6 +21,10 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.BinaryFileDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class BinaryFileBag : EntityBagBase
     {
         /// <summary>

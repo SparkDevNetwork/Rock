@@ -19,6 +19,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialGatewayDetail
 {
+    /// <summary>
+    /// Used to store options for the FinancialGateway
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class FinancialGatewayBag : EntityBagBase
     {
         /// <summary>
