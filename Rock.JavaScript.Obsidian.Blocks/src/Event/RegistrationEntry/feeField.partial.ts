@@ -99,7 +99,8 @@ export default defineComponent({
         dropDownListOptions(): ListItemBag[] {
             return this.fee.items.map(i => ({
                 text: this.getItemLabel(i),
-                value: i.guid
+                value: i.guid,
+                disabled: (i.countRemaining != null && i.countRemaining < 1)
             }));
         },
         numberUpDownGroupOptions(): NumberUpDownGroupOption[] {
