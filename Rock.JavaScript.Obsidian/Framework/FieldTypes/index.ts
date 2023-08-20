@@ -65,6 +65,9 @@ registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationP
 import { CurrencyFieldType } from "./currencyField.partial";
 registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());
 
+import { DataViewFieldType } from "./dataViewField.partial";
+registerFieldType(FieldTypeGuids.DataView, new DataViewFieldType());
+
 import { DateFieldType } from "./dateField.partial";
 registerFieldType(FieldTypeGuids.Date, new DateFieldType());
 
