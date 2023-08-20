@@ -76,6 +76,7 @@
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
+    <Compile Include="Engagement\StepTypeDetail.cs" />
     <Compile Include="Tv\AppleTvAppDetail.cs" />
     <Compile Include="Event\EventItemDetail.cs" />
     <Compile Include="Event\EventCalendarDetail.cs" />
