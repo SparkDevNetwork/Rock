@@ -23,6 +23,9 @@ export { ConfigurationValues, getFieldEditorProps } from "./utils";
  * Define the standard field types in Rock.
  */
 
+import { AchievementTypeFieldType } from "./achievementTypeField.partial";
+registerFieldType(FieldTypeGuids.AchievementType, new AchievementTypeFieldType());
+
 import { AddressFieldType } from "./addressField.partial";
 registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 
