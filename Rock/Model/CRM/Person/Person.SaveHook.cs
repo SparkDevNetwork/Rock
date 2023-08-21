@@ -365,7 +365,7 @@ namespace Rock.Model
                     PersonService.UpdateGivingId( this.Entity.Id, RockContext );
                 }
 
-                if ( this.Entity.Age.HasValue && this.Entity.Age != Entry.OriginalValues[nameof( Person.Age )].ToStringSafe().AsIntegerOrNull() )
+                if ( this.Entity.Age.HasValue && ( this.PreSaveState == EntityContextState.Added || this.Entity.Age != Entry.OriginalValues[nameof( Person.Age )].ToStringSafe().AsIntegerOrNull() ) )
                 {
                     PersonService.UpdateFamilyMemberRoleByAge( this.Entity.Id, this.Entity.Age.Value, RockContext );
                 }
