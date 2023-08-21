@@ -307,6 +307,8 @@
     <Compile Include="Modules\Core\Model\RegistrationTests.cs" />
     <Compile Include="Modules\Core\Model\StepTests.cs" />
     <Compile Include="Modules\Core\Model\DeviceTests.cs" />
+    <Compile Include="TestFramework\IntegrationTestDatabaseInitializer.cs" />
+    <Compile Include="TestFramework\DatabaseRequiredAttribute.cs" />
     <Compile Include="TestFramework\TestExtensionMethods.cs" />
     <Compile Include="ThirdPartyIntegrations\NcoaApi\TrueNcoaApiTests.cs" />
     <Compile Include="Modules\Core\Rock.Logging\RockLogConfigurationTest.cs" />
