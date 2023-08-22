@@ -396,12 +396,13 @@
 
     onMounted(() => {
         // Redirect since already authenticated.
-        if (config.shouldRedirect && config.redirectUrl) {
-            navigate(config.redirectUrl);
+        if (config.shouldRedirect) {
+            // If the redirect URL is not set, then redirect to the default route.
+            navigate(config.redirectUrl ? config.redirectUrl : "/");
         }
     });
 
-    removeCurrentUrlQueryParams("State", "Code", "IsPasswordless");
+    removeCurrentUrlQueryParams("State", "Code", "IsPasswordless", "state", "code", "scope", "authuser", "prompt");
 
     onConfigurationValuesChanged(useReloadBlock());
 </script>
