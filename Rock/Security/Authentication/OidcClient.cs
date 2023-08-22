@@ -199,7 +199,7 @@ namespace Rock.Security.ExternalAuthentication
         {
             var options = new ExternalRedirectAuthenticationOptions
             {
-                RedirectUrl = GetRedirectUrl( request ),
+                RedirectUrl = GetRedirectUrl(),
                 Parameters = request.QueryString.ToSimpleQueryStringDictionary()
             };
 
@@ -244,7 +244,7 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         public override Uri GenerateLoginUrl( HttpRequest request )
         {
-            return GenerateExternalLoginUrl( GetRedirectUrl( request ), request.QueryString[PageParameterKey.ReturnUrl] );
+            return GenerateExternalLoginUrl( GetRedirectUrl(), request.QueryString[PageParameterKey.ReturnUrl] );
         }
 
         /// <summary>
@@ -278,7 +278,7 @@ namespace Rock.Security.ExternalAuthentication
             throw new NotImplementedException();
         }
 
-        private string GetRedirectUrl( HttpRequest request )
+        private string GetRedirectUrl()
         {
             return GetAttributeValue( AttributeKey.RedirectUri );
         }
@@ -687,6 +687,7 @@ namespace Rock.Security.ExternalAuthentication
                 person.BirthDay = dateParts[2].AsIntegerOrNull();
             }
         }
+
         #region IExternalRedirectAuthentication Implementation
 
         /// <inheritdoc/>
@@ -695,40 +696,48 @@ namespace Rock.Security.ExternalAuthentication
             var result = new ExternalRedirectAuthenticationResult
             {
                 UserName = string.Empty,
-                ReturnUrl = HttpContext.Current.Session[SessionKey.ReturnUrl].ToStringSafe()
+                ReturnUrl = GetRequestCookieValue( SessionKey.ReturnUrl )
             };
 
             var code = request.Parameters.GetValueOrNull( PageParameterKey.Code );
             var state = request.Parameters.GetValueOrNull( PageParameterKey.State );
-            var validState = HttpContext.Current.Session[SessionKey.State].ToStringSafe();
+
+            var validState = GetRequestCookieValue( SessionKey.State );
 
             if ( validState.IsNullOrWhiteSpace() || !state.Equals( validState ) )
             {
+                // Clear the OAuth cookies to require a new OAuth session.
+                DeleteResponseCookie( SessionKey.Nonce );
+                DeleteResponseCookie( SessionKey.ReturnUrl );
+                DeleteResponseCookie( SessionKey.State );
                 throw new Exception( "State is invalid." );
             }
 
             try
             {
                 var client = new TokenClient( GetTokenUrl(), GetAttributeValue( AttributeKey.ApplicationId ), GetAttributeValue( AttributeKey.ApplicationSecret ) );
-                var response = client.RequestAuthorizationCodeAsync( code, request.RedirectUrl ).GetAwaiter().GetResult();
+                var response = client.RequestAuthorizationCodeAsync( code, GetAttributeValue( AttributeKey.RedirectUri ) ).GetAwaiter().GetResult();
 
                 if ( response.IsError )
                 {
                     throw new Exception( response.Error );
                 }
 
-                var nonce = HttpContext.Current.Session[SessionKey.Nonce].ToStringSafe();
+                var nonce = GetRequestCookieValue( SessionKey.Nonce );
                 var idToken = GetValidatedIdToken( response.IdentityToken, nonce );
                 result.UserName = HandleOidcUserAddUpdate( idToken, response.AccessToken );
                 result.IsAuthenticated = !string.IsNullOrWhiteSpace( result.UserName );
-
-                HttpContext.Current.Session[SessionKey.Nonce] = string.Empty;
-                HttpContext.Current.Session[SessionKey.ReturnUrl] = string.Empty;
-                HttpContext.Current.Session[SessionKey.State] = string.Empty;
             }
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, HttpContext.Current );
+            }
+            finally
+            {
+                // Clear the OAuth cookies to require a new OAuth session.
+                DeleteResponseCookie( SessionKey.Nonce );
+                DeleteResponseCookie( SessionKey.ReturnUrl );
+                DeleteResponseCookie( SessionKey.State );
             }
 
             return result;
@@ -740,18 +749,107 @@ namespace Rock.Security.ExternalAuthentication
             var nonce = EncodeBcrypt( System.Guid.NewGuid().ToString() );
             var state = EncodeBcrypt( System.Guid.NewGuid().ToString() );
 
-            HttpContext.Current.Session[SessionKey.Nonce] = nonce;
-            HttpContext.Current.Session[SessionKey.State] = state;
-            HttpContext.Current.Session[SessionKey.ReturnUrl] = successfulAuthenticationRedirectUrl;
+            SetResponseCookieValue( SessionKey.State, state );
+            SetResponseCookieValue( SessionKey.Nonce, nonce );
+            SetResponseCookieValue( SessionKey.ReturnUrl, successfulAuthenticationRedirectUrl );
 
-            return new Uri( GetLoginUrl( externalProviderReturnUrl, nonce, state ) );
+            // Use the OIDC RedirectUri attribute instead of the provided external provider return URL.
+            return new Uri( GetLoginUrl( GetAttributeValue( AttributeKey.RedirectUri ), nonce, state ) );
         }
 
         /// <inheritdoc/>
         public bool IsReturningFromExternalAuthentication( IDictionary<string, string> parameters )
         {
-            return !string.IsNullOrWhiteSpace( parameters.GetValueOrNull( PageParameterKey.Code ) )
-                && !string.IsNullOrWhiteSpace( parameters.GetValueOrNull( PageParameterKey.State ) );
+            var isReturningFromOAuth = parameters.GetValueOrNull( PageParameterKey.Code ).IsNotNullOrWhiteSpace()
+                && parameters.GetValueOrNull( PageParameterKey.State ).IsNotNullOrWhiteSpace()
+                && GetRequestCookieValue( SessionKey.State ).IsNotNullOrWhiteSpace();
+
+            if ( !isReturningFromOAuth )
+            {
+                // If not performing the OIDC process,
+                // then ensure the OIDC cookies are cleared.
+                DeleteResponseCookie( SessionKey.Nonce );
+                DeleteResponseCookie( SessionKey.ReturnUrl );
+                DeleteResponseCookie( SessionKey.State );
+            }
+
+            return isReturningFromOAuth;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Deletes a cookie from the response.
+        /// </summary>
+        /// <param name="cookieName">The cookie name.</param>
+        private void DeleteResponseCookie( string cookieName )
+        {
+            // To delete a cookie, the value must be cleared
+            // and the expiration date should be a past date.
+
+            // Create a cookie instance with a blank value.
+            var cookie = GetCookieInstance( cookieName, string.Empty );
+
+            // Any past date will work to expire a client cookie (except for DateTime.MinValue).
+            // Using a specific date here instead of a relative date to the current date of the server/client.
+            cookie.Expires = new DateTime( 1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc );
+
+            HttpContext.Current.Response.Cookies.Set( cookie );
+        }
+
+        /// <summary>
+        /// Creates and returns a new cookie instance with the flags required for the OIDC process.
+        /// </summary>
+        /// <param name="cookieName">The cookie name.</param>
+        /// <param name="cookieValue">The cookie value.</param>
+        /// <returns>A new cookie instance.</returns>
+        private HttpCookie GetCookieInstance(string cookieName, string cookieValue)
+        {
+            return new HttpCookie( cookieName )
+            {
+                // Prevent client-side JS from inspecting the cookie.
+                HttpOnly = true,
+
+                // Use SameSite=Lax so the cookie is sent in the OAuth redirect back to Rock.
+                SameSite = SameSiteMode.Lax,
+
+                // Only add the Secure option if the request site is using HTTPS.
+                Secure = HttpContext.Current.Request.IsSecureConnection
+                         || string.Equals( HttpContext.Current.Request.UrlProxySafe().Scheme, "https", StringComparison.OrdinalIgnoreCase ),
+
+                // Encrypt the cookie value as an extra layer of security.
+                Value = Encryption.EncryptString( cookieValue ),
+            };
+        }
+
+        /// <summary>
+        /// Gets a request cookie value or <c>""</c> if not found.
+        /// </summary>
+        /// <param name="cookieName">The cookie name.</param>
+        /// <returns>The cookie value.</returns>
+        private string GetRequestCookieValue( string cookieName )
+        {
+            var cookie = HttpContext.Current.Request.Cookies[cookieName];
+
+            if ( cookie == null )
+            {
+                return string.Empty;
+            }
+
+            return Encryption.DecryptString( cookie?.Value ).ToStringSafe();
+        }
+
+        /// <summary>
+        /// Sets a response cookie value.
+        /// </summary>
+        /// <param name="cookieName">The cookie name.</param>
+        /// <param name="cookieValue">The cookie value.</param>
+        private void SetResponseCookieValue( string cookieName, string cookieValue )
+        {
+            var cookie = GetCookieInstance( cookieName, cookieValue );
+            HttpContext.Current.Response.Cookies.Set( cookie );
         }
 
         #endregion
