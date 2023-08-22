@@ -696,7 +696,12 @@ namespace Rock.Model
         [DataMember]
         public int? PrimaryAliasId
         {
-            get => _primaryAliasId ?? PrimaryAlias?.Id;
+            get
+            {
+                _ = PrimaryAlias; // Populate the list of aliases for navigation. This will be removed in v17.0
+                return _primaryAliasId ?? PrimaryAlias?.Id;
+            }
+            
             set => _primaryAliasId = value;
         }
         private int? _primaryAliasId;
