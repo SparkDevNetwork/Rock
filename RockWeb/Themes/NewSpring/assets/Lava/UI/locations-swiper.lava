@@ -25,7 +25,7 @@
           <p class="push-half-bottom"><a href="{{ directionsLink | Trim }}" target="_blank">Get Directions</a></p>
         {% endcapture %}
 
-        {[ card type:'Location' title:'{{ campus.Name | Replace:'Eastlan','Greenville' }}' titlesize:'h3' linktext:'Campus Details' linkurl:'{% if servicetype == 'Fuse' %}/fuse{% endif %}/locations/{{ campus.Name | Replace:' ','-' | Downcase | Replace:'eastlan','greenville' }}' imageurl:'{{ campusImageUrl | Trim }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' lava:'{{ lava }}' ]}
+        {[ card type:'Location' title:'{{ campus.Name | Replace:'Eastlan','Greenville' }}' titlesize:'h3' linktext:'Campus Details' linkurl:'/locations/{{ campus.Name | Replace:' ','-' | Downcase | Replace:'eastlan','greenville' }}' imageurl:'{{ campusImageUrl | Trim }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' lava:'{{ lava }}' ]}
 
     </div>{% endfor %}
   </div>
