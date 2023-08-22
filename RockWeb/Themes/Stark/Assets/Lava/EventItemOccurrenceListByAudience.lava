@@ -1,7 +1,11 @@
 <div class="module">
-  <header class="clearfix">
-    <h1>Upcoming Events</h1>
-  </header>
+    <header class="clearfix">
+        {% if ListTitle != ''%}
+        <h1>{{ ListTitle }}</h1>
+        {% else %}
+        <h1>Upcoming Events</h1>
+        {% endif %}
+    </header>
 
   <ul class="list-unstyled">
     {% for occurrence in EventItemOccurrences %}
