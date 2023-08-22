@@ -1,12 +1,12 @@
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./dataViewField.partial";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { ConfigurationValueKey } from "./dataViewsField.partial";
 
 export const EditComponent = defineComponent({
-    name: "DataViewField.Edit",
+    name: "DataViewsField.Edit",
 
     components: {
         DataViewPicker
@@ -15,7 +15,7 @@ export const EditComponent = defineComponent({
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-        const internalValue = ref({} as ListItemBag[]);
+        const internalValue = ref({} as ListItemBag);
 
         const entityTypeGuid = computed((): string | null | undefined => {
             const entityType = JSON.parse(props.configurationValues[ConfigurationValueKey.EntityTypeName] ?? "{}") as ListItemBag;
@@ -37,13 +37,12 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-    <DataViewPicker v-model="internalValue" :entityTypeGuid="entityTypeGuid" />
+    <DataViewPicker v-model="internalValue" multiple :entityTypeGuid="entityTypeGuid" />
 `
 });
 
-
 export const ConfigurationComponent = defineComponent({
-    name: "DataViewField.Configuration",
+    name: "DataViewsField.Configuration",
 
     components: {
         EntityTypePicker

@@ -68,6 +68,9 @@ registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());
 import { DataViewFieldType } from "./dataViewField.partial";
 registerFieldType(FieldTypeGuids.DataView, new DataViewFieldType());
 
+import { DataViewsFieldType } from "./dataViewsField.partial";
+registerFieldType(FieldTypeGuids.Dataviews, new DataViewsFieldType());
+
 import { DateFieldType } from "./dateField.partial";
 registerFieldType(FieldTypeGuids.Date, new DateFieldType());
 
