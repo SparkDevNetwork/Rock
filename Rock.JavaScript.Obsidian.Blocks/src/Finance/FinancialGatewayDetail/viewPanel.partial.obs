@@ -54,6 +54,18 @@
             return valueBuilder.build();
         }
 
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+
         if (props.modelValue.description) {
             valueBuilder.addTextValue("", props.modelValue.description);
         }
@@ -64,6 +76,9 @@
 
         if (props.modelValue.batchStartDay) {
             valueBuilder.addTextValue("Batched Weekly", DayOfWeekDescription[props.modelValue.batchStartDay]);
+        }
+        else {
+            valueBuilder.addTextValue("Batched Daily", "Every Day");
         }
 
         if (props.modelValue.batchTimeOffsetTicks) {
@@ -76,6 +91,9 @@
 
                 if (hour > 12) {
                     hour -= 12;
+                }
+                else if (hour == 0 && meridiem == "AM") {
+                    hour = 12;
                 }
 
                 const timeSpan = `${hour}:${padLeft(minute.toString(), 2, "0")} ${meridiem}`;
@@ -90,17 +108,6 @@
     });
 
     /** The values to display at half-width on the left side of the block. */
-    const leftSideValues = computed((): ValueDetailListItem[] => {
-        const valueBuilder = new ValueDetailListItemBuilder();
-
-        if (!props.modelValue) {
-            return valueBuilder.build();
-        }
-
-        return valueBuilder.build();
-    });
-
-    /** The values to display at half-width on the left side of the block. */
     const rightSideValues = computed((): ValueDetailListItem[] => {
         const valueBuilder = new ValueDetailListItemBuilder();
 
@@ -108,16 +115,24 @@
             return valueBuilder.build();
         }
 
+        if (props.modelValue.inactiveGatewayNotificationMessage) {
+            const notification = `
+            <div class="alert alert-warning ">
+                ${props.modelValue.inactiveGatewayNotificationMessage}
+            </div>`;
+            valueBuilder.addHtmlValue("", notification);
+        }
+
         return valueBuilder.build();
     });
 
-                            // #endregion
+                    // #endregion
 
-                            // #region Functions
+                    // #region Functions
 
-                            // #endregion
+                    // #endregion
 
-                            // #region Event Handlers
+                    // #region Event Handlers
 
-                            // #endregion
+                    // #endregion
 </script>

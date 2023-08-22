@@ -97,7 +97,7 @@
 
     const weeklySchedule = "Weekly";
     const dailySchedule = "Daily";
-    const defaultInactiveMessage = "An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
+    const defaultInactiveMessage = "<strong>Important!</strong> An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const description = propertyRef(props.modelValue.description ?? "", "Description");
@@ -107,7 +107,7 @@
     const gatewayType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
     const batchSchedule = ref(props.modelValue.batchSchedule ?? "");
     const dayOfWeek = ref(props.modelValue.batchStartDay ?? "");
-    const inactiveGatewayMessage = ref("");
+    const inactiveGatewayMessage = ref(props.modelValue.inactiveGatewayNotificationMessage ?? "");
     const scheduleOptions = ref([
         {
             text: dailySchedule,
@@ -180,6 +180,27 @@
         }
         else {
             inactiveGatewayMessage.value = defaultInactiveMessage;
+        }
+    }, {
+        immediate: true
+    });
+
+    // Get the component description and set as description if description is empty.
+    watch(() => gatewayType.value, async () => {
+        // if user has already entered a description then return.
+        if (description.value) {
+            return;
+        }
+
+        const entityTypeGuid = gatewayType.value.value;
+        if (entityTypeGuid) {
+            const result = await invokeBlockAction<{ description: string }>("GetGatewayComponentDescription", {
+                entityTypeGuid: entityTypeGuid
+            });
+
+            if (result.isSuccess && result.data) {
+                description.value = result.data.description;
+            }
         }
     });
 
