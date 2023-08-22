@@ -2235,6 +2235,7 @@ namespace Rock.Blocks.Event
 
             registrant.OnWaitList = isWaitlist;
             registrant.PersonAliasId = person.PrimaryAliasId;
+            registrant.PersonAlias = person.PrimaryAlias;
 
             // Check if discount applies
             var maxRegistrants = context.Discount?.RegistrationTemplateDiscount.MaxRegistrants;
@@ -2380,7 +2381,7 @@ namespace Rock.Blocks.Event
                 var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
                 var signedBy = RequestContext.CurrentPerson ?? registrar;
 
-                var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.Person.FullName, context.RegistrationSettings.Name);
+                var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.PersonAlias?.Person?.FullName ?? person.FullName, context.RegistrationSettings.Name);
 
                 new SignatureDocumentService( rockContext ).Add( document );
                 rockContext.SaveChanges();
