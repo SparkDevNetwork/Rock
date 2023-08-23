@@ -978,7 +978,7 @@ namespace RockWeb.Blocks.Connection
 
             var title = connectionRequest.ToString();
             string quickReturnLava = "{{ Title | AddQuickReturn:'ConnectionRequests', 60 }}";
-            var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
             quickReturnMergeFields.Add( "Title", title );
             quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
 

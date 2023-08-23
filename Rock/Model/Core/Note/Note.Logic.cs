@@ -149,6 +149,14 @@ namespace Rock.Model
 
             if ( this.IsPrivateNote )
             {
+                if ( Id == 0 )
+                {
+                    // If we have not been created yet, use the default security
+                    // from the parent authority since we don't have a created
+                    // by person yet.
+                    return base.IsAuthorized( action, person );
+                }
+
                 // If this is a private note, the creator has FULL access to it. Everybody else has NO access (including admins)
                 if ( this.CreatedByPersonAlias?.PersonId == person?.Id )
                 {

@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( groupHeaderLava.IsNotNullOrWhiteSpace() || groupFooterLava.IsNotNullOrWhiteSpace() )
                         {
                             // add header and footer information
-                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                             mergeFields.Add( "Group", group );
                             mergeFields.Add( "GroupMembers", members );
 

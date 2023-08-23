@@ -591,7 +591,7 @@ namespace Rock
         {
             try
             {
-                if ( !content.IsLavaTemplate() )
+                if ( !content.IsLavaTemplate() ) 
                 {
                     return content ?? string.Empty;
                 }
@@ -599,14 +599,6 @@ namespace Rock
                 if ( mergeObjects == null )
                 {
                     mergeObjects = new Dictionary<string, object>();
-                }
-
-                if ( GlobalAttributesCache.Get().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
-                {
-                    if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
-                    {
-                        Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ), System.Web.HttpContext.Current );
-                    }
                 }
 
                 if ( LavaService.RockLiquidIsEnabled )

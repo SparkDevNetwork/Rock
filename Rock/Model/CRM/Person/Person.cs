@@ -698,12 +698,19 @@ namespace Rock.Model
         {
             get
             {
-                _ = PrimaryAlias; // Populate the list of aliases for navigation. This will be removed in v17.0
-                return _primaryAliasId ?? PrimaryAlias?.Id;
+                var id = _primaryAliasId ?? PrimaryAlias?.Id;
+                if ( id == 0 )
+                {
+                    // This is not a valid reference to a persisted PersonAlias.
+                    // In this case, most verification code will expect a null value to be returned.
+                    return null;
+                }
+                return id;
             }
-            
+
             set => _primaryAliasId = value;
         }
+
         private int? _primaryAliasId;
 
         #endregion
