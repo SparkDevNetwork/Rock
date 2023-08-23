@@ -698,8 +698,6 @@ namespace Rock.Model
         {
             get
             {
-                _ = PrimaryAlias; // Populate the list of aliases for navigation. This will be removed in v17.0
-
                 var id = _primaryAliasId ?? PrimaryAlias?.Id;
                 if ( id == 0 )
                 {
