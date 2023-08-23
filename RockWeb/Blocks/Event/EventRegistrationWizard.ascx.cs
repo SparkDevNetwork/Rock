@@ -190,6 +190,15 @@ namespace RockWeb.Blocks.Event
         DefaultValue = Rock.SystemGuid.Page.EVENT_DETAILS,
         Order = 15 )]
 
+    [BooleanField(
+        "Enable Existing Group Selection ",
+        Key = AttributeKey.EnableExistingGroupSelection,
+        Description = "When enabled, an optional toggle switch will allow choosing an existing group or creating a new group.",
+        Category = "",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Order = 16 )]
+
     #region Advanced Block Attribute Settings 
 
     [MemoField(
@@ -280,6 +289,7 @@ namespace RockWeb.Blocks.Event
             public const string CheckInGroupTypes = "CheckInGroupTypes";
             public const string DisplayEventDetailsLink = "DisplayEventDetailsLink";
             public const string EventDetailsPage = "EventDetailsPage";
+            public const string EnableExistingGroupSelection = "EnableExistingGroupSelection ";
 
             public const string LavaInstruction_InitiateWizard = "LavaInstruction_InitiateWizard";
             public const string LavaInstruction_Registration = "LavaInstruction_Registration";
@@ -427,40 +437,51 @@ namespace RockWeb.Blocks.Event
             phChanges.Controls.Add( registrationLiteral );
 
             // Group Summary
-            if ( !string.IsNullOrWhiteSpace( tbGroupName.Text ) )
+            if ( !string.IsNullOrWhiteSpace( tbGroupName.Text ) || gpExistingGroup.SelectedIds.Length > 0 )
             {
+                string groupDescription = string.Empty;
+                var groupService = new GroupService( rockContext );
 
-                string groupDescription = "\"" + tbGroupName.Text + "\" will be created ";
-
-                Group parentGroup = null;
-                var parentGroupId = gpParentGroup.SelectedValueAsId();
-                if ( parentGroupId != null )
+                if ( !string.IsNullOrWhiteSpace( tbGroupName.Text ) )
                 {
-                    var groupService = new GroupService( rockContext );
-                    parentGroup = groupService.Get( parentGroupId.Value );
+                    groupDescription = "\"" + tbGroupName.Text + "\" will be created ";
+
+                    Group parentGroup = null;
+                    var parentGroupId = gpParentGroup.SelectedValueAsId();
+                    if ( parentGroupId != null )
+                    {
+                        parentGroup = groupService.Get( parentGroupId.Value );
+                    }
+                    else
+                    {
+                        Guid? rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
+                        if ( rootGroupGuid != null )
+                        {
+                            parentGroup = groupService.Get( rootGroupGuid.Value );
+                        }
+                    }
+                    if ( parentGroup == null )
+                    {
+                        groupDescription += " as a new root group.";
+                    }
+                    else
+                    {
+                        string parentGroupTitle = parentGroup.Name;
+                        while ( parentGroup.ParentGroup != null )
+                        {
+                            parentGroupTitle = parentGroup.ParentGroup.Name + " > " + parentGroupTitle;
+                            parentGroup = parentGroup.ParentGroup;
+                        }
+                        groupDescription += " under the parent group the \"" + parentGroupTitle + "\".";
+                    }
                 }
                 else
                 {
-                    Guid? rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
-                    if ( rootGroupGuid != null )
+                    var selectedGroup = groupService.Get( gpExistingGroup.SelectedValueAsId() ?? 0 );
+                    if ( selectedGroup != null )
                     {
-                        var groupService = new GroupService( rockContext );
-                        parentGroup = groupService.Get( rootGroupGuid.Value );
+                        groupDescription = "\"" + selectedGroup.Name + "\" will be used.";
                     }
-                }
-                if ( parentGroup == null )
-                {
-                    groupDescription += " as a new root group.";
-                }
-                else
-                {
-                    string parentGroupTitle = parentGroup.Name;
-                    while ( parentGroup.ParentGroup != null )
-                    {
-                        parentGroupTitle = parentGroup.ParentGroup.Name + " > " + parentGroupTitle;
-                        parentGroup = parentGroup.ParentGroup;
-                    }
-                    groupDescription += " under the parent group the \"" + parentGroupTitle + "\".";
                 }
 
                 List<int> selectedSchedules = spGroupLocationSchedule.SelectedValuesAsInt().ToList();
@@ -587,42 +608,52 @@ namespace RockWeb.Blocks.Event
             linkage.UrlSlug = tbSlug.Text;
 
             // Create Group.
-            if ( !string.IsNullOrWhiteSpace( tbGroupName.Text ) )
+            if ( !string.IsNullOrWhiteSpace( tbGroupName.Text ) || gpExistingGroup.SelectedIds.Length > 0 )
             {
                 var groupService = new GroupService( rockContext );
                 var group = new Group();
-                group.Name = tbGroupName.Text;
-                group.GroupTypeId = registrationTemplate.GroupTypeId.Value; // RegistrationTemplate MUST have a group type value if the user is creating a group.
 
-                Group parentGroup = null;
-
-                var parentGroupId = gpParentGroup.SelectedValueAsId();
-                if ( parentGroupId != null )
+                if ( gpExistingGroup.SelectedIds.Length > 0 )
                 {
-                    parentGroup = groupService.Get( parentGroupId.Value );
+                    var groupId = gpExistingGroup.SelectedValueAsId() ?? 0;
+                    group = groupService.Get( groupId );
                 }
                 else
                 {
-                    Guid? rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
-                    if ( rootGroupGuid != null )
+                    group.Name = tbGroupName.Text;
+                    group.GroupTypeId = registrationTemplate.GroupTypeId.Value; // RegistrationTemplate MUST have a group type value if the user is creating a group.
+
+                    Group parentGroup = null;
+
+                    var parentGroupId = gpParentGroup.SelectedValueAsId();
+                    if ( parentGroupId != null )
                     {
-                        parentGroup = groupService.Get( rootGroupGuid.Value );
+                        parentGroup = groupService.Get( parentGroupId.Value );
                     }
+                    else
+                    {
+                        Guid? rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
+                        if ( rootGroupGuid != null )
+                        {
+                            parentGroup = groupService.Get( rootGroupGuid.Value );
+                        }
+                    }
+
+                    if ( parentGroup != null )
+                    {
+                        group.ParentGroupId = parentGroup.Id;
+                    }
+
+                    // Set group CampusId if campus is selected.
+                    if ( ( ddlCampus.Enabled ) && ( !string.IsNullOrWhiteSpace( ddlCampus.SelectedValue ) ) )
+                    {
+                        group.CampusId = ddlCampus.SelectedValueAsInt();
+                    }
+
+                    groupService.Add( group );
+                    rockContext.SaveChanges();
                 }
 
-                if ( parentGroup != null )
-                {
-                    group.ParentGroupId = parentGroup.Id;
-                }
-
-                // Set group CampusId if campus is selected.
-                if ( ( ddlCampus.Enabled ) && ( !string.IsNullOrWhiteSpace( ddlCampus.SelectedValue ) ) )
-                {
-                    group.CampusId = ddlCampus.SelectedValueAsInt();
-                }
-
-                groupService.Add( group );
-                rockContext.SaveChanges();
                 result.GroupId = group.Id.ToString();
 
                 // Add GrouId to linkage.
@@ -944,6 +975,7 @@ namespace RockWeb.Blocks.Event
             eipSelectedEvent.IncludeInactive = GetAttributeValue( AttributeKey.IncludeInactiveCalendarItems ).AsBoolean();
 
             Init_SetupAudienceControls();
+            Init_GroupControls();
 
             if ( !Page.IsPostBack )
             {
@@ -965,6 +997,14 @@ namespace RockWeb.Blocks.Event
             // Build calendar item attributes on every Init event to ensure they are populated by ViewState.
             ShowItemAttributes();
         }
+
+        private void Init_GroupControls()
+        {
+            var enableExistingGroupSelection = GetAttributeValue( AttributeKey.EnableExistingGroupSelection ).AsBoolean();
+            tgExistingroup.Visible = enableExistingGroupSelection;
+            pnlExistingGroup.Visible = enableExistingGroupSelection && tgExistingroup.Checked;
+        }
+
         private void Init_SetupAudienceControls()
         {
             gAudiences.DataKeyNames = new string[] { "Guid" };
@@ -1673,6 +1713,25 @@ namespace RockWeb.Blocks.Event
                 var eventMapingService = new EventItemOccurrenceGroupMapService( rockContext );
 
                 args.IsValid = !eventMapingService.Queryable().AsNoTracking().Any( m => m.UrlSlug == urlSlug );
+            }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tgExistingroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tgExistingroup_CheckedChanged( object sender, EventArgs e )
+        {
+            pnlNewGroup.Visible = !tgExistingroup.Checked;
+            pnlExistingGroup.Visible = tgExistingroup.Checked;
+            if ( tgExistingroup.Checked )
+            {
+                tbGroupName.Text = string.Empty;
+            }
+            else
+            {
+                gpExistingGroup.SetValue( null );
             }
         }
 

@@ -111,6 +111,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this MediaElement target, MediaElement source )
         {
             target.Id = source.Id;
+            target.CloseCaption = source.CloseCaption;
             target.Description = source.Description;
             target.DurationSeconds = source.DurationSeconds;
             target.FileDataJson = source.FileDataJson;
@@ -124,6 +125,7 @@ namespace Rock.Model
             target.SourceKey = source.SourceKey;
             target.SourceModifiedDateTime = source.SourceModifiedDateTime;
             target.ThumbnailDataJson = source.ThumbnailDataJson;
+            target.TranscriptionText = source.TranscriptionText;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

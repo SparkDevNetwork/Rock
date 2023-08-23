@@ -7322,11 +7322,9 @@ const popOverGallery = defineComponent({
             show: ref(false),
             importCode: getSfcControlImportPath("popOver"),
             exampleCode: `<PopOver v-model:isVisible="isVisible" placement="right">
+    This is the content that shows up in the popOver
     <template #activator="props">
         <strong v-bind="props">Hover Me</strong>
-    </template>
-    <template #popOverContent>
-        This is the content that shows up in the popOver
     </template>
 </PopOver>`
         };
@@ -7338,11 +7336,9 @@ const popOverGallery = defineComponent({
 
     <div class="text-center">
         <PopOver v-model:isVisible="show" :placement="placement" v-model:triggerUpdate="triggerUpdate">
+            This is the content that shows up in the popOver
             <template #activator="props">
                 <strong v-bind="props">Hover Me</strong>
-            </template>
-            <template #popOverContent>
-                This is the content that shows up in the popOver
             </template>
         </PopOver>
     </div>

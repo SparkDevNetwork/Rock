@@ -166,7 +166,7 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, ...propRefs], () => {
+    watch([attributeValues, selectedDateRange, ...propRefs], () => {
         const newValue: FinancialPledgeBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,

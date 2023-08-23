@@ -157,6 +157,14 @@ namespace Rock.Model
         [DataMember]
         public string RemoteSettlementBatchUrl { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Batch Key for tracking an external system's settlement batch id/key
+        /// </summary>
+        /// <value>
+        /// The Batch Key
+        /// </value>
+        public string RemoteSettlementBatchKey { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
