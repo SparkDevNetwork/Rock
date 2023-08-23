@@ -375,7 +375,7 @@ namespace RockWeb.Blocks.Reporting
                             defaultFilterLabel = component.GetTitle( reportEntityTypeModel );
                         }
 
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                         mergeFields.Add( "Filter", filter );
                         mergeFields.Add( "Label", defaultFilterLabel );
 

@@ -683,7 +683,7 @@ $(document).ready(function() {
             else
             {
                 string quickReturnLava = "{{ Dataview.Name | AddQuickReturn:'Data Views', 30 }}";
-                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                 quickReturnMergeFields.Add( "Dataview", dataView );
                 quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
             }

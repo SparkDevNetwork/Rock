@@ -138,7 +138,7 @@ namespace Rock.Blocks.Event
             // display future events if needed
             if ( registrationsToDisplay.Contains( RegistrationsToDisplayKey.FutureEvents ) )
             {
-                var futureEventsDataRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.DateRange ) );
+                var futureEventsDataRange = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.DateRange ), RockDateTime.Now );
 
                 // if the value for futureEventsDataRange happens to be null, show all the registrations having an event
                 if ( futureEventsDataRange.Start == null && futureEventsDataRange.End == null )
@@ -170,7 +170,7 @@ namespace Rock.Blocks.Event
             // display past events if needed
             if ( registrationsToDisplay.Contains( RegistrationsToDisplayKey.RecentRegistrations ) )
             {
-                var pastEventsDataRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.RecentRegistrations ) );
+                var pastEventsDataRange = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.RecentRegistrations ), RockDateTime.Now );
                 // in case the pastEventsDataRange happens to not have a value, show all the registrations else filter out the ones within the range
                 if ( pastEventsDataRange.Start == null && pastEventsDataRange.End == null )
                 {

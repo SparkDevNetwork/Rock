@@ -261,7 +261,7 @@ namespace Rock.Jobs
 
         private static void SendNotificationMessage( JobExecutionException jobException, ServiceJob job )
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "Job", job );
             try
             {

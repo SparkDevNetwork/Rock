@@ -154,9 +154,11 @@ namespace RockWeb.Blocks.Core
                     nbSqlServerVersionIssue.Visible = true;
                 }
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel;
-
-                if ( lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy )
+                var isConfiguredForLegacyLava = lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy;
+#pragma warning restore CS0618 // Type or member is obsolete
+                if ( isConfiguredForLegacyLava )
                 {
                     nbLegacyLavaIssue.Visible = true;
                 }
@@ -185,7 +187,7 @@ namespace RockWeb.Blocks.Core
                         }
 
                         // if LegacyLavaIssue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
-                        if ( lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy )
+                        if ( isConfiguredForLegacyLava )
                         {
                             nbLegacyLavaIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                         }

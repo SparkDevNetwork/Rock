@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Lava
 {
     /// <summary>
@@ -33,7 +35,6 @@ namespace Rock.Lava
             this.GetCampuses = true;
             this.GetDeviceFamily = false;
             this.GetOSFamily = false;
-            this.GetLegacyGlobalMergeFields = true;
         }
 
         /// <summary>
@@ -55,8 +56,7 @@ namespace Rock.Lava
                     GetCurrentVisitor = false,
                     GetCampuses = false,
                     GetDeviceFamily = false,
-                    GetOSFamily = false,
-                    GetLegacyGlobalMergeFields = false
+                    GetOSFamily = false
                 };
             }
         }
@@ -123,6 +123,8 @@ namespace Rock.Lava
         /// <value>
         /// The get global attributes.
         /// </value>
+        [RockObsolete("1.16")]
+        [Obsolete("Legacy Lava is no longer supported.")]
         public bool GetLegacyGlobalMergeFields { get; set; }
     }
 }
