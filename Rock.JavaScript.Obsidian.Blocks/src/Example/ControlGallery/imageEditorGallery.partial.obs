@@ -1,0 +1,44 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <ImageEditor v-model="value"
+                     label="Profile Picture"
+                     :uploadAsTemporary="uploadAsTemporary"
+                     :binaryFileTypeGuid="binaryFileTypeGuid"
+                     :uploadButtonText="uploadButtonText"
+                     :showDeleteButton="showDeleteButton" />
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-sm-4" v-model="uploadAsTemporary" label="Upload As Temporary" />
+                <TextBox formGroupClasses="col-sm-8" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
+            </div>
+            <div class="row">
+                <CheckBox formGroupClasses="col-sm-4" v-model="showDeleteButton" label="Show Delete Button" />
+                <TextBox formGroupClasses="col-sm-8" v-model="uploadButtonText" label="Upload Button Text" />
+            </div>
+
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { computed, ref } from "vue";
+
+    const binaryFileTypeGuid = ref(BinaryFiletype.Default);
+    const showDeleteButton = ref(true);
+    const uploadAsTemporary = ref(true);
+    const uploadButtonText = ref("Upload");
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("imageEditor");
+    const exampleCode = computed((): string => {
+        return `<ImageEditor v-model="value" label="Image Editor" :uploadAsTemporary="true" :binaryFileTypeGuid="BinaryFiletype.Default" uploadButtonText="Upload" :showDeleteButton="true" />`;
+    });
+</script>
