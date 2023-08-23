@@ -611,6 +611,8 @@ namespace Rock.Web.Cache
         /// <value>
         /// The lava support level.
         /// </value>
+        [RockObsolete("1.16")]
+        [Obsolete( "Legacy Lava is no longer supported." )]
         public Lava.LavaSupportLevel LavaSupportLevel => GetValue( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Lava.LavaSupportLevel>() ?? Lava.LavaSupportLevel.NoLegacy;
 
         /// <summary>

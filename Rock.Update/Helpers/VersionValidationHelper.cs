@@ -151,11 +151,13 @@ namespace Rock.Update.Helpers
                 throw new VersionValidationException( $"Version {targetVersion} requires Microsoft SQL Azure or Microsoft Sql Server 2016 or greater." );
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel;
             if ( isTargetVersionGreaterThan15 && lavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
             {
                 throw new VersionValidationException( $"Version {targetVersion} requires a Lava Support Level of 'NoLegacy'." );
             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var isTargetVersionGreaterThan16 = targetVersion.Major > 1 || targetVersion.Minor > 16;
             if ( isTargetVersionGreaterThan16 && RockInstanceConfig.LavaEngineName != "Fluid" )

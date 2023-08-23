@@ -180,7 +180,6 @@ namespace Rock.Reporting.DataSelect
 
             /* Legacy options add about 0.3s per column. Disable them. */
             var options = new Rock.Lava.CommonMergeFieldsOptions();
-            options.GetLegacyGlobalMergeFields = false;
             result.LavaMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
 
             return result;

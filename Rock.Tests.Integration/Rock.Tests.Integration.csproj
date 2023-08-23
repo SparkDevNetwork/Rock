@@ -306,7 +306,6 @@
     <Compile Include="Modules\Core\Model\MetricValueTests.cs" />
     <Compile Include="Modules\Core\Model\RegistrationTests.cs" />
     <Compile Include="Modules\Core\Model\StepTests.cs" />
-    <Compile Include="Modules\Core\Lava\LegacyLavaUpdaterTest.cs" />
     <Compile Include="Modules\Core\Model\DeviceTests.cs" />
     <Compile Include="TestFramework\TestExtensionMethods.cs" />
     <Compile Include="ThirdPartyIntegrations\NcoaApi\TrueNcoaApiTests.cs" />

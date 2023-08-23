@@ -391,7 +391,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
 
                 string quickReturnLava = "{{ Person.FullName | AddQuickReturn:'People', 10 }}";
-                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                 quickReturnMergeFields.Add( "Person", Person );
                 quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
 

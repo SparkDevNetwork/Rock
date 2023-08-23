@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Fundraising
 
             fundraisingGroupList = fundraisingGroupList.OrderBy( g => DateRange.FromDelimitedValues( g.GetAttributeValue( "OpportunityDateRange" ) ).Start ).ThenBy( g => g.GetAttributeValue( "Opportunity Title" ) ).ToList();
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "GroupList", fundraisingGroupList );
             mergeFields.Add( "DetailsPage", LinkedPageRoute( "DetailsPage" ) );
 

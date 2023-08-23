@@ -104,19 +104,6 @@ namespace Rock.Lava
                 }
             }
 
-            if ( options.GetLegacyGlobalMergeFields )
-            {
-                var globalAttributes = GlobalAttributesCache.Get();
-                if ( globalAttributes.LavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
-                {
-                    var legacyGlobalAttributeMergeFields = GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
-                    foreach ( var legacyGlobalAttributeMergeField in legacyGlobalAttributeMergeFields )
-                    {
-                        mergeFields.Add( legacyGlobalAttributeMergeField.Key, legacyGlobalAttributeMergeField.Value );
-                    }
-                }
-            }
-
             if ( options.GetPageContext && rockPage != null )
             {
                 var contextObjects = rockPage.GetContextEntities();

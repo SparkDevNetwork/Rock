@@ -89,7 +89,6 @@ namespace Rock.Field
                 string listSource = configurationValues[ propertyName ];
 
                 var options = new Lava.CommonMergeFieldsOptions();
-                options.GetLegacyGlobalMergeFields = false;
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
 
                 listSource = listSource.ResolveMergeFields( mergeFields );

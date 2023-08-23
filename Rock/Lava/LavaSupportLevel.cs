@@ -15,11 +15,15 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.Lava
 {
     /// <summary>
     /// 
     /// </summary>
+    [RockObsolete( "1.16" )]
+    [Obsolete( "Legacy Lava is no longer supported." )]
     public enum LavaSupportLevel
     {
         /// <summary>
