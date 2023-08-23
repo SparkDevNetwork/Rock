@@ -112,11 +112,21 @@ namespace Rock.Blocks.Event
         {
             var registrationsToDisplay = GetAttributeValue( AttributeKey.RegistrationsToDisplay ).SplitDelimitedValues();
 
+            // Limit to the current person
+            int currentPersonId = this.GetCurrentPerson()?.Id ?? 0;
+
+            // Return an empty list if the person is not logged in.
+            if(currentPersonId == 0)
+            {
+                return new List<Registration>();
+            }
+
             var registrationList = registrationService.Queryable()
                 .Include( r => r.RegistrationInstance.Linkages )
                 .Where( a =>
                     a.RegistrationInstance.IsActive == true &&
-                    !a.IsTemporary )
+                    !a.IsTemporary &&
+                    a.PersonAlias.PersonId == currentPersonId )
                 .ToList();
 
             // filter out the registrations with no balance if required.
