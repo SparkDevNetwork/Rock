@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Rock.Model
+namespace Rock.Cms
 {
     /// <summary>
     /// Used by the ContentLibraryConfigurationJson of the <seealso cref="Rock.Model.ContentChannel"/>.

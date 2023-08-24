@@ -27,6 +27,7 @@ using Rock.Model.CMS.ContentChannelItem.Options;
 using Rock.Utility.ContentLibraryApi;
 using Rock.ViewModels.Blocks.Cms.LibraryViewer;
 using Rock.Web.Cache;
+using Rock.Cms;
 
 namespace Rock.Blocks.Cms
 {
