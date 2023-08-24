@@ -74,6 +74,10 @@ const galleries: FieldComponent[] = [
         selectiontype: "Color Picker"
     }),
 
+    getFieldTypeGalleryComponent("ColorSelector", "#1D6E9C", FieldTypeGuids.ColorSelector, {
+        colors: "#1D6E9C|#38B6D2|#F05F78|#2E2E2E|#16C98D|#F70C0C"
+    }),
+
     getFieldTypeGalleryComponent("CommunicationPreference", "1", FieldTypeGuids.CommunicationPreferenceType, {
         options: JSON.stringify(
             [
