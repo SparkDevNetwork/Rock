@@ -468,6 +468,8 @@ namespace RockWeb.Blocks.Crm
                 fuUploader.BinaryFileId = document.BinaryFile.Id;
                 fuUploader.ParentEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DOCUMENT.AsGuid() );
                 fuUploader.ParentEntityId = document.Id;
+                fuUploader.Visible = ddlAddEditDocumentType.SelectedValue.IsNotNullOrWhiteSpace();
+                nbSelectDocumentType.Visible = ddlAddEditDocumentType.SelectedValue.IsNullOrWhiteSpace();
             }
 
             pnlAddEdit.Visible = true;
