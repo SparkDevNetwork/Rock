@@ -16,6 +16,7 @@
 //
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using Rock.Cms;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -67,7 +68,7 @@ namespace Rock.Model
         /// The content library configuration.
         /// </value>
         [NotMapped]
-        public ContentLibraryConfiguration ContentLibraryConfiguration { get; set; }
+        public virtual ContentLibraryConfiguration ContentLibraryConfiguration { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the content library is enabled for this content channel.

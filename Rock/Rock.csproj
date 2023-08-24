@@ -1041,7 +1041,7 @@
     <Compile Include="Lava\Shortcodes\AICompletionShortcode.cs" />
     <Compile Include="Lava\WebsiteLavaHost.cs" />
     <Compile Include="Logging\RockLoggerMemoryBuffer.cs" />
-    <Compile Include="Model\CMS\ContentChannel\ContentLibraryConfiguration.cs" />
+    <Compile Include="Cms\ContentLibraryConfiguration.cs" />
     <Compile Include="Model\CMS\ContentTopicDomain\ContentTopicDomain.cs" />
     <Compile Include="Model\CMS\ContentTopic\ContentTopic.cs" />
     <Compile Include="Model\CMS\Site\Site.SaveHook.cs" />
