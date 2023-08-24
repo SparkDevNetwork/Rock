@@ -2279,24 +2279,20 @@ namespace RockWeb.Blocks.WorkFlow
 
                 // Confirmation email can come FormBuilderSettings or FormBuilderTemplate
                 FormConfirmationEmailSettings confirmationEmailSettings;
-                FormCompletionActionSettings completionActionSettings;
-                if ( _workflowType?.FormBuilderTemplate != null )
+                if ( _workflowType?.FormBuilderTemplate?.ConfirmationEmailSettings?.Enabled == true )
                 {
                     // Use FormBuilderTemplate
                     confirmationEmailSettings = _workflowType?.FormBuilderTemplate.ConfirmationEmailSettings;
-                    completionActionSettings = _workflowType?.FormBuilderTemplate.CompletionActionSettings;
                 }
                 else if ( _workflowType?.FormBuilderSettings?.ConfirmationEmail != null )
                 {
-                    // User FormBuilderSettings
+                    // Use FormBuilderSettings
                     confirmationEmailSettings = _workflowType.FormBuilderSettings.ConfirmationEmail;
-                    completionActionSettings = _workflowType.FormBuilderSettings.CompletionAction;
                 }
                 else
                 {
                     // Not a FormBuilder
                     confirmationEmailSettings = null;
-                    completionActionSettings = null;
                 }
 
                 if ( confirmationEmailSettings != null )
@@ -2305,6 +2301,24 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         SendFormBuilderConfirmationEmail( confirmationEmailSettings );
                     }
+                }
+
+                // Completion Action can come FormBuilderSettings or FormBuilderTemplate
+                FormCompletionActionSettings completionActionSettings;
+                if ( _workflowType?.FormBuilderTemplate?.CompletionActionSettings != null )
+                {
+                    // Use FormBuilderTemplate
+                    completionActionSettings = _workflowType?.FormBuilderTemplate.CompletionActionSettings;
+                }
+                else if ( _workflowType?.FormBuilderSettings?.CompletionAction != null )
+                {
+                    // Use FormBuilderSettings
+                    completionActionSettings = _workflowType.FormBuilderSettings.CompletionAction;
+                }
+                else
+                {
+                    // Not a FormBuilder
+                    completionActionSettings = null;
                 }
 
                 // Notification Email is only defined on FormBuilder. FormBuilderTemplate doesn't have NotificationEmailSettings

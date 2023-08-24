@@ -1,0 +1,207 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+            <div class="col-md-6">
+                <NumberBox label="Engagement Strength" v-model="engagementStrength" />
+            </div>
+            <div class="col-md-6">
+                <NumberBox label="Retention Duration" v-model="retentionDuration">
+                    <template v-slot:inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
+            <div class="col-md-6">
+                <NumberBox label="Component Cache Duration" v-model="componentCacheDuration" >
+                    <template v-slot:inputGroupAppend>
+                        <span class="input-group-addon">minutes</span>
+                    </template>
+                </NumberBox>
+            </div>
+            <div class="col-md-6">
+                <TextBox label="Interaction Custom 1 Label" v-model="interactionCustom1Label" />
+            </div>
+            <div class="col-md-6">
+                <TextBox label="Interaction Custom 2 Label" v-model="interactionCustom2Label" />
+            </div>
+            <div class="col-md-6">
+                <TextBox label="Interaction Custom Indexed 1 Label" v-model="interactionCustomIndexed1Label" />
+            </div>
+        </div>
+
+        <CodeEditor label="Channel List Lava Template"
+                    v-model="channelListTemplate"
+                    mode="lava"
+                    :editorHeight="200"
+                    help="This Lava template will be used by the Interactions block when viewing channel list." />
+
+        <CodeEditor label="Channel Detail Lava Template"
+                    v-model="channelDetailTemplate"
+                    mode="lava"
+                    :editorHeight="200"
+                    help="This Lava template will be used by the Interaction Channel Details block when viewing a interaction channel. This allows you to customize the layout of a channel." />
+
+        <CodeEditor label="Component List Lava Template"
+                    v-model="componentListTemplate"
+                    mode="lava"
+                    :editorHeight="200"
+                    help="This Lava template will be used by the block when viewing component list." />
+
+        <CodeEditor label="Component Detail Lava Template"
+                    v-model="componentDetailTemplate"
+                    mode="lava"
+                    :editorHeight="200"
+                    help="This Lava template will be used by the Interaction Component Details block when viewing a interaction component. This allows you to customize the layout of a component." />
+
+        <CodeEditor label="Session List Lava Template"
+                    v-model="sessionListTemplate"
+                    mode="lava"
+                    :editorHeight="200"
+                    help="This Lava template will be used by the block when viewing session list." />
+
+        <CodeEditor label="Interaction List Lava Template"
+                    v-model="interactionListTemplate"
+                    mode="lava"
+                    :editorHeight="200"
+                    help="This Lava template will be used by the block when viewing interaction list." />
+
+        <CodeEditor label="Interaction Detail Lava Template"
+                    v-model="interactionDetailTemplate"
+                    mode="lava"
+                    :editorHeight="200"
+                    help="This Lava template will be used by the Interaction Details block when viewing a interaction. This allows you to customize the layout of a interaction." />
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { InteractionChannelBag } from "@Obsidian/ViewModels/Blocks/Core/InteractionChannelDetail/interactionChannelBag";
+    import { InteractionChannelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/InteractionChannelDetail/interactionChannelDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<InteractionChannelBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<InteractionChannelDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: InteractionChannelBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const engagementStrength = propertyRef(props.modelValue.engagementStrength, "EngagementStrength");
+    const retentionDuration = propertyRef(props.modelValue.retentionDuration, "RetentionDuration");
+    const componentCacheDuration = propertyRef(props.modelValue.componentCacheDuration, "ComponentCacheDuration");
+    const interactionCustom1Label = propertyRef(props.modelValue.interactionCustom1Label ?? "", "InteractionCustom1Label");
+    const interactionCustom2Label = propertyRef(props.modelValue.interactionCustom2Label ?? "", "InteractionCustom2Label");
+    const interactionCustomIndexed1Label = propertyRef(props.modelValue.interactionCustomIndexed1Label ?? "", "InteractionCustomIndexed1Label");
+    const channelListTemplate = propertyRef(props.modelValue.channelListTemplate ?? "", "ChannelListTemplate");
+    const channelDetailTemplate = propertyRef(props.modelValue.channelDetailTemplate ?? "", "ChannelDetailTemplate");
+    const componentListTemplate = propertyRef(props.modelValue.componentListTemplate ?? "", "ComponentListTemplate");
+    const componentDetailTemplate = propertyRef(props.modelValue.componentDetailTemplate ?? "", "ComponentDetailTemplate");
+    const sessionListTemplate = propertyRef(props.modelValue.sessionListTemplate ?? "", "SessionListTemplate");
+    const interactionListTemplate = propertyRef(props.modelValue.interactionListTemplate ?? "", "InteractionListTemplate");
+    const interactionDetailTemplate = propertyRef(props.modelValue.interactionDetailTemplate ?? "", "InteractionDetailTemplate");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [isActive, name, engagementStrength, retentionDuration, componentCacheDuration, interactionCustom1Label, interactionCustom2Label,
+        interactionCustomIndexed1Label, channelListTemplate, channelDetailTemplate, componentListTemplate, componentDetailTemplate, sessionListTemplate,
+        interactionListTemplate, interactionDetailTemplate];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(engagementStrength, props.modelValue.engagementStrength);
+        updateRefValue(retentionDuration, props.modelValue.retentionDuration);
+        updateRefValue(componentCacheDuration, props.modelValue.componentCacheDuration);
+        updateRefValue(interactionCustom1Label, props.modelValue.interactionCustom1Label ?? "");
+        updateRefValue(interactionCustom2Label, props.modelValue.interactionCustom2Label ?? "");
+        updateRefValue(interactionCustomIndexed1Label, props.modelValue.interactionCustomIndexed1Label ?? "");
+        updateRefValue(channelListTemplate, props.modelValue.channelListTemplate ?? "");
+        updateRefValue(channelDetailTemplate, props.modelValue.channelDetailTemplate ?? "");
+        updateRefValue(componentListTemplate, props.modelValue.componentListTemplate ?? "");
+        updateRefValue(componentDetailTemplate, props.modelValue.componentDetailTemplate ?? "");
+        updateRefValue(sessionListTemplate, props.modelValue.sessionListTemplate ?? "");
+        updateRefValue(interactionListTemplate, props.modelValue.interactionListTemplate ?? "");
+        updateRefValue(interactionDetailTemplate, props.modelValue.interactionDetailTemplate ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: InteractionChannelBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            isActive: isActive.value,
+            name: name.value,
+            engagementStrength: engagementStrength.value,
+            retentionDuration: retentionDuration.value,
+            componentCacheDuration: componentCacheDuration.value,
+            interactionCustom1Label: interactionCustom1Label.value,
+            interactionCustom2Label: interactionCustom2Label.value,
+            interactionCustomIndexed1Label: interactionCustomIndexed1Label.value,
+            channelListTemplate: channelListTemplate.value,
+            channelDetailTemplate: channelDetailTemplate.value,
+            componentListTemplate: componentListTemplate.value,
+            componentDetailTemplate: componentDetailTemplate.value,
+            sessionListTemplate: sessionListTemplate.value,
+            interactionListTemplate: interactionListTemplate.value,
+            interactionDetailTemplate: interactionDetailTemplate.value,
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

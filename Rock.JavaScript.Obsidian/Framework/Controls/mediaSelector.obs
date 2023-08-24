@@ -4,7 +4,7 @@
         <template #default="{uniqueId}">
             <div class="d-flex flex-nowrap js-mediaselector">
                 <template v-for="item in mediaItems">
-                    <div v-if="item.key != '' && item.value != ''" style="display: grid;" :class="cssClasses(internalValue, item)">
+                    <div v-if="item.key && item.value" style="display: grid;" :class="cssClasses(internalValue, item)">
                         <img v-if="mode == MediaSelectorMode.Image" :src="valueForItem(item)" alt="#" class="img-fluid" :style="{ width: itemWidth }" />
                         <audio v-else :src="valueForItem(item)" controls></audio>
                         <div class="custom-control-label align-self-end" style="text-align: left;">

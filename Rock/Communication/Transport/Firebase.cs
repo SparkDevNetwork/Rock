@@ -328,7 +328,7 @@ namespace Rock.Communication.Transport
 
                                         recipient.Status = status;
                                         recipient.TransportEntityTypeName = this.GetType().FullName;
-                                        recipient.UniqueMessageId = response.Responses[0].MessageId;
+                                        recipient.UniqueMessageId = response.Responses?.FirstOrDefault()?.MessageId;
 
                                         if ( recipient.PersonAlias != null )
                                         {

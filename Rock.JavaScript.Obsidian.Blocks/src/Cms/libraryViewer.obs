@@ -4,20 +4,26 @@
         <NotificationBox v-if="config.errorMessage" alertType="danger">
             {{ config.errorMessage }}
         </NotificationBox>
-        <Panel v-else class="styled-scroll" title="Library Viewer" :hasFullscreen="true">
+        <Panel v-else
+               type="block"
+               class="styled-scroll"
+               :hasFullscreen="true"
+               title="Library Viewer">
             <template #preBody>
-                <div class="library-viewer-toolbar">
-                    <ItemListSort :items="filteredItems"
-                          @sortedItems="(i) => sortedItems = i" />
+                <div class="panel-toolbar justify-content-end">
+                    <ItemListSort :contentChannelIdKey="config.contentChannelIdKey"
+                                  :items="filteredItems"
+                                  @sortedItems="(i) => filteredAndSortedItems = i" />
                     <ItemListFilters :areFiltersAppliedOnClose="true"
-                             :items="items"
-                             @filteredItems="(i) => filteredItems = i" />
+                                     :contentChannelIdKey="config.contentChannelIdKey"
+                                     :items="items"
+                                     @filteredItems="(i) => filteredItems = i" />
                 </div>
                 <div class="library-viewer-body">
-                    <ItemList v-if="sortedItems"
-                                            :items="sortedItems"
-                                            :selectedItem="selectedItem"
-                                            @select="onSelected" />
+                    <ItemList v-if="filteredAndSortedItems"
+                              :items="filteredAndSortedItems"
+                              :selectedItem="selectedItem"
+                              @select="onSelected" />
                     <template v-if="selectedItem">
                         <ItemPreview :contentChannelIdKey="config.contentChannelIdKey"
                                      :disabled="isDownloading"
@@ -40,50 +46,13 @@
 </template>
 
 <style scoped>
-.library-viewer-container {
-    height: calc(100vh - var(--top-header-height, 80px) - 2px);
-    max-height: calc(100vh - var(--top-header-height, 80px) - 2px);
-    display: flex;
-    color: var(--theme-colors-dark, #725E4F);
-}
-
-.library-viewer-container :deep(> div) {
-    /* Use :deep to target first child div of container */
-    display: flex;
-    flex: 1;
-}
-
-.library-viewer-container :deep(.panel) {
-    /* Use :deep to target panel */
-    flex: 1;
-}
-
 .library-viewer-container :deep(.panel-body) {
     /* Use :deep to target panel body */
     padding: 0;
 }
 
-.library-viewer-toolbar {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 8px 24px;
-
-    border-top: 1px solid var(--toremove-border-color, #F2E3D9);
-    border-bottom: 1px solid var(--toremove-border-color, #F2E3D9);
-    background: var(--theme-colors-lightest, #FAF7F5);
-}
-
-.library-viewer-toolbar :deep(> *) {
-    /* Using .library-viewer-toolbar :deep(> * + *) { margin-left: 8px; } causes sketchy page reflows. */
-    margin-right: 8px;
-}
-
-:deep(.library-viewer-toolbar-button) {
-    border-radius: 4px;
-    border: 0 solid var(--toremove-text-secondary-muted, #725E4F);
-    background: var(--theme-colors-light, #F2E3D9);
+.library-viewer-container :deep(.panel-toolbar) {
+    gap: 4px;
 }
 
 .library-viewer-body {
@@ -91,13 +60,6 @@
     flex-direction: row;
     overflow: hidden;
     height: 100%;
-}
-
-.library-viewer-item-list {
-    width: 479px;
-    flex-shrink: 0;
-    border-right: 1px solid var(--toremove-border-color, #F2E3D9);
-    background: #FFF;
 }
 
 :deep(.styled-scroll *::-webkit-scrollbar),
@@ -138,8 +100,8 @@
     //#region Values
 
     const items = ref<LibraryViewerItemBag[]>(config.items ?? []);
-    const filteredItems = ref<LibraryViewerItemBag[]>(items.value);
-    const sortedItems = ref<LibraryViewerItemBag[]>(items.value);
+    const filteredItems = ref<LibraryViewerItemBag[]>([]);
+    const filteredAndSortedItems = ref<LibraryViewerItemBag[]>([]);
     const selectedItem = ref<LibraryViewerItemBag | null | undefined>();
     const isDownloading = ref<boolean>(false);
     const isLoadingDetails = ref<boolean>(false);

@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
 using Rock.ViewModels.Utility;
@@ -26,8 +27,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockViewModel
     /// </summary>
-    /// <seealso cref="Rock.ViewModels.Utility.IViewModel" />
-    public sealed class RegistrationEntryBlockViewModel : IViewModel
+    public sealed class RegistrationEntryBlockViewModel
     {
         /// <summary>
         /// Gets or sets the current person family unique identifier.
@@ -521,6 +521,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         ///   <c>true</c> if [discount applies]; otherwise, <c>false</c>.
         /// </value>
         public bool DiscountApplies { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide when none remaining].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide when none remaining]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideWhenNoneRemaining { get; set; }
     }
 
     /// <summary>

@@ -526,7 +526,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                 $"{giftAmountIqr}",
                 "fa-fw fa-money-bill",
                 "left",
-                $"A typical gift amount has a median value of ${giftAmountMedian} with an IQR variance of ${giftAmountIqr}." );
+                $"A typical gift amount has a median value of ${giftAmountMedian} with a variability of ${giftAmountIqr}." );
 
             stringBuilder.Append( typicalGiftKpi );
 
@@ -541,7 +541,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                 giftFrequencyDaysMean + "d",
                 $"{PlusOrMinus}{giftFrequencyDaysStdDev}d",
                 "fa-fw fa-clock",
-                description: $"A typical gift frequency has a mean value of {giftFrequencyDaysMean} {giftFrequencyDaysMeanUnits} with a standard deviation variance of {giftFrequencyDaysStdDev} {giftFrequencyDaysStdDevUnits}." );
+                description: $"A typical gift frequency has a mean value of {giftFrequencyDaysMean} {giftFrequencyDaysMeanUnits} with a variability of {giftFrequencyDaysStdDev} {giftFrequencyDaysStdDevUnits}." );
 
             stringBuilder.Append( typicalFrequencyKpi );
 

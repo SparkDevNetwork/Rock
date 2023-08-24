@@ -1,0 +1,116 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div id="pnlViewDetails" runat="server">
+            <h3 class="mt-1">
+                {{ name }} Step Type
+            </h3>
+            <div class="row">
+                <div class="col-md-6 description">
+                    {{ description }}
+                </div>
+                <div class="col-md-offset-3 col-md-3">
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Default"
+                                class="btn btn-default btn-square pull-right"
+                                @click="onRefresh"
+                                loadingText="..."
+                                :isLoading="isRefreshLoading">
+                        <i class="fa fa-refresh"></i>
+                    </RockButton>
+                    <SlidingDateRangePicker v-model="filterDate"
+                                            :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
+                                            :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
+                                            class="pull-right"/>
+                </div>
+            </div>
+            <div v-html="kpi"></div>
+            <div>
+                <NotificationBox v-if="notificationMessage" alertType="information">{{ notificationMessage }}</NotificationBox>
+                <div class="chart-banner" v-if="showChart">
+                    {{ chartData }}
+                </div>
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { RangeType, SlidingDateRange, TimeUnit, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { StepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeBag";
+    import { StepTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<StepTypeBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<StepTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+    const name = ref(props.modelValue?.name ?? "");
+    const description = ref(props.modelValue?.description ?? "");
+    const chartData = ref(props.modelValue?.chartData ?? "");
+    const kpi = ref(props.modelValue?.kpi ?? "");
+    const showChart = ref(props.modelValue?.showChart);
+    const notificationMessage = ref("");
+    const filterDate = ref(props.modelValue?.defaultDateRange as SlidingDateRange);
+    const isRefreshLoading = ref(false);
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+    /**
+     * Event handler for the Refresh button being clicked. Request new chart
+     * data from the server using the specified filter date.
+     */
+    async function onRefresh(): Promise<void> {
+
+        isRefreshLoading.value = true;
+
+        const result = await invokeBlockAction<StepTypeBag>("RefreshChart", {
+            dateRange: slidingDateRangeToString(filterDate.value as SlidingDateRange)
+        });
+
+        isRefreshLoading.value = false;
+
+        if (result.isSuccess && result.data) {
+            chartData.value = result.data.chartData ?? "";
+            kpi.value = result.data.kpi ?? "";
+        }
+        else {
+            chartData.value = "";
+            notificationMessage.value = result.errorMessage ?? "Unknown error while trying to refresh chart.";
+        }
+    }
+                // #endregion
+</script>

@@ -23,8 +23,14 @@ export { ConfigurationValues, getFieldEditorProps } from "./utils";
  * Define the standard field types in Rock.
  */
 
+import { AchievementTypeFieldType } from "./achievementTypeField.partial";
+registerFieldType(FieldTypeGuids.AchievementType, new AchievementTypeFieldType());
+
 import { AddressFieldType } from "./addressField.partial";
 registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
+
+import { AssessmentTypesFieldType } from "./assessmentTypesField.partial";
+registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType());
 
 import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
 registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
@@ -50,11 +56,23 @@ registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefined
 import { ColorFieldType } from "./colorField.partial";
 registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 
+import { ConnectionTypeField } from "./connectionTypeField.partial";
+registerFieldType(FieldTypeGuids.ConnectionType, new ConnectionTypeField());
+
+import { ConnectionTypesField } from "./connectionTypesField.partial";
+registerFieldType(FieldTypeGuids.ConnectionTypes, new ConnectionTypesField());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
 import { CurrencyFieldType } from "./currencyField.partial";
 registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());
+
+import { DataViewFieldType } from "./dataViewField.partial";
+registerFieldType(FieldTypeGuids.DataView, new DataViewFieldType());
+
+import { DataViewsFieldType } from "./dataViewsField.partial";
+registerFieldType(FieldTypeGuids.Dataviews, new DataViewsFieldType());
 
 import { DateFieldType } from "./dateField.partial";
 registerFieldType(FieldTypeGuids.Date, new DateFieldType());
@@ -85,6 +103,12 @@ registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldTy
 
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
+
+import { FinancialAccountFieldType  } from "./financialAccountField.partial";
+registerFieldType(FieldTypeGuids.FinancialAccount, new FinancialAccountFieldType());
+
+import { FinancialAccountsFieldType  } from "./financialAccountsField.partial";
+registerFieldType(FieldTypeGuids.FinancialAccounts, new FinancialAccountsFieldType());
 
 import { FileFieldType } from "./fileField.partial";
 registerFieldType(FieldTypeGuids.File, new FileFieldType());

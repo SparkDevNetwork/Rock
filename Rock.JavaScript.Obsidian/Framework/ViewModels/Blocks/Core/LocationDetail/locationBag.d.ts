@@ -41,11 +41,13 @@ export type LocationBag = {
     /** Gets or sets the formatted HTML address. */
     formattedHtmlAddress?: string | null;
 
+    /** Gets or sets the geo fence well known text. */
     geoFence_WellKnownText?: string | null;
 
     /** Gets or sets the GeoFence image HTML. */
     geoFenceImageHtml?: string | null;
 
+    /** Gets or sets the geo point well known text. */
     geoPoint_WellKnownText?: string | null;
 
     /** Gets or sets the GeoPoint image HTML. */

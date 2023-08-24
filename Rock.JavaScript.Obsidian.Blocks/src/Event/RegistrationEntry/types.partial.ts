@@ -115,6 +115,8 @@ export type RegistrationEntryBlockViewModel = {
     registrationInstanceNotFoundMessage: string | null;
     races: ListItemBag[];
     ethnicities: ListItemBag[];
+    showSmsOptIn: boolean;
+    smsOptInText: string;
 
     isInlineSignatureRequired: boolean;
     isSignatureDrawn: boolean;

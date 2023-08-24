@@ -48,6 +48,11 @@ namespace Rock.Jobs
         /// </summary>
         private readonly List<(string Message, Exception Exception)> _migrationErrors = new List<(string Message, Exception Exception)>();
 
+        /// <summary>
+        /// List of all prefix and suffix pairs that have already been converted.
+        /// </summary>
+        private readonly List<(string Prefix, string Suffix)> _convertedKeys = new List<(string Prefix, string Suffix)>();
+
         private static class AttributeKey
         {
             public const string CommandTimeout = "CommandTimeout";
@@ -100,6 +105,8 @@ namespace Rock.Jobs
             CopyPreferences( "StreakMapEditorDateRange", string.Empty, CopyStreakMapEditorDateRangePreferences );
             CopyPreferences( "MyWorkflows_DisplayToggle", string.Empty, CopyMyWorkflowsDisplayTogglePreferences );
             CopyPreferences( "MyWorkflows_RoleToggle", string.Empty, CopyMyWorkflowsRoleTogglePreferences );
+
+            CopyRemainingGlobalPreferences();
 
             PersonPreferenceCache.Clear();
 
@@ -984,6 +991,8 @@ namespace Rock.Jobs
             var personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
             List<(int Id, string Key)> attributes;
 
+            _convertedKeys.Add( (prefix, suffix) );
+
             // Load all the attributes that match the query.
             using ( var rockContext = CreateRockContext() )
             {
@@ -1020,6 +1029,70 @@ namespace Rock.Jobs
                 try
                 {
                     processor( attributeId, attributeKey );
+                }
+                catch ( Exception ex )
+                {
+                    _migrationErrors.Add( ($"Failed to migrate person preference for attribute #{attributeId}", ex) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Copies any remaining preferences that have not already been copied.
+        /// They are created as global preferences.
+        /// </summary>
+        private void CopyRemainingGlobalPreferences()
+        {
+            var personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
+            List<(int Id, string Key)> attributes;
+
+            // Load all the attributes that match the query.
+            using ( var rockContext = CreateRockContext() )
+            {
+                var attributesQry = new AttributeService( rockContext )
+                    .Queryable()
+                    .Where( a => a.EntityTypeId == personEntityTypeId
+                        && ( a.EntityTypeQualifierColumn == null || a.EntityTypeQualifierColumn == string.Empty )
+                        && ( a.EntityTypeQualifierValue == null || a.EntityTypeQualifierValue == string.Empty ) );
+
+                foreach ( var (prefix, suffix) in _convertedKeys )
+                {
+                    if ( prefix.IsNotNullOrWhiteSpace() && suffix.IsNotNullOrWhiteSpace() )
+                    {
+                        attributesQry = attributesQry.Where( a => !( a.Key.StartsWith( prefix ) && a.Key.EndsWith( suffix ) ) );
+                    }
+                    else if ( prefix.IsNotNullOrWhiteSpace() )
+                    {
+                        attributesQry = attributesQry.Where( a => !a.Key.StartsWith( prefix ) );
+                    }
+                    else if ( suffix.IsNotNullOrWhiteSpace() )
+                    {
+                        attributesQry = attributesQry.Where( a => !a.Key.EndsWith( suffix ) );
+                    }
+                }
+
+                attributes = attributesQry
+                    .Select( a => new
+                    {
+                        a.Id,
+                        a.Key
+                    } )
+                    .ToList()
+                    .Select( a => (a.Id, a.Key) )
+                    .ToList();
+            }
+
+            // Process each attribute one at a time.
+            foreach ( var (attributeId, attributeKey) in attributes )
+            {
+                try
+                {
+                    // We only copy global preferences if the total size is 2KB or less.
+                    var existingValues = GetExistingAttributeValues( attributeId )
+                        .Where( v => v.Value.Length <= 2048 )
+                        .ToList();
+
+                    CreateOrIgnorePersonPreferences( null, null, $"global-0-{attributeKey}", existingValues );
                 }
                 catch ( Exception ex )
                 {

@@ -95,5 +95,13 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
         /// Gets or sets a value indicating whether the type is user selectable.
         /// </summary>
         public bool UserSelectable { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the entity type picker to allow user selection.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show entity type picker]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowEntityTypePicker { get; set; }
     }
 }

@@ -134,7 +134,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( MODE_TYPE, new ConfigurationValue( "Mode", "", "" ) );
-            configurationValues.Add( ITEM_WIDTH, new ConfigurationValue( "Item Width", "The width of each media item in pixes or percentage.", "" ) );
+            configurationValues.Add( ITEM_WIDTH, new ConfigurationValue( "Item Width", "The width of each media item in pixels or percentage.", "" ) );
             configurationValues.Add( MEDIA_ITEMS, new ConfigurationValue( "Media Items", "The items to display. The key will be the name of the item and the value should be the URL to the media file.", "" ) );
 
             if ( controls != null )
@@ -212,8 +212,6 @@ namespace Rock.Field.Types
                     control.ItemWidth = configurationValues[ITEM_WIDTH].Value;
                 }
             }
-
-
 
             return control;
         }

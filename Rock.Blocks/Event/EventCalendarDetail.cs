@@ -40,7 +40,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given Event Calendar." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -142,6 +142,7 @@ namespace Rock.Blocks.Event
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity.CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() ) || entity.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() );
                 }
                 else
                 {

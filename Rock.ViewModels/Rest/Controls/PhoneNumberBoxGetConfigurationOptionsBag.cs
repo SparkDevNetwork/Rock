@@ -14,25 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
+
+
 using System;
 
-namespace Rock.Lava
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// 
+    /// Used for configuration options for the PhoneNumberBox
     /// </summary>
-    /// <seealso cref="System.Exception" />
-    public class LegacyLavaSyntaxDetectedException : Exception
+    public class PhoneNumberBoxGetConfigurationOptionsBag
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LegacyLavaSyntaxDetectedException"/> class.
+        /// Gets or sets a value indicating whether [show SMS opt in].
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
-        /// <param name="fieldName">Name of the field.</param>
-        public LegacyLavaSyntaxDetectedException( string entityTypeName, string fieldName )
-            : base( string.Format( "Warning: Legacy Lava Syntax Detected: {0}.{1}", entityTypeName, fieldName ) )
-        {
-            System.Diagnostics.Debug.WriteLine( this.Message );
-        }
+        /// <value>
+        ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowSmsOptIn { get; set; }
     }
 }

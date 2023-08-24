@@ -27,6 +27,8 @@
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { FinancialPledgeBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeBag";
     import { FinancialPledgeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeDetailOptionsBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps({
         modelValue: {
@@ -76,8 +78,9 @@
             valueBuilder.addTextValue("Account", props.modelValue.account.text);
         }
 
-        if (props.modelValue?.totalAmount) {
-            valueBuilder.addTextValue("Amount", props.modelValue.totalAmount.toString());
+        const amount = toCurrencyOrNull(props.modelValue.totalAmount);
+        if (amount) {
+            valueBuilder.addTextValue("Amount", amount);
         }
 
         return valueBuilder.build();
@@ -89,6 +92,20 @@
 
         if (!props.modelValue) {
             return valueBuilder.build();
+        }
+
+        if (props.modelValue.startDate && props.modelValue.endDate) {
+            valueBuilder.addTextValue("Date Range", `${RockDateTime.parseISO(props.modelValue.startDate ?? "")?.toASPString("d")} to ${RockDateTime.parseISO(props.modelValue.endDate ?? "")?.toASPString("d")}`);
+        }
+        else if (props.modelValue.startDate) {
+            valueBuilder.addTextValue("Start Date", `${RockDateTime.parseISO(props.modelValue.startDate ?? "")?.toASPString("d")}`);
+        }
+        else if (props.modelValue.endDate) {
+            valueBuilder.addTextValue("End Date", `${RockDateTime.parseISO(props.modelValue.endDate ?? "")?.toASPString("d")}`);
+        }
+
+        if (props.modelValue.pledgeFrequencyValue?.text) {
+            valueBuilder.addTextValue("Payment Schedule", props.modelValue.pledgeFrequencyValue.text);
         }
 
         return valueBuilder.build();

@@ -24,6 +24,8 @@
 /** Guids for Field Types. NOTE: Some of these are referenced in Migrations to avoid string-typos. */
 export const FieldType = {
     /** Address field type */
+    AchievementType: "593132CF-BA5D-462F-97F6-94DCC0BFFE6F",
+    /** Address field type */
     Address: "0A495222-23B7-41D3-82C8-D484CDB75D17",
     /** Assessment field type */
     AssessmentType: "C263513A-30BE-4823-ABF1-AC12A56F9644",

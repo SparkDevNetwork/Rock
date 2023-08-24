@@ -72,7 +72,7 @@ namespace Rock.Model
         /// <summary>
         /// Specifies the number of prefix characters of the Exception Message property that are examined when grouping similar exceptions.
         /// </summary>
-        public static readonly int DescriptionGroupingPrefixLength = 28;
+        public static readonly int DescriptionGroupingPrefixLength = 95;
 
         /// <summary>
         /// Filter a query for exceptions at the innermost or lowest level of the exception hierarchy.

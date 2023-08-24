@@ -18,7 +18,7 @@
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Groups.GroupRegistration
+namespace Rock.ViewModels.Blocks.Group.GroupRegistration
 {
     /// <summary>
     /// 
@@ -71,7 +71,7 @@ namespace Rock.ViewModels.Blocks.Groups.GroupRegistration
         /// <value>
         ///   <c>true</c> if [enable SMS]; otherwise, <c>false</c>.
         /// </value>
-        public bool EnableSms { get; set; }
+        public bool IsMessagingEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets the address.
@@ -111,7 +111,7 @@ namespace Rock.ViewModels.Blocks.Groups.GroupRegistration
         /// <value>
         ///   <c>true</c> if [enable spouse SMS]; otherwise, <c>false</c>.
         /// </value>
-        public bool EnableSpouseSms { get; set; }
+        public bool SpouseIsMessagingEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets the spouse email.

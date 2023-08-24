@@ -763,7 +763,7 @@ namespace RockWeb.Blocks.Cms
             hfItemId.Value = item.Id.ToString();
             lUploadName.Text = item.Name;
             var licenseGuid = ContentChannelCache.Get( _channelId.Value )?.ContentLibraryConfiguration?.LicenseTypeValueGuid ?? Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_OPEN.AsGuid();
-            aLibraryLicense.HRef = $"https://rockrms.com/library/license/{ licenseGuid }?utm_source=rock-item-uploaded";
+            aLibraryLicense.HRef = $"https://rockrms.com/library/licenses?utm_source=rock-item-uploaded";
             aLibraryLicense.InnerHtml = $"{ DefinedValueCache.Get( licenseGuid ).Value } License";
             mdUploadContentLibrary.Show();
         }

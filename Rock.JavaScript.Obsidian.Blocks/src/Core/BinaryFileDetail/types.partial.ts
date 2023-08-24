@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,13 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Utility
-{
-    /// <summary>
-    /// View Model
-    /// </summary>
-    public interface IViewModel
-    {
-        /* This interface is intentionally empty. */
-    }
+export const enum NavigationUrlKey {
+    ParentPage = "ParentPage",
+    EditLabelPage = "EditLabelPage"
 }

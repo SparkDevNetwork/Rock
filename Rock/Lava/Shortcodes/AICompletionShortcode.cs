@@ -79,6 +79,8 @@ namespace Rock.Lava.Shortcodes
         /// The documentation for the shortcode that will be used in the <see cref="LavaShortcodeMetadataAttribute"/>.
         /// </summary>
         internal const string DocumentationMetadata = @"
+<div class=""alert alert-warning"">This shortcode is experimental and should not be used in production. It is likely to change before it's final release in v17.</div>
+
 <p>This shortcode allows you to interact with AI models to provide dynamic responses to various prompts you provide. These APIs can be
 slow. It's recommended that they not be used on public facing websites. They're better used in back-end or batch processes.</p>
 

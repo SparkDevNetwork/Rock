@@ -155,7 +155,7 @@
 }
 
 .note-text :deep(.mention) {
-    color: blue;
+    color: #006dcc;
 }
 
 .note-text {

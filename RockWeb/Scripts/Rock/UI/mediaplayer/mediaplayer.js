@@ -376,6 +376,11 @@ var Rock;
                     OriginalUrl: window.location.href,
                     PageId: Rock.settings.get("pageId")
                 };
+                if (typeof navigator.sendBeacon !== "undefined" && !async) {
+                    var beaconData = new Blob([JSON.stringify(data)], { type: 'application/json; charset=UTF-8' });
+                    navigator.sendBeacon("/api/MediaElements/WatchInteraction", beaconData);
+                    return;
+                }
                 const xmlRequest = new XMLHttpRequest();
                 const self = this;
                 xmlRequest.open("POST", "/api/MediaElements/WatchInteraction", async);

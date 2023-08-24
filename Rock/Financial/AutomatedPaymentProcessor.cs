@@ -707,46 +707,77 @@ namespace Rock.Financial
 
             if ( _authorizedPerson != null && _financialPersonSavedAccount == null && _financialGateway != null )
             {
-                // Pick the correct saved account based on args or default for the user
-                var financialGatewayId = _financialGateway.Id;
+                // Attempt to find the correct saved account based on the AutomatedPaymentArgs, linkage to a specified
+                // scheduled transaction, or the default saved accounts for the specified user.
 
                 var savedAccounts = _financialPersonSavedAccountService
                     .GetByPersonId( _authorizedPerson.Id )
                     .AsNoTracking()
-                    .Where( sa => sa.FinancialGatewayId == financialGatewayId )
+                    .Where( sa => sa.FinancialGatewayId == _financialGateway.Id )
                     .Include( sa => sa.FinancialPaymentDetail )
                     .OrderByDescending( sa => sa.CreatedDateTime ?? DateTime.MinValue )
                     .ToList();
 
                 if ( _automatedPaymentArgs.FinancialPersonSavedAccountId.HasValue )
                 {
-                    // If there is an indicated saved account to use, don't assume any other saved account even with a schedule
+                    // If the AutomatedPaymentArgs specify a saved account to use, use that account and do not attempt to
+                    // find any other saved account.
+
                     var savedAccountId = _automatedPaymentArgs.FinancialPersonSavedAccountId.Value;
                     _financialPersonSavedAccount = savedAccounts.FirstOrDefault( sa => sa.Id == savedAccountId );
                 }
+                else if ( _financialScheduledTransaction != null )
+                {
+                    // If this payment is for a scheduled transaction and the saved account was not specified in the
+                    // AutomatedPaymentArgs, then attempt to find the correct saved account through it's association to
+                    // the scheduled transaction.
+
+                    /*
+                         5/16/2022 - SMC
+
+                         Previously, the logic for scheduled transactions would fall through to the block after this one
+                         which selects either the default account or the most recently created account (due to the
+                         OrderByDescending call above).  This resulted in scheduled transactions that users believed to be
+                         "dead" sometimes resurecting themselves when a new saved account was added if the linkage between
+                         the scheduled transaction and it's original saved account was broken.  Additionally, the logic in
+                         this section did not conform to what the Rock UI displays.
+
+                         When viewing a scheduled transaction in Rock, the payment method displayed is determined by
+                         getting the associated FinancialPaymentDetail, which has an associated
+                         FinancialPersonSavedAccount (i.e., Rock uses
+                         FinancialScheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccountId).  This link
+                         was also incorrectly coded in the logic below, originally.  That has been fixed, but it is still
+                         possible that Rock may show a different saved account than the one which will be selected by the
+                         logic below.  This can only occur if the link between these entities is modified, and we assume
+                         that modification in this manner is intentional, so the matching logic below is preserved as it
+                         was initially designed.  In other words, Rock may show an incorrect payment method on these
+                         scheduled transactions if an update was made without correctly updating the linkage the Rock UI
+                         uses.
+
+                         Reason:  Prevent charges to stale scheduled transactions.
+                    */
+
+                    _financialPersonSavedAccount =
+                        // sa.ReferenceNumber == fst.TransactionCode
+                        savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.ReferenceNumber ) && sa.ReferenceNumber == _financialScheduledTransaction.TransactionCode ) ??
+                        // sa.GatewayPersonIdentifier == fst.TransactionCode
+                        savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.GatewayPersonIdentifier ) && sa.GatewayPersonIdentifier == _financialScheduledTransaction.TransactionCode ) ??
+                        // sa.Id.FinancialPersonSavedAccountId == fst.FinancialPaymentDetail.FinancialPersonSavedAccountId (This is the linkage used by the Rock UI - see engineering note above.)
+                        savedAccounts.FirstOrDefault( sa => sa.Id == _financialScheduledTransaction.FinancialPaymentDetail?.FinancialPersonSavedAccountId ) ??
+                        // sa.TransactionCode == fst.TransactionCode
+                        savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.TransactionCode ) && sa.TransactionCode == _financialScheduledTransaction.TransactionCode );
+                }
                 else
                 {
-                    // If there is a schedule and no indicated saved account to use, try to use payment info associated with the schedule
-                    if ( _financialScheduledTransaction != null )
-                    {
-                        _financialPersonSavedAccount =
-                            // sa.ReferenceNumber == fst.TransactionCode
-                            savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.ReferenceNumber ) && sa.ReferenceNumber == _financialScheduledTransaction.TransactionCode ) ??
-                            // sa.GatewayPersonIdentifier == fst.TransactionCode
-                            savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.GatewayPersonIdentifier ) && sa.GatewayPersonIdentifier == _financialScheduledTransaction.TransactionCode ) ??
-                            // sa.FinancialPaymentDetailId == fst.FinancialPaymentDetailId
-                            savedAccounts.FirstOrDefault( sa => sa.FinancialPaymentDetailId.HasValue && sa.FinancialPaymentDetailId == _financialScheduledTransaction.FinancialPaymentDetailId ) ??
-                            // sa.TransactionCode == fst.TransactionCode
-                            savedAccounts.FirstOrDefault( sa => !string.IsNullOrEmpty( sa.TransactionCode ) && sa.TransactionCode == _financialScheduledTransaction.TransactionCode );
-                    }
+                    // If this is not a scheduled transaction, and/or the saved account to charge was not specified in
+                    // the AutomatedPaymentArgs, then try the saved account flagged as default or the most recently
+                    // created saved account.
 
-                    if ( _financialPersonSavedAccount == null )
-                    {
-                        // Use the default or first if no default
-                        _financialPersonSavedAccount =
-                            savedAccounts.FirstOrDefault( sa => sa.IsDefault ) ??
-                            savedAccounts.FirstOrDefault();
-                    }
+                    _financialPersonSavedAccount =
+                        // Default account - this probably means we're charging a text-to-give payment.
+                        savedAccounts.FirstOrDefault( sa => sa.IsDefault ) ??
+                        // Most recently created account (due to OrderByDescending on CreatedDateTime).
+                        savedAccounts.FirstOrDefault();
                 }
             }
 
@@ -871,14 +902,7 @@ namespace Rock.Financial
 
             if ( !financialTransaction.BatchId.HasValue )
             {
-                batch = _financialBatchService.Get(
-                    _automatedPaymentArgs.BatchNamePrefix ?? "Online Giving",
-                    string.Empty,
-                    _referencePaymentInfo.CurrencyTypeValue,
-                    _referencePaymentInfo.CreditCardTypeValue,
-                    financialTransaction.TransactionDateTime ?? financialTransaction.FutureProcessingDateTime.Value,
-                    _financialGateway.GetBatchTimeOffset(),
-                    _financialGateway.BatchDayOfWeek );
+                batch = _financialBatchService.GetForNewTransaction( financialTransaction, _automatedPaymentArgs.BatchNamePrefix ?? "Online Giving" );
             }
             else
             {
@@ -892,11 +916,7 @@ namespace Rock.Financial
             // add history entries about the batch creation
             if ( isNewBatch )
             {
-                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
 
                 _rockContext.SaveChanges();
             }

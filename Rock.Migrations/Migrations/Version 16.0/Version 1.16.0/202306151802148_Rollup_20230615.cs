@@ -150,22 +150,36 @@ WHERE AttributeId = (SELECT Id FROM Attribute WHERE Guid = '4D245B9E-6B03-46E7-8
         /// </summary>
         private void GetCurrentPersonImpersonationSecurityUp()
         {
-            var restActionPath = "People^String GetCurrentPersonImpersonationToken(Nullable`1[DateTimeOffset], Nullable`1[Int32], Nullable`1[Int32])";
-            RockMigrationHelper.AddSecurityAuthForRestAction( "GET", restActionPath,
-            0,
-            Rock.Security.Authorization.VIEW,
-            true,
-            string.Empty,
-            Rock.Model.SpecialRole.AllAuthenticatedUsers,
-            "22697EFE-6C6F-4F59-9D01-974AF1197F2F" );
+            // Add the default 'All Authenticated Users' => Allow security settings for the 'GetCurrentImpersonationToken' RestAction.
+            RockMigrationHelper.UpdateGroup( null,
+                Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE,
+                "RSR - Mobile Application Users",
+                "Group of mobile application people to use for endpoint authorization.",
+                null,
+                0,
+                Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
+                true,
+                true );
 
-            RockMigrationHelper.AddSecurityAuthForRestAction( "GET", "People^String GetCurrentPersonImpersonationToken(Nullable`1[DateTimeOffset], Nullable`1[Int32], Nullable`1[Int32])",
-            0,
-            Rock.Security.Authorization.VIEW,
-            true,
-            Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
-            Model.SpecialRole.None,
-            "93AFF421-D2B9-46A7-8420-70EC2FF8CD38" );
+            RockMigrationHelper.AddRestAction( "8911b107-8e79-4e5d-949b-ae61be130bf9",
+                "People",
+                "Rock.Rest.Controllers.PeopleController" );
+            
+            RockMigrationHelper.AddSecurityAuthForRestAction( "8911b107-8e79-4e5d-949b-ae61be130bf9",
+                0,
+                Rock.Security.Authorization.VIEW,
+                true,
+                string.Empty,
+                Rock.Model.SpecialRole.AllAuthenticatedUsers,
+                "22697EFE-6C6F-4F59-9D01-974AF1197F2F" );
+
+            // Add the default 'RSR: Mobile Application Users' => Allow security settings for the 'GetCurrentImpersonationToken' RestAction.
+            RockMigrationHelper.AddSecurityAuthForRestAction( "8911b107-8e79-4e5d-949b-ae61be130bf9",
+                0, Rock.Security.Authorization.VIEW,
+                true,
+                Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
+                Model.SpecialRole.None,
+                "93AFF421-D2B9-46A7-8420-70EC2FF8CD38" );
         }
 
         /// <summary>

@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,7 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Account Field Type.  Stored as FinancialAccount's Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FINANCIAL_ACCOUNT )]
     public class AccountFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
@@ -90,7 +91,53 @@ namespace Rock.Field.Types
 
         #endregion
 
-        #region Edit Control 
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var accountValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( accountValue != null )
+            {
+                return accountValue.Value;
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( Guid.TryParse( privateValue, out Guid guid ) )
+            {
+                var displayPublicName = true;
+
+                if ( privateConfigurationValues != null &&
+                     privateConfigurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+                {
+                    displayPublicName = privateConfigurationValues[DISPLAY_PUBLIC_NAME].AsBoolean();
+                }
+
+                var account = FinancialAccountCache.Get( guid );
+                if ( account != null )
+                {
+                    return new ListItemBag()
+                    {
+                        Value = account.Guid.ToString(),
+                        Text = displayPublicName ? account.PublicName : account.Name,
+                    }.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return string.Empty;
+        }
 
         #endregion
 

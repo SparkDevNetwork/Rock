@@ -112,11 +112,21 @@ namespace Rock.Blocks.Event
         {
             var registrationsToDisplay = GetAttributeValue( AttributeKey.RegistrationsToDisplay ).SplitDelimitedValues();
 
+            // Limit to the current person
+            int currentPersonId = this.GetCurrentPerson()?.Id ?? 0;
+
+            // Return an empty list if the person is not logged in.
+            if(currentPersonId == 0)
+            {
+                return new List<Registration>();
+            }
+
             var registrationList = registrationService.Queryable()
                 .Include( r => r.RegistrationInstance.Linkages )
                 .Where( a =>
                     a.RegistrationInstance.IsActive == true &&
-                    !a.IsTemporary )
+                    !a.IsTemporary &&
+                    a.PersonAlias.PersonId == currentPersonId )
                 .ToList();
 
             // filter out the registrations with no balance if required.
@@ -138,7 +148,7 @@ namespace Rock.Blocks.Event
             // display future events if needed
             if ( registrationsToDisplay.Contains( RegistrationsToDisplayKey.FutureEvents ) )
             {
-                var futureEventsDataRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.DateRange ) );
+                var futureEventsDataRange = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.DateRange ), RockDateTime.Now );
 
                 // if the value for futureEventsDataRange happens to be null, show all the registrations having an event
                 if ( futureEventsDataRange.Start == null && futureEventsDataRange.End == null )
@@ -170,7 +180,7 @@ namespace Rock.Blocks.Event
             // display past events if needed
             if ( registrationsToDisplay.Contains( RegistrationsToDisplayKey.RecentRegistrations ) )
             {
-                var pastEventsDataRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.RecentRegistrations ) );
+                var pastEventsDataRange = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.RecentRegistrations ), RockDateTime.Now );
                 // in case the pastEventsDataRange happens to not have a value, show all the registrations else filter out the ones within the range
                 if ( pastEventsDataRange.Start == null && pastEventsDataRange.End == null )
                 {

@@ -1,18 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel :isDrawerOpen="false" :title="panelName" :hasCollapse="false" :hasFullscreen="true">
+    <Panel type="block" >
 
         <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
-
         <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
         <div v-if="!blockError">
-            <div v-if="resultLavaTemplate" v-html="resultLavaTemplate">
-
-            </div>
-
+            <div v-if="resultLavaTemplate" v-html="resultLavaTemplate"></div>
             <EditPanel v-else v-model="groupRegistrationBag" :options="options" />
-
         </div>
 
         <template #footerActions v-if="!resultLavaTemplate && !blockError">
@@ -82,7 +77,7 @@ async function onSave(): Promise<void> {
     errorMessage.value = "";
 
     const result = await invokeBlockAction<string>("Save", {
-        box: groupRegistrationBag.value
+        groupRegistrationBag: groupRegistrationBag.value
     });
 
     if (result.isSuccess && result.data) {

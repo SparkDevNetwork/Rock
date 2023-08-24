@@ -522,6 +522,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         }
                     }
                     NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.IsActive = tgl.Checked );
+                    int? campusId = CurrentCampusId.AsIntegerOrNull();
+                    if ( campusId.HasValue )
+                    {
+                        int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
+                        NavData = GetNavigationData( CampusCache.Get( campusId.Value ), scheduleId );
+                    }
                 }
             }
 
@@ -544,6 +550,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         Rock.CheckIn.KioskDevice.Clear();
 
                         NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.SoftThreshold = softThreshold );
+                        int? campusId = CurrentCampusId.AsIntegerOrNull();
+                        if ( campusId.HasValue )
+                        {
+                            int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
+                            NavData = GetNavigationData( CampusCache.Get( campusId.Value ), scheduleId );
+                        }
                     }
                 }
             }
@@ -711,11 +723,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         }
 
                         int? totalSoftThreshold = null;
-                        var locations = allDescendentchildLocations.Select( a => a.Location ).Distinct();
+                        var locations = allDescendentchildLocations.Select( a => a.Location ).DistinctBy( a => a.Id );
                         if ( locations.All( a => a.SoftRoomThreshold.HasValue ) )
                         {
-                            
-                            totalSoftThreshold = locations.Select( a => a.SoftRoomThreshold ).Sum();
+
+                            totalSoftThreshold = locations.Where( a => a.IsActive ).Select( a => a.SoftRoomThreshold ).Sum();
                         }
 
                         var navGroup = new NavigationGroup( group, chartTimes, totalSoftThreshold );
@@ -728,7 +740,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 We need to keep track of Threshold values on per location basis.
                                 It will be used in calculation of Total Threshold values for Areas that  has multiple group with same location associated with multiple group.
                             */
-                            navGroup.LocationTotalThresholdKeyValues = locations.ToDictionary( l => l.Id, t => t.SoftRoomThreshold.Value );
+                            navGroup.LocationTotalThresholdKeyValues = locations.ToDictionary( l => l.Id, t => t.IsActive ? t.SoftRoomThreshold.Value : 0 );
                         }
 
                         NavData.Groups.Add( navGroup );
@@ -1686,7 +1698,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public void AddChildLocation( NavigationLocation location )
             {
                 ChildLocationIds.Add( location.Id );
-                if ( TotalSoftThreshold.HasValue && location.SoftThreshold.HasValue )
+                if ( TotalSoftThreshold.HasValue && location.SoftThreshold.HasValue && location.IsActive )
                 {
                     TotalSoftThreshold += location.SoftThreshold;
                 }

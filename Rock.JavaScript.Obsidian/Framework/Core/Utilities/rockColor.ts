@@ -805,7 +805,7 @@ export class RockColor {
         // a different recipe so the color looks more like the original (which
         // would be gray).
         if (color.saturation <= 0.15) {
-            recipeSaturation = 0.15;
+            recipeSaturation = color.saturation;
         }
 
         recipeColor.saturation = recipeSaturation;

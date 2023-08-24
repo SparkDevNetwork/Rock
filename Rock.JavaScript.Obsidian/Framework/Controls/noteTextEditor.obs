@@ -33,9 +33,9 @@
                                  ariaSelected="{ item.identifier === currentSearchItem?.identifier }"
                                  :class="{ 'active': item.identifier === currentSearchItem?.identifier }"
                                  :data-identifier="item.identifier"
-                                 @click="onMentionSelect(item)"
+                                 @click="onMentionSelect(item, $event)"
                                  @mousedown="$event.preventDefault()"
-                                 @mouseover="onMentionHover(item)">
+                                 @mousemove="onMentionHover(item)">
                                 <img v-if="item.imageUrl" :src="item.imageUrl" class="mention-search-item-image" loading="lazy" width="24" height="24" />
                                 <div class="mention-search-item-text">
                                     <div class="mention-search-item-title">
@@ -127,7 +127,7 @@
 }
 
 .mention-search-container {
-    width: 450px;
+    width: 315px;
     max-width: 100%;
     max-height: 216px;
     overflow-x: clip;
@@ -262,9 +262,16 @@
     /**
      * Update the content from our model value.
      */
-    function updateContent(): void {
+    function updateContent(content: string): void {
         if (contentElement.value) {
-            contentElement.value.innerHTML = props.modelValue || "";
+            contentElement.value.innerHTML = content;
+
+            const mentionSpans = contentElement.value.querySelectorAll("span.mention");
+            for (const element of mentionSpans) {
+                if (element instanceof HTMLElement) {
+                    element.contentEditable = "false";
+                }
+            }
         }
     }
 
@@ -284,7 +291,18 @@
      * Gets the current content HTML of the editor.
      */
     function getCurrentContent(): string {
-        let value = contentElement.value?.innerHTML ?? "";
+        if (!contentElement.value) {
+            return "";
+        }
+
+        const clone = contentElement.value.cloneNode(true) as HTMLElement;
+        for (const child of clone.children) {
+            if (child instanceof HTMLElement && child.hasAttribute("contentEditable")) {
+                child.removeAttribute("contentEditable");
+            }
+        }
+
+        let value = clone.innerHTML;
 
         // Browsers sometimes put a trailing break at the end of the
         // content. This seems to happen with certain combinations of
@@ -461,14 +479,27 @@
      * @param event The keyboard event.
      */
     function handlePopoverKeydown(selection: Selection, event: KeyboardEvent): void {
+        // Pressing @ inside a search will cancel the old search and start a
+        // new mention search.
+        if (event.key === "@") {
+            mentionStart.value = getAnchorPositionInText(selection);
+            inMentionMode.value = true;
+            mentionSearchResults.value = [];
+            currentSearchItem.value = undefined;
+            return;
+        }
+
         // Check for special keys that abort the process.
-        if (event.key === "@" || event.key === "," || event.key === "." || event.key === "Escape") {
-            inMentionMode.value = false;
+        if (event.key === "," || event.key === "." || event.key === "Escape") {
+            mentionStart.value = getAnchorPositionInText(selection);
+            inMentionMode.value = true;
+            mentionSearchResults.value = [];
+            currentSearchItem.value = undefined;
             return;
         }
 
         // Ignore meta keys.
-        if (event.key === "Shift" || event.key === "Control" || event.key === "Alt" || event.key === "OS") {
+        if (event.key === "Shift" || event.key === "Control" || event.key === "Alt" || event.key === "OS" || event.key === "Meta") {
             return;
         }
 
@@ -766,7 +797,9 @@
      *
      * @param mention The mention that was selected.
      */
-    function onMentionSelect(mention: NoteMentionItemBag): void {
+    function onMentionSelect(mention: NoteMentionItemBag, event: MouseEvent): void {
+        event.stopPropagation();
+
         const sel = window.getSelection();
 
         if (sel) {
@@ -778,6 +811,9 @@
 
     /**
      * Event handler for when a mention is hovered by the mouse.
+     * This is actually in response to the mousemove event to fix an issue
+     * in Chrome where using the up/down keys while the mouse was over the
+     * list of mentions would cause jerky behavior.
      *
      * @param mention The mention that was hovered over.
      */
@@ -791,7 +827,7 @@
     // Watch for changes from the parent component.
     watch(() => props.modelValue, () => {
         if (props.modelValue !== getCurrentContent()) {
-            updateContent();
+            updateContent(props.modelValue);
         }
     });
 
@@ -804,7 +840,7 @@
     });
 
     onMounted(() => {
-        updateContent();
+        updateContent(props.modelValue);
 
         document.addEventListener("selectionchange", onDocumentSelectionChange);
     });
@@ -818,7 +854,7 @@
         // re-created without us being remounted. This can happen if the label
         // text changes from blank to non-blank or vice-versa.
         if (contentElement.value && internalValue.value) {
-            contentElement.value.innerHTML = internalValue.value;
+            updateContent(internalValue.value);
         }
     });
 </script>

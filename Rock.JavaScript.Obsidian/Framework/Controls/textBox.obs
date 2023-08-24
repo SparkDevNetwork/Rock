@@ -1,9 +1,6 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   v-model="internalValue"
-                   :formGroupClasses="'rock-text-box ' + formGroupClasses"
-                   name="textbox">
+    <RockFormField v-model="internalValue" :formGroupClasses="'rock-text-box ' + formGroupClasses" name="textbox">
         <template #pre>
             <em v-if="showCountDown" class="pull-right badge" :class="countdownClass">
                 {{ charsRemaining }}
@@ -107,7 +104,7 @@
 
     const controlContainerClass = computed((): Record<string, boolean> => {
         return {
-            "input-group": isInputGroup.value,
+            "input-group col-xs-12": isInputGroup.value,
             "input-group-sm": isInputGroup.value && props.size == "small",
             "input-group-lg": isInputGroup.value && props.size == "large"
         };

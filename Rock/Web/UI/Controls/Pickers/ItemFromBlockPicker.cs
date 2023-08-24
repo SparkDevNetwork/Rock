@@ -677,7 +677,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockBlock().RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockBlock().RockPage, null, new Rock.Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "SelectedText", SelectedText );
             mergeFields.Add( "SelectedValue", SelectedValue ?? string.Empty );
 

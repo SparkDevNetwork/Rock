@@ -33,6 +33,7 @@ using Rock.Update.Exceptions;
 using Rock.Update.Helpers;
 using Rock.Update.Models;
 using Rock.Update.Services;
+using Rock.Utility.Settings;
 using Rock.VersionInfo;
 using Rock.Web.Cache;
 
@@ -153,11 +154,18 @@ namespace RockWeb.Blocks.Core
                     nbSqlServerVersionIssue.Visible = true;
                 }
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel;
-
-                if ( lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy )
+                var isConfiguredForLegacyLava = lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy;
+#pragma warning restore CS0618 // Type or member is obsolete
+                if ( isConfiguredForLegacyLava )
                 {
                     nbLegacyLavaIssue.Visible = true;
+                }
+
+                if ( RockInstanceConfig.LavaEngineName != "Fluid" )
+                {
+                    nbLavaEngineIssue.Visible = true;
                 }
 
                 _releases = GetOrderedReleaseList( rockUpdateService, _installedVersion );
@@ -179,10 +187,16 @@ namespace RockWeb.Blocks.Core
                         }
 
                         // if LegacyLavaIssue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
-                        if ( lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy )
+                        if ( isConfiguredForLegacyLava )
                         {
                             nbLegacyLavaIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                         }
+                    }
+
+                    // if LavaEngineIssue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
+                    if ( new Version( _releases.Last().SemanticVersion ) >= new Version( "1.17.0" ) && RockInstanceConfig.LavaEngineName != "Fluid" )
+                    {
+                        nbLavaEngineIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                     }
 
                     pnlUpdatesAvailable.Visible = true;

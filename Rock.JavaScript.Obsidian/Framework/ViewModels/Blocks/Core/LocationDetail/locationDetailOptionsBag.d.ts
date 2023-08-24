@@ -24,5 +24,6 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type LocationDetailOptionsBag = {
+    /** Gets or sets the printer device options. */
     printerDeviceOptions?: ListItemBag[] | null;
 };

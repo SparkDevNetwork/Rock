@@ -134,7 +134,7 @@ namespace Rock.CodeGeneration.Pages
         private List<Type> GetViewModelTypes()
         {
             // We only include types that end in "Bag" or "Box".
-            return typeof( Rock.ViewModels.Utility.IViewModel ).Assembly
+            return typeof( Rock.ViewModels.Utility.EntityBagBase ).Assembly
                 .GetExportedTypes()
                 .Where( t => t.Name.Split( '`' )[0].EndsWith( "Bag" ) || t.Name.Split( '`' )[0].EndsWith( "Box" ) )
                 .Where( t => !t.IsAbstract && !t.IsInterface )

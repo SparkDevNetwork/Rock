@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** The Site List Options Bag */
 export type SiteListOptionsBag = {
 };

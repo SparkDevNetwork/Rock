@@ -34,5 +34,14 @@ namespace Rock.ViewModels.Rest.Controls
         /// The list of validation/formatting rules for each country code
         /// </summary>
         public Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>> Rules { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the SMS opt in text.
+        /// </summary>
+        /// <value>
+        /// The SMS opt in text.
+        /// </value>
+        public string SmsOptInText { get; set; } = string.Empty;
     }
 }
