@@ -1233,6 +1233,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class FieldType
     {
+        public const string ACHIEVEMENT_TYPE = "593132CF-BA5D-462F-97F6-94DCC0BFFE6F";
         public const string ADDRESS = "0A495222-23B7-41D3-82C8-D484CDB75D17";
         public const string ASSESSMENT_TYPE = "C263513A-30BE-4823-ABF1-AC12A56F9644";
         public const string ASSET = "FC27D395-8F57-467E-91FF-E648F807110E";

@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+/** Used for configuration options for the PhoneNumberBox */
 export type PhoneNumberBoxGetConfigurationOptionsBag = {
+    /** Gets or sets a value indicating whether [show SMS opt in]. */
     showSmsOptIn: boolean;
 };
