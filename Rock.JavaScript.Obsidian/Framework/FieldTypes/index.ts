@@ -29,6 +29,9 @@ registerFieldType(FieldTypeGuids.AchievementType, new AchievementTypeFieldType()
 import { AddressFieldType } from "./addressField.partial";
 registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 
+import { AssessmentTypesFieldType } from "./assessmentTypesField.partial";
+registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType());
+
 import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
 registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
 

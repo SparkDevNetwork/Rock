@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,13 +35,108 @@ namespace Rock.Field.Types
     /// Field Type used to display Assessment type check boxes.
     /// Stored as Assessment type's Guid.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian  )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ASSESSMENT_TYPE )]
     public class AssessmentTypesFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                var guids = new List<Guid>();
+
+                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    Guid? guid = guidValue.AsGuidOrNull();
+                    if ( guid.HasValue )
+                    {
+                        guids.Add( guid.Value );
+                    }
+                }
+
+                if ( guids.Any() )
+                {
+                    var assessmentTypes = guids.Select( a => AssessmentTypeCache.Get( a ) ).ToList();
+                    if ( assessmentTypes.Any() )
+                    {
+                        formattedValue = string.Join( ", ", ( from assessmentType in assessmentTypes select assessmentType?.Title ) );
+                    }
+                }
+            }
+
+            return formattedValue;
+        }
+
+        #endregion
+
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var assessmentTypeValues = publicValue.FromJsonOrNull<List<ListItemBag>>();
+
+            if ( assessmentTypeValues != null && assessmentTypeValues.Any() )
+            {
+                return string.Join( ",", assessmentTypeValues.Select( s => s.Value ) );
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                var assessmentTypeValues = new List<ListItemBag>();
+
+                foreach ( string guidValue in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    Guid? guid = guidValue.AsGuidOrNull();
+                    if ( guid.HasValue )
+                    {
+                        var assessmentType = AssessmentTypeCache.Get( guid.Value );
+                        if ( assessmentType != null )
+                        {
+                            var scheduleValue = new ListItemBag()
+                            {
+                                Text = assessmentType.Title,
+                                Value = assessmentType.Guid.ToString(),
+                            };
+
+                            assessmentTypeValues.Add( scheduleValue );
+                        }
+                    }
+                }
+
+                if ( assessmentTypeValues.Any() )
+                {
+                    return assessmentTypeValues.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return string.Empty;
+        }
+
 
         #endregion
 
