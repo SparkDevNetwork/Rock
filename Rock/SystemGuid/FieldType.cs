@@ -129,6 +129,11 @@ namespace Rock.SystemGuid
         public const string COLOR = "D747E6AE-C383-4E22-8846-71518E3DD06F";
 
         /// <summary>
+        /// Color selector field type
+        /// </summary>
+        public const string COLOR_SELECTOR = "B07070F6-B66E-4B83-8DA6-12CF3400A1EC";
+
+        /// <summary>
         /// Communication Template field type
         /// </summary>
         public const string COMMUNICATION_TEMPLATE = "C3B37465-DCAF-4C8C-930C-9A9B5D066CA9";

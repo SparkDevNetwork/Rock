@@ -65,6 +65,8 @@ export const FieldType = {
     CodeEditor: "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5",
     /** Color field type */
     Color: "D747E6AE-C383-4E22-8846-71518E3DD06F",
+    /** Color selector field type */
+    ColorSelector: "B07070F6-B66E-4B83-8DA6-12CF3400A1EC",
     /** Communication Preference field type */
     CommunicationPreferenceType: "507C28F2-8BC0-4909-A4FE-9C2B1149E2B2",
     /** Communication Template field type */
