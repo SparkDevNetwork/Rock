@@ -22,6 +22,7 @@ using System.Text.RegularExpressions;
 using DotLiquid.Util;
 
 using Rock.Attribute;
+using Rock.Cms;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Logging;

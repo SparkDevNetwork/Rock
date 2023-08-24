@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Rock.Cms;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Tasks;
