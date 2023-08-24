@@ -362,6 +362,7 @@ namespace RockWeb.Blocks.GroupScheduling
                         ScheduledAttendanceItemStatus = Attendance.GetScheduledAttendanceItemStatus( a.RSVP, a.ScheduledToAttend ),
                         Person = a.PersonAlias.Person,
                         GroupMember = a.Occurrence.Group.Members.FirstOrDefault( gm => gm.PersonId == a.PersonAlias.PersonId ),
+                        GroupMembers = a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).ToList(),
                         CurrentlyCheckedIn = a.DidAttend == true
                     } )
                     .ToList() );
@@ -724,6 +725,8 @@ namespace RockWeb.Blocks.GroupScheduling
             public Person Person { get; set; }
 
             public GroupMember GroupMember { get; set; }
+
+            public List<GroupMember> GroupMembers { get; set; }
 
             public bool CurrentlyCheckedIn { get; set; }
         }
