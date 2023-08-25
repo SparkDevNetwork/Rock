@@ -64,16 +64,16 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs" />
-    <Compile Include="Migrations\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.designer.cs">
       <DependentUpon>202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202308241656443_Rollup_20230824.cs" />
-    <Compile Include="Migrations\202308241656443_Rollup_20230824.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308241656443_Rollup_20230824.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308241656443_Rollup_20230824.designer.cs">
       <DependentUpon>202308241656443_Rollup_20230824.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202308241713529_CodeGenerated_20230824.cs" />
-    <Compile Include="Migrations\202308241713529_CodeGenerated_20230824.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308241713529_CodeGenerated_20230824.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308241713529_CodeGenerated_20230824.designer.cs">
       <DependentUpon>202308241713529_CodeGenerated_20230824.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\202308242352371_WorkflowEntryForm-PersonEntrySmsOptInEntryOption.cs" />
@@ -1782,13 +1782,13 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.resx">
       <DependentUpon>202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202308241656443_Rollup_20230824.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308241656443_Rollup_20230824.resx">
       <DependentUpon>202308241656443_Rollup_20230824.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202308241713529_CodeGenerated_20230824.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308241713529_CodeGenerated_20230824.resx">
       <DependentUpon>202308241713529_CodeGenerated_20230824.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202308242352371_WorkflowEntryForm-PersonEntrySmsOptInEntryOption.resx">
