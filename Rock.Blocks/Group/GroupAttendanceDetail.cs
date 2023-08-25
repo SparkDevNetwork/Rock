@@ -545,15 +545,13 @@ namespace Rock.Blocks.Group
         {
             using ( var rockContext = new RockContext() )
             {
-                var attendanceInfo = new AttendanceService( rockContext )
+                var attendanceQuery = new AttendanceService( rockContext )
                     .Queryable()
-                    .Where( a => a.Guid == bag.AttendanceGuid )
-                    .Select( a => new AttendanceDto
+                    .Where( a => a.Guid == bag.AttendanceGuid );
+                var attendanceInfo = attendanceQuery
+                    .Select( a => new
                     {
-                        GroupId = a.Occurrence.GroupId,
-                        Person = a.PersonAlias.Person,
-                        DidAttend = a.DidAttend,
-                        PersonAliasId = a.PersonAliasId ?? a.PersonAlias.Id
+                        a.Occurrence.GroupId
                     } )
                     .FirstOrDefault();
 
@@ -575,28 +573,22 @@ namespace Rock.Blocks.Group
                 }
 
                 // The attendee may not be a member of the group.
-                var groupMemberDto = new GroupMemberService( rockContext )
+                var groupMembersQuery = new GroupMemberService( rockContext )
                     .Queryable()
-                    .Where( m =>
-                        m.GroupId == group.Id
-                        && m.GroupId == group.Id
-                        && m.PersonId == attendanceInfo.Person.Id )
-                    .Select( m => new GroupMemberDto
+                    .Where( m => m.GroupId == group.Id );
+                var personAliasAttendanceBagDto = attendanceQuery
+                    .Select( a => new PersonAliasAttendanceBagDto
                     {
-                        GroupMember = m,
-                        GroupRoleName = m.GroupRole != null ? m.GroupRole.Name : null,
+                        DidAttend = a.DidAttend,
+                        GroupMembers = groupMembersQuery.Where( groupMember => groupMember.PersonId == a.PersonAlias.PersonId ).ToList(),
+                        Roles = groupMembersQuery.Where( groupMember => groupMember.PersonId == a.PersonAlias.PersonId ).Select( groupMember => groupMember.GroupRole.Name ).ToList(),
+                        Person = a.PersonAlias.Person,
+                        PersonAliasId = a.PersonAlias.Id,
+                        PrimaryCampusGuid = a.PersonAlias.Person.PrimaryCampusId.HasValue ? a.PersonAlias.Person.PrimaryCampus.Guid : ( Guid? ) null
                     } )
                     .FirstOrDefault();
 
-                var attendanceBag = GetAttendanceBag( new PersonAliasAttendanceBagDto
-                {
-                    DidAttend = attendanceInfo.DidAttend,
-                    GroupMembers = groupMemberDto?.GroupMember != null ? new List<GroupMember> { groupMemberDto.GroupMember } : new List<GroupMember>(),
-                    GroupRoleNames = groupMemberDto?.GroupRoleName != null ? new List<string> { groupMemberDto.GroupRoleName } : new List<string>(),
-                    Person = attendanceInfo.Person,
-                    PersonAliasId = attendanceInfo.PersonAliasId,
-                    PrimaryCampusGuid = attendanceInfo.Person.PrimaryCampusId.HasValue ? attendanceInfo.Person.PrimaryCampus.Guid : ( Guid? ) null
-                } );
+                var attendanceBag = GetAttendanceBag( personAliasAttendanceBagDto );
 
                 return ActionOk( attendanceBag );
             }
@@ -780,11 +772,16 @@ namespace Rock.Blocks.Group
                 // Save GroupMember and Attendance changes.
                 rockContext.SaveChanges();
 
+                var personGroupMembers = new GroupMemberService( rockContext )
+                    .Queryable( "GroupRole" )
+                    .Where( gm => gm.GroupId == occurrenceData.AttendanceOccurrence.GroupId && personAlias.PersonId == gm.PersonId )
+                    .ToList();
+
                 var attendanceBag = GetAttendanceBag( new PersonAliasAttendanceBagDto
                 {
                     DidAttend = true,
-                    GroupMembers = groupMember != null ? new List<GroupMember> { groupMember } : new List<GroupMember>(),
-                    GroupRoleNames = groupMember?.GroupRole != null ? new List<string> { groupMember.GroupRole.Name } : new List<string>(),
+                    GroupMembers = personGroupMembers,
+                    Roles = personGroupMembers.Select( gm => gm.GroupRole.Name ).ToList(),
                     Person = personAlias.Person,
                     PersonAliasId = personAlias.Id,
                     PrimaryCampusGuid = campusGuid
@@ -1760,7 +1757,7 @@ namespace Rock.Blocks.Group
             // Get the query to get primary person aliases.
             var primaryAliasQuery = new PersonAliasService( rockContext ).GetPrimaryAliasQuery();
 
-            IQueryable<GroupMemberAttendanceBagDto> existingAttendeesQuery = null;
+            IQueryable<PersonAliasAttendanceBagDto> existingAttendeesQuery = null;
             if ( occurrenceData.AttendanceOccurrence.Id > 0 )
             {
                 // Get the query for people who did or didn't attend this occurrence.
@@ -1772,26 +1769,20 @@ namespace Rock.Blocks.Group
                         a.OccurrenceId == occurrenceData.AttendanceOccurrence.Id
                         && a.DidAttend.HasValue
                         && a.PersonAliasId.HasValue )
-                    .Select( a => new
+                    .Select( a => new PersonAliasAttendanceBagDto
                     {
-                        Attendance = a,
+                        DidAttend = a.DidAttend,
                         // We should include all group members regardless of GroupMemberStatus
                         // since these attendees already exist on the occurrence.
-                        GroupMember = groupMembersQuery.FirstOrDefault( m => m.PersonId == a.PersonAlias.Person.Id )
-                    } )
-                    .Select( a => new GroupMemberAttendanceBagDto
-                    {
-                        DidAttend = a.Attendance.DidAttend,
-                        GroupMemberId = a.GroupMember != null ? a.GroupMember.Id : ( int? )null,
-                        GroupMember = a.GroupMember,
-                        GroupRoleName = a.GroupMember != null && a.GroupMember.GroupRole != null ? a.GroupMember.GroupRole.Name : null,
-                        Person = a.Attendance.PersonAlias.Person,
-                        PersonAliasId = a.Attendance.PersonAlias.Id,
-                        PrimaryCampusGuid = a.Attendance.PersonAlias.Person.PrimaryCampusId.HasValue ? a.Attendance.PersonAlias.Person.PrimaryCampus.Guid : ( Guid? ) null,
+                        GroupMembers = groupMembersQuery.Where( m => m.PersonId == a.PersonAlias.Person.Id ).ToList(),
+                        Person = a.PersonAlias.Person,
+                        PersonAliasId = a.PersonAlias.Id,
+                        PrimaryCampusGuid = a.PersonAlias.Person.PrimaryCampusId.HasValue ? a.PersonAlias.Person.PrimaryCampus.Guid : ( Guid? ) null,
+                        Roles = groupMembersQuery.Where( m => m.PersonId == a.PersonAlias.Person.Id ).Select( v => v.GroupRole.Name ).ToList()
                     } );
             }
 
-            IQueryable<GroupMemberAttendanceBagDto> prospectiveAttendeesQuery = null;
+            IQueryable<PersonAliasAttendanceBagDto> prospectiveAttendeesQuery = null;
             var entitySetId = this.EntitySetIdPageParameter;
             if ( entitySetId.HasValue )
             {
@@ -1801,38 +1792,31 @@ namespace Rock.Blocks.Group
                 prospectiveAttendeesQuery = entitySetService
                     .GetEntityQuery<Person>( entitySetId.Value )
                     .AsNoTracking()
-                    .Select( p => new
-                    {
-                        Person = p,
-                        GroupMember = groupMembersQuery.FirstOrDefault( m => m.PersonId == p.Id ),
-                    } )
-                    .Select( p => new GroupMemberAttendanceBagDto
+                    .Select( p => new PersonAliasAttendanceBagDto
                     {
                         DidAttend = null,
-                        GroupMemberId = p.GroupMember != null ? p.GroupMember.Id : ( int? ) null,
-                        GroupMember = p.GroupMember,
-                        GroupRoleName = p.GroupMember != null && p.GroupMember.GroupRole != null ? p.GroupMember.GroupRole.Name : null,
-                        Person = p.Person,
-                        PersonAliasId = primaryAliasQuery.Where( a => a.PersonId == p.Person.Id ).Select( a => a.Id ).FirstOrDefault(),
-                        PrimaryCampusGuid = p.Person.PrimaryCampusId.HasValue ? p.Person.PrimaryCampus.Guid : ( Guid? ) null,
+                        GroupMembers = groupMembersQuery.Where( m => m.PersonId == p.Id ).ToList(),
+                        Person = p,
+                        PersonAliasId = primaryAliasQuery.Where( a => a.PersonId == p.Id ).Select( a => a.Id ).FirstOrDefault(),
+                        PrimaryCampusGuid = p.PrimaryCampusId.HasValue ? p.PrimaryCampus.Guid : ( Guid? ) null,
+                        Roles = groupMembersQuery.Where( m => m.PersonId == p.Id ).Select( v => v.GroupRole.Name ).ToList()
                     } );
             }
             else
             {
                 // Get the prospective attendees from the current group members.
                 // Inactive group members should be excluded from the prospective attendees result.
-                prospectiveAttendeesQuery = groupMembersQuery
-                    .Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive )
-                    .Select( m => new GroupMemberAttendanceBagDto
+                prospectiveAttendeesQuery = primaryAliasQuery
+                    .Select( p => new PersonAliasAttendanceBagDto
                     {
                         DidAttend = null,
-                        GroupMemberId = m.Id,
-                        GroupMember = m,
-                        GroupRoleName = m.GroupRole != null ? m.GroupRole.Name : null,
-                        Person = m.Person,
-                        PersonAliasId = primaryAliasQuery.Where( a => a.PersonId == m.PersonId ).Select( a => a.Id ).FirstOrDefault(),
-                        PrimaryCampusGuid = m.Person.PrimaryCampusId.HasValue ? m.Person.PrimaryCampus.Guid : ( Guid? ) null
-                    } );
+                        GroupMembers = groupMembersQuery.Where( gm => gm.PersonId == p.PersonId && gm.GroupMemberStatus != GroupMemberStatus.Inactive ).ToList(),
+                        Person = p.Person,
+                        PersonAliasId = p.Id,
+                        PrimaryCampusGuid = p.Person.PrimaryCampusId.HasValue ? p.Person.PrimaryCampus.Guid : ( Guid? ) null,
+                        Roles = groupMembersQuery.Where( gm => gm.PersonId == p.PersonId && gm.GroupMemberStatus != GroupMemberStatus.Inactive ).Select( v => v.GroupRole.Name ).ToList()
+                    } )
+                    .Where( p => p.GroupMembers.Any() );
             }
 
             if (existingAttendeesQuery == null && prospectiveAttendeesQuery == null )
@@ -1841,47 +1825,31 @@ namespace Rock.Blocks.Group
                 return new List<GroupAttendanceDetailAttendanceBag>();
             }
 
-            IQueryable<GroupMemberAttendanceBagDto> allAttendeesQuery;
+            IEnumerable<PersonAliasAttendanceBagDto> allAttendees;
             if ( existingAttendeesQuery == null )
             {
-                allAttendeesQuery = prospectiveAttendeesQuery;
+                allAttendees = prospectiveAttendeesQuery.ToList();
             }
             else if ( prospectiveAttendeesQuery == null )
             {
-                allAttendeesQuery = existingAttendeesQuery;
+                allAttendees = existingAttendeesQuery.ToList();
             }
             else
             {
                 // Get the prospective attendees query that excludes existing attendees.
-                var prospectiveNewAttendeesQuery = prospectiveAttendeesQuery.Where( newAttendee => !existingAttendeesQuery.Any( existingAttendee =>
-                    // Remove prospective attendees that are group members and match the group members of existing attendees.
-                    ( existingAttendee.GroupMemberId.HasValue && newAttendee.GroupMemberId.HasValue && existingAttendee.GroupMemberId == newAttendee.GroupMemberId )
-                    // Remove prospective attendees that are not group members and match the person alias of existing attendees that are not group members.
-                    || ( !existingAttendee.GroupMemberId.HasValue && !newAttendee.GroupMemberId.HasValue && existingAttendee.PersonAliasId == newAttendee.PersonAliasId ) ) );
+                var prospectiveNewAttendeesQuery = prospectiveAttendeesQuery
+                    .Where( newAttendee => !existingAttendeesQuery
+                        .Select( existingattendee => existingattendee.PersonAliasId )
+                        .Contains( newAttendee.PersonAliasId ) );
 
-                // Combine the existing and prospective attendees.
-                allAttendeesQuery = existingAttendeesQuery.Union( prospectiveNewAttendeesQuery );
+                // Execute the existing and prospective attendees queries individually and combine the attendees.
+                allAttendees = existingAttendeesQuery.ToList().Concat( prospectiveNewAttendeesQuery.ToList() );
             }
 
             // The attendees query may contain multiple records for the same person
             // if they have multiple group roles (like leader and member).
             // Return a list of attendances, one per person, and include their groups and roles.
-            return allAttendeesQuery
-                .ToList()
-                .GroupBy( p => p.PersonAliasId )
-                .Select( g => new PersonAliasAttendanceBagDto
-                {
-                    // The person alias details should be the same across the grouped data (grouped by person alias id),
-                    // so just pick the first element whose value is not null.
-                    DidAttend = g.FirstOrDefault( p => p.DidAttend.HasValue )?.DidAttend,
-                    Person = g.FirstOrDefault( p => p.Person != null )?.Person,
-                    PersonAliasId = g.Key,
-                    PrimaryCampusGuid = g.FirstOrDefault( p => p.PrimaryCampusGuid.HasValue )?.PrimaryCampusGuid,
-
-                    // Aggregate the group members and roles for each person alias.
-                    GroupMembers = g.Select( p => p.GroupMember ).ToList(),
-                    GroupRoleNames = g.Select( p => p.GroupRoleName ).ToList(),
-                } )
+            return allAttendees
                 .Select( p => GetAttendanceBag( p ) )
                 .ToList();
         }
@@ -1898,10 +1866,10 @@ namespace Rock.Blocks.Group
             mergeFields.Add( MergeFieldKeys.Attended, attendanceData.DidAttend );
 #pragma warning disable CS0618 // Type or member is obsolete
             mergeFields.Add( MergeFieldKeys.GroupMember, attendanceData.GroupMembers?.FirstOrDefault() );
-            mergeFields.Add( MergeFieldKeys.GroupRoleName, string.Join( ", ", attendanceData.GroupRoleNames ?? Enumerable.Empty<string>() ) );
+            mergeFields.Add( MergeFieldKeys.GroupRoleName, string.Join( ", ", attendanceData.Roles?.Distinct() ?? Enumerable.Empty<string>() ) );
 #pragma warning restore CS0618 // Type or member is obsolete
             mergeFields.Add( MergeFieldKeys.GroupMembers, attendanceData.GroupMembers );
-            mergeFields.Add( MergeFieldKeys.Roles, string.Join( ", ", attendanceData.GroupRoleNames ?? Enumerable.Empty<string>() ) );
+            mergeFields.Add( MergeFieldKeys.Roles, string.Join( ", ", attendanceData.Roles?.Distinct() ?? Enumerable.Empty<string>() ) );
 
             var itemTemplate = this.ListItemDetailsTemplate.ResolveMergeFields( mergeFields );
 
@@ -1953,39 +1921,19 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Used for gathering <see cref="Attendance"/> data to create an instance of <see cref="GroupAttendanceDetailAttendanceBag"/>.
         /// </summary>
-        private class GroupMemberAttendanceBagDto
-        {
-            internal bool? DidAttend { get; set; }
-
-            internal Person Person { get; set; }
-
-            internal Guid? PrimaryCampusGuid { get; set; }
-
-            internal int? GroupMemberId { get; set; }
-
-            internal GroupMember GroupMember { get; set; }
-
-            internal int PersonAliasId { get; set; }
-
-            internal string GroupRoleName { get; set; }
-        }
-
-        /// <summary>
-        /// Used for gathering <see cref="Attendance"/> data to create an instance of <see cref="GroupAttendanceDetailAttendanceBag"/>.
-        /// </summary>
         private class PersonAliasAttendanceBagDto
         {
-            internal bool? DidAttend { get; set; }
+            public bool? DidAttend { get; set; }
 
-            internal Person Person { get; set; }
+            public Person Person { get; set; }
 
-            internal Guid? PrimaryCampusGuid { get; set; }
+            public Guid? PrimaryCampusGuid { get; set; }
 
-            internal List<GroupMember> GroupMembers { get; set; }
+            public List<GroupMember> GroupMembers { get; set; }
 
-            internal int PersonAliasId { get; set; }
+            public int PersonAliasId { get; set; }
 
-            internal List<string> GroupRoleNames { get; set; }
+            public List<string> Roles { get; set; }
         }
 
         /// <summary>
@@ -2644,14 +2592,6 @@ namespace Rock.Blocks.Group
         {
             public GroupMember GroupMember { get; internal set; }
             public string GroupRoleName { get; internal set; }
-        }
-
-        private class AttendanceDto
-        {
-            public int? GroupId { get; internal set; }
-            public Person Person { get; internal set; }
-            public bool? DidAttend { get; internal set; }
-            public int PersonAliasId { get; internal set; }
         }
 
         private class LocationDto

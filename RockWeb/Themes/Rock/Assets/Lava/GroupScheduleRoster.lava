@@ -12,9 +12,9 @@
 
      + ScheduledIndividuals (list of each scheduled individual), which includes
           + Person
-          + GroupMember (nullable. This would be the person"s member record in the Group, if they are member of the group )
+          + GroupMember (nullable. This would be the person's member record in the Group, if they are member of the group)
               + GroupRole (the Role)
-          + GroupMembers (nullable. This would be the person"s member records in the Group, if they are a member of the group )
+          + GroupMembers (nullable. This would be the person's member records in the Group, if they are a member of the group)
               + GroupRole (the Role)
           + CurrentlyCheckedIn (bool. True if the person is checked in)
           + ScheduledAttendanceItemStatus (Pending, Confirmed, or Declined).
