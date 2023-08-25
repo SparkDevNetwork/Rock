@@ -16,32 +16,32 @@
 //
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
-import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
-import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
-import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { FieldTypeBase } from "./fieldType";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const enum ConfigurationValueKey {
-    MinValue = "min",
-    MaxValue = "max"
+    Values = "values",
+    EnhancedSelection = "enhancedselection",
+    RepeatColumns = "repeatColumns",
+    IncludeInactive = "includeInactive"
 }
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
-    return (await import("./rangeSliderFieldComponents")).EditComponent;
+    return (await import("./assessmentTypesFieldComponents")).EditComponent;
 });
 
-// The configuration component can be quite large, so load it only as needed.
+// Load the configuration component only as needed.
 const configurationComponent = defineAsyncComponent(async () => {
-    return (await import("./rangeSliderFieldComponents")).ConfigurationComponent;
+    return (await import("./assessmentTypesFieldComponents")).ConfigurationComponent;
 });
 
 /**
- * The field type handler for the Integer field.
+ * The field type handler for the Achievement Type field.
  */
-export class RangeSliderFieldType extends FieldTypeBase {
+export class AssessmentTypesFieldType extends FieldTypeBase {
     public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
-        return toNumberOrNull(value)?.toString() ?? "";
+        return value ?? "";
     }
 
     public override getEditComponent(): Component {
@@ -50,9 +50,5 @@ export class RangeSliderFieldType extends FieldTypeBase {
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
-    }
-
-    public override getSupportedComparisonTypes(): ComparisonType {
-        return numericComparisonTypes;
     }
 }

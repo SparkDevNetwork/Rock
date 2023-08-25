@@ -202,11 +202,24 @@ namespace Rock.Blocks.Finance
                 return null;
             }
 
-            var componentName = Rock.Financial.GatewayContainer.GetComponentName( entityType.Name );
+            var componentEntityType = EntityTypeCache.Get( entityType.Guid );
+            var componentName = Rock.Reflection.GetDisplayName( componentEntityType.GetEntityType() );
+
+            // If it has a DisplayName use it as is, otherwise use the original logic
+            if ( string.IsNullOrWhiteSpace( componentName ) )
+            {
+                componentName = entityType.FriendlyName;
+                // If the component name already has a space then trust
+                // that they are using the exact name formatting they want.
+                if ( !componentName.Contains( ' ' ) )
+                {
+                    componentName = componentName.SplitCase();
+                }
+            }
 
             return new ListItemBag()
             {
-                Text = componentName.IsNullOrWhiteSpace() ? entityType.FriendlyName : componentName.SplitCase(),
+                Text = componentName,
                 Value = entityType.Guid.ToString(),
             };
         }

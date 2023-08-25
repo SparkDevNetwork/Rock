@@ -16,7 +16,7 @@
                  :isBadgesVisible="true"
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
+                 :isFollowVisible="false"
                  :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"

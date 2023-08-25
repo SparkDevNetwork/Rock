@@ -35,6 +35,7 @@ using System.Web.UI.WebControls;
 using Rock.UniversalSearch;
 using System.Text;
 using Rock.Store;
+using Rock.Cms;
 
 namespace RockWeb.Blocks.Cms
 {
