@@ -24,6 +24,7 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** Used to store options for the FinancialGateway */
 export type FinancialGatewayBag = {
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;

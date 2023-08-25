@@ -469,6 +469,11 @@ export type FormPersonEntry = {
     mobilePhone?: FormFieldVisibility;
 
     /**
+     * Determines if the SmsOptIn control should be hidden, optional, or required when displaying on the person entry form.
+     */
+    smsOptIn?: FormFieldVisibility;
+
+    /**
      * Determines if the birthdate control should be hidden, optional or required
      * when displaying the person entry form.
      */
