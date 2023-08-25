@@ -1107,6 +1107,67 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns the list of campuses closest to the target person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">A Person entity object or identifier.</param>
+        /// <param name="maximumCount">The maximum number of campuses to return.</param>
+        /// <returns>A single Campus, or a list of Campuses in ascending order of distance from the target Person.</returns>
+        public static object NearestCampus( ILavaRenderContext context, object input, object maximumCount = null )
+        {
+            var resultSetSize = InputParser.TryConvertInteger( maximumCount, 1, 0 ) ?? 0;
+            if ( resultSetSize <= 0 )
+            {
+                return null;
+            }
+
+            // Return a singleton or collection according to the maximum count.
+            object result = resultSetSize == 1 ? null : new List<Campus>();
+
+            if ( resultSetSize < 1 )
+            {
+                return result;
+            }
+
+            var person = GetPerson( input, context );
+            if ( person == null )
+            {
+                return result;
+            }
+
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+            // Get the Geopoint associated with the mapped location of the person's primary family.
+            var personService = new PersonService( rockContext );
+
+            var personGeopoint = personService.GetGeopoints( person.Id ).FirstOrDefault();
+            if ( personGeopoint == null )
+            {
+                return result;
+            }
+
+            // Get the nearest campuses in order of distance.
+            var campusService = new CampusService( rockContext );
+            var campuses = campusService.Queryable()
+                .Where( c =>
+                    c.IsActive == true
+                    && c.Location != null
+                    && c.Location.GeoPoint != null )
+                .OrderBy( c => c.Location.GeoPoint.Distance( personGeopoint ) )
+                .Take( resultSetSize )
+                .ToList();
+
+            if ( resultSetSize == 1 )
+            {
+                return campuses.FirstOrDefault();
+            }
+            else
+            {
+                return campuses;
+            }
+        }
+
+        /// <summary>
         /// Returns the Campus (or Campuses) that the Person belongs to
         /// </summary>
         /// <param name="context">The context.</param>
