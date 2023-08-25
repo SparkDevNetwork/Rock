@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class AddSnippetAndSnippetType : IMigrationMetadata
+    public sealed partial class WorkflowEntryFormPersonEntrySmsOptInEntryOption : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(UpdateExternalWorkflowEntryRoutes));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(WorkflowEntryFormPersonEntrySmsOptInEntryOption));
         
         string IMigrationMetadata.Id
         {
-            get { return "202301041200148_AddSnippetAndSnippetType"; }
+            get { return "202308242352371_WorkflowEntryForm-PersonEntrySmsOptInEntryOption"; }
         }
         
         string IMigrationMetadata.Source

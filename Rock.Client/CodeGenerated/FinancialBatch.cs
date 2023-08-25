@@ -73,6 +73,9 @@ namespace Rock.Client
         public string Note { get; set; }
 
         /// <summary />
+        public string RemoteSettlementBatchKey { get; set; }
+
+        /// <summary />
         public string RemoteSettlementBatchUrl { get; set; }
 
         /// <summary />
@@ -123,6 +126,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Note = source.Note;
+            this.RemoteSettlementBatchKey = source.RemoteSettlementBatchKey;
             this.RemoteSettlementBatchUrl = source.RemoteSettlementBatchUrl;
             this.Status = source.Status;
             this.CreatedDateTime = source.CreatedDateTime;

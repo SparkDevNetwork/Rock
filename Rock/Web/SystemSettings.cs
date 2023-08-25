@@ -292,7 +292,18 @@ namespace Rock.Web
             using ( var rockContext = new RockContext() )
             {
                 var systemSettingAttributes = new AttributeService( rockContext ).GetSystemSettings().ToAttributeCacheList();
-                var keyValueLookup = systemSettingAttributes.ToDictionary( k => k.Key, v => v.DefaultValue );
+
+                // Build the settings lookup list and flag any duplicates.
+                var keyValueLookup = new Dictionary<string, string>();
+                foreach ( var attribute in systemSettingAttributes )
+                {
+                    if ( keyValueLookup.ContainsKey( attribute.Key ) )
+                    {
+                        ExceptionLogService.LogException( $"The SystemSettings.LoadSettings action encountered a duplicate key. The entry will be ignored. [Key={attribute.Key}, AttributeId={attribute.Id}]" );
+                        continue;
+                    }
+                    keyValueLookup.Add( attribute.Key, attribute.DefaultValue );
+                }
 
                 // RockInstanceId is not the default value but the Guid. So we'll do that one seperately.
                 keyValueLookup.AddOrReplace( Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID, systemSettingAttributes.Where( s => s.Key == Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID ).Select( s => s.Guid ).FirstOrDefault().ToString() );

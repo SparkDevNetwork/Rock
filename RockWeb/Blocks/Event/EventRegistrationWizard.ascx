@@ -277,7 +277,7 @@
 
                         <fieldset>
 
-                            <Rock:Toggle ID="tgExistingroup" runat="server" OnText="Existing Group" OffText="New Group" OnCheckedChanged="tgExistingroup_CheckedChanged" CssClass="mb-2" />
+                            <Rock:Toggle ID="tgExistingroup" runat="server" OnText="Existing Group" OffText="New Group" OnCheckedChanged="tgExistingroup_CheckedChanged" ButtonSizeCssClass="btn-xs" CssClass="mb-2" />
 
                             <asp:Panel ID="pnlNewGroup" runat="server">
 

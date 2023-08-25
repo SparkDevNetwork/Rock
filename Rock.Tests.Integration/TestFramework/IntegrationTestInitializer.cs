@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System.Configuration;
+using System.Linq;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Bus;
 using Rock.Tests.Integration.Core.Lava;
+using Rock.Tests.Integration.Database;
 using Rock.Tests.Shared;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
@@ -29,6 +31,8 @@ namespace Rock.Tests.Integration
     public sealed class IntegrationTestInitializer
     {
         public static bool InitializeDatabaseOnStartup = true;
+        public static ITestDatabaseInitializer DatabaseInitializer = new IntegrationTestDatabaseInitializer();
+        public static bool InitializeSampleDataOnStartup = true;
 
         /// <summary>
         /// This will run before any tests in this assembly are run.
@@ -37,6 +41,39 @@ namespace Rock.Tests.Integration
         [AssemblyInitialize]
         public static void AssemblyInitialize( TestContext context )
         {
+            var testClassType = System.Type.GetType( context.FullyQualifiedTestClassName );
+            var requirement = testClassType.GetCustomAttributes( typeof( DatabaseInitializationStateAttribute ), inherit: false )
+                .Cast<DatabaseInitializationStateAttribute>()
+                .FirstOrDefault();
+
+            if ( requirement == null )
+            {
+                var testMethodType = testClassType.GetMethod( context.TestName );
+                requirement = testMethodType.GetCustomAttributes( typeof( DatabaseInitializationStateAttribute ), inherit: false )
+                    .Cast<DatabaseInitializationStateAttribute>()
+                    .FirstOrDefault();
+            }
+
+            if ( requirement != null )
+            {
+                if ( requirement.RequiredState == DatabaseInitializationStateSpecifier.None
+                    || requirement.RequiredState == DatabaseInitializationStateSpecifier.Custom )
+                {
+                    InitializeDatabaseOnStartup = false;
+                }
+                else if ( requirement.RequiredState == DatabaseInitializationStateSpecifier.New )
+                {
+                    InitializeDatabaseOnStartup = true;
+                    InitializeSampleDataOnStartup = false;
+
+                }
+                else
+                {
+                    InitializeDatabaseOnStartup = true;
+                    InitializeSampleDataOnStartup = true;
+                }
+            }
+
             Initialize( context );
         }
 
@@ -48,7 +85,7 @@ namespace Rock.Tests.Integration
         {
             Rock.AssemblyInitializer.Initialize();
 
-            // Copy the configuration settings to the TestContext. so they can be accessed by the integration tests project initializer.
+            // Copy the configuration settings to the TestContext so they can be accessed by the integration tests project initializer.
             AddTestContextSettingsFromConfigurationFile( context );
 
             LogHelper.SetTestContext( context );
@@ -67,6 +104,9 @@ namespace Rock.Tests.Integration
                 TestDatabaseHelper.DatabaseCreatorKey = context.Properties["DatabaseCreatorKey"].ToStringSafe();
                 TestDatabaseHelper.DatabaseRefreshStrategy = context.Properties["DatabaseRefreshStrategy"].ToStringSafe().ConvertToEnum<DatabaseRefreshStrategySpecifier>( DatabaseRefreshStrategySpecifier.Never );
                 TestDatabaseHelper.SampleDataUrl = context.Properties["SampleDataUrl"].ToStringSafe();
+                TestDatabaseHelper.DefaultSnapshotName = context.Properties["DefaultSnapshotName"].ToStringSafe();
+                TestDatabaseHelper.DatabaseInitializer = DatabaseInitializer;
+                TestDatabaseHelper.SampleDataIsEnabled = InitializeSampleDataOnStartup;
 
                 TestDatabaseHelper.InitializeTestDatabase();
 
@@ -75,34 +115,35 @@ namespace Rock.Tests.Integration
                 // Reinitialize the Lava Engine and configure it to load dynamic shortcodes from the test database.
                 LogHelper.Log( $"Initializing Lava Engine (Pass 2)..." );
                 LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: true, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: true );
+
+                LogHelper.Log( $"Initializing Rock Message Bus..." );
+
+                // Verify that the InMemory transport component is registered.
+                // If not, the Rock Message Bus will fail to start.
+                var cacheEntity = EntityTypeCache.Get( typeof( Rock.Bus.Transport.InMemory ), createIfNotFound: false );
+                if ( cacheEntity == null )
+                {
+                    throw new System.Exception( "Rock Message Bus failure. The InMemoryTransport Entity Type is not registered. To correct this error, re-create the test database with the \"ForceReplaceExistingDatabase\" configuration option." );
+                }
+
+                // Start the Message Bus and poll until it is ready.
+                _ = RockMessageBus.StartAsync();
+
+                while ( !RockMessageBus.IsReady() )
+                {
+                    LogHelper.Log( $"Waiting on Rock Message Bus..." );
+                    Thread.Sleep( 500 );
+                }
+                RockMessageBus.IsRockStarted = true;
             }
             else
             {
                 LogHelper.Log( $"Initializing test database... (disabled)" );
             }
 
-            LogHelper.Log( $"Initializing Rock Message Bus..." );
-
-            // Verify that the InMemory transport component is registered.
-            // If not, the Rock Message Bus will fail to start.
-            var cacheEntity = EntityTypeCache.Get( typeof( Rock.Bus.Transport.InMemory ), createIfNotFound: false );
-            if ( cacheEntity == null )
-            {
-                throw new System.Exception( "Rock Message Bus failure. The InMemoryTransport Entity Type is not registered. To correct this error, re-create the test database with the \"ForceReplaceExistingDatabase\" configuration option." );
-            }
-
-            // Start the Message Bus and poll until it is ready.
-            _ = RockMessageBus.StartAsync();
-
-            while ( !RockMessageBus.IsReady() )
-            {
-                LogHelper.Log( $"Waiting on Rock Message Bus..." );
-                Thread.Sleep( 500 );
-            }
-            RockMessageBus.IsRockStarted = true;
-
             LogHelper.Log( $"Initialization completed." );
         }
+
         public static void AddTestContextSettingsFromConfigurationFile( TestContext context )
         {
             // Copy the application configuration settings to the TestContext.
@@ -120,9 +161,29 @@ namespace Rock.Tests.Integration
         /// Execute this test method as a placeholder to create/update/verify the test database.
         /// </summary>
         [TestMethod]
-        public void CreateTestDatabase()
+        [DatabaseInitializationState( DatabaseInitializationStateSpecifier.None )]
+        public void CreateEmptyDatabase()
         {
+            var taskGuid = LogHelper.StartTask( $"Create New Database" );
 
+            // Set properties of the database manager from the test context.
+            TestDatabaseHelper.ConnectionString = ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString;
+            TestDatabaseHelper.DatabaseCreatorKey = ConfigurationManager.AppSettings["DatabaseCreatorKey"].ToStringSafe();
+            TestDatabaseHelper.DatabaseRefreshStrategy = DatabaseRefreshStrategySpecifier.Force;
+            TestDatabaseHelper.SampleDataIsEnabled = false;
+
+            TestDatabaseHelper.InitializeTestDatabase();
+
+            LogHelper.StopTask( taskGuid );
+        }
+
+        /// <summary>
+        /// Execute this test method as a placeholder to create/update/verify the test database.
+        /// </summary>
+        [TestMethod]
+        [DatabaseInitializationState(DatabaseInitializationStateSpecifier.SampleData)]
+        public void CreateSampleDatabase()
+        {
             LogHelper.Log( "Database created." );
         }
     }

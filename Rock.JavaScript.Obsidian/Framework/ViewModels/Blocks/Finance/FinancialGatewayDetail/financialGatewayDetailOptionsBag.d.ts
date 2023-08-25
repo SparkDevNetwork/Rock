@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** Options for the FinancialGatewayDetail box */
 export type FinancialGatewayDetailOptionsBag = {
 };
