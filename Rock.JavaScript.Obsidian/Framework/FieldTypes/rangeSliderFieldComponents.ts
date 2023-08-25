@@ -71,7 +71,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<RangeSlider v-model="internalValue" rules="integer" :min="minValue" :max="maxValue" />
+<RangeSlider v-model="internalValue" rules="integer" :min="minValue" :max="maxValue" showValueBar="true" />
 `
 });
 
