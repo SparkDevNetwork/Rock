@@ -8399,7 +8399,7 @@ END
         /// <summary>
         /// Creates a Service Job to Replace webforms blocks with corresponding obsidian blocks.
         /// </summary>
-        /// <param name="name">The name of the Job. For instance the list of block types it would be replacing.
+        /// <param name="name">The name of the Job. For instance the list of block types it would be replacing. Restricted to 31 characters due to DB constraints.
         /// In the front end the name would be prefixed with : "Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks -"
         /// </param>
         /// <param name="blockTypeReplacements">A key value pair of the webforms block type GUID to be replaced with the corresponding obsidian block type GUID</param>
@@ -8407,6 +8407,11 @@ END
         /// <param name="jobGuid">The GUID of the job</param>
         public void ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid )
         {
+            if ( name.Length > 31 )
+            {
+                throw new ArgumentException( $"Service job name '{name}' exceeds the max limit of 31 characters.", "name" );
+            }
+
             // note: the cronExpression was chosen at random. It is provided as it is mandatory in the Service Job. Feel free to change it if needed.
             AddPostUpdateServiceJob(
                 name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks - { name }",
