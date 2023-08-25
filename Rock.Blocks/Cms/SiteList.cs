@@ -203,8 +203,10 @@ namespace Rock.Blocks.Cms
                 {
                     if ( pageService.CanDelete( page, out string deletePageErrorMessage ) )
                     {
-                        pageService.Delete( page );
+                        return ActionBadRequest( deletePageErrorMessage );
                     }
+
+                    pageService.Delete( page );
                 }
 
                 var layoutService = new LayoutService( rockContext );
