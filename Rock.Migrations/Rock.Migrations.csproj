@@ -76,8 +76,8 @@
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308241713529_CodeGenerated_20230824.designer.cs">
       <DependentUpon>202308241713529_CodeGenerated_20230824.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202308242352371_WorkflowEntryForm-PersonEntrySmsOptInEntryOption.cs" />
-    <Compile Include="Migrations\202308242352371_WorkflowEntryForm-PersonEntrySmsOptInEntryOption.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308242352371_WorkflowEntryForm-PersonEntrySmsOptInEntryOption.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308242352371_WorkflowEntryForm-PersonEntrySmsOptInEntryOption.designer.cs">
       <DependentUpon>202308242352371_WorkflowEntryForm-PersonEntrySmsOptInEntryOption.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202304061959408_CodeGenerated_20230406.cs" />
@@ -1791,7 +1791,7 @@
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308241713529_CodeGenerated_20230824.resx">
       <DependentUpon>202308241713529_CodeGenerated_20230824.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202308242352371_WorkflowEntryForm-PersonEntrySmsOptInEntryOption.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308242352371_WorkflowEntryForm-PersonEntrySmsOptInEntryOption.resx">
       <DependentUpon>202308242352371_WorkflowEntryForm-PersonEntrySmsOptInEntryOption.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202304061959408_CodeGenerated_20230406.resx">
