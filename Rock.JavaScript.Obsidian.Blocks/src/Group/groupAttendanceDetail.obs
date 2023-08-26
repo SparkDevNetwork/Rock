@@ -641,6 +641,7 @@
         if (existingAttendance) {
             // Update the existing attendance "did attend" value to whatever was passed in.
             existingAttendance.didAttend = attendance.didAttend;
+            existingAttendance.itemTemplate = attendance.itemTemplate;
         }
         else {
             config.value.attendances = [...config.value.attendances ?? [], attendance];

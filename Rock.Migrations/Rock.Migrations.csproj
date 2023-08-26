@@ -64,6 +64,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.cs" />
+    <Compile Include="Migrations\202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.designer.cs">
+      <DependentUpon>202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.designer.cs">
       <DependentUpon>202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs</DependentUpon>
@@ -1782,6 +1786,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.resx">
+      <DependentUpon>202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.resx">
       <DependentUpon>202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs</DependentUpon>
     </EmbeddedResource>

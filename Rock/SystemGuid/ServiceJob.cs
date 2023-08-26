@@ -286,5 +286,10 @@ namespace Rock.SystemGuid
         /// Following Event Type Detail, Financial Batch Detail
         /// </summary>
         public const string DATA_MIGRATIONS_CHOP_BLOCKS_GROUP_1 = "54FACAE5-2175-4FE0-AC9F-5CDA957BCFB5";
+
+        /// <summary>
+        /// The post update data migration job to chop the Group Registration block
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_CHOP_BLOCKS_GROUP_REGISTRATION = "72D9EC04-517A-4CA0-B631-9F9A41F1790D";
     }
 }

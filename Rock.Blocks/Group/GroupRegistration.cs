@@ -189,7 +189,7 @@ namespace Rock.Blocks.Group
     [CustomDropdownListField(
         "Show SMS Opt-in",
         Key = AttributeKey.DisplaySmsOptIn,
-        Description = "If this option will show the SMS Opt-In text for the selection.",
+        Description = "If selected this option will show the SMS Opt-In text and checkbox for the selected persons.",
         ListSource = "Hide,First Adult,All Adults",
         IsRequired = true,
         DefaultValue = "Hide",
