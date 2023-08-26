@@ -150,6 +150,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 actionForm.PersonEntryHideIfCurrentPersonKnown = formSettings.PersonEntry.HideIfCurrentPersonKnown;
                 actionForm.PersonEntryMaritalStatusEntryOption = formSettings.PersonEntry.MaritalStatus.ToPersonEntryOption();
                 actionForm.PersonEntryMobilePhoneEntryOption = formSettings.PersonEntry.MobilePhone.ToPersonEntryOption();
+                actionForm.PersonEntrySmsOptInEntryOption = formSettings.PersonEntry.SmsOptIn.ToPersonEntryOption();
                 actionForm.PersonEntryRecordStatusValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( formSettings.PersonEntry.RecordStatus );
                 actionForm.PersonEntryCampusIsVisible = formSettings.PersonEntry.ShowCampus;
                 actionForm.PersonEntrySpouseEntryOption = formSettings.PersonEntry.SpouseEntry.ToPersonEntryOption();
@@ -463,6 +464,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     HideIfCurrentPersonKnown = actionForm.PersonEntryHideIfCurrentPersonKnown,
                     MaritalStatus = actionForm.PersonEntryMaritalStatusEntryOption.ToFormFieldVisibility(),
                     MobilePhone = actionForm.PersonEntryMobilePhoneEntryOption.ToFormFieldVisibility(),
+                    SmsOptIn = actionForm.PersonEntrySmsOptInEntryOption.ToFormFieldVisibility(),
                     RecordStatus = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryRecordStatusValueId ),
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption.ToFormFieldVisibility(),
