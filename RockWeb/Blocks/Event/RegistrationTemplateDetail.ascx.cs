@@ -1760,11 +1760,9 @@ The logged-in person's information will be used to complete the registrar inform
         protected void dlgRegistrantFormField_SaveClick( object sender, EventArgs e )
         {
             nbFormField.Visible = false;
-            if ( !FieldSave( out string errorMessage ) )
+            if ( !FieldSave() )
             {
-                // Show the error and don't hide the dialog
-                nbFormField.Text = errorMessage;
-                nbFormField.Visible = true;
+                // Don't dismiss the dialog since the field didn't save.
                 return;
             }
             
@@ -1775,10 +1773,9 @@ The logged-in person's information will be used to complete the registrar inform
         /// <summary>
         /// Saves the form field
         /// </summary>
-        private bool FieldSave( out string errorMessage )
+        private bool FieldSave()
         {
             var formGuid = hfFormGuid.Value.AsGuid();
-            errorMessage = string.Empty;
 
             if ( !FormFieldsState.ContainsKey( formGuid ) )
             {
@@ -1786,7 +1783,7 @@ The logged-in person's information will be used to complete the registrar inform
                 return true;
             }
 
-            var attributeFormField = CreateFormField( formGuid, out errorMessage );
+            var attributeFormField = CreateFormField( formGuid );
             if ( attributeFormField == null )
             {
                 // There was a problem with the form field. Return false so the error can display
@@ -1867,27 +1864,18 @@ The logged-in person's information will be used to complete the registrar inform
         /// </summary>
         /// <param name="formGuid">The form unique identifier.</param>
         /// <returns></returns>
-        private RegistrationTemplateFormField CreateFormField( Guid formGuid, out string errorMessage )
+        private RegistrationTemplateFormField CreateFormField( Guid formGuid )
         {
-            errorMessage = string.Empty;
-
             var attributeGuid = hfAttributeGuid.Value.AsGuid();
             var attributeFormField = FormFieldsState[formGuid].FirstOrDefault( a => a.Guid.Equals( attributeGuid ) );
+
+            if ( !ValidateUniqueKey() )
+            {
+                return null;
+            }
+
             if ( attributeFormField == null )
             {
-                foreach( var form in FormFieldsState )
-                {
-                    var fields = form.Value;
-                    foreach( var field in fields )
-                    {
-                        if ( field.Attribute?.Key == edtRegistrantAttribute.Key )
-                        {
-                            errorMessage = $"The Attribute Key <strong>'{edtRegistrantAttribute.Key}'</strong> is already being used by this Registration Template";
-                            return null;
-                        }
-                    }
-                }
-
                 attributeFormField = new RegistrationTemplateFormField
                 {
                     Order = FormFieldsState[formGuid].Any() ? FormFieldsState[formGuid].Max( a => a.Order ) + 1 : 0,
@@ -1909,6 +1897,31 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             return attributeFormField;
+        }
+
+        /// <summary>
+        /// Returns false if an attribute with a different GUID but using the same key is found.
+        /// Also sets the message on the notification box and makes it visible.
+        /// </summary>
+        /// <returns></returns>
+        private bool ValidateUniqueKey()
+        {
+            var attributeGuid = hfAttributeGuid.Value.AsGuid();
+            foreach( var form in FormFieldsState )
+            {
+                var fields = form.Value;
+                foreach( var field in fields )
+                {
+                    if ( field.Guid != attributeGuid && field.Attribute?.Key == edtRegistrantAttribute.Key )
+                    {
+                        nbFormField.Text = $"The Attribute Key <strong>'{edtRegistrantAttribute.Key}'</strong> is already being used by this Registration Template";
+                        nbFormField.Visible = true;
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         #endregion
