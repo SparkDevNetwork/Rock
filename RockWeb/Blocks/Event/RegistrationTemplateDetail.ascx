@@ -465,6 +465,7 @@
             <Content>
                 <asp:HiddenField ID="hfFormGuid" runat="server" />
                 <asp:HiddenField ID="hfAttributeGuid" runat="server" />
+                <Rock:NotificationBox ID="nbFormField" runat="server" Visible="false" NotificationBoxType="Validation"></Rock:NotificationBox>
                 <asp:ValidationSummary ID="ValidationSummaryAttribute" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Field" />
                 <div class="row">
                     <div class="col-md-3">
