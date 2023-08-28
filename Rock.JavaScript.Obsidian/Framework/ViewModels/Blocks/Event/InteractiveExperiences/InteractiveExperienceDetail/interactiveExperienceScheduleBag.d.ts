@@ -29,11 +29,20 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * that are associated with the schedule.
  */
 export type InteractiveExperienceScheduleBag = {
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the campuses that are tied to this schedule. */
     campuses?: ListItemBag[] | null;
 
     /** Gets or sets the data view to use for filtering. */
     dataView?: ListItemBag | null;
+
+    /**
+     * Gets or sets the number of minutes before the schedule starts that
+     * the experience should be enabled.
+     */
+    enableMinutesBefore?: number | null;
 
     /** Gets or sets the group to use for filtering. */
     group?: ListItemBag | null;
