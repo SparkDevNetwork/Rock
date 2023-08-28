@@ -8,7 +8,8 @@
                      :binaryFileTypeGuid="binaryFileTypeGuid"
                      :noPictureUrl="noPictureUrl"
                      :maxImageWidth="maxImageWidth"
-                     :maxImageHeight="maxImageHeight" />
+                     :maxImageHeight="maxImageHeight"
+                     :aspectRatio="aspectRatio" />
 
         <template #settings>
             <div class="row">
@@ -18,8 +19,9 @@
                 <NumberBox formGroupClasses="col-sm-3" v-model="maxImageHeight" label="Max Image Height" help="The maximum pixel height of the image to be uploaded to the server. If the cropped image is bigger than this, it will be scaled down to this height. Default is 0, which means there is no limit" />
             </div>
             <div class="row">
-                <TextBox formGroupClasses="col-sm-6" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
-                <TextBox formGroupClasses="col-sm-6" v-model="noPictureUrl" label="Placeholder Image" help="The URL of the image that is shown if there is no cropped image chosen/provided. The URL in this box on page load is the default" />
+                <NumberBox formGroupClasses="col-sm-4" v-model="aspectRatio" label="Aspect Ratio" help="A number that represents the width divided by the height. For example, to do a 16:9 ratio, divide 16 by 9 -> <u>1.77777</u>." />
+                <TextBox formGroupClasses="col-sm-4" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
+                <TextBox formGroupClasses="col-sm-4" v-model="noPictureUrl" label="Placeholder Image" help="The URL of the image that is shown if there is no cropped image chosen/provided. The URL in this box on page load is the default" />
             </div>
 
             <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
@@ -41,6 +43,7 @@
     const disabled = ref(false);
     const hideDeleteButton = ref(false);
     const value = ref(null);
+    const aspectRatio = ref(1);
     const maxImageWidth = ref(0);
     const maxImageHeight = ref(0);
     const noPictureUrl = ref("/Assets/Images/person-no-photo-unknown.svg");

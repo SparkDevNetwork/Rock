@@ -214,7 +214,7 @@
         uploadProgressText.value = "0%";
         errorMessage.value = "";
 
-        const fileToUpload = new File([file], selectedImageFileName.value);
+        const fileToUpload = new File([file], selectedImageFileName.value, { type: file.type });
 
         try {
             // Perform the actual file upload using the helper function.
