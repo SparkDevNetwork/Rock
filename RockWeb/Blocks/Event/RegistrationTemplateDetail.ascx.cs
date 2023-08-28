@@ -1760,7 +1760,13 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgRegistrantFormField_SaveClick( object sender, EventArgs e )
         {
-            FieldSave();
+            nbFormField.Visible = false;
+            if ( !FieldSave() )
+            {
+                // Don't dismiss the dialog since the field didn't save.
+                return;
+            }
+            
             HideDialog();
             BuildControls( true );
         }
@@ -1768,80 +1774,90 @@ The logged-in person's information will be used to complete the registrar inform
         /// <summary>
         /// Saves the form field
         /// </summary>
-        private void FieldSave()
+        private bool FieldSave()
         {
             var formGuid = hfFormGuid.Value.AsGuid();
 
-            if ( FormFieldsState.ContainsKey( formGuid ) )
+            if ( !FormFieldsState.ContainsKey( formGuid ) )
             {
-                var attributeForm = CreateFormField( formGuid );
+                // Just swallow this error for now
+                return true;
+            }
 
-                int? attributeId = null;
+            var attributeFormField = CreateFormField( formGuid );
+            if ( attributeFormField == null )
+            {
+                // There was a problem with the form field. Return false so the error can display
+                return false;
+            }
 
-                switch ( attributeForm.FieldSource )
-                {
-                    case RegistrationFieldSource.PersonField:
-                        {
-                            attributeForm.ShowCurrentValue = cbUsePersonCurrentValue.Checked;
-                            attributeForm.IsGridField = cbShowOnGrid.Checked;
-                            attributeForm.IsRequired = cbRequireInInitialEntry.Checked;
-                            break;
-                        }
+            int? attributeId = null;
 
-                    case RegistrationFieldSource.PersonAttribute:
-                        {
-                            attributeId = ddlPersonAttributes.SelectedValueAsInt();
-                            attributeForm.ShowCurrentValue = cbUsePersonCurrentValue.Checked;
-                            attributeForm.IsGridField = cbShowOnGrid.Checked;
-                            attributeForm.IsRequired = cbRequireInInitialEntry.Checked;
-                            break;
-                        }
-
-                    case RegistrationFieldSource.GroupMemberAttribute:
-                        {
-                            attributeId = ddlGroupTypeAttributes.SelectedValueAsInt();
-                            attributeForm.ShowCurrentValue = false;
-                            attributeForm.IsGridField = cbShowOnGrid.Checked;
-                            attributeForm.IsRequired = cbRequireInInitialEntry.Checked;
-                            break;
-                        }
-
-                    case RegistrationFieldSource.RegistrantAttribute:
-                        {
-                            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-                            edtRegistrantAttribute.GetAttributeProperties( attribute );
-                            attributeForm.Attribute = attribute;
-                            attributeForm.Id = attribute.Id;
-                            attributeForm.ShowCurrentValue = false;
-                            attributeForm.IsGridField = attribute.IsGridColumn;
-                            attributeForm.IsRequired = attribute.IsRequired;
-                            break;
-                        }
-                }
-
-                attributeForm.ShowOnWaitlist = cbShowOnWaitList.Checked;
-
-                if ( attributeId.HasValue )
-                {
-                    using ( var rockContext = new RockContext() )
+            switch ( attributeFormField.FieldSource )
+            {
+                case RegistrationFieldSource.PersonField:
                     {
-                        var attribute = new AttributeService( rockContext ).Get( attributeId.Value );
-                        if ( attribute != null )
+                        attributeFormField.ShowCurrentValue = cbUsePersonCurrentValue.Checked;
+                        attributeFormField.IsGridField = cbShowOnGrid.Checked;
+                        attributeFormField.IsRequired = cbRequireInInitialEntry.Checked;
+                        break;
+                    }
+
+                case RegistrationFieldSource.PersonAttribute:
+                    {
+                        attributeId = ddlPersonAttributes.SelectedValueAsInt();
+                        attributeFormField.ShowCurrentValue = cbUsePersonCurrentValue.Checked;
+                        attributeFormField.IsGridField = cbShowOnGrid.Checked;
+                        attributeFormField.IsRequired = cbRequireInInitialEntry.Checked;
+                        break;
+                    }
+
+                case RegistrationFieldSource.GroupMemberAttribute:
+                    {
+                        attributeId = ddlGroupTypeAttributes.SelectedValueAsInt();
+                        attributeFormField.ShowCurrentValue = false;
+                        attributeFormField.IsGridField = cbShowOnGrid.Checked;
+                        attributeFormField.IsRequired = cbRequireInInitialEntry.Checked;
+                        break;
+                    }
+
+                case RegistrationFieldSource.RegistrantAttribute:
+                    {
+                        Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+                        edtRegistrantAttribute.GetAttributeProperties( attribute );
+                        attributeFormField.Attribute = attribute;
+                        attributeFormField.Id = attribute.Id;
+                        attributeFormField.ShowCurrentValue = false;
+                        attributeFormField.IsGridField = attribute.IsGridColumn;
+                        attributeFormField.IsRequired = attribute.IsRequired;
+                        break;
+                    }
+            }
+
+            attributeFormField.ShowOnWaitlist = cbShowOnWaitList.Checked;
+
+            if ( attributeId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var attribute = new AttributeService( rockContext ).Get( attributeId.Value );
+                    if ( attribute != null )
+                    {
+                        attributeFormField.Attribute = attribute.Clone( false );
+                        attributeFormField.Attribute.FieldType = attribute.FieldType.Clone( false );
+                        attributeFormField.Attribute.AttributeQualifiers = new List<AttributeQualifier>();
+
+                        foreach ( var qualifier in attribute.AttributeQualifiers )
                         {
-                            attributeForm.Attribute = attribute.Clone( false );
-                            attributeForm.Attribute.FieldType = attribute.FieldType.Clone( false );
-                            attributeForm.Attribute.AttributeQualifiers = new List<AttributeQualifier>();
-
-                            foreach ( var qualifier in attribute.AttributeQualifiers )
-                            {
-                                attributeForm.Attribute.AttributeQualifiers.Add( qualifier.Clone( false ) );
-                            }
-
-                            attributeForm.AttributeId = attribute.Id;
+                            attributeFormField.Attribute.AttributeQualifiers.Add( qualifier.Clone( false ) );
                         }
+
+                        attributeFormField.AttributeId = attribute.Id;
                     }
                 }
             }
+
+            return true;
         }
 
         /// <summary>
@@ -1852,28 +1868,61 @@ The logged-in person's information will be used to complete the registrar inform
         private RegistrationTemplateFormField CreateFormField( Guid formGuid )
         {
             var attributeGuid = hfAttributeGuid.Value.AsGuid();
-
             var attributeFormField = FormFieldsState[formGuid].FirstOrDefault( a => a.Guid.Equals( attributeGuid ) );
+
+            if ( !ValidateUniqueKey() )
+            {
+                return null;
+            }
+
             if ( attributeFormField == null )
             {
-                attributeFormField = new RegistrationTemplateFormField();
-                attributeFormField.Order = FormFieldsState[formGuid].Any() ? FormFieldsState[formGuid].Max( a => a.Order ) + 1 : 0;
-                attributeFormField.Guid = attributeGuid;
+                attributeFormField = new RegistrationTemplateFormField
+                {
+                    Order = FormFieldsState[formGuid].Any() ? FormFieldsState[formGuid].Max( a => a.Order ) + 1 : 0,
+                    Guid = attributeGuid
+                };
+
                 FormFieldsState[formGuid].Add( attributeFormField );
             }
 
             attributeFormField.PreText = ceFormFieldPreHtml.Text;
             attributeFormField.PostText = ceFormFieldPostHtml.Text;
             attributeFormField.FieldSource = ddlFieldSource.SelectedValueAsEnum<RegistrationFieldSource>();
+            attributeFormField.IsInternal = cbInternalField.Checked;
+            attributeFormField.IsSharedValue = cbCommonValue.Checked;
+
             if ( ddlPersonField.Visible )
             {
                 attributeFormField.PersonFieldType = ddlPersonField.SelectedValueAsEnum<RegistrationPersonFieldType>();
             }
 
-            attributeFormField.IsInternal = cbInternalField.Checked;
-            attributeFormField.IsSharedValue = cbCommonValue.Checked;
-
             return attributeFormField;
+        }
+
+        /// <summary>
+        /// Returns false if an attribute with a different GUID but using the same key is found.
+        /// Also sets the message on the notification box and makes it visible.
+        /// </summary>
+        /// <returns></returns>
+        private bool ValidateUniqueKey()
+        {
+            var attributeGuid = hfAttributeGuid.Value.AsGuid();
+            foreach( var form in FormFieldsState )
+            {
+                var fields = form.Value;
+                foreach( var field in fields )
+                {
+                    if ( field.Guid != attributeGuid && field.Attribute?.Key == edtRegistrantAttribute.Key )
+                    {
+                        nbFormField.Text = $"The Attribute Key <strong>'{edtRegistrantAttribute.Key}'</strong> is already being used by this Registration Template";
+                        nbFormField.Visible = true;
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         #endregion
@@ -3092,6 +3141,7 @@ The logged-in person's information will be used to complete the registrar inform
             if ( FormFieldsState.ContainsKey( formGuid ) )
             {
                 ShowDialog( dlgRegistrantFormField );
+                nbFormField.Visible = false;
 
                 var fieldList = FormFieldsState[formGuid];
 
