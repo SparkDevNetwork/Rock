@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -568,7 +568,7 @@ namespace Rock.Blocks.Event
 
                 // Prepare the merge fields.
                 var campusCache = campusId.HasValue ? CampusCache.Get( campusId.Value ) : null;
-                var (regAttributes, regAttributeValues) = GetRegistrantAttributesFromRegistration(registrantInfo, registrationInstance.RegistrationTemplate);
+                var ( regAttributes, regAttributeValues) = GetRegistrantAttributesFromRegistration(registrantInfo, registrationInstance.RegistrationTemplate );
                 var mergeFields = new Dictionary<string, object>
                 {
                     { "Registration", new LavaSignatureRegistration( registrationInstance, groupId, args.Registrants.Count ) },
@@ -2376,30 +2376,31 @@ namespace Rock.Blocks.Event
             registrantInfo.FamilyGuid = Guid.Empty;
             registrantInfo.PersonGuid = person.Guid;
         }
-        private (Dictionary<string, AttributeCache>, Dictionary<string, AttributeValueCache>) GetRegistrantAttributesFromRegistration(ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationTemplate template)
+
+        private ( Dictionary<string, AttributeCache>, Dictionary<string, AttributeValueCache> ) GetRegistrantAttributesFromRegistration( ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationTemplate template )
         {
             var attributes = new Dictionary<string, AttributeCache>();
             var attributeValues = new Dictionary<string, AttributeValueCache>();
             var registrantAttributeFields = template.Forms
-                .SelectMany(f => f.Fields.Where(ff => ff.AttributeId.HasValue && ff.FieldSource == RegistrationFieldSource.RegistrantAttribute))
+                .SelectMany( f => f.Fields.Where(ff => ff.AttributeId.HasValue && ff.FieldSource == RegistrationFieldSource.RegistrantAttribute ) )
                 .ToList();
 
-            foreach (var field in registrantAttributeFields)
+            foreach ( var field in registrantAttributeFields )
             {
-                var attribute = AttributeCache.Get(field.AttributeId.Value);
+                var attribute = AttributeCache.Get( field.AttributeId.Value );
 
 
-                if (attribute is null)
+                if ( attribute is null )
                 {
                     continue;
                 }
-                var newValue = registrantInfo.FieldValues.GetValueOrNull(field.Guid).ToStringSafe();
-                var attributeValue = new AttributeValueCache(field.AttributeId.Value, null, newValue);
-                attributes.Add(attribute.Key, attribute);
-                attributeValues.Add(attribute.Key, attributeValue);
+                var newValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid ).ToStringSafe();
+                var attributeValue = new AttributeValueCache( field.AttributeId.Value, null, newValue );
+                attributes.Add( attribute.Key, attribute );
+                attributeValues.Add( attribute.Key, attributeValue );
             }
 
-            return (attributes, attributeValues);
+            return ( attributes, attributeValues );
         }
 
         /// <summary>
@@ -4195,7 +4196,7 @@ namespace Rock.Blocks.Event
             public LavaHasAttributes GroupMember { get; }
 
             public LavaSignatureRegistrant( RegistrationRegistrant registrant )
-                : this( registrant.Person, null, null, registrant.GroupMember, registrant.Attributes, registrant.AttributeValues)
+                : this( registrant.Person, null, null, registrant.GroupMember, registrant.Attributes, registrant.AttributeValues )
             {
                 FirstName = registrant.FirstName;
                 LastName = registrant.LastName;
@@ -4210,13 +4211,13 @@ namespace Rock.Blocks.Event
                 }
             }
 
-            public LavaSignatureRegistrant( Person person, Location homeLocation, CampusCache campus, GroupMember groupMember, Dictionary<string, AttributeCache> registrantAttributes, Dictionary<string, AttributeValueCache> registrantAttributeValues)
+            public LavaSignatureRegistrant( Person person, Location homeLocation, CampusCache campus, GroupMember groupMember, Dictionary<string, AttributeCache> registrantAttributes, Dictionary<string, AttributeValueCache> registrantAttributeValues )
             {
                 Address = homeLocation;
                 AnniversaryDate = person.AnniversaryDate;
                 BirthDate = person.BirthDate;
                 Campus = campus;
-                ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get(person.ConnectionStatusValueId.Value) : null;
+                ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ) : null;
                 Email = person.Email;
                 FirstName = person.FirstName;
                 Gender = person.Gender;
@@ -4224,14 +4225,14 @@ namespace Rock.Blocks.Event
                 GradeOffset = person.GradeOffset;
                 GraduationYear = person.GraduationYear;
                 // We call FormattedNumber here rather than using the property NumberFormatted because at this point NumberFormatted hasn't yet been initialized
-                HomePhone = PhoneNumber.FormattedNumber("", person.GetPhoneNumber(SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid())?.Number, false);
+                HomePhone = PhoneNumber.FormattedNumber( "", person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() )?.Number, false );
                 LastName = person.LastName;
-                MaritalStatus = person.MaritalStatusValueId.HasValue ? DefinedValueCache.Get(person.MaritalStatusValueId.Value) : null;
+                MaritalStatus = person.MaritalStatusValueId.HasValue ? DefinedValueCache.Get( person.MaritalStatusValueId.Value ) : null;
                 MiddleName = person.MiddleName;
-                MobilePhone = PhoneNumber.FormattedNumber("", person.GetPhoneNumber(SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid())?.Number, false);
-                WorkPhone = PhoneNumber.FormattedNumber("", person.GetPhoneNumber(SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid())?.Number, false);
+                MobilePhone = PhoneNumber.FormattedNumber( "", person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )?.Number, false );
+                WorkPhone = PhoneNumber.FormattedNumber( "", person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() )?.Number, false );
 
-                if (registrantAttributes != null && registrantAttributeValues != null)
+                if ( registrantAttributes != null && registrantAttributeValues != null )
                 {
                     Attributes = registrantAttributes;
                     AttributeValues = registrantAttributeValues;
