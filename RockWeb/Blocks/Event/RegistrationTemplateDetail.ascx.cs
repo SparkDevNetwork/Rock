@@ -2593,7 +2593,7 @@ The logged-in person's information will be used to complete the registrar inform
             pdAuditDetails.Visible = false;
             SetEditMode( true );
 
-            LoadDropDowns( rockContext );
+            LoadDropDowns( registrationTemplate, rockContext );
 
             cbIsActive.Checked = registrationTemplate.IsActive;
             tbName.Text = registrationTemplate.Name;
@@ -2860,7 +2860,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns( RockContext rockContext )
+        private void LoadDropDowns( RegistrationTemplate registrationTemplate, RockContext rockContext )
         {
             /*
                  11/16/2021 - SK
@@ -2891,7 +2891,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             ddlSignatureDocumentTemplate.Items.Clear();
             ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
-            SignatureDocumentTemplateState = new SignatureDocumentTemplateService( rockContext ).Queryable().Where( d => d.IsActive || d.Name == lRequiredSignedDocument.Text ).AsNoTracking().OrderBy( t => t.Name ).ToList();
+            SignatureDocumentTemplateState = new SignatureDocumentTemplateService( rockContext ).Queryable().Where( d => d.IsActive || d.Id == registrationTemplate.RequiredSignatureDocumentTemplateId ).AsNoTracking().OrderBy( t => t.Name ).ToList();
 
             foreach ( var documentType in SignatureDocumentTemplateState )
             {
