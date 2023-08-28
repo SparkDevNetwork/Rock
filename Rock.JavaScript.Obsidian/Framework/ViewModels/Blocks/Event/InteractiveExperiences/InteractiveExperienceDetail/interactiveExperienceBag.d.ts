@@ -138,6 +138,9 @@ export type InteractiveExperienceBag = {
     /** Gets or sets the push notification type. */
     pushNotificationType: InteractiveExperiencePushNotificationType;
 
+    /** Gets or sets the schedule attributes. */
+    scheduleAttributes?: Record<string, PublicAttributeBag> | null;
+
     /** Gets or sets the schedules associated with this interactive experience. */
     schedules?: InteractiveExperienceScheduleBag[] | null;
 

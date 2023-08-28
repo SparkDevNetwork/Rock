@@ -41,6 +41,11 @@ namespace Rock.Web.Cache
         private string _calendarContent;
 
         /// <summary>
+        /// The number of minutes before the schedule starts to enable it.
+        /// </summary>
+        private int _enableMinutesBefore;
+
+        /// <summary>
         /// The friendly schedule text used when rendering the name of this item.
         /// </summary>
         private string _friendlyScheduleText;
@@ -110,6 +115,7 @@ namespace Rock.Web.Cache
                 .ToList();
 
             _calendarContent = interactiveExperienceSchedule.Schedule.iCalendarContent;
+            _enableMinutesBefore = interactiveExperienceSchedule.Schedule.CheckInStartOffsetMinutes ?? 0;
             _friendlyScheduleText = interactiveExperienceSchedule.Schedule.ToFriendlyScheduleText( true );
         }
 
@@ -131,8 +137,8 @@ namespace Rock.Web.Cache
             // Look for a schedule that started sometime between midnight today
             // and the current time. The cast to DateTime? ensures we get a null
             // value back, otherwise we get a 1/1/0001 date if nothing found.
-            return schedule.GetScheduledStartTimes( now.Date, now )
-                .Where( dt => dt <= now && dt.AddMinutes( schedule.DurationInMinutes ) > now )
+            return schedule.GetScheduledStartTimes( now.Date, now.AddMinutes( _enableMinutesBefore ) )
+                .Where( dt => dt.AddMinutes( -_enableMinutesBefore ) <= now && dt.AddMinutes( schedule.DurationInMinutes ) > now )
                 .Select( dt => ( DateTime? ) dt )
                 .FirstOrDefault();
         }
