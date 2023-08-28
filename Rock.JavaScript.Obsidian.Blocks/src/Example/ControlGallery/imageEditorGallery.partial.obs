@@ -1,0 +1,57 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <ImageEditor v-model="value"
+                     label="Profile Picture"
+                     :disabled="disabled"
+                     :hideDeleteButton="hideDeleteButton"
+                     :binaryFileTypeGuid="binaryFileTypeGuid"
+                     :noPictureUrl="noPictureUrl"
+                     :maxImageWidth="maxImageWidth"
+                     :maxImageHeight="maxImageHeight"
+                     :aspectRatio="aspectRatio" />
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-sm-3" v-model="disabled" label="Disabled" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="hideDeleteButton" label="Hide Delete Button" help="When there is an image value, by default there is a delete button that resets this control's value to null. Check this to prevent that button from appearing." />
+                <NumberBox formGroupClasses="col-sm-3" v-model="maxImageWidth" label="Max Image Width" help="The maximum pixel width of the image to be uploaded to the server. If the cropped image is bigger than this, it will be scaled down to this width. Default is 0, which means there is no limit" />
+                <NumberBox formGroupClasses="col-sm-3" v-model="maxImageHeight" label="Max Image Height" help="The maximum pixel height of the image to be uploaded to the server. If the cropped image is bigger than this, it will be scaled down to this height. Default is 0, which means there is no limit" />
+            </div>
+            <div class="row">
+                <NumberBox formGroupClasses="col-sm-4" v-model="aspectRatio" label="Aspect Ratio" help="A number that represents the width divided by the height. For example, to do a 16:9 ratio, divide 16 by 9 -> <u>1.77777</u>." />
+                <TextBox formGroupClasses="col-sm-4" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
+                <TextBox formGroupClasses="col-sm-4" v-model="noPictureUrl" label="Placeholder Image" help="The URL of the image that is shown if there is no cropped image chosen/provided. The URL in this box on page load is the default" />
+            </div>
+
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const binaryFileTypeGuid = ref(BinaryFiletype.Default);
+    const disabled = ref(false);
+    const hideDeleteButton = ref(false);
+    const value = ref(null);
+    const aspectRatio = ref(1);
+    const maxImageWidth = ref(0);
+    const maxImageHeight = ref(0);
+    const noPictureUrl = ref("/Assets/Images/person-no-photo-unknown.svg");
+
+    const importCode = getSfcControlImportPath("imageEditor");
+    const exampleCode = computed((): string => {
+        return (
+            `<ImageEditor v-model="value" label="Profile Picture"${disabled.value ? ` disabled` : ""}${hideDeleteButton.value ? ` hideDeleteButton` : ""}${binaryFileTypeGuid.value !== BinaryFiletype.Default ? ` :binaryFileTypeGuid="${binaryFileTypeGuid.value}"` : ""}${noPictureUrl.value !== "/Assets/Images/person-no-photo-unknown.svg" ? ` :noPictureUrl="${noPictureUrl.value}"` : ""}${maxImageHeight.value !== 0 ? ` :maxImageHeight="${maxImageHeight.value}"` : ""}${maxImageWidth.value !== 0 ? ` :maxImageWidth="${maxImageWidth.value}"` : ""} />`
+        );
+    });
+</script>
