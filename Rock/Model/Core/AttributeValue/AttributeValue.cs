@@ -236,16 +236,6 @@ namespace Rock.Model
         public virtual Attribute Attribute { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> that this AttributeValue points to.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Person"/> that this AttributeValue points to.
-        /// </value>
-        [DataMember]
-        [LavaHidden]
-        public virtual Person ValueAsPerson { get; set; }
-
-        /// <summary>
         /// Gets or sets the a list of previous values that this attribute value had (If Attribute.EnableHistory is enabled)
         /// </summary>
         /// <value>
@@ -286,7 +276,6 @@ namespace Rock.Model
         public AttributeValueConfiguration()
         {
             this.HasRequired( p => p.Attribute ).WithMany().HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete( true );
-            this.HasOptional( p => p.ValueAsPerson ).WithMany().HasForeignKey( p => p.ValueAsPersonId ).WillCascadeOnDelete( false );
         }
     }
 
