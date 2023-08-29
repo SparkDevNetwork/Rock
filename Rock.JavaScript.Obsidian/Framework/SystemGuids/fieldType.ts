@@ -41,6 +41,8 @@ export const FieldType = {
     AudioUrl: "3B2D8714-421C-4CB8-A892-58B83521EF8A",
     /** Background Check field type */
     Backgroundcheck: "D05B3808-803A-4531-9680-DD4AAB8ADF1A",
+    /** Badges field type */
+    Badges: "602F273B-7EC2-42E6-9AA7-A36A268192A3",
     /** Benevolence Request field type */
     BenevolenceRequest: "44EEC881-3C07-4A58-ACC4-0F21D873DBE0",
     /** Binary File field type */

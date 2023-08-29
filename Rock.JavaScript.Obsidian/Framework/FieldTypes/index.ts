@@ -32,6 +32,9 @@ registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 import { AssessmentTypesFieldType } from "./assessmentTypesField.partial";
 registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType());
 
+import { BadgesFieldType } from "./badgesField.partial";
+registerFieldType(FieldTypeGuids.Badges, new BadgesFieldType());
+
 import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
 registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
 
