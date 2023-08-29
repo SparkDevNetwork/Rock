@@ -1396,9 +1396,10 @@ namespace Rock.Blocks.Crm
                     };
 
                     var visitDateField = GetVisitDateFieldBag( out var errorMessage );
-                    var isPlannedVisitDateHidden = visitDateField.IsHidden || !visitDateField.IsDateAndTimeShown;
-                    var isPlannedVisitScheduleHidden = visitDateField.IsHidden || visitDateField.IsDateAndTimeShown;
-                    if ( !isPlannedVisitDateHidden )
+                    var isPlannedVisitDateShown = visitDateField.IsShown && visitDateField.IsDateShown;
+                    var isPlannedVisitScheduleShown = visitDateField.IsShown && visitDateField.IsDateAndTimeShown;
+
+                    if ( isPlannedVisitDateShown )
                     {
                         var visitDate = bag.PlannedVisitDate;
                         if ( visitDate.HasValue )
@@ -1406,7 +1407,7 @@ namespace Rock.Blocks.Crm
                             parameters.Add( AttributeKey.PlannedVisitDate, visitDate.Value.ToString( "o" ) );
                         }
                     }
-                    else if ( !isPlannedVisitScheduleHidden && schedule != null )
+                    else if ( isPlannedVisitScheduleShown )
                     {
                         var visitDate = bag.PlannedVisitDate;
                         if ( visitDate.HasValue )
@@ -1414,8 +1415,11 @@ namespace Rock.Blocks.Crm
                             parameters.Add( AttributeKey.PlannedVisitDate, visitDate.Value.ToString( "o" ) );
                         }
 
-                        // Also add the schedule id
-                        parameters.Add( "ScheduleId", schedule.Id.ToString() );
+                        if ( schedule != null )
+                        {
+                            // Also add the schedule id
+                            parameters.Add( "ScheduleId", schedule.Id.ToString() );
+                        }
                     }
 
                     // Look for any workflows
