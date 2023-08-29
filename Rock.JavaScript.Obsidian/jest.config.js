@@ -4,6 +4,9 @@ const { compilerOptions } = require("./Tests/tsconfig.json");
 module.exports = {
     preset: "ts-jest",
     testEnvironment: "jsdom",
+    testEnvironmentOptions: {
+        customExportConditions: ["node", "node-addons"]
+    },
     testMatch: [
         "**/?(*.)+(spec|test).ts"
     ],
@@ -14,9 +17,14 @@ module.exports = {
                 tsconfig: "./Tests/tsconfig.json",
                 isolatedModules: true,
             }
+        ],
+        "^.+\\.obs$": [
+            "@vue/vue3-jest",
+            {
+            }
         ]
     },
-    moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts"],
+    moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts", "obs"],
     moduleNameMapper: {
         "^@Obsidian/(.*)$": `${__dirname}/Framework/$1`
     }
