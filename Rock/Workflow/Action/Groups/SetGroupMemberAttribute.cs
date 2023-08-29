@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,15 +37,15 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Attribute Set" )]
 
-    [WorkflowAttribute("Group", "The attribute containing the group to get the leader for.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupFieldType" })]
+    [WorkflowAttribute( "Group", "The attribute containing the group to get the leader for.", true, "", "", 0, null,
+        new string[] { "Rock.Field.Types.GroupFieldType" })]
 
-    [WorkflowAttribute("Person", "The attribute to set to the person in the group.", true, "", "", 1, null,
+    [WorkflowAttribute( "Person", "The attribute to set to the person in the group.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.PersonFieldType" })]
 
-    [TextField("Group Member Attribute Key", "The attribute key to use for the group member attribute.", true, "", "", 2)]
+    [TextField( "Group Member Attribute Key", "The attribute key to use for the group member attribute.", true, "", "", 2)]
 
-    [GroupRoleField("", "Group Role Filter", "Use to set the attribute if the person is a specific role. If no role filter is provided then the all roles will be used.", false, "", "", 3)]
+    [GroupRoleField( "", "Group Role Filter", "Use to set the attribute if the person is a specific role. If no role filter is provided then the all roles will be used.", false, "", "", 3)]
 
     [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from. <span class='tip tip-lava'></span>", false, "", "", 4, "AttributeValue" )]
     

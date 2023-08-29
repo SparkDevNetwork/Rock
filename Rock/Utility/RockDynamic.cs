@@ -55,6 +55,15 @@ namespace Rock.Utility
 
         private Dictionary<string, PropertyInfo> _instancePropertyInfoLookup;
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the instance of the object that is rapped in RockDynamic.
+        /// </summary>
+        public object Instance { get { return _instance; } }
+
+        #endregion
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RockDynamic"/> class.
         /// </summary>
