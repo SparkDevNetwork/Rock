@@ -41,6 +41,7 @@ using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
 using Rock.Enums.Core;
+using Rock.Lava.Helpers;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
@@ -2034,6 +2035,13 @@ namespace Rock.Lava
                 {
                     item = ( ( IHasAttributesWrapper ) input ).HasAttributesEntity;
                 }
+                else if ( input is RockDynamic inputDynamic )
+                {
+                    if ( inputDynamic.Instance != null && inputDynamic.Instance is IHasAttributes )
+                    {
+                        item = ( Attribute.IHasAttributes ) inputDynamic.Instance;
+                    }
+                }
 
                 if ( item != null )
                 {
@@ -2839,6 +2847,71 @@ namespace Rock.Lava
             }
 
             return resultDataObject;
+        }
+
+        /// <summary>
+        /// Appends watch data to various types of objects.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="source"></param>
+        /// <param name="attributeKey"></param>
+        /// <returns></returns>
+        public static object AppendWatches( ILavaRenderContext context, object source, string attributeKey = "" )
+        {
+            var currentPerson = GetCurrentPerson( context );
+
+            // Quick out if we have no data
+            if ( source == null || currentPerson == null )
+            {
+                return source;
+            }
+
+            // Get a Rock Context
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+            // Append the media information based on the object type
+
+            // Entity
+            if ( source is IEntity sourceAsEntity )
+            {
+                return LavaAppendWatchesHelper.AppendMediaForEntity( sourceAsEntity, attributeKey, currentPerson, rockContext );
+            }
+
+            // Collection of Entities
+            if ( source is ICollection collection )
+            {
+                // Get this first item so we can determine it's type. Checking for IEnumerable<IEntity> directly does not work.
+                var enumerator = collection.GetEnumerator();
+
+                var firstItem = enumerator.MoveNext() ? enumerator.Current : null;
+
+                if ( firstItem is MediaElement )
+                {
+                    return LavaAppendWatchesHelper.AppendMediaForMediaElements( collection, currentPerson, rockContext );
+                }
+                else if ( firstItem is IEntity )
+                {
+                    return LavaAppendWatchesHelper.AppendMediaForEntities( collection, attributeKey, currentPerson, rockContext, ( ( IEntity ) firstItem ).TypeId );
+                }
+                else if ( firstItem is ExpandoObject )
+                {
+                    // If the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset.
+                    var expandoCollection = collection.Cast<ExpandoObject>();
+
+                    var dynamicCollection = expandoCollection.Select( a => a.ShallowCopy() ).ToList();
+
+                    // Append watch information
+                    return  LavaAppendWatchesHelper.AppendMediaForExpandoCollection( dynamicCollection, currentPerson, rockContext );
+                }
+            }
+
+            // ExpandoObject
+            if ( source is ExpandoObject xo )
+            {
+                return LavaAppendWatchesHelper.AppendMediaForExpando( xo, currentPerson, rockContext );
+            }
+
+            return source;
         }
 
         /// <summary>
