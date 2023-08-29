@@ -565,7 +565,9 @@ export class RockDateTime {
      * @returns An ISO8601 formatted string.
      */
     public toISOString(): string {
-        return this.dateTime.toISO();
+        // We never create an instance of RockDateTime if dateTime is not valid
+        // and that is the only time toISO() would return null.
+        return <string>this.dateTime.toISO();
     }
 
     /**
@@ -634,7 +636,9 @@ export class RockDateTime {
      * @returns A new string that conforms to RFC 1123
      */
     public toHTTPString(): string {
-        return this.dateTime.toHTTP();
+        // We never create an instance of RockDateTime if dateTime is not valid
+        // and that is the only time toHTTP() would return null.
+        return <string>this.dateTime.toHTTP();
     }
 
     /**
