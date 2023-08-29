@@ -1034,6 +1034,7 @@
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
+    <Compile Include="Lava\Helpers\LavaAppendWatchesHelper.cs" />
     <Compile Include="Model\CMS\BlockType\BlockType.WebForms.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\AddToContentLibraryException.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\AddFromContentLibraryException.cs" />
