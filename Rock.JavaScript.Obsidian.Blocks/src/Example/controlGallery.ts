@@ -8127,6 +8127,11 @@ const controlGalleryComponents: Record<string, Component> = [
     ImageEditorGallery,
     HighlightLabelGallery,
 ]
+    // Fix vue 3 SFC putting name in __name.
+    .map(a => {
+        a.name = a.__name ?? a.name;
+        return a;
+    })
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
     // Convert list to an object where the key is the component name and the value is the component
@@ -8363,6 +8368,10 @@ const detailBlockGallery = defineComponent({
 const templateGalleryComponents = [
     detailBlockGallery
 ]
+    .map(a => {
+        a.name = a.__name ?? a.name;
+        return a;
+    })
     .sort((a, b) => a.name.localeCompare(b.name))
     .reduce((newList, comp) => {
         newList[comp.name] = comp;

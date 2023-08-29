@@ -69,6 +69,11 @@ namespace Rock.SystemGuid
         public const string BACKGROUNDCHECK = "D05B3808-803A-4531-9680-DD4AAB8ADF1A";
 
         /// <summary>
+        /// Badges field type
+        /// </summary>
+        public const string BADGES = "602F273B-7EC2-42E6-9AA7-A36A268192A3";
+
+        /// <summary>
         /// Benevolence Request field type
         /// </summary>
         public const string BENEVOLENCE_REQUEST = "44EEC881-3C07-4A58-ACC4-0F21D873DBE0";
