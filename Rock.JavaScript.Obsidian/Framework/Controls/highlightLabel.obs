@@ -1,0 +1,54 @@
+<template>
+    <PopOver v-if="tooltip" :placement="tooltipPlacement">
+        {{ tooltip }}
+        <template #activator="props">
+            <span :class="labelClass" :title="tooltip" :aria-label="tooltip" v-bind="props"><i v-if="iconCssClass" :class="iconCssClass"></i>
+                <slot />
+            </span>
+        </template>
+    </PopOver>
+    <span v-else :class="labelClass" :title="tooltip" :aria-label="tooltip"><i v-if="iconCssClass" :class="iconCssClass"></i>
+        <slot />
+    </span>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import PopOver from "./popOver.obs";
+
+    const props = defineProps({
+        customClass: {
+            type: String,
+            default: ""
+        },
+
+        iconCssClass: {
+            type: String,
+            default: ""
+        },
+
+        labelType: {
+            type: String as PropType<"default" | "primary" | "success" | "info" | "warning" | "danger" | "campus" | "type" | "custom">,
+            default: "default"
+        },
+
+        tooltip: {
+            type: String,
+            default: ""
+        },
+
+        tooltipPlacement: {
+            type: String as PropType<"top" | "right" | "bottom" | "left">,
+            default: "right"
+        }
+    });
+
+    const labelClass = computed(() => {
+        if (props.labelType == "custom") {
+            return "label " + props.customClass;
+        }
+        else {
+            return "label label-" + props.labelType;
+        }
+    });
+</script>

@@ -236,6 +236,7 @@ import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGaller
 import CampusAccountAmountPickerGallery from "./ControlGallery/campusAccountAmountPickerGallery.partial.obs";
 import PersonPickerGallery from "./ControlGallery/personPickerGallery.partial.obs";
 import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
+import HighlightLabelGallery from "./ControlGallery/highlightLabelGallery.partial.obs";
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 
@@ -8124,6 +8125,7 @@ const controlGalleryComponents: Record<string, Component> = [
     ButtonDropDownListGallery,
     CampusAccountAmountPickerGallery,
     ImageEditorGallery,
+    HighlightLabelGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

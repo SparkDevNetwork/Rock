@@ -1,0 +1,64 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <HighlightLabel :iconCssClass="iconCssClass" :tooltip="tooltip" :tooltipPlacement="placement" :labelType="labelType" :customClass="customClass">This is the main content</HighlightLabel>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <DropDownList label="Label Type" v-model="labelType" :items="labelTypes" help="Determines the visual style of the label. If you choose 'custom', you'll need to provide a <code>customClass</code> prop in order to style it yourself." :showBlankItem="false" />
+                    <TextBox v-if="labelType == 'custom'" label="Custom Class" v-model="customClass" help="When using a custom label type, you need to pass in a custom class to style it." />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Icon Class" v-model="iconCssClass" help="If you want to show an icon in front of the main content put an icon class name in here. For example 'fa fa-flag' to show a flag." />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Tooltip" v-model="tooltip" help="Show this message when hovering the label." />
+                </div>
+                <div class="col-md-3">
+                    <DropDownList v-if="tooltip" label="Tooltip placement" v-model="placement" :items="placements" help="If you have a tooltip specified, this determines which side of the label it appears on." />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const labelTypes: ListItemBag[] = [
+        { text: "Default", value: "default" },
+        { text: "Primary", value: "primary" },
+        { text: "Success", value: "success" },
+        { text: "Info", value: "info" },
+        { text: "Warning", value: "warning" },
+        { text: "Danger", value: "danger" },
+        { text: "Campus", value: "campus" },
+        { text: "Type", value: "type" },
+        { text: "Custom", value: "custom" },
+    ];
+
+    const placements: ListItemBag[] = [
+        { text: "Top", value: "top" },
+        { text: "Right", value: "right" },
+        { text: "Bottom", value: "bottom" },
+        { text: "Left", value: "left" },
+    ];
+
+    const labelType = ref<"default" | "primary" | "success" | "info" | "warning" | "danger" | "campus" | "type" | "custom">("default");
+    const customClass = ref("");
+    const iconCssClass = ref("");
+    const tooltip = ref("");
+    const placement = ref<"top" | "right" | "bottom" | "left" | "">("");
+
+    const importCode = getSfcControlImportPath("highlightLabel");
+    const exampleCode = computed(() => {
+        return `<HighlightLabel${labelType.value ? ` labelType="${labelType.value}"` : ""}${labelType.value == "custom" && customClass.value ? ` customClass="${customClass.value}"` : ""}${iconCssClass.value ? ` iconCssClass="${iconCssClass.value}"` : ""}${tooltip.value ? ` tooltip="${tooltip.value}"` : ""}${tooltip.value && placement.value ? ` tooltipPlacement="${placement.value}"` : ""}>This is the main content</HighlightLabel>`;
+    });
+</script>
