@@ -572,10 +572,11 @@ namespace Rock.Blocks.Event
 
                 // Prepare the merge fields.
                 var campusCache = campusId.HasValue ? CampusCache.Get( campusId.Value ) : null;
+               
                 var mergeFields = new Dictionary<string, object>
                 {
                     { "Registration", new LavaSignatureRegistration( registrationInstance, groupId, args.Registrants.Count ) },
-                    { "Registrant", new LavaSignatureRegistrant( person, location, campusCache, groupMember ) }
+                    { "Registrant", new LavaSignatureRegistrant( person, location, campusCache, groupMember, registrantInfo, registrationInstance ) }
                 };
 
                 var html = ElectronicSignatureHelper.GetSignatureDocumentHtml( documentTemplate.LavaTemplate, mergeFields );
@@ -2417,6 +2418,32 @@ namespace Rock.Blocks.Event
             registrantInfo.PersonGuid = person.Guid;
         }
 
+        private static ( Dictionary<string, AttributeCache>, Dictionary<string, AttributeValueCache> ) GetRegistrantAttributesFromRegistration( ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationTemplate template )
+        {
+            var attributes = new Dictionary<string, AttributeCache>();
+            var attributeValues = new Dictionary<string, AttributeValueCache>();
+            var registrantAttributeFields = template.Forms
+                .SelectMany( f => f.Fields.Where(ff => ff.AttributeId.HasValue && ff.FieldSource == RegistrationFieldSource.RegistrantAttribute ) )
+                .ToList();
+
+            foreach ( var field in registrantAttributeFields )
+            {
+                var attribute = AttributeCache.Get( field.AttributeId.Value );
+
+
+                if ( attribute is null )
+                {
+                    continue;
+                }
+                var newValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid ).ToStringSafe();
+                var attributeValue = new AttributeValueCache( field.AttributeId.Value, null, newValue );
+                attributes.Add( attribute.Key, attribute );
+                attributeValues.Add( attribute.Key, attributeValue );
+            }
+
+            return ( attributes, attributeValues );
+        }
+
         /// <summary>
         /// Updates the registrant attribute values with those provided by the
         /// registrant information.
@@ -4161,17 +4188,21 @@ namespace Rock.Blocks.Event
         {
             public Location Address { get; }
 
+            public CampusCache Campus { get; }
+
+            public DefinedValueCache ConnectionStatus { get; }
+            
             public DateTime? AnniversaryDate { get; }
 
             public DateTime? BirthDate { get; }
 
-            public CampusCache Campus { get; }
-
-            public DefinedValueCache ConnectionStatus { get; }
-
             public string Email { get; }
 
             public string FirstName { get; }
+
+            public string MiddleName { get; }
+
+            public string LastName { get; }
 
             public Gender Gender { get; }
 
@@ -4181,57 +4212,47 @@ namespace Rock.Blocks.Event
 
             public int? GraduationYear { get; }
 
-            public string HomePhone { get; }
-
-            public string LastName { get; }
-
             public DefinedValueCache MaritalStatus { get; }
 
-            public string MiddleName { get; }
+            public string HomePhone { get; }
 
             public string MobilePhone { get; }
 
             public string WorkPhone { get; }
 
-            public LavaHasAttributes Person { get; }
+            public Rock.Model.Person Person { get; }
 
-            public LavaHasAttributes GroupMember { get; }
+            public Rock.Model.GroupMember GroupMember { get; }
 
-            public LavaSignatureRegistrant( RegistrationRegistrant registrant )
-                : this( registrant.Person, null, null, registrant.GroupMember )
+            public LavaSignatureRegistrant( Person person, Location homeLocation, CampusCache campus, GroupMember groupMember, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationInstance registrationInstance )
             {
-                FirstName = registrant.FirstName;
-                LastName = registrant.LastName;
-                Email = registrant.Email;
+                var ( registrantAttributes, registrantAttributeValues) = GetRegistrantAttributesFromRegistration(registrantInfo, registrationInstance.RegistrationTemplate );
 
-                Address = registrant.Person.GetHomeLocation();
-
-                var campus = registrant.Person.GetCampus();
-                if ( campus != null )
-                {
-                    Campus = CampusCache.Get( campus.Id );
-                }
-            }
-
-            public LavaSignatureRegistrant( Person person, Location homeLocation, CampusCache campus, GroupMember groupMember )
-            {
                 Address = homeLocation;
+                Campus = campus;
                 AnniversaryDate = person.AnniversaryDate;
                 BirthDate = person.BirthDate;
-                Campus = campus;
                 ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ) : null;
                 Email = person.Email;
                 FirstName = person.FirstName;
+                MiddleName = person.MiddleName;
+                LastName = person.LastName;
                 Gender = person.Gender;
                 GradeFormatted = person.GradeFormatted;
                 GradeOffset = person.GradeOffset;
                 GraduationYear = person.GraduationYear;
-                HomePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() )?.NumberFormatted;
-                LastName = person.LastName;
+
+                // We call FormattedNumber here rather than using the property NumberFormatted because at this point NumberFormatted hasn't yet been initialized
+                HomePhone = PhoneNumber.FormattedNumber( "", person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() )?.Number, false );
                 MaritalStatus = person.MaritalStatusValueId.HasValue ? DefinedValueCache.Get( person.MaritalStatusValueId.Value ) : null;
-                MiddleName = person.MiddleName;
-                MobilePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )?.NumberFormatted;
-                WorkPhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() )?.NumberFormatted;
+                MobilePhone = PhoneNumber.FormattedNumber( "", person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )?.Number, false );
+                WorkPhone = PhoneNumber.FormattedNumber( "", person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() )?.Number, false );
+
+                if ( registrantAttributes != null && registrantAttributeValues != null )
+                {
+                    Attributes = registrantAttributes;
+                    AttributeValues = registrantAttributeValues;
+                }
 
                 if ( person != null )
                 {
@@ -4240,11 +4261,7 @@ namespace Rock.Blocks.Event
                         person.LoadAttributes();
                     }
 
-                    Person = new LavaHasAttributes
-                    {
-                        Attributes = person.Attributes,
-                        AttributeValues = person.AttributeValues
-                    };
+                    Person = person;
                 }
 
                 if ( groupMember != null )
@@ -4254,11 +4271,7 @@ namespace Rock.Blocks.Event
                         groupMember.LoadAttributes();
                     }
 
-                    GroupMember = new LavaHasAttributes
-                    {
-                        Attributes = groupMember.Attributes,
-                        AttributeValues = groupMember.AttributeValues
-                    };
+                    GroupMember = groupMember;
                 }
             }
         }

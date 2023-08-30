@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Rock.Attribute;
@@ -452,7 +451,7 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Gets the group identifier page parameter or null if missing.
         /// </summary>
-        private int? GroupIdPageParameter => PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+        private string GroupIdPageParameter => PageParameter( PageParameterKey.GroupId );
 
         /// <summary>
         /// Gets the group type identifiers page parameter or null if missing.
@@ -487,7 +486,7 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Gets the entity set identifier page parameter.
         /// </summary>
-        private int? EntitySetIdPageParameter => PageParameter( PageParameterKey.EntitySetId ).AsIntegerOrNull();
+        private string EntitySetIdPageParameter => PageParameter( PageParameterKey.EntitySetId );
 
         #endregion
 
@@ -1541,9 +1540,6 @@ namespace Rock.Blocks.Group
                 }
             }
 
-            // Set the attendances for the occurrence.
-            box.Attendances = GetAttendanceBags( rockContext, occurrenceData );
-
             var allowAddPerson = this.IsNewAttendeeAdditionAllowed;
 
             if ( this.AddGroupMemberPage.IsNotNullOrWhiteSpace() )
@@ -1708,14 +1704,25 @@ namespace Rock.Blocks.Group
             }
 
             IQueryable<PersonAliasAttendanceBagDto> prospectiveAttendeesQuery = null;
-            var entitySetId = this.EntitySetIdPageParameter;
-            if ( entitySetId.HasValue )
+            var entitySetId = this.EntitySetIdPageParameter.AsIntegerOrNull();
+            var entitySetGuid = this.EntitySetIdPageParameter.AsGuidOrNull();
+            if ( entitySetId.HasValue || entitySetGuid.HasValue )
             {
                 // Get the prospective attendees from a Person EntitySet.
                 // These may or may not be group members.
                 var entitySetService = new EntitySetService( rockContext );
-                prospectiveAttendeesQuery = entitySetService
-                    .GetEntityQuery<Person>( entitySetId.Value )
+                IQueryable<Person> personEntitySetQuery;
+
+                if ( entitySetId.HasValue )
+                {
+                    personEntitySetQuery = entitySetService.GetEntityQuery<Person>( entitySetId.Value );
+                }
+                else
+                {
+                    personEntitySetQuery = entitySetService.GetEntityQuery<Person>( entitySetGuid.Value );
+                }
+
+                prospectiveAttendeesQuery = personEntitySetQuery
                     .AsNoTracking()
                     .Select( p => new PersonAliasAttendanceBagDto
                     {
@@ -2401,12 +2408,28 @@ namespace Rock.Blocks.Group
             /// <returns>The group associated with the GroupId page parameter if the current person is authorized; otherwise, <c>null</c>.</returns>
             internal Model.Group GetGroupIfAuthorized( bool withTracking = false )
             {
-                var groupId = this._block.GroupIdPageParameter;
+                var query = _groupService
+                        .AsNoFilter()
+                        .Include( g => g.GroupType )
+                        .Include( g => g.Schedule );
 
-                var query = _groupService.AsNoFilter()
-                    .Include( g => g.GroupType )
-                    .Include( g => g.Schedule )
-                    .Where( g => g.Id == groupId );
+                var groupId = this._block.GroupIdPageParameter.AsIntegerOrNull();
+                var groupGuid = this._block.GroupIdPageParameter.AsGuidOrNull();
+
+                if ( groupId.HasValue )
+                {
+                    query = query.Where( g => g.Id == groupId.Value );
+                }
+                else if ( groupGuid.HasValue )
+                {
+                    query = query.Where( g => g.Guid == groupGuid.Value );
+                }
+                else
+                {
+                    // The GroupId page parameter is not an integer ID
+                    // nor a guid ID so return null.
+                    return null;
+                }
 
                 if ( !withTracking )
                 {
