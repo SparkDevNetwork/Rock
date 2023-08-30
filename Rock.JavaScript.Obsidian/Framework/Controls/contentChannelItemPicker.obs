@@ -1,24 +1,37 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField v-model="internalItemValue" name="content-channel-item" v-bind="standardProps">
-        <BaseAsyncPicker v-if="!contentChannelGuid"
-                         v-model="internalChannelValue"
-                         v-bind="standardAsyncProps"
-                         label="Content Channel"
-                         :displayStyle="displayStyle"
-                         :items="actualChannelItems"
-                         :multiple="false"
-                         rules=""
-                         showBlankItem
-                         enhanceForLongLists />
-        <BaseAsyncPicker v-model="internalItemValue"
-                         v-bind="standardAsyncProps"
-                         label="Content Channel Item"
-                         :displayStyle="displayStyle"
-                         :items="actualItemItems"
-                         :multiple="false"
-                         showBlankItem
-                         enhanceForLongLists />
+        <TransitionVerticalCollapse speed="fast">
+            <div v-if="mode == 'edit'" class="well border-0">
+                <BaseAsyncPicker v-if="!contentChannelGuid"
+                                 v-model="internalChannelValue"
+                                 v-bind="standardAsyncProps"
+                                 label="Content Channel"
+                                 :displayStyle="displayStyle"
+                                 :items="actualChannelItems"
+                                 :multiple="false"
+                                 rules=""
+                                 showBlankItem
+                                 enhanceForLongLists />
+                <BaseAsyncPicker v-model="internalItemValue"
+                                 v-bind="standardAsyncProps"
+                                 label="Content Channel Item"
+                                 :displayStyle="displayStyle"
+                                 :items="actualItemItems"
+                                 :multiple="false"
+                                 showBlankItem
+                                 enhanceForLongLists />
+                <div class="text-right">
+                    <button type=button class="btn btn-xs btn-default" @click="selectItem">Select</button>
+                    <button type=button class="btn btn-xs btn-link" @click="cancelEdit">Cancel</button>
+                </div>
+            </div>
+        </TransitionVerticalCollapse>
+        <TransitionVerticalCollapse speed="fast">
+            <button v-if="mode == 'view'" @click="mode = 'edit'" type="button" title="Click to edit value" class="d-block w-100 text-left border rounded px-3 py-1" style="background: #fff; border-color:#ddd !important;">
+                {{ modelValue?.text }}&nbsp;
+            </button>
+        </TransitionVerticalCollapse>
     </RockFormField>
 </template>
 
@@ -29,6 +42,7 @@
     import { PropType, computed, nextTick, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import RockFormField from "./rockFormField.obs";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
     import { Guid } from "@Obsidian/Types";
     import { ContentChannelItemPickerGetContentChannelItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetContentChannelItemsOptionsBag";
     import { ContentChannelItemPickerGetAllForContentChannelItemOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetAllForContentChannelItemOptionsBag";
@@ -66,8 +80,10 @@
     const internalChannelValue = ref<ListItemBag | null>(null);
     const loadedTypeItems = ref<ListItemBag[] | null>(null);
 
-    const internalItemValue = ref(props.modelValue);
+    const internalItemValue = ref<ListItemBag | null>(null);
     const loadedContentChannelItemItems = ref<ListItemBag[] | null>(null);
+
+    const mode = ref<'edit' | 'view'>('view');
 
     // #endregion
 
@@ -172,6 +188,18 @@
         }
     }
 
+    /** Close the editor and set the selected value as the "officially selected item" by emitting it to the parent. */
+    function selectItem() {
+        emit("update:modelValue", internalItemValue.value);
+        mode.value = 'view'
+    }
+
+    /** Exit edit mode */
+    function cancelEdit() {
+        loadContentChannelItemOptionsFromValue();
+        mode.value = 'view'
+    }
+
     // #endregion
 
     // #region Watchers
@@ -181,9 +209,7 @@
         if (updateRefValue(internalItemValue, props.modelValue)) {
             loadContentChannelItemOptionsFromValue();
         }
-    });
-
-    watch(internalItemValue, () => emit("update:modelValue", internalItemValue.value));
+    }, { immediate: true });
 
     /** Reload CC items if the channel or excluded CC items list change */
     watch([contentChannelGuidValue, () => props.excludeContentChannelItems], () => {
@@ -197,13 +223,9 @@
 
     // #region Initialization
 
-    if (props.modelValue) {
-        // Load the type and list of items based on the selected value
-        loadContentChannelItemOptionsFromValue();
-    }
-    else if (props.contentChannelGuid) {
+    if (!props.modelValue && props.contentChannelGuid) {
         loadContentChannelItemOptions();
     }
 
-                            // #endregion
+    // #endregion
 </script>
