@@ -75,7 +75,7 @@
                                         </ul>
                                         <div class="ml-auto flex-shrink-0">
                                             <div class="taglist">
-                                                <Tag v-for="tag in getTags(result)" :key="tag.name" :modelValue="tag" disabled />
+                                                <Tag v-for="tag in getTags(result)" :key="tag.name ?? undefined" :modelValue="tag" disabled />
                                             </div>
                                         </div>
                                     </div>
@@ -97,7 +97,7 @@
     import Panel from "./panel.obs";
     import TextBox from "./textBox.obs";
     import RockButton from "./rockButton.obs";
-    import Tag from "./tag.obs";
+    import Tag from "./Internal/tag.obs";
     import { nextTick } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useStore } from "@Obsidian/PageState";
