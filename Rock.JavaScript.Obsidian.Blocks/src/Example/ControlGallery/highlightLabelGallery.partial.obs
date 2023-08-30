@@ -55,7 +55,7 @@
     const customClass = ref("");
     const iconCssClass = ref("");
     const tooltip = ref("");
-    const placement = ref<"top" | "right" | "bottom" | "left" | "">("");
+    const placement = ref<"top" | "right" | "bottom" | "left">("right");
 
     const importCode = getSfcControlImportPath("highlightLabel");
     const exampleCode = computed(() => {
