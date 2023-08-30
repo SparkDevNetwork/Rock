@@ -7,7 +7,7 @@
         <div class="row">
             <div class="col-md-12">
                 <NotificationBox alert-type="info" v-if="modelValue?.isAutomated">{{ options.automatedToolTip }}</NotificationBox>
-                <NotificationBox alert-type="info" v-if="options.isStatusChangeDisabled">{{ options.editModeMessage }}</NotificationBox>
+                <NotificationBox alert-type="info" v-else-if="options.isStatusChangeDisabled">{{ options.editModeMessage }}</NotificationBox>
             </div>
             <div class="col-md-6">
                 <ValueDetailList :modelValue="leftSideValues" />
