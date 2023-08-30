@@ -40,6 +40,7 @@ using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Event
 {
@@ -199,6 +200,17 @@ namespace Rock.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 var viewModel = GetViewModel( rockContext );
+
+                if ( viewModel.InstanceName.IsNotNullOrWhiteSpace() )
+                {
+                    ResponseContext.SetPageTitle( viewModel.InstanceName );
+                    ResponseContext.SetBrowserTitle( viewModel.InstanceName );
+
+                    // This is temporary until we have an interface to properly
+                    // update the breadcrumbs.
+                    ResponseContext.AddBreadCrumb( new BreadCrumb( viewModel.InstanceName, RequestContext.RequestUri.PathAndQuery ) );
+                }
+
                 return viewModel;
             }
         }
