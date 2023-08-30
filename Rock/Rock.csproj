@@ -1130,6 +1130,10 @@
     <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
+    <Compile Include="Net\BrowserCookie.cs" />
+    <Compile Include="Net\IRockResponseContext.cs" />
+    <Compile Include="Net\NullRockResponseContext.cs" />
+    <Compile Include="Net\RockResponseContext.WebForms.cs" />
     <Compile Include="Observability\ObservabilityHelper.cs" />
     <Compile Include="Observability\RockActivitySource.cs" />
     <Compile Include="Obsidian\UI\GridActionUrlKey.cs" />
@@ -1860,6 +1864,7 @@
     <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
     <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\RockResponseContextExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Image.cs" />
     <Compile Include="Utility\IdHasher.cs" />
@@ -2127,6 +2132,7 @@
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\HttpModules\Observability.cs" />
+    <Compile Include="Web\IBreadCrumb.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
     <Compile Include="Web\RockControlAdapter.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartJsChart.cs" />

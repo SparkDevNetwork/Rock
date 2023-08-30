@@ -60,6 +60,14 @@ namespace Rock.Net
         #region Properties
 
         /// <summary>
+        /// Gets the response object associated with this request.
+        /// </summary>
+        /// <value>
+        /// The response object associated with this request.
+        /// </value>
+        public virtual IRockResponseContext Response { get; private set; }
+
+        /// <summary>
         /// Gets the current user.
         /// </summary>
         /// <value>
@@ -183,8 +191,11 @@ namespace Rock.Net
         /// Initializes a new instance of the <see cref="RockRequestContext" /> class.
         /// </summary>
         /// <param name="request">The request from an HttpContext load that we will initialize from.</param>
-        internal RockRequestContext( HttpRequest request )
+        /// <param name="response">The object that handles response updates.</param>
+        internal RockRequestContext( HttpRequest request, IRockResponseContext response )
         {
+            Response = response;
+
             CurrentUser = UserLoginService.GetCurrentUser( true );
 
             RequestUri = request.UrlProxySafe();
@@ -229,8 +240,11 @@ namespace Rock.Net
         /// Initializes a new instance of the <see cref="RockRequestContext" /> class.
         /// </summary>
         /// <param name="request">The request that we will initialize from.</param>
-        internal RockRequestContext( IRequest request )
+        /// <param name="response">The object that handles response updates.</param>
+        internal RockRequestContext( IRequest request, IRockResponseContext response )
         {
+            Response = response;
+
             CurrentUser = UserLoginService.GetCurrentUser( true );
 
             RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
