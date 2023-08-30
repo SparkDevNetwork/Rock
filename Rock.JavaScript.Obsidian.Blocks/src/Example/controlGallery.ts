@@ -94,7 +94,6 @@ import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import Rating from "@Obsidian/Controls/rating.obs";
 import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
-import PersonPicker from "@Obsidian/Controls/personPicker.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
 import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
