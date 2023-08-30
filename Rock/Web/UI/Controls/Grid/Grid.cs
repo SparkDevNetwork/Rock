@@ -3803,12 +3803,36 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             // If this is a dynamic class, don't include any of the properties that are inherited from the base class.
             additionalMergeProperties = FilterDynamicObjectPropertiesCollection( dataSourceObjectType, additionalMergeProperties );
 
-            var gridDataFields = this.Columns.OfType<BoundField>().ToList();
+            // Create a lookup for the DataControlField corresponding to each of the merge fields.
+            // The control is used to render the field output.
+            var mergeKeyToControlFieldMap = new Dictionary<string, DataControlField>();
+            foreach ( DataControlField gridColumn in this.Columns )
+            {
+                var mergeFieldKey = string.Empty;
+                if ( gridColumn is LavaField lf )
+                {
+                    // The Lava field is not bound to the data source, so use the header as the field key.
+                    mergeFieldKey = lf.HeaderText.RemoveSpecialCharacters();
+                }
+                else if ( gridColumn is BoundField boundField )
+                {
+                    // Set the key that can be used to retrieve the value from the data source.
+                    mergeFieldKey = boundField.DataField;
+                }
 
-            Dictionary<int, Dictionary<string, object>> itemMergeFieldsList = new Dictionary<int, Dictionary<string, object>>( this.DataSourceAsList.Count );
+                if ( string.IsNullOrWhiteSpace( mergeFieldKey )
+                     || mergeKeyToControlFieldMap.ContainsKey( mergeFieldKey ) )
+                {
+                    continue;
+                }
+                mergeKeyToControlFieldMap.Add( mergeFieldKey, gridColumn );
+            }
+
+            var itemMergeFieldsList = new Dictionary<int, Dictionary<string, object>>( this.DataSourceAsList.Count );
             bool? useHeaderNamesIfAvailable = null;
             if ( additionalMergeProperties != null && additionalMergeProperties.Any() && idProp != null )
             {
+                var additionalMergePropertiesMap = additionalMergeProperties.ToDictionary( k => k.Name, v => v );
                 foreach ( var item in this.DataSourceAsList )
                 {
                     // since Reporting fieldnames are dynamic and can have special internal names, use the header text instead of the datafield name
@@ -3818,26 +3842,49 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) && !itemMergeFieldsList.ContainsKey( idVal.Value ) )
                     {
                         var mergeFields = new Dictionary<string, object>();
-                        foreach ( var mergeProperty in additionalMergeProperties )
+                        foreach ( var mergeFieldEntry in mergeKeyToControlFieldMap )
                         {
-                            var objValue = mergeProperty.GetValue( item );
+                            // Get the merge field.
+                            object objValue;
+                            string mergeFieldKey = null;
+                            string headerText = null;
 
-                            BoundField boundField = null;
-                            if ( useHeaderNamesIfAvailable.Value )
+                            var mergeField = mergeFieldEntry.Value;
+                            if ( mergeField is LavaField lbf )
                             {
-                                boundField = gridDataFields.FirstOrDefault( a => a.DataField == mergeProperty.Name );
+                                // A LavaField value is calculated by resolving the Lava template using the values from the current row of the datasource.
+                                objValue = lbf.LavaTemplate.ResolveMergeFields( LavaDataDictionary.FromAnonymousObject( item ) );
+
+                                headerText = lbf.HeaderText;
+                                if ( string.IsNullOrWhiteSpace( headerText ) )
+                                {
+                                    headerText = "Lava";
+                                }
                             }
-
-                            string mergeFieldKey;
-                            if ( useHeaderNamesIfAvailable.Value && boundField != null && !string.IsNullOrWhiteSpace( boundField.HeaderText ) )
+                            else if ( mergeField is BoundField bf )
                             {
-                                mergeFieldKey = boundField.HeaderText.RemoveSpecialCharacters().Replace( " ", "_" );
+                                // Get the field value from the data source.
+                                mergeFieldKey = mergeFieldEntry.Key;
+
+                                var mergeProperty = additionalMergePropertiesMap[mergeFieldKey];
+                                objValue = mergeProperty.GetValue( item );
+
+                                headerText = bf.HeaderText;
                             }
                             else
                             {
-                                mergeFieldKey = mergeProperty.Name;
+                                objValue = null;
                             }
 
+                            if ( useHeaderNamesIfAvailable.Value && !string.IsNullOrWhiteSpace( headerText ) )
+                            {
+                                mergeFieldKey = headerText.RemoveSpecialCharacters();
+                            }
+
+                            if ( mergeFieldKey == null )
+                            {
+                                continue;
+                            }
                             mergeFields.AddOrIgnore( mergeFieldKey, objValue );
                         }
 
