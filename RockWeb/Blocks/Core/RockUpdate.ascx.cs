@@ -163,12 +163,12 @@ namespace RockWeb.Blocks.Core
                     nbLegacyLavaIssue.Visible = true;
                 }
 
-                if ( RockInstanceConfig.LavaEngineName != "Fluid" )
+                _releases = GetOrderedReleaseList( rockUpdateService, _installedVersion );
+
+                if ( _releases.Exists( r => new Version( r.SemanticVersion ) >= new Version( "1.17.0" ) ) && RockInstanceConfig.LavaEngineName != "Fluid" )
                 {
                     nbLavaEngineIssue.Visible = true;
                 }
-
-                _releases = GetOrderedReleaseList( rockUpdateService, _installedVersion );
 
                 if ( _releases.Count > 0 )
                 {
@@ -191,12 +191,6 @@ namespace RockWeb.Blocks.Core
                         {
                             nbLegacyLavaIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                         }
-                    }
-
-                    // if LavaEngineIssue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
-                    if ( new Version( _releases.Last().SemanticVersion ) >= new Version( "1.17.0" ) && RockInstanceConfig.LavaEngineName != "Fluid" )
-                    {
-                        nbLavaEngineIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                     }
 
                     pnlUpdatesAvailable.Visible = true;
