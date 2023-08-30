@@ -1088,7 +1088,12 @@ namespace Rock.Blocks.Crm
                 // Save any family attribute values.
                 primaryFamily.LoadAttributes( rockContext );
                 var familyAttributes = GetFamilyAttributes( this.GetCurrentPerson() );
-                primaryFamily.SetPublicAttributeValues( bag.FamilyAttributeValues, this.GetCurrentPerson(), attributeFilter: a1 => familyAttributes.Any( a => a.Guid == a1.Guid ) );
+                primaryFamily.SetPublicAttributeValues(
+                    bag.FamilyAttributeValues,
+                    this.GetCurrentPerson(),
+                    // Do not enforce security; otherwise, some attribute values may not be set for unauthenticated users.
+                    enforceSecurity: false,
+                    attributeFilter: a1 => familyAttributes.Any( a => a.Guid == a1.Guid ) );
                 primaryFamily.SaveAttributeValues( rockContext );
 
                 // Get the adult known relationship groups.
@@ -1229,7 +1234,12 @@ namespace Rock.Blocks.Crm
 
                     // Save the attributes for the child.
                     person.LoadAttributes();
-                    person.SetPublicAttributeValues( child.AttributeValues, this.GetCurrentPerson(), attributeFilter: a1 => childAttributes.Any( a => a.Guid == a1.Guid ) );
+                    person.SetPublicAttributeValues(
+                        child.AttributeValues,
+                        this.GetCurrentPerson(),
+                        // Do not enforce security; otherwise, some attribute values may not be set for unauthenticated users.
+                        enforceSecurity: false,
+                        attributeFilter: a1 => childAttributes.Any( a => a.Guid == a1.Guid ) );
                     person.SaveAttributeValues( rockContext );
 
                     // Get the child's current family state.
@@ -2740,7 +2750,12 @@ namespace Rock.Blocks.Crm
             // Save any attribute values
             adult.LoadAttributes( rockContext );
             var adultAttributes = GetAttributeCategoryAttributes( rockContext, this.AdultAttributeCategoryGuids );
-            adult.SetPublicAttributeValues( bag.AttributeValues, this.GetCurrentPerson(), attributeFilter: a1 => adultAttributes.Any( a => a.Guid == a1.Guid ) );
+            adult.SetPublicAttributeValues(
+                bag.AttributeValues,
+                this.GetCurrentPerson(),
+                // Do not enforce security; otherwise, some attribute values may not be set for unauthenticated users.
+                enforceSecurity: false,
+                attributeFilter: a1 => adultAttributes.Any( a => a.Guid == a1.Guid ) );
             adult.SaveAttributeValues( rockContext );
 
             adults.Add( adult );
