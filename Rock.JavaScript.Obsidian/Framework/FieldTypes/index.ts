@@ -41,6 +41,9 @@ registerFieldType(FieldTypeGuids.Badges, new BadgesFieldType());
 import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
 registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
 
+import { BinaryFileTypeFieldType } from "./binaryFileTypeField.partial";
+registerFieldType(FieldTypeGuids.BinaryFileType, new BinaryFileTypeFieldType());
+
 import { BooleanFieldType } from "./booleanField.partial";
 registerFieldType(FieldTypeGuids.Boolean, new BooleanFieldType());
 
