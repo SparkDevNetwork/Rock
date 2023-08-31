@@ -237,6 +237,7 @@ import CampusAccountAmountPickerGallery from "./ControlGallery/campusAccountAmou
 import PersonPickerGallery from "./ControlGallery/personPickerGallery.partial.obs";
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -8124,6 +8125,7 @@ const controlGalleryComponents: Record<string, Component> = [
     DropDownContentGallery,
     ButtonDropDownListGallery,
     CampusAccountAmountPickerGallery,
+    LightGridGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

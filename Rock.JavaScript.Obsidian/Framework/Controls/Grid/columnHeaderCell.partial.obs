@@ -64,6 +64,12 @@
         grid: {
             type: Object as PropType<IGridState>,
             required: true
+        },
+
+        /** Indicates if the grid is operating in light mode. */
+        light: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -87,13 +93,13 @@
 
     /** Will be `true` if we have a filter and it should be visible. */
     const isFilterVisible = computed((): boolean => {
-        return props.column.filter !== undefined;
+        return !props.light && props.column.filter !== undefined;
     });
 
     /** Will be `true` if sorting is enabled on the grid. */
     const isSortingEnabled = computed((): boolean => {
         // Sorting is not supported if this is not a data column.
-        return !props.column.name.startsWith("__");
+        return !props.light && !props.column.name.startsWith("__");
     });
 
     /** The CSS classes to apply to the filter button */
