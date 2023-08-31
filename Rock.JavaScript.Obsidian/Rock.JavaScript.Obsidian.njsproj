@@ -216,6 +216,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\DocumentTypeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Crm\SignalTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\ServiceJobDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateDetail\" />
@@ -798,6 +799,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentList\assessmentListBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\DocumentTypeDetail\documentTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\DocumentTypeDetail\documentTypeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\SignalTypeDetail\signalTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\SignalTypeDetail\signalTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\noteTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\noteTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ServiceJobDetail\serviceJobBag.d.ts" />
