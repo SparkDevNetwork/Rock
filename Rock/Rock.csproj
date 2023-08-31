@@ -1016,6 +1016,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV16PopulateInteractionSessionData.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionAndInteractionSessionIndices.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionSessionChannelId.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateMediaElementDefaultUrls.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateNoteData.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdatePersonPrimaryAliasId.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateWorkflowIds.cs" />
