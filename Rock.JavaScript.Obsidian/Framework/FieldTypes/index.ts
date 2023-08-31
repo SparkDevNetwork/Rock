@@ -32,11 +32,17 @@ registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 import { AssessmentTypesFieldType } from "./assessmentTypesField.partial";
 registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType());
 
+import { AudioUrlFieldType } from "./audioUrlField.partial";
+registerFieldType(FieldTypeGuids.AudioUrl, new AudioUrlFieldType());
+
 import { BadgesFieldType } from "./badgesField.partial";
 registerFieldType(FieldTypeGuids.Badges, new BadgesFieldType());
 
 import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
 registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
+
+import { BinaryFileTypeFieldType } from "./binaryFileTypeField.partial";
+registerFieldType(FieldTypeGuids.BinaryFileType, new BinaryFileTypeFieldType());
 
 import { BooleanFieldType } from "./booleanField.partial";
 registerFieldType(FieldTypeGuids.Boolean, new BooleanFieldType());

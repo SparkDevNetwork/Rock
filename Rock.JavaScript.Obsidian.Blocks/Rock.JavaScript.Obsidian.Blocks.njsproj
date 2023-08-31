@@ -75,6 +75,9 @@
     <Content Include="src\Crm\documentTypeDetail.vue" />
     <Content Include="src\Crm\DocumentTypeDetail\editPanel.partial.vue" />
     <Content Include="src\Crm\DocumentTypeDetail\viewPanel.partial.vue" />
+    <Content Include="src\Crm\signalTypeDetail.obs" />
+    <Content Include="src\Crm\SignalTypeDetail\editPanel.partial.obs" />
+    <Content Include="src\Crm\SignalTypeDetail\viewPanel.partial.obs" />
     <Content Include="src\Core\serviceJobDetail.vue" />
     <Content Include="src\Core\ServiceJobDetail\editPanel.partial.vue" />
     <Content Include="src\Core\ServiceJobDetail\viewPanel.partial.vue" />
@@ -267,6 +270,7 @@
     <Folder Include="src\Crm\BadgeDetail\" />
     <Folder Include="src\Crm\FamilyPreRegistration\" />
     <Folder Include="src\Crm\PersonDetail\" />
+    <Folder Include="src\Crm\SignalTypeDetail\" />
     <Folder Include="src\Engagement\AchievementAttemptDetail\" />
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
@@ -394,6 +398,7 @@
     <TypeScriptCompile Include="src\Core\ScheduleDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\TaggedItemDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\DocumentTypeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Crm\SignalTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\locationDetail.ts" />
     <TypeScriptCompile Include="src\Core\LocationDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\LocationDetail\types.partial.ts" />

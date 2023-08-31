@@ -2889,8 +2889,14 @@ namespace Rock.Lava
                 {
                     return LavaAppendWatchesHelper.AppendMediaForMediaElements( collection, currentPerson, rockContext );
                 }
-                else if ( firstItem is IEntity )
+                else if ( firstItem is IHasAttributes entityItem )
                 {
+                    // Make sure the collection has the provided attribute
+                    if ( !entityItem.Attributes.ContainsKey( attributeKey ) )
+                    {
+                        return source;
+                    }
+
                     return LavaAppendWatchesHelper.AppendMediaForEntities( collection, attributeKey, currentPerson, rockContext, ( ( IEntity ) firstItem ).TypeId );
                 }
                 else if ( firstItem is ExpandoObject )
