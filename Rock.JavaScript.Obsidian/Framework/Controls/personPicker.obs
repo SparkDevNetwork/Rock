@@ -97,7 +97,7 @@
     import Panel from "./panel.obs";
     import TextBox from "./textBox.obs";
     import RockButton from "./rockButton.obs";
-    import Tag from "./tag.obs";
+    import Tag from "./Internal/tag.obs";
     import { nextTick } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useStore } from "@Obsidian/PageState";

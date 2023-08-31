@@ -1,8 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-obsidian grid-bordered grid-striped grid-hover" :class="{ 'grid-sticky': isStickyHeader }">
+    <div class="grid-obsidian" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
         <div class="grid-heading">
-            <FilterHeaderRow v-model:quickFilterValue="quickFilterValue"
+            <FilterHeaderRow v-if="!light"
+                             v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
                              :gridActions="gridActions"
                              :visibleColumnCount="visibleColumnCount" />
@@ -10,7 +11,8 @@
             <ColumnHeaderRow :columns="visibleColumnDefinitions"
                              v-model:columnFilters="columnFilterValues"
                              v-model:columnSort="columnSortDirection"
-                             :grid="gridState" />
+                             :grid="gridState"
+                             :light="light" />
         </div>
 
 
@@ -34,6 +36,16 @@
                       @click="onRowClick" />
         </div>
 
+        <div class="grid-body" v-else-if="!keyField || light">
+            <DataRows
+                      :columns="visibleColumnDefinitions"
+                      :rows="visibleRows"
+                      :grid="gridState"
+                      :tooltipField="tooltipField"
+                      :isSelectable="isSelectionEnabled"
+                      @click="onRowClick" />
+        </div>
+
         <VirtualDataRows v-else
                          :columns="visibleColumnDefinitions"
                          :rows="visibleRows"
@@ -43,12 +55,17 @@
                          @click="onRowClick" />
 
         <div class="grid-footing">
-            <PagerRow v-model:pageSize="pageSize"
+            <PagerRow v-if="!light"
+                      v-model:pageSize="pageSize"
                       v-model:currentPage="currentPage"
                       :pageCount="pageCount"
                       :pageSizes="pageSizes"
                       :message="pagerMessage"
                       :visibleColumnCount="visibleColumnCount" />
+
+            <LightFooterRow v-else
+                            :grid="gridState"
+                            :gridActions="gridActions" />
         </div>
     </div>
 </template>
@@ -58,6 +75,9 @@
     --table-cell-padding-x: 16px;
     --table-cell-padding-y: 16px;
     color: var(--theme-darkest);
+}
+
+.grid-obsidian.grid-bordered {
     box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
 }
 
@@ -170,6 +190,9 @@
     align-items: center;
     font-size: 14px;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+}
+
+.grid-bordered .grid-column-header {
     background-color: var(--theme-lightest);
 }
 
@@ -225,6 +248,7 @@
 .grid-column-heading:hover .btn-grid-column-filter {
     opacity: 0.5;
 }
+
 .grid-column-header > .btn-grid-column-filter:hover {
     opacity: 1;
     background-color: var(--theme-white);
@@ -291,11 +315,11 @@
     cursor: pointer;
 }
 
-.grid-row.grid-row-even {
+.grid-striped .grid-row.grid-row-even {
     background-color: var(--theme-lightest);
 }
 
-.grid-row:hover {
+.grid-hover .grid-row:hover {
     background-color: #eef4fc;
 }
 
@@ -413,6 +437,7 @@
     import ColumnHeaderRow from "./columnHeaderRow.partial.obs";
     import DataRows from "./dataRows.partial.obs";
     import FilterHeaderRow from "./filterHeaderRow.partial.obs";
+    import LightFooterRow from "./lightFooterRow.partial.obs";
     import PagerRow from "./pagerRow.partial.obs";
     import VirtualDataRows from "./virtualDataRows.partial.obs";
     import { computed, onUnmounted, PropType, ref, shallowRef, useSlots, watch } from "vue";
@@ -513,6 +538,16 @@
         tooltipField: {
             type: String as PropType<string>,
             required: false
+        },
+
+        /**
+         * Indicates that this grid should operate in light mode which disables
+         * a number of features. This is intended to be used with small grids
+         * that are embedded inside other blocks or controls.
+         */
+        light: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         /**
@@ -772,7 +807,11 @@
      * Contains `true` if the export action should be visible.
      */
     const isExportVisible = computed((): boolean => {
-        return props.showExport !== false;
+        if (props.showExport === undefined) {
+            return !props.light;
+        }
+
+        return props.showExport;
     });
 
     /**

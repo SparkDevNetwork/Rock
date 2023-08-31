@@ -38,6 +38,8 @@ namespace Rock.Lava.Helpers
         /// </summary>
         /// <param name="source"></param>
         /// <param name="attributeKey"></param>
+        /// <param name="currentPerson"></param>
+        /// <param name="rockContext"></param>
         /// <returns></returns>
         internal static dynamic AppendMediaForEntity( IEntity source, string attributeKey, Person currentPerson, RockContext rockContext )
         {

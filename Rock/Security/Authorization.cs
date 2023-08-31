@@ -162,6 +162,11 @@ namespace Rock.Security
         /// </summary>
         public const string OVERRIDE = "Override";
 
+        /// <summary>
+        /// Authorization to view the protection profile alert for the selected person.
+        /// </summary>
+        public const string VIEW_PROTECTION_PROFILE = "ViewProtectionProfile";
+
         #endregion
 
         #region Public Methods

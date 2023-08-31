@@ -238,6 +238,7 @@ import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs"
 import HighlightLabelGallery from "./ControlGallery/highlightLabelGallery.partial.obs";
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -8123,6 +8124,7 @@ const controlGalleryComponents: Record<string, Component> = [
     DropDownContentGallery,
     ButtonDropDownListGallery,
     CampusAccountAmountPickerGallery,
+    LightGridGallery,
     ImageEditorGallery,
     HighlightLabelGallery,
 ]
