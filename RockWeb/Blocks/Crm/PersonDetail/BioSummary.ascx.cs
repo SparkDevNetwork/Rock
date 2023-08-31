@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -35,6 +36,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [DisplayName( "Person Bio Summary" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Person name, picture, and badges." )]
+
+    [SecurityAction( Authorization.VIEW_PROTECTION_PROFILE, "The roles and/or users that can view the protection profile alert for the selected person." )]
 
     #region Block Attributes
 
