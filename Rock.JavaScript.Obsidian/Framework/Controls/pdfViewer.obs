@@ -1,0 +1,50 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        Hello
+        <component :is="tagKey" ref="container">Hello?</component>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import PdfObject from "@Obsidian/Libs/pdfobject";
+
+    const props = defineProps({
+        sourceUrl: {
+            type: String,
+            required: true
+        },
+        viewerHeight: {
+            type: String,
+            default: "600px"
+        },
+        fitView: {
+            type: String,
+            default: "FitH"
+        },
+        pageMode: {
+            type: String,
+            default: "none"
+        },
+        tagKey: {
+            type: String,
+            default: "div"
+        },
+    });
+
+    const container = ref<HTMLDivElement | null>(null);
+
+    watch([container, () => props.sourceUrl], () => {
+        if (container.value && props.sourceUrl) {
+            PdfObject.embed(props.sourceUrl, container.value, {
+                height: props.viewerHeight,
+                pdfOpenParams: {
+                    view: props.fitView,
+                    pagemode: props.pageMode
+                }
+            });
+        }
+    });
+
+</script>

@@ -1,0 +1,25 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <PdfViewer sourceUrl="http://imperfectdisciples.com/NextcloudFlyer.pdf" tagKey="h1" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import PdfViewer from "@Obsidian/Controls/pdfViewer.obs";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { computed, ref } from "vue";
+
+    const importCode = getSfcControlImportPath("pdfViewer");
+    const exampleCode = computed((): string => {
+        return `<PdfViewer />`;
+    });
+</script>

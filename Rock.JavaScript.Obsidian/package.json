@@ -62,6 +62,7 @@
   "dependencies": {
     "@capaj/pluralize": "^1.0.4",
     "@floating-ui/vue": "^1.0.2",
+    "@types/pdfobject": "^2.2.3",
     "ant-design-vue": "^3.2.20",
     "axios": "^1.5.0",
     "chart.js": "^4.4.0",
@@ -72,6 +73,7 @@
     "liquidjs": "^10.9.2",
     "luxon": "^3.4.2",
     "mitt": "^3.0.1",
+    "pdfobject": "^2.2.12",
     "systemjs": "^6.14.2",
     "vue": "^3.3.4"
   }
