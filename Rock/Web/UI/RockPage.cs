@@ -2153,7 +2153,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
             // Make the last breadcrumb on this page the only one active. This
             // takes care of any late additions to the breadcrumbs by Lava or
             // Obsidian blocks.
-            if ( BreadCrumbs.Any() )
+            if ( BreadCrumbs != null && BreadCrumbs.Any() )
             {
                 BreadCrumbs.ForEach( bc => bc.Active = false );
                 BreadCrumbs.Last().Active = true;
