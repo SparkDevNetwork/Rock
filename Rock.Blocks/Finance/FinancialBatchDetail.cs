@@ -25,7 +25,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialBatchDetail;
-using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Finance
@@ -473,9 +472,9 @@ namespace Rock.Blocks.Finance
             }
 
             var isReopenDisabled = entity.Status == BatchStatus.Closed && !entity.IsAuthorized( AuthorizationReopenBatch, RequestContext.CurrentPerson );
-            if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) || isReopenDisabled )
+            if ( entity.IsAutomated || !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) || isReopenDisabled )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${FinancialBatch.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {FinancialBatch.FriendlyTypeName}." );
                 return false;
             }
 
