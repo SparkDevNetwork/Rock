@@ -50,6 +50,9 @@ namespace Rock.Lava.Helpers
             {
                 resultDataObject.MediaId = mediaElement.Id;
                 mediaId = mediaElement.Id;
+                resultDataObject.MediaDefaultFileUrl = mediaElement.DefaultFileUrl;
+                resultDataObject.MediaDefaultThumbnailUrl = mediaElement.DefaultThumbnailUrl;
+                resultDataObject.MediaGuid = mediaElement.Guid;
             }
             else if ( source is IHasAttributes dataObjectAsIHasAttributes )
             {
@@ -61,10 +64,28 @@ namespace Rock.Lava.Helpers
                 // Get attribute value
                 var mediaAttributeValue = dataObjectAsIHasAttributes.AttributeValues[attributeKey].Value?.AsGuid();
 
-                var mediaEntityType = EntityTypeCache.Get( SystemGuid.EntityType.MEDIA_ELEMENT.AsGuid() );
-                mediaId = Reflection.GetEntityIdForEntityType( mediaEntityType.Id, mediaAttributeValue.Value );
+                // Query the database for meta data on the needed media element
+                var mediaResult = new MediaElementService( rockContext ).Queryable()
+                                        .Where( m => m.Guid == mediaAttributeValue )
+                                        .Select( m => new
+                                        {
+                                            m.Id,
+                                            m.Guid,
+                                            m.DefaultFileUrl,
+                                            m.DefaultThumbnailUrl
+                                        } )
+                                        .FirstOrDefault();
 
-                resultDataObject.MediaId = mediaId;
+                if ( mediaResult == null )
+                {
+                    return source;
+                }
+
+                mediaId = mediaResult.Id;
+                resultDataObject.MediaGuid = mediaAttributeValue;
+                resultDataObject.MediaId = mediaResult.Id;
+                resultDataObject.MediaDefaultFileUrl = mediaResult.DefaultFileUrl;
+                resultDataObject.MediaDefaultThumbnailUrl = mediaResult.DefaultThumbnailUrl;
             }
 
             if ( !mediaId.HasValue )
@@ -92,7 +113,7 @@ namespace Rock.Lava.Helpers
         internal static dynamic AppendMediaForEntities( ICollection source, string attributeKey, Person currentPerson, RockContext rockContext, int entityTypeId )
         {
             var entityType = EntityTypeCache.Get( entityTypeId );
-            List<string> mediaGuidList = new List<string>();
+            List<Guid> mediaGuidList = new List<Guid>();
 
             // Convert the list into a dynamic
             var resultDataObject = new List<RockDynamic>();
@@ -117,25 +138,44 @@ namespace Rock.Lava.Helpers
 
                     if ( mediaAttributeValue.IsNotNullOrWhiteSpace() )
                     {
-                        mediaGuidList.Add( mediaAttributeValue );
+                        mediaGuidList.Add( mediaAttributeValue.AsGuid() );
                     }
 
                     // Append the media guid to the dynamic item so we can match it later
-                    rockDynamicItem.MediaGuid = mediaAttributeValue;
+                    rockDynamicItem.MediaGuid = mediaAttributeValue.AsGuid();
                 }
             }
 
-            var mediaEntityType = EntityTypeCache.Get( SystemGuid.EntityType.MEDIA_ELEMENT.AsGuid() );
-            var mediaLookup = Reflection.GetEntityIdsForEntityType( mediaEntityType, mediaGuidList );
+            // Query the database for meta data on the needed media elements
+            var mediaResults = new MediaElementService( rockContext ).Queryable()
+                                    .Where( m => mediaGuidList.Contains( m.Guid ) )
+                                    .Select( m => new
+                                        {
+                                            m.Id,
+                                            m.Guid, 
+                                            m.DefaultFileUrl,
+                                            m.DefaultThumbnailUrl
+                                        } )
+                                    .ToList();
 
             // Append media id for matching later
             foreach ( dynamic item in resultDataObject )
             {
-                item.MediaId = mediaLookup[item.MediaGuid];
+                // Get the matching media result
+                var mediaItem = mediaResults.Where( m => m.Guid == item.MediaGuid ).FirstOrDefault();
+
+                if ( mediaItem == null )
+                {
+                    continue;
+                }
+
+                item.MediaId = mediaItem.Id;
+                item.MediaDefaultFileUrl = mediaItem.DefaultFileUrl;
+                item.MediaDefaultThumbnailUrl = mediaItem.DefaultThumbnailUrl;
             }
 
             // Get list of media ids
-            var mediaIds = mediaLookup.Select( m => m.Value ).ToList();
+            var mediaIds = mediaResults.Select( m => m.Id ).ToList();
 
             // Get watches for the items
             var mediaWatches = GetWatchInteractions( mediaIds, currentPerson, rockContext );
@@ -267,6 +307,7 @@ namespace Rock.Lava.Helpers
 
             media.WatchLength = watch.InteractionLength;
             media.HasWatched = true;
+            media.WatchInteractionGuid = watch.InteractionGuid;
 
             try
             {
@@ -288,16 +329,11 @@ namespace Rock.Lava.Helpers
         private static List<WatchInteractionSummary> GetWatchInteractions( List<int> mediaIds, Person currentPerson, RockContext rockContext )
         {
             // Get watches for the items
-            var personAliasQuery = new PersonAliasService( rockContext )
-                    .Queryable()
-                    .Where( a => a.PersonId == currentPerson.Id )
-                    .Select( a => a.Id );
-
             var mediaEventsInteractionChannelId = InteractionChannelCache.Get( SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() ).Id;
 
             var mediaWatch = new InteractionService( rockContext ).Queryable()
                 .Where( i =>
-                    personAliasQuery.Contains( i.PersonAliasId.Value )
+                    i.PersonAlias.PersonId == currentPerson.Id
                     && i.InteractionComponent.InteractionChannelId == mediaEventsInteractionChannelId
                     && mediaIds.Contains( i.InteractionComponent.EntityId.Value )
                 )
@@ -305,7 +341,8 @@ namespace Rock.Lava.Helpers
                 {
                     InteractionLength = i.InteractionLength,
                     MediaId = i.InteractionComponent.EntityId,
-                    InteractionData = i.InteractionData
+                    InteractionData = i.InteractionData,
+                    InteractionGuid = i.Guid
                 } )
                 .ToList();
 
@@ -346,6 +383,11 @@ namespace Rock.Lava.Helpers
             /// Media Id
             /// </summary>
             public int? MediaId { get; set; }
+
+            /// <summary>
+            /// Interaction Guid
+            /// </summary>
+            public Guid? InteractionGuid { get; set; }
 
             /// <summary>
             /// Watch Data
