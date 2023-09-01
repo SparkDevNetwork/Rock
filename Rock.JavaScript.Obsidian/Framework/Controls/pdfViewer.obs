@@ -1,41 +1,48 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div>
-        Hello
-        <component :is="tagKey" ref="container">Hello?</component>
-    </div>
+    <component :is="tagKey" ref="container">Hello?</component>
 </template>
 
 <script setup lang="ts">
-    import { ref, watch } from "vue";
+    import { PropType, ref, watchEffect } from "vue";
     import PdfObject from "@Obsidian/Libs/pdfobject";
 
     const props = defineProps({
+        /** The URL of the PDF File */
         sourceUrl: {
             type: String,
             required: true
         },
+        /** CSS `length` to set the height of the PDF viewer */
         viewerHeight: {
             type: String,
             default: "600px"
         },
+        /**
+         * The initial Fit View.
+         * FitH = fit to the width of the PDF
+         * FitV = fit to the height of the PDF
+         */
         fitView: {
-            type: String,
+            type: String as PropType<"FitH" | "FitV">,
             default: "FitH"
         },
+        /** Gets or sets Pdf PageMode option */
         pageMode: {
-            type: String,
+            type: String as PropType<"bookmarks" | "thumbs" | "none">,
             default: "none"
         },
+        /** The HTML element tag to wrap the PDF viewer in */
         tagKey: {
             type: String,
             default: "div"
-        },
+        }
     });
 
     const container = ref<HTMLDivElement | null>(null);
 
-    watch([container, () => props.sourceUrl], () => {
+    // Show the PDF viewer once the DOM is ready or when options change
+    watchEffect(() => {
         if (container.value && props.sourceUrl) {
             PdfObject.embed(props.sourceUrl, container.value, {
                 height: props.viewerHeight,
