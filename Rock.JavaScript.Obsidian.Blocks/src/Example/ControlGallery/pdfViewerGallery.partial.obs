@@ -1,0 +1,58 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <PdfViewer :sourceUrl="sourceUrl" :viewerHeight="viewerHeight" :fitView="fitView || undefined" :pageMode="pageMode || undefined" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <TextBox label="PDF URL" v-model="sourceUrl" help="URL of the PDF file" />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Viewer Height" v-model="viewerHeight" help="<a href='https://developer.mozilla.org/en-US/docs/Web/CSS/length'>CSS length</a> value specifying the height of the viewer. Default is 600px." />
+                </div>
+                <div class="col-md-3">
+                    <DropDownList label="Fit" v-model="fitView" :items="fitViews" :showBlankItem="false" help="How to fit the PDF within the viewer. <strong>Note:</strong> This is not supported by every browser. Defaults to 'FitH'.<br>'FitH' = fit to the width of the PDF<br>'FitV' = fit to the height of the PDF" />
+                </div>
+                <div class="col-md-3">
+                    <DropDownList label="Page Mode" v-model="pageMode" :items="pageModes" :showBlankItem="false" help="What to show in the sidebar by default. Defaults to 'none'.<strong>Note:</strong> This is not supported by every browser." />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import PdfViewer from "@Obsidian/Controls/pdfViewer.obs";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { computed, ref } from "vue";
+
+    const sourceUrl = ref("https://ccel.org/ccel/m/murray/waiting/cache/waiting.pdf");
+    const viewerHeight = ref("600px");
+    const fitView = ref<"FitH" | "FitV" | "">("");
+    const pageMode = ref<"bookmarks" | "thumbs" | "none" | "">("");
+
+    const fitViews = [
+        { text: "Default", value: "" },
+        { text: "Fit Horizontally", value: "FitH" },
+        { text: "Fit Vertically", value: "FitV" },
+    ];
+
+    const pageModes = [
+        { text: "Default", value: "" },
+        { text: "Bookmarks", value: "bookmarks" },
+        { text: "Thumbs", value: "thumbs" },
+        { text: "None", value: "none" }
+    ];
+
+    const importCode = getSfcControlImportPath("pdfViewer");
+    const exampleCode = computed((): string => {
+        return `<PdfViewer sourceUrl="${sourceUrl.value}"${viewerHeight.value != "600px" ? ` viewerHeight="${viewerHeight.value}"` : ""
+            }${fitView.value ? ` fitView="${fitView.value}"` : ""
+            }${pageMode.value ? ` pageMode="${pageMode.value}"` : ""
+            } />`;
+    });
+</script>
