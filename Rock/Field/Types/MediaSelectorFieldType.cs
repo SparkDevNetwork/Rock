@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using Rock.Attribute;
 using Rock.Enums.Controls;
+using Rock.Media;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -111,7 +112,7 @@ namespace Rock.Field.Types
 
             var tbItemWidth = new RockTextBox();
             tbItemWidth.Label = "Item Width";
-            tbItemWidth.Help = "The width of each media item in pixes or percentage.";
+            tbItemWidth.Help = "The width of each media item in pixels or percentage.";
             tbItemWidth.AutoPostBack = true;
             tbItemWidth.TextChanged += OnQualifierUpdated;
             controls.Add( tbItemWidth );
@@ -195,6 +196,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var control = new Web.UI.Controls.MediaSelector { ID = id };
+            
             if ( configurationValues != null )
             {
                 if ( configurationValues.ContainsKey( MODE_TYPE ) )
