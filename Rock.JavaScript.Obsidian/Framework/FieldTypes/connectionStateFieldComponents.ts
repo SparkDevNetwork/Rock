@@ -16,58 +16,62 @@
 
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
-import TextBox from "@Obsidian/Controls/textBox.obs";
-import { ConfigurationValueKey } from "./componentField.partial";
+import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
+import { ConfigurationValueKey } from "./connectionStateField.partial";
+import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({
-    name: "ComponentField.Edit",
+    name: "ConnectionStateField.Edit",
 
     components: {
-        ComponentPicker
+        RadioButtonList
     },
 
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
         // The internal value used by the text editor.
-        const internalValue = ref<ListItemBag>({});
+        const internalValue = ref<string>("");
+        // The connection state options
+        const options = JSON.parse(props.configurationValues[ConfigurationValueKey.Options] ?? "[]") as ListItemBag[];
 
-        // The selected container type configuration value.
-        const container = computed((): string => {
-            const container = props.configurationValues[ConfigurationValueKey.Container];
-            return container;
+        // The repeat columns configuration value.
+        const repeatColumns = computed((): number => {
+            const repeatColumns = toNumberOrNull(props.configurationValues[ConfigurationValueKey.RepeatColumns]);
+            return repeatColumns ?? 4;
         });
 
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
-            internalValue.value = JSON.parse(props.modelValue || "{}");
+            internalValue.value = props.modelValue;
         }, {
             immediate: true
         });
 
         // Watch for changes from the text editor and update the parent component.
         watch(internalValue, () => {
-            emit("update:modelValue", JSON.stringify(internalValue.value ?? ""));
+            emit("update:modelValue", internalValue.value);
         });
 
         return {
             internalValue,
-            container
+            repeatColumns,
+            options
         };
     },
 
     template: `
-    <ComponentPicker v-model="internalValue" :containerType="container" showBlankItem />
+    <RadioButtonList v-model="internalValue" :items="options" horizontal :repeatColumns="repeatColumns" />
 `
 });
 
 export const ConfigurationComponent = defineComponent({
-    name: "ComponentField.Configuration",
+    name: "ConnectionStateField.Configuration",
 
     components: {
-        TextBox,
+        NumberBox,
     },
 
     props: getFieldConfigurationProps(),
@@ -76,7 +80,7 @@ export const ConfigurationComponent = defineComponent({
 
     setup(props, { emit }) {
         // Define the properties that will hold the current selections.
-        const containerType = ref<string>("");
+        const repeatColumns = ref<number | null>();
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -91,10 +95,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.Container] = containerType.value;
+            newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.Container] !== (props.modelValue[ConfigurationValueKey.Container]);
+            const anyValueChanged = newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -121,20 +125,20 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            containerType.value = props.modelValue[ConfigurationValueKey.Container];
+            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(containerType, () => maybeUpdateConfiguration(ConfigurationValueKey.Container, containerType.value));
+        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
 
         return {
-            containerType,
+            repeatColumns,
         };
     },
 
     template: `
-    <TextBox label="Container Assembly Name" v-model="containerType" help="The assembly name of the MEF container to show components of" />
+    <NumberBox label="Columns" v-model="repeatColumns" help="Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space." />
 `
 });
