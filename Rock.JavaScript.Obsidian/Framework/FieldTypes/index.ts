@@ -89,6 +89,9 @@ registerFieldType(FieldTypeGuids.ConnectionState, new ConnectionStateFieldType()
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
+import { CommunicationTemplateFieldType } from "./communicationTemplateField.partial";
+registerFieldType(FieldTypeGuids.CommunicationTemplate, new CommunicationTemplateFieldType());
+
 import { ComponentsFieldType } from "./componentsField.partial";
 registerFieldType(FieldTypeGuids.Components, new ComponentsFieldType());
 

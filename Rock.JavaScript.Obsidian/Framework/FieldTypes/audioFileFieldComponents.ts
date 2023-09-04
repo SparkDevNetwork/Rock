@@ -127,16 +127,6 @@ export const ConfigurationComponent = defineComponent({
             immediate: true
         });
 
-        // Watch for changes in properties that require new configuration
-        // properties to be retrieved from the server.
-        // THIS IS JUST A PLACEHOLDER FOR COPYING TO NEW FIELDS THAT MIGHT NEED IT.
-        // THIS FIELD DOES NOT NEED THIS
-        watch([], () => {
-            if (maybeUpdateModelValue()) {
-                emit("updateConfiguration");
-            }
-        });
-
         // Watch for changes in properties that only require a local UI update.
         watch(binaryFileType, () => maybeUpdateConfiguration(ConfigurationValueKey.BinaryFileType, JSON.stringify(binaryFileType.value ?? "")));
 
