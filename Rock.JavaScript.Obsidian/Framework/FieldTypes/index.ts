@@ -32,6 +32,9 @@ registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 import { AssessmentTypesFieldType } from "./assessmentTypesField.partial";
 registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType());
 
+import { AudioFileFieldType } from "./audioFileField.partial";
+registerFieldType(FieldTypeGuids.AudioFile, new AudioFileFieldType());
+
 import { AudioUrlFieldType } from "./audioUrlField.partial";
 registerFieldType(FieldTypeGuids.AudioUrl, new AudioUrlFieldType());
 
