@@ -92,6 +92,9 @@ registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationP
 import { CommunicationTemplateFieldType } from "./communicationTemplateField.partial";
 registerFieldType(FieldTypeGuids.CommunicationTemplate, new CommunicationTemplateFieldType());
 
+import { ComparisonFieldType } from "./comparisonField.partial";
+registerFieldType(FieldTypeGuids.Comparison, new ComparisonFieldType());
+
 import { ComponentsFieldType } from "./componentsField.partial";
 registerFieldType(FieldTypeGuids.Components, new ComponentsFieldType());
 
