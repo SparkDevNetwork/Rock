@@ -44,6 +44,9 @@ registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType()
 import { BinaryFileTypeFieldType } from "./binaryFileTypeField.partial";
 registerFieldType(FieldTypeGuids.BinaryFileType, new BinaryFileTypeFieldType());
 
+import { BinaryFileTypesFieldType } from "./binaryFileTypesField.partial";
+registerFieldType(FieldTypeGuids.BinaryFileTypes, new BinaryFileTypesFieldType());
+
 import { BooleanFieldType } from "./booleanField.partial";
 registerFieldType(FieldTypeGuids.Boolean, new BooleanFieldType());
 
