@@ -118,14 +118,6 @@ export const ConfigurationComponent = defineComponent({
             }
         };
 
-        // Watch for changes coming in from the parent component and update our
-        // data to match the new information.
-        watch(() => [props.modelValue, props.configurationProperties], () => {
-            containerType.value = props.modelValue[ConfigurationValueKey.Container];
-        }, {
-            immediate: true
-        });
-
         // Watch for changes in properties that only require a local UI update.
         watch(containerType, () => maybeUpdateConfiguration(ConfigurationValueKey.Container, containerType.value));
 
