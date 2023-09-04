@@ -19,14 +19,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data.Entity;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -2856,14 +2853,25 @@ namespace Rock.Lava
         /// <param name="source"></param>
         /// <param name="attributeKey"></param>
         /// <returns></returns>
-        public static object AppendWatches( ILavaRenderContext context, object source, string attributeKey = "" )
+        public static object AppendWatches( ILavaRenderContext context, object source, string attributeKey = "", object startValue = null )
         {
             var currentPerson = GetCurrentPerson( context );
+            DateTime? startDate = null;
 
             // Quick out if we have no data
             if ( source == null || currentPerson == null )
             {
                 return source;
+            }
+
+            // Determine the start date. This can be either an integer (days since watch) or a datetime
+            if ( startValue is int daysSinceWatch )
+            {
+                startDate = RockDateTime.Now.AddDays( daysSinceWatch * -1 );
+            }
+            else
+            {
+                startDate = startValue?.ToString().AsDateTime();
             }
 
             // Get a Rock Context
@@ -2874,7 +2882,7 @@ namespace Rock.Lava
             // Entity
             if ( source is IEntity sourceAsEntity )
             {
-                return LavaAppendWatchesHelper.AppendMediaForEntity( sourceAsEntity, attributeKey, currentPerson, rockContext );
+                return LavaAppendWatchesHelper.AppendMediaForEntity( sourceAsEntity, attributeKey, startDate, currentPerson, rockContext );
             }
 
             // Collection of Entities
@@ -2887,7 +2895,7 @@ namespace Rock.Lava
 
                 if ( firstItem is MediaElement )
                 {
-                    return LavaAppendWatchesHelper.AppendMediaForMediaElements( collection, currentPerson, rockContext );
+                    return LavaAppendWatchesHelper.AppendMediaForMediaElements( collection, startDate, currentPerson, rockContext );
                 }
                 else if ( firstItem is IHasAttributes entityItem )
                 {
@@ -2897,7 +2905,7 @@ namespace Rock.Lava
                         return source;
                     }
 
-                    return LavaAppendWatchesHelper.AppendMediaForEntities( collection, attributeKey, currentPerson, rockContext, ( ( IEntity ) firstItem ).TypeId );
+                    return LavaAppendWatchesHelper.AppendMediaForEntities( collection, attributeKey, startDate, currentPerson, rockContext, ( ( IEntity ) firstItem ).TypeId );
                 }
                 else if ( firstItem is ExpandoObject )
                 {
@@ -2907,15 +2915,16 @@ namespace Rock.Lava
                     var dynamicCollection = expandoCollection.Select( a => a.ShallowCopy() ).ToList();
 
                     // Append watch information
-                    return  LavaAppendWatchesHelper.AppendMediaForExpandoCollection( dynamicCollection, currentPerson, rockContext );
+                    return LavaAppendWatchesHelper.AppendMediaForExpandoCollection( dynamicCollection, startDate, currentPerson, rockContext );
                 }
             }
 
             // ExpandoObject
             if ( source is ExpandoObject xo )
             {
-                return LavaAppendWatchesHelper.AppendMediaForExpando( xo, currentPerson, rockContext );
+                return LavaAppendWatchesHelper.AppendMediaForExpando( xo, startDate, currentPerson, rockContext );
             }
+            
 
             return source;
         }

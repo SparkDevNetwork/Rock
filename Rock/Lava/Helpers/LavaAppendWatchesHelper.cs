@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using AngleSharp.Dom;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -27,6 +26,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using Rock;
+using System.Diagnostics;
 
 namespace Rock.Lava.Helpers
 {
@@ -38,8 +38,11 @@ namespace Rock.Lava.Helpers
         /// </summary>
         /// <param name="source"></param>
         /// <param name="attributeKey"></param>
+        /// <param name="startDate"></param>
+        /// <param name="currentPerson"></param>
+        /// <param name="rockContext"></param>
         /// <returns></returns>
-        internal static dynamic AppendMediaForEntity( IEntity source, string attributeKey, Person currentPerson, RockContext rockContext )
+        internal static dynamic AppendMediaForEntity( IEntity source, string attributeKey, DateTime? startDate, Person currentPerson, RockContext rockContext )
         {
             // Convert entity to dynamic
             dynamic resultDataObject = new RockDynamic( source );
@@ -94,7 +97,7 @@ namespace Rock.Lava.Helpers
             }
 
             // Get watches for the items
-            var mediaWatches = GetWatchInteractions( new List<int> { mediaId.Value }, currentPerson, rockContext );
+            var mediaWatches = GetWatchInteractions( new List<int> { mediaId.Value }, startDate, currentPerson, rockContext );
 
             AppendWatchDataToDynamic( resultDataObject, mediaWatches );
 
@@ -106,11 +109,12 @@ namespace Rock.Lava.Helpers
         /// </summary>
         /// <param name="source"></param>
         /// <param name="attributeKey"></param>
+        /// <param name="startDate"></param>
         /// <param name="currentPerson"></param>
         /// <param name="rockContext"></param>
         /// <param name="entityTypeId"></param>
         /// <returns></returns>
-        internal static dynamic AppendMediaForEntities( ICollection source, string attributeKey, Person currentPerson, RockContext rockContext, int entityTypeId )
+        internal static dynamic AppendMediaForEntities( ICollection source, string attributeKey, DateTime? startDate, Person currentPerson, RockContext rockContext, int entityTypeId )
         {
             var entityType = EntityTypeCache.Get( entityTypeId );
             List<Guid> mediaGuidList = new List<Guid>();
@@ -118,6 +122,7 @@ namespace Rock.Lava.Helpers
             // Convert the list into a dynamic
             var resultDataObject = new List<RockDynamic>();
 
+            var stopwatch = Stopwatch.StartNew();
             foreach ( var item in source )
             {
                 // Add to dynamic collection
@@ -150,12 +155,12 @@ namespace Rock.Lava.Helpers
             var mediaResults = new MediaElementService( rockContext ).Queryable()
                                     .Where( m => mediaGuidList.Contains( m.Guid ) )
                                     .Select( m => new
-                                        {
-                                            m.Id,
-                                            m.Guid, 
-                                            m.DefaultFileUrl,
-                                            m.DefaultThumbnailUrl
-                                        } )
+                                    {
+                                        m.Id,
+                                        m.Guid,
+                                        m.DefaultFileUrl,
+                                        m.DefaultThumbnailUrl
+                                    } )
                                     .ToList();
 
             // Append media id for matching later
@@ -178,7 +183,7 @@ namespace Rock.Lava.Helpers
             var mediaIds = mediaResults.Select( m => m.Id ).ToList();
 
             // Get watches for the items
-            var mediaWatches = GetWatchInteractions( mediaIds, currentPerson, rockContext );
+            var mediaWatches = GetWatchInteractions( mediaIds, startDate, currentPerson, rockContext );
 
             // Append the watches into the collection
             foreach ( dynamic media in resultDataObject )
@@ -196,7 +201,7 @@ namespace Rock.Lava.Helpers
         /// <param name="currentPerson"></param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        internal static dynamic AppendMediaForMediaElements( ICollection source, Person currentPerson, RockContext rockContext )
+        internal static dynamic AppendMediaForMediaElements( ICollection source, DateTime? startDate, Person currentPerson, RockContext rockContext )
         {
             var mediaIds = new List<int>();
 
@@ -213,14 +218,14 @@ namespace Rock.Lava.Helpers
             }
 
             // Get watch data
-            var mediaWatches = GetWatchInteractions( mediaIds, currentPerson, rockContext );
+            var mediaWatches = GetWatchInteractions( mediaIds, startDate, currentPerson, rockContext );
 
             // Append the watch data to the dynamic object
             foreach ( dynamic media in source )
             {
                 AppendWatchDataToDynamic( media, mediaWatches );
             }
-                
+
             return resultDataObject;
         }
 
@@ -228,17 +233,18 @@ namespace Rock.Lava.Helpers
         /// Appends watches to a list of expando objects
         /// </summary>
         /// <param name="source"></param>
+        /// <param name="startDate"></param>
         /// <param name="currentPerson"></param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        internal static dynamic AppendMediaForExpandoCollection( List<ExpandoObject> source, Person currentPerson, RockContext rockContext )
+        internal static dynamic AppendMediaForExpandoCollection( List<ExpandoObject> source, DateTime? startDate, Person currentPerson, RockContext rockContext )
         {
             // Get list of media ids
             var mediaIds = new List<int>();
 
-            foreach( dynamic item in source )
+            foreach ( dynamic item in source )
             {
-                var mediaId = (int?) ConvertDynamicToInt( item.MediaId );
+                var mediaId = ( int? ) ConvertDynamicToInt( item.MediaId );
 
                 if ( mediaId.HasValue )
                 {
@@ -250,7 +256,7 @@ namespace Rock.Lava.Helpers
             }
 
             // Get watches for the items
-            var mediaWatches = GetWatchInteractions( mediaIds, currentPerson, rockContext );
+            var mediaWatches = GetWatchInteractions( mediaIds, startDate, currentPerson, rockContext );
 
             // Append the watches into the collection
             foreach ( dynamic media in source )
@@ -265,12 +271,13 @@ namespace Rock.Lava.Helpers
         /// Appends watch data for the expando. This object needs to have a property of MediaId.
         /// </summary>
         /// <param name="source"></param>
+        /// <param name="startDate"></param>
         /// <param name="currentPerson"></param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        internal static dynamic AppendMediaForExpando( dynamic source, Person currentPerson, RockContext rockContext )
+        internal static dynamic AppendMediaForExpando( dynamic source, DateTime? startDate, Person currentPerson, RockContext rockContext )
         {
-            var mediaId = (int?) ConvertDynamicToInt ( source.MediaId );
+            var mediaId = ( int? ) ConvertDynamicToInt( source.MediaId );
 
             if ( mediaId.HasValue )
             {
@@ -278,7 +285,7 @@ namespace Rock.Lava.Helpers
                 source.MediaId = mediaId.Value;
 
                 // Get watches for the items
-                var mediaWatches = GetWatchInteractions( new List<int> { mediaId.Value }, currentPerson, rockContext );
+                var mediaWatches = GetWatchInteractions( new List<int> { mediaId.Value }, startDate, currentPerson, rockContext );
 
                 AppendWatchDataToDynamic( source, mediaWatches );
             }
@@ -296,7 +303,7 @@ namespace Rock.Lava.Helpers
         {
             // Get relevant watch
             var watch = mediaWatches.Where( w => w.MediaId == media.MediaId )
-                        .OrderByDescending( i => i.InteractionLength )
+                        .OrderByDescending( i => i.InteractionDateTime )
                         .FirstOrDefault();
 
             if ( watch == null )
@@ -308,6 +315,7 @@ namespace Rock.Lava.Helpers
             media.WatchLength = watch.InteractionLength;
             media.HasWatched = true;
             media.WatchInteractionGuid = watch.InteractionGuid;
+            media.WatchInteractionDateTime = watch.InteractionDateTime;
 
             try
             {
@@ -323,10 +331,11 @@ namespace Rock.Lava.Helpers
         /// Gets media watch information for a given set of media ids.
         /// </summary>
         /// <param name="mediaIds"></param>
+        /// <param name="startDate"></param>
         /// <param name="currentPerson"></param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        private static List<WatchInteractionSummary> GetWatchInteractions( List<int> mediaIds, Person currentPerson, RockContext rockContext )
+        private static List<WatchInteractionSummary> GetWatchInteractions( List<int> mediaIds, DateTime? startDate, Person currentPerson, RockContext rockContext )
         {
             // Get watches for the items
             var mediaEventsInteractionChannelId = InteractionChannelCache.Get( SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() ).Id;
@@ -336,21 +345,29 @@ namespace Rock.Lava.Helpers
                     i.PersonAlias.PersonId == currentPerson.Id
                     && i.InteractionComponent.InteractionChannelId == mediaEventsInteractionChannelId
                     && mediaIds.Contains( i.InteractionComponent.EntityId.Value )
-                )
+                );
+
+            // Add start date if one was provided.
+            if ( startDate.HasValue )
+            {
+                var startDateKey = startDate.ToDateKey();
+                mediaWatch = mediaWatch.Where( i => i.InteractionDateKey >= startDateKey );
+            }
+
+            return mediaWatch
                 .Select( i => new WatchInteractionSummary
                 {
                     InteractionLength = i.InteractionLength,
                     MediaId = i.InteractionComponent.EntityId,
                     InteractionData = i.InteractionData,
-                    InteractionGuid = i.Guid
+                    InteractionGuid = i.Guid,
+                    InteractionDateTime = i.InteractionDateTime
                 } )
                 .ToList();
-
-            return mediaWatch;
         }
 
         /// <summary>
-        /// Helper method to convert dynamic objects to ints.
+        /// Helper method to convert dynamic objects to integers.
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
@@ -366,7 +383,7 @@ namespace Rock.Lava.Helpers
                 return ( ( long ) item ).ToIntSafe( 0 );
             }
 
-            if (item is string )
+            if ( item is string )
             {
                 return ( ( string ) item ).AsInteger();
             }
@@ -398,6 +415,11 @@ namespace Rock.Lava.Helpers
             /// Interaction Length
             /// </summary>
             public double? InteractionLength { get; set; }
+
+            /// <summary>
+            /// The date of the interaction
+            /// </summary>
+            public DateTime InteractionDateTime { get; set; }
         }
     }
 }
