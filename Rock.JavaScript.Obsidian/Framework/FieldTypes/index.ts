@@ -83,6 +83,9 @@ registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationP
 import { ComponentsFieldType } from "./componentsField.partial";
 registerFieldType(FieldTypeGuids.Components, new ComponentsFieldType());
 
+import { ComponentFieldType } from "./componentField.partial";
+registerFieldType(FieldTypeGuids.Component, new ComponentFieldType());
+
 import { CurrencyFieldType } from "./currencyField.partial";
 registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());
 
