@@ -115,7 +115,7 @@ export const ConfigurationComponent = defineComponent({
             // Construct the new value that will be emitted if it is different
             // than the current value.
             newValue[ConfigurationValueKey.EnhancedSelection] = asTrueOrFalseString(enhancedSelection.value);
-            newValue[ConfigurationValueKey.RepeatColumns] = enhancedSelection.value === false ? numberOfColumns.value?.toString() ?? "" : "";
+            newValue[ConfigurationValueKey.RepeatColumns] = numberOfColumns.value?.toString() ?? "";
             newValue[ConfigurationValueKey.ClientValues] = props.modelValue[ConfigurationValueKey.ClientValues];
 
             // Compare the new value and the old value.
@@ -151,16 +151,6 @@ export const ConfigurationComponent = defineComponent({
             numberOfColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
         }, {
             immediate: true
-        });
-
-        // Watch for changes in properties that require new configuration
-        // properties to be retrieved from the server.
-        // THIS IS JUST A PLACEHOLDER FOR COPYING TO NEW FIELDS THAT MIGHT NEED IT.
-        // THIS FIELD DOES NOT NEED THIS
-        watch([], () => {
-            if (maybeUpdateModelValue()) {
-                emit("updateConfiguration");
-            }
         });
 
         // Watch for changes in properties that only require a local UI update.
