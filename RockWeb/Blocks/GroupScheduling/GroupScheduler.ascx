@@ -388,7 +388,7 @@
                                                     <%-- Occurrence Column Heading when in Multi-Group mode (show Group name with Checkbox --%>
                                                     <asp:Panel ID="pnlMultiGroupModeColumnHeading" runat="server" CssClass="board-heading mt-3">
                                                         <div class="d-flex justify-content-between">
-                                                            <span class="board-column-title"><asp:Literal ID="lMultiGroupModeColumnGroupNameHtml" runat="server" /></span>
+                                                            <span class="board-column-title flex-fill text-wrap"><asp:Literal ID="lMultiGroupModeColumnGroupNameHtml" runat="server" /></span>
                                                             <asp:LinkButton ID="btnMultiGroupModeColumnSelectedGroup" runat="server"
                                                             CssClass="text-color p-0"
                                                             Text="fa fa-check-square"
