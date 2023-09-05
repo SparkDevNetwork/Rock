@@ -163,28 +163,22 @@ namespace RockWeb.Blocks.Administration
                     var blockContexts = new List<BlockContextsInfo>();
                     foreach ( var block in pageCache.Blocks )
                     {
-                        try
+                        foreach ( var context in block.ContextTypesRequired )
                         {
-                            var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
-                            if ( blockControl != null )
+                            var blockContextsInfo = blockContexts.FirstOrDefault( t => t.EntityTypeName == context.Name );
+                            if ( blockContextsInfo == null )
                             {
-                                blockControl.SetBlock( pageCache, block );
-                                foreach ( var context in blockControl.ContextTypesRequired )
+                                blockContextsInfo = new BlockContextsInfo
                                 {
-                                    var blockContextsInfo = blockContexts.FirstOrDefault( t => t.EntityTypeName == context.Name );
-                                    if ( blockContextsInfo == null )
-                                    {
-                                        blockContextsInfo = new BlockContextsInfo { EntityTypeName = context.Name, EntityTypeFriendlyName = context.FriendlyName, BlockList = new List<BlockCache>() };
-                                        blockContexts.Add( blockContextsInfo );
-                                    }
+                                    EntityTypeName = context.Name,
+                                    EntityTypeFriendlyName = context.FriendlyName,
+                                    BlockList = new List<BlockCache>()
+                                };
 
-                                    blockContextsInfo.BlockList.Add( block );
-                                }
+                                blockContexts.Add( blockContextsInfo );
                             }
-                        }
-                        catch
-                        {
-                            // if the blocktype can't compile, just ignore it since we are just trying to find out if it had a blockContext
+
+                            blockContextsInfo.BlockList.Add( block );
                         }
                     }
 

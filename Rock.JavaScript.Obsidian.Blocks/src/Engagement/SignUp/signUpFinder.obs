@@ -131,7 +131,7 @@
     const comparisonValuesByAttributeGuid: Record<string, ComparisonValue> = {};
 
     const selectedProjectTypes = ref<string[]>([]);
-    const selectedCampuses = ref<string[]>(config.pageCampusContext?.value ? [...config.pageCampusContext.value] : []);
+    const selectedCampuses = ref<string[]>(config.pageCampusContext?.value ? [config.pageCampusContext.value] : []);
     const selectedNamedSchedules = ref<string[]>([]);
     const selectedDateRange = ref<DateRangeParts>({});
     const selectedLocationSort = ref<string>("");

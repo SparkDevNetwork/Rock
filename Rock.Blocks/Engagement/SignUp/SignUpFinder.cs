@@ -48,6 +48,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [Category( "Obsidian > Engagement > Sign-Up" )]
     [Description( "Block used for finding a sign-up group/project." )]
     [IconCssClass( "fa fa-clipboard-check" )]
+    [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
 
@@ -264,7 +265,6 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [Rock.SystemGuid.EntityTypeGuid( "BF09747C-786D-4979-BADF-2D0157F4CB21" )]
     [Rock.SystemGuid.BlockTypeGuid( "74A20402-00DF-4A87-98D1-B5A8920F1D32" )]
-    [ContextAware( typeof( Campus ), IsConfigurable = true )]
     public class SignUpFinder : RockObsidianBlockType, IHasCustomActions
     {
         #region Keys & Constants
@@ -579,7 +579,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 return null;
             }
 
-            return CampusCache.Get( pageContextCampus.Id ).ToListItemBag();
+            return pageContextCampus.ToListItemBag();
         }
 
         /// <summary>
@@ -783,7 +783,20 @@ namespace Rock.Blocks.Engagement.SignUp
             }
 
             // Filter by campuses.
-            var campusIds = GetIds( selectedFilters.Campuses, CampusCache.GetId, GetCampusFilterItems() );
+            var campusIds = new List<int>();
+            if ( GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean() )
+            {
+                campusIds = GetIds( selectedFilters.Campuses, CampusCache.GetId, GetCampusFilterItems() );
+            }
+            else if ( GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean() )
+            {
+                var pageContextCampus = this.RequestContext.GetContextEntity<Campus>();
+                if ( pageContextCampus!= null )
+                {
+                    campusIds.Add( pageContextCampus.Id );
+                }
+            }
+
             if ( campusIds.Any() )
             {
                 qryGroupLocationSchedules = qryGroupLocationSchedules
