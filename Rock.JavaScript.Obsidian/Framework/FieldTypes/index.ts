@@ -32,6 +32,9 @@ registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 import { AssessmentTypesFieldType } from "./assessmentTypesField.partial";
 registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType());
 
+import { AudioFileFieldType } from "./audioFileField.partial";
+registerFieldType(FieldTypeGuids.AudioFile, new AudioFileFieldType());
+
 import { AudioUrlFieldType } from "./audioUrlField.partial";
 registerFieldType(FieldTypeGuids.AudioUrl, new AudioUrlFieldType());
 
@@ -43,6 +46,9 @@ registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType()
 
 import { BinaryFileTypeFieldType } from "./binaryFileTypeField.partial";
 registerFieldType(FieldTypeGuids.BinaryFileType, new BinaryFileTypeFieldType());
+
+import { BinaryFileTypesFieldType } from "./binaryFileTypesField.partial";
+registerFieldType(FieldTypeGuids.BinaryFileTypes, new BinaryFileTypesFieldType());
 
 import { BooleanFieldType } from "./booleanField.partial";
 registerFieldType(FieldTypeGuids.Boolean, new BooleanFieldType());
@@ -62,6 +68,9 @@ registerFieldType(FieldTypeGuids.Category, new CategoryFieldType());
 import { CategorizedDefinedValueField } from "./categorizedDefinedValueField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefinedValueField());
 
+import { CodeEditorFieldType } from "./codeEditorField.partial";
+registerFieldType(FieldTypeGuids.CodeEditor, new CodeEditorFieldType());
+
 import { ColorFieldType } from "./colorField.partial";
 registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 
@@ -74,8 +83,23 @@ registerFieldType(FieldTypeGuids.ConnectionType, new ConnectionTypeField());
 import { ConnectionTypesField } from "./connectionTypesField.partial";
 registerFieldType(FieldTypeGuids.ConnectionTypes, new ConnectionTypesField());
 
+import { ConnectionStateFieldType } from "./connectionStateField.partial";
+registerFieldType(FieldTypeGuids.ConnectionState, new ConnectionStateFieldType());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
+
+import { CommunicationTemplateFieldType } from "./communicationTemplateField.partial";
+registerFieldType(FieldTypeGuids.CommunicationTemplate, new CommunicationTemplateFieldType());
+
+import { ComparisonFieldType } from "./comparisonField.partial";
+registerFieldType(FieldTypeGuids.Comparison, new ComparisonFieldType());
+
+import { ComponentsFieldType } from "./componentsField.partial";
+registerFieldType(FieldTypeGuids.Components, new ComponentsFieldType());
+
+import { ComponentFieldType } from "./componentField.partial";
+registerFieldType(FieldTypeGuids.Component, new ComponentFieldType());
 
 import { CurrencyFieldType } from "./currencyField.partial";
 registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());

@@ -146,7 +146,7 @@ namespace Rock.Blocks.CMS
 
             // should have a token that is unique for the siteId
             var service = new PageShortLinkService( rockContext );
-            bool isTokenUsedBySite = !service.VerifyUniqueToken( pageShortLink.SiteId, 0, pageShortLink.Token );
+            bool isTokenUsedBySite = !service.VerifyUniqueToken( pageShortLink.SiteId, pageShortLink.Id, pageShortLink.Token );
             if ( isTokenUsedBySite )
             {
                 errorMessage = "The selected token is already being used. Please enter a different token.";

@@ -24,6 +24,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Field.Types
@@ -32,10 +33,13 @@ namespace Rock.Field.Types
     /// Audio file field type
     /// Stored as BinaryFile.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.AUDIO_FILE )]
     public class AudioFileFieldType : FileFieldType, IEntityReferenceFieldType
     {
+        private const string FILE_PATH = "filePath";
+        private const string MIME_TYPE = "mimeType";
+
         #region Formatting
 
         /// <inheritdoc />
@@ -133,6 +137,77 @@ namespace Rock.Field.Types
         }
 
         #endregion
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) && Guid.TryParse( privateValue, out Guid guidValue ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var binaryFileInfo = new BinaryFileService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( f => f.Guid == guidValue )
+                        .Select( f => new ListItemBag()
+                        {
+                             Text = f.FileName,
+                             Value = f.Guid.ToString(),
+                        } )
+                        .FirstOrDefault();
+
+                    if ( binaryFileInfo == null )
+                    {
+                        return string.Empty;
+                    }
+
+                    return binaryFileInfo.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return base.GetPublicValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            var binaryFileGuid = value.AsGuidOrNull();
+            if ( binaryFileGuid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    var mimeType = binaryFileService.Queryable().AsNoTracking().Where( a => a.Guid == binaryFileGuid.Value )
+                        .Select( s => s.MimeType )
+                        .FirstOrDefault();
+
+                    if ( !string.IsNullOrWhiteSpace( mimeType ) )
+                    {
+                        configurationValues[FILE_PATH] = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                        configurationValues[MIME_TYPE] = mimeType;
+                    }
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            configurationValues.Remove( FILE_PATH );
+            configurationValues.Remove( MIME_TYPE );
+
+            return configurationValues;
+        }
+
+        #endregion Edit Control
 
         #region IEntityReferenceFieldType
 

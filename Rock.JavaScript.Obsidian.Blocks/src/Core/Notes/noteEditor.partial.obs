@@ -260,6 +260,11 @@
         return selectedNoteType.value?.isMentionEnabled === true;
     });
 
+    /** The default note type to select. */
+    const defaultNoteTypeIdKey = computed((): string => {
+        return props.noteTypes.length > 0 ? props.noteTypes[0].idKey ?? "" : "";
+    });
+
     // #endregion
 
     // #region Event Handlers
@@ -388,8 +393,8 @@
 
     // Set the default note type to the first one if not already selected.
     // Do this before the watch events below.
-    if (!noteTypeIdKey.value && props.noteTypes.length > 0) {
-        noteTypeIdKey.value = props.noteTypes[0].idKey ?? "";
+    if (!noteTypeIdKey.value) {
+        noteTypeIdKey.value = defaultNoteTypeIdKey.value;
     }
 
     // Set initially selected note type attributes.
@@ -406,7 +411,11 @@
 
     // Watch for changes in our model value and update the UI.
     watch(() => props.modelValue, () => {
-        updateRefValue(noteTypeIdKey, props.modelValue?.noteTypeIdKey ?? "");
+        // If the new modelValue does not have a noteTypeIdKey defined then
+        // we try to use the existing note type id key, otherwise we fall back
+        // to the default. If the modelValue provides an empty string for
+        // noteTypeIdKey then it will be honored.
+        updateRefValue(noteTypeIdKey, props.modelValue?.noteTypeIdKey ?? noteTypeIdKey.value ?? defaultNoteTypeIdKey.value);
         updateRefValue(noteText, props.modelValue?.text ?? "");
         updateRefValue(isAlert, props.modelValue?.isAlert ?? false);
         updateRefValue(isPrivate, props.modelValue?.isPrivate ?? false);

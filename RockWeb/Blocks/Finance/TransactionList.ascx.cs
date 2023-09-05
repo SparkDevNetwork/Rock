@@ -516,9 +516,9 @@ namespace RockWeb.Blocks.Finance
                     _ddlMove.Visible = true;
                 }
 
-                // If the batch is closed, do not allow any editing of the transactions
+                // If the batch is closed or is automated, do not allow any editing of the transactions
                 // NOTE that gTransactions_Delete click will also check if the transaction is part of a closed batch
-                if ( _batch.Status != BatchStatus.Closed && _canEdit )
+                if ( _batch.Status != BatchStatus.Closed && !_batch.IsAutomated && _canEdit )
                 {
                     gTransactions.Actions.ShowAdd = _canEdit;
                     gTransactions.IsDeleteEnabled = _canEdit;
@@ -962,12 +962,18 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
-                // prevent deleting a Transaction that is in closed batch
+                // prevent deleting a Transaction that is in a closed or an automated batch
                 if ( transaction.Batch != null )
                 {
                     if ( transaction.Batch.Status == BatchStatus.Closed )
                     {
                         mdGridWarning.Show( string.Format( "This {0} is assigned to a closed {1}", FinancialTransaction.FriendlyTypeName, FinancialBatch.FriendlyTypeName ), ModalAlertType.Information );
+                        return;
+                    }
+
+                    if ( transaction.Batch.IsAutomated )
+                    {
+                        mdGridWarning.Show( string.Format( "This {0} is assigned to an automated {1}", FinancialTransaction.FriendlyTypeName, FinancialBatch.FriendlyTypeName ), ModalAlertType.Information );
                         return;
                     }
                 }
@@ -1742,7 +1748,7 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
 
                 // If the batch is closed, do not allow any editing of the transactions
-                if ( _batch.Status != BatchStatus.Closed && _canEdit )
+                if ( _batch.Status != BatchStatus.Closed && !_batch.IsAutomated && _canEdit )
                 {
                     gTransactions.IsDeleteEnabled = _canEdit;
                 }
