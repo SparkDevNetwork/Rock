@@ -1,0 +1,92 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <canvas ref="chart"></canvas>
+    <button @click="random" type="button">Randomize</button>
+</template>
+
+<script setup lang="ts" generic="T extends ChartType">
+    import { PropType, ref, watch, watchEffect } from "vue";
+    import { Chart, ChartType, ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+
+    const props = defineProps({
+        type: {
+            type: String as unknown as PropType<T>,
+            required: true,
+        },
+
+        data: {
+            type: Object as PropType<ChartData<T>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ChartOptions<T>>,
+            required: true
+        }
+    });
+
+    // const emit = defineEmits<{
+    //     (e: "update:modelValue", value: ListItemBag): void
+    // }>();
+
+    const chart = ref<HTMLCanvasElement | null>(null);
+    let theChart;
+
+    const actions = [
+        {
+            name: "Randomize",
+            handler(chart) {
+                chart.data.datasets.forEach(dataset => {
+                    dataset.data = generateData();
+                });
+                chart.update();
+            }
+        },
+    ];
+
+    function generateData() {
+        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0].map(() => Math.floor(Math.random() * 200) - 100);
+    }
+
+    const data = () => {
+        return {
+            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            datasets: [{
+                data: generateData(),
+            }]
+        };
+    };
+
+    const config = ref({
+        type: "bar",
+        data: data(),
+        options: {
+            plugins: {
+                legend: false,
+            },
+            elements: {
+                bar: {
+                    backgroundColor: colorize(),
+                    borderColor: colorize(),
+                    borderWidth: 2
+                }
+            }
+        }
+    });
+
+    function colorize() {
+        const i = Math.floor(Math.random() * 5);
+        return ["red", "purple", "blue", "green", "pink"];
+    }
+
+    function random() {
+        config.value.data.datasets[0].data = generateData();
+        theChart.update();
+    }
+    watch(chart, () => {
+        if (chart.value) {
+            theChart = new Chart(chart.value, config.value);
+            //this.$refs["chart-view"].chart()
+        }
+    });
+</script>

@@ -1,0 +1,25 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <Chart />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref([]);
+
+    const importCode = getSfcControlImportPath("chart");
+    const exampleCode = computed(() => `<Chart v-model="value" />`);
+</script>
