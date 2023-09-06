@@ -1,0 +1,106 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <slot></slot>
+
+    <div ref="breakpointHelperDiv"
+         style="visibility: collapse !important;"
+         :class="classes"></div>
+</template>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+    import { Breakpoint, provideBreakpoint } from "./types.partial";
+
+    defineProps();
+
+    const emit = defineEmits<{
+        (e: "breakpoint", value: Breakpoint): void
+    }>();
+
+    const breakpointDisplays: Partial<Record<Breakpoint, string>> = {
+        "xs": "none",
+        "sm": "inline",
+        "md": "inline-block",
+        "lg": "block",
+        "xl": "table"
+    };
+
+    const displayBreakpoints: Record<string, Breakpoint> = Object.entries(breakpointDisplays).reduce((swapped, [key, value]) => ({
+        ...swapped,
+        [value]: key
+    }), {});
+
+    const classes: string[] = Object.keys(breakpointDisplays)
+        .map((breakpoint: string) => breakpoint as Breakpoint)
+        .map((breakpoint: Breakpoint) => breakpoint === "xs" ? `d-${breakpointDisplays[breakpoint]}` : `d-${breakpoint}-${breakpointDisplays[breakpoint]}`);
+
+    //#region Values
+
+    /**
+     * This div helps determine the responsive breakpoint based on CSS rules.
+     *
+     * The element has `class="d-none d-sm-inline d-md-inline-block d-lg-block d-xl-table"`
+     * so whenever the screen is a specific width, the div's `display` property will be updated.
+     * We can efficiently re-check the breakpoint by listening to the window "resize" event
+     * and examining the current `display` property.
+     *
+     * Lastly, we need `visibility: collapse !important` in the div's inline style
+     * because we want to keep the element invisible while the `display` is being updated.
+     */
+    const breakpointHelperDiv = ref<HTMLElement | undefined>();
+    const breakpoint = ref<Breakpoint>("unknown");
+    const internalBreakpoint = computed<Breakpoint>({
+        get() {
+            return breakpoint.value;
+        },
+        set(newValue: Breakpoint) {
+            breakpoint.value = newValue;
+
+            // Emit so client code can use output binding
+            // if unable to use the provide/inject pattern.
+            emit("breakpoint", breakpoint.value);
+        }
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    /** Checks if the breakpoint changed */
+    function checkBreakpoint(): void {
+        // Skip if the div element is not set (this could happen if this component isn't mounted).
+        if (!breakpointHelperDiv.value) {
+            return;
+        }
+
+        // Get the breakpoint that is mapped to the `display` style property.
+        const display = getComputedStyle(breakpointHelperDiv.value).display;
+        const newBreakpoint: Breakpoint = displayBreakpoints[display] ?? "unknown";
+        internalBreakpoint.value = newBreakpoint;
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Event handler for the window "resize" event. */
+    function onWindowResized(): void {
+        checkBreakpoint();
+    }
+
+    //#endregion
+
+    // Provide the reactive breakpoint to child components.
+    provideBreakpoint(breakpoint);
+
+    onMounted(() => {
+        // Check the breakpoint initially and wire up the window "resize" event handler.
+        checkBreakpoint();
+        addEventListener("resize", onWindowResized);
+    });
+
+    onBeforeUnmount(() => {
+        // Remove the window "resize" event handler when this component is unmounted.
+        removeEventListener("resize", onWindowResized);
+    });
+</script>
