@@ -240,6 +240,7 @@ import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
 import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
+import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -8129,6 +8130,7 @@ const controlGalleryComponents: Record<string, Component> = [
     ImageEditorGallery,
     HighlightLabelGallery,
     PdfViewerGallery,
+    ChartGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
