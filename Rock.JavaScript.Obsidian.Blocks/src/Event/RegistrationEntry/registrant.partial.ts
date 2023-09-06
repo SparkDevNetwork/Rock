@@ -303,7 +303,6 @@ export default defineComponent({
     methods: {
         onPrevious(): void {
             this.clearFormErrors();
-            //this.updateFeeItemsRemaining();
 
             if (this.currentFormIndex <= 0) {
                 this.$emit("previous");
@@ -373,7 +372,7 @@ export default defineComponent({
                             combinedFeeItemQuantities[feeItemGuid] = feeItemsUsed;
                         }
                         else {
-                            combinedFeeItemQuantities[feeItemGuid] = combinedFeeItemQuantities[feeItemGuid] = feeItemsUsed + feeItemsUsed;
+                            combinedFeeItemQuantities[feeItemGuid] = combinedFeeItemQuantities[feeItemGuid] + feeItemsUsed;
                         }
                     }
                 }
