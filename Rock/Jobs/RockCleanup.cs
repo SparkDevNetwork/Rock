@@ -1236,6 +1236,12 @@ namespace Rock.Jobs
                     compareFileDateModified: true );
             }
 
+            // If the Avatar Cache folder happens to be missing, create it.
+            if ( !Directory.Exists( avatarCachePath ) )
+            {
+                Directory.CreateDirectory( avatarCachePath );
+            }
+
             if ( validationMessages.Any() )
             {
                 throw new RockCleanupException( "Invalid Cache Directory", new Exception( validationMessages.JoinStrings( "\n" ) ) );

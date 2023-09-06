@@ -19,6 +19,7 @@ using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web;
+
 using Rock;
 using Rock.Data;
 using Rock.Drawing.Avatar;
@@ -124,7 +125,7 @@ namespace RockWeb
                 context.Response.AddHeader( "ETag", DateTime.Now.ToString().XxHash() );
 
                 // Configure client to cache image locally for 1 week
-                context.Response.Cache.SetCacheability( HttpCacheability.Public ); 
+                context.Response.Cache.SetCacheability( HttpCacheability.Public );
                 context.Response.Cache.SetMaxAge( new TimeSpan( 7, 0, 0, 0, 0 ) );
 
                 context.Response.ContentType = "image/png";
@@ -139,6 +140,24 @@ namespace RockWeb
                     }
                     responseStream.CopyTo( context.Response.OutputStream );
                     context.Response.Flush();
+                }
+            }
+            /*
+                8/31/2023 - PA
+
+                Catch and ignore exceptions caused when the client browser drops the connection before the request is complete.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/5521
+            */
+            catch ( System.Web.HttpException ex )
+            {
+                if ( ex.Message.IsNotNullOrWhiteSpace() && ex.Message.Contains( "The remote host closed the connection." ) )
+                {
+                    // Ignore the exception
+                }
+                else
+                {
+                    throw;
                 }
             }
             finally
