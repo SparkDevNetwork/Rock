@@ -95,9 +95,7 @@ export default defineComponent({
         const signatureSource = ref("");
         const signatureToken = ref("");
         const formResetKey = ref("");
-
         const isNextDisabled = ref(false);
-
         const isSignatureDrawn = computed((): boolean => registrationEntryState.viewModel.isSignatureDrawn);
 
         return {
@@ -111,6 +109,9 @@ export default defineComponent({
             signatureSource,
             signatureToken
         };
+    },
+    updated() {
+        this.updateFeeItemsRemaining();
     },
     data() {
         return {
@@ -301,10 +302,13 @@ export default defineComponent({
     methods: {
         onPrevious(): void {
             this.clearFormErrors();
+            //this.updateFeeItemsRemaining();
+
             if (this.currentFormIndex <= 0) {
                 this.$emit("previous");
                 return;
             }
+
 
             this.registrationEntryState.currentRegistrantFormIndex--;
         },
@@ -346,6 +350,51 @@ export default defineComponent({
             }
 
             this.registrationEntryState.currentRegistrantFormIndex++;
+        },
+        updateFeeItemsRemaining(): void {
+            // calculate fee items remaining
+            const combinedFeeItemQuantities: Record<Guid, number> = {};
+
+            /* eslint-disable-next-line */
+            const self = this;
+
+            // Get all of the fee items in use for all registrants and add them to the combinedFeeItemQuantities Record
+            for(const registrant of self.registrationEntryState.registrants) {
+                if(registrant.guid === this.currentRegistrant.guid) {
+                    continue;
+                }
+
+                for (const feeItemGuid in registrant.feeItemQuantities) {
+
+                    if (registrant.feeItemQuantities[feeItemGuid] > 0) {
+                        const feeItemsUsed = registrant.feeItemQuantities[feeItemGuid];
+                        if(combinedFeeItemQuantities[feeItemGuid] === undefined || combinedFeeItemQuantities[feeItemGuid] === null) {
+                            combinedFeeItemQuantities[feeItemGuid] = feeItemsUsed;
+                        }
+                        else {
+                            combinedFeeItemQuantities[feeItemGuid] = combinedFeeItemQuantities[feeItemGuid] = feeItemsUsed + feeItemsUsed;
+                        }
+                    }
+                }
+            }
+
+            // No go through all of the fee items and update the usage by subtracting the the total in combinedFeeItemQuantities from the originalCountRemaining
+            const fees = self.registrationEntryState.viewModel.fees;
+            for(const fee of fees){
+                const selfFee = fee;
+                if(selfFee !== undefined && selfFee !== null && selfFee.items !== undefined && selfFee.items !== null && selfFee.items.length > 0) {
+                    for(const feeItem of selfFee.items) {
+                        if(feeItem.countRemaining === null || feeItem.countRemaining === undefined || feeItem.originalCountRemaining === undefined || feeItem.originalCountRemaining === null) {
+                            continue;
+                        }
+
+                        const usedFeeItemCount = combinedFeeItemQuantities[feeItem.guid];
+                        if(usedFeeItemCount !== undefined && usedFeeItemCount !== null) {
+                            feeItem.countRemaining = feeItem.originalCountRemaining - usedFeeItemCount;
+                        }
+                    }
+                }
+            }
         },
 
         /**
