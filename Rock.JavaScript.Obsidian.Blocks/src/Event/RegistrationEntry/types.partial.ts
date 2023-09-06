@@ -144,6 +144,7 @@ export type RegistrationEntryBlockFeeItemViewModel = {
     name: string;
     guid: Guid;
     cost: number;
+    originalCountRemaining: number | null;
     countRemaining: number | null;
 };
 

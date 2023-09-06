@@ -2677,6 +2677,7 @@ namespace Rock.Blocks.Event
                             Cost = fi.Cost,
                             Name = fi.Name,
                             Guid = fi.Guid,
+                            OriginalCountRemaining = context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ),
                             CountRemaining = context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid )
                         } )
                 };
