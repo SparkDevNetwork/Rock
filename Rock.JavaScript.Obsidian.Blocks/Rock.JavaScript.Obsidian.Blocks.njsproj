@@ -125,12 +125,13 @@
     <Content Include="src\Security\ConfirmAccount\confirmAccountAlert.partial.obs" />
     <Content Include="src\Security\ConfirmAccount\deleteConfirmation.partial.obs" />
     <Content Include="src\Security\forgotUserName.obs" />
-    <Content Include="src\Security\restkeyDetail.vue" />
-    <Content Include="src\Security\RestKeyDetail\editPanel.partial.vue" />
-    <Content Include="src\Security\RestKeyDetail\viewPanel.partial.vue" />
+    <Content Include="src\Security\Login\divider.partial.obs" />
+    <Content Include="src\Security\restkeyDetail.obs" />
     <Content Include="src\Reporting\mergeTemplateDetail.vue" />
     <Content Include="src\Reporting\MergeTemplateDetail\editPanel.partial.vue" />
     <Content Include="src\Reporting\MergeTemplateDetail\viewPanel.partial.vue" />
+    <Content Include="src\Security\RestKeyDetail\editPanel.partial.obs" />
+    <Content Include="src\Security\RestKeyDetail\viewPanel.partial.obs" />
     <Content Include="src\WebFarm\webFarmNodeDetail.vue" />
     <Content Include="src\WebFarm\WebFarmNodeDetail\editPanel.partial.vue" />
     <Content Include="src\WebFarm\WebFarmNodeDetail\viewPanel.partial.vue" />
@@ -206,8 +207,9 @@
     <Content Include="src\Security\AccountEntry\registrationStepAccountInfo.partial.obs" />
     <Content Include="src\Security\AccountEntry\registrationStepPersonInfo.partial.obs" />
     <Content Include="src\Security\AccountEntry\simpleGrid.partial.obs" />
+    <Content Include="src\Security\breakpointObserver.partial.obs" />
     <Content Include="src\Security\codeBox.obs" />
-    <Content Include="src\Security\divider.obs" />
+    <Content Include="src\Security\codeBoxCharacter.partial.obs" />
     <Content Include="src\Security\login.obs" />
     <Content Include="src\Security\Login\credentialLogin.partial.obs" />
     <Content Include="src\Security\Login\externalLogin.partial.obs" />
@@ -463,11 +465,10 @@
     <TypeScriptCompile Include="src\Finance\transactionEntry.ts" />
     <TypeScriptCompile Include="src\Group\groupMemberList.ts" />
     <TypeScriptCompile Include="src\Reporting\MergeTemplateDetail\types.partial.ts" />
-    <TypeScriptCompile Include="src\Security\login.ts" />
-    <TypeScriptCompile Include="src\Security\Login\passwordlessCommunicationType.d.ts" />
     <TypeScriptCompile Include="src\Group\GroupAttendanceDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupAttendanceDetail\utils.partial.ts" />
-    <TypeScriptCompile Include="src\Security\Login\passwordlessCommunicationType.partial.ts" />
+    <TypeScriptCompile Include="src\Security\Login\types.partial.ts" />
+    <TypeScriptCompile Include="src\Security\types.partial.ts" />
     <TypeScriptCompile Include="src\shims-vue.d.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

@@ -1,87 +1,78 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-if="isCompleted">
-        <NotificationBox alertType="warning" v-html="completedCaption">
-        </NotificationBox>
-    </div>
-    <div v-else class="login-block">
-        <fieldset>
-            <legend>Log In</legend>
-        </fieldset>
+    <BreakpointObserver @breakpoint="value => breakpoint = value">
+        <div v-if="isCompleted">
+            <NotificationBox alertType="warning" v-html="completedCaption" />
+        </div>
+        <div v-else class="login-block">
+            <fieldset>
+                <legend>Log In</legend>
+            </fieldset>
 
-        <template v-if="config.configurationErrors?.length">
-            <NotificationBox
-                             v-for="configError in config.configurationErrors"
-                             alertType="warning"
-                             v-text="configError" />
-        </template>
+            <template v-if="config.configurationErrors?.length">
+                <NotificationBox v-for="configError in config.configurationErrors"
+                                 alertType="warning"
+                                 v-text="configError" />
+            </template>
 
-        <div :class="isMobileForced ? 'mobile-layout' : 'row d-sm-flex'">
-            <div v-if="isAnyExternalAuthProviderVisible || areBothInternalAuthProvidersVisible" :class="isMobileForced ? 'login-methods' : 'login-methods col-12 col-xs-12 col-sm'">
-                <ExternalLogin
-                               v-if="isAnyExternalAuthProviderVisible"
-                               :modelValue="config.externalAuthProviderButtons || []"
-                               :caption="config.remoteAuthorizationPromptMessage ?? ''"
-                               :disabled="isAuthenticating || isNavigating"
-                               @login="onExternalLogin($event)" />
-
-                <LoginMethodPicker
-                                   v-if="areBothInternalAuthProvidersVisible"
-                                   v-model="internalLoginMethod"
+            <div :class="['row', isMobile ? 'mobile-layout' : 'd-flex']">
+                <div v-if="isAnyExternalAuthProviderVisible || areBothInternalAuthProvidersVisible"
+                     class="login-methods col">
+                    <ExternalLogin v-if="isAnyExternalAuthProviderVisible"
+                                   :modelValue="config.externalAuthProviderButtons || []"
+                                   :caption="config.remoteAuthorizationPromptMessage ?? ''"
                                    :disabled="isAuthenticating || isNavigating"
-                                   :isCredentialLoginSupported="config.isInternalDatabaseLoginSupported"
-                                   :isPasswordlessLoginSupported="config.isPasswordlessLoginSupported" />
+                                   @login="onExternalLogin($event)" />
 
-            </div>
+                    <LoginMethodPicker v-if="areBothInternalAuthProvidersVisible"
+                                       v-model="internalLoginMethod"
+                                       :disabled="isAuthenticating || isNavigating"
+                                       :isCredentialLoginSupported="config.isInternalDatabaseLoginSupported"
+                                       :isPasswordlessLoginSupported="config.isPasswordlessLoginSupported" />
+                </div>
 
-            <Divider
-                     v-if="areSecondaryAndPrimaryAuthVisible"
-                     :class="isMobileForced ? '' : 'd-flex d-sm-none col-xs-12 col-sm-1'"
-                     content="or" />
+                <Divider v-if="areSecondaryAndPrimaryAuthVisible"
+                         :class="isMobile ? 'col' : 'd-flex col-1'"
+                         content="or"
+                         :isVertical="!isMobile" />
 
-            <Divider
-                     v-if="!isMobileForced && areSecondaryAndPrimaryAuthVisible"
-                     class="d-none d-sm-flex col-sm flex-grow-0"
-                     content="or"
-                     :isVertical="true" />
+                <div class="login-entry col">
+                    <CredentialLogin v-if="config.isInternalDatabaseLoginSupported && loginMethodWrapper.isCredential"
+                                     :config="config"
+                                     :disabled="isAuthenticating || isNavigating"
+                                     :isMobileForced="isMobileForced"
+                                     @forgotAccount="onForgotAccount()"
+                                     @login="onCredentialLogin($event)"
+                                     @register="onRegister()" />
 
-            <div :class="isMobileForced ? 'login-entry' : areSecondaryAndPrimaryAuthVisible ? 'login-entry col-12 col-xs-12 col-sm' : 'login-entry col-sm-12'">
-                <CredentialLogin
-                                 v-if="config.isInternalDatabaseLoginSupported && loginMethodWrapper.isCredential"
-                                 :config="config"
-                                 :disabled="isAuthenticating || isNavigating"
-                                 :isMobileForced="isMobileForced"
-                                 @forgotAccount="onForgotAccount()"
-                                 @login="onCredentialLogin($event)"
-                                 @register="onRegister()" />
+                    <PasswordlessLogin v-else-if="config.isPasswordlessLoginSupported && loginMethodWrapper.isPasswordless"
+                                       v-model="passwordlessLoginOptions"
+                                       :config="config"
+                                       :disabled="isAuthenticating || isNavigating"
+                                       :isMobileForced="isMobileForced"
+                                       @start="onPasswordlessLoginStart($event)"
+                                       @verify="onPasswordlessLoginVerify($event)" />
 
-                <PasswordlessLogin
-                                   v-else-if="config.isPasswordlessLoginSupported && loginMethodWrapper.isPasswordless"
-                                   v-model="passwordlessLoginOptions"
-                                   :config="config"
-                                   :disabled="isAuthenticating || isNavigating"
-                                   :isMobileForced="isMobileForced"
-                                   @start="onPasswordlessLoginStart($event)"
-                                   @verify="onPasswordlessLoginVerify($event)" />
-
-                <div v-if="errorMessage" class="mt-3">
-                    <NotificationBox alertType="warning" v-html="errorMessage">
-                    </NotificationBox>
+                    <div v-if="errorMessage" class="mt-3">
+                        <NotificationBox alertType="warning" v-html="errorMessage" />
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div v-if="config.contentText" class="mt-3" v-html="config.contentText"></div>
-    </div>
+            <div v-if="config.contentText" class="mt-3" v-html="config.contentText"></div>
+        </div>
+    </BreakpointObserver>
 </template>
 
 <script setup lang="ts">
     import { computed, onMounted, ref } from "vue";
+    import BreakpointObserver from "./breakpointObserver.partial.obs";
     import CredentialLogin from "./Login/credentialLogin.partial.obs";
     import Divider from "./Login/divider.partial.obs";
     import ExternalLogin from "./Login/externalLogin.partial.obs";
     import LoginMethodPicker from "./Login/loginMethodPicker.partial.obs";
     import PasswordlessLogin from "./Login/passwordlessLogin.partial.obs";
+    import { Breakpoint } from "./types.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { LoginMethod } from "@Obsidian/Enums/Blocks/Security/Login/loginMethod";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
@@ -104,6 +95,7 @@
 
     // #region Values
 
+    const breakpoint = ref<Breakpoint>("unknown");
     const isMobileForced = !!document.getElementById("splash");
 
     const isAuthenticating = ref(config.shouldRedirect);
@@ -152,6 +144,8 @@
         isCredential: internalLoginMethod.value === LoginMethod.InternalDatabase,
         isPasswordless: internalLoginMethod.value === LoginMethod.Passwordless
     }));
+
+    const isMobile = computed<boolean>(() => isMobileForced || breakpoint.value === "xs");
 
     // #endregion
 
