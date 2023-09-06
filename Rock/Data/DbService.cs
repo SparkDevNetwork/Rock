@@ -305,8 +305,9 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
+        /// <param name="commandTimeout">The command timeout (seconds)</param>
         /// <returns></returns>
-        public static object ExecuteScaler( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null )
+        public static object ExecuteScaler( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null, int? commandTimeout = null )
         {
             string connectionString = GetRockContextConnectionString();
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
@@ -328,6 +329,11 @@ namespace Rock.Data
                                 sqlParam.Value = parameter.Value;
                                 sqlCommand.Parameters.Add( sqlParam );
                             }
+                        }
+
+                        if (commandTimeout.HasValue)
+                        {
+                            sqlCommand.CommandTimeout = commandTimeout.Value;
                         }
 
                         return sqlCommand.ExecuteScalar();
