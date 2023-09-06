@@ -1,12 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <canvas ref="chart"></canvas>
-    <button @click="random" type="button">Randomize</button>
+    <canvas ref="chartEl"></canvas>
 </template>
 
 <script setup lang="ts" generic="T extends ChartType">
-    import { PropType, ref, watch, watchEffect } from "vue";
-    import { Chart, ChartType, ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { computed, onUnmounted, PropType, ref, watch } from "vue";
+    import { Chart, ChartType, ChartData, ChartOptions, ChartConfiguration, Plugin } from "@Obsidian/Libs/chart";
 
     const props = defineProps({
         type: {
@@ -22,71 +21,56 @@
         options: {
             type: Object as PropType<ChartOptions<T>>,
             required: true
-        }
-    });
-
-    // const emit = defineEmits<{
-    //     (e: "update:modelValue", value: ListItemBag): void
-    // }>();
-
-    const chart = ref<HTMLCanvasElement | null>(null);
-    let theChart;
-
-    const actions = [
-        {
-            name: "Randomize",
-            handler(chart) {
-                chart.data.datasets.forEach(dataset => {
-                    dataset.data = generateData();
-                });
-                chart.update();
-            }
         },
-    ];
 
-    function generateData() {
-        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0].map(() => Math.floor(Math.random() * 200) - 100);
-    }
-
-    const data = () => {
-        return {
-            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-            datasets: [{
-                data: generateData(),
-            }]
-        };
-    };
-
-    const config = ref({
-        type: "bar",
-        data: data(),
-        options: {
-            plugins: {
-                legend: false,
-            },
-            elements: {
-                bar: {
-                    backgroundColor: colorize(),
-                    borderColor: colorize(),
-                    borderWidth: 2
-                }
-            }
+        plugins: {
+            type: Array as PropType<Plugin<T>[]>,
+            default: null
         }
     });
 
-    function colorize() {
-        const i = Math.floor(Math.random() * 5);
-        return ["red", "purple", "blue", "green", "pink"];
-    }
+    const chartEl = ref<HTMLCanvasElement | null>(null);
+    let chart;
+    let previousType = props.type as T;
 
-    function random() {
-        config.value.data.datasets[0].data = generateData();
-        theChart.update();
-    }
-    watch(chart, () => {
-        if (chart.value) {
-            theChart = new Chart(chart.value, config.value);
-            //this.$refs["chart-view"].chart()
+    const config = computed<ChartConfiguration<T>>(() => {
+        return {
+            type: props.type,
+            data: props.data,
+            // ChartJS likes to make changes to the options behind the scenes; cloning prevents it
+            // from causing endless updates and pointless watch/computed triggers.
+            options: { ...props.options as ChartOptions<T> },
+            plugins: props.plugins
+        } as ChartConfiguration<T>;
+    });
+
+    watch(chartEl, () => {
+        if (chartEl.value) {
+            chart = new Chart(chartEl.value, config.value);
+        }
+    });
+
+    watch(config, () => {
+        if (!chartEl.value || !chart) {
+            return;
+        }
+
+        // If the type changes, we need to recreate the chart. We can't just update it.
+        if (config.value.type != previousType) {
+            previousType = config.value.type;
+            chart.destroy();
+            chart = new Chart(chartEl.value, config.value);
+            return;
+        }
+
+        // All other changes just need an update
+        chart.update();
+    }, { deep: true });
+
+    onUnmounted(() => {
+        if (chart) {
+            chart.destroy();
+            chart = undefined;
         }
     });
 </script>
