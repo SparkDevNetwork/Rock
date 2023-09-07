@@ -1168,6 +1168,7 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\185_MigrationRollupsForV15_2_4.cs" />
     <Compile Include="Plugin\HotFixes\184_MigrationRollupsForV15_2_3.cs" />
     <Compile Include="Plugin\HotFixes\183_MigrationRollupsForV15_2_2.cs" />
     <Compile Include="Plugin\HotFixes\182_FamilyPreRegistrationObsidian.cs" />
