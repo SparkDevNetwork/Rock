@@ -30,6 +30,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
@@ -586,20 +587,33 @@ function onTaskCompleted( resultData )
 
             UpdateRecipientListCount();
 
+            // Set the visibility of the Individual Recipients panel.
+            var showIndividualRecipientsPanel = false;
+
             if ( IndividualRecipientPersonIds.Count > 0 )
             {
-                BindIndividualRecipientsGrid();
-                pnlListSelection.Visible = false;
-                pnlIndividualRecipientList.Visible = true;
+                showIndividualRecipientsPanel = true;
             }
             else
             {
                 // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
                 if ( ddlCommunicationGroupList.Items.Count <= 1 || ( communication.Id != 0 && communication.ListGroupId == null ) )
                 {
-                    pnlListSelection.Visible = false;
-                    pnlIndividualRecipientList.Visible = true;
+                    showIndividualRecipientsPanel = true;
                 }
+            }
+
+            if ( showIndividualRecipientsPanel )
+            {
+                BindIndividualRecipientsPanelControls();
+
+                pnlListSelection.Visible = false;
+                pnlIndividualRecipientPanel.Visible = true;
+            }
+            else
+            {
+                pnlListSelection.Visible = true;
+                pnlIndividualRecipientPanel.Visible = false;
             }
 
             // Note: Javascript takes care of making sure the buttons are set up based on this
@@ -938,7 +952,7 @@ function onTaskCompleted( resultData )
                 if ( !IndividualRecipientPersonIds.Contains( ppAddPerson.PersonId.Value ) )
                 {
                     IndividualRecipientPersonIds.Add( ppAddPerson.PersonId.Value );
-                    BindIndividualRecipientsGrid();
+                    BindIndividualRecipientsPanelControls();
                 }
 
                 // clear out the personpicker and have it say "Add Person" again since they are added to the list
@@ -956,7 +970,7 @@ function onTaskCompleted( resultData )
         /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
         private void gIndividualRecipients_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindIndividualRecipientsGrid();
+            BindIndividualRecipientsPanelControls();
         }
 
         /// <summary>
@@ -1124,49 +1138,69 @@ function onTaskCompleted( resultData )
         /// <summary>
         /// Binds the individual recipients grid.
         /// </summary>
-        private void BindIndividualRecipientsGrid()
+        private void BindIndividualRecipientsPanelControls()
         {
-            List<int> recipientIdList = this.IndividualRecipientPersonIds;
+            var panelModel = new IndividualRecipientsPanelViewModel();
+            panelModel.RecipientPersonIdList = this.IndividualRecipientPersonIds;
+            panelModel.SortProperty = gIndividualRecipients.SortProperty;
 
-            // Apply sort parameters.
-            using ( var rockContext = new RockContext() )
+            var showIndividualRecipientsSummary = panelModel.RecipientPersonIdList.Count > 1000;
+
+            if ( showIndividualRecipientsSummary )
             {
-                var personService = new PersonService( rockContext );
-                var qryPersons = personService
-                    .Queryable( true )
-                    .AsNoTracking()
-                    .Where( a => recipientIdList.Contains( a.Id ) )
-                    .Include( a => a.PhoneNumbers )
-                    .Select( p => new IndividualRecipientListInfo
-                    {
-                        Id = p.Id,
-                        NickName = p.NickName,
-                        LastName = p.LastName,
-                        FullName = ( p.NickName + " " + p.LastName ).Trim(),
-                        Email = p.Email,
-                        EmailNote = p.EmailNote,
-                        IsEmailActive = p.IsEmailActive,
-                        SmsPhoneNumber = p.PhoneNumbers
-                            .Where( a => a.IsMessagingEnabled )
-                            .Select( pn => pn.NumberFormatted )
-                            .FirstOrDefault(),
-                        IsDeceased = p.IsDeceased,
-                        EmailPreference = p.EmailPreference
-                    } );
+                // Show the Summary Panel.
+                lIndividualRecipientPanelCaption.Text = "Below is a summary of your current recipients. You can add individuals to this list before continuing.";
 
-                if ( gIndividualRecipients.SortProperty != null )
-                {
-                    qryPersons = qryPersons.Sort( gIndividualRecipients.SortProperty );
-                }
-                else
-                {
-                    qryPersons = qryPersons.OrderBy( a => a.LastName ).ThenBy( r => r.NickName );
-                }
+                var panelInfo = panelModel.GetRecipientStatusSummaryValues();
+
+                var template = @"
+{% assign dangerItems = SummaryItems | Where:'StatusName','Danger' %}
+{% for item in dangerItems %}
+    <div class='row'>
+        <div class='col col-md-4'></div>
+        <div class='col col-md-1 text-right'>
+            <span class='badge badge-danger'>{{ item.Value }}</span>
+        </div>
+        <div class='col col-md-3'>
+            {{ item.Label }}
+        </div>
+    </div>
+{% endfor %}
+<br>
+{% assign warningItems = SummaryItems | Where:'StatusName','Warn' %}
+{% for item in warningItems %}
+<div class='row'>
+    <div class='col col-md-4'></div>
+    <div class='col col-md-1 text-right'>
+        <span class='badge badge-warning'>{{ item.Value }}</span>
+    </div>
+    <div class='col col-md-3'>
+        {{ item.Label }}
+    </div>
+</div>
+{% endfor %}
+";
+                var lavaDictionary = new LavaDataDictionary();
+                lavaDictionary.Add( "SummaryItems", panelInfo );
+                lRecipientSummary.Text = template.ResolveMergeFields( lavaDictionary );
+
+                pnlIndividualRecipientSummary.Visible = true;
+            }
+            else
+            {
+                // Show the Individual Recipients List.
+                lIndividualRecipientPanelCaption.Text = "Below is a listing of your current recipients. You can add or remove individuals from this list before continuing.";
+
+                var qryRecipients = panelModel.GetListItems();
 
                 // Bind the list items to the grid.
-                gIndividualRecipients.SetLinqDataSource( qryPersons );
+                gIndividualRecipients.SetLinqDataSource( qryRecipients );
                 gIndividualRecipients.DataBind();
+
             }
+
+            pnlIndividualRecipientSummary.Visible = showIndividualRecipientsSummary;
+            pnlIndividualRecipientList.Visible = !showIndividualRecipientsSummary;
         }
 
         /// <summary>
@@ -1213,7 +1247,7 @@ function onTaskCompleted( resultData )
         protected void gIndividualRecipients_DeleteClick( object sender, RowEventArgs e )
         {
             this.IndividualRecipientPersonIds.Remove( e.RowKeyId );
-            BindIndividualRecipientsGrid();
+            BindIndividualRecipientsPanelControls();
             UpdateRecipientListCount();
 
             // upnlContent has UpdateMode = Conditional and this is a modal, so we have to update manually
@@ -1334,7 +1368,7 @@ function onTaskCompleted( resultData )
                 IndividualRecipientPersonIds.RemoveAll( a => selectedPersonIds.Contains( a ) );
             }
 
-            BindIndividualRecipientsGrid();
+            BindIndividualRecipientsPanelControls();
 
             UpdateRecipientListCount();
 
@@ -1384,7 +1418,7 @@ function onTaskCompleted( resultData )
                 hfRSVPPersonIDs.Value = this.IndividualRecipientPersonIds.AsDelimited( "," );
             }
 
-            pnlIndividualRecipientList.Visible = false;
+            pnlIndividualRecipientPanel.Visible = false;
             ShowCommunicationDelivery();
         }
 
@@ -1393,8 +1427,8 @@ function onTaskCompleted( resultData )
         /// </summary>
         private void ShowManualList()
         {
-            pnlIndividualRecipientList.Visible = true;
-            SetNavigationHistory( pnlIndividualRecipientList );
+            pnlIndividualRecipientPanel.Visible = true;
+            SetNavigationHistory( pnlIndividualRecipientPanel );
         }
         #endregion Recipient Selection
 
@@ -3491,6 +3525,139 @@ function onTaskCompleted( resultData )
         }
 
         #region Support Classes
+
+        /// <summary>
+        /// A View Model for the Individual Recipients Panel.
+        /// </summary>
+        private class IndividualRecipientsPanelViewModel
+        {
+            public SortProperty SortProperty { get; set; } = null;
+
+            public List<int> RecipientPersonIdList { get; set; } = null;
+
+            private IQueryable<Person> GetListQuery()
+            {
+                List<int> recipientIdList = this.RecipientPersonIdList;
+
+                // Apply sort parameters.
+                var rockContext = new RockContext();
+
+                var personService = new PersonService( rockContext );
+                var qryPersons = personService
+                    .Queryable( true )
+                    .AsNoTracking()
+                    .Where( a => recipientIdList.Contains( a.Id ) );
+
+                if ( this.SortProperty != null )
+                {
+                    qryPersons = qryPersons.Sort( this.SortProperty );
+                }
+                else
+                {
+                    qryPersons = qryPersons.OrderBy( a => a.LastName ).ThenBy( r => r.NickName );
+                }
+
+                return qryPersons;
+            }
+
+            /// <summary>
+            /// Binds the individual recipients grid.
+            /// </summary>
+            public IQueryable<IndividualRecipientListInfo> GetListItems()
+            {
+
+                var qryPersons = this.GetListQuery();
+                List<int> recipientIdList = this.RecipientPersonIdList;
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var personService = new PersonService( rockContext );
+                    var qryRecipients = qryPersons
+                        .Include( a => a.PhoneNumbers )
+                        .Select( p => new IndividualRecipientListInfo
+                        {
+                            Id = p.Id,
+                            NickName = p.NickName,
+                            LastName = p.LastName,
+                            FullName = ( p.NickName + " " + p.LastName ).Trim(),
+                            Email = p.Email,
+                            EmailNote = p.EmailNote,
+                            IsEmailActive = p.IsEmailActive,
+                            SmsPhoneNumber = p.PhoneNumbers
+                                .Where( a => a.IsMessagingEnabled )
+                                .Select( pn => pn.NumberFormatted )
+                                .FirstOrDefault(),
+                            IsDeceased = p.IsDeceased,
+                            EmailPreference = p.EmailPreference
+                        } );
+
+                    if ( this.SortProperty != null )
+                    {
+                        qryRecipients = qryRecipients.Sort( this.SortProperty );
+                    }
+                    else
+                    {
+                        qryRecipients = qryRecipients.OrderBy( a => a.LastName ).ThenBy( r => r.NickName );
+                    }
+
+                    return qryRecipients;
+                }
+            }
+
+            /// <summary>
+            /// Binds the individual recipients grid.
+            /// </summary>
+            public List<SummaryValueInfo> GetRecipientStatusSummaryValues()
+            {
+                var values = new List<SummaryValueInfo>();
+
+                var qryPersons = this.GetListQuery();
+
+                var qryRecipients = qryPersons
+                    .Select( p => new
+                    {
+                        Id = p.Id,
+                        HasEmailAddress = ( p.Email != null && p.Email.Trim() != string.Empty ),
+                        IsEmailActive = p.IsEmailActive,
+                        HasSmsPhone = p.PhoneNumbers.Any( a => a.IsMessagingEnabled ),
+                        IsDeceased = p.IsDeceased,
+                        EmailPreference = p.EmailPreference
+                    } ).ToList();
+
+                AddSummaryValue( values, "No Email Address", qryRecipients.Count( r => r.HasEmailAddress == false ), "Danger" );
+                AddSummaryValue( values, "No SMS-Enabled Phone", qryRecipients.Count( r => r.HasSmsPhone == false ), "Danger" );
+                AddSummaryValue( values, "No Email/SMS", qryRecipients.Count( r => r.HasEmailAddress == false && r.HasSmsPhone == false ), "Danger" );
+
+                AddSummaryValue( values, "Do Not Email", qryRecipients.Count( r => r.EmailPreference == EmailPreference.DoNotEmail ), "Warn" );
+                AddSummaryValue( values, "No Mass Email", qryRecipients.Count( r => r.EmailPreference == EmailPreference.NoMassEmails ), "Warn" );
+                AddSummaryValue( values, "Inactive Email", qryRecipients.Count( r => r.IsEmailActive == false ), "Warn" );
+
+                return values;
+            }
+
+            private void AddSummaryValue( List<SummaryValueInfo> valueCollection, string label, int? value, string statusName = "Info" )
+            {
+                var info = new SummaryValueInfo
+                {
+                    Key = label.Replace( " ", string.Empty ),
+                    Label = label,
+                    Value = value,
+                    StatusName = statusName
+                };
+                valueCollection.Add( info );
+            }
+
+            /// <summary>
+            /// A line item in the Individual Recipients summary.
+            /// </summary>
+            public class SummaryValueInfo : RockDynamic
+            {
+                public string Key { get; set; }
+                public string Label { get; set; }
+                public int? Value { get; set; }
+                public string StatusName { get; set; }
+            }
+        }
 
         /// <summary>
         /// Information about an individual recipient that is displayed in the recipient list.
