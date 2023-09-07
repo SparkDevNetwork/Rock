@@ -20,6 +20,9 @@ using System;
 
 namespace Rock.ViewModels.Blocks.Engagement.StepTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class StepTypeWorkflowTriggerBag
     {
         /// <summary>

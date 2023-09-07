@@ -198,6 +198,7 @@ namespace Rock.Lava.Helpers
         /// Appends media watches for a collection of media entities.
         /// </summary>
         /// <param name="source"></param>
+        /// <param name="startDate"></param>
         /// <param name="currentPerson"></param>
         /// <param name="rockContext"></param>
         /// <returns></returns>

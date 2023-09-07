@@ -19,6 +19,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.StepTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class StepAttributeBag
     {
         /// <summary>

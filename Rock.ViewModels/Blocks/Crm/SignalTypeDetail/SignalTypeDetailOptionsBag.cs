@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Crm.SignalTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SignalTypeDetailOptionsBag
     {
     }

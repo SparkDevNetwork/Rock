@@ -77,6 +77,8 @@ export const ServiceJob = {
     DataMigrations151DuplicateMobileInteractionsCleanup: "D3D60B90-48D1-4718-905E-39638B44C665",
     /** The Job to run Post v15.2 to replace web forms blocks with Obsidian blocks. */
     DataMigrations152ReplaceWebFormsBlocksWithObsidianBlocks: "4232194C-90AE-4B44-93E7-1E5DE984A9E1",
+    /** The post update data migration job to chop the Group Registration block */
+    DataMigrations160ChopBlocksGroupRegistration: "72D9EC04-517A-4CA0-B631-9F9A41F1790D",
     /** The Job to run Post v16.0 Move Person Preferences. */
     DataMigrations160MovePersonPreferences: "C8591D15-9D37-49D3-8DF8-1DB72EE42D29",
     /** The Job to run v16.0 - Add New Indices To Interaction and InteractionSession. */
@@ -87,6 +89,8 @@ export const ServiceJob = {
     DataMigrations160UpdateInteractionSessionInteractionChannelId: "3BC5124D-0ED1-4D90-A9ED-D858FA4B5051",
     /** The Job to run Post v16.0 Update InteractionSession SessionStartDateKey. */
     DataMigrations160UpdateInteractionSessionSessionStartDateKey: "EBAD6B4D-D928-41FD-A0DD-445060810504",
+    /** The Job to run Post v16.0 Data Migrations to update the media element default urls. */
+    DataMigrations160UpdateMediaElementDefaultUrls: "3f2a18ce-882d-4687-a4e4-b2a34af2777d",
     /** The Job to run Post v16.0 Data Migrations to update the note data to match the new formatting. */
     DataMigrations160UpdateNoteData: "3768889a-ba73-4cff-91f9-cc0f92780745",
     /** The Job to run Post v16.0 Update Person PrimaryPersonAliasId. */

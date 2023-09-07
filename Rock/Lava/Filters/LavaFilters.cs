@@ -2852,6 +2852,7 @@ namespace Rock.Lava
         /// <param name="context"></param>
         /// <param name="source"></param>
         /// <param name="attributeKey"></param>
+        /// <param name="startValue"></param>
         /// <returns></returns>
         public static object AppendWatches( ILavaRenderContext context, object source, string attributeKey = "", object startValue = null )
         {

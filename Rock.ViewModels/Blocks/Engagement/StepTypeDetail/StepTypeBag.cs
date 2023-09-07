@@ -22,6 +22,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Engagement.StepTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class StepTypeBag : EntityBagBase
     {
         /// <summary>
