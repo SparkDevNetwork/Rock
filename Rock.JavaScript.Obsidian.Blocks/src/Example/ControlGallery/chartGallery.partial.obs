@@ -37,6 +37,7 @@
         }]
     });
     const options = ref<ChartOptions>({
+        plugins: { legend: { display: false } },
         elements: {
             bar: {
                 backgroundColor: ["#369", "#396", "#639", "#693", "#936", "#963"],

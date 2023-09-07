@@ -27,7 +27,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { AccountEntryExistingAccountStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryExistingAccountStepBag";
 
-    const props = defineProps({
+    defineProps({
         disabled: {
             type: Boolean as PropType<boolean>,
             required: false,

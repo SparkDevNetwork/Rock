@@ -299,7 +299,7 @@ namespace RockWeb.Blocks.Reminders
             {
                 var reminderService = new ReminderService( rockContext );
 
-                entityTypes = reminderService.GetReminderEntityTypesByPerson( CurrentPersonId.Value, includedReminderTypeIds, excludedReminderTypeIds).ToList();
+                entityTypes = reminderService.GetReminderEntityTypesByPerson( CurrentPersonId.Value, includedReminderTypeIds, excludedReminderTypeIds ).ToList();
 
                 reminderTypes = reminderService.GetReminderTypesByPerson( selectedEntityTypeId, CurrentPerson );
                 if ( includedReminderTypeIds.Any() )
@@ -339,23 +339,23 @@ namespace RockWeb.Blocks.Reminders
 
             if ( showFilters )
             {
-                // Show Person Picker if EntityType matches.
-                var entityTypeId_Person = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
-                if ( selectedEntityTypeId == entityTypeId_Person )
+                // Show Person Picker if EntityType is PersonAlias.
+                var personAliasEntityTypeId = EntityTypeCache.GetId<PersonAlias>();
+                if ( selectedEntityTypeId == personAliasEntityTypeId )
                 {
                     lSelectedEntityType.Text = "People";
                     ppSelectedPerson.Visible = true;
                     if ( selectedEntityId.HasValue )
                     {
-                        var person = new PersonService( new RockContext() ).Get( selectedEntityId.Value );
+                        var person = new PersonAliasService( new RockContext() ).GetPerson( selectedEntityId.Value );
                         ppSelectedPerson.SetValue( person );
                     }
                     return;
                 }
 
                 // Show Group Picker if EntityType matches.
-                var entityTypeId_Group = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
-                if ( selectedEntityTypeId == entityTypeId_Group )
+                var groupEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
+                if ( selectedEntityTypeId == groupEntityTypeId )
                 {
                     lSelectedEntityType.Text = "Groups";
                     gpSelectedGroup.Visible = true;
@@ -379,8 +379,25 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="reminderTypeId">The reminder type identifier.</param>
         private void BindEntityTypeList( List<EntityType> entityTypes )
         {
-            entityTypes.Insert( 0, new EntityType() { FriendlyName = "All Reminders", Id = 0 } );
-            rptEntityTypeList.DataSource = entityTypes;
+            var boundEntityTypes = new List<EntityType>
+            {
+                new EntityType() { FriendlyName = "All Reminders", Id = 0 }
+            };
+
+            foreach ( var entityType in entityTypes )
+            {
+                if ( entityType.Id == EntityTypeCache.GetId<PersonAlias>() )
+                {
+                    // Show PersonAlias reminder filter as "People".
+                    boundEntityTypes.Add( new EntityType() { FriendlyName = "People", Id = entityType.Id } );
+                }
+                else
+                {
+                    boundEntityTypes.Add( entityType );
+                }
+            }
+
+            rptEntityTypeList.DataSource = boundEntityTypes;
             rptEntityTypeList.DataBind();
         }
 
@@ -392,7 +409,16 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="reminderTypeId">The reminder type identifier.</param>
         private void BindReminderList( int? entityTypeId, int? entityId, int? reminderTypeId )
         {
-            var reminders = GetReminders( entityTypeId, entityId, reminderTypeId );
+            List<ReminderViewModel> reminders;
+            if ( entityTypeId.HasValue && entityId.HasValue && entityTypeId.Value == EntityTypeCache.GetId<PersonAlias>() )
+            {
+                // Special logic is required here to ensure we get any reminders that are linked to previous PersonAliases.
+                reminders = GetPersonReminders( entityTypeId.Value, entityId.Value, reminderTypeId );
+            }
+            else
+            {
+                reminders = GetReminders( entityTypeId, entityId, reminderTypeId );
+            }
 
             if ( reminders.Count == 0 )
             {
@@ -448,7 +474,7 @@ namespace RockWeb.Blocks.Reminders
                 dueFilter = "Due";
             }
 
-            var personEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
+            var personAliasEntityTypeId = EntityTypeCache.GetId<PersonAlias>();
 
             var includedReminderTypeIds = GetIncludedReminderTypeIds();
             var excludedReminderTypeIds = GetExcludedReminderTypeIds();
@@ -529,9 +555,9 @@ namespace RockWeb.Blocks.Reminders
                     }
 
                     string personProfilePhoto = string.Empty;
-                    if ( entity.TypeId == personEntityTypeId )
+                    if ( entity.TypeId == personAliasEntityTypeId )
                     {
-                        var person = entity as Person;
+                        var person = ( entity as PersonAlias ).Person;
                         reminderViewModels.Add( new ReminderViewModel( reminder, person, Person.GetPersonPhotoUrl( person ) ) );
                     }
                     else
@@ -549,6 +575,27 @@ namespace RockWeb.Blocks.Reminders
             }
 
             return reminderViewModels;
+        }
+
+        /// <summary>
+        /// Gets the reminders for all PersonAliases belonging to the Person associated to a specific PersonAlias.
+        /// </summary>
+        /// <returns></returns>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="selectedPersonAliasId">The PersonAlias identifier.</param>
+        /// <param name="reminderTypeId">The reminder type identifier.</param>
+        private List<ReminderViewModel> GetPersonReminders( int entityTypeId, int selectedPersonAliasId, int? reminderTypeId )
+        {
+            var reminders = new List<ReminderViewModel>();
+
+            var person = new PersonAliasService( new RockContext() ).GetPerson( selectedPersonAliasId );
+            foreach ( var personAlias in person.Aliases )
+            {
+                var remindersForAlias = GetReminders( entityTypeId, personAlias.Id, reminderTypeId );
+                reminders.AddRange( remindersForAlias );
+            }
+
+            return reminders;
         }
 
         /// <summary>
@@ -612,12 +659,12 @@ namespace RockWeb.Blocks.Reminders
                 queryParameters.AddOrReplace( PageParameterKey.EntityTypeId, entityTypeId.ToString() );
             }
 
-            if ( entityId.HasValue )
+            if ( entityId.HasValue && entityId != 0 )
             {
                 queryParameters.AddOrReplace( PageParameterKey.EntityId, entityId.ToString() );
             }
 
-            if ( reminderTypeId.HasValue )
+            if ( reminderTypeId.HasValue && reminderTypeId != 0 )
             {
                 queryParameters.AddOrReplace( PageParameterKey.ReminderTypeId, reminderTypeId.ToString() );
             }
@@ -626,6 +673,8 @@ namespace RockWeb.Blocks.Reminders
             foreach ( var paramKey in PageParameters().Keys )
             {
                 if ( paramKey != "PageId"
+                    && paramKey != PageParameterKey.EntityTypeId
+                    && paramKey != PageParameterKey.EntityId
                     && paramKey != PageParameterKey.ReminderTypeId
                     && !queryParameters.ContainsKey( paramKey ) )
                 {
@@ -771,7 +820,7 @@ namespace RockWeb.Blocks.Reminders
         {
             var selectedEntityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsIntegerOrNull();
             var selectedReminderTypeId = PageParameter( PageParameterKey.ReminderTypeId ).AsIntegerOrNull();
-            var selectedEntityId = ppSelectedPerson.SelectedValue;
+            var selectedEntityId = ppSelectedPerson.PersonAliasId ?? 0;
             RefreshPage( selectedEntityTypeId, selectedEntityId, selectedReminderTypeId );
         }
 

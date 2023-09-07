@@ -1,0 +1,211 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-model="internalModelValue"
+                   name="codebox"
+                   :rules="rules">
+        <template #default="{uniqueId, field}">
+            <div :class="['form-group rock-code-box', isRequired ? 'required' : '']">
+                <div class="control-wrapper">
+                    <div class="d-flex">
+                        <CodeBoxCharacter v-for="(character, index) of characters"
+                                          :modelValue="character"
+                                          :allowedChars="allowedChars"
+                                          :boxIndex="index"
+                                          :disabled="disabled"
+                                          :key="index"
+                                          :maxLength="maxLength"
+                                          :modelModifiers="modelModifiers"
+                                          :uniqueId="uniqueId"
+                                          @clear="onClear"
+                                          @complete="onComplete"
+                                          @move="onMove"
+                                          @pasteValues="onPasteValues"
+                                          @ready="onReady"
+                                          @update:modelValue="value => onCodeBoxCharacterUpdated(value, index)" />
+                    </div>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<style scoped>
+.rock-code-box input {
+    width: 47px;
+    height: 64px;
+    text-align: center;
+    font-size: 24px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref } from "vue";
+    import CodeBoxCharacter from "./codeBoxCharacter.partial.obs";
+    import { CodeBoxCharacterController } from "./types.partial";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { normalizeRules, rulesPropType } from "@Obsidian/ValidationRules";
+
+    type CodeBoxModelModifiers = {
+        capitalize?: unknown
+    };
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: false,
+            default: null
+        },
+
+        allowedChars: {
+            type: Object as PropType<RegExp>,
+            required: false,
+            default: /^[a-zA-Z0-9]$/
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
+        maxLength: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        modelModifiers: {
+            type: Object as PropType<CodeBoxModelModifiers>,
+            required: false,
+            default: null
+        },
+
+        rules: rulesPropType
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void,
+        (e: "complete", value: string): void
+    }>();
+
+    /** Controllers for each codeBoxCharacter component. */
+    const codeBoxCharacterControllers: Record<number, CodeBoxCharacterController> = {};
+
+    //#region Values
+
+    const internalModelValue = useVModelPassthrough(props, "modelValue", emit);
+    const characters = ref<string[]>(getMaxLengthCharacters(props.modelValue.split("")));
+
+    //#endregion
+
+    //#region Computed Values
+
+    /** The internal rules we will be used for calculations. */
+    const internalRules = computed(() => normalizeRules(props.rules));
+
+    /** Determines if this field is marked as required. */
+    const isRequired = computed(() => internalRules.value.includes("required"));
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Event handler for a codeBoxCharacter component being updated. */
+    function onCodeBoxCharacterUpdated(value: string, boxIndex: number): void {
+        // Modify the value if there are any modifiers present.
+        if (props.modelModifiers?.capitalize) {
+            value = value?.toLocaleUpperCase();
+        }
+
+        // Update the character associated with the codeBoxCharacter component.
+        characters.value[boxIndex] = value;
+
+        // Update the model value (which is the code combined from all the characters).
+        internalModelValue.value = characters.value.join("");
+    }
+
+    /** Event handler for a codeBoxCharacter component being cleared. */
+    function onClear(boxIndex: number): void {
+        codeBoxCharacterControllers[boxIndex].clear();
+    }
+
+    /** Event handler for moving focus to a codeBoxCharacter component. */
+    function onMove(boxIndex: number): void {
+        codeBoxCharacterControllers[boxIndex].focus();
+    }
+
+    /** Event handler for a value being pasted into a codeBoxCharacter component. */
+    function onPasteValues(value: string): void {
+        // Modify the value if there are any modifiers present.
+        if (props.modelModifiers?.capitalize) {
+            value = value?.toLocaleUpperCase();
+        }
+
+        // Set all the characters to the pasted value after splitting it.
+        characters.value = getMaxLengthCharacters(value.split(""));
+    }
+
+    /**
+     * Event handler for a codeBoxCharacter component completing.
+     *
+     * This can be sent from any of the codeBoxCharacter components if
+     * it recognizes that the entire code has been entered.
+     */
+    function onComplete(): void {
+        const code = characters.value.join("");
+        internalModelValue.value = code;
+        emit("complete", code);
+    }
+
+    /**
+     * Event handler for a codeBoxCharacter component being ready.
+     *
+     * The codeBoxCharacter component will provide an object that can be used to control it.
+     */
+    function onReady(event: CodeBoxCharacterController): void {
+        codeBoxCharacterControllers[event.boxIndex] = event;
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Copies a source array and ensures the resulting array has `length === props.maxLength`.
+     *
+     * If the `source.length < props.maxLength`, then `""` elements will be added.
+     *
+     * If the `source.length > props.maxLength`, then excess elements will be removed.
+     */
+    function getMaxLengthCharacters(source: string[]): string[] {
+        if (source.length > props.maxLength) {
+            // Truncate to match the max length of the code box.
+            return source.slice(0, props.maxLength);
+        }
+        else if (source.length < props.maxLength) {
+            const result = [...source];
+
+            // Pad the array to match the maxLength of the code box.
+            const charactersToInsert = props.maxLength - result.length;
+            for (let i = 0; i < charactersToInsert; i++) {
+                result.push("");
+            }
+
+            return result;
+        }
+        else {
+            return [...source];
+        }
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    //#endregion
+
+    onMounted(() => {
+        // Try to focus on the first codeBoxCharacter component when this component is mounted.
+        codeBoxCharacterControllers[0]?.focus();
+    });
+</script>

@@ -184,7 +184,15 @@ namespace RockWeb.Blocks.Reminders
             {
                 var firstKey = contextTypes.Keys.First();
                 var contextType = contextTypes[firstKey];
-                hfContextEntityTypeId.Value = contextType.Id.ToString();
+                if ( contextType == EntityTypeCache.Get<Person>() )
+                {
+                    // if the context entity is a Person, use PersonAlias instead.
+                    hfContextEntityTypeId.Value = EntityTypeCache.GetId<PersonAlias>().ToString();
+                }
+                else
+                {
+                    hfContextEntityTypeId.Value = contextType.Id.ToString();
+                }
             }
         }
 
@@ -198,7 +206,22 @@ namespace RockWeb.Blocks.Reminders
             if ( contextEntities.Any() )
             {
                 var firstKey = contextEntities.Keys.First();
-                return contextEntities[firstKey];
+                var contextEntity = contextEntities[firstKey];
+
+                if ( contextEntity is Person )
+                {
+                    // if the context entity is a Person, use PersonAlias instead.
+                    var person = contextEntity as Person;
+                    var personAlias = person.PrimaryAlias;
+                    if ( personAlias == null )
+                    {
+                        personAlias = person.Aliases.FirstOrDefault();
+                    }
+
+                    contextEntity = personAlias;
+                }
+
+                return contextEntity;
             }
 
             return null;
@@ -249,8 +272,13 @@ namespace RockWeb.Blocks.Reminders
             rptReminders.DataBind();
 
             var entityTypeName = EntityTypeCache.Get( contextEntity.TypeId ).FriendlyName;
-            var reminderText = lExistingReminderTextTemplate.Text
-                .Replace( "{ENTITY_TYPE}", entityTypeName );
+            if ( contextEntity.TypeId == EntityTypeCache.GetId<PersonAlias>() )
+            {
+                // Show "Person" instead of "Person Alias".
+                entityTypeName = EntityTypeCache.Get<Person>().FriendlyName;
+            }
+
+            var reminderText = lExistingReminderTextTemplate.Text.Replace( "{ENTITY_TYPE}", entityTypeName );
 
             if ( reminders.Count == 1 )
             {
@@ -283,17 +311,35 @@ namespace RockWeb.Blocks.Reminders
 
             using ( var rockContext = new RockContext() )
             {
-                var entityTypeService = new EntityTypeService( rockContext );
                 var reminderService = new ReminderService( rockContext );
-                var reminders = reminderService
-                    .GetReminders( CurrentPersonId.Value, contextEntity.TypeId, contextEntity.Id, null )
-                    .Where( r => r.ReminderDate <= RockDateTime.Now )
-                    .OrderByDescending( r => r.ReminderDate )
-                    .Take( 2 ); // We're only interested in two reminders for this block.
 
-                foreach ( var reminder in reminders.ToList() )
+                if ( contextEntity is PersonAlias personAlias )
                 {
-                    if ( reminder.IsActive )
+                    var personAliasService = new PersonAliasService( rockContext );
+                    var personAliasIds = personAlias.Person.Aliases.Select( a => a.Id ).ToList();
+
+                    var reminders = reminderService
+                        .GetReminders( CurrentPersonId.Value, contextEntity.TypeId, null, null )
+                        .Where( r => personAliasIds.Contains( r.EntityId ) && !r.IsComplete && r.ReminderDate < RockDateTime.Now ) // only get active reminders for this person.
+                        .OrderByDescending( r => r.ReminderDate )
+                        .Take( 2 ); // We're only interested in two reminders for this block.
+
+                    foreach ( var reminder in reminders.ToList() )
+                    {
+                        var entity = personAliasService.Get( contextEntity.Id );
+                        reminderViewModels.Add( new ReminderViewModel( reminder, entity ) );
+                    }
+                }
+                else
+                {
+                    var entityTypeService = new EntityTypeService( rockContext );
+                    var reminders = reminderService
+                        .GetReminders( CurrentPersonId.Value, contextEntity.TypeId, contextEntity.Id, null )
+                        .Where( r => !r.IsComplete && r.ReminderDate < RockDateTime.Now ) // only get active reminders.
+                        .OrderByDescending( r => r.ReminderDate )
+                        .Take( 2 ); // We're only interested in two reminders for this block.
+
+                    foreach ( var reminder in reminders.ToList() )
                     {
                         var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
                         reminderViewModels.Add( new ReminderViewModel( reminder, entity ) );
