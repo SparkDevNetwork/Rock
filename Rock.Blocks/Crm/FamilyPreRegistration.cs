@@ -230,7 +230,7 @@ namespace Rock.Blocks.Crm
         "Birth Date",
         Key = AttributeKey.AdultBirthdate,
         Description = "How should Birth Date be displayed for adults?",
-        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED_ADULT_BIRTHDATE,
         IsRequired = false,
         DefaultValue = "Optional",
         Category = CategoryKey.AdultFields,
@@ -584,6 +584,7 @@ namespace Rock.Blocks.Crm
         private static class ListSource
         {
             public const string DISPLAY_SMS_OPT_IN = "Hide,First Adult,All Adults,Adults and Children";
+            public const string HIDE_OPTIONAL_REQUIRED_ADULT_BIRTHDATE = "Hide^Hide,Optional^Optional,Required_Partial^Required (month and day only),Required^Required (full)";
             public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
             public const string HIDE_SHOW_REQUIRED = "Hide,Show,Required";
             public const string HIDE_OPTIONAL = "Hide,Optional";
@@ -1904,7 +1905,7 @@ namespace Rock.Blocks.Crm
                 AddressField = GetFieldBag( AttributeKey.AdultAddress ),
                 AdultGenderField = GetFieldBag( AttributeKey.AdultGender ),
                 AdultSuffixField = GetFieldBag( AttributeKey.AdultSuffix ),
-                AdultBirthdayField = GetFieldBag( AttributeKey.AdultBirthdate ),
+                AdultBirthdayField = GetDatePickerFieldBag( AttributeKey.AdultBirthdate ),
                 AdultEmailField = GetFieldBag( AttributeKey.AdultEmail ),
                 AdultMaritalStatusField = GetFieldBag( AttributeKey.AdultMaritalStatus ),
                 AdultCommunicationPreferenceField = GetFieldBag( AttributeKey.AdultDisplayCommunicationPreference ),
@@ -2369,16 +2370,17 @@ namespace Rock.Blocks.Crm
         /// <summary>
         /// Gets the isOptional and isHidden field properties associated with a given attribute.
         /// </summary>
-        /// <param name="attributeValue">The attribute key.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="getFieldBagForAttributeValue">Used to return a field bag for non-standard attribute values.</param>
         /// <returns>Whether the field isOptional and isHidden.</returns>
-        private FamilyPreRegistrationFieldBag GetFieldBag( string attributeKey )
+        private T GetFieldBag<T>( string attributeKey, Func<string, T> getFieldBagForAttributeValue = null ) where T : FamilyPreRegistrationFieldBag, new()
         {
-            var attributeValue = this.GetAttributeValue( attributeKey );
+            var attributeValue = GetAttributeValue( attributeKey );
 
             if ( string.Equals( attributeValue, "Hide", StringComparison.OrdinalIgnoreCase ) )
             {
                 // Hidden and optional.
-                return new FamilyPreRegistrationFieldBag
+                return new T
                 {
                     IsHidden = true,
                     IsShown = false,
@@ -2389,7 +2391,7 @@ namespace Rock.Blocks.Crm
             else if ( string.Equals( attributeValue, "Required", StringComparison.OrdinalIgnoreCase ) )
             {
                 // Shown and required.
-                return new FamilyPreRegistrationFieldBag
+                return new T
                 {
                     IsHidden = false,
                     IsShown = true,
@@ -2397,10 +2399,11 @@ namespace Rock.Blocks.Crm
                     IsRequired = true
                 };
             }
-            else
+            else if ( string.Equals( attributeValue, "Optional", StringComparison.OrdinalIgnoreCase )
+                      || string.Equals( attributeValue, "Show", StringComparison.OrdinalIgnoreCase ) )
             {
-                // Shown and optional by default.
-                return new FamilyPreRegistrationFieldBag
+                // Shown and optional.
+                return new T
                 {
                     IsHidden = false,
                     IsShown = true,
@@ -2408,6 +2411,59 @@ namespace Rock.Blocks.Crm
                     IsRequired = false
                 };
             }
+            else
+            {
+                // If none of the above checks pass,
+                // then try to get the field bag from the supplied delegate.
+                return getFieldBagForAttributeValue?.Invoke( attributeValue )
+                    // Shown and optional by default.
+                    ?? new T
+                    {
+                        IsHidden = false,
+                        IsShown = true,
+                        IsOptional = true,
+                        IsRequired = false
+                    };
+            }
+        }
+
+        /// <summary>
+        /// Gets the isOptional and isHidden field properties associated with a given attribute.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns>Whether the field isOptional and isHidden.</returns>
+        private FamilyPreRegistrationFieldBag GetFieldBag( string attributeKey )
+        {
+            return GetFieldBag<FamilyPreRegistrationFieldBag>( attributeKey );
+        }
+
+        /// <summary>
+        /// Gets the isOptional and isHidden field properties associated with a given attribute.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns>Whether the field isOptional and isHidden.</returns>
+        private FamilyPreRegistrationDatePickerFieldBag GetDatePickerFieldBag( string attributeKey )
+        {
+            return GetFieldBag(
+                attributeKey,
+                attributeValue =>
+                {
+                    if ( string.Equals( attributeValue, "Required_Partial", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        return new FamilyPreRegistrationDatePickerFieldBag
+                        {
+                            IsMonthAndDayRequired = true,
+                            IsRequired = false,
+                            IsHidden = false,
+                            IsShown = true,
+                            IsOptional = false
+                        };
+                    }
+
+                    // Return `null` here to let the parent method handle the default return value.
+                    return null;
+                } );
+
         }
 
         /// <summary>
@@ -2667,8 +2723,17 @@ namespace Rock.Blocks.Crm
                 adult.Gender = bag.Gender;
             }
 
-            if ( GetFieldBag( AttributeKey.AdultBirthdate ).IsShown )
+            var adultBirthdateOptions = GetDatePickerFieldBag( AttributeKey.AdultBirthdate );
+            if ( adultBirthdateOptions.IsShown )
             {
+                if ( ( adultBirthdateOptions.IsMonthAndDayRequired || adultBirthdateOptions.IsOptional )
+                     && bag.BirthDate?.Year == 0 )
+                {
+                    // If the year is optional and the year is not set,
+                    // then default it to the minimum year value.
+                    bag.BirthDate.Year = DateTime.MinValue.Year;
+                }
+
                 var birthDate = bag.BirthDate.ToDateTime();
 
                 if ( birthDate.HasValue || saveEmptyValues )
