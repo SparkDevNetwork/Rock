@@ -150,7 +150,7 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         /// <summary>
         /// Gets or sets the adult birthday field.
         /// </summary>
-        public FamilyPreRegistrationFieldBag AdultBirthdayField { get; set; }
+        public FamilyPreRegistrationDatePickerFieldBag AdultBirthdayField { get; set; }
 
         /// <summary>
         /// Gets or sets the adult email field.
