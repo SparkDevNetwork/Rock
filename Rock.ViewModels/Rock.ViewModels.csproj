@@ -47,6 +47,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDatePickerFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationSmsOptInFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDateAndTimeFieldBag.cs" />
