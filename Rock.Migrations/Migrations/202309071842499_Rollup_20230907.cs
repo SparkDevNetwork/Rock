@@ -44,21 +44,26 @@ namespace Rock.Migrations
         private void UpdateInteractionComponentIndex()
         {
             Sql( @"-- Drop original index
-DROP INDEX IF EXISTS [IX_InteractionChannelId] ON [InteractionComponent]
-
+IF  EXISTS (SELECT * FROM sys.indexes WHERE NAME = N'IX_InteractionChannelId' AND object_id = OBJECT_ID('InteractionComponent')) 
+BEGIN
+	DROP INDEX [IX_InteractionChannelId] ON [InteractionComponent]
+END
 
 -- Drop new index (just in case it exists)
-DROP INDEX IF EXISTS [IX_ChannelId_EntityId] ON [InteractionComponent]
+IF  EXISTS (SELECT * FROM sys.indexes WHERE NAME = N'IX_InteractionChannelId_EntityId' AND object_id = OBJECT_ID('InteractionComponent')) 
+BEGIN
+	DROP INDEX IF EXISTS [IX_InteractionChannelId_EntityId] ON [InteractionComponent]
+END
 
 -- Create new index
-CREATE NONCLUSTERED INDEX [IX_ChannelId_EntityId] ON [dbo].[InteractionComponent]
+CREATE NONCLUSTERED INDEX [IX_InteractionChannelId_EntityId] ON [dbo].[InteractionComponent]
 (
-    [InteractionChannelId] ASC,
-    [EntityId] ASC
-    
+    [InteractionChannelId] ASC,
+    [EntityId] ASC
+    
 )
 INCLUDE([Guid])
-WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, FILLFACTOR = 80, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]" );
+WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, FILLFACTOR = 80) ON [PRIMARY]" );
         }
 
         /// <summary>
