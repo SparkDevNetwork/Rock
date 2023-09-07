@@ -85,6 +85,7 @@
     <Compile Include="Blocks\Event\RegistrationListLavaBox.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\BusinessDetailBag.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\BusinessDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDatePickerFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationSmsOptInFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDateAndTimeFieldBag.cs" />

@@ -810,6 +810,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\BadgeDetail\badgeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationCreateAccountRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationDateAndTimeFieldBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationDatePickerFieldBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationFieldBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationGetScheduleDatesRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationGetScheduleDatesResponseBag.d.ts" />

@@ -126,7 +126,8 @@
                                         v-model="adult1.birthDate"
                                         :disabled="isSaving || isNavigating"
                                         label="Birth Date"
-                                        :rules="isAdult1Entered && config.adultBirthdayField.isRequired ? 'required' : ''" />
+                                        :rules="isAdult1Entered && config.adultBirthdayField.isRequired ? 'required' :
+                                                isAdult1Entered && config.adultBirthdayField.isMonthAndDayRequired ? createMonthAndDayRequiredRule(adult1) : ''" />
                                 </div>
                                 <div class="col-sm-6">
                                     <DefinedValuePicker
@@ -324,7 +325,8 @@
                                             v-model="adult2.birthDate"
                                             :disabled="isSaving || isNavigating"
                                             label="Birth Date"
-                                            :rules="isAdult2Entered && config.adultBirthdayField.isRequired ? 'required' : ''" />
+                                            :rules="isAdult2Entered && config.adultBirthdayField.isRequired ? 'required' :
+                                                    isAdult2Entered && config.adultBirthdayField.isMonthAndDayRequired ? createMonthAndDayRequiredRule(adult2) : ''" />
                                     </div>
                                     <div v-if="config.adultMaritalStatusField?.isShown" class="col-sm-6">
                                         <DefinedValuePicker
@@ -501,16 +503,19 @@
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getDay, getMonth, toNoYearDateKey } from "@Obsidian/Utility/dateKey";
     import { FormError } from "@Obsidian/Utility/form";
     import { useHttp } from "@Obsidian/Utility/http";
     import { ValidationResult } from "@Obsidian/ValidationRules";
     import { FamilyPreRegistrationGetScheduleDatesRequestBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationGetScheduleDatesRequestBag";
     import { FamilyPreRegistrationGetScheduleDatesResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationGetScheduleDatesResponseBag";
     import { FamilyPreRegistrationInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationInitializationBox";
+    import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
     import { FamilyPreRegistrationSaveRequestBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationSaveRequestBag";
     import { FamilyPreRegistrationSaveResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationSaveResponseBag";
     import { FamilyPreRegistrationScheduleDateBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationScheduleDateBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
@@ -668,6 +673,31 @@
     //#endregion
 
     //#region Functions
+
+    /**
+     * Validates whether a birthday with an optional year is valid.
+     */
+    function monthAndDayRequiredRule(birthDate: BirthdayPickerBag | null | undefined): ValidationResult {
+        const dateKey = toNoYearDateKey(birthDate?.month ?? null, birthDate?.day ?? null);
+
+        if (!getMonth(dateKey)) {
+        return "must have a month";
+        }
+
+        if (!getDay(dateKey)) {
+            return "must have a day";
+        }
+
+        return true;
+    }
+
+    /**
+     * Creates a validation rule that validates when a birthdate has a month and a day set.
+     */
+    function createMonthAndDayRequiredRule(person: FamilyPreRegistrationPersonBag): () => ValidationResult {
+        return () => monthAndDayRequiredRule(person.birthDate);
+    }
+
 
     /**
      * Validates whether adult1 has a first name and a last name.
