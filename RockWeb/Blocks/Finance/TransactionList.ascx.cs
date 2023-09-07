@@ -1510,9 +1510,14 @@ namespace RockWeb.Blocks.Finance
 
             // If configured for a person and person is null, return
             int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
+            bool isContextPerson = false;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person == null )
             {
                 return;
+            }
+            else if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person != null )
+            {
+                isContextPerson = true;
             }
 
             // If configured for a batch and batch is null, return
@@ -1561,6 +1566,11 @@ namespace RockWeb.Blocks.Finance
                 else
                 {
                     financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.TransactionDateTime.HasValue );
+                }
+
+                if ( isContextPerson )
+                {
+                    financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.Batch == null || a.Transaction.Batch.Status != BatchStatus.Pending );
                 }
 
                 if ( _availableAttributes != null && _availableAttributes.Any() )
@@ -1652,6 +1662,11 @@ namespace RockWeb.Blocks.Finance
                 else
                 {
                     financialTransactionQry = financialTransactionQry.Where( a => a.TransactionDateTime.HasValue );
+                }
+
+                if ( isContextPerson )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( a => a.Batch == null || a.Batch.Status != BatchStatus.Pending );
                 }
 
                 // Filter to configured accounts.
