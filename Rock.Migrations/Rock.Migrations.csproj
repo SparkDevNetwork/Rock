@@ -92,6 +92,10 @@
     <Compile Include="Migrations\202309071914168_CodeGenerated_20230907.designer.cs">
       <DependentUpon>202309071914168_CodeGenerated_20230907.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202309072020172_CodeGeneration20230907_2.cs" />
+    <Compile Include="Migrations\202309072020172_CodeGeneration20230907_2.designer.cs">
+      <DependentUpon>202309072020172_CodeGeneration20230907_2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.designer.cs">
       <DependentUpon>202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs</DependentUpon>
@@ -1830,6 +1834,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202309071914168_CodeGenerated_20230907.resx">
       <DependentUpon>202309071914168_CodeGenerated_20230907.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202309072020172_CodeGeneration20230907_2.resx">
+      <DependentUpon>202309072020172_CodeGeneration20230907_2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.resx">
       <DependentUpon>202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs</DependentUpon>
