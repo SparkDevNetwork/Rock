@@ -23,6 +23,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { FamilyPreRegistrationDateAndTimeFieldBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationDateAndTimeFieldBag";
+import { FamilyPreRegistrationDatePickerFieldBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationDatePickerFieldBag";
 import { FamilyPreRegistrationFieldBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationFieldBag";
 import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
 import { FamilyPreRegistrationSmsOptInFieldBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationSmsOptInFieldBag";
@@ -45,7 +46,7 @@ export type FamilyPreRegistrationInitializationBox = {
     adult2?: FamilyPreRegistrationPersonBag | null;
 
     /** Gets or sets the adult birthday field. */
-    adultBirthdayField?: FamilyPreRegistrationFieldBag | null;
+    adultBirthdayField?: FamilyPreRegistrationDatePickerFieldBag | null;
 
     /** Gets or sets the adult communication preference field. */
     adultCommunicationPreferenceField?: FamilyPreRegistrationFieldBag | null;

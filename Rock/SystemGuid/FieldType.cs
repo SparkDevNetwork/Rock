@@ -69,6 +69,11 @@ namespace Rock.SystemGuid
         public const string BACKGROUNDCHECK = "D05B3808-803A-4531-9680-DD4AAB8ADF1A";
 
         /// <summary>
+        /// Badges field type
+        /// </summary>
+        public const string BADGES = "602F273B-7EC2-42E6-9AA7-A36A268192A3";
+
+        /// <summary>
         /// Benevolence Request field type
         /// </summary>
         public const string BENEVOLENCE_REQUEST = "44EEC881-3C07-4A58-ACC4-0F21D873DBE0";
@@ -132,6 +137,11 @@ namespace Rock.SystemGuid
         /// Color field type
         /// </summary>
         public const string COLOR = "D747E6AE-C383-4E22-8846-71518E3DD06F";
+
+        /// <summary>
+        /// Color selector field type
+        /// </summary>
+        public const string COLOR_SELECTOR = "B07070F6-B66E-4B83-8DA6-12CF3400A1EC";
 
         /// <summary>
         /// Communication Template field type

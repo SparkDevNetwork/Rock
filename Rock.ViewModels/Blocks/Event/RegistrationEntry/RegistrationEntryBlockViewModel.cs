@@ -561,6 +561,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public Guid Guid { get; set; }
 
         /// <summary>
+        /// Gets or sets the remaining fee items when the registration was started. Used to calcualte items remaining as fees are added/removed across registrants during a registration.
+        /// </summary>
+        /// <value>
+        /// The original count remaining.
+        /// </value>
+        public int? OriginalCountRemaining { get; set; }
+
+        /// <summary>
         /// Gets or sets the count remaining.
         /// </summary>
         /// <value>

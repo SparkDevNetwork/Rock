@@ -140,7 +140,7 @@
 
     const isEditable = computed((): boolean => {
         const isReopenDisabled = financialBatchViewBag.value?.status == 2 && !config.options?.isReopenAuthorized;
-        return config.isEditable === true && !(isReopenDisabled);
+        return config.isEditable === true && !(isReopenDisabled) && !financialBatchViewBag.value?.isAutomated;
     });
 
     const options = computed((): FinancialBatchDetailOptionsBag => {

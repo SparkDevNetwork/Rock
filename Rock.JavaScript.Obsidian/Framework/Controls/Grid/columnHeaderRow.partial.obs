@@ -1,11 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-column-heading">
+    <div v-if="isVisible" class="grid-column-heading">
         <ColumnHeaderCell v-for="column in columns"
                           :column="column"
                           :filterValue="columnFilters[column.name]"
                           :sortDirection="columnSortLookup[column.name]"
                           :grid="grid"
+                          :light="light"
                           @update:filterValue="onUpdateFilterValue(column.name, $event)"
                           @update:sortDirection="onUpdateSortDirection(column.name, $event)" />
     </div>
@@ -13,7 +14,7 @@
 
 <script setup lang="ts">
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { PropType, ref } from "vue";
+    import { PropType, computed, ref } from "vue";
     import ColumnHeaderCell from "./columnHeaderCell.partial.obs";
     import { ColumnSort, ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
 
@@ -51,6 +52,12 @@
         grid: {
             type: Object as PropType<IGridState>,
             required: true
+        },
+
+        /** Indicates if the grid is operating in light mode. */
+        light: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -64,6 +71,14 @@
     const columnFilters = useVModelPassthrough(props, "columnFilters", emit);
     const columnSort = useVModelPassthrough(props, "columnSort", emit);
     const columnSortLookup = ref<Record<string, number>>({});
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return props.columns.some(c => c.title);
+    });
 
     // #endregion
 

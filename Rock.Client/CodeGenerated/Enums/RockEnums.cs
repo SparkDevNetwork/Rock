@@ -1265,6 +1265,129 @@ namespace Rock.Client.Enums.AI
 
 }
 
+namespace Rock.Client.Enums.Controls
+{
+    /// <summary>
+    /// </summary>
+    public enum CodeEditorMode
+    {
+        Text = 0x0,
+        Css = 0x1,
+        Html = 0x2,
+        Lava = 0x3,
+        JavaScript = 0x4,
+        Less = 0x5,
+        Powershell = 0x6,
+        Sql = 0x7,
+        TypeScript = 0x8,
+        CSharp = 0x9,
+        Markdown = 0xa,
+        Xml = 0xb,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum CodeEditorTheme
+    {
+        Rock = 0x0,
+        Chrome = 0x1,
+        CrimsonEditor = 0x2,
+        Dawn = 0x3,
+        Dreamweaver = 0x4,
+        Eclipse = 0x5,
+        SolarizedLight = 0x6,
+        Textmate = 0x7,
+        Tomorrow = 0x8,
+        Xcode = 0x9,
+        Github = 0xa,
+        AmbianceDark = 0xb,
+        ChaosDark = 0xc,
+        CloudsMidnightDark = 0xd,
+        CobaltDark = 0xe,
+        IdleFingersDark = 0xf,
+        krThemeDark = 0x10,
+        MerbivoreDark = 0x11,
+        MerbivoreSoftDark = 0x12,
+        MonoIndustrialDark = 0x13,
+        MonokaiDark = 0x14,
+        PastelOnDark = 0x15,
+        SolarizedDark = 0x16,
+        TerminalDark = 0x17,
+        TomorrowNightDark = 0x18,
+        TomorrowNightBlueDark = 0x19,
+        TomorrowNightBrightDark = 0x1a,
+        TomorrowNightEightiesDark = 0x1b,
+        TwilightDark = 0x1c,
+        VibrantInkDark = 0x1d,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum DayOfWeek
+    {
+        Sunday = 0x0,
+        Monday = 0x1,
+        Tuesday = 0x2,
+        Wednesday = 0x3,
+        Thursday = 0x4,
+        Friday = 0x5,
+        Saturday = 0x6,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MediaSelectorMode
+    {
+        Image = 0x0,
+        Audio = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MergeTemplateOwnership
+    {
+        Global = 0x0,
+        Personal = 0x1,
+        PersonalAndGlobal = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum RequirementLevel
+    {
+        Unspecified = 0x0,
+        Optional = 0x1,
+        Required = 0x2,
+        Unavailable = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    [Flags]
+    public enum SlidingDateRangeType
+    {
+        Last = 0x0,
+        Current = 0x1,
+        DateRange = 0x2,
+        Previous = 0x4,
+        Next = 0x8,
+        Upcoming = 0x10,
+        All = -1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum TimeUnitType
+    {
+        Hour = 0x0,
+        Day = 0x1,
+        Week = 0x2,
+        Month = 0x3,
+        Year = 0x4,
+    }
+
+}
+
 namespace Rock.Client.Enums.Core
 {
     /// <summary>
@@ -1371,71 +1494,24 @@ namespace Rock.Client.Enums.Cms
 
 }
 
-namespace Rock.Client.Enums.Controls
+namespace Rock.Client.Enums.Net
 {
     /// <summary>
     /// </summary>
-    public enum DayOfWeek
+    public enum CookieSameSiteMode
     {
-        Sunday = 0x0,
-        Monday = 0x1,
-        Tuesday = 0x2,
-        Wednesday = 0x3,
-        Thursday = 0x4,
-        Friday = 0x5,
-        Saturday = 0x6,
+        None = 0x0,
+        Lax = 0x1,
+        Strict = 0x2,
+        Unspecified = -1,
     }
 
     /// <summary>
     /// </summary>
-    public enum MediaSelectorMode
+    public enum ResponseElementLocation
     {
-        Image = 0x0,
-        Audio = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum MergeTemplateOwnership
-    {
-        Global = 0x0,
-        Personal = 0x1,
-        PersonalAndGlobal = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum RequirementLevel
-    {
-        Unspecified = 0x0,
-        Optional = 0x1,
-        Required = 0x2,
-        Unavailable = 0x3,
-    }
-
-    /// <summary>
-    /// </summary>
-    [Flags]
-    public enum SlidingDateRangeType
-    {
-        Last = 0x0,
-        Current = 0x1,
-        DateRange = 0x2,
-        Previous = 0x4,
-        Next = 0x8,
-        Upcoming = 0x10,
-        All = -1,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum TimeUnitType
-    {
-        Hour = 0x0,
-        Day = 0x1,
-        Week = 0x2,
-        Month = 0x3,
-        Year = 0x4,
+        Header = 0x0,
+        Footer = 0x1,
     }
 
 }

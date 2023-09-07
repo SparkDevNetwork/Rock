@@ -94,7 +94,6 @@ import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import Rating from "@Obsidian/Controls/rating.obs";
 import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
-import PersonPicker from "@Obsidian/Controls/personPicker.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
 import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
@@ -235,8 +234,13 @@ import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.part
 import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
 import CampusAccountAmountPickerGallery from "./ControlGallery/campusAccountAmountPickerGallery.partial.obs";
 import PersonPickerGallery from "./ControlGallery/personPickerGallery.partial.obs";
+import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
+import HighlightLabelGallery from "./ControlGallery/highlightLabelGallery.partial.obs";
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
+import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
+import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -3760,7 +3764,9 @@ const modalGallery = defineComponent({
             isOpen: ref(false),
             value: "",
             importCode: getControlImportPath("modal"),
-            exampleCode: `<Modal title="Modal Dialog Title" saveText="Save" />`
+            exampleCode: `<Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
+    <TextBox label="Required Value" v-model="value" rules="required" />
+</Modal>`
         };
     },
     template: `
@@ -8120,7 +8126,17 @@ const controlGalleryComponents: Record<string, Component> = [
     DropDownContentGallery,
     ButtonDropDownListGallery,
     CampusAccountAmountPickerGallery,
+    LightGridGallery,
+    ImageEditorGallery,
+    HighlightLabelGallery,
+    PdfViewerGallery,
+    ChartGallery,
 ]
+    // Fix vue 3 SFC putting name in __name.
+    .map(a => {
+        a.name = a.__name ?? a.name;
+        return a;
+    })
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
     // Convert list to an object where the key is the component name and the value is the component
@@ -8357,6 +8373,10 @@ const detailBlockGallery = defineComponent({
 const templateGalleryComponents = [
     detailBlockGallery
 ]
+    .map(a => {
+        a.name = a.__name ?? a.name;
+        return a;
+    })
     .sort((a, b) => a.name.localeCompare(b.name))
     .reduce((newList, comp) => {
         newList[comp.name] = comp;

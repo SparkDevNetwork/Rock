@@ -33,7 +33,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a checkbox list of MEF Components of a specific type
     /// Stored as a pipe-delimited list of EntityType.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.COMPONENTS )]
     public class ComponentsFieldType : FieldType
     {
@@ -58,9 +58,23 @@ namespace Rock.Field.Types
                 .JoinStrings( ", " );
         }
 
-        #endregion 
+        #endregion
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // The default implementation of GetPublicEditValue calls GetPublicValue, which in this case has been overridden to return the text value
+            // or Friendly Name of the entity, but when editing we actually need the private value, i.e. the saved comma delimited Guid value(s). 
+            return privateValue;
+        }
 
         #endregion
 

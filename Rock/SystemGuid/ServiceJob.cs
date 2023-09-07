@@ -204,6 +204,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_160_UPDATE_NOTE_DATA = "3768889a-ba73-4cff-91f9-cc0f92780745";
 
         /// <summary>
+        /// The Job to run Post v16.0 Data Migrations to update the media element default urls.
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_UPDATE_MEDIA_ELEMENT_DEFAULT_URLS = "3f2a18ce-882d-4687-a4e4-b2a34af2777d";
+
+        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
@@ -286,5 +291,10 @@ namespace Rock.SystemGuid
         /// Following Event Type Detail, Financial Batch Detail
         /// </summary>
         public const string DATA_MIGRATIONS_CHOP_BLOCKS_GROUP_1 = "54FACAE5-2175-4FE0-AC9F-5CDA957BCFB5";
+
+        /// <summary>
+        /// The post update data migration job to chop the Group Registration block
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_CHOP_BLOCKS_GROUP_REGISTRATION = "72D9EC04-517A-4CA0-B631-9F9A41F1790D";
     }
 }

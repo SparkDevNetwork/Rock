@@ -395,14 +395,14 @@ namespace Rock.Jobs
 
             var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
 
-            var personEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) );
+            var personAliasEntityTypeId = EntityTypeCache.GetId<PersonAlias>();
             var personReminderList = reminders
-                .Where( r => r.ReminderType.EntityTypeId == personEntityTypeId )
+                .Where( r => r.ReminderType.EntityTypeId == personAliasEntityTypeId )
                 .OrderByDescending( r => r.ReminderDate )
                 .Take( remindersPerEntityType )
                 .ToList();
 
-            var groupEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Group ) );
+            var groupEntityTypeId = EntityTypeCache.GetId<Group>();
             var groupReminderList = reminders
                 .Where( r => r.ReminderType.EntityTypeId == groupEntityTypeId )
                 .OrderByDescending( r => r.ReminderDate )
@@ -410,7 +410,7 @@ namespace Rock.Jobs
                 .ToList();
 
             var otherReminders = reminders
-                .Where( r => r.ReminderType.EntityTypeId != personEntityTypeId
+                .Where( r => r.ReminderType.EntityTypeId != personAliasEntityTypeId
                         && r.ReminderType.EntityTypeId != groupEntityTypeId );
 
             var otherReminderList = new List<Reminder>();
@@ -445,7 +445,8 @@ namespace Rock.Jobs
                     continue;
                 }
 
-                var person = reminderEntities[reminder.Id] as Person;
+                var personAlias = reminderEntities[reminder.Id] as PersonAlias;
+                var person = personAlias.Person;
                 var photoUrl = person.PhotoUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );
                 var reminderData = new ReminderViewModel( reminder, person, photoUrl );
                 reminderDataObjects.Add( reminderData );

@@ -15,11 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.UI;
 
 namespace Rock.Web.Cache
 {
@@ -31,6 +34,11 @@ namespace Rock.Web.Cache
     [DataContract]
     public class BlockCache : ModelCache<BlockCache, Block>
     {
+        #region Fields
+
+        private List<EntityTypeCache> _contextTypesRequired;
+
+        #endregion
 
         #region Properties
 
@@ -269,6 +277,53 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets a list of any context entities that the block requires.
+        /// </summary>
+        public List<EntityTypeCache> ContextTypesRequired
+        {
+            get
+            {
+                if ( _contextTypesRequired == null )
+                {
+                    _contextTypesRequired = new List<EntityTypeCache>();
+
+                    int properties = 0;
+                    foreach ( var attribute in this.BlockType.GetCompiledType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
+                    {
+                        var contextAttribute = ( ContextAwareAttribute ) attribute;
+
+                        if ( !contextAttribute.Contexts.Any() )
+                        {
+                            // If the entity type was not specified in the attribute, look for a property that defines it
+                            string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : string.Empty );
+                            properties++;
+
+                            Guid guid = Guid.Empty;
+                            if ( Guid.TryParse( this.GetAttributeValue( propertyKeyName ), out guid ) )
+                            {
+                                _contextTypesRequired.Add( EntityTypeCache.Get( guid ) );
+                            }
+                        }
+                        else
+                        {
+                            foreach ( var context in contextAttribute.Contexts )
+                            {
+                                var entityType = context.EntityType;
+
+                                if ( entityType != null && !_contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
+                                {
+                                    _contextTypesRequired.Add( entityType );
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return _contextTypesRequired;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -311,6 +366,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }

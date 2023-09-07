@@ -41,6 +41,8 @@ export const FieldType = {
     AudioUrl: "3B2D8714-421C-4CB8-A892-58B83521EF8A",
     /** Background Check field type */
     Backgroundcheck: "D05B3808-803A-4531-9680-DD4AAB8ADF1A",
+    /** Badges field type */
+    Badges: "602F273B-7EC2-42E6-9AA7-A36A268192A3",
     /** Benevolence Request field type */
     BenevolenceRequest: "44EEC881-3C07-4A58-ACC4-0F21D873DBE0",
     /** Binary File field type */
@@ -67,6 +69,8 @@ export const FieldType = {
     CodeEditor: "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5",
     /** Color field type */
     Color: "D747E6AE-C383-4E22-8846-71518E3DD06F",
+    /** Color selector field type */
+    ColorSelector: "B07070F6-B66E-4B83-8DA6-12CF3400A1EC",
     /** Communication Preference field type */
     CommunicationPreferenceType: "507C28F2-8BC0-4909-A4FE-9C2B1149E2B2",
     /** Communication Template field type */

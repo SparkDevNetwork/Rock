@@ -8,7 +8,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AccountEntryConfirmationSentStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryConfirmationSentStepBag";
 
-    const props = defineProps({
+    defineProps({
         options: {
             type: Object as PropType<AccountEntryConfirmationSentStepBag>,
             required: true

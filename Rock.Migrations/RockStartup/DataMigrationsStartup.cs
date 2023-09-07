@@ -74,6 +74,8 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_NOTE_DATA.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_SWAP_NOTES_BLOCK.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_CHOP_BLOCKS_GROUP_1.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_CHOP_BLOCKS_GROUP_REGISTRATION.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_MEDIA_ELEMENT_DEFAULT_URLS.AsGuid(),
         };
 
 

@@ -2445,7 +2445,7 @@ mission. We are so grateful for your commitment.</p>
                 {
                     cbSmsOptIn.Visible = true;
                     cbSmsOptIn.Text = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
-                    cbSmsOptIn.Checked = workPhone.IsMessagingEnabled;
+                    cbSmsOptIn.Checked = workPhone?.IsMessagingEnabled ?? false;
                 }
             }
             

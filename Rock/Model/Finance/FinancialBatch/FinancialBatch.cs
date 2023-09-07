@@ -165,6 +165,14 @@ namespace Rock.Model
         /// </value>
         public string RemoteSettlementBatchKey { get; set; }
 
+        /// <summary>
+        /// Gets or sets the external system's settlement batch amount.
+        /// </summary>
+        /// <value>
+        /// The Settlement Batch Amount.
+        /// </value>
+        public decimal? RemoteSettlementAmount { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
