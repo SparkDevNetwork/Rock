@@ -89,6 +89,9 @@
     <Content Include="src\Engagement\achievementAttemptDetail.obs" />
     <Content Include="src\Engagement\AchievementAttemptDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\AchievementAttemptDetail\viewPanel.partial.obs" />
+    <Content Include="src\Engagement\achievementTypeDetail.obs" />
+    <Content Include="src\Engagement\AchievementTypeDetail\editPanel.partial.obs" />
+    <Content Include="src\Engagement\AchievementTypeDetail\viewPanel.partial.obs" />
     <Content Include="src\Engagement\stepTypeDetail.obs" />
     <Content Include="src\Engagement\StepTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\StepTypeDetail\viewPanel.partial.obs" />
@@ -424,6 +427,7 @@
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Engagement\AchievementAttemptDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Engagement\AchievementTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StepTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakTypeExclusionDetail\types.partial.ts" />
