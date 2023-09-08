@@ -6,15 +6,19 @@
                              v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
                              :gridActions="gridActions"
-                             :visibleColumnCount="visibleColumnCount" />
+                             :visibleColumnCount="visibleColumnCount"
+                             :countMessage="countMessage" />
+
+            <slot name="gridHeaderPrepend" />
 
             <ColumnHeaderRow :columns="visibleColumnDefinitions"
                              v-model:columnFilters="columnFilterValues"
                              v-model:columnSort="columnSortDirection"
                              :grid="gridState"
                              :light="light" />
-        </div>
 
+            <slot name="gridHeaderAppend" />
+        </div>
 
         <div class="grid-body" v-if="loadingData">
             <SkeletonRows :columns="visibleColumnDefinitions"
@@ -55,17 +59,20 @@
                          @click="onRowClick" />
 
         <div class="grid-footing">
+            <slot name="gridFooterPrepend" />
+
             <PagerRow v-if="!light"
                       v-model:pageSize="pageSize"
                       v-model:currentPage="currentPage"
                       :pageCount="pageCount"
                       :pageSizes="pageSizes"
-                      :message="pagerMessage"
                       :visibleColumnCount="visibleColumnCount" />
 
             <LightFooterRow v-else
                             :grid="gridState"
                             :gridActions="gridActions" />
+
+            <slot name="gridFooterAppend" />
         </div>
     </div>
 </template>
@@ -99,6 +106,7 @@
 
 .grid-obsidian > .grid-heading > .grid-title-heading {
     display: flex;
+    flex-wrap: wrap;
     border-bottom: 1px solid var(--theme-light);
     align-items: center;
     font-size: 18px;
@@ -112,6 +120,12 @@
     padding-left: 24px;
 }
 
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-badges {
+    height: 56px;
+    display: flex;
+    align-items: center;
+}
+
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions {
     background-color: initial;
     text-align: initial;
@@ -122,6 +136,11 @@
     height: 56px;
     margin: 0;
     border-radius: 0;
+}
+
+.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.active {
+    background-color: var(--theme-light);
+    color: var(--theme-medium);
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add {
@@ -278,6 +297,7 @@
     border-bottom-right-radius: 6px;
     border-bottom-left-radius: 6px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+    cursor: initial;
     font-weight: initial;
     z-index: 10;
     /* Temporary Fix Until JS */
@@ -327,6 +347,7 @@
     display: flex;
     align-items: flex-start;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+    overflow-x: hidden;
 }
 
 .grid-select-field:first-child {
@@ -353,13 +374,17 @@
     align-items: center;
 }
 
+.grid-footing {
+    color: var(--theme-darkest);
+    background-color: var(--theme-white);
+    border-radius: 0 0 4px 4px;
+    overflow: hidden;
+}
+
 .grid-paging-footer {
     display: flex;
     padding: 8px var(--table-cell-padding-x);
-    color: var(--theme-darkest);
-    background-color: var(--theme-white);
     align-items: center;
-    border-radius: 0 0 4px 4px;
 }
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes {
@@ -445,7 +470,7 @@
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { getColumnDefinitions, getEntitySetBag, GridActionUrlKey, GridState } from "@Obsidian/Core/Controls/grid";
     import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions, useDragReorder } from "@Obsidian/Directives/dragDrop";
-    import { ColumnSort, GridAction, ColumnDefinition, EntitySetOptions } from "@Obsidian/Types/Controls/grid";
+    import { ColumnSort, GridAction, ColumnDefinition, EntitySetOptions, IGridState } from "@Obsidian/Types/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
     import { GridCommunicationBag } from "@Obsidian/ViewModels/Core/Grid/gridCommunicationBag";
@@ -725,6 +750,25 @@
         },
 
         /**
+         * When `true`, a grid settings icon will be displayed and emit the
+         * `gridSettingsClick` event when clicked.
+         */
+        gridSettings: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * When `true`, the grid settings icon will be displayed in an active
+         * state. When `false`, the grid settings icon will be displayed in an
+         * in-active state.
+         */
+        gridSettingsActive: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
          * The function to call in response to the add button being clicked.
          * Providing this function will automatically enable the add button.
          */
@@ -744,12 +788,22 @@
         }
     });
 
+    const emit = defineEmits<{
+        (e: "gridSettingsClick"): void;
+        (e: "filteredRowsChanged", grid: IGridState): void;
+        (e: "selectedKeysChanged", grid: IGridState): void;
+    }>();
+
+    defineExpose({
+        deleteRow,
+        rowUpdated,
+        rowsUpdated
+    });
+
     // #endregion
 
     const slots = useSlots();
     const invokeBlockAction = useInvokeBlockAction();
-
-    const gridState = createGridState();
 
     // #region Values
 
@@ -763,10 +817,9 @@
     const columnSortDirection = ref<ColumnSort | undefined>();
     const visibleRows = ref<Record<string, unknown>[]>([]);
     const pageCount = ref(0);
-    const pagerMessage = ref("");
-    const visibleColumnDefinitions = shallowRef<ReadonlyArray<ColumnDefinition>>(gridState.visibleColumns);
+    const countMessage = ref("");
+    const visibleColumnDefinitions = shallowRef<ReadonlyArray<ColumnDefinition>>([]);
     const dragOptions = ref<IDragSourceOptions | undefined>();
-    const reorderColumn: ColumnDefinition | undefined = gridState.columns.find(c => c.name === "__reorder");
     const isRowSelectionInProgress = ref(false);
 
     const rootPreferences = usePersonPreferences().blockPreferences;
@@ -777,6 +830,13 @@
     // #endregion
 
     // #region Computed Values
+
+    /**
+     * The columns that have been configured in the template of this grid.
+     */
+    const columnDefinitions = computed((): ColumnDefinition[] => {
+        return getColumnDefinitions(slots["default"]?.() ?? []);
+    });
 
     /**
      * Contains the number of currently visible columns.
@@ -941,6 +1001,19 @@
             });
         }
 
+        if (props.gridSettings) {
+            actions.push({
+                buttonCssClass: props.gridSettingsActive ? "active" : "",
+                handler: () => {
+                    emit("gridSettingsClick");
+                },
+                iconCssClass: "fa fa-sliders-h",
+                isPrimary: true,
+                title: "Settings",
+                tooltip: "Adjust list settings."
+            });
+        }
+
         // Append the action for Merge Records.
         if (isMergeTemplateVisible.value) {
             actions.push({
@@ -1068,7 +1141,7 @@
      */
     function createGridState(): GridState {
         const state = new GridState(
-            getColumnDefinitions(slots["default"]?.() ?? []),
+            columnDefinitions.value,
             props.definition,
             props.liveUpdates ?? false,
             props.itemTerm || "item",
@@ -1097,11 +1170,18 @@
     }
 
     /**
-     * Updates the message to be displayed in the pager footer. This describes
-     * the items and how many there are.
+     * Updates the message that describes the items and how many there are.
      */
-    function updatePagerMessage(): void {
-        pagerMessage.value = `${asFormattedString(gridState.filteredRows.length)} ${pluralize(gridState.itemTerm, gridState.filteredRows.length)}`;
+    function updateCountMessage(): void {
+        if (loadingData.value) {
+            countMessage.value = `0 ${pluralize(gridState.itemTerm)}`;
+        }
+        else if (gridState.filteredRows.length === gridState.rows.length) {
+            countMessage.value = `${asFormattedString(gridState.filteredRows.length)} ${pluralize(gridState.itemTerm, gridState.filteredRows.length)}`;
+        }
+        else {
+            countMessage.value = `${asFormattedString(gridState.filteredRows.length)} of ${asFormattedString(gridState.rows.length)} ${pluralize(gridState.itemTerm, gridState.rows.length)}`;
+        }
     }
 
     /**
@@ -1249,6 +1329,7 @@
     async function updateGridData(): Promise<void> {
         // Show an indicator that we are loading data from the server.
         loadingData.value = true;
+        updateCountMessage();
 
         if (!props.data) {
             gridState.setDataRows([]);
@@ -1276,6 +1357,7 @@
         }
 
         loadingData.value = false;
+        updateCountMessage();
     }
 
     /**
@@ -1283,6 +1365,8 @@
      * of the rows.
      */
     function setupManualOrdering(): void {
+        const reorderColumn = columnDefinitions.value.find(c => c.name === "__reorder");
+
         // If we don't have a re-order column, then nothing to do.
         if (!reorderColumn) {
             dragOptions.value = undefined;
@@ -1380,6 +1464,37 @@
         const finalUrl = makeUrlRedirectSafe(url.replace("{EntitySetId}", `${result.data}`));
 
         window.location.href = finalUrl;
+    }
+
+    // #endregion
+
+    // #region Exposed Functions
+
+    /**
+     * Deletes a row from the grid when not tracking live updates.
+     *
+     * @param keyOrIndex The row key or row index that should be deleted.
+     */
+    function deleteRow(keyOrIndex: string | number): void {
+        gridState.deleteRow(keyOrIndex);
+    }
+
+    /**
+     * Informs the grid that the specified row has been modified.
+     *
+     * @param keyOrIndex The row key or index that was updated.
+     */
+    function rowUpdated(keyOrIndex: string | number): void {
+        gridState.rowUpdated(keyOrIndex);
+    }
+
+    /**
+     * Informs the grid that the specified rows have been modified.
+     *
+     * @param keysOrIndexes The row keys or indexes that have been updated.
+     */
+    function rowsUpdated(keysOrIndexes: readonly string[] | readonly number[]): void {
+        gridState.rowsUpdated(keysOrIndexes);
     }
 
     // #endregion
@@ -1783,7 +1898,7 @@
     function onSortedRowsChanged(): void {
         updateVisibleRows();
         updatePageCount();
-        updatePagerMessage();
+        updateCountMessage();
     }
 
     /**
@@ -1816,6 +1931,8 @@
 
     // #endregion
 
+    const gridState = createGridState();
+
     // Set initial filtering and sorting based on preferences. This needs to
     // happen before we start watching for changes so we don't try to save
     // preferences when we change the value.
@@ -1826,6 +1943,7 @@
 
     gridState.setFilters(quickFilterValue.value, columnFilterValues.value);
     gridState.setSort(columnSortDirection.value);
+    visibleColumnDefinitions.value = gridState.visibleColumns;
 
     watch(quickFilterValue, () => {
         currentPage.value = 1;
@@ -1851,7 +1969,18 @@
         gridState.setItemKey(props.keyField);
     });
 
+    watch(() => props.data, () => {
+        updateGridData();
+    });
+
+    watch(columnDefinitions, () => {
+        gridState.setColumns(columnDefinitions.value);
+    });
+
     gridState.on("sortedRowsChanged", onSortedRowsChanged);
+    gridState.on("visibleColumnsChanged", () => visibleColumnDefinitions.value = gridState.visibleColumns);
+    gridState.on("filteredRowsChanged", () => emit("filteredRowsChanged", gridState));
+    gridState.on("selectedKeysChanged", () => emit("selectedKeysChanged", gridState));
 
     onUnmounted(() => {
         gridState.off("sortedRowsChanged", onSortedRowsChanged);
