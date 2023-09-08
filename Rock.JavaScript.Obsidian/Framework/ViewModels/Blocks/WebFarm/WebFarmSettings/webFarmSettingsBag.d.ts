@@ -31,14 +31,20 @@ export type WebFarmSettingsBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** Gets or sets a value indicating whether this instance has valid key. */
+    hasValidKey: boolean;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
     /** Gets or sets a value indicating whether this instance is active. */
-    isActive: boolean;
+    isEnabled: boolean;
 
     /** Gets or sets a value indicating whether this instance is in memory transport. */
     isInMemoryTransport: boolean;
+
+    /** Gets or sets a value indicating whether this instance is running. */
+    isRunning: boolean;
 
     /** Gets or sets the lower polling limit. */
     lowerPollingLimit: number;
