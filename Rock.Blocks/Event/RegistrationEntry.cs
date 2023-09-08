@@ -200,15 +200,26 @@ namespace Rock.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 var viewModel = GetViewModel( rockContext );
+                var instanceName = viewModel.InstanceName;
 
-                if ( viewModel.InstanceName.IsNotNullOrWhiteSpace() )
+                if ( instanceName.IsNullOrWhiteSpace() && viewModel.RegistrationInstanceNotFoundMessage?.Contains( " closed on " ) == true )
                 {
-                    ResponseContext.SetPageTitle( viewModel.InstanceName );
-                    ResponseContext.SetBrowserTitle( viewModel.InstanceName );
+                    // The view model did not have a name filled in even though
+                    // we found the registration instance. Get the instance name
+                    // only so we can fill in the page name.
+                    var registrationInstanceId = GetRegistrationInstanceId( rockContext );
+                    instanceName = new RegistrationInstanceService( rockContext )
+                        .GetSelect( registrationInstanceId, ri => ri.Name );
+                }
+
+                if ( instanceName.IsNotNullOrWhiteSpace() )
+                {
+                    ResponseContext.SetPageTitle( instanceName );
+                    ResponseContext.SetBrowserTitle( instanceName );
 
                     // This is temporary until we have an interface to properly
                     // update the breadcrumbs.
-                    ResponseContext.AddBreadCrumb( new BreadCrumb( viewModel.InstanceName, RequestContext.RequestUri.PathAndQuery ) );
+                    ResponseContext.AddBreadCrumb( new BreadCrumb( instanceName, RequestContext.RequestUri.PathAndQuery ) );
                 }
 
                 return viewModel;
@@ -2532,7 +2543,7 @@ namespace Rock.Blocks.Event
             var session = GetRegistrationEntryBlockSession( rockContext, context.RegistrationSettings );
 
             /*
-	            9/7/2022 - SMC / DSH / NA
+                9/7/2022 - SMC / DSH / NA
                 
                 isExistingRegistration is true if we have a RegistrationId in the page parameters, OR if we have a saved
                 RegistrationGuid in the RegistrationSession temporary table.  This is true because redirection payment gateways
