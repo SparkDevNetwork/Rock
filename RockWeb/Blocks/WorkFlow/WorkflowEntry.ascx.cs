@@ -731,30 +731,6 @@ namespace RockWeb.Blocks.WorkFlow
                                 ActionTypeId = _actionType.Id;
                                 return true;
                             }
-
-                            if ( action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Delay && action.IsCriteriaValid )
-                            {
-                                if ( action.CompletedDateTime == null )
-                                {
-                                    var errorMessages = new List<string>();
-                                    _workflowService.Process( _workflow, out errorMessages );
-                                    if ( errorMessages.Any() )
-                                    {
-                                        ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):", "<ul><li>" + errorMessages.AsDelimited( "</li><li>", null, true ) + "</li></ul>" );
-                                    }
-
-                                    if ( action.CompletedDateTime == null )
-                                    {
-                                        ShowMessage( NotificationBoxType.Info, string.Empty, "Workflow is delayed", true );
-                                        _action = action;
-                                        _actionType = _action.ActionTypeCache;
-                                        ActionTypeId = _actionType.Id;
-
-                                        return true;
-                                    }
-
-                                }
-                            }
                         }
                     }
                 }
@@ -789,7 +765,6 @@ namespace RockWeb.Blocks.WorkFlow
             ShowNotes( false );
             pnlWorkflowUserForm.Visible = false;
             pnlWorkflowActionElectronicSignature.Visible = false;
-            
             return false;
         }
 
@@ -2257,8 +2232,7 @@ namespace RockWeb.Blocks.WorkFlow
                 // final form completed
                 LogWorkflowEntryInteraction( _workflow, completionActionTypeId, WorkflowInteractionOperationType.FormCompleted );
 
-                //Don't use the default response if there is summary text or if the action is a delay, which has its own message.
-                if ( lSummary.Text.IsNullOrWhiteSpace() && _action != null && !(_action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Delay ) )
+                if ( lSummary.Text.IsNullOrWhiteSpace() )
                 {
                     var hideForm = _action == null || _action.Guid != previousActionGuid;
                     ShowMessage( NotificationBoxType.Success, string.Empty, responseText, hideForm );
