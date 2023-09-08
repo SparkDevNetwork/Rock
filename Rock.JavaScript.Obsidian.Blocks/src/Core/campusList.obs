@@ -89,7 +89,7 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-            return result.data;
+            return gridData;
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");

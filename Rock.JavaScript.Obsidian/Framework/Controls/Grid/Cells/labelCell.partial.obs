@@ -27,6 +27,13 @@
 
             return `${(value as ListItemBag).text}`;
         }
+        else if (typeof value === "number" || typeof value === "string") {
+            const textSource = props.column.props["textSource"] as Record<string | number, string>;
+
+            if (textSource && value in textSource) {
+                return textSource[value];
+            }
+        }
 
         return `${value}`;
     });
