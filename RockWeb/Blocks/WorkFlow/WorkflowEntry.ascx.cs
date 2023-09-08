@@ -155,6 +155,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
             public const string InteractionStartDateTime = "InteractionStartDateTime";
+            public const string WorkflowMessageBoxSettings = "WorkflowMessageBoxSettings";
 
             // NOTE that the actual parameter for CampusId and CampusGuid is just 'Campus', but making them different internally to make it clearer
             public const string CampusId = "Campus";
@@ -171,6 +172,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string WorkflowTypeDeterminedByBlockAttribute = "WorkflowTypeDeterminedByBlockAttribute";
             public const string InteractionStartDateTime = "InteractionStartDateTime";
             public const string SignatureDocumentHtml = "SignatureDocumentHtml";
+            
         }
 
         #region Fields
@@ -258,6 +260,12 @@ namespace RockWeb.Blocks.WorkFlow
             get { return ViewState[ViewStateKey.SignatureDocumentHtml] as string; }
             set { ViewState[ViewStateKey.SignatureDocumentHtml] = value; }
         }
+
+        //public MessageBoxSettings WorkflowMessageBoxSettings
+        //{
+        //    get { return ViewState[ViewStateKey.WorkflowMessageBoxSettings] as MessageBoxSettings; }
+        //    set { ViewState[ViewStateKey.WorkflowMessageBoxSettings] = value; }
+        //}
 
         #endregion Properties
 
@@ -697,14 +705,15 @@ namespace RockWeb.Blocks.WorkFlow
 
                 activeWorkflowActivitiesList = activeWorkflowActivitiesList.OrderBy( a => a.ActivityTypeCache.Order ).ToList();
                 var activityCount = 0;
+                var actionCount = 0;
 
                 foreach ( var activity in activeWorkflowActivitiesList )
                 {
                     if ( canEdit || activity.ActivityTypeCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         activityCount++;
-                        foreach ( var action in activity.ActiveActions
-                            .Where( a => ( !actionId.HasValue || a.Id == actionId.Value ) ) )
+                        actionCount = 0;
+                        foreach ( var action in activity.ActiveActions.Where( a => ( !actionId.HasValue || a.Id == actionId.Value ) ) )
                         {
                             if ( action.ActionTypeCache.WorkflowForm != null && action.IsCriteriaValid )
                             {
@@ -749,11 +758,18 @@ namespace RockWeb.Blocks.WorkFlow
                                     {
                                         if ( activityCount == activeWorkflowActivitiesList.Count() )
                                         {
-                                            // There are no more activities so the delay has to expire before doing any more work, notify the user.
-                                            ShowMessage( NotificationBoxType.Info, string.Empty, "Workflow is delayed", true );
+                                            // There are no more activities so the delay has to expire before doing any more work
                                             _action = action;
                                             _actionType = _action.ActionTypeCache;
                                             ActionTypeId = _actionType.Id;
+
+                                            // Keep the display of the previous message
+                                            var pageReference = new PageReference( CurrentPageReference );
+                                            var workflowMessageBoxSettings = pageReference.Parameters.GetValueOrNull(PageParameterKey.WorkflowMessageBoxSettings)?.FromJsonOrNull<MessageBoxSettings>();
+                                            if( workflowMessageBoxSettings != null )
+                                            {
+                                                ShowMessage( workflowMessageBoxSettings.Type, workflowMessageBoxSettings.Title, workflowMessageBoxSettings.Text, workflowMessageBoxSettings.Visible );
+                                            }
 
                                             return true;
                                         }
@@ -763,11 +779,11 @@ namespace RockWeb.Blocks.WorkFlow
 
                                 }
                             }
+
+                            actionCount++;
                         }
                     }
                 }
-
-                lSummary.Text = string.Empty;
             }
             else
             {
@@ -908,6 +924,8 @@ namespace RockWeb.Blocks.WorkFlow
                 var electronicSignatureWorkflowAction = _actionType.WorkflowAction as Rock.Workflow.Action.ElectronicSignature;
                 BuildWorkflowActionDigitalSignature( electronicSignatureWorkflowAction, _action, setValues );
             }
+
+            pnlPersonEntrySection.Visible = false;
         }
 
         /// <summary>
@@ -2230,6 +2248,12 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( hydrateObjectsResult && _action != null && _action.Guid != previousActionGuid )
             {
+                if ( lSummary.Text.IsNullOrWhiteSpace() )
+                {
+                    var hideForm = _action == null || _action.Guid != previousActionGuid;
+                    PersistMessageBox( NotificationBoxType.Success, string.Empty, responseText, true );
+                }
+
                 // The block reloads the page with the workflow IDs as a parameter. At this point the workflow must be persisted regardless of user settings in order for the workflow to work.
                 _workflowService.PersistImmediately( _action );
 
@@ -2265,9 +2289,8 @@ namespace RockWeb.Blocks.WorkFlow
                 // final form completed
                 LogWorkflowEntryInteraction( _workflow, completionActionTypeId, WorkflowInteractionOperationType.FormCompleted );
 
-                //Don't use the default response if there is summary text or if the action is a delay, which has its own message.
-                if ( lSummary.Text.IsNullOrWhiteSpace() || ( _action != null && !(_action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Delay ) ) )
-                //if ( lSummary.Text.IsNullOrWhiteSpace() )
+                //Don't use the default response if there is summary text
+                if ( lSummary.Text.IsNullOrWhiteSpace() )
                 {
                     var hideForm = _action == null || _action.Guid != previousActionGuid;
                     ShowMessage( NotificationBoxType.Success, string.Empty, responseText, hideForm );
@@ -2540,6 +2563,21 @@ namespace RockWeb.Blocks.WorkFlow
                 pnlWorkflowUserForm.Visible = false;
                 pnlWorkflowActionElectronicSignature.Visible = false;
             }
+
+            PersistMessageBox( type, title, message, true );
+        }
+
+        private void PersistMessageBox( NotificationBoxType type, string title, string message, bool visible )
+        {
+            var workflowMessageBoxSettings = new MessageBoxSettings
+            {
+                Type = type,
+                Title = title,
+                Text = message,
+                Visible = visible
+            };
+
+            CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.WorkflowMessageBoxSettings, workflowMessageBoxSettings.ToJson() );
         }
 
         /// <summary>
@@ -2928,5 +2966,13 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         #endregion Interaction Methods
+
+        public class MessageBoxSettings
+        {
+            public NotificationBoxType Type { get; set; }
+            public string Title { get; set; }
+            public string Text { get; set; }
+            public bool Visible { get; set; }
+        }
     }
 }
