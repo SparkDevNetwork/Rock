@@ -841,7 +841,7 @@ mission. We are so grateful for your commitment.</p>
                 referencePaymentInfo = new ReferencePaymentInfo();
                 referencePaymentInfo.GatewayPersonIdentifier = financialScheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier;
                 referencePaymentInfo.FinancialPersonSavedAccountId = financialScheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccountId;
-                referencePaymentInfo.ReferenceNumber = financialGatewayComponent.GetReferenceNumber( scheduledTransaction, out errorMessage );
+                referencePaymentInfo.ReferenceNumber = financialGatewayComponent.GetReferenceNumber( financialScheduledTransaction, out errorMessage );
             }
             else if ( useSavedAccount )
             {
