@@ -2136,13 +2136,6 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
         {
             base.OnLoadComplete( e );
 
-            // Cause the wrapper to render it's content so the initialization
-            // logic will be part of our page load timings.
-            foreach ( var wrapper in _blockTypeWrappers )
-            {
-                wrapper.RenderAndCache();
-            }
-
             // Set the title displayed in the browser on the base page.
             string pageTitle = BrowserTitle ?? string.Empty;
             string siteTitle = _pageCache.Layout.Site.Name;
