@@ -19,8 +19,7 @@
                     <CheckBox
                         v-model="internalValue.isMessagingEnbabled"
                         label=""
-                        :text="smsOptInText ?? ''"
-                        class="input-group-addon"/>
+                        :text="smsOptInText ?? ''"/>
                 </div>
             </div>
         </template>
