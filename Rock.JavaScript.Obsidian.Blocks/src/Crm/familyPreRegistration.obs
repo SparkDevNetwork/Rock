@@ -206,6 +206,7 @@
                                 <div v-if="config.adultProfilePhotoField?.isShown" class="col-sm-6">
                                     <ImageUploader
                                         v-model="adult1.profileImageListItemBag"
+                                        :binaryFileTypeGuid="BinaryFiletype.PersonImage"
                                         :disabled="isSaving || isNavigating"
                                         label="Profile Photo"
                                         :rules="isAdult1Entered && config.adultProfilePhotoField.isRequired ? 'required' : ''" />
@@ -402,6 +403,7 @@
                                     <div v-if="config.adultProfilePhotoField?.isShown" class="col-sm-6">
                                         <ImageUploader
                                             v-model="adult2.profileImageListItemBag"
+                                            :binaryFileTypeGuid="BinaryFiletype.PersonImage"
                                             :disabled="isSaving || isNavigating"
                                             label="Profile Photo"
                                             :rules="isAdult2Entered && config.adultProfilePhotoField.isRequired ? 'required' : ''" />
@@ -501,6 +503,7 @@
     import StaticFormControl from "@Obsidian/Controls/staticFormControl";
     import TextBox from "@Obsidian/Controls/textBox";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { getDay, getMonth, toNoYearDateKey } from "@Obsidian/Utility/dateKey";

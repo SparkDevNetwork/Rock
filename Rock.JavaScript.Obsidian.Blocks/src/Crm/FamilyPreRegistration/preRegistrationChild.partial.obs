@@ -151,6 +151,7 @@
         <div class="col-sm-6">
             <ImageUploader
                 v-model="child.profileImageListItemBag"
+                :binaryFileTypeGuid="BinaryFiletype.PersonImage"
                 :disabled="disabled"
                 label="Profile Photo"
                 :rules="config.childProfilePhotoField.isRequired ? 'required' : ''" />
@@ -198,6 +199,7 @@
     import StaticFormControl from "@Obsidian/Controls/staticFormControl";
     import TextBox from "@Obsidian/Controls/textBox";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { FamilyPreRegistrationInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationInitializationBox";
