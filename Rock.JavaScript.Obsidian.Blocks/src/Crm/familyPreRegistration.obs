@@ -431,8 +431,8 @@
                                         v-if="config.addressField?.isShown"
                                         v-model="address"
                                         :disabled="isSaving || isNavigating"
+                                        :disableFrontEndValidation="!config.addressField.isRequired"
                                         label="Address"
-                                        :rules="config.addressField.isRequired ? 'required' : ''"
                                         :useCountryAbbreviation="false"
                                      />
                                 </div>
