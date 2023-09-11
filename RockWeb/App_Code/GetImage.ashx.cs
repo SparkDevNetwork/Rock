@@ -545,6 +545,11 @@ namespace RockWeb
         /// <param name="physFilePath">The physical file path.</param>
         private void Cache( Stream fileContent, string physFilePath )
         {
+            // If the fileContent happens to be empty, do not cache it.
+            if (fileContent == null || fileContent.Length == 0)
+            {
+                return;
+            }
             try
             {
                 // ensure that the Cache folder exists
