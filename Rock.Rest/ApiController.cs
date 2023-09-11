@@ -434,7 +434,17 @@ namespace Rock.Rest
                                 try
                                 {
                                     var int32 = Convert.ToInt32( currentValue );
-                                    property.SetValue( targetModel, int32 );
+                                
+                                    if ( !propertyType.IsEnum )
+                                    {
+                                        property.SetValue( targetModel, int32 );
+                                    }
+                                    else
+                                    {
+                                        // Convert the int to the enum type per https://stackoverflow.com/a/54627581
+                                        var convertedValue = Enum.ToObject( propertyType, int32 );
+                                        property.SetValue( targetModel, convertedValue, null );
+                                    }
                                 }
                                 catch ( OverflowException )
                                 {
