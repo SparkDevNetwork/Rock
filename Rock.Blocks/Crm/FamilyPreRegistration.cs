@@ -1195,9 +1195,9 @@ namespace Rock.Blocks.Crm
                         person.CommunicationPreference = ( CommunicationType ) ( int ) child.CommunicationPreference;
                     }
 
-                    if ( isChildProfileShown )
+                    if ( isChildProfileShown && child.ProfilePhotoGuid.HasValue )
                     {
-                        person.PhotoId = child.ProfilePhotoGuid.HasValue ? binaryFileService.GetId( child.ProfilePhotoGuid.Value ) : null;
+                        person.PhotoId = binaryFileService.GetId( child.ProfilePhotoGuid.Value );
                     }
 
                     if ( isChildRaceShown )

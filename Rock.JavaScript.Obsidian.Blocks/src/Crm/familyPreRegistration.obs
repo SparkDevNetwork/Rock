@@ -204,7 +204,7 @@
 
                             <div class="row">
                                 <div v-if="config.adultProfilePhotoField?.isShown" class="col-sm-6">
-                                    <ImageUploader
+                                    <ImageEditor
                                         v-model="adult1.profileImageListItemBag"
                                         :binaryFileTypeGuid="BinaryFiletype.PersonImage"
                                         :disabled="isSaving || isNavigating"
@@ -401,7 +401,7 @@
 
                                 <div class="row">
                                     <div v-if="config.adultProfilePhotoField?.isShown" class="col-sm-6">
-                                        <ImageUploader
+                                        <ImageEditor
                                             v-model="adult2.profileImageListItemBag"
                                             :binaryFileTypeGuid="BinaryFiletype.PersonImage"
                                             :disabled="isSaving || isNavigating"
@@ -492,7 +492,7 @@
     import EmailBox from "@Obsidian/Controls/emailBox";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
-    import ImageUploader from "@Obsidian/Controls/imageUploader";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
