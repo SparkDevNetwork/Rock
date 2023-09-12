@@ -212,6 +212,8 @@ import PopOver from "@Obsidian/Controls/popOver.obs";
 import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
 import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
+import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
+import { convertComponentName, getSfcControlImportPath } from "./ControlGallery/utils.partial";
 
 // #region Gallery Support
 
@@ -229,21 +231,6 @@ const displayStyleItems: ListItemBag[] = [
         text: "Condensed"
     }
 ];
-
-/**
- * Takes a gallery component's name and converts it to a name that is useful for the header and
- * sidebar by adding spaces and stripping out the "Gallery" suffix
- *
- * @param name Name of the control
- * @returns A string of code that can be used to import the given control file
- */
-function convertComponentName(name: string | undefined | null): string {
-    if (!name) {
-        return "Unknown Component";
-    }
-
-    return name.replace(/[A-Z]/g, " $&").replace(/Gallery$/, "").trim();
-}
 
 /**
  * Takes an element name and a collection of attribute keys and values and
@@ -513,17 +500,6 @@ export const GalleryAndResult = defineComponent({
  */
 export function getControlImportPath(fileName: string): string {
     return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}";`;
-}
-
-/**
- * Generate a string of an import statement that imports the SFC control will the given file name.
- * The control's name will be based off the filename
- *
- * @param fileName Name of the control's file
- * @returns A string of code that can be used to import the given control file
- */
-export function getSfcControlImportPath(fileName: string): string {
-    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}.obs";`;
 }
 
 /**
@@ -3963,7 +3939,9 @@ const modalGallery = defineComponent({
             isOpen: ref(false),
             value: "",
             importCode: getControlImportPath("modal"),
-            exampleCode: `<Modal title="Modal Dialog Title" saveText="Save" />`
+            exampleCode: `<Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
+    <TextBox label="Required Value" v-model="value" rules="required" />
+</Modal>`
         };
     },
     template: `
@@ -7738,6 +7716,7 @@ const controlGalleryComponents: Record<string, Component> = [
     rockLiteralGallery,
     registryEntryGallery,
     groupTypeGroupPickerGallery,
+    ImageEditorGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
