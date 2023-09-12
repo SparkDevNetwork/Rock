@@ -2501,6 +2501,11 @@ namespace Rock.Lava
                             modelCacheType = typeof( CampusCache );
                             break;
                         }
+                    case "EntityType":
+                        {
+                            modelCacheType = typeof( EntityTypeCache );
+                            break;
+                        }
                     case "Category":
                         {
                             modelCacheType = typeof( CategoryCache );
