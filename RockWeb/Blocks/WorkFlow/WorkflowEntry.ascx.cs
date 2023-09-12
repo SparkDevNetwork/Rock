@@ -696,13 +696,11 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 activeWorkflowActivitiesList = activeWorkflowActivitiesList.OrderBy( a => a.ActivityTypeCache.Order ).ToList();
-                var activityCount = 0;
 
                 foreach ( var activity in activeWorkflowActivitiesList )
                 {
                     if ( canEdit || activity.ActivityTypeCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
-                        activityCount++;
                         foreach ( var action in activity.ActiveActions
                             .Where( a => ( !actionId.HasValue || a.Id == actionId.Value ) ) )
                         {
@@ -732,36 +730,6 @@ namespace RockWeb.Blocks.WorkFlow
                                 _actionType = _action.ActionTypeCache;
                                 ActionTypeId = _actionType.Id;
                                 return true;
-                            }
-
-                            if ( action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Delay && action.IsCriteriaValid )
-                            {
-                                if ( action.CompletedDateTime == null )
-                                {
-                                    var errorMessages = new List<string>();
-                                    _workflowService.Process( _workflow, out errorMessages );
-                                    if ( errorMessages.Any() )
-                                    {
-                                        ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):", "<ul><li>" + errorMessages.AsDelimited( "</li><li>", null, true ) + "</li></ul>" );
-                                    }
-
-                                    if ( action.CompletedDateTime == null )
-                                    {
-                                        if ( activityCount == activeWorkflowActivitiesList.Count() )
-                                        {
-                                            // There are no more activities so the delay has to expire before doing any more work, notify the user.
-                                            ShowMessage( NotificationBoxType.Info, string.Empty, "Workflow is delayed", true );
-                                            _action = action;
-                                            _actionType = _action.ActionTypeCache;
-                                            ActionTypeId = _actionType.Id;
-
-                                            return true;
-                                        }
-                                        
-                                        break;
-                                    }
-
-                                }
                             }
                         }
                     }
@@ -797,7 +765,6 @@ namespace RockWeb.Blocks.WorkFlow
             ShowNotes( false );
             pnlWorkflowUserForm.Visible = false;
             pnlWorkflowActionElectronicSignature.Visible = false;
-            
             return false;
         }
 
@@ -2267,8 +2234,7 @@ namespace RockWeb.Blocks.WorkFlow
                 // final form completed
                 LogWorkflowEntryInteraction( _workflow, completionActionTypeId, WorkflowInteractionOperationType.FormCompleted );
 
-                //Don't use the default response if there is summary text or if the action is a delay, which has its own message.
-                if ( lSummary.Text.IsNullOrWhiteSpace() || ( _action != null && !(_action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Delay ) ) )
+                if ( lSummary.Text.IsNullOrWhiteSpace() )
                 {
                     var hideForm = _action == null || _action.Guid != previousActionGuid;
                     ShowMessage( NotificationBoxType.Success, string.Empty, responseText, hideForm );

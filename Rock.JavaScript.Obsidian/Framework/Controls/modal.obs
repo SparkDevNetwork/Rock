@@ -101,6 +101,7 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: boolean): void;
+        (e: "closeModal"): void;
         (e: "save"): void;
     }>();
 
@@ -170,6 +171,7 @@
      * Event handler for when one of the close buttons is clicked.
      */
     function onClose(): void {
+        emit("closeModal");
         internalModalVisible.value = false;
     }
 

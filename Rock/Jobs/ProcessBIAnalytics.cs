@@ -867,7 +867,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
                 // Get the count of existing analytics rows that require updating.
                 var countCandidateRecordsScript = GetPersonUpdateETLCandidateScript( personValueSelectColumns, attributeValueColumns );
 
-                var modifiedRowCount = ( int ) DbService.ExecuteScaler( countCandidateRecordsScript, CommandType.Text );
+                var modifiedRowCount = ( int ) DbService.ExecuteScalar( countCandidateRecordsScript, CommandType.Text, null, _commandTimeout );
 
                 var markAsHistoryScript = GetPersonMarkAsHistoryScript( historyColumns );
                 var updateETLScript = GetPersonUpdateETLScript( attributeValueColumns, personValueSelectColumns );

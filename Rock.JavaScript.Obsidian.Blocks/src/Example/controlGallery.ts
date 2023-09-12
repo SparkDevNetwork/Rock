@@ -238,6 +238,7 @@ import PersonPickerGallery from "./ControlGallery/personPickerGallery.partial.ob
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
+import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -3761,7 +3762,9 @@ const modalGallery = defineComponent({
             isOpen: ref(false),
             value: "",
             importCode: getControlImportPath("modal"),
-            exampleCode: `<Modal title="Modal Dialog Title" saveText="Save" />`
+            exampleCode: `<Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
+    <TextBox label="Required Value" v-model="value" rules="required" />
+</Modal>`
         };
     },
     template: `
@@ -8126,6 +8129,7 @@ const controlGalleryComponents: Record<string, Component> = [
     ButtonDropDownListGallery,
     CampusAccountAmountPickerGallery,
     LightGridGallery,
+    ImageEditorGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

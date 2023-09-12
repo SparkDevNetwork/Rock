@@ -52,7 +52,7 @@
                         </div>
                     </div>
 
-                    <Rock:RockTextBox ID="rtbSmsOptInMessage" runat="server" Label="SMS Opt-In Message" Help="This text will display next to a checkbox on blocks were a mobile phone number can be entered to enable SMS messaging for that number."></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="rtbSmsOptInMessage" runat="server" Label="SMS Opt-In Message" Help="This text will display next to a checkbox on blocks where a mobile phone number can be entered to enable SMS messaging for that number."></Rock:RockTextBox>
 
                     <div class="actions">
                         <Rock:BootstrapButton ID="btnUiSettingSave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnUiSettingSave_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="UISettings"></Rock:BootstrapButton>
