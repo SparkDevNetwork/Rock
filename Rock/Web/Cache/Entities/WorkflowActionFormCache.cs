@@ -113,9 +113,9 @@ namespace Rock.Web.Cache
         [DataMember]
         public WorkflowActionFormPersonEntryOption PersonEntryMobilePhoneEntryOption { get; private set; }
 
-        /// <inheritdoc cref="WorkflowActionForm.PersonEntrySmsOptInEntryOption"/>
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntrySmsOptInEntryOption" />
         [DataMember]
-        public WorkflowActionFormPersonEntryOption PersonEntrySmsOptInEntryOption { get; private set; }
+        public WorkflowActionFormShowHideOption PersonEntrySmsOptInEntryOption { get; private set; }
 
         /// <inheritdoc cref="WorkflowActionForm.PersonEntryBirthdateEntryOption"/>
         [DataMember]

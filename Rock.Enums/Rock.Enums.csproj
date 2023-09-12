@@ -170,6 +170,7 @@
     <Compile Include="Reporting\ReportFieldType.cs" />
     <Compile Include="Reporting\UnitType.cs" />
     <Compile Include="Blocks\Security\ConfirmAccount\ConfirmAccountViewType.cs" />
+    <Compile Include="Workflow\WorkflowActionFormShowHideOption.cs" />
     <Compile Include="Workflow\WorkflowActionFormPersonEntryOption.cs" />
     <Compile Include="Workflow\WorkflowLoggingLevel.cs" />
     <Compile Include="Workflow\WorkflowTriggerType.cs" />
