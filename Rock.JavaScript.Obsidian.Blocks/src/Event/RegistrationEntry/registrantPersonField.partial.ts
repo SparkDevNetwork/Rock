@@ -91,7 +91,11 @@ export default defineComponent({
                     return DropDownList;
 
                 case RegistrationPersonFieldType.HomePhone:
+                    return PhoneNumberBox;
+
                 case RegistrationPersonFieldType.WorkPhone:
+                    return PhoneNumberBox;
+
                 case RegistrationPersonFieldType.MobilePhone:
                     if(registrationEntryState.viewModel?.showSmsOptIn ?? false) {
                         return PhoneNumberBoxWithSms;

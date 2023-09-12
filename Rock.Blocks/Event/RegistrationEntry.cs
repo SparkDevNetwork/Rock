@@ -1494,12 +1494,10 @@ namespace Rock.Blocks.Event
                     }
 
                 case RegistrationPersonFieldType.HomePhone:
-                    var homePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
-                    return CreatePhoneNumberBoxWithSmsControlBag( homePhone );
+                    return person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() )?.Number;
 
                 case RegistrationPersonFieldType.WorkPhone:
-                    var workPhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
-                    return CreatePhoneNumberBoxWithSmsControlBag( workPhone );
+                    return person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() )?.Number;
 
                 case RegistrationPersonFieldType.MobilePhone:
                     var mobilePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
