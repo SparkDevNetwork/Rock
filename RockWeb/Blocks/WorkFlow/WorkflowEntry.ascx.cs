@@ -696,13 +696,11 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 activeWorkflowActivitiesList = activeWorkflowActivitiesList.OrderBy( a => a.ActivityTypeCache.Order ).ToList();
-                var activityCount = 0;
 
                 foreach ( var activity in activeWorkflowActivitiesList )
                 {
                     if ( canEdit || activity.ActivityTypeCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
-                        activityCount++;
                         foreach ( var action in activity.ActiveActions
                             .Where( a => ( !actionId.HasValue || a.Id == actionId.Value ) ) )
                         {
@@ -747,18 +745,12 @@ namespace RockWeb.Blocks.WorkFlow
 
                                     if ( action.CompletedDateTime == null )
                                     {
-                                        if ( activityCount == activeWorkflowActivitiesList.Count() )
-                                        {
-                                            // There are no more activities so the delay has to expire before doing any more work, notify the user.
-                                            ShowMessage( NotificationBoxType.Info, string.Empty, "Workflow is delayed", true );
-                                            _action = action;
-                                            _actionType = _action.ActionTypeCache;
-                                            ActionTypeId = _actionType.Id;
+                                        ShowMessage( NotificationBoxType.Info, string.Empty, "Workflow is delayed", true );
+                                        _action = action;
+                                        _actionType = _action.ActionTypeCache;
+                                        ActionTypeId = _actionType.Id;
 
-                                            return true;
-                                        }
-                                        
-                                        break;
+                                        return true;
                                     }
 
                                 }
