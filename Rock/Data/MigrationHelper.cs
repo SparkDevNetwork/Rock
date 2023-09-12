@@ -3617,7 +3617,7 @@ END" );
 ",
                     blockGuid,
                     attributeGuid,
-                    value.Replace( "'", "''" ),
+                    value?.Replace( "'", "''" ) ?? null,
                     ( appendToExisting ? "1" : "0" )
                 );
 
