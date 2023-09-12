@@ -40,7 +40,7 @@ using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Web.UI;
+using Rock.Web;
 
 namespace Rock.Blocks.Event
 {
@@ -132,7 +132,7 @@ namespace Rock.Blocks.Event
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
-    public class RegistrationEntry : RockBlockType
+    public class RegistrationEntry : RockBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -216,10 +216,6 @@ namespace Rock.Blocks.Event
                 {
                     ResponseContext.SetPageTitle( instanceName );
                     ResponseContext.SetBrowserTitle( instanceName );
-
-                    // This is temporary until we have an interface to properly
-                    // update the breadcrumbs.
-                    ResponseContext.AddBreadCrumb( new BreadCrumb( instanceName, RequestContext.RequestUri.PathAndQuery ) );
                 }
 
                 return viewModel;
@@ -682,7 +678,32 @@ namespace Rock.Blocks.Event
 
         #endregion Block Actions
 
-        #region Helpers
+        #region Methods
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstanceId = GetRegistrationInstanceId( rockContext, pageReference );
+                var instanceName = new RegistrationInstanceService( rockContext )
+                    .GetSelect( registrationInstanceId, ri => ri.Name );
+
+                if ( instanceName.IsNotNullOrWhiteSpace() )
+                {
+                    return new BreadCrumbResult
+                    {
+                        BreadCrumbs = new List<IBreadCrumb>
+                        {
+                            new BreadCrumbLink( instanceName, pageReference )
+                        }
+                    };
+                }
+
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Updates or Inserts the session.
@@ -3473,16 +3494,22 @@ namespace Rock.Blocks.Event
         /// Gets the registration session page parameter value from all possible sources.
         /// </summary>
         /// <returns>The session unique identifier or <c>null</c> if it could not be obtained.</returns>
-        private Guid? GetRegistrationSessionPageParameter()
+        private Guid? GetRegistrationSessionPageParameter( PageReference pageReference )
         {
-            var sessionGuid = PageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull();
+            var sessionGuid = pageReference != null
+                ? pageReference.GetPageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull()
+                : PageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull();
 
             if ( sessionGuid.HasValue )
             {
                 return sessionGuid;
             }
 
-            var prefixedSessionValue = RequestContext.GetPageParameters()
+            var pageParameters = pageReference != null
+                ? pageReference.GetPageParameters()
+                : RequestContext.GetPageParameters();
+
+            var prefixedSessionValue = pageParameters
                 .Select( k => k.Value )
                 .Where( v => v != null && v.StartsWith( ReturnUrlSessionPrefix ) )
                 .FirstOrDefault();
@@ -3502,8 +3529,36 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private int GetRegistrationInstanceId( RockContext rockContext )
         {
+            return GetRegistrationInstanceId( rockContext, null );
+        }
+
+        /// <summary>
+        /// Gets the registration instance identifier.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="pageReference">The page reference to use when accessing page parameters.</param>
+        /// <returns></returns>
+        private int GetRegistrationInstanceId( RockContext rockContext, PageReference pageReference )
+        {
+            string registrationParameter;
+            string registrationInstanceParameter;
+            string slugParameter;
+
+            if ( pageReference != null )
+            {
+                registrationParameter = pageReference.GetPageParameter( PageParameterKey.RegistrationId );
+                registrationInstanceParameter = pageReference.GetPageParameter( PageParameterKey.RegistrationInstanceId );
+                slugParameter = pageReference.GetPageParameter( PageParameterKey.Slug );
+            }
+            else
+            {
+                registrationParameter = PageParameter( PageParameterKey.RegistrationId );
+                registrationInstanceParameter = PageParameter( PageParameterKey.RegistrationInstanceId );
+                slugParameter = PageParameter( PageParameterKey.Slug );
+            }
+
             // The page param is the least costly since there is no database call, so try that first
-            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+            var registrationInstanceId = registrationInstanceParameter.AsIntegerOrNull();
 
             if ( registrationInstanceId.HasValue )
             {
@@ -3511,7 +3566,7 @@ namespace Rock.Blocks.Event
             }
 
             // Try a session. This is typically from a redirect
-            var registrationSessionGuid = GetRegistrationSessionPageParameter();
+            var registrationSessionGuid = GetRegistrationSessionPageParameter( pageReference );
 
             if ( registrationSessionGuid.HasValue )
             {
@@ -3532,15 +3587,13 @@ namespace Rock.Blocks.Event
             }
 
             // Try a url slug
-            var slug = PageParameter( PageParameterKey.Slug );
-
-            if ( !slug.IsNullOrWhiteSpace() )
+            if ( !slugParameter.IsNullOrWhiteSpace() )
             {
                 var linkage = new EventItemOccurrenceGroupMapService( rockContext )
                     .Queryable()
                     .AsNoTracking()
                     .Where( l =>
-                        l.UrlSlug == slug &&
+                        l.UrlSlug == slugParameter &&
                         l.RegistrationInstanceId.HasValue )
                     .Select( l => new
                     {
@@ -3555,7 +3608,7 @@ namespace Rock.Blocks.Event
             }
 
             // Try the registration id
-            var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+            var registrationId = registrationParameter.AsIntegerOrNull();
 
             if ( registrationId.HasValue )
             {
@@ -3587,7 +3640,7 @@ namespace Rock.Blocks.Event
         private RegistrationEntryBlockSession GetRegistrationEntryBlockSession( RockContext rockContext, RegistrationSettings settings )
         {
             // Try to restore the session from the RegistrationSessionGuid, which is typically a PushPay redirect
-            var registrationSessionGuid = GetRegistrationSessionPageParameter();
+            var registrationSessionGuid = GetRegistrationSessionPageParameter( null );
 
             if ( registrationSessionGuid.HasValue )
             {
