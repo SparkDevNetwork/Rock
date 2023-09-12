@@ -1412,7 +1412,7 @@ namespace Rock.Blocks.Crm
 
                     if ( isPlannedVisitDateShown )
                     {
-                        var visitDate = bag.PlannedVisitDate;
+                        var visitDate = bag.PlannedVisitDate?.Date;
                         if ( visitDate.HasValue )
                         {
                             parameters.Add( AttributeKey.PlannedVisitDate, visitDate.Value.ToString( "o" ) );
@@ -1420,7 +1420,7 @@ namespace Rock.Blocks.Crm
                     }
                     else if ( isPlannedVisitScheduleShown )
                     {
-                        var visitDate = bag.PlannedVisitDate;
+                        var visitDate = bag.PlannedVisitDate?.Date;
                         if ( visitDate.HasValue )
                         {
                             parameters.Add( AttributeKey.PlannedVisitDate, visitDate.Value.ToString( "o" ) );
