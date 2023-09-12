@@ -2260,7 +2260,7 @@ namespace RockWeb.Blocks.WorkFlow
                 LogWorkflowEntryInteraction( _workflow, completionActionTypeId, WorkflowInteractionOperationType.FormCompleted );
 
                 //Don't use the default response if there is summary text or if the action is a delay, which has its own message.
-                if ( lSummary.Text.IsNullOrWhiteSpace() || ( _action != null && !(_action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Delay ) ) )
+                if ( lSummary.Text.IsNullOrWhiteSpace() && _action != null && !(_action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Delay ) )
                 {
                     var hideForm = _action == null || _action.Guid != previousActionGuid;
                     ShowMessage( NotificationBoxType.Success, string.Empty, responseText, hideForm );
