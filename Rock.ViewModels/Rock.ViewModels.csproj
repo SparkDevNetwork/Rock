@@ -345,6 +345,7 @@
     <Compile Include="Blocks\Utility\RealTimeVisualizer\CustomSettingsOptionsBag.cs" />
     <Compile Include="Blocks\Utility\RealTimeVisualizer\ThemeListItemBag.cs" />
     <Compile Include="Blocks\Utility\RealTimeVisualizer\TopicAndChannelBag.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormFieldShowHide.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerBag.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerDetailBox.cs" />
     <Compile Include="Cms\ContentCollectionCustomFieldBag.cs" />

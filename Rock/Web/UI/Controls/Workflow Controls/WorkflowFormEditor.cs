@@ -163,7 +163,7 @@ namespace Rock.Web.UI.Controls
             form.PersonEntryGenderEntryOption = _ddlPersonEntryGenderEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
             form.PersonEntryEmailEntryOption = _ddlPersonEntryEmailEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
             form.PersonEntryMobilePhoneEntryOption = _ddlPersonEntryMobilePhoneEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
-            form.PersonEntrySmsOptInEntryOption = _ddlPersonEntrySmsOptInEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
+            form.PersonEntrySmsOptInEntryOption = _ddlPersonEntrySmsOptInEntryOption.SelectedValueAsEnum<WorkflowActionFormShowHideOption>();
             form.PersonEntryBirthdateEntryOption = _ddlPersonEntryBirthdateEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
             form.PersonEntryAddressEntryOption = _ddlPersonEntryAddressEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
             form.PersonEntryMaritalStatusEntryOption = _ddlPersonEntryMaritalStatusEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
