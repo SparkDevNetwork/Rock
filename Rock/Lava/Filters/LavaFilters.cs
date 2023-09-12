@@ -4079,7 +4079,6 @@ namespace Rock.Lava
 
                 input = input.EscapeQuotes();
 
-                input = input.EscapeQuotes();
                 if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
                 {
                     var quickReturnScript = "" +
