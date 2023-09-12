@@ -582,6 +582,7 @@
     <TypeScriptCompile Include="Framework\Enums\Reporting\reportFieldType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\unitType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Workflow\workflowActionFormPersonEntryOption.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Workflow\workflowActionFormShowHideOption.ts" />
     <TypeScriptCompile Include="Framework\Enums\Workflow\workflowLoggingLevel.ts" />
     <TypeScriptCompile Include="Framework\Enums\Workflow\workflowTriggerType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Workflow\workflowTriggerValueChangeType.ts" />

@@ -1062,6 +1062,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum WorkflowActionFormShowHideOption
+    {
+        Hide = 0x0,
+        Show = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum WorkflowLoggingLevel
     {
         None = 0x0,
