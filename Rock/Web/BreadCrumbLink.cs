@@ -14,81 +14,66 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Web.UI
+namespace Rock.Web
 {
     /// <summary>
     /// Helper class to work with page navigation
     /// </summary>
-    public class BreadCrumb
+    public class BreadCrumbLink : IBreadCrumb
     {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
+        /// <inheritdoc/>
         public string Name { get; set; }
 
-        /// <summary>
-        /// Gets or sets the URL.
-        /// </summary>
-        /// <value>
-        /// The URL.
-        /// </value>
+        /// <inheritdoc/>
         public string Url { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="BreadCrumb" /> is active.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if active; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc/>
         public bool Active { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BreadCrumb" /> class.
+        /// Initializes a new instance of the <see cref="BreadCrumbLink" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="active">if set to <c>true</c> [active].</param>
-        public BreadCrumb( string name, bool active = false )
+        public BreadCrumbLink( string name, bool active = false )
         {
             Name = name;
             Active = active;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BreadCrumb" /> class.
+        /// Initializes a new instance of the <see cref="BreadCrumbLink" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="url">The URL.</param>
         /// <param name="active">if set to <c>true</c> [active].</param>
-        public BreadCrumb( string name, string url, bool active = false )
+        public BreadCrumbLink( string name, string url, bool active = false )
             : this( name, active )
         {
             Url = url;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BreadCrumb" /> class.
+        /// Initializes a new instance of the <see cref="BreadCrumbLink" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="pageReference">The page reference.</param>
         /// <param name="active">if set to <c>true</c> [active].</param>
-        public BreadCrumb( string name, PageReference pageReference, bool active = false )
+        public BreadCrumbLink( string name, PageReference pageReference, bool active = false )
             : this( name, active )
         {
             Url = pageReference.BuildUrl();
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="string" /> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="string" /> that represents this instance.
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
     }
 }

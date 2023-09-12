@@ -23,6 +23,7 @@ using System.Web;
 using System.Web.Routing;
 using System.Web.Security.AntiXss;
 
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -312,6 +313,50 @@ namespace Rock.Web
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets the value that matches the given page parameter name. This will
+        /// first try to search the route parameters and then try the query
+        /// parameters.
+        /// </summary>
+        /// <param name="name">The name of the parameter to be retrieved.</param>
+        /// <returns>The value of the parameter or <c>null</c> if it was found.</returns>
+        public string GetPageParameter( string name )
+        {
+            if ( Parameters.TryGetValue( name, out var value ) )
+            {
+                return value;
+            }
+
+            if ( QueryString.AllKeys.Contains( name ) )
+            {
+                return QueryString[name];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets all the page parameters related to this page reference. This
+        /// includes both route parameters and query string parameters.
+        /// </summary>
+        /// <returns>A dictionary of parameter data whose case are case-insensitive.</returns>
+        public IDictionary<string, string> GetPageParameters()
+        {
+            var parameters = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+
+            foreach ( var p in Parameters )
+            {
+                parameters.AddOrIgnore( p.Key, p.Value );
+            }
+
+            foreach ( var k in QueryString.AllKeys )
+            {
+                parameters.AddOrIgnore( k, QueryString[k] );
+            }
+
+            return parameters;
+        }
 
         /// <summary>
         /// Builds the URL.
@@ -789,6 +834,138 @@ namespace Rock.Web
             }
         }
 
+        /// <summary>
+        /// Gets the page references and their breadcrumbs that make up the
+        /// current page and it's tree of parent pages.
+        /// </summary>
+        /// <param name="rockPage">The page handling this request.</param>
+        /// <param name="initialPage">The initial page to start building the references from.</param>
+        /// <param name="initialPageReference">The page reference that contains the parameter data for <paramref name="initialPage"/>.</param>
+        /// <param name="keySuffix">The cache key suffix when accessing cache.</param>
+        /// <returns>An array of page references with the current page being the last item in the list.</returns>
+        internal static List<PageReference> GetBreadCrumbPageReferences( RockPage rockPage, PageCache initialPage, PageReference initialPageReference, string keySuffix )
+        {
+            if ( initialPage == null )
+            {
+                return new List<PageReference>();
+            }
+
+            // Get previous page references in nav history
+            var key = BuildStorageKey( keySuffix );
+            var pageReferenceHistory = ( Dictionary<int, List<BreadCrumb>> ) HttpContext.Current.Session[key];
+            var newPageReferenceHistory = new Dictionary<int, List<BreadCrumb>>();
+
+            // Current page hierarchy references
+            var pageReferences = new List<PageReference>();
+
+            // Initial starting parameters.
+            var trackedPageParameters = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+
+            if ( initialPageReference != null )
+            {
+                foreach ( var p in initialPageReference.Parameters )
+                {
+                    trackedPageParameters.AddOrIgnore( p.Key, p.Value );
+                }
+
+                foreach ( var qs in initialPageReference.QueryString.AllKeys )
+                {
+                    trackedPageParameters.AddOrIgnore( qs, initialPageReference.QueryString[qs] );
+                }
+            }
+
+            var currentParentPages = initialPage.GetPageHierarchy();
+
+            foreach ( PageCache page in currentParentPages )
+            {
+                var pageBlocks = page.Blocks.Where( b => b.BlockLocation == BlockLocation.Page );
+                var pageBreadCrumbs = new List<BreadCrumb>();
+
+                // Check the blocks that support the new breadcrumb behavior.
+                foreach ( var block in pageBlocks )
+                {
+                    var compiledType = block.BlockType.GetCompiledType();
+
+                    if ( compiledType == null || !typeof( IBreadCrumbBlock ).IsAssignableFrom( compiledType ) )
+                    {
+                        continue;
+                    }
+
+                    var instance = ( IBreadCrumbBlock ) Activator.CreateInstance( compiledType );
+                    var instancePageReference = new PageReference( page.Id, 0, trackedPageParameters );
+                    var crumbResult = instance.GetBreadCrumbs( instancePageReference );
+
+                    if ( crumbResult?.BreadCrumbs != null && crumbResult.BreadCrumbs.Count > 0 )
+                    {
+                        foreach ( var crumb in crumbResult.BreadCrumbs )
+                        {
+                            // In the future, when we can change PageReference.BreadCrumbs
+                            // to be a list of IBreadCrumb then this can be simplified.
+                            pageBreadCrumbs.Add( new BreadCrumb( crumb.Name, crumb.Url, crumb.Active ) );
+                        }
+                    }
+
+                    if ( crumbResult?.AdditionalParameters != null && crumbResult.AdditionalParameters.Count > 0 )
+                    {
+                        foreach ( var ap in crumbResult.AdditionalParameters )
+                        {
+                            trackedPageParameters.AddOrReplace( ap.Key, ap.Value );
+                        }
+                    }
+                }
+
+                if ( initialPage.Id != page.Id && pageReferenceHistory?.TryGetValue( page.Id, out var cachedBreadCrumbs ) == true )
+                {
+                    pageBreadCrumbs.AddRange( cachedBreadCrumbs );
+                    newPageReferenceHistory.Add( page.Id, cachedBreadCrumbs );
+                }
+                else
+                {
+                    var blockPageReference = page.Id == initialPage.Id ? new PageReference( initialPageReference ) : new PageReference( page.Id );
+
+                    foreach ( var block in pageBlocks.Where( b => b.BlockType.Path.IsNotNullOrWhiteSpace() ) )
+                    {
+                        try
+                        {
+                            System.Web.UI.Control control = rockPage.TemplateControl.LoadControl( block.BlockType.Path );
+                            if ( control is RockBlock rockBlock )
+                            {
+                                rockBlock.SetBlock( page, block );
+                                rockBlock.GetBreadCrumbs( blockPageReference ).ForEach( c => blockPageReference.BreadCrumbs.Add( c ) );
+                            }
+
+                            control = null;
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( ex, HttpContext.Current, initialPage.Id, initialPage.Layout.SiteId );
+                        }
+                    }
+
+                    pageBreadCrumbs.AddRange( blockPageReference.BreadCrumbs );
+                    newPageReferenceHistory.Add( page.Id, blockPageReference.BreadCrumbs );
+                }
+
+                var parentPageReference = new PageReference( page.Id );
+
+                var bcName = page.BreadCrumbText;
+                if ( bcName != string.Empty )
+                {
+                    parentPageReference.BreadCrumbs.Add( new BreadCrumb( bcName, parentPageReference.BuildUrl() ) );
+                }
+
+                parentPageReference.BreadCrumbs.AddRange( pageBreadCrumbs );
+                parentPageReference.BreadCrumbs.ForEach( c => c.Active = false );
+                pageReferences.Add( parentPageReference );
+            }
+
+            HttpContext.Current.Session[key] = newPageReferenceHistory;
+
+            pageReferences.Reverse();
+
+            return pageReferences;
+        }
+
         #endregion
 
         #region Public Static Methods
@@ -800,6 +977,8 @@ namespace Rock.Web
         /// <param name="currentPage">The current page.</param>
         /// <param name="currentPageReference">The current page reference.</param>
         /// <returns></returns>
+        [RockObsolete( "1.16.1" )]
+        [Obsolete( "Parent page references is handled internally." )]
         public static List<PageReference> GetParentPageReferences( RockPage rockPage, PageCache currentPage, PageReference currentPageReference )
         {
             return GetParentPageReferences( rockPage, currentPage, currentPageReference, null );
@@ -813,83 +992,26 @@ namespace Rock.Web
         /// <param name="currentPageReference">The current page reference.</param>
         /// <param name="keySuffix">The suffix - if any - that should be added to the base key that will be used to get the parent page references.</param>
         /// <returns></returns>
+        [RockObsolete( "1.16.1" )]
+        [Obsolete( "Parent page references is handled internally." )]
         public static List<PageReference> GetParentPageReferences( RockPage rockPage, PageCache currentPage, PageReference currentPageReference, string keySuffix )
         {
-            var key = BuildStorageKey( keySuffix );
+            var references = GetBreadCrumbPageReferences( rockPage, currentPage, currentPageReference, keySuffix );
 
-            // Get previous page references in nav history
-            var pageReferenceHistory = HttpContext.Current.Session[key] as List<PageReference>;
-
-            // Current page hierarchy references
-            var pageReferences = new List<PageReference>();
-
-            if ( currentPage != null )
+            if ( references.Count > 0 )
             {
-                var parentPage = currentPage.ParentPage;
-                if ( parentPage != null )
-                {
-                    var currentParentPages = parentPage.GetPageHierarchy();
-                    if ( currentParentPages != null && currentParentPages.Count > 0 )
-                    {
-                        currentParentPages.Reverse();
-                        foreach ( PageCache page in currentParentPages )
-                        {
-                            PageReference parentPageReference = null;
-                            if ( pageReferenceHistory != null )
-                            {
-                                parentPageReference = pageReferenceHistory.Where( p => p.PageId == page.Id ).FirstOrDefault();
-                            }
-
-                            if ( parentPageReference == null )
-                            {
-                                parentPageReference = new PageReference();
-                                parentPageReference.PageId = page.Id;
-
-                                parentPageReference.BreadCrumbs = new List<BreadCrumb>();
-                                parentPageReference.QueryString = new NameValueCollection();
-                                parentPageReference.Parameters = new Dictionary<string, string>();
-
-                                string bcName = page.BreadCrumbText;
-                                if ( bcName != string.Empty )
-                                {
-                                    parentPageReference.BreadCrumbs.Add( new BreadCrumb( bcName, parentPageReference.BuildUrl() ) );
-                                }
-
-                                foreach ( var block in page.Blocks.Where( b => b.BlockLocation == Model.BlockLocation.Page && b.BlockType.Path.IsNotNullOrWhiteSpace() ) )
-                                {
-                                    try
-                                    {
-                                        System.Web.UI.Control control = rockPage.TemplateControl.LoadControl( block.BlockType.Path );
-                                        if ( control is RockBlock )
-                                        {
-                                            RockBlock rockBlock = control as RockBlock;
-                                            rockBlock.SetBlock( page, block );
-                                            rockBlock.GetBreadCrumbs( parentPageReference ).ForEach( c => parentPageReference.BreadCrumbs.Add( c ) );
-                                        }
-
-                                        control = null;
-                                    }
-                                    catch ( Exception ex )
-                                    {
-                                        ExceptionLogService.LogException( ex, HttpContext.Current, currentPage.Id, currentPage.Layout.SiteId );
-                                    }
-                                }
-                            }
-
-                            parentPageReference.BreadCrumbs.ForEach( c => c.Active = false );
-                            pageReferences.Add( parentPageReference );
-                        }
-                    }
-                }
+                return references.Take( references.Count - 1 ).ToList();
             }
 
-            return pageReferences;
+            return references;
         }
 
         /// <summary>
         /// Saves the history.
         /// </summary>
         /// <param name="pageReferences">The page references.</param>
+        [RockObsolete( "1.16.1" )]
+        [Obsolete( "Caching of page references for use as breadcrumbs is handled internally." )]
         public static void SavePageReferences( List<PageReference> pageReferences )
         {
             SavePageReferences( pageReferences, null );
@@ -900,11 +1022,10 @@ namespace Rock.Web
         /// </summary>
         /// <param name="pageReferences">The page references.</param>
         /// <param name="keySuffix">The suffix - if any - that should be added to the base key that will be used to save the parent page references.</param>
+        [RockObsolete( "1.16.1" )]
+        [Obsolete( "Caching of page references for use as breadcrumbs is handled internally." )]
         public static void SavePageReferences( List<PageReference> pageReferences, string keySuffix )
         {
-            var key = BuildStorageKey( keySuffix );
-
-            HttpContext.Current.Session[key] = pageReferences;
         }
 
         /// <summary>

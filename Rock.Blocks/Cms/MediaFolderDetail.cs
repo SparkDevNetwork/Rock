@@ -28,6 +28,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaFolderDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -49,7 +50,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "29cf7521-2dcd-467a-98fa-1c28c16c8b69" )]
     [Rock.SystemGuid.BlockTypeGuid( "662af7bb-5b61-43c6-bda6-a6e7aab8fc00" )]
-    public class MediaFolderDetail : RockDetailBlockType
+    public class MediaFolderDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -440,6 +441,39 @@ namespace Rock.Blocks.Cms
             }
 
             return mediaElementAttributes;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaFolderKey = pageReference.GetPageParameter( PageParameterKey.MediaFolderId );
+                var pageParameters = new Dictionary<string, string>();
+                var additionalParameters = new Dictionary<string, string>();
+
+                var data = new MediaFolderService( rockContext )
+                    .GetSelect( mediaFolderKey, mf => new
+                    {
+                        mf.Name,
+                        mf.MediaAccountId
+                    } );
+
+                if ( data != null )
+                {
+                    pageParameters.Add( PageParameterKey.MediaFolderId, mediaFolderKey );
+                    additionalParameters.Add( PageParameterKey.MediaAccountId, data.MediaAccountId.ToString() );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( data?.Name ?? "New Media Folder", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb },
+                    AdditionalParameters = additionalParameters
+                };
+            }
         }
 
         #endregion
