@@ -646,7 +646,7 @@ namespace Rock.Web.UI.Controls
                 Label = "SMS Opt-In"
             };
 
-            _ddlPersonEntrySmsOptInEntryOption.BindToEnum<WorkflowActionFormPersonEntryOption> ();
+            _ddlPersonEntrySmsOptInEntryOption.BindToEnum<WorkflowActionFormShowHideOption> ();
 
             _ddlPersonEntryBirthdateEntryOption = new RockDropDownList
             {
