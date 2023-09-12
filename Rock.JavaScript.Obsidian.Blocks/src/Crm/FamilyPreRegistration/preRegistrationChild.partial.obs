@@ -149,8 +149,9 @@
     </div>
     <div v-if="config.childProfilePhotoField?.isShown" class="row">
         <div class="col-sm-6">
-            <ImageUploader
+            <ImageEditor
                 v-model="child.profileImageListItemBag"
+                :binaryFileTypeGuid="BinaryFiletype.PersonImage"
                 :disabled="disabled"
                 label="Profile Photo"
                 :rules="config.childProfilePhotoField.isRequired ? 'required' : ''" />
@@ -190,7 +191,7 @@
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
     import GradePicker from "@Obsidian/Controls/gradePicker.obs";
-    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
@@ -198,12 +199,12 @@
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { FamilyPreRegistrationInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationInitializationBox";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
-    const getColumnClass = useGetBootstrapColumnClass(2);
 
     const props = defineProps({
         childNumber: {
@@ -222,7 +223,7 @@
         }
     });
 
-    const emit = defineEmits<{
+    defineEmits<{
         (e: "remove", value: ChildRequestBag): void
     }>();
 

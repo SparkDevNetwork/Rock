@@ -204,8 +204,9 @@
 
                             <div class="row">
                                 <div v-if="config.adultProfilePhotoField?.isShown" class="col-sm-6">
-                                    <ImageUploader
+                                    <ImageEditor
                                         v-model="adult1.profileImageListItemBag"
+                                        :binaryFileTypeGuid="BinaryFiletype.PersonImage"
                                         :disabled="isSaving || isNavigating"
                                         label="Profile Photo"
                                         :rules="isAdult1Entered && config.adultProfilePhotoField.isRequired ? 'required' : ''" />
@@ -400,8 +401,9 @@
 
                                 <div class="row">
                                     <div v-if="config.adultProfilePhotoField?.isShown" class="col-sm-6">
-                                        <ImageUploader
+                                        <ImageEditor
                                             v-model="adult2.profileImageListItemBag"
+                                            :binaryFileTypeGuid="BinaryFiletype.PersonImage"
                                             :disabled="isSaving || isNavigating"
                                             label="Profile Photo"
                                             :rules="isAdult2Entered && config.adultProfilePhotoField.isRequired ? 'required' : ''" />
@@ -429,8 +431,8 @@
                                         v-if="config.addressField?.isShown"
                                         v-model="address"
                                         :disabled="isSaving || isNavigating"
+                                        :disableFrontEndValidation="!config.addressField.isRequired"
                                         label="Address"
-                                        :rules="config.addressField.isRequired ? 'required' : ''"
                                         :useCountryAbbreviation="false"
                                      />
                                 </div>
@@ -490,7 +492,7 @@
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
-    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
@@ -501,6 +503,7 @@
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { getDay, getMonth, toNoYearDateKey } from "@Obsidian/Utility/dateKey";

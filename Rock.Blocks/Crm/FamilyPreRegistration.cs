@@ -1193,9 +1193,9 @@ namespace Rock.Blocks.Crm
                         person.CommunicationPreference = ( CommunicationType ) ( int ) child.CommunicationPreference;
                     }
 
-                    if ( isChildProfileShown )
+                    if ( isChildProfileShown && child.ProfilePhotoGuid.HasValue )
                     {
-                        person.PhotoId = child.ProfilePhotoGuid.HasValue ? binaryFileService.GetId( child.ProfilePhotoGuid.Value ) : null;
+                        person.PhotoId = binaryFileService.GetId( child.ProfilePhotoGuid.Value );
                     }
 
                     if ( isChildRaceShown )
@@ -2674,7 +2674,7 @@ namespace Rock.Blocks.Crm
                     bag.LastName.Trim(),
                     bag.Email?.Trim(),
                     bag.MobilePhone?.Trim(),
-                    bag.Gender,
+                    bag.Gender == Gender.Unknown ? (Gender?)null : bag.Gender,
                     bag.BirthDate.ToDateTime(),
                     DefinedValueCache.GetId( bag.SuffixDefinedValueGuid.GetValueOrDefault() ) );
 
@@ -2720,7 +2720,10 @@ namespace Rock.Blocks.Crm
 
             if ( GetFieldBag( AttributeKey.AdultGender ).IsShown )
             {
-                adult.Gender = bag.Gender;
+                if ( bag.Gender != Gender.Unknown || saveEmptyValues )
+                {
+                    adult.Gender = bag.Gender;
+                }
             }
 
             var adultBirthdateOptions = GetDatePickerFieldBag( AttributeKey.AdultBirthdate );
@@ -2748,10 +2751,6 @@ namespace Rock.Blocks.Crm
                 {
                     adult.MaritalStatusValueId = DefinedValueCache.GetId( bag.MaritalStatusDefinedValueGuid.Value );
                 }
-                else
-                {
-                    adult.MaritalStatusValueId = null;
-                } 
             }
 
             if ( isEmailShown )
