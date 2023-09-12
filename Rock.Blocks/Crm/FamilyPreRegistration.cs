@@ -2750,7 +2750,7 @@ namespace Rock.Blocks.Crm
 
             if ( GetFieldBag( AttributeKey.AdultMaritalStatus ).IsShown )
             {
-                if ( bag.MaritalStatusDefinedValueGuid.HasValue || saveEmptyValues )
+                if ( bag.MaritalStatusDefinedValueGuid.HasValue )
                 {
                     adult.MaritalStatusValueId = DefinedValueCache.GetId( bag.MaritalStatusDefinedValueGuid.Value );
                 } 
