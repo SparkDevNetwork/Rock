@@ -914,7 +914,7 @@ namespace Rock.Web
                     }
                 }
 
-                if ( initialPage.Id != page.Id && pageReferenceHistory?.TryGetValue( page.Id, out var cachedBreadCrumbs ) == true )
+                if ( initialPage.Id != page.Id && pageReferenceHistory != null && pageReferenceHistory.TryGetValue( page.Id, out var cachedBreadCrumbs ) )
                 {
                     pageBreadCrumbs.AddRange( cachedBreadCrumbs );
                     newPageReferenceHistory.Add( page.Id, cachedBreadCrumbs );
