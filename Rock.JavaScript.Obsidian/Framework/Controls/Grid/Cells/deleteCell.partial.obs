@@ -26,6 +26,12 @@
             return true;
         }
 
+        if (typeof props.column.props.rowDisabled === "function") {
+            if (props.column.props.rowDisabled(props.row, props.grid)) {
+                return true;
+            }
+        }
+
         return false;
     });
 
@@ -56,7 +62,7 @@
                 }
             }
 
-            const result = props.column.props.onClick(key);
+            const result = props.column.props.onClick(key, props.grid);
 
             // If the onClick function is asynchronous, wait for it.
             if (isPromise(result)) {

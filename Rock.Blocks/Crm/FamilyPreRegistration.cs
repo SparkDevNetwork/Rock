@@ -230,7 +230,7 @@ namespace Rock.Blocks.Crm
         "Birth Date",
         Key = AttributeKey.AdultBirthdate,
         Description = "How should Birth Date be displayed for adults?",
-        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED_ADULT_BIRTHDATE,
         IsRequired = false,
         DefaultValue = "Optional",
         Category = CategoryKey.AdultFields,
@@ -584,6 +584,7 @@ namespace Rock.Blocks.Crm
         private static class ListSource
         {
             public const string DISPLAY_SMS_OPT_IN = "Hide,First Adult,All Adults,Adults and Children";
+            public const string HIDE_OPTIONAL_REQUIRED_ADULT_BIRTHDATE = "Hide^Hide,Optional^Optional,Required_Partial^Required (month and day only),Required^Required (full)";
             public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
             public const string HIDE_SHOW_REQUIRED = "Hide,Show,Required";
             public const string HIDE_OPTIONAL = "Hide,Optional";
@@ -1086,7 +1087,12 @@ namespace Rock.Blocks.Crm
                 // Save any family attribute values.
                 primaryFamily.LoadAttributes( rockContext );
                 var familyAttributes = GetFamilyAttributes( this.GetCurrentPerson() );
-                primaryFamily.SetPublicAttributeValues( bag.FamilyAttributeValues, this.GetCurrentPerson(), attributeFilter: a1 => familyAttributes.Any( a => a.Guid == a1.Guid ) );
+                primaryFamily.SetPublicAttributeValues(
+                    bag.FamilyAttributeValues,
+                    this.GetCurrentPerson(),
+                    // Do not enforce security; otherwise, some attribute values may not be set for unauthenticated users.
+                    enforceSecurity: false,
+                    attributeFilter: a1 => familyAttributes.Any( a => a.Guid == a1.Guid ) );
                 primaryFamily.SaveAttributeValues( rockContext );
 
                 // Get the adult known relationship groups.
@@ -1227,7 +1233,12 @@ namespace Rock.Blocks.Crm
 
                     // Save the attributes for the child.
                     person.LoadAttributes();
-                    person.SetPublicAttributeValues( child.AttributeValues, this.GetCurrentPerson(), attributeFilter: a1 => childAttributes.Any( a => a.Guid == a1.Guid ) );
+                    person.SetPublicAttributeValues(
+                        child.AttributeValues,
+                        this.GetCurrentPerson(),
+                        // Do not enforce security; otherwise, some attribute values may not be set for unauthenticated users.
+                        enforceSecurity: false,
+                        attributeFilter: a1 => childAttributes.Any( a => a.Guid == a1.Guid ) );
                     person.SaveAttributeValues( rockContext );
 
                     // Get the child's current family state.
@@ -1394,9 +1405,10 @@ namespace Rock.Blocks.Crm
                     };
 
                     var visitDateField = GetVisitDateFieldBag( out var errorMessage );
-                    var isPlannedVisitDateHidden = visitDateField.IsHidden || !visitDateField.IsDateAndTimeShown;
-                    var isPlannedVisitScheduleHidden = visitDateField.IsHidden || visitDateField.IsDateAndTimeShown;
-                    if ( !isPlannedVisitDateHidden )
+                    var isPlannedVisitDateShown = visitDateField.IsShown && visitDateField.IsDateShown;
+                    var isPlannedVisitScheduleShown = visitDateField.IsShown && visitDateField.IsDateAndTimeShown;
+
+                    if ( isPlannedVisitDateShown )
                     {
                         var visitDate = bag.PlannedVisitDate;
                         if ( visitDate.HasValue )
@@ -1404,7 +1416,7 @@ namespace Rock.Blocks.Crm
                             parameters.Add( AttributeKey.PlannedVisitDate, visitDate.Value.ToString( "o" ) );
                         }
                     }
-                    else if ( !isPlannedVisitScheduleHidden && schedule != null )
+                    else if ( isPlannedVisitScheduleShown )
                     {
                         var visitDate = bag.PlannedVisitDate;
                         if ( visitDate.HasValue )
@@ -1412,8 +1424,11 @@ namespace Rock.Blocks.Crm
                             parameters.Add( AttributeKey.PlannedVisitDate, visitDate.Value.ToString( "o" ) );
                         }
 
-                        // Also add the schedule id
-                        parameters.Add( "ScheduleId", schedule.Id.ToString() );
+                        if ( schedule != null )
+                        {
+                            // Also add the schedule id
+                            parameters.Add( "ScheduleId", schedule.Id.ToString() );
+                        }
                     }
 
                     // Look for any workflows
@@ -1890,7 +1905,7 @@ namespace Rock.Blocks.Crm
                 AddressField = GetFieldBag( AttributeKey.AdultAddress ),
                 AdultGenderField = GetFieldBag( AttributeKey.AdultGender ),
                 AdultSuffixField = GetFieldBag( AttributeKey.AdultSuffix ),
-                AdultBirthdayField = GetFieldBag( AttributeKey.AdultBirthdate ),
+                AdultBirthdayField = GetDatePickerFieldBag( AttributeKey.AdultBirthdate ),
                 AdultEmailField = GetFieldBag( AttributeKey.AdultEmail ),
                 AdultMaritalStatusField = GetFieldBag( AttributeKey.AdultMaritalStatus ),
                 AdultCommunicationPreferenceField = GetFieldBag( AttributeKey.AdultDisplayCommunicationPreference ),
@@ -2355,16 +2370,17 @@ namespace Rock.Blocks.Crm
         /// <summary>
         /// Gets the isOptional and isHidden field properties associated with a given attribute.
         /// </summary>
-        /// <param name="attributeValue">The attribute key.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="getFieldBagForAttributeValue">Used to return a field bag for non-standard attribute values.</param>
         /// <returns>Whether the field isOptional and isHidden.</returns>
-        private FamilyPreRegistrationFieldBag GetFieldBag( string attributeKey )
+        private T GetFieldBag<T>( string attributeKey, Func<string, T> getFieldBagForAttributeValue = null ) where T : FamilyPreRegistrationFieldBag, new()
         {
-            var attributeValue = this.GetAttributeValue( attributeKey );
+            var attributeValue = GetAttributeValue( attributeKey );
 
             if ( string.Equals( attributeValue, "Hide", StringComparison.OrdinalIgnoreCase ) )
             {
                 // Hidden and optional.
-                return new FamilyPreRegistrationFieldBag
+                return new T
                 {
                     IsHidden = true,
                     IsShown = false,
@@ -2375,7 +2391,7 @@ namespace Rock.Blocks.Crm
             else if ( string.Equals( attributeValue, "Required", StringComparison.OrdinalIgnoreCase ) )
             {
                 // Shown and required.
-                return new FamilyPreRegistrationFieldBag
+                return new T
                 {
                     IsHidden = false,
                     IsShown = true,
@@ -2383,10 +2399,11 @@ namespace Rock.Blocks.Crm
                     IsRequired = true
                 };
             }
-            else
+            else if ( string.Equals( attributeValue, "Optional", StringComparison.OrdinalIgnoreCase )
+                      || string.Equals( attributeValue, "Show", StringComparison.OrdinalIgnoreCase ) )
             {
-                // Shown and optional by default.
-                return new FamilyPreRegistrationFieldBag
+                // Shown and optional.
+                return new T
                 {
                     IsHidden = false,
                     IsShown = true,
@@ -2394,6 +2411,59 @@ namespace Rock.Blocks.Crm
                     IsRequired = false
                 };
             }
+            else
+            {
+                // If none of the above checks pass,
+                // then try to get the field bag from the supplied delegate.
+                return getFieldBagForAttributeValue?.Invoke( attributeValue )
+                    // Shown and optional by default.
+                    ?? new T
+                    {
+                        IsHidden = false,
+                        IsShown = true,
+                        IsOptional = true,
+                        IsRequired = false
+                    };
+            }
+        }
+
+        /// <summary>
+        /// Gets the isOptional and isHidden field properties associated with a given attribute.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns>Whether the field isOptional and isHidden.</returns>
+        private FamilyPreRegistrationFieldBag GetFieldBag( string attributeKey )
+        {
+            return GetFieldBag<FamilyPreRegistrationFieldBag>( attributeKey );
+        }
+
+        /// <summary>
+        /// Gets the isOptional and isHidden field properties associated with a given attribute.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns>Whether the field isOptional and isHidden.</returns>
+        private FamilyPreRegistrationDatePickerFieldBag GetDatePickerFieldBag( string attributeKey )
+        {
+            return GetFieldBag(
+                attributeKey,
+                attributeValue =>
+                {
+                    if ( string.Equals( attributeValue, "Required_Partial", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        return new FamilyPreRegistrationDatePickerFieldBag
+                        {
+                            IsMonthAndDayRequired = true,
+                            IsRequired = false,
+                            IsHidden = false,
+                            IsShown = true,
+                            IsOptional = false
+                        };
+                    }
+
+                    // Return `null` here to let the parent method handle the default return value.
+                    return null;
+                } );
+
         }
 
         /// <summary>
@@ -2653,8 +2723,17 @@ namespace Rock.Blocks.Crm
                 adult.Gender = bag.Gender;
             }
 
-            if ( GetFieldBag( AttributeKey.AdultBirthdate ).IsShown )
+            var adultBirthdateOptions = GetDatePickerFieldBag( AttributeKey.AdultBirthdate );
+            if ( adultBirthdateOptions.IsShown )
             {
+                if ( ( adultBirthdateOptions.IsMonthAndDayRequired || adultBirthdateOptions.IsOptional )
+                     && bag.BirthDate?.Year == 0 )
+                {
+                    // If the year is optional and the year is not set,
+                    // then default it to the minimum year value.
+                    bag.BirthDate.Year = DateTime.MinValue.Year;
+                }
+
                 var birthDate = bag.BirthDate.ToDateTime();
 
                 if ( birthDate.HasValue || saveEmptyValues )
@@ -2733,7 +2812,12 @@ namespace Rock.Blocks.Crm
             // Save any attribute values
             adult.LoadAttributes( rockContext );
             var adultAttributes = GetAttributeCategoryAttributes( rockContext, this.AdultAttributeCategoryGuids );
-            adult.SetPublicAttributeValues( bag.AttributeValues, this.GetCurrentPerson(), attributeFilter: a1 => adultAttributes.Any( a => a.Guid == a1.Guid ) );
+            adult.SetPublicAttributeValues(
+                bag.AttributeValues,
+                this.GetCurrentPerson(),
+                // Do not enforce security; otherwise, some attribute values may not be set for unauthenticated users.
+                enforceSecurity: false,
+                attributeFilter: a1 => adultAttributes.Any( a => a.Guid == a1.Guid ) );
             adult.SaveAttributeValues( rockContext );
 
             adults.Add( adult );

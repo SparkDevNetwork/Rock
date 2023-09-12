@@ -89,7 +89,7 @@
 
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const isActive = ref(props.modelValue.isActive ?? false);
+    const isActive = ref(props.modelValue.isEnabled ?? false);
     const webFarmKey = ref(props.modelValue.webFarmKey ?? "");
     const lowerPollingLimit = ref(props.modelValue.lowerPollingLimit);
     const upperPollingLimit = ref(props.modelValue.upperPollingLimit);
@@ -119,7 +119,7 @@
     watch(() => props.modelValue, () => {
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(isActive, props.modelValue.isActive);
+        updateRefValue(isActive, props.modelValue.isEnabled);
         updateRefValue(webFarmKey, props.modelValue.webFarmKey ?? "");
         updateRefValue(lowerPollingLimit, props.modelValue.lowerPollingLimit);
         updateRefValue(upperPollingLimit, props.modelValue.upperPollingLimit);
@@ -133,7 +133,7 @@
         const newValue: WebFarmSettingsBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
-            isActive: isActive.value,
+            isEnabled: isActive.value,
             webFarmKey: webFarmKey.value,
             lowerPollingLimit: lowerPollingLimit.value,
             upperPollingLimit: upperPollingLimit.value,

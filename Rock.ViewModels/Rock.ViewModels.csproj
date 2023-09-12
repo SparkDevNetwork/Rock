@@ -58,6 +58,7 @@
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
@@ -66,6 +67,9 @@
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusResponseBag.cs" />
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayBag.cs" />
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionBag.cs" />
@@ -91,9 +95,14 @@
     <Compile Include="Blocks\Event\RegistrationListLavaBox.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\BusinessDetailBag.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\BusinessDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDatePickerFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationSmsOptInFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationFieldBag.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDateAndTimeFieldBag.cs" />
+    <Compile Include="Blocks\Engagement\AchievementTypeDetail\AchievementTypeBag.cs" />
+    <Compile Include="Blocks\Engagement\AchievementTypeDetail\AchievementTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeBag.cs" />
+    <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\SearchKeyBag.cs" />
     <Compile Include="Blocks\Group\GroupSchedulePreference\PreferencePageContentBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleBag.cs" />

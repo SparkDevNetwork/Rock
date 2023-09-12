@@ -162,7 +162,7 @@ namespace Rock.Web.UI.Controls
         /// Hidden field to assist in figuring out which items are checked.
         /// </summary>
         private HiddenField _hfCheckBoxListId;
-        
+
         #endregion
 
         #region Properties
@@ -213,7 +213,7 @@ namespace Rock.Web.UI.Controls
 
             base.RenderControl( writer );
 
-            var script = $"Rock.controls.colorSelector.initialize({{ controlId: '{this.ClientID}', allowMultiple: {AllowMultiple.ToJavaScriptValue()} }})";
+            var script = $"Rock.controls.colorSelector.initialize({{ controlId: '{this.ClientID}', allowMultiple: {AllowMultiple.ToJavaScriptValue()} }});";
 
             // On startup, modify the checkboxes so they look like color boxes.
             ScriptManager.RegisterStartupScript( this, typeof( ColorSelector ), "ColorSelectorScript_" + this.ClientID, script, true );
@@ -242,7 +242,7 @@ namespace Rock.Web.UI.Controls
 
             this.RequiredFieldValidator.ControlToValidate = _hfCheckBoxListId.ID;
         }
-        
+
         /// <inheritdoc/>
         protected override void OnInit( System.EventArgs e )
         {

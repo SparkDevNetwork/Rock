@@ -64,25 +64,37 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.cs" />
-    <Compile Include="Migrations\202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.designer.cs">
       <DependentUpon>202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202308260019585_AddRemoteSettlementAmountToFinancialBatch.cs" />
-    <Compile Include="Migrations\202308260019585_AddRemoteSettlementAmountToFinancialBatch.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308260019585_AddRemoteSettlementAmountToFinancialBatch.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308260019585_AddRemoteSettlementAmountToFinancialBatch.designer.cs">
       <DependentUpon>202308260019585_AddRemoteSettlementAmountToFinancialBatch.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202308291925296_ModifyValueAsPersonIdColumnInAttributeValueTableAndRenamePayFlowGatewayBlocks.cs" />
-    <Compile Include="Migrations\202308291925296_ModifyValueAsPersonIdColumnInAttributeValueTableAndRenamePayFlowGatewayBlocks.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308291925296_ModifyValueAsPersonIdColumnInAttributeValueTableAndRenamePayFlowGatewayBlocks.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308291925296_ModifyValueAsPersonIdColumnInAttributeValueTableAndRenamePayFlowGatewayBlocks.designer.cs">
       <DependentUpon>202308291925296_ModifyValueAsPersonIdColumnInAttributeValueTableAndRenamePayFlowGatewayBlocks.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202308311625179_AddDefaultUrlsToMediaElement.cs" />
-    <Compile Include="Migrations\202308311625179_AddDefaultUrlsToMediaElement.Designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308311625179_AddDefaultUrlsToMediaElement.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308311625179_AddDefaultUrlsToMediaElement.Designer.cs">
       <DependentUpon>202308311625179_AddDefaultUrlsToMediaElement.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202309071523040_PersonAliasReminders.cs" />
-    <Compile Include="Migrations\202309071523040_PersonAliasReminders.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309071523040_PersonAliasReminders.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309071523040_PersonAliasReminders.designer.cs">
       <DependentUpon>202309071523040_PersonAliasReminders.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309071842499_Rollup_20230907.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309071842499_Rollup_20230907.designer.cs">
+      <DependentUpon>202309071842499_Rollup_20230907.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309071914168_CodeGenerated_20230907.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309071914168_CodeGenerated_20230907.designer.cs">
+      <DependentUpon>202309071914168_CodeGenerated_20230907.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309072020172_CodeGeneration20230907_2.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309072020172_CodeGeneration20230907_2.designer.cs">
+      <DependentUpon>202309072020172_CodeGeneration20230907_2.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.designer.cs">
@@ -1802,20 +1814,29 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.resx">
       <DependentUpon>202308251850448_ReplaceWebformsGroupRegistrationWithObsidian.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202308260019585_AddRemoteSettlementAmountToFinancialBatch.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308260019585_AddRemoteSettlementAmountToFinancialBatch.resx">
       <DependentUpon>202308260019585_AddRemoteSettlementAmountToFinancialBatch.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202308291925296_ModifyValueAsPersonIdColumnInAttributeValueTableAndRenamePayFlowGatewayBlocks.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308291925296_ModifyValueAsPersonIdColumnInAttributeValueTableAndRenamePayFlowGatewayBlocks.resx">
       <DependentUpon>202308291925296_ModifyValueAsPersonIdColumnInAttributeValueTableAndRenamePayFlowGatewayBlocks.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202308311625179_AddDefaultUrlsToMediaElement.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308311625179_AddDefaultUrlsToMediaElement.resx">
       <DependentUpon>202308311625179_AddDefaultUrlsToMediaElement.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202309071523040_PersonAliasReminders.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309071523040_PersonAliasReminders.resx">
       <DependentUpon>202309071523040_PersonAliasReminders.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309071842499_Rollup_20230907.resx">
+      <DependentUpon>202309071842499_Rollup_20230907.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309071914168_CodeGenerated_20230907.resx">
+      <DependentUpon>202309071914168_CodeGenerated_20230907.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309072020172_CodeGeneration20230907_2.resx">
+      <DependentUpon>202309072020172_CodeGeneration20230907_2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.resx">
       <DependentUpon>202308221829356_AddRemoteSettlementBatchIdToFinancialBatch.cs</DependentUpon>

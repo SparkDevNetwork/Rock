@@ -141,7 +141,7 @@
         ...standardRockFormFieldProps,
 
         modelValue: {
-            type: Object as PropType<ListItemBag>,
+            type: Object as PropType<ListItemBag | ListItemBag[]>,
             required: true
         },
 

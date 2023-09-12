@@ -19,6 +19,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Crm.SignalTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class SignalTypeBag : EntityBagBase
     {
         /// <summary>

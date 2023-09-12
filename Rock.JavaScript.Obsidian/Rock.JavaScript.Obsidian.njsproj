@@ -277,6 +277,7 @@
     <Folder Include="Framework\Enums\Event\" />
     <Folder Include="Framework\Enums\Finance\" />
     <Folder Include="Framework\Enums\Group\" />
+    <Folder Include="Framework\Enums\Net\" />
     <Folder Include="Framework\Enums\Reporting\" />
     <Folder Include="Framework\Enums\Workflow\" />
     <Folder Include="Framework\FieldTypes\" />
@@ -342,6 +343,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\" />
@@ -364,6 +366,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Finance\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
@@ -570,6 +573,8 @@
     <TypeScriptCompile Include="Framework\Enums\Group\participationType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\requirementCheckType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\scheduleConfirmationLogic.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Net\cookieSameSiteMode.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Net\responseElementLocation.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\fieldFilterSourceType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\filterExpressionType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\metricNumericDataType.ts" />
@@ -794,6 +799,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\scheduleExclusionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateDetail\getPdfPreviewUrlRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\scheduleBag.d.ts" />
@@ -816,6 +822,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\BadgeDetail\badgeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationCreateAccountRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationDateAndTimeFieldBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationDatePickerFieldBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationFieldBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationGetScheduleDatesRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationGetScheduleDatesResponseBag.d.ts" />
@@ -829,6 +836,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\achievementTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\achievementTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceDetailInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendeeBag.d.ts" />
@@ -879,6 +888,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchCurrencyTotalsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\financialBatchListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\setBulkBatchStatusRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\setBulkBatchStatusResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\financialGatewayBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\financialGatewayDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBag.d.ts" />

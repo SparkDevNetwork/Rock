@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -179,7 +179,9 @@ namespace Rock.Blocks.WebFarm
         {
             return new WebFarmSettingsBag
             {
-                IsActive = RockWebFarm.IsEnabled(),
+                IsEnabled = RockWebFarm.IsEnabled(),
+                HasValidKey = RockWebFarm.HasValidKey(),
+                IsRunning = RockWebFarm.IsRunning(),
                 WebFarmKey = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.WEBFARM_KEY ),
                 LowerPollingLimit = RockWebFarm.GetLowerPollingLimitSeconds(),
                 UpperPollingLimit = RockWebFarm.GetUpperPollingLimitSeconds(),
@@ -254,7 +256,7 @@ namespace Rock.Blocks.WebFarm
                 {
                     var metrics = node.WebFarmNodeMetrics.ConvertAll( x => new MetricViewModel() { MetricValue = x.MetricValue, MetricValueDateTime = x.MetricValueDateTime } );
                     var samples = WebFarmNodeMetricService.CalculateMetricSamples( metrics, _cpuMetricSampleCount, ChartMinDate, ChartMaxDate );
-                    node.ChartHtml = GetChartHtml( samples );
+                    node.ChartData = GetChartData( samples );
                 }
             }
 
@@ -285,8 +287,8 @@ namespace Rock.Blocks.WebFarm
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => RockWebFarm.SetIsEnabled( box.Entity.IsActive ) );
+            box.IfValidProperty( nameof( box.Entity.IsEnabled ),
+                () => RockWebFarm.SetIsEnabled( box.Entity.IsEnabled ) );
 
             box.IfValidProperty( nameof( box.Entity.WebFarmKey ),
                 () => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.WEBFARM_KEY, box.Entity.WebFarmKey ) );
@@ -343,7 +345,7 @@ namespace Rock.Blocks.WebFarm
         /// Gets the chart HTML.
         /// </summary>
         /// <returns></returns>
-        private string GetChartHtml( decimal[] samples )
+        private string GetChartData( decimal[] samples )
         {
             if ( samples == null || samples.Length <= 1 )
             {
@@ -351,20 +353,19 @@ namespace Rock.Blocks.WebFarm
             }
 
             return string.Format(
-@"<canvas
-    class='js-chart''
-    data-chart='{{
-        ""labels"": [{0}],
-        ""datasets"": [{{
-            ""data"": [{1}],
-            ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
-            ""borderColor"": ""#009CE3"",
-            ""borderWidth"": 2,
-            ""pointRadius"": 0,
-            ""pointHoverRadius"": 0
-        }}]
-    }}'>
-</canvas>",
+@"{{
+            ""labels"": [{0}],
+            ""datasets"": [{{
+                ""data"": [{1}],
+                ""fill"": true,
+                ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
+                ""borderColor"": ""#009CE3"",
+                ""borderWidth"": 2,
+                ""pointRadius"": 0,
+                ""pointHoverRadius"": 0,
+                ""tension"": 0.5
+            }}]
+        }}",
                 samples.Select( s => "\"\"" ).JoinStrings( "," ),
                 samples.Select( s => ( ( int ) s ).ToString() ).JoinStrings( "," )
             );

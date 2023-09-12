@@ -93,6 +93,6 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail
         /// <value>
         /// The chart HTML.
         /// </value>
-        public string ChartHtml { get; set; }
+        public string ChartData { get; set; }
     }
 }
