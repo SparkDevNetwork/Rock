@@ -21,7 +21,8 @@
                    :label="label"
                    :help="helpText"
                    :configurationValues="configurationValues"
-                   :rules="rules" />
+                   :rules="rules"
+                   @updateConfiguration="$emit('updateConfiguration')" />
     </div>
 </template>
 

@@ -9,7 +9,7 @@
             {{ fieldErrorMessage }}
         </NotificationBox>
         <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationValues" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
-        <RockField v-if="hasDefaultValue && !showConfigOnly" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode />
+        <RockField v-if="hasDefaultValue && !showConfigOnly" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode @updateConfiguration="onUpdateConfiguration" />
     </div>
 </template>
 

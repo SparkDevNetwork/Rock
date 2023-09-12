@@ -220,6 +220,7 @@ export const EditComponent = defineComponent({
                     internalValue.value = result.data.value ?? "";
                 }
 
+                emit("updateConfiguration");
                 hideAddForm();
                 newValue.value = "";
                 newDescription.value = "";
