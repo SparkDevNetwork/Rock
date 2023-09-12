@@ -16,21 +16,21 @@ body:
     validations:
       required: true
   - type: textarea
-    id: expected-behavior
-    attributes:
-      label: Expected Behavior
-      description: Please provide a brief description of the expected behavior of the system.
-      placeholder: Expected Behavior
-      value: "Expected Behavior"
-    validations:
-      required: true
-  - type: textarea
     id: actual-behavior
     attributes:
       label: Actual Behavior
       description: Please provide a brief description of the actual behavior or the bug that you see along with the screenshots.
       placeholder: Actual Behavior
       value: "Actual Behavior"
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: Please provide a brief description of the expected behavior of the system.
+      placeholder: Expected Behavior
+      value: "Expected Behavior"
     validations:
       required: true
   - type: textarea
