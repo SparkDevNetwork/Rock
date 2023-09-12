@@ -46,12 +46,12 @@ body:
     validations:
       required: true
   - type: checkboxes
-    id: due diligence
+    id: issue-confirmation
     attributes:
-      label: Due Diligence
+      label: Issue Confirmation
       options:
         - label: Perform a search on the [Github Issues](https://github.com/issues?q=is%3Aissue+user%3ASparkDevNetwork+-repo%3ARock) to see if your bug or enhancement is already reported.
-        - Try to reproduce the problem on a fresh install or on the [demo site](https://rock.rocksolidchurchdemo.com/).
+        - label: Try to reproduce the problem on a fresh install or on the [demo site](https://rock.rocksolidchurchdemo.com/).
     validations:
       required: true
   - type: input
