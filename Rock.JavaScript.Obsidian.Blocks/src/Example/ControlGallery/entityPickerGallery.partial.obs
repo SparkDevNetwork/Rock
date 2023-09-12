@@ -1,0 +1,25 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <EntityPicker v-model="value" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import EntityPicker from "@Obsidian/Controls/entityPicker.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref([]);
+
+    const importCode = getSfcControlImportPath("entityPicker");
+    const exampleCode = computed(() => `<EntityPicker v-model="value"${someBool.value ? " someBool" : ""}${someVal.value ? ` someVal="${someVal.value}"` : ""} />`);
+</script>

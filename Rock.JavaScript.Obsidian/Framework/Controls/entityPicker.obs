@@ -26,11 +26,6 @@
             default: false
         },
 
-        entityTypeGuids: {
-            type: Array as PropType<ListItemBag[]>,
-            default: []
-        },
-
         ...standardAsyncPickerProps
     });
 
@@ -87,7 +82,6 @@
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const options: Partial<EntityTypePickerGetEntityTypesOptionsBag> = {
-            entityTypeGuids: props.entityTypeGuids
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/EntityTypePickerGetEntityTypes", undefined, options);
 

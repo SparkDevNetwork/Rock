@@ -2155,8 +2155,15 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var items = EntityTypeCache.All( rockContext )
-                    .Where( t => t.IsEntity )
+                var itemQuery = EntityTypeCache.All( rockContext )
+                    .Where( t => t.IsEntity );
+
+                if ( options.EntityTypeGuids != null && options.EntityTypeGuids.Any() )
+                {
+                    itemQuery = itemQuery.Where(t=> options.EntityTypeGuids.Contains( t.Guid ));
+                }
+
+                var items = itemQuery
                     .OrderByDescending( t => t.IsCommon )
                     .ThenBy( t => t.FriendlyName )
                     .Select( t => new ListItemBag
