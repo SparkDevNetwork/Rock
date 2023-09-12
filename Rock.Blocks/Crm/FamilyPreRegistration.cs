@@ -2677,7 +2677,7 @@ namespace Rock.Blocks.Crm
                     bag.LastName.Trim(),
                     bag.Email?.Trim(),
                     bag.MobilePhone?.Trim(),
-                    bag.Gender,
+                    bag.Gender == Gender.Unknown ? (Gender?)null : bag.Gender,
                     bag.BirthDate.ToDateTime(),
                     DefinedValueCache.GetId( bag.SuffixDefinedValueGuid.GetValueOrDefault() ) );
 
@@ -2723,7 +2723,10 @@ namespace Rock.Blocks.Crm
 
             if ( GetFieldBag( AttributeKey.AdultGender ).IsShown )
             {
-                adult.Gender = bag.Gender;
+                if ( bag.Gender != Gender.Unknown || saveEmptyValues )
+                {
+                    adult.Gender = bag.Gender;
+                }
             }
 
             var adultBirthdateOptions = GetDatePickerFieldBag( AttributeKey.AdultBirthdate );
@@ -2747,13 +2750,9 @@ namespace Rock.Blocks.Crm
 
             if ( GetFieldBag( AttributeKey.AdultMaritalStatus ).IsShown )
             {
-                if ( bag.MaritalStatusDefinedValueGuid.HasValue )
+                if ( bag.MaritalStatusDefinedValueGuid.HasValue || saveEmptyValues )
                 {
                     adult.MaritalStatusValueId = DefinedValueCache.GetId( bag.MaritalStatusDefinedValueGuid.Value );
-                }
-                else
-                {
-                    adult.MaritalStatusValueId = null;
                 } 
             }
 
