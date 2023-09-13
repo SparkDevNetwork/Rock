@@ -2859,8 +2859,7 @@ namespace Rock.Blocks.Crm
                     mobilePhoneNumber = new PhoneNumber
                     {
                         PersonId = personId,
-                        NumberTypeValueId = mobilePhoneDefinedValueId.Value,
-                        IsMessagingEnabled = isSmsNumber
+                        NumberTypeValueId = mobilePhoneDefinedValueId.Value
                     };
 
                     phoneNumberService.Add( mobilePhoneNumber );
@@ -2868,6 +2867,7 @@ namespace Rock.Blocks.Crm
 
                 mobilePhoneNumber.CountryCode = PhoneNumber.CleanNumber( countryCode );
                 mobilePhoneNumber.Number = number;
+                mobilePhoneNumber.IsMessagingEnabled = isSmsNumber;
             }
             else
             {
