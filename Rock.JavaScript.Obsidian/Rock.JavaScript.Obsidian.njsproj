@@ -35,6 +35,8 @@
     <Content Include="Build\build-fast.js" />
     <Content Include="Framework\Controls\addressControl.obs" />
     <Content Include="Framework\Controls\groupTypeGroupPicker.obs" />
+    <Content Include="Framework\Controls\imageEditor.obs" />
+    <Content Include="Framework\Controls\modal.obs" />
     <Content Include="Framework\Controls\notificationBox.obs" />
     <Content Include="Framework\Controls\buttonGroup.obs" />
     <Content Include="Framework\Controls\cacheabilityPicker.obs" />
@@ -71,6 +73,7 @@
     <Content Include="Framework\Controls\popOver.obs" />
     <Content Include="Framework\Controls\racePicker.obs" />
     <Content Include="Framework\Controls\registryEntry.obs" />
+    <Content Include="Framework\Controls\rockFormField.obs" />
     <Content Include="Framework\Controls\rockLiteral.obs" />
     <Content Include="Framework\Controls\slidingDateRangePicker.obs" />
     <Content Include="Framework\Controls\reminderTypePicker.obs" />

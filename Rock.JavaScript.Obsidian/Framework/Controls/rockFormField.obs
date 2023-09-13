@@ -8,7 +8,7 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import { normalizeRules, validateValue } from "@Obsidian/ValidationRules";
     import { computed, defineComponent, onBeforeUnmount, ref, watch } from "vue";
-    import RockLabel from "./rockLabel.obs";
+    import RockLabel from "./rockLabel";
 
     export default defineComponent({
         name: "RockFormField",

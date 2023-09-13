@@ -58,7 +58,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import NotificationBox from "./notificationBox.obs";
     import Modal from "./modal.obs";
-    import RockButton from "./rockButton.obs";
+    import RockButton from "./rockButton";
     import RockFormField from "./rockFormField.obs";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { uploadBinaryFile } from "@Obsidian/Utility/http";

@@ -46,9 +46,9 @@
 
 <script setup lang="ts">
     import { onBeforeUnmount, PropType, ref, watch } from "vue";
-    import RockForm from "./rockForm.obs";
-    import RockButton from "./rockButton.obs";
-    import RockValidation from "./rockValidation.obs";
+    import RockForm from "./rockForm";
+    import RockButton from "./rockButton";
+    import RockValidation from "./rockValidation";
     import { trackModalState } from "@Obsidian/Utility/page";
     import { FormError } from "@Obsidian/Utility/form";
 
