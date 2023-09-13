@@ -94,6 +94,7 @@
     <Content Include="Framework\Controls\groupPicker.obs" />
     <Content Include="Framework\Controls\groupTypeGroupPicker.obs" />
     <Content Include="Framework\Controls\helpBlock.obs" />
+    <Content Include="Framework\Controls\imageEditor.obs" />
     <Content Include="Framework\Controls\imageUploader.obs" />
     <Content Include="Framework\Controls\inlineCheckBox.obs" />
     <Content Include="Framework\Controls\inlineSwitch.obs" />
@@ -189,6 +190,7 @@
     <Content Include="Framework\Controls\registrationInstanceBasePicker.obs" />
     <Content Include="Framework\Controls\registrationInstancePicker.obs" />
     <Content Include="Framework\Controls\registryEntry.obs" />
+    <Content Include="Framework\Controls\rockFormField.obs" />
     <Content Include="Framework\Controls\rockLiteral.obs" />
     <Content Include="Framework\Controls\slidingDateRangePicker.obs" />
     <Content Include="Framework\Controls\reminderTypePicker.obs" />

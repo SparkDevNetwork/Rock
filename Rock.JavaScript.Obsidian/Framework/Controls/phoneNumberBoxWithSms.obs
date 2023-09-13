@@ -65,7 +65,7 @@
     const internalValue = reactive<InternalPhoneNumber>({
         countryCode: props.modelValue?.countryCode ?? "",
         isMessagingEnbabled: props.modelValue?.isMessagingEnbabled ?? false,
-        number: props.modelValue?.number ?? ""
+        number: formatPhoneNumber(props.modelValue?.number ?? "")
     });
 
     // #region Values
@@ -169,6 +169,7 @@
 
     // #endregion
 
+    // #region Watchers
     watch(internalValue, () => {
         emit("update:modelValue", internalValue);
     });
@@ -184,31 +185,6 @@
             }
         });
     });
-
-    // #region Watchers
-    /**
-    watch(formattedValue, (): void => {
-        // The value that should be stored for phone number attribute values is the formatted version.
-        // This seems backwards, but actually keeps parity with the web forms functionality.
-        emit("update:modelValue", formattedValue.value);
-    }, { immediate: true });
-
-    watch(() => props.modelValue, (): void => {
-        internalValue.value = formattedValue.value;
-    }, {
-        immediate: true
-    });
-
-    watch([configuration, availableCountryCodes], (): void => {
-        // If we don't have any country codes from the server, ignore
-        if (configuration.value == null || availableCountryCodes.value.length == 0) return;
-
-        // If no country code set or the set country code isn't in the list of available codes, then change it to the default
-        if (countryCode.value == null || !availableCountryCodes.value.includes(countryCode.value)) {
-            countryCode.value = availableCountryCodes.value[0];
-        }
-    });
-    */
 
     // #endregion
 

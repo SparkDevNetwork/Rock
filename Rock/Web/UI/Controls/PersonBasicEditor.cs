@@ -1352,9 +1352,16 @@ namespace Rock.Web.UI.Controls
             this.Email = person.Email;
 
             var existingMobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+            if ( existingMobilePhone != null )
+            {
+                this.MobilePhoneNumber = existingMobilePhone.NumberFormatted;
+                this.MobilePhoneCountryCode = existingMobilePhone.CountryCode;
 
-            this.MobilePhoneNumber = existingMobilePhone?.NumberFormatted;
-            this.MobilePhoneCountryCode = existingMobilePhone?.CountryCode;
+                if( ShowSmsOptIn )
+                {
+                    this.IsMessagingEnabled = existingMobilePhone.IsMessagingEnabled;
+                }
+            }
         }
 
         /// <summary>
