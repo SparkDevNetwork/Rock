@@ -118,7 +118,7 @@
                             visiblePriority="xs" />
 
                 <TextColumn name="workflowTrigger"
-                            title="Workflow Trigger"
+                            title="Trigger"
                             field="workflowTrigger"
                             :filter="textValueFilter"
                             visiblePriority="lg" />
