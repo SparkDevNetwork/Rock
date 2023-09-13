@@ -18,6 +18,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -163,7 +164,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             gWorkflows.GridRebind += gWorkflows_GridRebind;
             gWorkflows.RowDataBound += gWorkflows_RowDataBound;
 
-            gWorkflows.Actions.ShowAdd = UserCanEdit;
+            gWorkflows.Actions.ShowAdd = WorkflowTypeCache.Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() ).Category.IsAuthorized( Authorization.EDIT, CurrentPerson );
             gWorkflows.Actions.AddClick += gWorkflows_Add;
 
             gWorkflows.Actions.ShowCommunicate = false;
