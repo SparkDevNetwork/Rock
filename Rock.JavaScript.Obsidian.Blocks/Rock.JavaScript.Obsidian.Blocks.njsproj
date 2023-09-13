@@ -186,6 +186,8 @@
     <Content Include="src\Event\InteractiveExperiences\liveExperienceOccurrences.obs" />
     <Content Include="src\Event\InteractiveExperiences\LiveExperience\actionPoll.partial.obs" />
     <Content Include="src\Event\InteractiveExperiences\LiveExperience\actionShortAnswer.partial.obs" />
+    <Content Include="src\Example\ControlGallery\galleryAndResult.partial.obs" />
+    <Content Include="src\Example\ControlGallery\imageEditorGallery.partial.obs" />
     <Content Include="src\Group\groupAttendanceDetail.obs" />
     <Content Include="src\Group\GroupAttendanceDetail\attendanceRoster.partial.obs" />
     <Content Include="src\Group\GroupAttendanceDetail\campusFilter.partial.obs" />
@@ -300,6 +302,7 @@
     <Folder Include="src\Event\InteractiveExperiences\LiveExperience\" />
     <Folder Include="src\Event\RegistrationEntry\" />
     <Folder Include="src\Example\" />
+    <Folder Include="src\Example\ControlGallery\" />
     <Folder Include="src\Finance\" />
     <Folder Include="src\Group\" />
     <Folder Include="src\Group\GroupAttendanceDetail\" />
@@ -459,6 +462,7 @@
     <TypeScriptCompile Include="src\Event\RegistrationEntry\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationEntry\utils.partial.ts" />
     <TypeScriptCompile Include="src\Example\controlGallery.ts" />
+    <TypeScriptCompile Include="src\Example\ControlGallery\utils.partial.ts" />
     <TypeScriptCompile Include="src\Example\fieldTypeGallery.ts" />
     <TypeScriptCompile Include="src\Example\personDetail.ts" />
     <TypeScriptCompile Include="src\Example\personSecondary.ts" />
