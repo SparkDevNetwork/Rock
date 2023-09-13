@@ -70,9 +70,10 @@
 
             <div :class="columnClass">
                 <DropDownList v-model="smsOptIn"
-                                label="SMS Opt-In"
-                                :showBlankItem="false"
-                                :items="formFieldVisibilityOptions" />
+                              label="SMS Opt-In"
+                              :disabled="toNumberOrNull(mobilePhone) === FormFieldVisibility.Hidden"
+                              :showBlankItem="false"
+                              :items="formFieldShowHideOptions" />
             </div>
 
             <div :class="columnClass">
@@ -147,7 +148,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-    import { FormPersonEntry } from "./types.partial";
+    import { FormFieldShowHide, FormPersonEntry } from "./types.partial";
     import { FormFieldVisibility } from "./types.partial";
 
     const props = defineProps({
@@ -202,7 +203,7 @@
     const gender = ref(props.modelValue.gender?.toString() ?? FormFieldVisibility.Hidden.toString());
     const email = ref(props.modelValue.email?.toString() ?? FormFieldVisibility.Hidden.toString());
     const mobilePhone = ref(props.modelValue.mobilePhone?.toString() ?? FormFieldVisibility.Hidden.toString());
-    const smsOptIn = ref(props.modelValue.smsOptIn?.toString() ?? FormFieldVisibility.Hidden.toString());
+    const smsOptIn = ref(props.modelValue.smsOptIn?.toString() ?? FormFieldShowHide.Hide.toString());
     const birthdate = ref(props.modelValue.birthdate?.toString() ?? FormFieldVisibility.Hidden.toString());
     const address = ref(props.modelValue.address?.toString() ?? FormFieldVisibility.Hidden.toString());
     const addressType = ref(props.modelValue.addressType ?? "");
@@ -228,6 +229,20 @@
         {
             value: FormFieldVisibility.Required.toString(),
             text: "Required"
+        }
+    ];
+
+    /**
+     * The list of options for the individual to pick from to show or hide a field. use "formFieldVisibilityOptions" if "Required" should be an option.
+     */
+    const formFieldShowHideOptions: ListItemBag[] = [
+        {
+            value: FormFieldShowHide.Hide.toString(),
+            text: "Hide"
+        },
+        {
+            value: FormFieldShowHide.Show.toString(),
+            text: "Show"
         }
     ];
 
@@ -276,7 +291,7 @@
         gender.value = props.modelValue.gender?.toString() ?? FormFieldVisibility.Hidden.toString();
         email.value = props.modelValue.email?.toString() ?? FormFieldVisibility.Hidden.toString();
         mobilePhone.value = props.modelValue.mobilePhone?.toString() ?? FormFieldVisibility.Hidden.toString();
-        smsOptIn.value = props.modelValue.smsOptIn?.toString() ?? FormFieldVisibility.Hidden.toString();
+        smsOptIn.value = props.modelValue.smsOptIn?.toString() ?? FormFieldShowHide.Hide.toString();
         birthdate.value = props.modelValue.birthdate?.toString() ?? FormFieldVisibility.Hidden.toString();
         address.value = props.modelValue.address?.toString() ?? FormFieldVisibility.Hidden.toString();
         addressType.value = props.modelValue.addressType ?? "";

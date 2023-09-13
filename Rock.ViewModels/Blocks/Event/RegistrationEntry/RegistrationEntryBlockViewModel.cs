@@ -429,6 +429,15 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The ethnicities available for the user to select.
         /// </value>
         public List<ListItemBag> Ethnicities { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the SMS OptIn checkbox under the phone number
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowSmsOptIn { get; set; }
+
     }
 
     /// <summary>

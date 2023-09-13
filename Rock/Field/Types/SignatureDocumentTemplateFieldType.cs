@@ -171,7 +171,7 @@ namespace Rock.Field.Types
 
             bool showExternalProviders = configurationValues.GetValueOrNull( SHOW_TEMPLATES_WITH_EXTERNAL_PROVIDERS )?.AsBoolean() ?? false;
 
-            var templatesQuery = new SignatureDocumentTemplateService( new RockContext() ).Queryable();
+            var templatesQuery = new SignatureDocumentTemplateService( new RockContext() ).Queryable().Where( x => x.IsActive );
             if ( showExternalProviders )
             {
                 templatesQuery = templatesQuery.Where( a => a.ProviderEntityTypeId.HasValue );
@@ -179,7 +179,7 @@ namespace Rock.Field.Types
             else
             {
                 templatesQuery = templatesQuery.Where( a => !a.ProviderEntityTypeId.HasValue );
-            };
+            }
 
             var templates = templatesQuery.OrderBy( t => t.Name ).Select( a => new
             {
@@ -223,6 +223,22 @@ namespace Rock.Field.Types
             var editControl = control as ListControl;
             if ( editControl != null )
             {
+                var guid = value.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    var selectedValue = editControl.Items.FindByValue( value );
+
+                    // If the value is not part of the control's ListItems then it's most likely the template was
+                    // marked inactive after it was selected so add it to the control's list.
+                    if ( selectedValue == null )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var name = new SignatureDocumentTemplateService( rockContext ).GetSelect( guid.Value, a => a.Name );
+                            editControl.Items.Add( new ListItem( name, value ) );
+                        }
+                    }
+                }
                 editControl.SetValue( value );
             }
         }

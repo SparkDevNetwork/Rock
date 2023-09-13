@@ -712,7 +712,7 @@ $@"Rock.controls.itemPicker.initialize({{
     restUrl: '{this.ResolveUrl( ItemRestUrl )}',
     allowMultiSelect: {this.AllowMultiSelect.ToString().ToLower()},
     allowCategorySelection: {this.UseCategorySelection.ToString().ToLower()},
-    categoryPrefix: '{CategoryPrefix}',
+    categoryPrefix: '{( this.UseCategorySelection ? CategoryPrefix : "")}',
     defaultText: '{this.DefaultText}',
     restParams: $('#{_hfItemRestUrlExtraParams.ClientID}').val(),
     expandedIds: [{this.InitialItemParentIds}],

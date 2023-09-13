@@ -203,9 +203,6 @@
             // This will leave the pasted value in the current text box.
             emit("pasteValues", pastedValue);
             emit("complete");
-            // TODO JMH The above event emitted from any code box should be captured by the codeBox control
-            // and re-emitted. The block using the codeBox control should then focus on the button.
-            //$(".js-verify-button").focus();
         }
     }
 

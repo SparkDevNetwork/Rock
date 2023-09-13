@@ -88,7 +88,7 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         /// <summary>
         /// Determines if the SmsOptIn control should be hidden, optional, or required when displaying on the person entry form.
         /// </summary>
-        public FormFieldVisibility SmsOptIn { get; set; }
+        public FormFieldShowHide SmsOptIn { get; set; }
 
         /// <summary>
         /// Determines if the birthdate control should be hidden, optional or

@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -27,6 +26,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaAccountDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -48,7 +48,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "704fa615-60eb-4fd2-99ed-6b5ae0879145" )]
     [Rock.SystemGuid.BlockTypeGuid( "a63f0145-d323-4b6e-ad21-bcda1f1d8d5d" )]
-    public class MediaAccountDetail : RockDetailBlockType
+    public class MediaAccountDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -378,6 +378,32 @@ namespace Rock.Blocks.Cms
         {
             // Don't include the special attributes "Order" and "Active".
             return attribute.Key != "Order" && attribute.Key != "Active";
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.MediaAccountId );
+                var pageParameters = new Dictionary<string, string>();
+
+                var name = new MediaAccountService( rockContext )
+                    .GetSelect( key, mf => mf.Name );
+
+                if ( name != null )
+                {
+                    pageParameters.Add( PageParameterKey.MediaAccountId, key );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( name ?? "New Media Account", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+                };
+            }
         }
 
         #endregion

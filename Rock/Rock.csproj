@@ -2097,6 +2097,8 @@
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
+    <Compile Include="Blocks\BreadCrumbResult.cs" />
+    <Compile Include="Web\BreadCrumbLink.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
@@ -2136,6 +2138,7 @@
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\HttpModules\Observability.cs" />
     <Compile Include="Web\IBreadCrumb.cs" />
+    <Compile Include="Blocks\IBreadCrumbBlock.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
     <Compile Include="Web\RockControlAdapter.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartJsChart.cs" />

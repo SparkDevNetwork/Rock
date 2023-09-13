@@ -21,14 +21,15 @@
                     <SlidingDateRangePicker v-model="filterDate"
                                             :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
                                             :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
-                                            class="pull-right"/>
+                                            class="pull-right"
+                                            previewLocation="None" />
                 </div>
             </div>
             <div v-html="kpi"></div>
             <div>
-                <NotificationBox v-if="notificationMessage" alertType="information">{{ notificationMessage }}</NotificationBox>
-                <div class="chart-banner" v-if="showChart">
-                    {{ chartData }}
+                <NotificationBox v-if="notificationMessage" alertType="info">{{ notificationMessage }}</NotificationBox>
+                <div v-if="showChart" style="height: 350px;" class="col-md-12">
+                    <Chart type="line" :data="chartData" :options="options" />
                 </div>
             </div>
         </div>
@@ -46,6 +47,8 @@
     import { RangeType, SlidingDateRange, TimeUnit, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { StepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeBag";
@@ -69,22 +72,53 @@
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
     const name = ref(props.modelValue?.name ?? "");
     const description = ref(props.modelValue?.description ?? "");
-    const chartData = ref(props.modelValue?.chartData ?? "");
+    //const chartData = ref(props.modelValue?.chartData ?? "{}");
+    const chartData = ref<ChartData>(JSON.parse(props.modelValue?.chartData ?? "{}"));
     const kpi = ref(props.modelValue?.kpi ?? "");
     const showChart = ref(props.modelValue?.showChart);
     const notificationMessage = ref("");
     const filterDate = ref(props.modelValue?.defaultDateRange as SlidingDateRange);
     const isRefreshLoading = ref(false);
+    const options = ref<ChartOptions>({
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            duration: 1000
+        },
+        plugins: {
+            legend: {
+                position: "bottom",
+                align: "center",
+                display: true
+            },
+            tooltip: {
+                enabled: true
+            },
+        },
+        scales: {
+            y:
+            {
+                ticks: {
+                    callback: function (label, _index, _labels) {
+                        const date = Number(label);
+                        if (date) {
+                            return Intl.NumberFormat().format(date);
+                        }
+                        else {
+                            return label;
+                        }
+                    },
+                    stepSize: 1
+                },
+                stacked: false,
+                beginAtZero: true,
+                suggestedMax: 2
+            },
+
+        }
+    });
 
     const invokeBlockAction = useInvokeBlockAction();
-
-    // #endregion
-
-    // #region Computed Values
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 
@@ -96,6 +130,7 @@
     async function onRefresh(): Promise<void> {
 
         isRefreshLoading.value = true;
+        notificationMessage.value = "";
 
         const result = await invokeBlockAction<StepTypeBag>("RefreshChart", {
             dateRange: slidingDateRangeToString(filterDate.value as SlidingDateRange)
@@ -104,13 +139,21 @@
         isRefreshLoading.value = false;
 
         if (result.isSuccess && result.data) {
-            chartData.value = result.data.chartData ?? "";
             kpi.value = result.data.kpi ?? "";
+
+            if (result.data.chartData) {
+                chartData.value = JSON.parse(result.data.chartData ?? "{}") as ChartData;
+                showChart.value = true;
+            }
+            else {
+                notificationMessage.value = "There are no Steps matching the current filter.";
+                showChart.value = false;
+            }
         }
         else {
-            chartData.value = "";
+            chartData.value = {} as ChartData;
             notificationMessage.value = result.errorMessage ?? "Unknown error while trying to refresh chart.";
         }
     }
-                // #endregion
+    // #endregion
 </script>

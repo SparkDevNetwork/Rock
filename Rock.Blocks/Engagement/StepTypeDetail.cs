@@ -349,15 +349,28 @@ namespace Rock.Blocks.Engagement
 
                 if ( chartFactory.HasData )
                 {
+                    var args = GetChartArgs();
                     // Add client script to construct the chart.
-                    bag.ChartData = chartFactory.GetJson(
-                        sizeToFitContainerWidth: true,
-                        maintainAspectRatio: false,
-                        displayLegend: false );
+                    bag.ChartData = chartFactory.GetChartDataJson( args );
                 }
             }
 
             return bag;
+        }
+
+        /// <summary>
+        /// Gets the arguments for creating the Chart.
+        /// </summary>
+        /// <returns></returns>
+        private static ChartJsTimeSeriesDataFactory.GetJsonArgs GetChartArgs()
+        {
+            return new ChartJsTimeSeriesDataFactory.GetJsonArgs
+            {
+                DisplayLegend = false,
+                LineTension = 0.4m,
+                MaintainAspectRatio = false,
+                SizeToFitContainerWidth = true
+            };
         }
 
         /// <summary>
@@ -1371,17 +1384,15 @@ namespace Rock.Blocks.Engagement
 
                 if ( chartFactory.HasData )
                 {
+                    var args = GetChartArgs();
                     // Add client script to construct the chart.
-                    chartDataJson = chartFactory.GetJson(
-                        sizeToFitContainerWidth: true,
-                        maintainAspectRatio: false,
-                        displayLegend: false );
+                    chartDataJson = chartFactory.GetChartDataJson( args );
                 }
             }
 
             var kpi = GetKpi( dateRange );
 
-            return ActionOk( new StepTypeBag() { ChartData = chartDataJson, Kpi = kpi } );
+            return ActionOk( new StepTypeBag() { ChartData = chartDataJson, Kpi = kpi, ShowChart = showActivitySummary } );
         }
 
         #endregion
