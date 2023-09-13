@@ -164,7 +164,7 @@
     // #region Event Handlers
 
     function onChange(): void {
-        internalValue.number = formattedValue.value;
+        internalValue.number = formatPhoneNumber(internalValue.number);
     }
 
     // #endregion
