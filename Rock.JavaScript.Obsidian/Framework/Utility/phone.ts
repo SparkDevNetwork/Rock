@@ -57,7 +57,7 @@ async function fetchPhoneNumberAndSmsConfiguration(): Promise<PhoneNumberBoxGetC
  */
 export const getPhoneNumberConfiguration = Cache.cachePromiseFactory("phoneNumberConfiguration", fetchPhoneNumberConfiguration);
 
-export const getPhoneNumberAndSmsConfiguration = Cache.cachePromiseFactory("phoneNumberConfiguration", fetchPhoneNumberAndSmsConfiguration);
+export const getPhoneNumberAndSmsConfiguration = Cache.cachePromiseFactory("phoneNumberAndSmsConfiguration", fetchPhoneNumberAndSmsConfiguration);
 
 const defaultRulesConfig = [
     {
