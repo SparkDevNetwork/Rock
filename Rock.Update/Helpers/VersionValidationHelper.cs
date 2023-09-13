@@ -151,8 +151,10 @@ namespace Rock.Update.Helpers
                 throw new VersionValidationException( $"Version {targetVersion} requires Microsoft SQL Azure or Microsoft Sql Server 2016 or greater." );
             }
 
+            // Read the LavaSupportLevel setting for the current database.
+            // The setting is removed by the v1.16 migration process, so this check is only relevant for databases prior to that version.
 #pragma warning disable CS0618 // Type or member is obsolete
-            var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel;
+            var lavaSupportLevel = GlobalAttributesCache.Value( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Lava.LavaSupportLevel>() ?? Lava.LavaSupportLevel.NoLegacy;
             if ( isTargetVersionGreaterThan15 && lavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
             {
                 throw new VersionValidationException( $"Version {targetVersion} requires a Lava Support Level of 'NoLegacy'." );
