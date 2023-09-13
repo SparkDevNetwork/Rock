@@ -418,7 +418,7 @@ namespace Rock.Web.UI.Controls
 
             var postBackChangedscript = this.ValueChanged != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "ValueChanged" ), true ) : "";
             postBackChangedscript = postBackChangedscript.Replace( '\'', '"' );
-            var script = string.Format( @"Rock.controls.listItems.initialize({{ id: '{0}', valueChangedScript: '{1}' }});", this.ID, postBackChangedscript );
+            var script = string.Format( @"Rock.controls.listItems.initialize({{ id: '{0}', valueChangedScript: '{1}', clientId: '{2}' }});", this.ID, postBackChangedscript, this.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "list-items-script" + this.ClientID, script, true );
         }
 
