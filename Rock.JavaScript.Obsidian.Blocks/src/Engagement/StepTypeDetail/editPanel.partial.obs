@@ -59,6 +59,7 @@
         <Panel title="Step Attributes" :hasCollapse="true" :isDrawerOpen="true">
             <Grid :definition="props.modelValue.stepTypeAttributesGridDefinition ?? undefined"
                   :data="attributesGridDataSource"
+                  light
                   keyField="idKey"
                   itemTerm="Attribute"
                   liveUpdates
@@ -104,6 +105,7 @@
 
             <Grid :definition="props.modelValue.workflowTriggerGridDefinition ?? undefined"
                   :data="workflowTriggersGridDataSource"
+                  light
                   keyField="idKey"
                   itemTerm="Workflow"
                   liveUpdates
