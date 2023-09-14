@@ -2,15 +2,15 @@
 <template>
     <RockFormField v-bind="formFieldProps" :modelValue="internalValue" name="entity-picker">
         <EntityTypePicker
-                          v-model="internalChannelValue"
+                          v-model="internalTypeValue"
                           label="Entity Type"
                           :multiple="false"
                           :disabled="disabled"
                           showBlankItem
                           formGroupClasses="mt-0"
-                          :entityTypeGuids="entityTypeGuidsFilter"
-                          :displayStyle="PickerDisplayStyle.Condensed" />
-        <InteractionComponentPicker
+                          :entityTypeGuids="entityTypeGuidsFilter" />
+        <RockField v-if="fieldConfiguration" :attribute="fieldConfiguration" />
+        <!-- <InteractionComponentPicker
                                     v-if="internalChannelGuid"
                                     v-model="internalValue"
                                     label="Interaction Component"
@@ -18,7 +18,7 @@
                                     :multiple="false"
                                     :disabled="disabled"
                                     showBlankItem
-                                    :displayStyle="PickerDisplayStyle.Condensed" />
+                                    :displayStyle="PickerDisplayStyle.Condensed" /> -->
     </RockFormField>
 </template>
 
@@ -26,21 +26,29 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import EntityTypePicker from "./entityTypePicker.obs";
-    import InteractionComponentPicker from "./interactionComponentPicker.obs";
+    // import InteractionComponentPicker from "./interactionComponentPicker.obs";
     import RockFormField from "./rockFormField.obs";
-    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import RockField from "./rockField.obs";
+    // import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { Guid } from "@Obsidian/Types";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { useHttp } from "@Obsidian/Utility/http";
     import { InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/interactionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag";
     import { EntityPickerGetEntityTypeGuidsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityPickerGetEntityTypeGuidsOptionsBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { containsRequiredRule, rulesPropType, normalizeRules } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<ListItemBag | null>,
             required: true
+        },
+
+        entityType: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
         },
 
         disabled: {
@@ -53,12 +61,14 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | null): void
+        (e: "update:entityType", value: ListItemBag | null): void
     }>();
 
     // #region Values
 
     const internalValue = ref<ListItemBag | null>(props.modelValue);
-    const internalChannelValue = ref<ListItemBag | null>(null);
+    const internalTypeValue = ref<ListItemBag | null>(props.entityType);
+    const fieldType = ref<Guid | null>(null);
 
     const securityGrantToken = useSecurityGrantToken();
     const http = useHttp();
@@ -66,9 +76,22 @@
     const formFieldProps = useStandardRockFormFieldProps(props);
 
     const internalChannelGuid = computed(() => {
-        return (internalChannelValue.value?.value) ?? "";
+        return (internalTypeValue.value?.value) ?? "";
     });
-    const entityTypeGuidsFilter = ref<string[]>([]);
+    const entityTypeGuidsFilter = ref<Guid[]>([]);
+
+    const fieldConfiguration = computed<PublicAttributeBag | null>(() => {
+        if (fieldType.value && internalTypeValue.value) {
+            return {
+                isRequired: containsRequiredRule(props.rules),
+                order: 1,
+                name: internalTypeValue.value.text
+            };
+        }
+
+        return null;
+    });
+
     let skipWatcher = false;
 
     // #endregion
@@ -88,7 +111,7 @@
         }
     });
 
-    watch(internalChannelValue, () => {
+    watch(internalTypeValue, () => {
         if (!skipWatcher) {
             internalValue.value = null;
         }
@@ -102,7 +125,7 @@
         const options: EntityPickerGetEntityTypeGuidsOptionsBag = {
             securityGrantToken: securityGrantToken.value
         };
-        const result = await http.post<string[]>("/api/v2/Controls/EntityPickerGetEntityTypeGuids", null, options);
+        const result = await http.post<Guid[]>("/api/v2/Controls/EntityPickerGetEntityTypeGuids", null, options);
 
         if (result.isSuccess && result.data) {
             entityTypeGuidsFilter.value = result.data;
@@ -123,7 +146,7 @@
         if (result.isSuccess && result.data) {
             // Set the template, but don't let the change reset the instance
             skipWatcher = true;
-            internalChannelValue.value = result.data;
+            internalTypeValue.value = result.data;
             await nextTick();
             skipWatcher = false;
         }

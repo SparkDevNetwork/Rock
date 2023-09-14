@@ -8,6 +8,7 @@
 
 <script setup lang="ts">
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { Guid } from "@Obsidian/Types";
     import { emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { EntityTypePickerGetEntityTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTypePickerGetEntityTypesOptionsBag";
@@ -27,7 +28,7 @@
         },
 
         entityTypeGuids: {
-            type: Array as PropType<ListItemBag[]>,
+            type: Array as PropType<Guid[]>,
             default: []
         },
 
@@ -102,5 +103,5 @@
         }
     };
 
-    // #endregion
+        // #endregion
 </script>

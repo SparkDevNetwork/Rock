@@ -2143,10 +2143,10 @@ namespace Rock.Rest.v2
         #region Entity Picker
 
         /// <summary>
-        /// Gets the entity types that can be displayed in the entity type picker.
+        /// Gets the entity type GUIDs to be displayed in the entity type picker part of the entity picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the entity types.</returns>
+        /// <returns>A List of <see cref="Guid"/> of the entity types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "EntityPickerGetEntityTypeGuids" )]
         [Authenticate]
@@ -2158,11 +2158,44 @@ namespace Rock.Rest.v2
                 var entityTypeGuids = new EntityTypeService( new RockContext() )
                     .Queryable()
                     .Where( e => e.IsEntity == true && e.SingleValueFieldTypeId.HasValue )
-                    .Select( e => e.Guid.ToString())
+                    .Select( e => e.Guid.ToString() )
                     .ToList();
 
                 return Ok( entityTypeGuids );
             }
+        }
+
+        /// <summary>
+        /// Gets the single value field type Guid of the given entity type
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A GUID of the field type</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityPickerGetFieldTypeGuid" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6bda28c3-e6d7-42eb-9011-0c076455d4a7" )]
+        public IHttpActionResult EntityPickerGetFieldTypeGuid( [FromBody] EntityPickerGetFieldTypeGuidOptionsBag options )
+        {
+            if (options.EntityTypeGuid == null)
+            {
+                return NotFound();
+            }
+
+            var entityType = EntityTypeCache.Get( options.EntityTypeGuid );
+
+            if ( entityType == null )
+            {
+                return NotFound();
+            }
+
+            var fieldTypeGuid = entityType.SingleValueFieldType.Guid;
+
+            if ( fieldTypeGuid == null )
+            {
+                return NotFound();
+            }
+
+            return Ok( fieldTypeGuid );
         }
 
         #endregion
