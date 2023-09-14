@@ -1,6 +1,6 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField formGroupClasses="address-control" #default="{ uniqueId, field }" name="addresscontrol" v-model.lazy="internalValue" :rules="fieldRules">
+    <RockFormField formGroupClasses="address-control" #default="{ uniqueId, field }" name="addresscontrol" v-model.lazy="internalValue" :rules="$props.rules">
         <div class="control-wrapper">
             <Loading :id="id || uniqueId" :isLoading="isLoading">
                 <div class="form-row" v-if="country.isVisible">
@@ -47,7 +47,7 @@
     import { post } from "@Obsidian/Utility/http";
     import Loading from "./loading";
     import type { ValidationRule } from "@Obsidian/Types/validationRules";
-    import { containsRequiredRule, rulesPropType, normalizeRules } from "@Obsidian/ValidationRules";
+    import { containsRequiredRule, rulesPropType } from "@Obsidian/ValidationRules";
 
 
     type FullAddress = Required<{
@@ -114,9 +114,6 @@
 
     const isRequired = computed(() => {
         return containsRequiredRule(props.rules);
-    });
-    const fieldRules = computed(() => {
-        return normalizeRules(props.rules).filter(rule => rule !== "required");
     });
 
     watch(internalValue, () => {
