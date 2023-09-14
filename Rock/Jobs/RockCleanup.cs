@@ -2624,6 +2624,22 @@ SELECT @@ROWCOUNT
                 }
             }
 
+            // Manually update the CreatedByPersonAliasId and ModifiedByPersonAliasId
+            // columns to be null for any aliases that do not exist anymore.
+            // This needs to be done since we removed the foreign keys in Rock v17.0.
+            using ( var rockContext = CreateRockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( @"UPDATE [Interaction]
+SET [CreatedByPersonAliasId] = NULL
+WHERE [CreatedByPersonAliasId] IS NOT NULL
+  AND [CreatedByPersonAliasId] NOT IN (SELECT [Id] FROM [PersonAlias])" );
+
+                rockContext.Database.ExecuteSqlCommand( @"UPDATE [Interaction]
+SET [ModifiedByPersonAliasId] = NULL
+WHERE [ModifiedByPersonAliasId] IS NOT NULL
+  AND [ModifiedByPersonAliasId] NOT IN (SELECT [Id] FROM [PersonAlias])" );
+            }
+
             return deleteCount;
         }
 
