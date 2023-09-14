@@ -109,6 +109,59 @@ UPDATE [AttributeValue]
 
             Sql( @"
 BEGIN
+--SET AGE AND AGE BRACKET VALUES ON  ANALYTICSSOURCEDATE
+DECLARE @Today DATE = GETDATE()
+	UPDATE A
+	SET [Age] = DATEDIFF(YEAR, A.[Date], @Today) - 
+	CASE 
+		WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
+		ELSE 0
+	END,
+	[AgeBracket] = CASE
+		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			CASE 
+				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
+			ELSE 0
+		END
+		BETWEEN 0 AND 12 THEN 1
+		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			CASE 
+				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
+			ELSE 0
+		END BETWEEN 13 AND 17 THEN 2
+		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			CASE 
+				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
+			ELSE 0
+		END BETWEEN 18 AND 24 THEN 3
+		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			CASE 
+				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
+			ELSE 0
+		END BETWEEN 25 AND 34 THEN 4
+		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			CASE 
+				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
+			ELSE 0
+		END BETWEEN 35 AND 44 THEN 5
+		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			CASE 
+				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
+			ELSE 0
+		END BETWEEN 45 AND 54 THEN 6
+		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			CASE 
+				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
+			ELSE 0
+		END BETWEEN 55 AND 65 THEN 7
+		ELSE 8
+	END
+	FROM AnalyticsSourceDate A
+	INNER JOIN AnalyticsSourceDate B
+	ON A.[DateKey] = B.[DateKey]
+	WHERE A.[Date] <= @Today
+
+--UPDATE PERSON AGE AND AGE BRACKET USING CALCULATED VALUES FROM ANALYTICS SOURCE DATE
 	UPDATE Person
 	SET [BirthDateKey] = FORMAT([BirthDate],'yyyyMMdd')
 
