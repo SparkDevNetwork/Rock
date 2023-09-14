@@ -377,7 +377,7 @@ namespace Rock.Financial
         public override string GetReferenceNumber( FinancialTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-            return string.Empty;
+            return transaction.TransactionCode;
         }
 
         /// <summary>

@@ -437,7 +437,7 @@ namespace Rock.Financial
             errorMessage = string.Empty;
             var referencePaymentInfo = paymentInfo as ReferencePaymentInfo;
 
-            if ( referencePaymentInfo != null )
+            if ( referencePaymentInfo != null && referencePaymentInfo.TransactionCode.IsNotNullOrWhiteSpace() )
             {
                 transaction.TransactionCode = referencePaymentInfo.TransactionCode;
             }
@@ -540,7 +540,7 @@ namespace Rock.Financial
         public override string GetReferenceNumber( FinancialTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-            return string.Empty;
+            return transaction.TransactionCode;
         }
 
         /// <summary>
