@@ -1,100 +1,142 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <BaseAsyncPicker v-model="internalValue"
-                     v-bind="standardProps"
-                     grouped
-                     :items="actualItems" />
+    <RockFormField v-bind="formFieldProps" :modelValue="internalValue" name="entity-picker">
+        <EntityTypePicker
+                          v-model="internalChannelValue"
+                          label="Entity Type"
+                          :multiple="false"
+                          :disabled="disabled"
+                          showBlankItem
+                          formGroupClasses="mt-0"
+                          :entityTypeGuids="entityTypeGuidsFilter"
+                          :displayStyle="PickerDisplayStyle.Condensed" />
+        <InteractionComponentPicker
+                                    v-if="internalChannelGuid"
+                                    v-model="internalValue"
+                                    label="Interaction Component"
+                                    :interactionChannelGuid="internalChannelGuid"
+                                    :multiple="false"
+                                    :disabled="disabled"
+                                    showBlankItem
+                                    :displayStyle="PickerDisplayStyle.Condensed" />
+    </RockFormField>
 </template>
 
 <script setup lang="ts">
-    import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
-    import { useHttp } from "@Obsidian/Utility/http";
-    import { EntityTypePickerGetEntityTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTypePickerGetEntityTypesOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { computed, PropType, ref } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import EntityTypePicker from "./entityTypePicker.obs";
+    import InteractionComponentPicker from "./interactionComponentPicker.obs";
+    import RockFormField from "./rockFormField.obs";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { Guid } from "@Obsidian/Types";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/interactionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag";
+    import { EntityPickerGetEntityTypeGuidsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityPickerGetEntityTypeGuidsOptionsBag";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
-            required: false
+            type: Object as PropType<ListItemBag | null>,
+            required: true
         },
 
-        includeGlobalOption: {
-            type: Boolean as PropType<boolean>,
+        disabled: {
+            type: Boolean,
             default: false
         },
 
-        ...standardAsyncPickerProps
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void;
+        (e: "update:modelValue", value: ListItemBag | null): void
     }>();
 
     // #region Values
 
-    const internalValue = useVModelPassthrough(props, "modelValue", emit);
-    const standardProps = useStandardAsyncPickerProps(props);
+    const internalValue = ref<ListItemBag | null>(props.modelValue);
+    const internalChannelValue = ref<ListItemBag | null>(null);
+
+    const securityGrantToken = useSecurityGrantToken();
     const http = useHttp();
-    const loadedItems = ref<ListItemBag[] | null>(null);
+
+    const formFieldProps = useStandardRockFormFieldProps(props);
+
+    const internalChannelGuid = computed(() => {
+        return (internalChannelValue.value?.value) ?? "";
+    });
+    const entityTypeGuidsFilter = ref<string[]>([]);
+    let skipWatcher = false;
 
     // #endregion
 
-    // #region Computed Values
+    // #region Watchers
 
-    /**
-     * The actual items to make available to the picker. This allows us to do any
-     * post-processing, such as adding additional items, and still be lazy loaded as well.
-     */
-    const actualItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
-        return loadedItems.value ? postProcessItems(loadedItems.value) : loadOptions;
+    watch(() => props.modelValue, () => {
+        if (!deepEqual(internalValue.value, props.modelValue, false)) {
+            internalValue.value = props.modelValue;
+            getChannelFromComponent();
+        }
+    });
+
+    watch(internalValue, (val) => {
+        if (!deepEqual(val, props.modelValue, false)) {
+            emit("update:modelValue", val);
+        }
+    });
+
+    watch(internalChannelValue, () => {
+        if (!skipWatcher) {
+            internalValue.value = null;
+        }
     });
 
     // #endregion
 
     // #region Functions
 
-    /**
-     * Perform additional processing on the items based on our property
-     * settings.
-     *
-     * @param items The items to be processed.
-     *
-     * @returns A new array of items that have been processed.
-     */
-    const postProcessItems = (items: ListItemBag[]): ListItemBag[] => {
-        const processedItems = [...items];
-
-        if (props.includeGlobalOption) {
-            processedItems.splice(0, 0, {
-                value: emptyGuid,
-                text: "None (Global Attributes)"
-            });
-        }
-
-        return processedItems;
-    };
-
-    /**
-     * Loads the items from the server.
-     */
-    const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: Partial<EntityTypePickerGetEntityTypesOptionsBag> = {
+    async function getEntityTypeGuids(): Promise<void> {
+        const options: EntityPickerGetEntityTypeGuidsOptionsBag = {
+            securityGrantToken: securityGrantToken.value
         };
-        const result = await http.post<ListItemBag[]>("/api/v2/Controls/EntityTypePickerGetEntityTypes", undefined, options);
+        const result = await http.post<string[]>("/api/v2/Controls/EntityPickerGetEntityTypeGuids", null, options);
 
         if (result.isSuccess && result.data) {
-            loadedItems.value = result.data;
-            return postProcessItems(result.data);
+            entityTypeGuidsFilter.value = result.data;
         }
         else {
             console.error(result.errorMessage ?? "Unknown error while loading data.");
-            loadedItems.value = [];
-            return [];
         }
-    };
+    }
+
+    async function getChannelFromComponent(): Promise<void> {
+        const options: InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag = {
+            interactionComponentGuid: props.modelValue?.value,
+            securityGrantToken: securityGrantToken.value
+        };
+
+        const result = await http.post<ListItemBag>("/api/v2/Controls/InteractionChannelInteractionComponentPickerGetChannelFromComponent", null, options);
+
+        if (result.isSuccess && result.data) {
+            // Set the template, but don't let the change reset the instance
+            skipWatcher = true;
+            internalChannelValue.value = result.data;
+            await nextTick();
+            skipWatcher = false;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
 
     // #endregion
+
+    getEntityTypeGuids();
+
+    if (props.modelValue && !internalChannelGuid.value) {
+        getChannelFromComponent();
+    }
 </script>

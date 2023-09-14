@@ -2140,6 +2140,33 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Entity Picker
+
+        /// <summary>
+        /// Gets the entity types that can be displayed in the entity type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the entity types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityPickerGetEntityTypeGuids" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "8e92f72e-235a-4192-9c09-742f94849d62" )]
+        public IHttpActionResult EntityPickerGetEntityTypeGuids( [FromBody] EntityPickerGetEntityTypeGuidsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeGuids = new EntityTypeService( new RockContext() )
+                    .Queryable()
+                    .Where( e => e.IsEntity == true && e.SingleValueFieldTypeId.HasValue )
+                    .Select( e => e.Guid.ToString())
+                    .ToList();
+
+                return Ok( entityTypeGuids );
+            }
+        }
+
+        #endregion
+
         #region Entity Type Picker
 
         /// <summary>
@@ -2160,7 +2187,7 @@ namespace Rock.Rest.v2
 
                 if ( options.EntityTypeGuids != null && options.EntityTypeGuids.Any() )
                 {
-                    itemQuery = itemQuery.Where(t=> options.EntityTypeGuids.Contains( t.Guid ));
+                    itemQuery = itemQuery.Where( t => options.EntityTypeGuids.Contains( t.Guid ) );
                 }
 
                 var items = itemQuery
