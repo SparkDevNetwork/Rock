@@ -1694,14 +1694,27 @@ namespace Rock.Blocks.Event
         /// <param name="changes">The changes.</param>
         private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, History.HistoryChangeList changes )
         {
+            string phoneNumber = string.Empty;
+            bool? isMessagingEnabled = null;
+
             var phoneData = fieldValue.ToStringSafe().FromJsonOrNull<PhoneNumberBoxWithSmsControlBag>();
-            if ( phoneData == null )
+            if ( phoneData != null )
             {
+                // We got the number and SMS selection, so set both.
+                phoneNumber = phoneData.Number;
+                isMessagingEnabled = phoneData.IsMessagingEnbabled;
+            }
+            else if( fieldValue is string )
+            {
+                // Only got the number, so leave IsMessagingEnabled null so it isn't changed
+                phoneNumber = fieldValue.ToStringSafe();
+            }
+            else
+            {
+                // No usable data, just return without doing anything.
                 return;
             }
-
-            var phoneNumber = phoneData.Number;
-            var isMessagingEnabled = phoneData.IsMessagingEnbabled;
+            
             string cleanNumber = PhoneNumber.CleanNumber( phoneNumber );
             var numberType = DefinedValueCache.Get( phoneTypeGuid );
 
@@ -1718,8 +1731,7 @@ namespace Rock.Blocks.Event
             {
                 phone = new PhoneNumber
                 {
-                    NumberTypeValueId = numberType.Id,
-                    IsMessagingEnabled = isMessagingEnabled
+                    NumberTypeValueId = numberType.Id
                 };
 
                 person.PhoneNumbers.Add( phone );
@@ -1731,10 +1743,13 @@ namespace Rock.Blocks.Event
             }
 
             phone.Number = cleanNumber;
-            phone.IsMessagingEnabled = isMessagingEnabled;
-
             History.EvaluateChange( changes, $"{numberType.Value} Phone", oldPhoneNumber, phone.NumberFormattedWithCountryCode );
-            History.EvaluateChange( changes, $"{numberType.Value} IsMessagingEnabled", oldIsMessagingEnabled, phone.IsMessagingEnabled );
+
+            if( isMessagingEnabled != null )
+            {
+                phone.IsMessagingEnabled = isMessagingEnabled.Value;
+                History.EvaluateChange( changes, $"{numberType.Value} IsMessagingEnabled", oldIsMessagingEnabled, phone.IsMessagingEnabled );
+            }
         }
 
         /// <summary>
