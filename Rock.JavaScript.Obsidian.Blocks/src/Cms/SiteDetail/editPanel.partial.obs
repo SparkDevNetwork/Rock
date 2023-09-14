@@ -2,13 +2,18 @@
 <template>
     <fieldset>
 
-        <NotificationBox alertType="info">
+        <NotificationBox v-if="!idkey" alertType="info">
             <strong>Note</strong> If a Default Page is not specified, Rock will automatically create a new page at the root and set it as the default page for this new site.
+        </NotificationBox>
+
+        <NotificationBox v-if="isSystem" alertType="info">
+            <strong>Note</strong> Because this site is used by Rock, editing is restricted.
         </NotificationBox>
 
         <div class="row">
             <div class="col-md-6">
                 <TextBox v-model="name"
+                         :disabled="isSystem"
                          label="Name"
                          rules="required" />
             </div>
@@ -20,6 +25,7 @@
         </div>
 
         <TextBox v-model="description"
+                 :disabled="isSystem"
                  label="Description"
                  textMode="multiline" />
 
@@ -28,6 +34,7 @@
             <div class="col-md-4">
                 <DropDownList v-model="theme"
                               label="Theme"
+                              :disabled="isSystem"
                               help="The theme that should be used for the site. Themes contain specific layouts and css styling that controls how a site and its pages will look."
                               :items="themes" />
 
@@ -111,20 +118,21 @@
 
                 <div class="row">
                     <div class="col-md-4">
-                        <FileUploader v-model="favIconBinaryFile"
-                                      label="Site Icon"
-                                      help="Commonly called a 'favicon', this image is used as a browser and app icon for your site. Recommended image size is 192x192. Rock will automatically create all the sizes required by various devices."
-                                      :uploadAsTemporary="true"
-                                      uploadButtonText="Upload"
-                                      :showDeleteButton="true" />
+                        <ImageUploader v-model="favIconBinaryFile"
+                                       label="Site Icon"
+                                       help="Commonly called a 'favicon', this image is used as a browser and app icon for your site. Recommended image size is 192x192. Rock will automatically create all the sizes required by various devices."
+                                       :uploadAsTemporary="true"
+                                       uploadButtonText="Upload"
+                                       :binaryFileTypeGuid="binaryFileTypeGuid"
+                                       :showDeleteButton="true" />
                     </div>
                     <div class="col-md-4">
-                        <FileUploader v-model="siteLogoBinaryFile"
-                                      label="Site Logo"
-                                      help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing"
-                                      :uploadAsTemporary="true"
-                                      uploadButtonText="Upload"
-                                      :showDeleteButton="true" />
+                        <ImageUploader v-model="siteLogoBinaryFile"
+                                       label="Site Logo"
+                                       help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing"
+                                       :uploadAsTemporary="true"
+                                       uploadButtonText="Upload"
+                                       :showDeleteButton="true" />
                     </div>
 
                 </div>
@@ -138,30 +146,35 @@
                 Page Attributes apply to all of the pages of this site. Each page will have its own value for these attributes.
             </NotificationBox>
 
-            <RockButton class="btn-add btn-grid-action" btnType="link" @click="onAddAttribute"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
+            <div class="panel-body">
+                <div class="grid grid-panel">
+                    <Grid :data="gridData" keyField="key" itemTerm="Page Attribute" liveUpdates light @addItem="onAddItem">
+                        <TextColumn name="name" field="name" title="Attribute" />
+                        <TextColumn name="description" field="description" title="Description" />
+                        <BooleanColumn name="isRequired" field="isRequired" title="Required" />
+                        <EditColumn @click="onEditItem" />
+                        <DeleteColumn @click="onDeleteItem" disableConfirmation />
+                    </Grid>
+                </div>
+            </div>
+
 
             <Modal v-model="isModalOpen" title="Page Attributes">
-                <h4>{{ modalTitle }}</h4>
-                <hr />
 
-                <RockForm v-model:submit="submitEditAttribute" @submit="onSaveEditAttribute">
-                    <!-- <div v-if="showEntityTypeQualifier" class="well">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <TextBox v-model="entityTypeQualifierColumn" label="Qualifier Field" />
-                            </div>
-
-                            <div class="col-md-6">
-                                <TextBox v-model="entityTypeQualifierValue" label="Qualifier Value" />
-                            </div>
-                        </div>
-                    </div> -->
-
+                <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
+                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
+                        Please correct the following:
+                        <ul>
+                            <li v-for="error of attributeErrors">
+                                {{ error }}
+                            </li>
+                        </ul>
+                    </NotificationBox>
                     <AttributeEditor v-model="siteAttribute" :reservedKeyNames="reservedKeyNames" />
                 </RockForm>
 
                 <template #customButtons>
-                    <RockButton btnType="primary" @click="onSaveEditAttribute">Save</RockButton>
+                    <RockButton btnType="primary" @click="onStartSaveAttribute">Save</RockButton>
                 </template>
 
             </Modal>
@@ -226,25 +239,29 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
-    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
-    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import Grid, { DeleteColumn, EditColumn, TextColumn, BooleanColumn } from "@Obsidian/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { SiteBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteBag";
     import { SiteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteDetailOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
 
     const props = defineProps({
         modelValue: {
@@ -290,12 +307,16 @@
     const enablePageViewGeoTracking = propertyRef(props.modelValue.enablePageViewGeoTracking, "EnablePageViewGeoTracking");
     const disablePredictableIds = propertyRef(props.modelValue.disablePredictableIds, "DisablePredictableIds");
     const pageHeaderContent = propertyRef(props.modelValue.pageHeaderContent ?? "", "PageHeaderContent");
+    const idkey = ref(props.modelValue.idKey);
     const themes = ref(props.options.themes ?? []);
     const isModalOpen = ref<boolean>(false);
-    const reservedKeyNames = ref<[]>([]);
-    const modalTitle = ref<string>(`Add attribute for pages of ${name}`);
+    const reservedKeyNames = ref(props.options.reservedKeyNames ?? []);
     const siteAttribute = ref<PublicEditableAttributeBag | null>(null);
+    const siteAttributes = ref(props.modelValue.siteAttributes ?? []);
+    const binaryFileTypeGuid = ref(props.modelValue.binaryFileTypeGuid ?? BinaryFiletype.Default);
     const submitEditAttribute = ref<boolean>(false);
+    const attributeErrors = ref<string[]>([]);
+    const isSystem = props.modelValue.isSystem;
 
     const defaultPage = ref({
         page: props.modelValue.defaultPage ?? null
@@ -316,8 +337,6 @@
         page: props.modelValue.pageNotFoundPage ?? null
     });
 
-    const invokeBlockAction = useInvokeBlockAction();
-
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, isActive, name, theme, googleAnalyticsCode, requiresEncryption, enabledForShortening, enableVisitorTracking, enablePersonalization, favIconBinaryFile, enablePageViews,
@@ -327,43 +346,108 @@
 
     // #region Computed Values
 
+    const gridData: GridDataBag = reactive<GridDataBag>({
+        rows: siteAttributes.value.map(x => convertToRowItem(x))
+    });
     // #endregion
 
     // #region Functions
+
+    function convertToRowItem(attribute: PublicEditableAttributeBag): Record<string, unknown> {
+        return {
+            key: attribute.key,
+            name: attribute.name,
+            description: attribute.description,
+            isRequired: attribute.isRequired
+        };
+    }
 
     // #endregion
 
     // #region Event Handlers
 
-    async function onAddAttribute(): Promise<void> {
-        const response = await invokeBlockAction<{ editableAttribute: PublicEditableAttributeBag, reservedKeyNames: [], modalTitle: string }>("GetAttribute", {
-            attributeGuid: null
-        });
-
-        if (response.isSuccess && response.data) {
-            siteAttribute.value = response.data.editableAttribute;
-            isModalOpen.value = true;
-            reservedKeyNames.value = response.data.reservedKeyNames;
-            modalTitle.value = response.data.modalTitle;
-        }
+    async function onAddItem(): Promise<void> {
+        siteAttribute.value = {} as PublicEditableAttributeBag;
+        isModalOpen.value = true;
+        attributeErrors.value = [];
     }
 
-    function onSaveEditAttribute(): void {
+    const onEditItem = async (key: string): Promise<void> => {
 
-        if (siteAttribute.value && props.options.siteAttributes) {
-            const index = props.options.siteAttributes.findIndex(a => a.guid === siteAttribute.value?.guid);
+        attributeErrors.value = [];
+        const selectedSiteAttribute = siteAttributes.value.find(x => x.key === key);
+        // If attribute exists set it as current attribute for editing.
+        if (selectedSiteAttribute) {
+            siteAttribute.value = selectedSiteAttribute;
+            isModalOpen.value = true;
+        }
+        else {
+            onAddItem();
+        }
+    };
+
+    const onDeleteItem = async (key: string): Promise<void> => {
+        // Close modal and remove deleted attribute from the current collection of attributes.
+        isModalOpen.value = false;
+        siteAttributes.value = siteAttributes.value.filter(s => s.key !== key);
+
+        // Update the grid.
+        if (gridData.rows) {
+            const index = gridData.rows.findIndex(r => r["idKey"] === key);
 
             if (index !== -1) {
-                props.options.siteAttributes.splice(index, 1, siteAttribute.value);
+                gridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    function onSaveAttribute(): void {
+
+        if (siteAttribute.value) {
+            const index = siteAttributes.value.findIndex(a => a.key === siteAttribute.value?.key);
+            if (index !== -1) {
+                // Get the updated attribute and rowItem.
+                let editedAttribute = siteAttributes.value.find(a => a.guid == siteAttribute.value?.guid);
+                let rowItem = gridData.rows?.find(x => x["idKey"] == siteAttribute.value?.key);
+
+                if (editedAttribute) {
+                    // Replace old attribute with updated attribute.
+                    editedAttribute = siteAttribute.value;
+                    siteAttributes.value.splice(index, 1, editedAttribute);
+                }
+
+                if (rowItem && gridData.rows && editedAttribute) {
+                    // Update GridRowItem so changes are reflected in the UI.
+                    const rowIndex = gridData.rows.findIndex(r => r["idKey"] === siteAttribute.value?.key);
+                    rowItem = convertToRowItem(editedAttribute);
+                    gridData.rows?.splice(rowIndex, 1, rowItem);
+                }
             }
             else {
-                props.options.siteAttributes.push(siteAttribute.value);
+                siteAttributes.value.push(siteAttribute.value);
+
+                // Add new RowItem to the grid to represent the newly added attribute.
+                const newRowItem = convertToRowItem(siteAttribute.value);
+                gridData.rows?.push(newRowItem);
             }
 
+            const key = siteAttribute.value?.key ?? "";
             siteAttribute.value = null;
             isModalOpen.value = false;
+            if (!reservedKeyNames.value.includes(key)) {
+                reservedKeyNames.value.push(key);
+            }
         }
     }
+
+    const onStartSaveAttribute = (): void => {
+        attributeErrors.value = [];
+        const isExistingKey = reservedKeyNames.value.includes(siteAttribute.value?.key ?? "") && !siteAttribute.value?.guid;
+        submitEditAttribute.value = !isExistingKey;
+        if (isExistingKey) {
+            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
+        }
+    };
 
     // #endregion
 

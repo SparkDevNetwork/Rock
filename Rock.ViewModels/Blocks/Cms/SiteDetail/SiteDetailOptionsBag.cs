@@ -31,8 +31,11 @@ namespace Rock.ViewModels.Blocks.Cms.SiteDetail
         public List<ListItemBag> Themes { get; set; }
 
         /// <summary>
-        /// The site Attributes
+        /// Gets or sets the reserved key names.
         /// </summary>
-        public List<PublicEditableAttributeBag> SiteAttributes { get; set; }
+        /// <value>
+        /// The reserved key names.
+        /// </value>
+        public List<string> ReservedKeyNames { get; set; }
     }
 }
