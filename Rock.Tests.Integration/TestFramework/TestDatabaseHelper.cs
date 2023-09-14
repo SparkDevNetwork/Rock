@@ -24,6 +24,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using Rock.Data;
+using Rock.Jobs;
 using Rock.Model;
 using Rock.Tests.Integration.Database;
 using Rock.Tests.Shared;

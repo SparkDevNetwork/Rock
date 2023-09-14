@@ -27,7 +27,6 @@ namespace Rock.Tests.Integration.Database
     public interface ITestDatabaseInitializer
     {
         void InitializeSnapshot( string snapshotName, string sampleDataUrl );
-
     }
 
     public static class TestDatabaseSnapshotNames
@@ -79,9 +78,9 @@ namespace Rock.Tests.Integration.Database
 
             factory.CreateFromXmlDocumentFile( sampleDataUrl, args );
 
-            /*
-             * Run Rock Jobs to ensure calculated fields are updated.
-             */
+            //
+            // Run Rock Jobs to ensure calculated fields are updated.
+            //
 
             // Rock Cleanup
             var jobCleanup = new Rock.Jobs.RockCleanup();
@@ -124,11 +123,10 @@ namespace Rock.Tests.Integration.Database
                 action();
                 TestHelper.Log( $"Job Completed: {jobName}..." );
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 TestHelper.Log( $"WARNING: Job failed. [Job={jobName}]\n{ex.ToString()}" );
             }
         }
-
     }
 }
