@@ -191,13 +191,13 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
                 // in case called from CategoryTreeView
                 int? metricCategoryId = PageParameter( PageParameterKey.MetricCategoryId ).AsIntegerOrNull();
-                MetricCategory metricCategory = null;
+
                 if ( metricCategoryId.HasValue )
                 {
                     if ( metricCategoryId.Value > 0 )
                     {
                         // editing a metric, but get the metricId from the metricCategory
-                        metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId.Value );
+                        var metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId.Value );
                         if ( metricCategory != null )
                         {
                             hfMetricCategoryId.Value = metricCategory.Id.ToString();
@@ -224,19 +224,6 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 {
                     pnlDetails.Visible = false;
                 }
-            }
-            else
-            {
-                // Canceling on Edit.  Return to Details.
-                var metricService = new MetricService( new RockContext() );
-                var metric = metricService.Get( hfMetricId.Value.AsInteger() );
-
-                if ( metric == null )
-                {
-                    return;
-                }
-
-                CreateChart( metric );
             }
         }
 
