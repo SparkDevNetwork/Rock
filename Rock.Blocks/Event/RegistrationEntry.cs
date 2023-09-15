@@ -1514,7 +1514,7 @@ namespace Rock.Blocks.Event
                 return new PhoneNumberBoxWithSmsControlBag
                 {
                     Number = string.Empty,
-                    IsMessagingEnbabled = false,
+                    IsMessagingEnabled = false,
                     CountryCode = string.Empty
                 };
             }
@@ -1522,7 +1522,7 @@ namespace Rock.Blocks.Event
             return new PhoneNumberBoxWithSmsControlBag
             {
                 Number = phone.Number,
-                IsMessagingEnbabled = phone.IsMessagingEnabled,
+                IsMessagingEnabled = phone.IsMessagingEnabled,
                 CountryCode = phone.CountryCode
             };
         }
@@ -1702,7 +1702,7 @@ namespace Rock.Blocks.Event
             {
                 // We got the number and SMS selection, so set both.
                 phoneNumber = phoneData.Number;
-                isMessagingEnabled = phoneData.IsMessagingEnbabled;
+                isMessagingEnabled = phoneData.IsMessagingEnabled;
             }
             else if( fieldValue is string )
             {

@@ -17,7 +17,7 @@
                 </div>
                 <div v-if="showSmsOptIn ?? false">
                     <CheckBox
-                        v-model="isMessagingEnbabled"
+                        v-model="isMessagingEnabled"
                         label=""
                         :text="smsOptInText ?? ''"/>
                 </div>
@@ -64,7 +64,7 @@
     const configuration = ref<PhoneNumberBoxGetConfigurationResultsBag | null>(null);
     const number = ref(props.modelValue?.number?.toString() ?? "");
     const countryCode = ref(props.modelValue?.countryCode?.toString() ?? "");
-    const isMessagingEnbabled = ref(props.modelValue?.isMessagingEnbabled ?? false);
+    const isMessagingEnabled = ref(props.modelValue?.isMessagingEnabled ?? false);
 
     /** Used to temporarily disable emitting the modelValue when something changes. */
     let autoSyncModelValue = true;
@@ -162,12 +162,12 @@
         autoSyncModelValue = false;
         countryCode.value = props.modelValue?.countryCode?.toString() ?? "";
         number.value = props.modelValue?.number?.toString() ?? "";
-        isMessagingEnbabled.value = props.modelValue?.isMessagingEnbabled ?? false;
+        isMessagingEnabled.value = props.modelValue?.isMessagingEnabled ?? false;
         autoSyncModelValue = true;
     });
 
-    watch([countryCode, number, isMessagingEnbabled], () => {
-        console.log("watch([countryCode, number, isMessagingEnbabled]");
+    watch([countryCode, number, isMessagingEnabled], () => {
+        console.log("watch([countryCode, number, isMessagingEnabled]");
         if (!autoSyncModelValue) {
             return;
         }
@@ -175,7 +175,7 @@
         const value: PhoneNumberBoxWithSmsControlBag = {
             countryCode: countryCode.value ?? undefined,
             number: number.value ?? undefined,
-            isMessagingEnbabled: isMessagingEnbabled.value
+            isMessagingEnabled: isMessagingEnabled.value
         };
 
         emit("update:modelValue", value);
