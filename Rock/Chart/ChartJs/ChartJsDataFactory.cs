@@ -148,7 +148,7 @@ namespace Rock.Chart
             else if ( valueFormatString == "percentage" )
             {
                 callbackStr = @"function (label, index, values) {
-                return value + '%';
+                return label + '%';
               }";
             }
             else
