@@ -563,8 +563,15 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 hfMetricCategoryId.Value = metricCategoryId.ToString();
             }
 
-            qryParams[PageParameterKey.MetricCategoryId] = hfMetricCategoryId.Value;
-            qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+            if ( hfMetricCategoryId.ValueAsInt() != 0 )
+            {
+                qryParams[PageParameterKey.MetricCategoryId] = hfMetricCategoryId.Value;
+            }
+
+            if ( PageParameter( PageParameterKey.ExpandedIds ).IsNotNullOrWhiteSpace() )
+            {
+                qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+            }
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -651,10 +658,10 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             var qryParams = new Dictionary<string, string>();
             if ( parentCategoryId != null )
             {
-                qryParams["CategoryId"] = parentCategoryId.ToString();
+                qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
             }
 
-            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+            qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
