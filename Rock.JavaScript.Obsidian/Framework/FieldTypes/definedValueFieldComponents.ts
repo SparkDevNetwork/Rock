@@ -26,17 +26,21 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import Loading from "@Obsidian/Controls/loading.obs";
 import { DefinedValuePickerGetAttributesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetAttributesOptionsBag";
 import { DefinedValuePickerSaveNewValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerSaveNewValueOptionsBag";
+import { FieldTypeEditorUpdateAttributeConfigurationValueOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationValueOptionsBag";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
+import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./definedValueField.partial";
+import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, DefinedValueFieldType, ValueItem } from "./definedValueField.partial";
 import { getFieldEditorProps } from "./utils";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { useHttp } from "@Obsidian/Utility/http";
 import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+import { Guid } from "@Obsidian/Types";
+import { json } from "stream/consumers";
 
 function parseModelValue(modelValue: string | undefined): string {
     try {
@@ -98,12 +102,21 @@ export const EditComponent = defineComponent({
         const newDescription = ref("");
         const valueOptions = computed((): ValueItem[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
+                const valueOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
+                addedOptions.value.forEach(addedOption => {
+                    if(valueOptions.find(a=>a.value == addedOption.value) == null){
+                        valueOptions.push(addedOption);
+                    }
+                });
+
+                return valueOptions;
             }
             catch {
                 return [];
             }
         });
+
+        const addedOptions = ref<ValueItem[]>([]);
 
         const displayDescription = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.DisplayDescription]));
         const allowAdd = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.AllowAddingNewValues]));
@@ -120,7 +133,7 @@ export const EditComponent = defineComponent({
         });
 
         const isMultiple = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultiple]));
-
+        const attributeGuid = inject("attributeGuid") as Guid;
         const configAttributes = computed((): Record<string, unknown> => {
             const attributes: Record<string, unknown> = {};
 
@@ -208,18 +221,40 @@ export const EditComponent = defineComponent({
             const result = await http.post<ListItemBag>(url, undefined, options);
 
             if (result.isSuccess && result.data) {
+                addedOptions.value.push({value: result.data.value ?? "", text: result.data.text ?? "", description: ""});
                 if (isMultiple) {
                     if (Array.isArray(internalValues.value)) {
-                        internalValues.value.push(result.data.value??"");
+                        internalValues.value.push(result.data.value ?? "");
+                        const clientValue = getClientValue(internalValues.value, valueOptions.value);
+                        emit("update:modelValue", JSON.stringify(clientValue));
                     }
                     else {
-                        internalValues.value = [result.data.value??""];
+                        internalValue.value = result.data.value ?? "";
+                        const clientValue = getClientValue(internalValue.value, valueOptions.value);
+                        emit("update:modelValue", JSON.stringify(clientValue));
+
                     }
                 }
                 else {
                     internalValue.value = result.data.value ?? "";
                 }
 
+                emit("updateConfiguration");
+                const selectableValues = (props.configurationValues[ConfigurationValueKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
+                if(selectableValues.length > 0 && result.data.value){
+                    selectableValues.push(result.data.value);
+                    const update: FieldTypeEditorUpdateAttributeConfigurationValueOptionsBag = {
+                        fieldTypeGuid: FieldTypeGuids.DefinedValue,
+                        attributeGuid: attributeGuid,
+                        configurationKey: "selectableValues",
+                        configurationValue: selectableValues.join(",")
+                    };
+
+                    const response = await http.post<void>("/api/v2/Controls/FieldTypeEditorUpdateAttributeConfigurationValue", null, update);
+                    if (!response.isSuccess) {
+                        console.error(response.errorMessage || "Unable to save person preferences.");
+                    }
+                }
                 hideAddForm();
                 newValue.value = "";
                 newDescription.value = "";

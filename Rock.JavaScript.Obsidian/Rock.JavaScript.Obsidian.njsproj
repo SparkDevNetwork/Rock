@@ -1043,6 +1043,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorGetAvailableFieldTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationResultBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationValueOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\gatewayControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthDayValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthYearValue.d.ts" />

@@ -367,6 +367,7 @@
     <Compile Include="Cms\ObsidianBlockPreferencesBag.cs" />
     <Compile Include="Communication\ConversationAttachmentBag.cs" />
     <Compile Include="Communication\ConversationMessageBag.cs" />
+    <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationValueOptionsBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\RockCacheabilityBag.cs" />
