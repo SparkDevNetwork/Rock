@@ -376,6 +376,7 @@ so you can customize this to be exactly what you want.</p>
         /// <param name="result">The result.</param>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
+            int? visitorAliasId = null;
             var currentPerson = GetCurrentPerson( context );
             var settings = GetAttributesFromMarkup( _markup, context );
 
@@ -390,7 +391,12 @@ so you can customize this to be exactly what you want.</p>
                 sessionGuid = null;
             }
 
-            RenderToWriter( settings.Attributes, currentPerson, sessionGuid, result );
+            if ( currentPerson == null )
+            {
+                visitorAliasId = GetVisitorAliasId( context );
+            }
+
+            RenderToWriter( settings.Attributes, currentPerson, visitorAliasId, sessionGuid, result );
         }
 
         internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )
@@ -454,13 +460,27 @@ so you can customize this to be exactly what you want.</p>
         }
 
         /// <summary>
+        /// Gets the visitor alias identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private static int? GetVisitorAliasId( ILavaRenderContext context )
+        {
+            // First check for a person override value included in lava context
+            var personAlias = context.GetMergeField( "CurrentVisitor", null ) as PersonAlias;
+
+            return personAlias?.Id;
+        }
+
+        /// <summary>
         /// Renders the shortcode contents to the writer.
         /// </summary>
         /// <param name="parms">The parameters that will be used to construct the content.</param>
         /// <param name="currentPerson">The current person.</param>
+        /// <param name="personAliasId">The optional person alias identifier if <paramref name="currentPerson"/> is <c>null</c>.</param>
         /// <param name="rockSessionGuid">The current Rock session unique identifier.</param>
         /// <param name="result">The writer that output should be written to.</param>
-        internal static void RenderToWriter( Dictionary<string, string> parms, Person currentPerson, Guid? rockSessionGuid, TextWriter result )
+        internal static void RenderToWriter( Dictionary<string, string> parms, Person currentPerson, int? personAliasId, Guid? rockSessionGuid, TextWriter result )
         {
             var options = new MediaPlayerOptions
             {
@@ -484,7 +504,7 @@ so you can customize this to be exactly what you want.</p>
                 TrackProgress = true,
                 Type = parms[ParameterKeys.Type],
                 Volume = parms[ParameterKeys.Volume].AsDoubleOrNull() ?? 1.0,
-                WriteInteraction = currentPerson != null
+                WriteInteraction = currentPerson != null || personAliasId.HasValue
                     ? parms[ParameterKeys.TrackSession].AsBoolean( true )
                     : parms[ParameterKeys.TrackAnonymousSession].AsBoolean( true )
             };
@@ -496,7 +516,7 @@ so you can customize this to be exactly what you want.</p>
             var primaryColor = parms[ParameterKeys.PrimaryColor];
             var width = parms[ParameterKeys.Width];
 
-            options.UpdateValuesFromMedia( mediaId, options.MediaElementGuid, autoResumeInDays, combinePlayStatisticsInDays, currentPerson );
+            options.UpdateValuesFromMedia( mediaId, options.MediaElementGuid, autoResumeInDays, combinePlayStatisticsInDays, currentPerson, personAliasId );
 
             // Ensure the resume playing value is set.
             options.ResumePlaying = options.ResumePlaying ?? true;
