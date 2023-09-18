@@ -201,7 +201,14 @@ namespace Rock.Tests.Integration
             }
             else
             {
-                throw new NotImplementedException( "Reset is not available for a remote database." );
+                if ( string.IsNullOrEmpty( ConnectionString ) )
+                {
+                    throw new NotImplementedException( "ResetDatabase failed. The ConnectionString property is not set." );
+                }
+                else
+                {
+                    throw new NotImplementedException( "ResetDatabase failed. Reset is not available for a remote database." );
+                }
             }
         }
 
