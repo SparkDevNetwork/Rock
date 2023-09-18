@@ -9,16 +9,7 @@
                           showBlankItem
                           formGroupClasses="mt-0"
                           :entityTypeGuids="entityTypeGuidsFilter" />
-        <RockField v-if="fieldConfiguration" :attribute="fieldConfiguration" />
-        <!-- <InteractionComponentPicker
-                                    v-if="internalChannelGuid"
-                                    v-model="internalValue"
-                                    label="Interaction Component"
-                                    :interactionChannelGuid="internalChannelGuid"
-                                    :multiple="false"
-                                    :disabled="disabled"
-                                    showBlankItem
-                                    :displayStyle="PickerDisplayStyle.Condensed" /> -->
+        <RockField v-if="fieldConfiguration" :attribute="fieldConfiguration" v-model="internalValue" isEditMode />
     </RockFormField>
 </template>
 
@@ -33,8 +24,8 @@
     import { Guid } from "@Obsidian/Types";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/interactionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag";
     import { EntityPickerGetEntityTypeGuidsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityPickerGetEntityTypeGuidsOptionsBag";
+    import { EntityPickerGetFieldTypeGuidOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityPickerGetFieldTypeGuidOptionsBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
@@ -42,7 +33,7 @@
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ListItemBag | null>,
+            type: Object as PropType<string | null>,
             required: true
         },
 
@@ -60,13 +51,13 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ListItemBag | null): void
+        (e: "update:modelValue", value: string | null): void
         (e: "update:entityType", value: ListItemBag | null): void
     }>();
 
     // #region Values
 
-    const internalValue = ref<ListItemBag | null>(props.modelValue);
+    const internalValue = ref<string | undefined>(props.modelValue ?? undefined);
     const internalTypeValue = ref<ListItemBag | null>(props.entityType);
     const fieldType = ref<Guid | null>(null);
 
@@ -85,14 +76,13 @@
             return {
                 isRequired: containsRequiredRule(props.rules),
                 order: 1,
-                name: internalTypeValue.value.text
+                name: internalTypeValue.value.text,
+                fieldTypeGuid: fieldType.value
             };
         }
 
         return null;
     });
-
-    let skipWatcher = false;
 
     // #endregion
 
@@ -100,22 +90,31 @@
 
     watch(() => props.modelValue, () => {
         if (!deepEqual(internalValue.value, props.modelValue, false)) {
-            internalValue.value = props.modelValue;
-            getChannelFromComponent();
+            internalValue.value = props.modelValue ?? undefined;
         }
     });
 
     watch(internalValue, (val) => {
         if (!deepEqual(val, props.modelValue, false)) {
-            emit("update:modelValue", val);
+            emit("update:modelValue", val ?? null);
+        }
+    });
+
+    watch(() => props.entityType, () => {
+        if (!deepEqual(internalTypeValue.value, props.entityType, false)) {
+            internalTypeValue.value = props.entityType;
         }
     });
 
     watch(internalTypeValue, () => {
-        if (!skipWatcher) {
-            internalValue.value = null;
+        emit("update:entityType", internalTypeValue.value);
+        fieldType.value = null;
+        internalValue.value = undefined;
+
+        if (internalTypeValue.value) {
+            getFieldTypeFromEntityType();
         }
-    });
+    }, { immediate: true });
 
     // #endregion
 
@@ -135,20 +134,16 @@
         }
     }
 
-    async function getChannelFromComponent(): Promise<void> {
-        const options: InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag = {
-            interactionComponentGuid: props.modelValue?.value,
+    async function getFieldTypeFromEntityType(): Promise<void> {
+        const options: EntityPickerGetFieldTypeGuidOptionsBag = {
+            entityTypeGuid: internalTypeValue.value?.value,
             securityGrantToken: securityGrantToken.value
         };
 
-        const result = await http.post<ListItemBag>("/api/v2/Controls/InteractionChannelInteractionComponentPickerGetChannelFromComponent", null, options);
+        const result = await http.post<Guid>("/api/v2/Controls/EntityPickerGetFieldTypeGuid", null, options);
 
         if (result.isSuccess && result.data) {
-            // Set the template, but don't let the change reset the instance
-            skipWatcher = true;
-            internalTypeValue.value = result.data;
-            await nextTick();
-            skipWatcher = false;
+            fieldType.value = result.data;
         }
         else {
             console.error(result.errorMessage ?? "Unknown error while loading data.");
@@ -158,8 +153,4 @@
     // #endregion
 
     getEntityTypeGuids();
-
-    if (props.modelValue && !internalChannelGuid.value) {
-        getChannelFromComponent();
-    }
 </script>

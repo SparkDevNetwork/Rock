@@ -18,7 +18,7 @@
     import EntityPicker from "@Obsidian/Controls/entityPicker.obs";
     import { getSfcControlImportPath } from "./utils.partial";
 
-    const value = ref({});
+    const value = ref(null);
     const someBool = ref(false);
     const someVal = ref("");
 

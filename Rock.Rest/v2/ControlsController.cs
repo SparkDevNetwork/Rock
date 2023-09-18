@@ -2150,7 +2150,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityPickerGetEntityTypeGuids" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "8e92f72e-235a-4192-9c09-742f94849d62" )]
+        [Rock.SystemGuid.RestActionGuid( "8E92F72E-235A-4192-9C09-742F94849D62" )]
         public IHttpActionResult EntityPickerGetEntityTypeGuids( [FromBody] EntityPickerGetEntityTypeGuidsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -2173,7 +2173,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityPickerGetFieldTypeGuid" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "6bda28c3-e6d7-42eb-9011-0c076455d4a7" )]
+        [Rock.SystemGuid.RestActionGuid( "6BDA28C3-E6D7-42EB-9011-0C076455D4A7" )]
         public IHttpActionResult EntityPickerGetFieldTypeGuid( [FromBody] EntityPickerGetFieldTypeGuidOptionsBag options )
         {
             if (options.EntityTypeGuid == null)
