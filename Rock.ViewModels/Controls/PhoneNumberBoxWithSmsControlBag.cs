@@ -36,7 +36,7 @@ namespace Rock.ViewModels.Controls
         /// <value>
         ///   <c>true</c> if this instance is messaging enbabled; otherwise, <c>false</c>.
         /// </value>
-        public bool IsMessagingEnbabled { get; set; }
+        public bool IsMessagingEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets the country code.

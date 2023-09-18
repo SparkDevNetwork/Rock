@@ -1,6 +1,6 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-model="internalValue"
+    <RockFormField v-model="number"
                    v-bind="formFieldProps"
                    @change="onChange"
                    formGroupClasses="rock-phonenumber-box"
@@ -12,12 +12,12 @@
                     <span v-if="availableCountryCodeOptions.length < 2" class="input-group-addon">
                         <i class="fa fa-phone-square"></i>
                     </span>
-                    <InputGroupDropDown v-else :items="availableCountryCodeOptions" v-model="internalValue.countryCode" inputGroupClasses="input-group-addon" />
-                    <input v-model="internalValue.number" :id="uniqueId" type="text" class="form-control" v-bind="field" />
+                    <InputGroupDropDown v-else :items="availableCountryCodeOptions" v-model="countryCode" inputGroupClasses="input-group-addon" />
+                    <input v-model="number" :id="uniqueId" type="text" class="form-control" v-bind="field" />
                 </div>
                 <div v-if="showSmsOptIn ?? false">
                     <CheckBox
-                        v-model="internalValue.isMessagingEnbabled"
+                        v-model="isMessagingEnabled"
                         label=""
                         :text="smsOptInText ?? ''"/>
                 </div>
@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { computed, PropType, reactive, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { PhoneNumberBoxGetConfigurationResultsBag } from "@Obsidian/ViewModels/Rest/Controls/phoneNumberBoxGetConfigurationResultsBag";
     import { PhoneNumberCountryCodeRulesConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/phoneNumberCountryCodeRulesConfigurationBag";
     import { PhoneNumberBoxWithSmsControlBag } from "@Obsidian/ViewModels/Controls/phoneNumberBoxWithSmsControlBag";
@@ -38,10 +38,6 @@
     import RockFormField from "./rockFormField.obs";
     import InputGroupDropDown from "./inputGroupDropDown.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-
-    type InternalPhoneNumber = Required<{
-        [Property in keyof PhoneNumberBoxWithSmsControlBag]: NonNullable<PhoneNumberBoxWithSmsControlBag[Property]>
-    }>;
 
     const props = defineProps({
         /** v-model of Phone Number */
@@ -62,27 +58,20 @@
         (e: "update:modelValue", value: PhoneNumberBoxWithSmsControlBag): void
     }>();
 
-    const internalValue = reactive<InternalPhoneNumber>({
-        countryCode: props.modelValue?.countryCode ?? "",
-        isMessagingEnbabled: props.modelValue?.isMessagingEnbabled ?? false,
-        number: formatPhoneNumber(props.modelValue?.number ?? "")
-    });
-
     // #region Values
+
     const formFieldProps = useStandardRockFormFieldProps(props);
     const configuration = ref<PhoneNumberBoxGetConfigurationResultsBag | null>(null);
+    const number = ref(props.modelValue?.number?.toString() ?? "");
+    const countryCode = ref(props.modelValue?.countryCode?.toString() ?? "");
+    const isMessagingEnabled = ref(props.modelValue?.isMessagingEnabled ?? false);
+
+    /** Used to temporarily disable emitting the modelValue when something changes. */
+    let autoSyncModelValue = true;
 
     // #endregion
 
     // #region Computed Values
-
-    const strippedValue = computed((): string => {
-        return stripPhoneNumber(internalValue.number);
-    });
-
-    const formattedValue = computed((): string => {
-        return formatPhoneNumber(strippedValue.value, getConfiguredRules());
-    });
 
     const rules = computed(() => {
         const rules = normalizeRules(props.rules);
@@ -118,18 +107,14 @@
     function validatePhoneNumber(value: unknown): string | boolean {
         const rules = getConfiguredRules();
 
-        if (!value) {
-            return true;
-        }
-
-        if (rules.length == 0) {
+        if(!value || typeof(value) !== "string" || rules.length == 0) {
             return true;
         }
 
         for (let rule of rules) {
             const regex = new RegExp(rule.match ?? "");
-
-            if (regex.test(strippedValue.value)) {
+            const unformattedPhoneNumberToValidate = stripPhoneNumber(value);
+            if (regex.test(unformattedPhoneNumberToValidate)) {
                 return true;
             }
         }
@@ -144,6 +129,7 @@
 
             if (result) {
                 configuration.value = result;
+                countryCode.value ||= result.defaultCountryCode ?? "";
             }
             else {
                 console.error("Unknown error while loading phone number configuration.");
@@ -156,7 +142,8 @@
 
     /** Get the rules for the selected countryCode */
     function getConfiguredRules(): PhoneNumberCountryCodeRulesConfigurationBag[] {
-        return configuration.value?.rules?.[props.modelValue?.countryCode ?? ""] ?? [];
+        const temp = configuration.value?.rules?.[countryCode.value] ?? [];
+        return temp;
     }
 
     // #endregion
@@ -164,26 +151,34 @@
     // #region Event Handlers
 
     function onChange(): void {
-        internalValue.number = formatPhoneNumber(internalValue.number);
+        number.value = formatPhoneNumber(number.value);
     }
 
     // #endregion
 
     // #region Watchers
-    watch(internalValue, () => {
-        emit("update:modelValue", internalValue);
+    watch(() => props.modelValue, () => {
+        console.log("watch() props.modelValue");
+        autoSyncModelValue = false;
+        countryCode.value = props.modelValue?.countryCode?.toString() ?? "";
+        number.value = props.modelValue?.number?.toString() ?? "";
+        isMessagingEnabled.value = props.modelValue?.isMessagingEnabled ?? false;
+        autoSyncModelValue = true;
     });
 
-    watch(() => props.modelValue, () => {
-        // Update internalValue if there are differences
-        Object.entries(props.modelValue ?? []).forEach(([key, val]) => {
-            if (val === null || val === undefined) {
-                internalValue[key] = "";
-            }
-            else if (val !== internalValue[key]) {
-                internalValue[key] = val;
-            }
-        });
+    watch([countryCode, number, isMessagingEnabled], () => {
+        console.log("watch([countryCode, number, isMessagingEnabled]");
+        if (!autoSyncModelValue) {
+            return;
+        }
+
+        const value: PhoneNumberBoxWithSmsControlBag = {
+            countryCode: countryCode.value ?? undefined,
+            number: number.value ?? undefined,
+            isMessagingEnabled: isMessagingEnabled.value
+        };
+
+        emit("update:modelValue", value);
     });
 
     // #endregion
