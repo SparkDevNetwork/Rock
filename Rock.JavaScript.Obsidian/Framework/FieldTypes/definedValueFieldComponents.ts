@@ -315,10 +315,19 @@ export const EditComponent = defineComponent({
     </template>
     <template v-else>
 
-            <DropDownList v-if="!isMultiple" v-model="internalValue" v-bind="configAttributes" :items="options" :showBlankItem="!isRequired" />
-            <DropDownList v-else-if="isMultiple && configAttributes.enhanceForLongLists" multiple v-model="internalValues" v-bind="configAttributes" :items="options" :showBlankItem="!isRequired" />
-            <CheckBoxList v-else v-model="internalValues" :items="options" horizontal :repeatColumns="repeatColumns" />
-            <RockButton v-if="allowAdd" @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+        <DropDownList v-if="!isMultiple || (isMultiple && configAttributes.enhanceForLongLists)" :multiple="isMultiple" v-model="internalValue" v-bind="configAttributes" :items="options" :showBlankItem="!isRequired">
+            <template #inputGroupAppend v-if="allowAdd">
+                <span class="input-group-btn">
+                    <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                </span>
+            </template>
+        </DropDownList>
+        <CheckBoxList v-else v-model="internalValues" :items="options" horizontal :repeatColumns="repeatColumns">
+            <template #append v-if="allowAdd">
+                <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+             </template>
+        </CheckBoxList>
+
 
     </template>
     </div>
