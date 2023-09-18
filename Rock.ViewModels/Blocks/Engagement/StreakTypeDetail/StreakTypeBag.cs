@@ -23,6 +23,10 @@ using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Engagement.StreakTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class StreakTypeBag : EntityBagBase
     {
         /// <summary>

@@ -46,5 +46,14 @@ namespace Rock.ViewModels.Utility
         /// </value>
         /// <remarks>Categories are only supported on certain UI controls.</remarks>
         public string Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets disabled for this item.
+        /// </summary>
+        /// <value>
+        /// Wether or not this item is disabled (visible but not selectable).
+        /// </value>
+        /// <remarks>Disabled is only supported on certain UI controls.</remarks>
+        public bool? Disabled { get; set; }
     }
 }

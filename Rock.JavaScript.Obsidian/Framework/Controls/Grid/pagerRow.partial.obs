@@ -3,8 +3,6 @@
     <div class="grid-paging-footer">
         <div class="grid-page-sizes">
             <PageSizePicker v-model="pageSize" :pageSizes="pageSizes" />
-
-            <div v-if="message" class="grid-itemcount">{{ message }}</div>
         </div>
 
         <PagePicker v-model="currentPage" :pageCount="pageCount" />
@@ -40,12 +38,6 @@
         pageCount: {
             type: Number as PropType<number>,
             default: 1
-        },
-
-        /** The message to display that describes the contents of the grid. */
-        message: {
-            type: String as PropType<string>,
-            default: ""
         },
 
         /**

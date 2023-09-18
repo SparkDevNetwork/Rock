@@ -22,6 +22,7 @@ using System.Text.RegularExpressions;
 using DotLiquid.Util;
 
 using Rock.Attribute;
+using Rock.Cms;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Logging;
@@ -443,8 +444,6 @@ namespace Rock.Model
             private readonly string _summaryAttributeKey;
             private readonly string _authorNameAttributeKey;
             private readonly string _imageUrlAttributeKey;
-            private readonly string _experienceLevelAttributeKey;
-            private readonly string _publisherNameAttributeKey;
 
             /// <summary>
             /// Gets or sets the summary attribute value.

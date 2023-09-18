@@ -15,8 +15,8 @@
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -57,9 +57,11 @@
     const errorMessage = ref("");
 
     const assetStorageProviderViewBag = ref(config.entity);
-    const assetStorageProviderEditBag = ref<AssetStorageProviderBag>({} as AssetStorageProviderBag);
 
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+    // Open the edit bag populated with the Asset Storage Entities if available. Else initialize the bag with no values.
+    const assetStorageProviderEditBag = ref(config.entity ?? ({} as AssetStorageProviderBag));
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
@@ -143,15 +145,11 @@
      * @returns true if the panel should leave edit mode; otherwise false.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!assetStorageProviderEditBag.value?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
-            }
-
-            return false;
+        // navigate to the parent page when Cancel Button is clicked.
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
         }
-
-        return true;
+        return false;
     }
 
     /**

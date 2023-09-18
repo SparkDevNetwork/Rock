@@ -20,6 +20,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 
+using Rock.Data;
+using Rock.Financial;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -30,6 +32,108 @@ namespace Rock.Model
     public partial class FinancialBatchService
     {
         /// <summary>
+        /// Creates the standard history changes for a new batch. If the batch
+        /// has already been saved (Id not equal to 0) then no history changes
+        /// will be created.
+        /// </summary>
+        /// <param name="batch">The batch to be evaluated</param>
+        /// <param name="changes">The list of history changes to be saved with the batch.</param>
+        public static void EvaluateNewBatchHistory( FinancialBatch batch, History.HistoryChangeList changes )
+        {
+            if ( batch == null )
+            {
+                throw new ArgumentNullException( nameof( batch ) );
+            }
+
+            if ( changes == null )
+            {
+                throw new ArgumentNullException( nameof( changes ) );
+            }
+
+            if ( batch.Id == 0 )
+            {
+                changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
+                History.EvaluateChange( changes, "Batch Name", string.Empty, batch.Name );
+                History.EvaluateChange( changes, "Status", null, batch.Status );
+                History.EvaluateChange( changes, "Start Date/Time", null, batch.BatchStartDateTime );
+                History.EvaluateChange( changes, "End Date/Time", null, batch.BatchEndDateTime );
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets the first FinancialBatch matching the specified filter parameters,
+        /// or creates a new FinancialBatch if one isn't found.
+        /// </para>
+        /// <para>
+        /// If a new batch is created it will not have been saved to the database
+        /// yet and will have an Id of <c>0</c>.</para>
+        /// </summary>
+        /// <param name="transaction">The transaction that will be saved to the database. It should be fully populated with everything except BatchId.</param>
+        /// <param name="namePrefix">The prefix that should be applied to the batch name. This will only be used with supported gateways.</param>
+        /// <param name="nameSuffix">The suffix that should be applied to the batch name. This will only be used with supported gateways.</param>
+        /// <returns>The financial batch that should be used for the transaction.</returns>
+        public FinancialBatch GetForNewTransaction( FinancialTransaction transaction, string namePrefix = null, string nameSuffix = null )
+        {
+            // Validate that the transaction provides the required information.
+            if ( transaction == null )
+            {
+                throw new ArgumentNullException( nameof( transaction ) );
+            }
+
+            if ( !transaction.TransactionDateTime.HasValue && !transaction.FutureProcessingDateTime.HasValue )
+            {
+                throw new ArgumentException( "Transaction must have either TransactionDateTime or FutureProcessingDateTime specified.", nameof( transaction ) );
+            }
+
+            // Get all the additional bits we need.
+            FinancialGateway gateway;
+
+            if ( transaction.FinancialGateway != null )
+            {
+                gateway = transaction.FinancialGateway;
+            }
+            else if ( transaction.FinancialGatewayId.HasValue )
+            {
+                gateway = new FinancialGatewayService( ( RockContext ) Context ).Get( transaction.FinancialGatewayId.Value );
+            }
+            else
+            {
+                gateway = null;
+            }
+
+            var currencyType = transaction.FinancialPaymentDetail?.CurrencyTypeValueId.HasValue == true
+                ? DefinedValueCache.Get( transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value )
+                : null;
+
+            var creditCardType = transaction.FinancialPaymentDetail?.CreditCardTypeValueId.HasValue == true
+                ? DefinedValueCache.Get( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value )
+                : null;
+
+            var transactionDateTime = transaction.TransactionDateTime ?? transaction.FutureProcessingDateTime.Value;
+
+            // Check if the gateway supports automatic settlement.
+            if ( gateway?.GetGatewayComponent() is ISettlementGateway settlementGateway )
+            {
+                var batchId = settlementGateway.GetSettlementBatchId( gateway, transaction );
+
+                if ( batchId.HasValue )
+                {
+                    return Get( batchId.Value );
+                }
+            }
+
+            return GetInternal( namePrefix ?? string.Empty,
+                nameSuffix ?? string.Empty,
+                currencyType,
+                creditCardType,
+                transactionDateTime,
+                gateway?.GetBatchTimeOffset() ?? TimeSpan.Zero,
+                gateway?.BatchDayOfWeek,
+                null );
+        }
+
+        /// <summary>
         /// Gets the first FinancialBatch matching the specified filter parameters, or creates a new FinancialBatch if one isn't found.
         /// </summary>
         /// <param name="namePrefix">The name prefix.</param>
@@ -39,10 +143,12 @@ namespace Rock.Model
         /// <param name="batchTimeOffset">The batch time offset.</param>
         /// <param name="batches">The batches.</param>
         /// <returns></returns>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the GetForNewTransaction method." )]
         public FinancialBatch Get( string namePrefix, DefinedValueCache currencyType, DefinedValueCache creditCardType,
             DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
         {
-            return Get( namePrefix, string.Empty, currencyType, creditCardType, transactionDate, batchTimeOffset, batches );
+            return Get( namePrefix ?? string.Empty, string.Empty, currencyType, creditCardType, transactionDate, batchTimeOffset, batches );
         }
 
         /// <summary>
@@ -56,10 +162,12 @@ namespace Rock.Model
         /// <param name="batchTimeOffset">The batch time offset.</param>
         /// <param name="batches">The batches.</param>
         /// <returns></returns>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the GetForNewTransaction method." )]
         public FinancialBatch Get( string namePrefix, string nameSuffix, DefinedValueCache currencyType, DefinedValueCache creditCardType,
             DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
         {
-            return Get( namePrefix, nameSuffix, currencyType, creditCardType, transactionDate, batchTimeOffset, null, batches );
+            return Get( namePrefix ?? string.Empty, nameSuffix ?? string.Empty, currencyType, creditCardType, transactionDate, batchTimeOffset, null, batches );
         }
 
         /// <summary>
@@ -74,7 +182,27 @@ namespace Rock.Model
         /// <param name="batches">The batches.</param>
         /// <param name="batchWeeklyDayOfWeek">If batching weekly, the day of the week the batch should begin</param>
         /// <returns></returns>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the GetForNewTransaction method." )]
         public FinancialBatch Get( string namePrefix, string nameSuffix, DefinedValueCache currencyType, DefinedValueCache creditCardType,
+        DateTime transactionDate, TimeSpan batchTimeOffset, DayOfWeek? batchWeeklyDayOfWeek, List<FinancialBatch> batches = null )
+        {
+            return GetInternal( namePrefix, nameSuffix, currencyType, creditCardType, transactionDate, batchTimeOffset, batchWeeklyDayOfWeek, batches );
+        }
+
+        /// <summary>
+        /// Gets the first FinancialBatch matching the specified filter parameters, or creates a new FinancialBatch if one isn't found.
+        /// </summary>
+        /// <param name="namePrefix">The name prefix.</param>
+        /// <param name="nameSuffix">The name suffix.</param>
+        /// <param name="currencyType">Type of the currency.</param>
+        /// <param name="creditCardType">Type of the credit card.</param>
+        /// <param name="transactionDate">The transaction date.</param>
+        /// <param name="batchTimeOffset">The batch time offset.</param>
+        /// <param name="batches">The batches.</param>
+        /// <param name="batchWeeklyDayOfWeek">If batching weekly, the day of the week the batch should begin</param>
+        /// <returns></returns>
+        internal FinancialBatch GetInternal( string namePrefix, string nameSuffix, DefinedValueCache currencyType, DefinedValueCache creditCardType,
         DateTime transactionDate, TimeSpan batchTimeOffset, DayOfWeek? batchWeeklyDayOfWeek, List<FinancialBatch> batches = null )
         {
             // Use the credit card type's batch name suffix, or if that doesn't exist, use the currency type value
@@ -96,7 +224,7 @@ namespace Rock.Model
 
             string batchName = namePrefix.Trim() + ( string.IsNullOrWhiteSpace( ccSuffix ) ? "" : " " + ccSuffix ) + nameSuffix;
 
-            return GetByNameAndDate( batchName.Truncate(50), transactionDate, batchTimeOffset, batchWeeklyDayOfWeek, batches );
+            return GetByNameAndDateInternal( batchName.Truncate(50), transactionDate, batchTimeOffset, batchWeeklyDayOfWeek, batches );
         }
 
         /// <summary>
@@ -107,6 +235,8 @@ namespace Rock.Model
         /// <param name="batchTimeOffset">The batch time offset.</param>
         /// <param name="batches">The batches.</param>
         /// <returns></returns>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the GetForNewTransaction method." )]
         public FinancialBatch GetByNameAndDate( string batchName, DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
         {
             return GetByNameAndDate( batchName, transactionDate, batchTimeOffset, null, batches );
@@ -121,7 +251,23 @@ namespace Rock.Model
         /// <param name="batches">The batches.</param>
         /// <param name="batchWeeklyDayOfWeek">If batching weekly, the day of the week the batch should begin</param>
         /// <returns></returns>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use the GetForNewTransaction method." )]
         public FinancialBatch GetByNameAndDate( string batchName, DateTime transactionDate, TimeSpan batchTimeOffset, DayOfWeek? batchWeeklyDayOfWeek, List<FinancialBatch> batches = null )
+        {
+            return GetByNameAndDateInternal( batchName, transactionDate, batchTimeOffset, batchWeeklyDayOfWeek, batches );
+        }
+
+        /// <summary>
+        /// Gets the first FinancialBatch matching the specified filter parameters, or creates a new FinancialBatch if one isn't found.
+        /// </summary>
+        /// <param name="batchName">Name of the batch.</param>
+        /// <param name="transactionDate">The transaction date.</param>
+        /// <param name="batchTimeOffset">The batch time offset.</param>
+        /// <param name="batches">The batches.</param>
+        /// <param name="batchWeeklyDayOfWeek">If batching weekly, the day of the week the batch should begin</param>
+        /// <returns></returns>
+        private FinancialBatch GetByNameAndDateInternal( string batchName, DateTime transactionDate, TimeSpan batchTimeOffset, DayOfWeek? batchWeeklyDayOfWeek, List<FinancialBatch> batches = null )
         {
             FinancialBatch batch = null;
 

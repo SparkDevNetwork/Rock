@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
@@ -41,9 +42,17 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular site." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    //[SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
+
+    [BinaryFileTypeField( "Default File Type",
+        Key = AttributeKey.DefaultFileType,
+        Description = "The default file type to use while uploading Favicon",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.BinaryFiletype.DEFAULT, // this was previously defaultBinaryFileTypeGuid which maps to base default value
+        Category = "",
+        Order = 0 )]
 
     #endregion
 
@@ -63,6 +72,11 @@ namespace Rock.Blocks.Cms
             public const string ParentPage = "ParentPage";
         }
 
+        private static class AttributeKey
+        {
+            public const string DefaultFileType = "DefaultFileType";
+        }
+
         #endregion Keys
 
         #region Methods
@@ -77,7 +91,7 @@ namespace Rock.Blocks.Cms
                 SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext, string.Empty );
+                box.Options = GetBoxOptions( box.IsEditable, rockContext );
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Site>();
 
                 return box;
@@ -90,14 +104,18 @@ namespace Rock.Blocks.Cms
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="key">The id identifier of the entity.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private SiteDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext, string key )
+        private SiteDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
             var options = new SiteDetailOptionsBag();
-            var attributes = GetSiteAttributes( rockContext, key );
-            options.SiteAttributes = new List<PublicEditableAttributeBag>();
-            options.SiteAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
+
+            options.Themes = new List<ListItemBag>();
+
+            var physicalRootFolder = AppDomain.CurrentDomain.BaseDirectory;
+            string physicalFolder = Path.Combine( physicalRootFolder, RequestContext.ResolveRockUrl( "~~/" ).RemoveLeadingForwardslash() );
+            var di = new DirectoryInfo( physicalFolder );
+            options.Themes.AddRange( di.Parent.EnumerateDirectories().OrderBy( a => a.Name ).Select( themeDir => new ListItemBag() { Text = themeDir.Name, Value = themeDir.Name } ) );
+
             return options;
         }
 
@@ -155,7 +173,8 @@ namespace Rock.Blocks.Cms
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity );
+                    box.Entity = GetEntityBagForEdit( entity, rockContext );
+                    box.Options.ReservedKeyNames = box.Entity.SiteAttributes.Select( a => a.Key ).ToList();
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -217,7 +236,8 @@ namespace Rock.Blocks.Cms
                 RegistrationPageRoute = entity.RegistrationPageRoute.ToListItemBag(),
                 RequiresEncryption = entity.RequiresEncryption,
                 SiteLogoBinaryFile = entity.SiteLogoBinaryFile.ToListItemBag(),
-                Theme = entity.Theme
+                Theme = entity.Theme,
+                SiteUrl = $"{this.RequestContext.ResolveRockUrl( "~/page/" )}{entity.DefaultPageId}"
             };
 
             if ( entity.SiteDomains != null )
@@ -241,7 +261,7 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
-
+            bag.AllowsCompile = new Rock.Web.UI.RockTheme( entity.Theme ).AllowsCompile;
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;
@@ -252,7 +272,7 @@ namespace Rock.Blocks.Cms
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="SiteBag"/> that represents the entity.</returns>
-        private SiteBag GetEntityBagForEdit( Site entity )
+        private SiteBag GetEntityBagForEdit( Site entity, RockContext rockContext )
         {
             if ( entity == null )
             {
@@ -262,6 +282,12 @@ namespace Rock.Blocks.Cms
             var bag = GetCommonEntityBag( entity );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+
+            var attributes = GetSiteAttributes( rockContext, entity.Id.ToString() );
+
+            bag.SiteAttributes = new List<PublicEditableAttributeBag>();
+            bag.SiteAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
+            bag.BinaryFileTypeGuid = GetAttributeValue( AttributeKey.DefaultFileType ).AsGuid();
 
             return bag;
         }
@@ -586,6 +612,12 @@ namespace Rock.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Gets the site attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="siteIdQualifierValue">The site identifier qualifier value.</param>
+        /// <returns></returns>
         private static List<Model.Attribute> GetSiteAttributes( RockContext rockContext, string siteIdQualifierValue )
         {
             return new AttributeService( rockContext ).GetByEntityTypeId( new Page().TypeId, true ).AsQueryable()
@@ -622,9 +654,11 @@ namespace Rock.Blocks.Cms
                 var id = IdHasher.Instance.GetId( key );
                 var box = new DetailBlockBox<SiteBag, SiteDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity ),
-                    Options = GetBoxOptions( true, rockContext, id.ToString() )
+                    Entity = GetEntityBagForEdit( entity, rockContext ),
+                    Options = GetBoxOptions( true, rockContext )
                 };
+
+                box.Options.ReservedKeyNames = box.Entity.SiteAttributes.Select( a => a.Key ).ToList();
 
                 return ActionOk( box );
             }
@@ -668,9 +702,9 @@ namespace Rock.Blocks.Cms
                 {
                     rockContext.SaveChanges();
 
-                    if ( box.Options.SiteAttributes.Count > 0 )
+                    if ( box.Entity.SiteAttributes.Count > 0 )
                     {
-                        SaveAttributes( new Page().TypeId, "SiteId", entity.Id.ToString(), box.Options.SiteAttributes, rockContext );
+                        SaveAttributes( new Page().TypeId, "SiteId", entity.Id.ToString(), box.Entity.SiteAttributes, rockContext );
                     }
 
                     if ( existingIconId.HasValue && existingIconId.Value != entity.FavIconBinaryFileId )
@@ -864,7 +898,7 @@ namespace Rock.Blocks.Cms
 
                 var refreshedBox = new DetailBlockBox<SiteBag, SiteDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
@@ -926,6 +960,37 @@ namespace Rock.Blocks.Cms
             attributes.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
 
             return ActionOk( new { editableAttribute, reservedKeyNames, modalTitle } );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCompileTheme control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        [BlockAction]
+        public BlockActionResult CompileTheme( string idKey )
+        {
+            var rockContext = new RockContext();
+            SiteService siteService = new SiteService( rockContext );
+            Site site = siteService.Get( idKey );
+
+            if ( site == null )
+            {
+                return ActionBadRequest( "Unable to find the requested site." );
+            }
+
+            string messages;
+            var theme = new Rock.Web.UI.RockTheme( site.Theme );
+            bool success = theme.Compile( out messages );
+
+            if ( success )
+            {
+                return ActionOk( new { message = "Theme was successfully compiled." } );
+            }
+            else
+            {
+                return ActionBadRequest( string.Format( "An error occurred compiling the theme {0}. Message: {1}.", site.Theme, messages ) );
+            }
         }
 
         #endregion

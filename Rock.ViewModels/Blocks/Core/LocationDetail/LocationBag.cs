@@ -20,6 +20,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.LocationDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class LocationBag : EntityBagBase
     {
         /// <summary>
@@ -94,8 +98,20 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
 
         /* Update these to whatever they need to be when the GeoPicker is ready */
 
+        /// <summary>
+        /// Gets or sets the geo point well known text.
+        /// </summary>
+        /// <value>
+        /// The geo point well known text.
+        /// </value>
         public string GeoPoint_WellKnownText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the geo fence well known text.
+        /// </summary>
+        /// <value>
+        /// The geo fence well known text.
+        /// </value>
         public string GeoFence_WellKnownText { get; set; }
         
     }

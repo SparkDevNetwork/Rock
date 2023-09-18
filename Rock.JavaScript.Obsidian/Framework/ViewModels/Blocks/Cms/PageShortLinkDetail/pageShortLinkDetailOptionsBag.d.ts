@@ -24,5 +24,6 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type PageShortLinkDetailOptionsBag = {
+    /** Gets or sets the site options. */
     siteOptions?: ListItemBag[] | null;
 };

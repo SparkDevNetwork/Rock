@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Tv.AppleTvAppDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class AppleTvAppDetailOptionsBag
     {
     }

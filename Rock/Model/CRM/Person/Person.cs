@@ -697,9 +697,21 @@ namespace Rock.Model
         [DataMember]
         public int? PrimaryAliasId
         {
-            get => _primaryAliasId ?? PrimaryAlias?.Id;
+            get
+            {
+                var id = _primaryAliasId ?? PrimaryAlias?.Id;
+                if ( id == 0 )
+                {
+                    // This is not a valid reference to a persisted PersonAlias.
+                    // In this case, most verification code will expect a null value to be returned.
+                    return null;
+                }
+                return id;
+            }
+
             set => _primaryAliasId = value;
         }
+
         private int? _primaryAliasId;
 
         #endregion

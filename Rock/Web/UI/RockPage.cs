@@ -766,7 +766,7 @@ namespace Rock.Web.UI
 
             var stopwatchInitEvents = Stopwatch.StartNew();
 
-            RequestContext = new RockRequestContext( Request );
+            RequestContext = new RockRequestContext( Request, new RockResponseContext( this ) );
 
             if ( _pageCache != null )
             {
@@ -1352,13 +1352,6 @@ Rock.settings.initialize({{
                                     Page.Trace.Warn( "\tSetting block properties" );
                                     blockControl.SetBlock( _pageCache, block, canEdit, canAdministrate );
                                     control = new RockBlockWrapper( blockControl );
-
-                                    // Add any breadcrumbs to current page reference that the block creates
-                                    Page.Trace.Warn( "\tAdding any breadcrumbs from block" );
-                                    if ( block.BlockLocation == BlockLocation.Page )
-                                    {
-                                        blockControl.GetBreadCrumbs( PageReference ).ForEach( c => PageReference.BreadCrumbs.Add( c ) );
-                                    }
                                 }
                             }
 
@@ -1444,13 +1437,6 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         }
                     }
 
-                    // Make the last crumb for this page the active one
-                    Page.Trace.Warn( "Setting active breadcrumb" );
-                    if ( PageReference.BreadCrumbs.Any() )
-                    {
-                        PageReference.BreadCrumbs.Last().Active = true;
-                    }
-
                     /*
                      * 2020-06-17 - JH
                      *
@@ -1459,19 +1445,23 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                      * Page loads/postbacks occur. By providing a suffix for the storage key when in an iFrame modal, we can preserve the
                      * main Rock instance's PageReference history.
                      */
+                    Page.Trace.Warn( "Getting breadcrumbs" );
+
                     var pageReferencesKeySuffix = IsIFrameModal ? "_iFrameModal" : null;
+                    var pageReferences = PageReference.GetBreadCrumbPageReferences( this, _pageCache, PageReference, pageReferencesKeySuffix );
 
-                    Page.Trace.Warn( "Getting parent page references" );
-                    var pageReferences = PageReference.GetParentPageReferences( this, _pageCache, PageReference, pageReferencesKeySuffix );
-                    pageReferences.Add( PageReference );
-                    PageReference.SavePageReferences( pageReferences, pageReferencesKeySuffix );
+                    BreadCrumbs = pageReferences.SelectMany( pr => pr.BreadCrumbs ).ToList();
 
-                    // Update breadcrumbs
-                    Page.Trace.Warn( "Updating breadcrumbs" );
-                    BreadCrumbs = new List<BreadCrumb>();
-                    foreach ( var pageReference in pageReferences )
+                    // Update the current page reference to have the correct breadcrumbs.
+                    var currentPageReference = pageReferences.FirstOrDefault( pr => pr.PageId == PageReference.PageId );
+                    if ( currentPageReference != null )
                     {
-                        pageReference.BreadCrumbs.ForEach( c => BreadCrumbs.Add( c ) );
+                        PageReference.BreadCrumbs = currentPageReference.BreadCrumbs;
+
+                        if ( PageReference.BreadCrumbs.Any() )
+                        {
+                            PageReference.BreadCrumbs.Last().Active = true;
+                        }
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
@@ -1626,13 +1616,9 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     }
                 }
 
+                Page.Trace.Warn( "Setting meta tags" );
+
                 stopwatchInitEvents.Restart();
-
-                string pageTitle = BrowserTitle ?? string.Empty;
-                string siteTitle = _pageCache.Layout.Site.Name;
-                string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
-
-                base.Title = pageTitle + seperator + siteTitle;
 
                 if ( !string.IsNullOrWhiteSpace( _pageCache.Description ) )
                 {
@@ -2142,11 +2128,20 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
         {
             base.OnLoadComplete( e );
 
-            // Cause the wrapper to render it's content so the initialization
-            // logic will be part of our page load timings.
-            foreach ( var wrapper in _blockTypeWrappers )
+            // Set the title displayed in the browser on the base page.
+            string pageTitle = BrowserTitle ?? string.Empty;
+            string siteTitle = _pageCache.Layout.Site.Name;
+            string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
+
+            base.Title = pageTitle + seperator + siteTitle;
+
+            // Make the last breadcrumb on this page the only one active. This
+            // takes care of any late additions to the breadcrumbs by Lava or
+            // Obsidian blocks.
+            if ( BreadCrumbs != null && BreadCrumbs.Any() )
             {
-                wrapper.RenderAndCache();
+                BreadCrumbs.ForEach( bc => bc.Active = false );
+                BreadCrumbs.Last().Active = true;
             }
 
             // Finalize the debug settings

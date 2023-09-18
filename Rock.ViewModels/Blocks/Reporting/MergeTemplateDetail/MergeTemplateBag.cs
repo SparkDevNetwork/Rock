@@ -21,6 +21,10 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class MergeTemplateBag : EntityBagBase
     {
         /// <summary>

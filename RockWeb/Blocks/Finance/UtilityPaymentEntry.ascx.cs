@@ -1128,7 +1128,10 @@ mission. We are so grateful for your commitment.</p>
         {
             var allowAccountsInUrl = this.GetAttributeValue( AttributeKey.AllowAccountOptionsInURL ).AsBoolean();
             var rockContext = new RockContext();
-            List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
+            List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() )
+                .OrderBy( a => a.Order )
+                .Select( a => a.Id )
+                .ToList();
             CampusAccountAmountPicker.AccountIdAmount[] accountAmounts = null;
             caapPromptForAccountAmounts.AccountHeaderTemplate = this.GetAttributeValue( AttributeKey.AccountHeaderTemplate );
 
@@ -1144,6 +1147,7 @@ mission. We are so grateful for your commitment.</p>
                 caapPromptForAccountAmounts.AmountEntryMode = CampusAccountAmountPicker.AccountAmountEntryMode.SingleAccount;
             }
 
+            caapPromptForAccountAmounts.CampusId = this.CurrentPerson?.PrimaryCampusId;
             caapPromptForAccountAmounts.UseAccountCampusMappingLogic = this.GetAttributeValue( AttributeKey.UseAccountCampusMappingLogic ).AsBooleanOrNull() ?? false;
             caapPromptForAccountAmounts.AskForCampusIfKnown = this.GetAttributeValue( AttributeKey.AskForCampusIfKnown ).AsBoolean();
             caapPromptForAccountAmounts.IncludeInactiveCampuses = this.GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
@@ -2445,7 +2449,7 @@ mission. We are so grateful for your commitment.</p>
                 {
                     cbSmsOptIn.Visible = true;
                     cbSmsOptIn.Text = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
-                    cbSmsOptIn.Checked = workPhone.IsMessagingEnabled;
+                    cbSmsOptIn.Checked = workPhone?.IsMessagingEnabled ?? false;
                 }
             }
             
@@ -3468,23 +3472,10 @@ mission. We are so grateful for your commitment.</p>
             var batchService = new FinancialBatchService( rockContext );
 
             // Get the batch
-            var batch = batchService.Get(
-                GetAttributeValue( AttributeKey.BatchNamePrefix ),
-                paymentInfo.CurrencyTypeValue,
-                paymentInfo.CreditCardTypeValue,
-                transaction.TransactionDateTime.Value,
-                financialGateway.GetBatchTimeOffset() );
+            var batch = batchService.GetForNewTransaction( transaction, GetAttributeValue( AttributeKey.BatchNamePrefix ) );
 
             var batchChanges = new History.HistoryChangeList();
-
-            if ( batch.Id == 0 )
-            {
-                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-            }
+            FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
 
             transaction.LoadAttributes( rockContext );
 
@@ -3563,7 +3554,7 @@ mission. We are so grateful for your commitment.</p>
 
         private void ShowSuccess( IHostedGatewayComponent gatewayComponent, Person person, ReferencePaymentInfo paymentInfo )
         {
-            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
             var finishLavaTemplate = this.GetAttributeValue( AttributeKey.FinishLavaTemplate );
             IEntity transactionEntity = GetTransactionEntity();
             mergeFields.Add( "TransactionEntity", transactionEntity );

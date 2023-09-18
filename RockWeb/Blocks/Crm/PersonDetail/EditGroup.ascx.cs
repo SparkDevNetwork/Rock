@@ -1014,6 +1014,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             acAddress.State = groupAddress.State;
                             acAddress.PostalCode = groupAddress.PostalCode;
                             acAddress.County = groupAddress.County;
+
+                            acAddress.ValidationGroup = this.BlockValidationGroup;
+                        }
+
+                        // Configure he Address control to ensure that validation messages
+                        // are displayed correctly.
+                        var lbSave = e.Row.FindControl( "lbSave" ) as LinkButton;
+                        if ( lbSave != null )
+                        {
+                            lbSave.ValidationGroup = this.BlockValidationGroup;
+                            lbSave.CausesValidation = true;
                         }
                     }
                 }

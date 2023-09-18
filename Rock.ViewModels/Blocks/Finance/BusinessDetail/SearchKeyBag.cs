@@ -19,6 +19,9 @@ using System;
 
 namespace Rock.ViewModels.Blocks.Finance.BusinessDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SearchKeyBag
     {
         /// <summary>

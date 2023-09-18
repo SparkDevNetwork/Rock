@@ -1,7 +1,7 @@
 import AntSelect from "ant-design-vue/lib/select";
 import AntAutoComplete from "ant-design-vue/lib/auto-complete";
 import * as Axios from "axios";
-import { DateTime, FixedOffsetZone } from "luxon/src/luxon";
+import { DateTime, FixedOffsetZone } from "luxon";
 import * as Mitt from "mitt";
 import * as Vue from "vue";
 import * as TSLib from "tslib";

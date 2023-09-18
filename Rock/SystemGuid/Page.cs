@@ -1675,6 +1675,12 @@ namespace Rock.SystemGuid
         public const string REMINDER_LIST = "E1736347-1D4F-42A6-8EC4-7595286054A6";
 
         /// <summary>
+        /// Notification List page
+        /// ParentPage: My Dashboard
+        /// </summary>
+        public const string NOTIFICATION_LIST = "586A8827-5C22-4624-A5E3-1B1D6CD0E5B7";
+
+        /// <summary>
         /// Reminder List page.
         /// ParentPage: General Settings.
         /// </summary>

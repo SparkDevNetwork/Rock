@@ -24,9 +24,12 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type MergeTemplateFileValidationBag = {
+    /** Gets or sets the name of the file. */
     fileName?: string | null;
 
+    /** Gets or sets the file type warning message. */
     fileTypeWarningMessage?: string | null;
 
+    /** Gets or sets the type of the merge template type entity. */
     mergeTemplateTypeEntityType?: ListItemBag | null;
 };

@@ -181,6 +181,62 @@ namespace Rock.Field.Types
             return publicValue.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
         }
 
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationProperties = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            // Get the Guid value if one exists.
+            if ( publicConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) )
+            {
+                var publicValue = publicConfigurationValues[BINARY_FILE_TYPE].FromJsonOrNull<ListItemBag>();
+
+                if ( !string.IsNullOrWhiteSpace( publicValue?.Value ) )
+                {
+                    configurationProperties[BINARY_FILE_TYPE] = publicValue.Value;
+                }
+            }
+
+            return configurationProperties;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationProperties = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( privateConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) )
+            {
+                var guidValue = privateConfigurationValues[BINARY_FILE_TYPE];
+
+                if ( !string.IsNullOrWhiteSpace( guidValue ) && Guid.TryParse( guidValue, out Guid guid ) )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var binaryFileTypeName = new BinaryFileTypeService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( f => f.Guid == guid )
+                            .Select( f => f.Name )
+                            .FirstOrDefault();
+
+                        if ( binaryFileTypeName != null )
+                        {
+                            // A binary file type needs more than just the Guid to properly display
+                            // in most cases, so include the guid and the filename.
+                            configurationProperties[BINARY_FILE_TYPE] = new ListItemBag
+                            {
+                                Value = value,
+                                Text = binaryFileTypeName
+                            }.ToCamelCaseJson( false, true );
+                        }
+                    }
+                }
+            }
+
+            return configurationProperties;
+        }
+
         #endregion
 
         #region Filter Control

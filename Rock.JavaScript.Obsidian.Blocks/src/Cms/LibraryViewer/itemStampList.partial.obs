@@ -1,21 +1,71 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span class="library-viewer-item-stamp-list">
-        <span v-if="item.isPopular" title="Popular" class="library-viewer-item-stamp stamp-popular text-warning"><i class="fa fa-star"></i></span>
-        <span v-if="item.isNew" title="New" class="library-viewer-item-stamp stamp-new text-info"><i class="fa fa-calendar-alt"></i></span>
-        <span v-if="item.isUploaded" title="Uploaded" class="library-viewer-item-stamp stamp-uploaded text-info"><i class="fa fa-upload"></i></span>
-        <span v-if="item.isDownloaded" title="Downloaded" class="library-viewer-item-stamp stamp-downloaded text-success"><i class="fa fa-download"></i></span>
-        <span v-if="item.isTrending" title="Trending" class="library-viewer-item-stamp stamp-trending text-primary"><i class="fa fa-fire-alt"></i></span>
+    <span class="library-viewer-item-stamp-list"
+            v-if="item.isPopular || item.isNew || item.isUploaded || item.isDownloaded || item.isTrending"
+    >
+        <template v-if="item.isPopular">
+            <span v-if="!isLabelShownForStamp('popular')"
+                  class="library-viewer-item-stamp stamp-popular text-warning"
+                  title="Popular">
+                <i class="fa fa-star"></i>
+            </span>
+            <span v-else
+                  class="library-viewer-item-stamp stamp-popular label label-warning">
+                <i class="fa fa-star"></i> Popular
+            </span>
+        </template>
+        <template v-if="item.isNew">
+            <span v-if="!isLabelShownForStamp('new')"
+                  class="library-viewer-item-stamp stamp-new text-info"
+                  title="New">
+                <i class="fa fa-calendar-alt"></i>
+            </span>
+            <span v-else
+                  class="library-viewer-item-stamp stamp-new label label-info">
+                <i class="fa fa-calendar-alt"></i> New
+            </span>
+        </template>
+        <template v-if="item.isTrending">
+            <span v-if="!isLabelShownForStamp('trending')"
+                  class="library-viewer-item-stamp stamp-trending text-primary"
+                  title="Trending">
+                <i class="fa fa-fire-alt"></i>
+            </span>
+            <span v-else
+                  class="library-viewer-item-stamp stamp-trending label label-primary">
+                <i class="fa fa-fire-alt"></i> Trending
+            </span>
+        </template>
+        <template v-if="item.isUploaded">
+            <span v-if="!isLabelShownForStamp('uploaded')"
+                  class="library-viewer-item-stamp stamp-uploaded text-info"
+                  title="Uploaded">
+                <i class="fa fa-upload"></i>
+            </span>
+            <span v-else
+                  class="library-viewer-item-stamp stamp-uploaded label label-info">
+                <i class="fa fa-upload"></i> Uploaded
+            </span>
+        </template>
+        <template v-if="item.isDownloaded">
+            <span v-if="!isLabelShownForStamp('downloaded')"
+                  title="Downloaded"
+                  class="library-viewer-item-stamp stamp-downloaded text-success">
+                <i class="fa fa-download"></i>
+            </span>
+            <span v-else
+                  class="library-viewer-item-stamp stamp-downloaded label label-success">
+                <i class="fa fa-download"></i> Downloaded
+            </span>
+        </template>
     </span>
 </template>
 
 <style scoped>
     .library-viewer-item-stamp-list {
+        display: flex;
         flex-shrink: 0;
-    }
-
-    .library-viewer-item-stamp + .library-viewer-item-stamp {
-        margin-left: 6px;
+        gap: 6px;
     }
 </style>
 
@@ -23,10 +73,26 @@
     import { PropType } from "vue";
     import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";
 
-    defineProps({
+    type StampType = "popular" | "new" | "trending" | "uploaded" | "downloaded";
+
+    const props = defineProps({
         item: {
             type: Object as PropType<LibraryViewerItemBag>,
             required: true
+        },
+
+        showLabelsForStamps: {
+            type: Object as PropType<StampType[]>,
+            default: []
         }
     });
+
+    //#region Functions
+
+    /** Determines if a label should be shown for a stamp. */
+    function isLabelShownForStamp(stampType: StampType): boolean {
+        return props.showLabelsForStamps.indexOf(stampType) !== -1;
+    }
+
+    //#endregion
 </script>

@@ -22,8 +22,8 @@ import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
-    MinValue = "minValue",
-    MaxValue = "maxValue"
+    MinValue = "min",
+    MaxValue = "max"
 }
 
 // The edit component can be quite large, so load it only as needed.

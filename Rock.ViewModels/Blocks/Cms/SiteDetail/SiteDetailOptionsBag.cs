@@ -20,9 +20,22 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Cms.SiteDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SiteDetailOptionsBag
     {
+        /// <summary>
+        /// The themes
+        /// </summary>
         public List<ListItemBag> Themes { get; set; }
-        public List<PublicEditableAttributeBag> SiteAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reserved key names.
+        /// </summary>
+        /// <value>
+        /// The reserved key names.
+        /// </value>
+        public List<string> ReservedKeyNames { get; set; }
     }
 }

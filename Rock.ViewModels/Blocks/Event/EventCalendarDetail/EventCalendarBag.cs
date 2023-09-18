@@ -20,6 +20,10 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Event.EventCalendarDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class EventCalendarBag : EntityBagBase
     {
         /// <summary>
@@ -75,5 +79,14 @@ namespace Rock.ViewModels.Blocks.Event.EventCalendarDetail
         /// The attributes.
         /// </value>
         public List<EventAttributeBag> EventAttributes { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current user has Administrate Authorization.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can administrate; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanAdministrate { get; set; }
     }
 }

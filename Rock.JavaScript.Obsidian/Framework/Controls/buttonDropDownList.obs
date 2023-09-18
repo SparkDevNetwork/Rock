@@ -5,7 +5,7 @@
             <div class="dropdown">
                 <div :class="{ open: isDropDownOpen }" ref="dropdownElement">
                     <RockButton class="dropdown-toggle" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen" :id="uniqueId" v-bind="field">
-                        {{ selectionStyle === 'checkmark' ? title : selectedText }}
+                        {{ selectionStyle === 'title' && internalValue ? selectedText : title }}
                         <span class="fa fa-caret-down"></span>
                     </RockButton>
                     <ul class="dropdown-menu">
@@ -59,8 +59,8 @@ li.disabled > button {
         },
 
         /**
-         * When set to 'title' the selected item is displayed at the button text, or if set to 'checkmark'
-         * it will place a check next to the select item and display a given `title` as the button text
+         * When set to 'title', when an item is selected, the selected item is displayed as the button text, or if set to 'checkmark'
+         * it will place a check next to the selected item and display a given `title` as the button text
          */
         selectionStyle: {
             type: String as PropType<"title" | "checkmark">,

@@ -1,32 +1,32 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField formGroupClasses="address-control" #default="{ uniqueId, field }" name="addresscontrol" v-model.lazy="internalValue">
+    <RockFormField formGroupClasses="address-control" #default="{ uniqueId, field }" name="addresscontrol" v-model.lazy="internalValue" :rules="$props.rules">
         <div class="control-wrapper">
             <Loading :id="id || uniqueId" :isLoading="isLoading">
                 <div class="form-row" v-if="country.isVisible">
                     <div class="form-group col-sm-6">
-                        <DropDownList v-model="internalValue.country" :items="countryOptions" :validationTitle="country.label" :rules="country.rules" :disabled="disabled" />
+                        <DropDownList v-model="internalValue.country" :items="countryOptions" :validationTitle="country.label" :rules="rules.country" :disabled="disabled" :autocomplete="country.autocomplete" />
                     </div>
                 </div>
                 <div class="form-group" v-if="address1.isVisible">
-                    <TextBox v-model="internalValue.street1" :placeholder="address1.label" :validationTitle="address1.label" :rules="address1.rules" :disabled="disabled" />
+                    <TextBox v-model="internalValue.street1" :placeholder="address1.label" :validationTitle="address1.label" :rules="rules.street1" :disabled="disabled" :autocomplete="address1.autocomplete" />
                 </div>
                 <div class="form-group" v-if="address2.isVisible">
-                    <TextBox v-model="internalValue.street2" :placeholder="address2.label" :validationTitle="address2.label" :rules="address2.rules" :disabled="disabled" />
+                    <TextBox v-model="internalValue.street2" :placeholder="address2.label" :validationTitle="address2.label" :rules="rules.street2" :disabled="disabled" :autocomplete="address2.autocomplete" />
                 </div>
                 <div class="form-row">
                     <div class="form-group" :class="county.isVisible ? 'col-sm-3' : 'col-sm-6'" v-if="city.isVisible">
-                        <TextBox v-model="internalValue.city" :placeholder="city.label" :validationTitle="city.label" :rules="city.rules" :disabled="disabled" />
+                        <TextBox v-model="internalValue.city" :placeholder="city.label" :validationTitle="city.label" :rules="rules.city" :disabled="disabled" :autocomplete="city.autocomplete" />
                     </div>
                     <div class="form-group col-sm-3" v-if="county.isVisible">
-                        <TextBox v-model="internalValue.locality" :placeholder="county.label" :validationTitle="county.label" :rules="county.rules" :disabled="disabled" />
+                        <TextBox v-model="internalValue.locality" :placeholder="county.label" :validationTitle="county.label" :rules="rules.locality" :disabled="disabled" :autocomplete="county.autocomplete" />
                     </div>
                     <div class="form-group col-sm-3" v-if="state.isVisible">
-                        <DropDownList v-if="hasStateList" :showBlankItem="false" v-model="internalValue.state" :items="stateOptions" :validationTitle="state.label" :rules="state.rules" :disabled="disabled" />
-                        <TextBox v-else v-model="internalValue.state" :placeholder="state.label" :validationTitle="state.label" :rules="state.rules" :disabled="disabled" />
+                        <DropDownList v-if="hasStateList" :showBlankItem="false" v-model="internalValue.state" :items="stateOptions" :validationTitle="state.label" :rules="rules.state" :disabled="disabled" :autocomplete="state.autocomplete" />
+                        <TextBox v-else v-model="internalValue.state" :placeholder="state.label" :validationTitle="state.label" :rules="rules.state" :disabled="disabled" :autocomplete="state.autocomplete" />
                     </div>
                     <div class="form-group col-sm-3" v-if="zip.isVisible">
-                        <TextBox v-model="internalValue.postalCode" :placeholder="zip.label" :validationTitle="zip.label" :rules="zip.rules" inputmode="numeric" :disabled="disabled" />
+                        <TextBox v-model="internalValue.postalCode" :placeholder="zip.label" :validationTitle="zip.label" :rules="rules.postalCode" :disabled="disabled" :autocomplete="zip.autocomplete" />
                     </div>
                 </div>
             </Loading>
@@ -35,7 +35,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { PropType, reactive, ref, watch } from "vue";
+    import { computed, PropType, reactive, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
     import DropDownList from "./dropDownList.obs";
     import TextBox from "./textBox.obs";
@@ -46,6 +46,8 @@
     import { RequirementLevel } from "@Obsidian/Enums/Controls/requirementLevel";
     import { post } from "@Obsidian/Utility/http";
     import Loading from "./loading.obs";
+    import type { ValidationRule } from "@Obsidian/Types/validationRules";
+    import { containsRequiredRule, rulesPropType } from "@Obsidian/ValidationRules";
 
 
     type FullAddress = Required<{
@@ -91,7 +93,9 @@
         disableFrontEndValidation: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        rules: rulesPropType
     });
 
     const emit = defineEmits<{
@@ -106,6 +110,10 @@
         street1: props.modelValue.street1 ?? "",
         street2: props.modelValue.street2 ?? "",
         locality: props.modelValue.locality ?? ""
+    });
+
+    const isRequired = computed(() => {
+        return containsRequiredRule(props.rules);
     });
 
     watch(internalValue, () => {
@@ -129,48 +137,94 @@
     type FieldConfig = {
         isVisible: boolean,
         label: string,
-        rules: string
+        rules?: RequirementLevel,
+        autocomplete: string
     };
 
     const country = reactive<FieldConfig>({
         isVisible: true,
         label: "Country",
-        rules: ""
+        autocomplete: "country"
     });
     const address1 = reactive<FieldConfig>({
         isVisible: true,
         label: "Address Line 1",
-        rules: ""
+        rules: RequirementLevel.Unspecified,
+        autocomplete: "address-line1"
     });
     const address2 = reactive<FieldConfig>({
         isVisible: true,
         label: "Address Line 2",
-        rules: ""
+        rules: RequirementLevel.Unspecified,
+        autocomplete: "address-line2"
     });
     const city = reactive<FieldConfig>({
         isVisible: true,
         label: "City",
-        rules: ""
+        rules: RequirementLevel.Unspecified,
+        autocomplete: "address-level2"
     });
     const county = reactive<FieldConfig>({
         isVisible: true,
         label: "County",
-        rules: ""
+        rules: RequirementLevel.Unspecified,
+        autocomplete: "address-level2"
     });
     const state = reactive<FieldConfig>({
         isVisible: true,
         label: "State",
-        rules: ""
+        rules: RequirementLevel.Unspecified,
+        autocomplete: "address-level1"
     });
     const zip = reactive<FieldConfig>({
         isVisible: true,
         label: "Zip",
-        rules: ""
+        rules: RequirementLevel.Unspecified,
+        autocomplete: "postal-code"
     });
 
     const countryOptions = ref<ListItemBag[]>([]);
     const stateOptions = ref<ListItemBag[]>([]);
     const hasStateList = ref<boolean>(false);
+
+    const rules = computed(() => {
+        const rules: Record<keyof AddressControlBag, ValidationRule | undefined> = {
+            country: undefined,
+            street1: undefined,
+            street2: undefined,
+            city: undefined,
+            locality: undefined,
+            state: undefined,
+            postalCode: undefined
+        };
+
+        if (props.disableFrontEndValidation) {
+            return rules;
+        }
+
+        if (isRequired.value || internalValue.street1) {
+            if (address1.rules == RequirementLevel.Required) {
+                rules.street1 = "required";
+            }
+            if (address2.rules == RequirementLevel.Required) {
+                rules.street2 = "required";
+            }
+            if (city.rules == RequirementLevel.Required) {
+                rules.city = "required";
+            }
+            if (county.rules == RequirementLevel.Required) {
+                rules.locality = "required";
+            }
+            if (state.rules == RequirementLevel.Required) {
+                rules.state = "required";
+            }
+            if (zip.rules == RequirementLevel.Required) {
+                rules.postalCode = "required";
+            }
+        }
+
+        return rules;
+    });
 
     async function getConfiguration(): Promise<void> {
         isLoading.value = true;
@@ -190,27 +244,28 @@
 
             // Label is static
             address1.isVisible = data.addressLine1Requirement != RequirementLevel.Unavailable;
-            address1.rules = getRules(data.addressLine1Requirement);
+            address1.rules = data.addressLine1Requirement;
 
             // Address Line 2 is only shown if it's required or it's requested by the prop; Label is static
             address2.isVisible = data.addressLine2Requirement == RequirementLevel.Required || (props.showAddressLine2 && data.addressLine2Requirement != RequirementLevel.Unavailable);
-            address2.rules = getRules(data.addressLine2Requirement);
-
-            city.isVisible = data.cityRequirement != RequirementLevel.Unavailable;
-            city.rules = getRules(data.cityRequirement);
-            city.label = data.cityLabel ?? city.label;
+            address2.rules = data.addressLine2Requirement;
 
             // County / Locality is only shown if it's required or it's requested by the prop
             county.isVisible = data.localityRequirement == RequirementLevel.Required || (props.showCounty && data.localityRequirement != RequirementLevel.Unavailable);
-            county.rules = getRules(data.localityRequirement);
+            county.rules = data.localityRequirement;
             county.label = data.localityLabel ?? county.label;
 
+            city.isVisible = data.cityRequirement != RequirementLevel.Unavailable;
+            city.rules = data.cityRequirement;
+            city.label = data.cityLabel ?? city.label;
+            city.autocomplete = county.isVisible ? "address-level3" : "address-level2";
+
             state.isVisible = data.stateRequirement != RequirementLevel.Unavailable;
-            state.rules = getRules(data.stateRequirement);
+            state.rules = data.stateRequirement;
             state.label = data.stateLabel ?? state.label;
 
             zip.isVisible = data.postalCodeRequirement != RequirementLevel.Unavailable;
-            zip.rules = getRules(data.postalCodeRequirement);
+            zip.rules = data.postalCodeRequirement;
             zip.label = data.postalCodeLabel ?? zip.label;
 
             countryOptions.value = data.countries ?? [];
@@ -234,10 +289,6 @@
             console.error(result.errorMessage ?? "Unknown error while loading data.");
         }
         isLoading.value = false;
-    }
-
-    function getRules(reqLvl: RequirementLevel): string {
-        return reqLvl == RequirementLevel.Required && !props.disableFrontEndValidation ? "required" : "";
     }
 
     watch(() => internalValue.country, (currentVal, oldVal) => {

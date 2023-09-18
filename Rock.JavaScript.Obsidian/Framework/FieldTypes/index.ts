@@ -23,11 +23,32 @@ export { ConfigurationValues, getFieldEditorProps } from "./utils";
  * Define the standard field types in Rock.
  */
 
+import { AchievementTypeFieldType } from "./achievementTypeField.partial";
+registerFieldType(FieldTypeGuids.AchievementType, new AchievementTypeFieldType());
+
 import { AddressFieldType } from "./addressField.partial";
 registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 
+import { AssessmentTypesFieldType } from "./assessmentTypesField.partial";
+registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType());
+
+import { AudioFileFieldType } from "./audioFileField.partial";
+registerFieldType(FieldTypeGuids.AudioFile, new AudioFileFieldType());
+
+import { AudioUrlFieldType } from "./audioUrlField.partial";
+registerFieldType(FieldTypeGuids.AudioUrl, new AudioUrlFieldType());
+
+import { BadgesFieldType } from "./badgesField.partial";
+registerFieldType(FieldTypeGuids.Badges, new BadgesFieldType());
+
 import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
 registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
+
+import { BinaryFileTypeFieldType } from "./binaryFileTypeField.partial";
+registerFieldType(FieldTypeGuids.BinaryFileType, new BinaryFileTypeFieldType());
+
+import { BinaryFileTypesFieldType } from "./binaryFileTypesField.partial";
+registerFieldType(FieldTypeGuids.BinaryFileTypes, new BinaryFileTypesFieldType());
 
 import { BooleanFieldType } from "./booleanField.partial";
 registerFieldType(FieldTypeGuids.Boolean, new BooleanFieldType());
@@ -47,14 +68,47 @@ registerFieldType(FieldTypeGuids.Category, new CategoryFieldType());
 import { CategorizedDefinedValueField } from "./categorizedDefinedValueField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefinedValueField());
 
+import { CodeEditorFieldType } from "./codeEditorField.partial";
+registerFieldType(FieldTypeGuids.CodeEditor, new CodeEditorFieldType());
+
 import { ColorFieldType } from "./colorField.partial";
 registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
+
+import { ColorSelectorFieldType } from "./colorSelectorField.partial";
+registerFieldType(FieldTypeGuids.ColorSelector, new ColorSelectorFieldType());
+
+import { ConnectionTypeField } from "./connectionTypeField.partial";
+registerFieldType(FieldTypeGuids.ConnectionType, new ConnectionTypeField());
+
+import { ConnectionTypesField } from "./connectionTypesField.partial";
+registerFieldType(FieldTypeGuids.ConnectionTypes, new ConnectionTypesField());
+
+import { ConnectionStateFieldType } from "./connectionStateField.partial";
+registerFieldType(FieldTypeGuids.ConnectionState, new ConnectionStateFieldType());
 
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
+import { CommunicationTemplateFieldType } from "./communicationTemplateField.partial";
+registerFieldType(FieldTypeGuids.CommunicationTemplate, new CommunicationTemplateFieldType());
+
+import { ComparisonFieldType } from "./comparisonField.partial";
+registerFieldType(FieldTypeGuids.Comparison, new ComparisonFieldType());
+
+import { ComponentsFieldType } from "./componentsField.partial";
+registerFieldType(FieldTypeGuids.Components, new ComponentsFieldType());
+
+import { ComponentFieldType } from "./componentField.partial";
+registerFieldType(FieldTypeGuids.Component, new ComponentFieldType());
+
 import { CurrencyFieldType } from "./currencyField.partial";
 registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());
+
+import { DataViewFieldType } from "./dataViewField.partial";
+registerFieldType(FieldTypeGuids.DataView, new DataViewFieldType());
+
+import { DataViewsFieldType } from "./dataViewsField.partial";
+registerFieldType(FieldTypeGuids.Dataviews, new DataViewsFieldType());
 
 import { DateFieldType } from "./dateField.partial";
 registerFieldType(FieldTypeGuids.Date, new DateFieldType());
@@ -85,6 +139,12 @@ registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldTy
 
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
+
+import { FinancialAccountFieldType  } from "./financialAccountField.partial";
+registerFieldType(FieldTypeGuids.FinancialAccount, new FinancialAccountFieldType());
+
+import { FinancialAccountsFieldType  } from "./financialAccountsField.partial";
+registerFieldType(FieldTypeGuids.FinancialAccounts, new FinancialAccountsFieldType());
 
 import { FileFieldType } from "./fileField.partial";
 registerFieldType(FieldTypeGuids.File, new FileFieldType());

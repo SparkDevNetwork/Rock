@@ -175,7 +175,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             // Convert into bags.
             var reminderTypeBags = reminderTypesAndRemindersGrouping.Select( group => new ReminderTypeInfoBag
             {
-                TotalReminderCount = group.Count(), // The count of total reminders in the group.
+                TotalReminderCount = group.Where( r => !r.IsComplete ).Count(), // The count of total reminders in the group.
                 Guid = group.Key.Guid,
                 HighlightColor = group.Key.HighlightColor,
                 Name = group.Key.Name,
@@ -295,7 +295,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             {
                 reminders = reminders.Where( r => r.IsComplete );
             }
-            else if( filter == "all" )
+            else if ( filter == "all" )
             {
                 reminders = reminders.Where( r => !r.IsComplete );
             }

@@ -21,8 +21,17 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CMS.PageShortLinkDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class PageShortLinkDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the site options.
+        /// </summary>
+        /// <value>
+        /// The site options.
+        /// </value>
         public List<ListItemBag> SiteOptions { get; set; }
     }
 }

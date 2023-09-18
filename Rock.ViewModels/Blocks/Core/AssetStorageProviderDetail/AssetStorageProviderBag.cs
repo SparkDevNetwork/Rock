@@ -19,6 +19,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.AssetStorageProviderDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class AssetStorageProviderBag : EntityBagBase
     {
         /// <summary>

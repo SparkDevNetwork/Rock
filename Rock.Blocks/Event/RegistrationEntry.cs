@@ -40,6 +40,7 @@ using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web;
 
 namespace Rock.Blocks.Event
 {
@@ -131,7 +132,7 @@ namespace Rock.Blocks.Event
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
-    public class RegistrationEntry : RockBlockType
+    public class RegistrationEntry : RockBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -174,6 +175,15 @@ namespace Rock.Blocks.Event
 
         #endregion Keys
 
+        #region Properties
+
+        /// <summary>
+        /// A diagnostic collection of missing fields, grouped by form ID.
+        /// </summary>
+        public Dictionary<int, Dictionary<int, string>> MissingFieldsByFormId { get; set; }
+
+        #endregion Properties
+
         #region Obsidian Block Type Overrides
 
         /// <inheritdoc/>
@@ -190,6 +200,24 @@ namespace Rock.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 var viewModel = GetViewModel( rockContext );
+                var instanceName = viewModel.InstanceName;
+
+                if ( instanceName.IsNullOrWhiteSpace() && viewModel.RegistrationInstanceNotFoundMessage?.Contains( " closed on " ) == true )
+                {
+                    // The view model did not have a name filled in even though
+                    // we found the registration instance. Get the instance name
+                    // only so we can fill in the page name.
+                    var registrationInstanceId = GetRegistrationInstanceId( rockContext );
+                    instanceName = new RegistrationInstanceService( rockContext )
+                        .GetSelect( registrationInstanceId, ri => ri.Name );
+                }
+
+                if ( instanceName.IsNotNullOrWhiteSpace() )
+                {
+                    ResponseContext.SetPageTitle( instanceName );
+                    ResponseContext.SetBrowserTitle( instanceName );
+                }
+
                 return viewModel;
             }
         }
@@ -563,10 +591,11 @@ namespace Rock.Blocks.Event
 
                 // Prepare the merge fields.
                 var campusCache = campusId.HasValue ? CampusCache.Get( campusId.Value ) : null;
+               
                 var mergeFields = new Dictionary<string, object>
                 {
                     { "Registration", new LavaSignatureRegistration( registrationInstance, groupId, args.Registrants.Count ) },
-                    { "Registrant", new LavaSignatureRegistrant( person, location, campusCache, groupMember ) }
+                    { "Registrant", new LavaSignatureRegistrant( person, location, campusCache, groupMember, registrantInfo, registrationInstance ) }
                 };
 
                 var html = ElectronicSignatureHelper.GetSignatureDocumentHtml( documentTemplate.LavaTemplate, mergeFields );
@@ -649,7 +678,32 @@ namespace Rock.Blocks.Event
 
         #endregion Block Actions
 
-        #region Helpers
+        #region Methods
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstanceId = GetRegistrationInstanceId( rockContext, pageReference );
+                var instanceName = new RegistrationInstanceService( rockContext )
+                    .GetSelect( registrationInstanceId, ri => ri.Name );
+
+                if ( instanceName.IsNotNullOrWhiteSpace() )
+                {
+                    return new BreadCrumbResult
+                    {
+                        BreadCrumbs = new List<IBreadCrumb>
+                        {
+                            new BreadCrumbLink( instanceName, pageReference )
+                        }
+                    };
+                }
+
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Updates or Inserts the session.
@@ -718,6 +772,36 @@ namespace Rock.Blocks.Event
         /// <exception cref="Exception">There was a problem with the payment</exception>
         private Registration SubmitRegistration( RockContext rockContext, RegistrationContext context, RegistrationEntryBlockArgs args, out string errorMessage )
         {
+            /*
+                8/15/2023 - JPH
+
+                In order to successfully save the registration form values that were provided by the registrar, we must
+                have each [RegistrationTemplateForm].[Fields] collection loaded into memory below. Several individuals have
+                reported seeing missing registrant data within completed registrations, so it's possible that these Fields
+                collections are somehow empty.
+
+                The TryLoadMissingFields() method is a failsafe to ensure we have the data we need to properly save the
+                registration. This method will:
+                    1) Attempt to load any missing Fields collections;
+                    2) Return a list of any Form IDs that were actually missing Fields so we can log them to prove that
+                       this was a likely culprit for failed, past registration attempts (and so we can know to look into
+                       the issue further from this angle).
+
+                Reason: Registration entries are sometimes missing registration form data.
+                https://github.com/SparkDevNetwork/Rock/issues/5091
+             */
+            var logInstanceOrTemplateName = context?.RegistrationSettings?.Name;
+            var logCurrentPersonDetails = $"Current Person Name: {this.RequestContext.CurrentPerson?.FullName} (Person ID: {this.RequestContext.CurrentPerson?.Id});";
+            var logMsgPrefix = $"Obsidian{( logInstanceOrTemplateName.IsNotNullOrWhiteSpace() ? $@" ""{logInstanceOrTemplateName}""" : string.Empty )} Registration; {logCurrentPersonDetails}{Environment.NewLine}";
+
+            var ( wereFieldsMissing, missingFieldsDetails ) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( context?.RegistrationSettings?.Forms );
+            if ( wereFieldsMissing )
+            {
+                var logMissingFieldsMsg = $"{logMsgPrefix}RegistrationTemplateForm(s) missing Fields data when trying to save Registration.{Environment.NewLine}{missingFieldsDetails}";
+
+                ExceptionLogService.LogException( new RegistrationTemplateFormFieldException( logMissingFieldsMsg ) );
+            }
+
             errorMessage = string.Empty;
             var currentPerson = GetCurrentPerson();
 
@@ -975,6 +1059,8 @@ namespace Rock.Blocks.Event
                     var forceWaitlist = context.SpotsRemaining < 1 && ( isNewRegistration == true || registrantInfo.IsOnWaitList == true );
                     bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
+                    MissingFieldsByFormId = new Dictionary<int, Dictionary<int, string>>();
+
                     UpsertRegistrant(
                         rockContext,
                         context,
@@ -990,6 +1076,37 @@ namespace Rock.Blocks.Event
                         postSaveActions );
 
                     index++;
+
+                    if ( MissingFieldsByFormId?.Any() == true )
+                    {
+                        /*
+                            8/15/2023 - JPH
+
+                            Several individuals have reported seeing missing registrant data within completed registrations. This registrant
+                            is missing required, non-conditional Field value(s) that should have been enforced by the UI. Log an exception so
+                            we know which values were missing during the saving of this registrant's data (and so we can know to look into
+                            the issue further from this angle).
+
+                            Reason: Registration entries are sometimes missing registration form data.
+                            https://github.com/SparkDevNetwork/Rock/issues/5091
+                         */
+                        var logAllMissingFieldsSb = new StringBuilder();
+                        logAllMissingFieldsSb.AppendLine( $"{logMsgPrefix}Registrant {index} of {args.Registrants.Count}: The following required (non-conditional) Field values were missing:" );
+
+                        foreach ( var missingFormFields in MissingFieldsByFormId )
+                        {
+                            var logMissingFormFieldsSb = new StringBuilder( $"[Form ID: {missingFormFields.Key} -" );
+
+                            foreach ( var missingField in missingFormFields.Value )
+                            {
+                                logMissingFormFieldsSb.Append( $" {missingField.Value} (Field ID: {missingField.Key});" );
+                            }
+
+                            logAllMissingFieldsSb.AppendLine( $"{logMissingFormFieldsSb}]" );
+                        }
+
+                        ExceptionLogService.LogException( new RegistrationTemplateFormFieldException( logAllMissingFieldsSb.ToString() ) );
+                    }
                 }
 
                 rockContext.SaveChanges();
@@ -1288,8 +1405,7 @@ namespace Rock.Blocks.Event
 
                     if ( ( familySelection || f.ShowCurrentValue ) && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
-                        return f.PersonFieldType == RegistrationPersonFieldType.FirstName
-                            || f.PersonFieldType == RegistrationPersonFieldType.LastName;
+                        return f.PersonFieldType == RegistrationPersonFieldType.FirstName || f.PersonFieldType == RegistrationPersonFieldType.LastName;
                     }
 
                     if ( f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
@@ -1302,7 +1418,7 @@ namespace Rock.Blocks.Event
 
                 foreach ( var field in fields )
                 {
-                    var value = GetCurrentFieldValue( rockContext, person, registrant, field );
+                    var value = GetCurrentFieldValue( rockContext, person, registrant, field, registrationContext );
 
                     if ( value != null )
                     {
@@ -1322,14 +1438,16 @@ namespace Rock.Blocks.Event
         /// <param name="registrant">The registrant to use when retrieving registrant attribute values..</param>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object GetCurrentFieldValue( RockContext rockContext, Person person, RegistrationRegistrant registrant, RegistrationTemplateFormField field )
+        private object GetCurrentFieldValue( RockContext rockContext, Person person, RegistrationRegistrant registrant, RegistrationTemplateFormField field, RegistrationContext registrationContext )
         {
             switch ( field.FieldSource )
             {
                 case RegistrationFieldSource.PersonField:
-                    return GetPersonCurrentFieldValue( rockContext, person, field );
+                    return GetPersonCurrentFieldValue( rockContext, person, field, registrationContext );
+
                 case RegistrationFieldSource.PersonAttribute:
                     return GetEntityCurrentClientAttributeValue( rockContext, person, field );
+
                 case RegistrationFieldSource.RegistrantAttribute:
                     return GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
             }
@@ -1344,7 +1462,7 @@ namespace Rock.Blocks.Event
         /// <param name="person">The person.</param>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object GetPersonCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field )
+        private object GetPersonCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field, RegistrationContext registrationContext )
         {
             switch ( field.PersonFieldType )
             {
@@ -1426,10 +1544,37 @@ namespace Rock.Blocks.Event
                     return person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() )?.Number;
 
                 case RegistrationPersonFieldType.MobilePhone:
-                    return person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )?.Number;
+                    var mobilePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                    if ( registrationContext.RegistrationSettings.ShowSmsOptIn )
+                    {
+                        return CreatePhoneNumberBoxWithSmsControlBag( mobilePhone );
+                    }
+
+                    return mobilePhone?.Number;
+                    
             }
 
             return null;
+        }
+
+        private PhoneNumberBoxWithSmsControlBag CreatePhoneNumberBoxWithSmsControlBag( Rock.Model.PhoneNumber phone )
+        {
+            if ( phone == null )
+            {
+                return new PhoneNumberBoxWithSmsControlBag
+                {
+                    Number = string.Empty,
+                    IsMessagingEnabled = false,
+                    CountryCode = string.Empty
+                };
+            }
+
+            return new PhoneNumberBoxWithSmsControlBag
+            {
+                Number = phone.Number,
+                IsMessagingEnabled = phone.IsMessagingEnabled,
+                CountryCode = phone.CountryCode
+            };
         }
 
         /// <summary>
@@ -1599,37 +1744,61 @@ namespace Rock.Blocks.Event
         /// <param name="changes">The changes.</param>
         private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, History.HistoryChangeList changes )
         {
-            var phoneNumber = fieldValue as string;
-            if ( phoneNumber != null )
+            string phoneNumber = string.Empty;
+            bool? isMessagingEnabled = null;
+
+            var phoneData = fieldValue.ToStringSafe().FromJsonOrNull<PhoneNumberBoxWithSmsControlBag>();
+            if ( phoneData != null )
             {
-                string cleanNumber = PhoneNumber.CleanNumber( phoneNumber );
-                if ( !string.IsNullOrWhiteSpace( cleanNumber ) )
+                // We got the number and SMS selection, so set both.
+                phoneNumber = phoneData.Number;
+                isMessagingEnabled = phoneData.IsMessagingEnabled;
+            }
+            else if( fieldValue is string )
+            {
+                // Only got the number, so leave IsMessagingEnabled null so it isn't changed
+                phoneNumber = fieldValue.ToStringSafe();
+            }
+            else
+            {
+                // No usable data, just return without doing anything.
+                return;
+            }
+            
+            string cleanNumber = PhoneNumber.CleanNumber( phoneNumber );
+            var numberType = DefinedValueCache.Get( phoneTypeGuid );
+
+            if ( string.IsNullOrWhiteSpace( cleanNumber ) || numberType == null )
+            {
+                return;
+            }
+
+            string oldPhoneNumber = string.Empty;
+            bool oldIsMessagingEnabled = false;
+            var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
+
+            if ( phone == null )
+            {
+                phone = new PhoneNumber
                 {
-                    var numberType = DefinedValueCache.Get( phoneTypeGuid );
-                    if ( numberType != null )
-                    {
-                        var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
-                        string oldPhoneNumber = string.Empty;
-                        if ( phone == null )
-                        {
-                            phone = new PhoneNumber();
-                            person.PhoneNumbers.Add( phone );
-                            phone.NumberTypeValueId = numberType.Id;
-                        }
-                        else
-                        {
-                            oldPhoneNumber = phone.NumberFormattedWithCountryCode;
-                        }
+                    NumberTypeValueId = numberType.Id
+                };
 
-                        phone.Number = cleanNumber;
+                person.PhoneNumbers.Add( phone );
+            }
+            else
+            {
+                oldPhoneNumber = phone.NumberFormattedWithCountryCode;
+                oldIsMessagingEnabled = phone.IsMessagingEnabled;
+            }
 
-                        History.EvaluateChange(
-                            changes,
-                            string.Format( "{0} Phone", numberType.Value ),
-                            oldPhoneNumber,
-                            phone.NumberFormattedWithCountryCode );
-                    }
-                }
+            phone.Number = cleanNumber;
+            History.EvaluateChange( changes, $"{numberType.Value} Phone", oldPhoneNumber, phone.NumberFormattedWithCountryCode );
+
+            if( isMessagingEnabled != null )
+            {
+                phone.IsMessagingEnabled = isMessagingEnabled.Value;
+                History.EvaluateChange( changes, $"{numberType.Value} IsMessagingEnabled", oldIsMessagingEnabled, phone.IsMessagingEnabled );
             }
         }
 
@@ -1655,6 +1824,44 @@ namespace Rock.Blocks.Event
             var email = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
             var birthday = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerBag>().ToDateTime();
             var mobilePhone = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
+
+            /*
+                8/15/2023 - JPH
+
+                Several individuals have reported seeing missing registrant data within completed registrations. Check
+                each person field type to see if it was required, non-conditional & missing, so we know whether to look
+                into the issue further from this angle.
+
+                Reason: Registration entries are sometimes missing registration form data.
+                https://github.com/SparkDevNetwork/Rock/issues/5091
+            */
+            if ( MissingFieldsByFormId != null )
+            {
+                void NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType personFieldType, object fieldValue )
+                {
+                    var field = context.RegistrationSettings
+                        ?.Forms
+                        ?.SelectMany( f => f.Fields
+                            .Where( ff =>
+                                ff.FieldSource == RegistrationFieldSource.PersonField
+                                && ff.PersonFieldType == personFieldType
+                            )
+                        ).FirstOrDefault();
+
+                    if ( field == null )
+                    {
+                        return;
+                    }
+
+                    field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
+                }
+
+                NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType.FirstName, firstName );
+                NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType.LastName, lastName );
+                NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType.Email, email );
+                NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType.Birthdate, birthday );
+                NotePersonFieldDetailsIfRequiredAndMissing( RegistrationPersonFieldType.MobilePhone, mobilePhone );
+            }
 
             registrant = context.Registration.Registrants.FirstOrDefault( r => r.Guid == registrantInfo.Guid );
 
@@ -1943,6 +2150,8 @@ namespace Rock.Blocks.Event
                             }
                     }
                 }
+
+                field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
             }
 
             return (campusId, location, updateExistingCampus);
@@ -2000,6 +2209,8 @@ namespace Rock.Blocks.Event
                         }
                     }
                 }
+
+                field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
             }
 
             return isChanged;
@@ -2088,6 +2299,7 @@ namespace Rock.Blocks.Event
 
             registrant.OnWaitList = isWaitlist;
             registrant.PersonAliasId = person.PrimaryAliasId;
+            registrant.PersonAlias = person.PrimaryAlias;
 
             // Check if discount applies
             var maxRegistrants = context.Discount?.RegistrationTemplateDiscount.MaxRegistrants;
@@ -2233,7 +2445,7 @@ namespace Rock.Blocks.Event
                 var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
                 var signedBy = RequestContext.CurrentPerson ?? registrar;
 
-                var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.Person.FullName, context.RegistrationSettings.Name);
+                var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.PersonAlias?.Person?.FullName ?? person.FullName, context.RegistrationSettings.Name);
 
                 new SignatureDocumentService( rockContext ).Add( document );
                 rockContext.SaveChanges();
@@ -2267,6 +2479,32 @@ namespace Rock.Blocks.Event
             // Clear this registrant's family guid so it's not updated again
             registrantInfo.FamilyGuid = Guid.Empty;
             registrantInfo.PersonGuid = person.Guid;
+        }
+
+        private static ( Dictionary<string, AttributeCache>, Dictionary<string, AttributeValueCache> ) GetRegistrantAttributesFromRegistration( ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationTemplate template )
+        {
+            var attributes = new Dictionary<string, AttributeCache>();
+            var attributeValues = new Dictionary<string, AttributeValueCache>();
+            var registrantAttributeFields = template.Forms
+                .SelectMany( f => f.Fields.Where(ff => ff.AttributeId.HasValue && ff.FieldSource == RegistrationFieldSource.RegistrantAttribute ) )
+                .ToList();
+
+            foreach ( var field in registrantAttributeFields )
+            {
+                var attribute = AttributeCache.Get( field.AttributeId.Value );
+
+
+                if ( attribute is null )
+                {
+                    continue;
+                }
+                var newValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid ).ToStringSafe();
+                var attributeValue = new AttributeValueCache( field.AttributeId.Value, null, newValue );
+                attributes.Add( attribute.Key, attribute );
+                attributeValues.Add( attribute.Key, attributeValue );
+            }
+
+            return ( attributes, attributeValues );
         }
 
         /// <summary>
@@ -2317,6 +2555,8 @@ namespace Rock.Blocks.Event
                     isChanged = true;
                     History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
                 }
+
+                field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, newValue );
             }
 
             return isChanged;
@@ -2343,7 +2583,7 @@ namespace Rock.Blocks.Event
             var session = GetRegistrationEntryBlockSession( rockContext, context.RegistrationSettings );
 
             /*
-	            9/7/2022 - SMC / DSH / NA
+                9/7/2022 - SMC / DSH / NA
                 
                 isExistingRegistration is true if we have a RegistrationId in the page parameters, OR if we have a saved
                 RegistrationGuid in the RegistrationSession temporary table.  This is true because redirection payment gateways
@@ -2476,13 +2716,21 @@ namespace Rock.Blocks.Event
                     AllowMultiple = feeModel.AllowMultiple,
                     IsRequired = feeModel.IsRequired,
                     DiscountApplies = feeModel.DiscountApplies,
-                    Items = feeModel.FeeItems.Where( f => f.IsActive ).Select( fi => new RegistrationEntryBlockFeeItemViewModel
-                    {
-                        Cost = fi.Cost,
-                        Name = fi.Name,
-                        Guid = fi.Guid,
-                        CountRemaining = context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid )
-                    } )
+                    HideWhenNoneRemaining = feeModel.HideWhenNoneRemaining,
+                    Items = feeModel.FeeItems
+                        .Where( fi => fi.IsActive )
+                        .Where( fi => !feeModel.HideWhenNoneRemaining
+                            || (feeModel.HideWhenNoneRemaining
+                                && context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ) != null
+                                && context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ) > 0 ) )
+                        .Select( fi => new RegistrationEntryBlockFeeItemViewModel
+                        {
+                            Cost = fi.Cost,
+                            Name = fi.Name,
+                            Guid = fi.Guid,
+                            OriginalCountRemaining = context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ),
+                            CountRemaining = context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid )
+                        } )
                 };
 
                 fees.Add( feeViewModel );
@@ -2722,6 +2970,7 @@ namespace Rock.Blocks.Event
                 Fees = fees,
                 FamilyMembers = familyMembers,
                 MaxRegistrants = context.RegistrationSettings.MaxRegistrants ?? 25,
+                ShowSmsOptIn = context.RegistrationSettings.ShowSmsOptIn,
                 RegistrantsSameFamily = ( int ) context.RegistrationSettings.RegistrantsSameFamily,
                 ForceEmailUpdate = forceEmailUpdate,
                 RegistrarOption = ( int ) context.RegistrationSettings.RegistrarOption,
@@ -3113,21 +3362,8 @@ namespace Rock.Blocks.Event
                     context.RegistrationSettings.BatchNamePrefix;
 
                 // Get the batch
-                var batch = batchService.Get(
-                batchPrefix,
-                currencyTypeValue,
-                creditCardTypeValue,
-                transaction.TransactionDateTime.Value,
-                financialGateway.GetBatchTimeOffset() );
-
-                if ( batch.Id == 0 )
-                {
-                    batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                    History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                    History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                    History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                    History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-                }
+                var batch = batchService.GetForNewTransaction( transaction, batchPrefix );
+                FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
 
                 var financialTransactionService = new FinancialTransactionService( rockContext );
 
@@ -3279,16 +3515,22 @@ namespace Rock.Blocks.Event
         /// Gets the registration session page parameter value from all possible sources.
         /// </summary>
         /// <returns>The session unique identifier or <c>null</c> if it could not be obtained.</returns>
-        private Guid? GetRegistrationSessionPageParameter()
+        private Guid? GetRegistrationSessionPageParameter( PageReference pageReference )
         {
-            var sessionGuid = PageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull();
+            var sessionGuid = pageReference != null
+                ? pageReference.GetPageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull()
+                : PageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull();
 
             if ( sessionGuid.HasValue )
             {
                 return sessionGuid;
             }
 
-            var prefixedSessionValue = RequestContext.GetPageParameters()
+            var pageParameters = pageReference != null
+                ? pageReference.GetPageParameters()
+                : RequestContext.GetPageParameters();
+
+            var prefixedSessionValue = pageParameters
                 .Select( k => k.Value )
                 .Where( v => v != null && v.StartsWith( ReturnUrlSessionPrefix ) )
                 .FirstOrDefault();
@@ -3308,8 +3550,36 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private int GetRegistrationInstanceId( RockContext rockContext )
         {
+            return GetRegistrationInstanceId( rockContext, null );
+        }
+
+        /// <summary>
+        /// Gets the registration instance identifier.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="pageReference">The page reference to use when accessing page parameters.</param>
+        /// <returns></returns>
+        private int GetRegistrationInstanceId( RockContext rockContext, PageReference pageReference )
+        {
+            string registrationParameter;
+            string registrationInstanceParameter;
+            string slugParameter;
+
+            if ( pageReference != null )
+            {
+                registrationParameter = pageReference.GetPageParameter( PageParameterKey.RegistrationId );
+                registrationInstanceParameter = pageReference.GetPageParameter( PageParameterKey.RegistrationInstanceId );
+                slugParameter = pageReference.GetPageParameter( PageParameterKey.Slug );
+            }
+            else
+            {
+                registrationParameter = PageParameter( PageParameterKey.RegistrationId );
+                registrationInstanceParameter = PageParameter( PageParameterKey.RegistrationInstanceId );
+                slugParameter = PageParameter( PageParameterKey.Slug );
+            }
+
             // The page param is the least costly since there is no database call, so try that first
-            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+            var registrationInstanceId = registrationInstanceParameter.AsIntegerOrNull();
 
             if ( registrationInstanceId.HasValue )
             {
@@ -3317,7 +3587,7 @@ namespace Rock.Blocks.Event
             }
 
             // Try a session. This is typically from a redirect
-            var registrationSessionGuid = GetRegistrationSessionPageParameter();
+            var registrationSessionGuid = GetRegistrationSessionPageParameter( pageReference );
 
             if ( registrationSessionGuid.HasValue )
             {
@@ -3338,15 +3608,13 @@ namespace Rock.Blocks.Event
             }
 
             // Try a url slug
-            var slug = PageParameter( PageParameterKey.Slug );
-
-            if ( !slug.IsNullOrWhiteSpace() )
+            if ( !slugParameter.IsNullOrWhiteSpace() )
             {
                 var linkage = new EventItemOccurrenceGroupMapService( rockContext )
                     .Queryable()
                     .AsNoTracking()
                     .Where( l =>
-                        l.UrlSlug == slug &&
+                        l.UrlSlug == slugParameter &&
                         l.RegistrationInstanceId.HasValue )
                     .Select( l => new
                     {
@@ -3361,7 +3629,7 @@ namespace Rock.Blocks.Event
             }
 
             // Try the registration id
-            var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+            var registrationId = registrationParameter.AsIntegerOrNull();
 
             if ( registrationId.HasValue )
             {
@@ -3393,7 +3661,7 @@ namespace Rock.Blocks.Event
         private RegistrationEntryBlockSession GetRegistrationEntryBlockSession( RockContext rockContext, RegistrationSettings settings )
         {
             // Try to restore the session from the RegistrationSessionGuid, which is typically a PushPay redirect
-            var registrationSessionGuid = GetRegistrationSessionPageParameter();
+            var registrationSessionGuid = GetRegistrationSessionPageParameter( null );
 
             if ( registrationSessionGuid.HasValue )
             {
@@ -4017,17 +4285,21 @@ namespace Rock.Blocks.Event
         {
             public Location Address { get; }
 
+            public CampusCache Campus { get; }
+
+            public DefinedValueCache ConnectionStatus { get; }
+            
             public DateTime? AnniversaryDate { get; }
 
             public DateTime? BirthDate { get; }
 
-            public CampusCache Campus { get; }
-
-            public DefinedValueCache ConnectionStatus { get; }
-
             public string Email { get; }
 
             public string FirstName { get; }
+
+            public string MiddleName { get; }
+
+            public string LastName { get; }
 
             public Gender Gender { get; }
 
@@ -4037,57 +4309,47 @@ namespace Rock.Blocks.Event
 
             public int? GraduationYear { get; }
 
-            public string HomePhone { get; }
-
-            public string LastName { get; }
-
             public DefinedValueCache MaritalStatus { get; }
 
-            public string MiddleName { get; }
+            public string HomePhone { get; }
 
             public string MobilePhone { get; }
 
             public string WorkPhone { get; }
 
-            public LavaHasAttributes Person { get; }
+            public Rock.Model.Person Person { get; }
 
-            public LavaHasAttributes GroupMember { get; }
+            public Rock.Model.GroupMember GroupMember { get; }
 
-            public LavaSignatureRegistrant( RegistrationRegistrant registrant )
-                : this( registrant.Person, null, null, registrant.GroupMember )
+            public LavaSignatureRegistrant( Person person, Location homeLocation, CampusCache campus, GroupMember groupMember, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationInstance registrationInstance )
             {
-                FirstName = registrant.FirstName;
-                LastName = registrant.LastName;
-                Email = registrant.Email;
+                var ( registrantAttributes, registrantAttributeValues) = GetRegistrantAttributesFromRegistration(registrantInfo, registrationInstance.RegistrationTemplate );
 
-                Address = registrant.Person.GetHomeLocation();
-
-                var campus = registrant.Person.GetCampus();
-                if ( campus != null )
-                {
-                    Campus = CampusCache.Get( campus.Id );
-                }
-            }
-
-            public LavaSignatureRegistrant( Person person, Location homeLocation, CampusCache campus, GroupMember groupMember )
-            {
                 Address = homeLocation;
+                Campus = campus;
                 AnniversaryDate = person.AnniversaryDate;
                 BirthDate = person.BirthDate;
-                Campus = campus;
                 ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ) : null;
                 Email = person.Email;
                 FirstName = person.FirstName;
+                MiddleName = person.MiddleName;
+                LastName = person.LastName;
                 Gender = person.Gender;
                 GradeFormatted = person.GradeFormatted;
                 GradeOffset = person.GradeOffset;
                 GraduationYear = person.GraduationYear;
-                HomePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() )?.NumberFormatted;
-                LastName = person.LastName;
+
+                // We call FormattedNumber here rather than using the property NumberFormatted because at this point NumberFormatted hasn't yet been initialized
+                HomePhone = PhoneNumber.FormattedNumber( "", person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() )?.Number, false );
                 MaritalStatus = person.MaritalStatusValueId.HasValue ? DefinedValueCache.Get( person.MaritalStatusValueId.Value ) : null;
-                MiddleName = person.MiddleName;
-                MobilePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )?.NumberFormatted;
-                WorkPhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() )?.NumberFormatted;
+                MobilePhone = PhoneNumber.FormattedNumber( "", person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )?.Number, false );
+                WorkPhone = PhoneNumber.FormattedNumber( "", person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() )?.Number, false );
+
+                if ( registrantAttributes != null && registrantAttributeValues != null )
+                {
+                    Attributes = registrantAttributes;
+                    AttributeValues = registrantAttributeValues;
+                }
 
                 if ( person != null )
                 {
@@ -4096,11 +4358,7 @@ namespace Rock.Blocks.Event
                         person.LoadAttributes();
                     }
 
-                    Person = new LavaHasAttributes
-                    {
-                        Attributes = person.Attributes,
-                        AttributeValues = person.AttributeValues
-                    };
+                    Person = person;
                 }
 
                 if ( groupMember != null )
@@ -4110,11 +4368,7 @@ namespace Rock.Blocks.Event
                         groupMember.LoadAttributes();
                     }
 
-                    GroupMember = new LavaHasAttributes
-                    {
-                        Attributes = groupMember.Attributes,
-                        AttributeValues = groupMember.AttributeValues
-                    };
+                    GroupMember = groupMember;
                 }
             }
         }

@@ -21,6 +21,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Tv.AppleTvAppDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class AppleTvAppBag : EntityBagBase
     {
         /// <summary>

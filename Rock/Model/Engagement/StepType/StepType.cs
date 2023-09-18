@@ -325,6 +325,21 @@ namespace Rock.Model
 
         #endregion Navigation Properties
 
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        #endregion
+
         #region Entity Configuration
 
         /// <summary>

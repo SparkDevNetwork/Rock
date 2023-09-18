@@ -94,7 +94,6 @@ import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import Rating from "@Obsidian/Controls/rating.obs";
 import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
-import PersonPicker from "@Obsidian/Controls/personPicker.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
 import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
@@ -234,8 +233,14 @@ import DropDownMenuGallery from "./ControlGallery/dropDownMenuGallery.partial.ob
 import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.partial.obs";
 import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
 import CampusAccountAmountPickerGallery from "./ControlGallery/campusAccountAmountPickerGallery.partial.obs";
+import PersonPickerGallery from "./ControlGallery/personPickerGallery.partial.obs";
+import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
+import HighlightLabelGallery from "./ControlGallery/highlightLabelGallery.partial.obs";
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
+import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
+import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -725,7 +730,7 @@ const dropDownListGallery = defineComponent({
             { text: "A Text", value: "a", category: "First" },
             { text: "B Text", value: "b", category: "First" },
             { text: "C Text", value: "c", category: "Second" },
-            { text: "D Text", value: "d", category: "Second" }
+            { text: "D Text", value: "d", category: "Second", disabled: true }
         ];
 
         // This function can be used to demonstrate lazy loading of items.
@@ -742,7 +747,7 @@ const dropDownListGallery = defineComponent({
             grouped: ref(false),
             multiple: ref(false),
             value: ref(null),
-            options: options,
+            options,
             importCode: getControlImportPath("dropDownList"),
             exampleCode: `<DropDownList label="Select" v-model="value" :items="options" :showBlankItem="true" :enhanceForLongLists="false" :grouped="false" :multiple="false" />`
         };
@@ -2078,42 +2083,6 @@ const panelGallery = defineComponent({
         <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" />
 
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a person picker */
-const personPickerGallery = defineComponent({
-    name: "PersonPickerGallery",
-    components: {
-        GalleryAndResult,
-        PersonPicker,
-        CheckBox
-    },
-    setup() {
-        return {
-            value: ref(null),
-            includeBusinesses: ref(false),
-            importCode: getControlImportPath("personPicker"),
-            exampleCode: `<PersonPicker v-model="value" label="Person" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value ?? null"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <PersonPicker v-model="value" label="Person" :includeBusinesses="includeBusinesses" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Include Businesses" v-model="includeBusinesses" />
-            </div>
-        </div>
-
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -3795,7 +3764,9 @@ const modalGallery = defineComponent({
             isOpen: ref(false),
             value: "",
             importCode: getControlImportPath("modal"),
-            exampleCode: `<Modal title="Modal Dialog Title" saveText="Save" />`
+            exampleCode: `<Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
+    <TextBox label="Required Value" v-model="value" rules="required" />
+</Modal>`
         };
     },
     template: `
@@ -7357,11 +7328,9 @@ const popOverGallery = defineComponent({
             show: ref(false),
             importCode: getSfcControlImportPath("popOver"),
             exampleCode: `<PopOver v-model:isVisible="isVisible" placement="right">
+    This is the content that shows up in the popOver
     <template #activator="props">
         <strong v-bind="props">Hover Me</strong>
-    </template>
-    <template #popOverContent>
-        This is the content that shows up in the popOver
     </template>
 </PopOver>`
         };
@@ -7373,11 +7342,9 @@ const popOverGallery = defineComponent({
 
     <div class="text-center">
         <PopOver v-model:isVisible="show" :placement="placement" v-model:triggerUpdate="triggerUpdate">
+            This is the content that shows up in the popOver
             <template #activator="props">
                 <strong v-bind="props">Hover Me</strong>
-            </template>
-            <template #popOverContent>
-                This is the content that shows up in the popOver
             </template>
         </PopOver>
     </div>
@@ -8044,7 +8011,7 @@ const controlGalleryComponents: Record<string, Component> = [
     urlLinkBoxGallery,
     fullscreenGallery,
     panelGallery,
-    personPickerGallery,
+    PersonPickerGallery,
     fileUploaderGallery,
     imageUploaderGallery,
     slidingDateRangePickerGallery,
@@ -8159,7 +8126,17 @@ const controlGalleryComponents: Record<string, Component> = [
     DropDownContentGallery,
     ButtonDropDownListGallery,
     CampusAccountAmountPickerGallery,
+    LightGridGallery,
+    ImageEditorGallery,
+    HighlightLabelGallery,
+    PdfViewerGallery,
+    ChartGallery,
 ]
+    // Fix vue 3 SFC putting name in __name.
+    .map(a => {
+        a.name = a.__name ?? a.name;
+        return a;
+    })
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
     // Convert list to an object where the key is the component name and the value is the component
@@ -8396,6 +8373,10 @@ const detailBlockGallery = defineComponent({
 const templateGalleryComponents = [
     detailBlockGallery
 ]
+    .map(a => {
+        a.name = a.__name ?? a.name;
+        return a;
+    })
     .sort((a, b) => a.name.localeCompare(b.name))
     .reduce((newList, comp) => {
         newList[comp.name] = comp;

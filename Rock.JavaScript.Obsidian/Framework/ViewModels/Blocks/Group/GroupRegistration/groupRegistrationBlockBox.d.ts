@@ -62,4 +62,16 @@ export type GroupRegistrationBlockBox = {
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
+
+    /** Gets or sets a value indicating whether the field is hidden. */
+    smsIsHidden: boolean;
+
+    /** Gets or sets a value indicating whether the field is required. */
+    smsIsShowAllAdults: boolean;
+
+    /** Gets or sets a value indicating whether the field is shown. */
+    smsIsShowFirstAdult: boolean;
+
+    /** Gets or sets the text to display for the SMS Opt In checkbox */
+    smsOptInDisplayText?: string | null;
 };

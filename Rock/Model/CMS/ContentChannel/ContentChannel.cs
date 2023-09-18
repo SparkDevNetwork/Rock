@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Rock.Cms;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Tasks;
@@ -295,7 +296,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of ContentChannels that this ContentChannel allows as children.
         /// </value>
-        [DataMember, LavaHidden, JsonIgnore]
+        [DataMember, JsonIgnore]
         public virtual ICollection<ContentChannel> ChildContentChannels
         {
             get { return _childContentChannels ?? ( _childContentChannels = new Collection<ContentChannel>() ); }

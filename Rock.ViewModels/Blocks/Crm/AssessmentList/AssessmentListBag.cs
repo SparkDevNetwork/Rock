@@ -22,6 +22,9 @@ using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Crm.AssessmentList
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class AssessmentListBag
     {
         /// <summary>

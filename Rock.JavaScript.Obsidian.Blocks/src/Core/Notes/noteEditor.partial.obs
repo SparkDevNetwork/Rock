@@ -25,7 +25,7 @@
 
                 <div class="settings clearfix">
                     <div v-if="showDate" class="createDate">
-                        <DateTimePicker label="Note Created Date" />
+                        <DateTimePicker v-model="createdDateTime" label="Note Created Date" />
                     </div>
 
                     <select v-if="noteTypeItems.length > 1"
@@ -186,6 +186,7 @@
     const noteText = ref(props.modelValue?.text ?? "");
     const isAlert = ref(props.modelValue?.isAlert ?? false);
     const isPrivate = ref(props.modelValue?.isPrivate ?? false);
+    const createdDateTime = ref(props.modelValue?.createdDateTime ?? "");
     const attributes = ref<Record<string, PublicAttributeBag>>({});
     const attributeValues = ref<Record<string, string>>(props.modelValue?.attributeValues ?? {});
 
@@ -257,6 +258,11 @@
     /** Determines if the currently selected note type supports mentions. */
     const isMentionEnabled = computed((): boolean => {
         return selectedNoteType.value?.isMentionEnabled === true;
+    });
+
+    /** The default note type to select. */
+    const defaultNoteTypeIdKey = computed((): string => {
+        return props.noteTypes.length > 0 ? props.noteTypes[0].idKey ?? "" : "";
     });
 
     // #endregion
@@ -387,8 +393,8 @@
 
     // Set the default note type to the first one if not already selected.
     // Do this before the watch events below.
-    if (!noteTypeIdKey.value && props.noteTypes.length > 0) {
-        noteTypeIdKey.value = props.noteTypes[0].idKey ?? "";
+    if (!noteTypeIdKey.value) {
+        noteTypeIdKey.value = defaultNoteTypeIdKey.value;
     }
 
     // Set initially selected note type attributes.
@@ -405,21 +411,27 @@
 
     // Watch for changes in our model value and update the UI.
     watch(() => props.modelValue, () => {
-        updateRefValue(noteTypeIdKey, props.modelValue?.noteTypeIdKey ?? "");
+        // If the new modelValue does not have a noteTypeIdKey defined then
+        // we try to use the existing note type id key, otherwise we fall back
+        // to the default. If the modelValue provides an empty string for
+        // noteTypeIdKey then it will be honored.
+        updateRefValue(noteTypeIdKey, props.modelValue?.noteTypeIdKey ?? noteTypeIdKey.value ?? defaultNoteTypeIdKey.value);
         updateRefValue(noteText, props.modelValue?.text ?? "");
         updateRefValue(isAlert, props.modelValue?.isAlert ?? false);
         updateRefValue(isPrivate, props.modelValue?.isPrivate ?? false);
+        updateRefValue(createdDateTime, props.modelValue?.createdDateTime ?? "");
         updateRefValue(attributeValues, props.modelValue?.attributeValues ?? {});
     });
 
     // Watch for changes in the UI and update the model value.
-    watch([noteTypeIdKey, noteText, isAlert, isPrivate, attributeValues], () => {
+    watch([noteTypeIdKey, noteText, isAlert, isPrivate, createdDateTime, attributeValues], () => {
         const newBag: NoteEditBag = {
             ...(props.modelValue ?? {}),
             noteTypeIdKey: noteTypeIdKey.value,
             text: noteText.value,
             isAlert: isAlert.value,
             isPrivate: isPrivate.value,
+            createdDateTime: createdDateTime.value || null,
             attributeValues: attributeValues.value
         };
 

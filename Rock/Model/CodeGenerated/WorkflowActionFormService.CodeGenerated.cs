@@ -162,6 +162,7 @@ namespace Rock.Model
             target.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
             target.PersonEntrySectionTypeValueId = source.PersonEntrySectionTypeValueId;
             target.PersonEntryShowHeadingSeparator = source.PersonEntryShowHeadingSeparator;
+            target.PersonEntrySmsOptInEntryOption = source.PersonEntrySmsOptInEntryOption;
             target.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
             target.PersonEntrySpouseEntryOption = source.PersonEntrySpouseEntryOption;
             target.PersonEntrySpouseLabel = source.PersonEntrySpouseLabel;

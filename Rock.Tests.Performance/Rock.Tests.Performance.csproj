@@ -164,9 +164,6 @@
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
     </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
@@ -277,6 +274,7 @@
   <ItemGroup>
     <Compile Include="BenchmarkRunners\PersonSearchBenchmarks.cs" />
     <Compile Include="BenchmarkRunners\Program.cs" />
+    <Compile Include="Modules\Core\RockCleanupJobTests.cs" />
     <Compile Include="Modules\Reporting\DataViewTests.cs" />
     <Compile Include="PerformanceTestInitializer.cs" />
     <Compile Include="Modules\Checkin\AttendanceCodeTests.cs" />

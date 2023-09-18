@@ -103,48 +103,32 @@
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wbContentLibrary" runat="server" Title="Content Library">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    The Content Library feature enables you to upload and download content from the community library. By enabling this feature, you agree to allow other organizations to use your uploaded content based on the license you have chosen. Please note that once the content has been uploaded to the library, you will not be able to change to a more restrictive license. For further details on this feature, refer to the <a href="https://rockrms.com/library/licenses?utm_source=rock-channel-update">Spark Content Library License</a> page.
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            The Content Library feature enables you to upload and download content from the community library. By enabling this feature, you agree to allow other organizations to use your uploaded content based on the license you have chosen. Please note that once the content has been uploaded to the library, you will not be able to change to a more restrictive license. For further details on this feature, refer to the <a href="https://www.rockrms.com/library/licenses?utm_source=rock-channel-update" target="_blank" rel="noopener noreferrer">Spark Content Library License</a> page.
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <Rock:RockCheckBoxList ID="cblContentLibrarySettings" runat="server">
-                                        <asp:ListItem Text="Enable Library for This Channel" Value="EnableContentLibrary" />
-                                    </Rock:RockCheckBoxList>
-                                </div>
-                                <Rock:RockRadioButtonList ID="rblLicenseType" runat="server" Label="License" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblLicenseType_SelectedIndexChanged" AutoPostBack="true" />
-                                <Rock:NotificationBox ID="nbLicenseType" runat="server" NotificationBoxType="Info" Visible="false" />
+                        <asp:PlaceHolder ID="phContentLibraryFields" runat="server" Visible="false">
+                            <div class="form-group">
+                                <Rock:RockCheckBox ID="cbEnableContentLibrary" runat="server" Text="Enable Library for This Channel" AutoPostBack="true" CssClass="js-content-channel-enable-content-library" />
                             </div>
-                        </div>
+                            <Rock:RockRadioButtonList ID="rblLicenseType" runat="server" FormGroupCssClass="js-content-channel-license-type" Label="License" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblLicenseType_SelectedIndexChanged" ShowNoneOption="false" AutoPostBack="true" />
+                            <Rock:NotificationBox ID="nbLicenseType" runat="server" NotificationBoxType="Info" Visible="false" />
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlSummaryAttribute" runat="server" Label="Summary Attribute" Required="false" />
-                                <div>
-                                    <Rock:RockDropDownList ID="ddlImageAttribute" runat="server" Label="Image Attribute" />
-                                    Recommend image size 1140x570.
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlAuthorAttribute" runat="server" Label="Author Attribute" />
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:NotificationBox ID="nbLinkYourOrganization" runat="server" Heading="Link Your Organization" NotificationBoxType="Warning">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlSummaryAttribute" runat="server" Label="Summary Attribute" Required="false" />
                                     <div>
-                                    Your Rock instance is currently not associated with any organization. To proceed, <a href="/page/358?ReturnUrl=%T2fRockShop%2fPurchases">please link your instance to an organization</a>.
+                                        <Rock:RockDropDownList ID="ddlImageAttribute" runat="server" Label="Image Attribute" />
+                                        <span class="-mt-form-group help-block small">Recommend image size 1140x570.</span>
                                     </div>
-                                </Rock:NotificationBox>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlAuthorAttribute" runat="server" Label="Author Attribute" />
+                                </div>
                             </div>
-                        </div>
+                        </asp:PlaceHolder>
+
+                        <Rock:NotificationBox ID="nbLinkYourOrganization" runat="server" Heading="Link Your Organization" NotificationBoxType="Warning" Visible="false" />
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wbAdvanced" runat="server" Title="Advanced">

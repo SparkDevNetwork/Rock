@@ -624,7 +624,7 @@ namespace Rock.Blocks.Security
                 return ActionBadRequest( "Please try a different authentication method" );
             }
 
-            var loginUrl = externalRedirectAuthentication.GenerateExternalLoginUrl( GetCurrentPageUrl(), GetRedirectUrlAfterLogin() );
+            var loginUrl = externalRedirectAuthentication.GenerateExternalLoginUrl( GetRedirectUri(), GetRedirectUrlAfterLogin() );
 
             if ( loginUrl == null )
             {
@@ -731,13 +731,12 @@ namespace Rock.Blocks.Security
         }
 
         /// <summary>
-        /// Gets the current page URL.
+        /// Gets the redirect URI that can be used by external authentication components to complete authentication.
         /// </summary>
-        /// <returns>The current page URL.</returns>
-        private string GetCurrentPageUrl()
+        private string GetRedirectUri()
         {
-            var rootUrl = this.RequestContext.RootUrlPath?.TrimEnd( '/' );
-            return $"{rootUrl}/page/{PageCache.Id}";
+            var uri = this.RequestContext.RequestUri;
+            return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ).EnsureTrailingForwardslash() + $"page/{PageCache.Id}";
         }
 
         /// <summary>
@@ -866,7 +865,12 @@ namespace Rock.Blocks.Security
                 return returnUrl;
             }
 
-            return thirdPartyReturnUrl;
+            if ( thirdPartyReturnUrl.IsNotNullOrWhiteSpace() )
+            {
+                return thirdPartyReturnUrl;
+            }
+
+            return "/";
         }
 
         /// <summary>
@@ -1001,7 +1005,7 @@ namespace Rock.Blocks.Security
         /// <param name="externalAuthProviders">The external authentication providers.</param>
         private void LogInWithExternalAuthProviderIfNeeded( LoginInitializationBox box, List<NamedComponent<AuthenticationComponent>> externalAuthProviders )
         {
-            var redirectUrl = GetCurrentPageUrl();
+            var redirectUrl = GetRedirectUri();
 
             foreach ( var authProvider in externalAuthProviders.Select( c => c.Component ) )
             {
@@ -1085,7 +1089,7 @@ namespace Rock.Blocks.Security
                     return;
                 }
 
-                var authLoginUri = externalRedirectAuthentication.GenerateExternalLoginUrl( GetCurrentPageUrl(), GetRedirectUrlAfterLogin() ).AbsoluteUri;
+                var authLoginUri = externalRedirectAuthentication.GenerateExternalLoginUrl( GetRedirectUri(), GetRedirectUrlAfterLogin() ).AbsoluteUri;
 
                 if ( authLoginUri.IsNotNullOrWhiteSpace() )
                 {
@@ -1129,7 +1133,7 @@ namespace Rock.Blocks.Security
 
                 var mergeFields = GetMergeFields( new Dictionary<string, object>
                 {
-                    { "ConfirmAccountUrl", RequestContext.RootUrlPath + url.TrimStart( '/' ) },
+                    { "ConfirmAccountUrl", RequestContext.RootUrlPath.EnsureTrailingForwardslash() + url.RemoveLeadingForwardslash() },
                     { "Person", userLogin.Person },
                     { "User", userLogin }
                 } );

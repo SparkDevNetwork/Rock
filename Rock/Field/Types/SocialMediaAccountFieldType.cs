@@ -60,7 +60,7 @@ namespace Rock.Field.Types
             {
                 if ( privateConfigurationValues != null )
                 {
-                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() );
                     string template = string.Empty;
 
                     if ( privateConfigurationValues.ContainsKey( TEXT_TEMPLATE ) )

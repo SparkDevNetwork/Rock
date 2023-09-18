@@ -20,18 +20,57 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.ScheduleDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ScheduleDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the next occurrence.
+        /// </summary>
+        /// <value>
+        /// The next occurrence.
+        /// </value>
         public DateTimeOffset? NextOccurrence { get; set; }
 
+        /// <summary>
+        /// Gets or sets the exclusions.
+        /// </summary>
+        /// <value>
+        /// The exclusions.
+        /// </value>
         public List<ScheduleExclusionBag> Exclusions { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has schedule warning.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has schedule warning; otherwise, <c>false</c>.
+        /// </value>
         public bool HasScheduleWarning { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can delete.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can delete; otherwise, <c>false</c>.
+        /// </value>
         public bool CanDelete { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has attendance.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has attendance; otherwise, <c>false</c>.
+        /// </value>
         public bool HasAttendance { get; set; }
 
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
         public string HelpText { get; set; }
     }
 }

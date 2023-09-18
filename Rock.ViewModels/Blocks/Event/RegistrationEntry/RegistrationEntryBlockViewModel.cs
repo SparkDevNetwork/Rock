@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
 using Rock.ViewModels.Utility;
@@ -26,8 +27,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockViewModel
     /// </summary>
-    /// <seealso cref="Rock.ViewModels.Utility.IViewModel" />
-    public sealed class RegistrationEntryBlockViewModel : IViewModel
+    public sealed class RegistrationEntryBlockViewModel
     {
         /// <summary>
         /// Gets or sets the current person family unique identifier.
@@ -429,6 +429,15 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The ethnicities available for the user to select.
         /// </value>
         public List<ListItemBag> Ethnicities { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the SMS OptIn checkbox under the phone number
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowSmsOptIn { get; set; }
+
     }
 
     /// <summary>
@@ -521,6 +530,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         ///   <c>true</c> if [discount applies]; otherwise, <c>false</c>.
         /// </value>
         public bool DiscountApplies { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide when none remaining].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide when none remaining]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideWhenNoneRemaining { get; set; }
     }
 
     /// <summary>
@@ -551,6 +568,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The unique identifier.
         /// </value>
         public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the remaining fee items when the registration was started. Used to calcualte items remaining as fees are added/removed across registrants during a registration.
+        /// </summary>
+        /// <value>
+        /// The original count remaining.
+        /// </value>
+        public int? OriginalCountRemaining { get; set; }
 
         /// <summary>
         /// Gets or sets the count remaining.

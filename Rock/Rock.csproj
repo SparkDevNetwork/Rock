@@ -602,6 +602,7 @@
     <Compile Include="Attribute\BenevolenceTypeFieldAttribute.cs" />
     <Compile Include="Attribute\BlockTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
+    <Compile Include="Attribute\ColorSelectorFieldAttribute.cs" />
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
     <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
     <Compile Include="Data\EnableAttributeQualificationAttribute.cs" />
@@ -998,12 +999,14 @@
     <Compile Include="Field\PersistedValues.cs" />
     <Compile Include="Field\ReferencedEntity.cs" />
     <Compile Include="Field\ReferencedProperty.cs" />
+    <Compile Include="Field\Types\ColorSelectorFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
     <Compile Include="Field\Types\MediaSelectorFieldType.cs" />
     <Compile Include="Field\Types\ReminderTypeFieldType.cs" />
     <Compile Include="Field\Types\ReminderTypesFieldType.cs" />
     <Compile Include="Field\Types\SecondaryAuthsFieldType.cs" />
     <Compile Include="Field\Types\SystemPhoneNumberFieldType.cs" />
+    <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
@@ -1017,6 +1020,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV16PopulateInteractionSessionData.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionAndInteractionSessionIndices.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionSessionChannelId.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateMediaElementDefaultUrls.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateNoteData.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdatePersonPrimaryAliasId.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateWorkflowIds.cs" />
@@ -1034,6 +1038,8 @@
     <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
+    <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
+    <Compile Include="Lava\Helpers\LavaAppendWatchesHelper.cs" />
     <Compile Include="Model\CMS\BlockType\BlockType.WebForms.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\AddToContentLibraryException.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\AddFromContentLibraryException.cs" />
@@ -1044,7 +1050,7 @@
     <Compile Include="Lava\Shortcodes\AICompletionShortcode.cs" />
     <Compile Include="Lava\WebsiteLavaHost.cs" />
     <Compile Include="Logging\RockLoggerMemoryBuffer.cs" />
-    <Compile Include="Model\CMS\ContentChannel\ContentLibraryConfiguration.cs" />
+    <Compile Include="Cms\ContentLibraryConfiguration.cs" />
     <Compile Include="Model\CMS\ContentTopicDomain\ContentTopicDomain.cs" />
     <Compile Include="Model\CMS\ContentTopic\ContentTopic.cs" />
     <Compile Include="Model\CMS\Site\Site.SaveHook.cs" />
@@ -1119,6 +1125,8 @@
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.Logic.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperienceService.cs" />
     <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormFieldException.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateFormService.cs" />
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
     <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />
@@ -1127,11 +1135,16 @@
     <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
+    <Compile Include="Net\BrowserCookie.cs" />
+    <Compile Include="Net\IRockResponseContext.cs" />
+    <Compile Include="Net\NullRockResponseContext.cs" />
+    <Compile Include="Net\RockResponseContext.WebForms.cs" />
     <Compile Include="Observability\ObservabilityHelper.cs" />
     <Compile Include="Observability\RockActivitySource.cs" />
     <Compile Include="Obsidian\UI\GridActionUrlKey.cs" />
     <Compile Include="Obsidian\UI\GridBuilder.cs" />
     <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
+    <Compile Include="Obsidian\UI\GridBuilderGridOptions.cs" />
     <Compile Include="Obsidian\UI\GridHelper.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\EnvironmentRequestFilter.cs" />
     <Compile Include="Net\IRequest.cs" />
@@ -1164,6 +1177,8 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\185_MigrationRollupsForV15_2_4.cs" />
+    <Compile Include="Plugin\HotFixes\184_MigrationRollupsForV15_2_3.cs" />
     <Compile Include="Plugin\HotFixes\183_MigrationRollupsForV15_2_2.cs" />
     <Compile Include="Plugin\HotFixes\182_FamilyPreRegistrationObsidian.cs" />
     <Compile Include="Plugin\HotFixes\181_SmsOptionSystemSetting.cs" />
@@ -1856,6 +1871,7 @@
     <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
     <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\RockResponseContextExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Image.cs" />
     <Compile Include="Utility\IdHasher.cs" />
@@ -2085,6 +2101,8 @@
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
+    <Compile Include="Blocks\BreadCrumbResult.cs" />
+    <Compile Include="Web\BreadCrumbLink.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
@@ -2123,6 +2141,8 @@
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\HttpModules\Observability.cs" />
+    <Compile Include="Web\IBreadCrumb.cs" />
+    <Compile Include="Blocks\IBreadCrumbBlock.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
     <Compile Include="Web\RockControlAdapter.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartJsChart.cs" />
@@ -2159,6 +2179,7 @@
     <Compile Include="Web\UI\Controls\Pickers\SecondaryAuthsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumberPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumbersPicker.cs" />
+    <Compile Include="Web\UI\Controls\ColorSelector.cs" />
     <Compile Include="Web\UI\Controls\TagLiteral.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategorizedValuePicker.cs" />
     <Compile Include="Web\UI\Controls\TaskActivityProgressReporter.cs" />
@@ -2855,8 +2876,6 @@
     <Compile Include="Lava\Blocks\WorkflowActivateBlock.cs" />
     <Compile Include="Lava\LavaHelper.cs" />
     <Compile Include="Lava\LavaSupportLevel.cs" />
-    <Compile Include="Lava\LegacyLavaSyntaxDetectedException.cs" />
-    <Compile Include="Lava\LegacyLavaUpdater.cs" />
     <Compile Include="Lava\Shortcodes\BootstrapAlertShortcode.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />

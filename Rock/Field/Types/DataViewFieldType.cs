@@ -29,13 +29,14 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Data View Field Type.  Stored as DataViews's Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DATA_VIEW )]
     public class DataViewFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
@@ -45,6 +46,48 @@ namespace Rock.Field.Types
         /// Entity Type Name Key
         /// </summary>
         protected const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
+
+        #endregion
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var scheduleValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( scheduleValue != null )
+            {
+                return scheduleValue.Value;
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( Guid.TryParse( privateValue, out Guid guid ) )
+            {
+                var schedule = NamedScheduleCache.Get( guid );
+                if ( schedule != null )
+                {
+                    return new ListItemBag()
+                    {
+                        Value = schedule.Guid.ToString(),
+                        Text = schedule.Name,
+                    }.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return string.Empty;
+        }
 
         #endregion
 

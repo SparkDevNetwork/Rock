@@ -427,7 +427,14 @@
      * Event handler for the "Attendance For" date being updated.
      */
     async function onAttendanceForDateUpdated(dateString: string | null): Promise<void> {
-        attendanceForDate.value = (dateString ? RockDateTime.parseISO(dateString) : null) ?? RockDateTime.now();
+        const newDate = (dateString ? RockDateTime.parseISO(dateString) : null) ?? RockDateTime.now();
+
+        // Skip if the date wasn't changed.
+        if (attendanceForDate.value.date.isEqualTo(newDate.date)) {
+            return;
+        }
+
+        attendanceForDate.value = newDate.date;
 
         await getAttendanceOccurrence({
             attendanceOccurrenceDate: attendanceForDateIsoString.value,
@@ -641,6 +648,7 @@
         if (existingAttendance) {
             // Update the existing attendance "did attend" value to whatever was passed in.
             existingAttendance.didAttend = attendance.didAttend;
+            existingAttendance.itemTemplate = attendance.itemTemplate;
         }
         else {
             config.value.attendances = [...config.value.attendances ?? [], attendance];
@@ -924,17 +932,22 @@
     /**
      * Subscribes to the topic using the current Group and AttendanceOccurrence unique identifiers.
      */
-    async function startRealTime(): Promise<GroupAttendanceTopic> {
+    async function startRealTime(): Promise<void> {
         const groupGuid = config.value.groupGuid;
         const occurrenceGuid = attendanceOccurrenceGuid.value;
 
         if (topic.value && areEqual(topic.value.groupGuid, groupGuid) && areEqual(topic.value.attendanceOccurrenceGuid, occurrenceGuid)) {
             // Skip if already subscribed.
-            return topic.value;
+            return;
         }
 
-        if (!attendanceOccurrenceGuid.value || !config.value.groupGuid) {
+        if (!config.value.groupGuid) {
             throw "Unable to start real-time";
+        }
+
+        if (!attendanceOccurrenceGuid.value) {
+            // If the occurrence is new, do not start real-time yet.
+            return;
         }
 
         const groupAttendanceTopic = await getGroupAttendanceTopic(config.value.groupGuid, attendanceOccurrenceGuid.value);
@@ -946,7 +959,7 @@
         groupAttendanceTopic.on("attendanceUpdated", onAttendanceUpdatedFromServer);
         groupAttendanceTopic.on("attendanceOccurrenceUpdated", onAttendanceOccurrenceUpdatedFromServer);
 
-        return groupAttendanceTopic;
+        return;
     }
 
     /**

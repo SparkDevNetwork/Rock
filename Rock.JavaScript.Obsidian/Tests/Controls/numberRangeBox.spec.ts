@@ -14,89 +14,101 @@
 // limitations under the License.
 // </copyright>
 //
-import { mount, config } from "@vue/test-utils";
+import { mount, config, VueWrapper } from "@vue/test-utils";
 import assert = require("assert");
 import NumberRangeBox from "../../Framework/Controls/numberRangeBox.obs";
-import { ref } from "vue";
+import { nextTick } from "vue";
 
 config.global.config.warnHandler = () => { /*empty*/ };
 
-const wrappingComponent = {
-    components: {NumberRangeBox},
-    setup () {
-        return {
-            val: ref({ lower: 1.1, upper: 1.1 })
-        };
-    },
-    template: `<NumberRangeBox v-model="val" />`
-};
+function getComponentWrapper(): VueWrapper {
+    const wrapper = mount(NumberRangeBox, {
+        props: {
+            modelValue: { lower: 1.1, upper: 1.1 },
+            "onUpdate:modelValue": (e) => wrapper.setProps({ modelValue: e })
+        }
+    });
+
+    return wrapper;
+}
 
 describe("Number Range Box", () => {
 
-    it.skip("Should not delete zeroes after decimal place while still typing in first box", async () => {
-        const wrapper = mount(wrappingComponent);
+    it("Should not delete zeroes after decimal place while still typing in first box", async () => {
+        const wrapper = getComponentWrapper();
         const input = wrapper.get("input[id$='_lower']");
         const inputElement = input.element as HTMLInputElement;
         const numberRangeComponent = wrapper.getComponent(NumberRangeBox).vm;
 
-        // Type in a value into 1st box with an ending of zeroes, then fire an event so the models will change.
-        inputElement.focus();
+        // Make sure any pre-processing events finish up before we try to mess with things.
+        await nextTick();
+
+        // Type in a value into 1st box with an ending of zeroes, then fire an input event so the internal model will change.
         inputElement.value = "1.00";
         await input.trigger("input");
+        await nextTick();
 
         // Verify the value for the NumberRangeBox still has zeroes, but the model is converted to a number without them
         assert.strictEqual(inputElement.value, "1.00");
         assert.strictEqual(numberRangeComponent.internalValue.lower, "1.00");
-        assert.strictEqual(numberRangeComponent.modelValue.lower, 1);
+        assert.strictEqual(wrapper.props("modelValue")?.lower, 1);
     });
 
     it("Should delete stray zeroes after decimal place from first box when done with it", async () => {
-        const wrapper = mount(wrappingComponent);
+        const wrapper = getComponentWrapper();
         const input = wrapper.get("input[id$='_lower']");
         const inputElement = input.element as HTMLInputElement;
         const numberRangeComponent = wrapper.getComponent(NumberRangeBox).vm;
 
-        // Type in a value into 1st box with an ending of zeroes, then fire an event so the models will change.
-        inputElement.value = "1.00";
-        await input.trigger("input"); // Set internal value to "1.00" like the previous test
-        await input.trigger("change"); // Fire change event too so it'll "finalize" the value and strip zeroes
+        // Make sure any pre-processing events finish up before we try to mess with things.
+        await nextTick();
+
+        // Type in a value into 1st box with an ending of zeroes, then fire all events so all the updates will happen.
+        await input.setValue("1.00");
+        await nextTick();
 
         // Verify the value for the NumberRangeBox still has zeroes, but the model is converted to a number without them
         assert.strictEqual(inputElement.value, "1");
         assert.strictEqual(numberRangeComponent.internalValue.lower, "1");
-        assert.strictEqual(numberRangeComponent.modelValue.lower, 1);
+        assert.strictEqual(wrapper.props("modelValue")?.lower, 1);
     });
 
-    it.skip("Should not delete zeroes after decimal place while still typing in second box", async () => {
-        const wrapper = mount(wrappingComponent);
+    it("Should not delete zeroes after decimal place while still typing in second box", async () => {
+        const wrapper = getComponentWrapper();
         const input = wrapper.get("input[id$='_upper']");
         const inputElement = input.element as HTMLInputElement;
         const numberRangeComponent = wrapper.getComponent(NumberRangeBox).vm;
 
-        // Type in a value into 1st box with an ending of zeroes, then fire an event so the models will change.
+        // Make sure any pre-processing events finish up before we try to mess with things.
+        await nextTick();
+
+        // Type in a value into 2nd box with an ending of zeroes, then fire an input event so the internal model will change.
         inputElement.value = "1.00";
         await input.trigger("input");
+        await nextTick();
 
         // Verify the value for the NumberRangeBox still has zeroes, but the model is converted to a number without them
         assert.strictEqual(inputElement.value, "1.00");
         assert.strictEqual(numberRangeComponent.internalValue.upper, "1.00");
-        assert.strictEqual(numberRangeComponent.modelValue.upper, 1);
+        assert.strictEqual(wrapper.props("modelValue")?.upper, 1);
     });
 
     it("Should delete stray zeroes after decimal place from second box when done with it", async () => {
-        const wrapper = mount(wrappingComponent);
+        const wrapper = getComponentWrapper();
         const input = wrapper.get("input[id$='_upper']");
         const inputElement = input.element as HTMLInputElement;
         const numberRangeComponent = wrapper.getComponent(NumberRangeBox).vm;
 
-        // Type in a value into 1st box with an ending of zeroes, then fire an event so the models will change.
-        inputElement.value = "1.00";
-        await input.trigger("input"); // Set internal value to "1.00" like the previous test
-        await input.trigger("change"); // Fire change event too so it'll "finalize" the value and strip zeroes
+        // Make sure any pre-processing events finish up before we try to mess with things.
+        await nextTick();
+
+        // Type in a value into 1st box with an ending of zeroes, then fire all events so all the updates will happen.
+        await input.setValue("1.00");
+        await nextTick();
 
         // Verify the value for the NumberRangeBox still has zeroes, but the model is converted to a number without them
         assert.strictEqual(inputElement.value, "1");
         assert.strictEqual(numberRangeComponent.internalValue.upper, "1");
-        assert.strictEqual(numberRangeComponent.modelValue.upper, 1);
+        assert.strictEqual(wrapper.props("modelValue")?.upper, 1);
     });
 });

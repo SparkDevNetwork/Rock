@@ -552,6 +552,7 @@ textarea,
     &:hover {
       color: @btn-danger-bg;
       background: fade(@btn-danger-bg, 10%);
+      border-color: transparent;
     }
 
     &:focus,
@@ -1182,28 +1183,6 @@ td.grid-actions {
 
   .dropdown-menu {
     border: 0;
-
-    a {
-      &:hover {
-        color: @white;
-        background-color: var(--color-primary);
-        opacity: 1;
-      }
-    }
-
-    @media (min-width: @screen-sm-min) {
-      &::after {
-        position: absolute;
-        top: -8px;
-        left: 75px;
-        display: inline-block;
-        margin-left: -6px;
-        content: "";
-        border-right: 8px solid transparent;
-        border-bottom: 8px solid @white;
-        border-left: 8px solid transparent;
-      }
-    }
   }
 
   .header-content {
@@ -1549,6 +1528,16 @@ td.grid-actions {
     margin-bottom: 2px;
   }
 
+  .indicator-bottom {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background-color: var(--color-primary);
+    width: ~"calc(var(--size) * 0.2)";
+    height: ~"calc(var(--size) * 0.2)";
+    border-radius: ~"calc(var(--size) * 0.1)";
+  }
+
   &:hover,
   &:active {
     color: fade(@white, 50%);
@@ -1573,6 +1562,19 @@ td.grid-actions {
 
   @media (min-width: @grid-float-breakpoint) {
     --size: @navbar-element-height;
+  }
+}
+
+.dropdown-menu-reminders {
+  > li > a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .badge {
+    font-size: 10px;
+    margin-left: 4px;
   }
 }
 

@@ -1,0 +1,179 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-12">
+                <NotificationBox v-if="rebuildActionSuccessMessage" alertType="info">{{ rebuildActionSuccessMessage }}</NotificationBox>
+                <NotificationBox v-if="notificationMessage" alertType="info">{{ notificationMessage }}</NotificationBox>
+            </div>
+        </div>
+
+        <div class="row">
+            <div v-if="!hideControls" class="col-md-6">
+                <h5>Successful Attempts</h5>
+            </div>
+
+            <div v-if="!hideControls" class="col-md-3 col-sm-6 col-md-offset-3">
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Default"
+                            class="btn btn-default btn-square pull-right"
+                            @click="onRefresh"
+                            loadingText="..."
+                            :isLoading="isRefreshLoading">
+                    <i class="fa fa-refresh"></i>
+                </RockButton>
+                <SlidingDateRangePicker v-model="filterDate"
+                                        :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
+                                        :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
+                                        class="pull-right"
+                                        previewLocation="None" />
+            </div>
+
+            <div v-if="!hideChart" style="height: 350px;" class="col-md-12">
+                <Chart v-if="chartData" type="line" :data="chartData" :options="options" />
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { AchievementTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementTypeDetail/achievementTypeBag";
+    import { AchievementTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementTypeDetail/achievementTypeDetailOptionsBag";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { RangeType, SlidingDateRange, TimeUnit, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AchievementTypeBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<AchievementTypeDetailOptionsBag>,
+            required: true
+        },
+
+        rebuildActionSuccessMessage: String
+    });
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+    const isRefreshLoading = ref(false);
+    const filterDate = ref<SlidingDateRange>({ rangeType: RangeType.Current, timeUnit: TimeUnit.Year });
+    const notificationMessage = ref("");
+    const hideControls = ref<boolean>(!props.modelValue?.chartDataJSON);
+    const chartData = ref<ChartData>(JSON.parse(props.modelValue?.chartDataJSON ?? "{}"));
+    const hideChart = ref<boolean>(!props.modelValue?.chartDataJSON);
+    const options = ref<ChartOptions>({
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            duration: 1000
+        },
+        plugins: {
+            legend: {
+                position: "bottom",
+                align: "center",
+                display: false
+            },
+            tooltip: {
+                enabled: true
+            },
+        },
+        scales: {
+            y:
+            {
+                ticks: {
+                    callback: function (label, _index, _labels) {
+                        const date = Number(label);
+                        if (date) {
+                            return Intl.NumberFormat().format(date);
+                        }
+                        else {
+                            return label;
+                        }
+                    },
+                    stepSize: 1
+                },
+                stacked: false,
+                beginAtZero: true,
+                suggestedMax: 2
+            },
+
+        }
+    });
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // Watch for changes to the rebuild success message and refresh the chart if the achievement type is rebuild succcessfully.
+    watch(() => props.rebuildActionSuccessMessage, async () => {
+        if (props.rebuildActionSuccessMessage) {
+            await onRefresh();
+        }
+    });
+    // #endregion
+
+    // #region Event Handlers
+    /**
+     * Event handler for the Refresh button being clicked. Request new chart
+     * data from the server using the specified filter date.
+     */
+    async function onRefresh(): Promise<void> {
+        isRefreshLoading.value = true;
+        try {
+            const result = await invokeBlockAction<{ chartData: string }>("RefreshChart", {
+                dateRange: slidingDateRangeToString(filterDate.value)
+            });
+
+            if (result.isSuccess && result.data) {
+                chartData.value = JSON.parse(result.data.chartData ?? "{}") as ChartData;
+                hideChart.value = false;
+            }
+            else {
+                chartData.value = {} as ChartData;
+                hideChart.value = true;
+                notificationMessage.value = result.errorMessage ?? "Unknown error while trying to refresh chart.";
+            }
+        }
+        finally {
+            isRefreshLoading.value = false;
+        }
+    }
+    // #endregion
+</script>

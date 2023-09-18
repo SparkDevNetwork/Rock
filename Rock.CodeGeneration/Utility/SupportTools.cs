@@ -78,7 +78,7 @@ namespace Rock.CodeGeneration.Utility
             }
 
             // Read the XML documentation for the Rock.ViewModels assembly.
-            assemblyFileName = new FileInfo( new Uri( typeof( Rock.ViewModels.Utility.IViewModel ).Assembly.CodeBase ).LocalPath ).FullName;
+            assemblyFileName = new FileInfo( new Uri( typeof( Rock.ViewModels.Utility.EntityBagBase ).Assembly.CodeBase ).LocalPath ).FullName;
 
             try
             {

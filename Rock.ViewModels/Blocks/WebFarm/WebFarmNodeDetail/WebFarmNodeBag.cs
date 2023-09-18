@@ -22,6 +22,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class WebFarmNodeBag : EntityBagBase
     {
         /// <summary>
@@ -89,6 +93,6 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail
         /// <value>
         /// The chart HTML.
         /// </value>
-        public string ChartHtml { get; set; }
+        public string ChartData { get; set; }
     }
 }

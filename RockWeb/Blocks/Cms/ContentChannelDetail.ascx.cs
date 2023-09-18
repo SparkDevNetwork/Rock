@@ -35,6 +35,7 @@ using System.Web.UI.WebControls;
 using Rock.UniversalSearch;
 using System.Text;
 using Rock.Store;
+using Rock.Cms;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -182,6 +183,15 @@ namespace RockWeb.Blocks.Cms
 
                     ShowDialog();
                 }
+
+                if ( cbEnableContentLibrary.Checked )
+                {
+                    rblLicenseType.Required = true;
+                }
+                else
+                {
+                    rblLicenseType.Required = false;
+                } 
             }
         }
 
@@ -365,7 +375,7 @@ namespace RockWeb.Blocks.Cms
 
                 // Content Library configuration.
                 var contentLibraryConfiguration = contentChannel.ContentLibraryConfiguration ?? new ContentLibraryConfiguration();
-                contentLibraryConfiguration.IsEnabled = cblContentLibrarySettings.SelectedValues.Contains( "EnableContentLibrary" );
+                contentLibraryConfiguration.IsEnabled = cbEnableContentLibrary.Checked;
                 contentLibraryConfiguration.LicenseTypeValueGuid = rblLicenseType.SelectedValue.AsGuidOrNull();
                 contentLibraryConfiguration.SummaryAttributeGuid = ddlSummaryAttribute.SelectedValue.AsGuidOrNull();
                 contentLibraryConfiguration.AuthorAttributeGuid = ddlAuthorAttribute.SelectedValue.AsGuidOrNull();
@@ -476,6 +486,62 @@ namespace RockWeb.Blocks.Cms
             if ( !isStructuredContentChecked )
             {
                 dvEditorTool.SelectedDefinedValueId = null;
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblLicenseType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rblLicenseType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var selectedLicenseType = rblLicenseType.SelectedValueAsGuid();
+
+            if ( !selectedLicenseType.HasValue )
+            {
+                nbLicenseType.Visible = false;
+                return;
+            }
+
+            var contentChannelId = PageParameter( "ContentChannelId" ).AsIntegerOrNull();
+
+            if ( !contentChannelId.HasValue )
+            {
+                nbLicenseType.Visible = false;
+                return;
+            }
+
+            var contentChannel = GetContentChannel( contentChannelId.Value );
+
+            var contentLibraryConfiguration = contentChannel?.ContentLibraryConfiguration;
+
+            if ( contentLibraryConfiguration == null )
+            {
+                nbLicenseType.Visible = false;
+                return;
+            }
+
+            if ( contentLibraryConfiguration.LicenseTypeValueGuid.HasValue
+                 && contentLibraryConfiguration.LicenseTypeValueGuid != selectedLicenseType )
+            {
+                var oldLicenseType = DefinedValueCache.Get( contentLibraryConfiguration.LicenseTypeValueGuid.Value );
+                var newLicenseType = DefinedValueCache.Get( selectedLicenseType.Value );
+
+                if ( newLicenseType.Guid != Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_OPEN.AsGuid() )
+                {
+                    nbLicenseType.Text = $"Future items will be uploaded with the license of \"{newLicenseType.Value}\". Items previously uploaded will retain the \"{oldLicenseType.Value}\" license.";
+                }
+                else
+                {
+                    nbLicenseType.Text = $"Future items will be uploaded with the license of \"{newLicenseType.Value}\". Items previously uploaded will retain the \"{oldLicenseType.Value}\" license. If you would like to change your existing items to \"{newLicenseType.Value}\", please reach out to us at <a href=\"mailto:info@sparkdevnetwork.org\">info@sparkdevnetwork.org</a>.";
+                }
+
+                nbLicenseType.Visible = true;
+            }
+            else
+            {
+                nbLicenseType.Visible = false;
             }
         }
 
@@ -1169,7 +1235,7 @@ namespace RockWeb.Blocks.Cms
                     selectedValues.Remove( value );
                     cblControl.SetValues( selectedValues );
                 }
-            } 
+            }
         }
 
         /// <summary>
@@ -1274,10 +1340,8 @@ namespace RockWeb.Blocks.Cms
             var contentLibraryConfiguration = contentChannel.ContentLibraryConfiguration;
 
             // Enabled
-            if ( contentLibraryConfiguration?.IsEnabled == true )
-            {
-                cblContentLibrarySettings.SetValue( "EnableContentLibrary" );
-            }
+            var isContentLibraryEnabled = contentChannel.IsContentLibraryEnabled;
+            cbEnableContentLibrary.Checked = isContentLibraryEnabled;
 
             // License
             var availableLicenseGuids = new[]
@@ -1287,11 +1351,12 @@ namespace RockWeb.Blocks.Cms
                 Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_ORGANIZATION_ATTRIBUTION.AsGuid()
             };
 
+            rblLicenseType.Required = isContentLibraryEnabled;
             rblLicenseType.Items.Clear();
             foreach ( var licenseGuid in availableLicenseGuids )
             {
                 var license = DefinedValueCache.Get( licenseGuid );
-                
+
                 if ( license != null )
                 {
                     rblLicenseType.Items.Add( new ListItem { Text = license.Value, Value = license.Guid.ToString() } );
@@ -1310,7 +1375,25 @@ namespace RockWeb.Blocks.Cms
             ddlImageAttribute.SetValue( contentLibraryConfiguration?.ImageAttributeGuid );
 
             // Link Organization
-            nbLinkYourOrganization.Visible = !StoreService.OrganizationIsConfigured();
+            var isOrganizationConfigured = StoreService.OrganizationIsConfigured();
+
+            if ( !isOrganizationConfigured )
+            {
+                nbLinkYourOrganization.Text = $"Your Rock instance is currently not associated with any organization. To proceed, <a href=\"/page/358?ReturnUrl={GetCurrentPageUrl().UrlEncode()}\">please link your instance to an organization</a>.";
+                nbLinkYourOrganization.Visible = true;
+
+                // Although we are hiding the fields here,
+                // we still want to set them in the code above
+                // so saving retains the values.
+                // Once the organization is [re]linked,
+                // then the fields should be displayed with the expected values.
+                phContentLibraryFields.Visible = false;
+            }
+            else
+            {
+                nbLinkYourOrganization.Visible = false;
+                phContentLibraryFields.Visible = true;
+            }
         }
 
         /// <summary>
@@ -1337,7 +1420,7 @@ namespace RockWeb.Blocks.Cms
                         .Where( a =>
                             a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
                             a.EntityTypeQualifierValue.Equals( contentChannelTypeId.Value.ToString() ) )
-                        .Select( a => new { Text = a.Name + " (inherited from Content Channel Type)", Value = a.Guid.ToString() } );
+                        .Select( a => new { Text = a.Name, Value = a.Guid.ToString() } );
 
                     if ( listItems == null )
                     {
@@ -1376,56 +1459,5 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-
-        protected void rblLicenseType_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            var selectedLicenseType = rblLicenseType.SelectedValueAsGuid();
-
-            if ( !selectedLicenseType.HasValue )
-            {
-                nbLicenseType.Visible = false;
-                return;
-            }
-
-            var contentChannelId = PageParameter( "ContentChannelId" ).AsIntegerOrNull();
-
-            if ( !contentChannelId.HasValue )
-            {
-                nbLicenseType.Visible = false;
-                return;
-            }
-
-            var contentChannel = GetContentChannel( contentChannelId.Value );
-
-            var contentLibraryConfiguration = contentChannel?.ContentLibraryConfiguration;
-
-            if ( contentLibraryConfiguration == null )
-            {
-                nbLicenseType.Visible = false;
-                return;
-            }
-
-            if ( contentLibraryConfiguration.LicenseTypeValueGuid.HasValue
-                 && contentLibraryConfiguration.LicenseTypeValueGuid != selectedLicenseType )
-            {
-                var oldLicenseType = DefinedValueCache.Get( contentLibraryConfiguration.LicenseTypeValueGuid.Value );
-                var newLicenseType = DefinedValueCache.Get( selectedLicenseType.Value );
-
-                if ( newLicenseType.Guid != Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_OPEN.AsGuid() )
-                {
-                    nbLicenseType.Text = $"Future items will be uploaded with the license of \"{newLicenseType.Value}\". Items previously uploaded will retain the \"{oldLicenseType.Value}\" license.";
-                }
-                else
-                {
-                    nbLicenseType.Text = $"Future items will be uploaded with the license of \"{newLicenseType.Value}\". Items previously uploaded will retain the \"{oldLicenseType.Value}\" license. If you would like to change your existing items to \"{newLicenseType.Value}\", please reach out to us at <a href=\"mailto:info@sparkdevnetwork.org\">info@sparkdevnetwork.org</a>.";
-                }
-
-                nbLicenseType.Visible = true;
-            }
-            else
-            {
-                nbLicenseType.Visible = false;
-            }
-        }
     }
 }

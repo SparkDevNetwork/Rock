@@ -16,7 +16,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosProgressEvent, AxiosResponse } from "axios";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { HttpBodyData, HttpMethod, HttpFunctions, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
 import { inject, provide } from "vue";
@@ -194,8 +194,8 @@ async function uploadFile(url: string, data: FormData, progress: UploadProgressC
         headers: {
             "Content-Type": "multipart/form-data"
         },
-        onUploadProgress: (event: ProgressEvent) => {
-            if (progress) {
+        onUploadProgress: (event: AxiosProgressEvent) => {
+            if (progress && event.total !== undefined) {
                 progress(event.loaded, event.total, Math.floor(event.loaded * 100 / event.total));
             }
         }

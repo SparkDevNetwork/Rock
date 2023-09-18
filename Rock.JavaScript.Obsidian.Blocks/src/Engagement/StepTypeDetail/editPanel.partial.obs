@@ -1,0 +1,552 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="iconCssClass"
+                         label="Icon CSS Class"
+                         help="The Font Awesome icon class to use when displaying steps of this type." />
+                <CheckBox v-model="allowMultiple"
+                          label="Allow Multiple"
+                          text="Yes"
+                          help="Determines if a person can complete a step more than once." />
+                <CheckBox v-model="hasEndDate"
+                          label="Spans Time"
+                          text="Yes"
+                          help="Determines if the step occurs at a specific point or over a period of time." />
+                <CheckBox v-model="showCountOnBadge"
+                          label="Show Count on Badge"
+                          help="Determines if the count of the number of times a step has been completed should be shown on the badge for the person profile page."
+                          checked="false"
+                          text="Yes" />
+            </div>
+            <div class="col-md-6">
+                <ColorPicker v-model="highlightColor"
+                             label="Highlight Color"
+                             help="The color to use when displaying steps of this type." />
+                <CheckBoxList v-model="preRequisites"
+                              :items="availablePreRequisites"
+                              label="Prerequisite Steps"
+                              help="The steps that must be completed prior to this step."
+                              vertical />
+                <CheckBox v-model="isDateRequired"
+                          label="Is Date Required"
+                          help="Determines if the date for the step is required."
+                          text="Yes" />
+            </div>
+
+            <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="3" />
+
+        </div>
+
+        <Panel title="Step Attributes" :hasCollapse="true" :isDrawerOpen="true">
+            <Grid :definition="props.modelValue.stepTypeAttributesGridDefinition ?? undefined"
+                  :data="attributesGridDataSource"
+                  light
+                  keyField="idKey"
+                  itemTerm="Attribute"
+                  liveUpdates
+                  :onAddItem="onAddAttribute">
+
+                <TextColumn name="attributeName"
+                            title="Name"
+                            field="attributeName"
+                            :filter="textValueFilter"
+                            visiblePriority="xs" />
+
+                <TextColumn name="fieldType"
+                            title="Field Type"
+                            field="fieldType"
+                            :filter="textValueFilter"
+                            visiblePriority="lg" />
+
+                <BooleanColumn name="allowSearch"
+                               title="Allow Search"
+                               field="allowSearch"
+                               visiblePriority="xs" />
+
+                <EditColumn :onClick="onEditAttribute" />
+                <DeleteColumn :onClick="onDeleteAttribute" />
+            </Grid>
+
+            <Modal v-model="isAttributeModalOpen" title="Step Attributes">
+
+                <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
+                    <AttributeEditor v-model="stepAttribute" :reservedKeyNames="reservedKeyNames" />
+                </RockForm>
+
+                <template #customButtons>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onStartSaveAttribute">Save</RockButton>
+                </template>
+
+            </Modal>
+        </Panel>
+
+        <Panel title="Workflows" :hasCollapse="true" :isDrawerOpen="true">
+
+            <Grid :definition="props.modelValue.workflowTriggerGridDefinition ?? undefined"
+                  :data="workflowTriggersGridDataSource"
+                  light
+                  keyField="idKey"
+                  itemTerm="Workflow"
+                  liveUpdates
+                  :onAddItem="onAddWorkflow">
+
+                <TextColumn name="workflowType"
+                            title="Workflow Type"
+                            field="workflowType"
+                            :filter="textValueFilter"
+                            visiblePriority="xs" />
+
+                <TextColumn name="workflowTrigger"
+                            title="Trigger"
+                            field="workflowTrigger"
+                            :filter="textValueFilter"
+                            visiblePriority="lg" />
+
+                <EditColumn :onClick="onEditWorkflow" />
+                <DeleteColumn :onClick="onDeleteWorkflow" />
+            </Grid>
+
+            <Modal v-model="isWorkflowModalOpen" title="Select Workflow">
+
+                <RockForm v-model:submit="submitWorkflowTrigger" @submit="onSaveWorkflow">
+
+                    <fieldset>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <DropDownList v-model="triggerType"
+                                              :items="triggerTypes"
+                                              label="Launch Workflow When"
+                                              rules="required" />
+                            </div>
+                            <div class="col-md-6">
+                                <WorkflowTypePicker v-model="stepWorkflowTrigger.workflowType"
+                                                    label="Workflow Type"
+                                                    rules="required" />
+                            </div>
+                        </div>
+                        <div class="row" v-if="showQualifiers">
+                            <div class="col-md-6">
+                                <DropDownList v-model="primaryQualifier" :items="stepStatuses" label="From" showBlankItem />
+                                <DropDownList v-model="secondaryQualifier" :items="stepStatuses" label="To" showBlankItem />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                </RockForm>
+
+                <template #customButtons>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onStartSaveWorkflowTrigger">Save</RockButton>
+                </template>
+
+            </Modal>
+        </Panel>
+
+        <Panel title="Advanced Settings" :hasCollapse="true" :isDrawerOpen="false">
+            <div class="row">
+                <div class="col-md-2">
+                    <DataViewPicker v-if="audienceDataView.value"
+                                    v-model="audienceDataView"
+                                    label="Audience Data View"
+                                    help="A Data View that returns a list of people who are eligible to take this step." />
+                    <DataViewPicker v-else
+                                    v-model="autoCompleteDataView"
+                                    label="Auto-Complete Data View"
+                                    help="A Data View that returns a list of people who should be regarded as having completed this step." />
+                </div>
+                <div class="col-md-6 col-md-offset-4">
+                    <CheckBox v-model="allowManualEditing"
+                              label="Allow Manual Edit"
+                              help="Can the step be manually added or edited?"
+                              text="Yes" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <CodeEditor v-model="cardLavaTemplate"
+                                :editorHeight="200"
+                                mode="lava"
+                                theme="rock"
+                                label="Card Content Lava Template"
+                                help="The template to use when formatting the summary card for this step." />
+                </div>
+            </div>
+
+        </Panel>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch, computed, reactive } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import Grid, { BooleanColumn, EditColumn, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { StepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeBag";
+    import { StepTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeDetailOptionsBag";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { StepAttributeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepAttributeBag";
+    import { StepTypeWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeWorkflowTriggerBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<StepTypeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<StepTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: StepTypeBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
+    const highlightColor = propertyRef(props.modelValue.highlightColor ?? "", "HighlightColor");
+    const allowMultiple = propertyRef(props.modelValue.allowMultiple, "AllowMultiple");
+    const hasEndDate = propertyRef(props.modelValue.hasEndDate, "HasEndDate");
+    const showCountOnBadge = propertyRef(props.modelValue.showCountOnBadge, "ShowCountOnBadge");
+    const isDateRequired = propertyRef(props.modelValue.isDateRequired, "IsDateRequired");
+    const autoCompleteDataView = propertyRef(props.modelValue.autoCompleteDataView ?? {}, "AutoCompleteDataViewId");
+    const audienceDataView = propertyRef(props.modelValue.audienceDataView ?? {}, "AudienceDataViewId");
+    const allowManualEditing = propertyRef(props.modelValue.allowManualEditing, "AllowManualEditing");
+    const preRequisites = ref(props.modelValue.preRequisites ?? []);
+    const availablePreRequisites = ref(props.modelValue.availablePreRequisites ?? []);
+    const cardLavaTemplate = propertyRef(props.modelValue.cardLavaTemplate ?? "", "CardLavaTemplate");
+
+    const isWorkflowModalOpen = ref(false);
+    const triggerType = ref("");
+    const triggerTypes = ref(props.options.triggerTypes ?? []);
+    const stepStatuses = ref(props.options.stepStatuses ?? []);
+    const primaryQualifier = ref("");
+    const secondaryQualifier = ref("");
+    const stepWorkflowTrigger = ref<StepTypeWorkflowTriggerBag>({});
+    const stepWorkflowTriggers = ref(props.modelValue.workflows ?? []);
+    const submitWorkflowTrigger = ref(false);
+    const workflowTriggersGridData = reactive(props.modelValue.workflowTriggerGridData ?? {});
+    const workflowTriggersGridDataSource = ref<GridDataBag>(workflowTriggersGridData);
+
+    const stepAttributes = ref(props.modelValue.stepAttributes ?? []);
+    const isAttributeModalOpen = ref(false);
+    const submitEditAttribute = ref(false);
+    const stepAttribute = ref<PublicEditableAttributeBag | null>(null);
+    const reservedKeyNames = ref<string[]>([]);
+    const attributesGridData = reactive(props.modelValue.stepTypeAttributesGridData ?? {});
+    const attributesGridDataSource = ref<GridDataBag>(attributesGridData);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, iconCssClass, highlightColor, allowMultiple, hasEndDate, showCountOnBadge, isDateRequired,
+        autoCompleteDataView, audienceDataView, allowManualEditing, cardLavaTemplate];
+
+    // #endregion
+
+    // #region Computed Values
+    const showQualifiers = computed(() => {
+        return triggerType.value === "StatusChanged";
+    });
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    const onAddWorkflow = (): void => {
+        // Reset statuses and show modal.
+        stepWorkflowTrigger.value = {};
+        triggerType.value = "";
+        primaryQualifier.value = "";
+        secondaryQualifier.value = "";
+        isWorkflowModalOpen.value = true;
+    };
+
+    const onEditWorkflow = (key: string): void => {
+        const workflow = stepWorkflowTriggers.value.find(x => x.idKey == key);
+        if (workflow) {
+            stepWorkflowTrigger.value = workflow;
+            triggerType.value = workflow.workflowTrigger?.value ?? "";
+            primaryQualifier.value = workflow.primaryQualifier ?? "";
+            secondaryQualifier.value = workflow.secondaryQualifier ?? "";
+        }
+        isWorkflowModalOpen.value = true;
+    };
+
+    const onDeleteWorkflow = async (key: string): Promise<void> => {
+        // Close modal and remove deleted trigger from the current collection  of triggers.
+        isWorkflowModalOpen.value = false;
+        stepWorkflowTriggers.value = stepWorkflowTriggers.value.filter(s => s.idKey !== key);
+
+        // Update the grid.
+        if (workflowTriggersGridData.rows) {
+            const index = workflowTriggersGridData.rows.findIndex(r => r["idKey"] === key);
+
+            if (index !== -1) {
+                workflowTriggersGridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    const onSaveWorkflow = (): void => {
+        isWorkflowModalOpen.value = false;
+        const selectedTriggerType = triggerTypes.value.find(t => t.value == triggerType.value);
+
+        if (triggerType.value && stepWorkflowTrigger.value.workflowType?.value && workflowTriggersGridData.rows) {
+            const index = stepWorkflowTriggers.value.findIndex(a => (a.idKey === stepWorkflowTrigger.value.idKey));
+
+            if (index !== -1) {
+                // Get the updated WorkflowTrigger and RowItem.
+                let editedWorkflowTrigger = stepWorkflowTriggers.value.find(a => a.idKey == stepWorkflowTrigger.value.idKey);
+                let rowItem = workflowTriggersGridData.rows.find(x => x["idKey"] == stepWorkflowTrigger.value.idKey);
+
+                if (editedWorkflowTrigger && rowItem) {
+                    // Replace old WorkflowTrigger with updated WorkflowTrigger.
+                    editedWorkflowTrigger.workflowTrigger = selectedTriggerType;
+                    editedWorkflowTrigger.primaryQualifier = primaryQualifier.value;
+                    editedWorkflowTrigger.secondaryQualifier = secondaryQualifier.value;
+                    stepWorkflowTriggers.value.splice(index, 1, editedWorkflowTrigger);
+
+                    // Update the GridRowItem with changes
+                    const rowIndex = workflowTriggersGridData.rows.findIndex(r => r["idKey"] === stepWorkflowTrigger.value.idKey);
+                    rowItem = getWorkflowTriggerGridRowItem(editedWorkflowTrigger);
+                    workflowTriggersGridData.rows?.splice(rowIndex, 1, rowItem);
+                }
+            }
+            else {
+                // Create new entry and set the size of the current triggers as a pseudo id so
+                // it can be tracked for frontend edits and deletes
+                const currentLength = stepWorkflowTriggers.value.length + 1;
+                const newWorkflowTrigger: StepTypeWorkflowTriggerBag = {
+                    workflowTrigger: selectedTriggerType,
+                    workflowType: stepWorkflowTrigger.value.workflowType,
+                    primaryQualifier: primaryQualifier.value,
+                    secondaryQualifier: secondaryQualifier.value,
+                    idKey: currentLength.toString()
+                };
+                stepWorkflowTriggers.value.push(newWorkflowTrigger);
+
+                // Add new RowItem to the grid to represent the newly added trigger.
+                const newRowItem = getWorkflowTriggerGridRowItem(newWorkflowTrigger);
+                workflowTriggersGridData.rows.push(newRowItem);
+            }
+        }
+
+        stepWorkflowTrigger.value = {};
+        triggerType.value = "";
+        primaryQualifier.value = "";
+        secondaryQualifier.value = "";
+    };
+
+    const getWorkflowTriggerGridRowItem = (workflowTrigger: StepTypeWorkflowTriggerBag): Record<string, unknown> => {
+        const rowItem: Record<string, unknown> = {};
+
+        rowItem["idKey"] = workflowTrigger?.idKey;
+        rowItem["workflowType"] = workflowTrigger.workflowType?.text;
+        rowItem["workflowTrigger"] = workflowTrigger.workflowTrigger?.text;
+
+        return rowItem;
+    };
+
+    const onStartSaveWorkflowTrigger = (): void => {
+        submitWorkflowTrigger.value = true;
+    };
+
+    const onAddAttribute = async (): Promise<void> => {
+        stepAttribute.value = {
+            fieldTypeGuid: FieldType.Text,
+        } as PublicEditableAttributeBag;
+        isAttributeModalOpen.value = true;
+    };
+
+    const onEditAttribute = async (key: string): Promise<void> => {
+
+        const selectedStepAttribute = stepAttributes.value.find(x => x.attribute?.key === key);
+        // If attribute exists set it as current attribute for editing.
+        if (selectedStepAttribute?.attribute) {
+            stepAttribute.value = selectedStepAttribute.attribute;
+            isAttributeModalOpen.value = true;
+        }
+        else {
+            stepAttribute.value = {
+                fieldTypeGuid: FieldType.Text,
+            } as PublicEditableAttributeBag;
+            isAttributeModalOpen.value = true;
+        }
+    };
+
+    const onDeleteAttribute = async (key: string): Promise<void> => {
+        // Close modal and remove deleted attribute from the current collection of attributes.
+        isAttributeModalOpen.value = false;
+        stepAttributes.value = stepAttributes.value.filter(s => s.attribute?.key !== key);
+
+        // Update the grid.
+        if (attributesGridData.rows) {
+            const index = attributesGridData.rows.findIndex(r => r["idKey"] === key);
+
+            if (index !== -1) {
+                attributesGridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    const onSaveAttribute = (): void => {
+
+        if (stepAttribute.value && stepAttributes.value && attributesGridData.rows) {
+            const index = stepAttributes.value.findIndex(a => a.attribute?.guid === stepAttribute.value?.guid && a.attribute?.key === stepAttribute.value?.key);
+
+            if (index !== -1) {
+                // Get the updated attribute and rowItem.
+                let editedAttribute = stepAttributes.value.find(a => a.attribute?.guid == stepAttribute.value?.guid);
+                let rowItem = attributesGridData.rows.find(x => x["idKey"] == stepAttribute.value?.key);
+
+                if (editedAttribute && rowItem) {
+                    // Replace old attribute with updated attribute.
+                    editedAttribute.attribute = stepAttribute.value;
+                    stepAttributes.value.splice(index, 1, editedAttribute);
+
+                    // Update GridRowItem so changes are reflected in the UI.
+                    const rowIndex = attributesGridData.rows.findIndex(r => r["idKey"] === stepAttribute.value?.key);
+                    rowItem = getAttributeGridRowItem(editedAttribute);
+                    attributesGridData.rows?.splice(rowIndex, 1, rowItem);
+                }
+            }
+            else {
+                // Create new attribute if existing attribute with same key was not found.
+                const newStepAttribute: StepAttributeBag = {
+                    attribute: stepAttribute.value,
+                    fieldType: "",
+                };
+                stepAttributes.value.push(newStepAttribute);
+
+                // Add new RowItem to the grid to represent the newly added attribute.
+                const newRowItem = getAttributeGridRowItem(newStepAttribute);
+                attributesGridData.rows.push(newRowItem);
+            }
+
+            reservedKeyNames.value.push(stepAttribute.value.key ?? "");
+            stepAttribute.value = null;
+            isAttributeModalOpen.value = false;
+        }
+    };
+
+    const getAttributeGridRowItem = (stepAttribute: StepAttributeBag): Record<string, unknown> => {
+        const rowItem: Record<string, unknown> = {};
+
+        rowItem["idKey"] = stepAttribute.attribute?.key;
+        rowItem["attributeName"] = stepAttribute.attribute?.name;
+        rowItem["fieldType"] = stepAttribute.fieldType;
+        rowItem["allowSearch"] = stepAttribute.attribute?.isAllowSearch;
+
+        return rowItem;
+    };
+
+    const onStartSaveAttribute = (): void => {
+        submitEditAttribute.value = true;
+    };
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
+        updateRefValue(highlightColor, props.modelValue.highlightColor ?? "");
+        updateRefValue(allowMultiple, props.modelValue.allowMultiple ?? false);
+        updateRefValue(hasEndDate, props.modelValue.hasEndDate ?? false);
+        updateRefValue(showCountOnBadge, props.modelValue.showCountOnBadge ?? false);
+        updateRefValue(isDateRequired, props.modelValue.isDateRequired ?? false);
+        updateRefValue(autoCompleteDataView, props.modelValue.autoCompleteDataView ?? {});
+        updateRefValue(allowManualEditing, props.modelValue.allowManualEditing ?? false);
+        updateRefValue(preRequisites, props.modelValue.preRequisites ?? []);
+        updateRefValue(availablePreRequisites, props.modelValue.availablePreRequisites ?? []);
+        updateRefValue(cardLavaTemplate, props.modelValue.cardLavaTemplate ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, stepAttributes, stepWorkflowTriggers, ...propRefs], () => {
+        const newValue: StepTypeBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            iconCssClass: iconCssClass.value,
+            highlightColor: highlightColor.value,
+            allowMultiple: allowMultiple.value,
+            hasEndDate: hasEndDate.value,
+            showCountOnBadge: showCountOnBadge.value,
+            isDateRequired: isDateRequired.value,
+            autoCompleteDataView: autoCompleteDataView.value,
+            allowManualEditing: allowManualEditing.value,
+            preRequisites: preRequisites.value,
+            cardLavaTemplate: cardLavaTemplate.value,
+            stepAttributes: stepAttributes.value,
+            workflows: stepWorkflowTriggers.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -103,7 +103,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     var formBuilderEntityTypeId = EntityTypeCache.Get( typeof( Rock.Workflow.Action.FormBuilder ) ).Id;
                     var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId.Value );
 
-                    if ( workflowType != null && workflowType.IsFormBuilder && workflowType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                    if ( workflowType != null && workflowType.IsFormBuilder && workflowType.Category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                     {
                         var actionForm = workflowType.ActivityTypes
                             .SelectMany( a => a.ActionTypes )
@@ -150,6 +150,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 actionForm.PersonEntryHideIfCurrentPersonKnown = formSettings.PersonEntry.HideIfCurrentPersonKnown;
                 actionForm.PersonEntryMaritalStatusEntryOption = formSettings.PersonEntry.MaritalStatus.ToPersonEntryOption();
                 actionForm.PersonEntryMobilePhoneEntryOption = formSettings.PersonEntry.MobilePhone.ToPersonEntryOption();
+                actionForm.PersonEntrySmsOptInEntryOption = formSettings.PersonEntry.SmsOptIn.ToShowHideOption();
                 actionForm.PersonEntryRecordStatusValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( formSettings.PersonEntry.RecordStatus );
                 actionForm.PersonEntryCampusIsVisible = formSettings.PersonEntry.ShowCampus;
                 actionForm.PersonEntrySpouseEntryOption = formSettings.PersonEntry.SpouseEntry.ToPersonEntryOption();
@@ -463,6 +464,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     HideIfCurrentPersonKnown = actionForm.PersonEntryHideIfCurrentPersonKnown,
                     MaritalStatus = actionForm.PersonEntryMaritalStatusEntryOption.ToFormFieldVisibility(),
                     MobilePhone = actionForm.PersonEntryMobilePhoneEntryOption.ToFormFieldVisibility(),
+                    SmsOptIn = actionForm.PersonEntrySmsOptInEntryOption.ToFormFieldShowHide(),
                     RecordStatus = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryRecordStatusValueId ),
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption.ToFormFieldVisibility(),

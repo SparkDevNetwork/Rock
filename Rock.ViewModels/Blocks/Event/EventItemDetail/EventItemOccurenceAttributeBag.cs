@@ -19,6 +19,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Event.EventItemDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class EventItemOccurenceAttributeBag
     {
         /// <summary>

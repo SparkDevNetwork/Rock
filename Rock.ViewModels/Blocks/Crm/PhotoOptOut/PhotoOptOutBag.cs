@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Crm.PhotoOptOut
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class PhotoOptOutBag
     {
         /// <summary>

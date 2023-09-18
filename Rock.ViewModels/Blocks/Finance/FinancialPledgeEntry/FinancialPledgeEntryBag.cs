@@ -21,6 +21,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class FinancialPledgeEntryBag : EntityBagBase
     {
         /// <summary>

@@ -30,17 +30,14 @@ export type GroupRegistrationBag = {
     /** Gets or sets the email. */
     email?: string | null;
 
-    /** Gets or sets a value indicating whether [enable SMS]. */
-    enableSms: boolean;
-
-    /** Gets or sets a value indicating whether [enable spouse SMS]. */
-    enableSpouseSms: boolean;
-
     /** Gets or sets the first name. */
     firstName?: string | null;
 
     /** Gets or sets the home phone. */
     homePhone?: string | null;
+
+    /** Gets or sets a value indicating whether [enable SMS]. */
+    isMessagingEnabled: boolean;
 
     /** Gets or sets the last name. */
     lastName?: string | null;
@@ -56,6 +53,9 @@ export type GroupRegistrationBag = {
 
     /** Gets or sets the first name of the spouse. */
     spouseFirstName?: string | null;
+
+    /** Gets or sets a value indicating whether [enable spouse SMS]. */
+    spouseIsMessagingEnabled: boolean;
 
     /** Gets or sets the last name of the spouse. */
     spouseLastName?: string | null;

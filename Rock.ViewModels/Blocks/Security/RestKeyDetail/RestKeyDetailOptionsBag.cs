@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Security.RestKeyDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class RestKeyDetailOptionsBag
     {
     }

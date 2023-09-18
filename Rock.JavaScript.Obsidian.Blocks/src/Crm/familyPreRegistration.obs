@@ -36,7 +36,7 @@
                                     :disabled="isSaving || isNavigating"
                                     :disallowPastDateSelection="true"
                                     label="Planned Visit Date"
-                                    :rules="config.visitDateField.isRequired ? ['required'] : []" />
+                                    :rules="config.visitDateField.isRequired ? 'required' : ''" />
                             </div>
                             <div v-if="config.visitDateField?.isDateAndTimeShown" class="col-md-7">
                                 <div class="row">
@@ -46,7 +46,7 @@
                                             :disabled="isSaving || isNavigating"
                                             :items="scheduleDateItems"
                                             label="Planned Visit Date"
-                                            :rules="config.visitDateField.isRequired ? ['required'] : []"
+                                            :rules="config.visitDateField.isRequired ? 'required' : ''"
                                             :showBlankItem="config.visitDateField.isOptional" />
                                     </div>
                                     <div class="col-sm-6">
@@ -55,7 +55,7 @@
                                             :disabled="isSaving || isNavigating"
                                             :items="scheduleTimeItems"
                                             label="Planned Visit Time"
-                                            :rules="config.visitDateField.isRequired ? ['required'] : []"
+                                            :rules="config.visitDateField.isRequired ? 'required' : ''"
                                             :showBlankItem="config.visitDateField.isOptional" />
                                     </div>
                                 </div>
@@ -105,7 +105,7 @@
                                         v-model="adult1.genderStringValue"
                                         :disabled="isSaving || isNavigating"
                                         label="Gender"
-                                        :rules="isAdult1Entered && config.adultGenderField.isRequired ? 'required' : []" />
+                                        :rules="config.adultGenderField.isRequired ? adult1RequiredGenderRules : ''" />
                                 </div>
                                 <div class="col-sm-6">
                                     <DefinedValuePicker
@@ -115,7 +115,7 @@
                                         :disabled="isSaving || isNavigating"
                                         label="Suffix"
                                         lazyMode="lazy"
-                                        :rules="isAdult1Entered && config.adultSuffixField.isRequired ? 'required' : []"
+                                        :rules="config.adultSuffixField.isRequired ? adult1RequiredRules : ''"
                                         :showBlankItem="true" />
                                 </div>
                             </div>
@@ -126,7 +126,8 @@
                                         v-model="adult1.birthDate"
                                         :disabled="isSaving || isNavigating"
                                         label="Birth Date"
-                                        :rules="isAdult1Entered && config.adultBirthdayField.isRequired ? 'required' : ''" />
+                                        :rules="config.adultBirthdayField.isRequired ? [createRuleWithSuffix(monthAndDayAndYearRequiredRule, 'for First Adult'), 'required'] :
+                                                config.adultBirthdayField.isMonthAndDayRequired ? createRuleWithSuffix(monthAndDayRequiredRule, 'for First Adult') : ''" />
                                 </div>
                                 <div class="col-sm-6">
                                     <DefinedValuePicker
@@ -136,7 +137,7 @@
                                         :disabled="isSaving || isNavigating"
                                         label="Marital Status"
                                         lazyMode="lazy"
-                                        :rules="isAdult1Entered && config.adultMaritalStatusField.isRequired ? 'required': ''"
+                                        :rules="config.adultMaritalStatusField.isRequired ? adult1RequiredRules : ''"
                                         :showBlankItem="true" />
                                 </div>
                             </div>
@@ -148,7 +149,7 @@
                                         v-model:countryCode="adult1.mobilePhoneCountryCode"
                                         :disabled="isSaving || isNavigating"
                                         label="Mobile Phone"
-                                        :rules="isAdult1Entered && config.adultMobilePhoneField.isRequired ? 'required' : []" />
+                                        :rules="config.adultMobilePhoneField.isRequired ? adult1RequiredRules : ''" />
                                 </div>
                                 <div class="col-sm-6">
                                     <CheckBox
@@ -166,7 +167,7 @@
                                         v-model="adult1.email"
                                         :disabled="isSaving || isNavigating"
                                         label="Email"
-                                        :rules="isAdult1Entered && config.adultEmailField.isRequired ? 'required' : []" />
+                                        :rules="config.adultEmailField.isRequired ? adult1RequiredRules : []" />
                                 </div>
                                 <div class="col-sm-6">
                                     <RadioButtonList
@@ -179,7 +180,7 @@
                                             { text: 'SMS', value: CommunicationPreference.SMS.toString() }
                                         ]"
                                         label="Communication Preference"
-                                        :rules="isAdult1Entered && config.adultCommunicationPreferenceField.isRequired ? 'required' : ''" />
+                                        :rules="config.adultCommunicationPreferenceField.isRequired ? adult1RequiredRules : ''" />
                                 </div>
                             </div>
                             <div class="row">
@@ -188,7 +189,7 @@
                                         v-if="config.adultRaceField?.isShown"
                                         v-model="adult1.raceListItemBag"
                                         :disabled="isSaving || isNavigating"
-                                        :rules="isAdult1Entered && config.adultRaceField.isRequired ? 'required' : []"
+                                        :rules="config.adultRaceField.isRequired ? adult1RequiredRules : ''"
                                         :showBlankItem="true" />
                                 </div>
                                 <div class="col-sm-6">
@@ -196,18 +197,19 @@
                                         v-if="config.adultEthnicityField?.isShown"
                                         v-model="adult1.ethnicityListItemBag"
                                         :disabled="isSaving || isNavigating"
-                                        :rules="isAdult1Entered && config.adultEthnicityField.isRequired ? 'required' : []"
+                                        :rules="config.adultEthnicityField.isRequired ? adult1RequiredRules : ''"
                                         :showBlankItem="true" />
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div v-if="config.adultProfilePhotoField?.isShown" class="col-sm-6">
-                                    <ImageUploader
+                                    <ImageEditor
                                         v-model="adult1.profileImageListItemBag"
+                                        :binaryFileTypeGuid="BinaryFiletype.PersonImage"
                                         :disabled="isSaving || isNavigating"
                                         label="Profile Photo"
-                                        :rules="isAdult1Entered && config.adultProfilePhotoField.isRequired ? 'required' : ''" />
+                                        :rules="config.adultProfilePhotoField.isRequired ? adult1RequiredRules : ''" />
                                 </div>
                             </div>
 
@@ -285,7 +287,7 @@
                                             v-model="adult2.firstName"
                                             :disabled="isSaving || isNavigating"
                                             label="First Name"
-                                            :rules="[atLeastOneAdultFirstNameRule, adult2FirstNameRule]" />
+                                            :rules="[adult2FirstNameRule]" />
                                         </div>
                                     <div class="col-sm-6">
                                         <StaticFormControl
@@ -305,7 +307,7 @@
                                             v-model="adult2.genderStringValue"
                                             :disabled="isSaving || isNavigating"
                                             label="Gender"
-                                            :rules="isAdult2Entered && config.adultGenderField.isRequired ? 'required' : []" />
+                                            :rules="isAdult2Entered && config.adultGenderField.isRequired ? adult2RequiredGenderRules : ''" />
                                     </div>
                                     <div v-if="config.adultSuffixField?.isShown" class="col-sm-6">
                                         <DefinedValuePicker
@@ -314,7 +316,7 @@
                                             :disabled="isSaving || isNavigating"
                                             label="Suffix"
                                             lazyMode="lazy"
-                                            :rules="isAdult2Entered && config.adultSuffixField.isRequired ? 'required' : []"
+                                            :rules="isAdult2Entered && config.adultSuffixField.isRequired ? adult2RequiredRules : ''"
                                             :showBlankItem="true" />
                                     </div>
                                 </div>
@@ -324,7 +326,8 @@
                                             v-model="adult2.birthDate"
                                             :disabled="isSaving || isNavigating"
                                             label="Birth Date"
-                                            :rules="isAdult2Entered && config.adultBirthdayField.isRequired ? 'required' : ''" />
+                                            :rules="isAdult2Entered && config.adultBirthdayField.isRequired ? [createRuleWithSuffix(monthAndDayAndYearRequiredRule, 'for Second Adult'), 'required'] :
+                                                    isAdult2Entered && config.adultBirthdayField.isMonthAndDayRequired ? createRuleWithSuffix(monthAndDayRequiredRule, 'for Second Adult') : ''" />
                                     </div>
                                     <div v-if="config.adultMaritalStatusField?.isShown" class="col-sm-6">
                                         <DefinedValuePicker
@@ -333,7 +336,7 @@
                                             :disabled="isSaving || isNavigating"
                                             label="Marital Status"
                                             lazyMode="lazy"
-                                            :rules="isAdult2Entered && config.adultMaritalStatusField.isRequired ? 'required': ''"
+                                            :rules="isAdult2Entered && config.adultMaritalStatusField.isRequired ? adult2RequiredRules: ''"
                                             :showBlankItem="true" />
                                     </div>
                                 </div>
@@ -345,7 +348,7 @@
                                             v-model:countryCode="adult2.mobilePhoneCountryCode"
                                             :disabled="isSaving || isNavigating"
                                             label="Mobile Phone"
-                                            :rules="isAdult2Entered && config.adultMobilePhoneField.isRequired ? 'required' : []" />
+                                            :rules="isAdult2Entered && config.adultMobilePhoneField.isRequired ? adult2RequiredRules : ''" />
                                     </div>
                                     <div class="col-sm-6">
                                         <CheckBox
@@ -362,7 +365,7 @@
                                             v-model="adult2.email"
                                             :disabled="isSaving || isNavigating"
                                             label="Email"
-                                            :rules="isAdult2Entered && config.adultEmailField.isRequired ? 'required' : []" />
+                                            :rules="isAdult2Entered && config.adultEmailField.isRequired ? adult2RequiredRules : ''" />
                                     </div>
                                     <div v-if="config.adultCommunicationPreferenceField?.isShown" class="col-sm-6">
                                         <RadioButtonList
@@ -374,7 +377,7 @@
                                                 { text: 'SMS', value: CommunicationPreference.SMS.toString() }
                                             ]"
                                             label="Communication Preference"
-                                            :rules="isAdult2Entered && config.adultCommunicationPreferenceField.isRequired ? 'required' : ''" />
+                                            :rules="isAdult2Entered && config.adultCommunicationPreferenceField.isRequired ? adult2RequiredRules : ''" />
                                     </div>
                                 </div>
                                 <div class="row">
@@ -383,7 +386,7 @@
                                             v-if="config.adultRaceField?.isShown"
                                             v-model="adult2.raceListItemBag"
                                             :disabled="isSaving || isNavigating"
-                                            :rules="isAdult2Entered && config.adultRaceField.isRequired ? 'required' : []"
+                                            :rules="isAdult2Entered && config.adultRaceField.isRequired ? adult2RequiredRules : ''"
                                             :showBlankItem="true" />
                                     </div>
                                     <div class="col-sm-6">
@@ -391,18 +394,19 @@
                                             v-if="config.adultEthnicityField?.isShown"
                                             v-model="adult2.ethnicityListItemBag"
                                             :disabled="isSaving || isNavigating"
-                                            :rules="isAdult2Entered && config.adultEthnicityField.isRequired ? 'required' : []"
+                                            :rules="isAdult2Entered && config.adultEthnicityField.isRequired ? adult2RequiredRules : ''"
                                             :showBlankItem="true" />
                                     </div>
                                 </div>
 
                                 <div class="row">
                                     <div v-if="config.adultProfilePhotoField?.isShown" class="col-sm-6">
-                                        <ImageUploader
+                                        <ImageEditor
                                             v-model="adult2.profileImageListItemBag"
+                                            :binaryFileTypeGuid="BinaryFiletype.PersonImage"
                                             :disabled="isSaving || isNavigating"
                                             label="Profile Photo"
-                                            :rules="isAdult2Entered && config.adultProfilePhotoField.isRequired ? 'required' : ''" />
+                                            :rules="isAdult2Entered && config.adultProfilePhotoField.isRequired ? adult2RequiredRules : ''" />
                                     </div>
                                 </div>
 
@@ -427,6 +431,7 @@
                                         v-if="config.addressField?.isShown"
                                         v-model="address"
                                         :disabled="isSaving || isNavigating"
+                                        :disableFrontEndValidation="!config.addressField.isRequired"
                                         label="Address"
                                         :rules="config.addressField.isRequired ? 'required' : ''"
                                         :useCountryAbbreviation="false"
@@ -476,7 +481,7 @@
     import { computed, nextTick, ref } from "vue";
     import PreRegistrationChildren from "./FamilyPreRegistration/preRegistrationChildren.partial.obs";
     import { ChildRequestBag, CreateAccountRequest, PersonRequestBag } from "./FamilyPreRegistration/types.partial";
-    import { convertPersonToChildRequest, convertPersonToPersonRequest, createPersonViewModel } from "./FamilyPreRegistration/utils.partial";
+    import { convertPersonToChildRequest, convertPersonToPersonRequest, createNotEqualRule, createPersonViewModel, createRuleWithReplacement, createRuleWithSuffix, monthAndDayAndYearRequiredRule, monthAndDayRequiredRule, required, } from "./FamilyPreRegistration/utils.partial";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
@@ -488,7 +493,7 @@
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
-    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
@@ -499,11 +504,13 @@
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { ValidationResult } from "@Obsidian/ValidationRules";
+    import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
     import { FamilyPreRegistrationGetScheduleDatesRequestBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationGetScheduleDatesRequestBag";
     import { FamilyPreRegistrationGetScheduleDatesResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationGetScheduleDatesResponseBag";
     import { FamilyPreRegistrationInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationInitializationBox";
@@ -558,6 +565,33 @@
 
     const isAdult1Entered = computed<boolean>(() => !!adult1.firstName.trim());
     const isAdult2Entered = computed<boolean>(() => !!adult2.firstName.trim());
+    const isAdult2FirstNameEntered = computed<boolean>(() => !!adult2.firstName.trim());
+    const isAdult2LastNameEntered = computed<boolean>(() => !!adult2.lastName.trim());
+
+    // Validation rules are executed in order and stop on the first failure.
+    // Even though the first rule is a required rule,
+    // we need to add the special "required" rule to get the required indicator to display.
+    const adult1RequiredRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for First Adult`),
+        "required"
+    ]);
+
+    const adult1RequiredGenderRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for First Adult`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for First Adult"),
+        "required"
+    ]);
+
+    const adult2RequiredRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for Second Adult`),
+        "required"
+    ]);
+
+    const adult2RequiredGenderRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for Second Adult`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for Second Adult"),
+        "required"
+    ]);
 
     const campusListItemBag = computed<ListItemBag | null | undefined>({
         get(): ListItemBag | null | undefined {

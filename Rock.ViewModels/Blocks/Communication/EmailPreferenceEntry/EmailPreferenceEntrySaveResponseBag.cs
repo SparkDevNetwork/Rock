@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Communication.EmailPreferenceEntry
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class EmailPreferenceEntrySaveResponseBag
     {
         /// <summary>

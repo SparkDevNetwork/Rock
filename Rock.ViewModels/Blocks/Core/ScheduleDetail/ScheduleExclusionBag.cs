@@ -19,12 +19,24 @@ using System;
 
 namespace Rock.ViewModels.Blocks.Core.ScheduleDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ScheduleExclusionBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public string Title { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public DateTimeOffset StartDate { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public DateTimeOffset EndDate { get; set; }
     }
 }

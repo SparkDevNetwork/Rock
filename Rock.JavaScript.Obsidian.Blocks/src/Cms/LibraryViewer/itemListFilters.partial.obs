@@ -1,66 +1,79 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="library-viewer-item-list-filters">
-        <DropDownContent v-model="internalModelValue">
+        <DropDownContent v-model="internalIsOpen">
             <template #anchor>
-                <RockButton btnType="default" btnSize="xs" class="library-viewer-toolbar-button"><i class="fa fa-filter" /> {{ appliedFilterOptions.filterButtonText }}</RockButton>
+                <RockButton btnType="tool" btnSize="xs"><i class="fa fa-filter" /> {{ appliedFilters.filterButtonText }}</RockButton>
             </template>
 
             <div class="library-viewer-item-list-filters-container p-3">
-                <div class="container-fluid">
-                    <DropDownList v-model="internalTopics"
-                                :enhanceForLongLists="true"
-                                :grouped="false"
-                                :items="topicOptions"
-                                label="Topics"
-                                :multiple="true"
-                                :showBlankItem="true" />
+                <DropDownList v-model="pendingTopics"
+                            :enhanceForLongLists="true"
+                            :grouped="false"
+                            :items="topicOptions"
+                            label="Topics"
+                            :multiple="true"
+                            :showBlankItem="true" />
 
-                    <DropDownList v-model="internalOrganizations"
-                                :enhanceForLongLists="true"
-                                :grouped="false"
-                                :items="organizationOptions"
-                                label="Organizations"
-                                :multiple="true"
-                                :showBlankItem="true" />
+                <DropDownList v-model="pendingOrganizations"
+                            :enhanceForLongLists="true"
+                            :grouped="false"
+                            :items="organizationOptions"
+                            label="Organizations"
+                            :multiple="true"
+                            :showBlankItem="true" />
 
-                    <CheckBoxList v-model="internalDownloads"
-                                :horizontal="true"
-                                :items="downloadOptions"
-                                label="Downloads" />
+                <CheckBoxList v-model="pendingDownloads"
+                            :horizontal="true"
+                            :items="downloadOptions"
+                            label="Downloads" />
 
-                    <CheckBoxList v-model="internalLicenseTypes"
-                                :horizontal="true"
-                                :items="licenseTypeOptions"
-                                label="License Type" />
+                <CheckBoxList v-model="pendingLicenseTypes"
+                            :horizontal="true"
+                            :items="licenseTypeOptions"
+                            label="License Type" />
 
-                    <CheckBoxList v-model="internalExperienceLevels"
-                                :horizontal="true"
-                                :items="experienceLevelOptions"
-                                label="Experience Level" />
+                <CheckBoxList v-model="pendingExperienceLevels"
+                            :horizontal="true"
+                            :items="experienceLevelOptions"
+                            label="Experience Level" />
 
-                    <SlidingDateRangePicker v-model="internalPublishedDate"
-                                            label="Publish Date"
-                                            previewLocation="Top" />
+                <SlidingDateRangePicker v-model="pendingPublishedDate"
+                                        label="Publish Date"
+                                        previewLocation="Top" />
 
-                    <RockButton v-if="!areFiltersAppliedOnClose" @click="onApplyClicked" btnSize="xs">Apply Filters</RockButton>
-                    <RockButton @click="onClearAllClicked" btnSize="xs" class="ml-1">Clear All</RockButton>
-                </div>
+                <RockButton v-if="!areFiltersAppliedOnClose" @click="onApplyClicked" btnSize="xs" class="mr-1">Apply Filters</RockButton>
+                <RockButton @click="onClearAllClicked" btnSize="xs">Clear All</RockButton>
             </div>
         </DropDownContent>
     </div>
 </template>
 
-<style scoped>
-    .library-viewer-item-list-filters-container {
-        border-radius: 6px;
-        border: 1px solid var(--theme-colors-light, #F2E3D9);
-        background: var(--theme-colors-lightest, #FAF7F5);
-    }
+<style>
+
+.library-viewer-item-list-filters-container {
+    width: 410px;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.library-viewer-item-list-filters-container .rc-virtual-list-holder {
+    max-height: 200px;
+    overflow-y: hidden;
+}
+
+.library-viewer-item-list-filters-container .ant-select-loading {
+    display: none;
+}
+
+.ant-select {
+    position: relative !important;
+}
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { PersonPreferenceKey } from "./types.partial";
     import { compareStrings } from "./utils.partial";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
@@ -69,6 +82,7 @@
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { ContentLibraryItemExperienceLevel, ContentLibraryItemExperienceLevelDescription } from "@Obsidian/Enums/Cms/contentLibraryItemExperienceLevel";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { usePersonPreferences } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { SlidingDateRange, RangeType, calculateSlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
@@ -80,6 +94,11 @@
         filterButtonText: string;
         filter(item: LibraryViewerItemBag): boolean;
     };
+
+    enum DownloadItem {
+        Trending = "Trending",
+        Popular = "Popular"
+    }
 
     const props = defineProps({
         modelValue: {
@@ -93,7 +112,12 @@
         },
         areFiltersAppliedOnClose: {
             type: Boolean as PropType<boolean>,
-            default: true
+            default: true,
+            required: false
+        },
+        contentChannelIdKey: {
+            type: String as PropType<string | null | undefined>,
+            required: false
         }
     });
 
@@ -102,10 +126,7 @@
         (e: "filteredItems", value: LibraryViewerItemBag[]): void
     }>();
 
-    enum DownloadItem {
-        Trending = "Trending",
-        Popular = "Popular"
-    }
+    const preferences = usePersonPreferences().blockPreferences;
 
     const downloadOptions: ListItemBag[] = [
         {
@@ -118,31 +139,39 @@
         },
     ];
 
-    const defaultFilterOption: FilterOptions = {
+    const noFilterOptions: FilterOptions = {
         filterButtonText: "Filter",
-        filter(_item) {
-            return true;
-        }
+        filter: (_) => true
+    };
+
+    const noFiltersBag: LibraryViewerItemFiltersBag = {
+        mustBePopular: false,
+        mustBeTrending: false
     };
 
     //#region Values
 
-    const internalModelValue = useVModelPassthrough(props, "modelValue", emit);
-
-    const pendingFilters = ref<LibraryViewerItemFiltersBag>({
-        mustBePopular: false,
-        mustBeTrending: false
-    });
-
-    const appliedFilterOptions = ref<FilterOptions>(defaultFilterOption);
+    const internalIsOpen = useVModelPassthrough(props, "modelValue", emit);
+    const pendingFiltersBag = ref<LibraryViewerItemFiltersBag>(noFiltersBag);
+    const appliedFilters = ref<FilterOptions>(noFilterOptions);
 
     //#endregion
 
     //#region Computed Values
 
+    const personPreferenceKeyResolver = computed<(key: PersonPreferenceKey) => string>(() => {
+        if (props.contentChannelIdKey) {
+            return (key: PersonPreferenceKey) => `${props.contentChannelIdKey}-${key}`;
+        }
+        else {
+            return (key: PersonPreferenceKey) => key;
+        }
+    });
+
     const licenseTypeOptions = computed<ListItemBag[]>(() => {
         const distinctLicenseTypes: Record<string, ListItemBag> = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         for (let licenseType of props.items.filter(item => !!item.licenseType).map(item => item.licenseType!)) {
             if (licenseType.value && !distinctLicenseTypes[licenseType.value]) {
                 distinctLicenseTypes[licenseType.value] = licenseType;
@@ -156,7 +185,9 @@
             DefinedValue.LibraryLicenseTypeOrganizationAttribution.toLowerCase()
         ];
         return Object.values(distinctLicenseTypes).sort((licenseType1, licenseType2) => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const index1 = licenseTypePreferredOrder.indexOf(licenseType1.value!);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const index2 = licenseTypePreferredOrder.indexOf(licenseType2.value!);
 
             if (index1 === -1 && index2 === -1) {
@@ -192,6 +223,7 @@
     const experienceLevelOptions = computed<ListItemBag[]>(() => {
         const distinctExperienceLevels: Record<string, ListItemBag> = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         for (let experienceLevel of props.items.filter(item => !!item.experienceLevel).map(item => item.experienceLevel!)) {
             if (experienceLevel.value && !distinctExperienceLevels[experienceLevel.value]) {
                 distinctExperienceLevels[experienceLevel.value] = experienceLevel;
@@ -217,6 +249,7 @@
     const organizationOptions = computed<ListItemBag[]>(() => {
         const distinctOrganizations: Record<string, ListItemBag> = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         for (let organizationName of props.items.filter(item => !!item.sourcePublisherName).map(item => item.sourcePublisherName!)) {
             if (!distinctOrganizations[organizationName]) {
                 distinctOrganizations[organizationName] = {
@@ -229,39 +262,39 @@
         return Object.values(distinctOrganizations).sort((organization1, organization2) => compareStrings(organization1.text, organization2.text));
     });
 
-    const internalDownloads = computed<string[]>({
+    const pendingDownloads = computed<string[]>({
         get() {
             const downloads: string[] = [];
 
-            if (pendingFilters.value.mustBeTrending) {
+            if (pendingFiltersBag.value.mustBeTrending) {
                 downloads.push(DownloadItem.Trending);
             }
 
-            if (pendingFilters.value.mustBePopular) {
+            if (pendingFiltersBag.value.mustBePopular) {
                 downloads.push(DownloadItem.Popular);
             }
 
             return downloads;
         },
         set(newValue: string[]) {
-            pendingFilters.value.mustBePopular = newValue.some(v => v === DownloadItem.Popular);
-            pendingFilters.value.mustBeTrending = newValue.some(v => v === DownloadItem.Trending);
+            pendingFiltersBag.value.mustBePopular = newValue.some(v => v === DownloadItem.Popular);
+            pendingFiltersBag.value.mustBeTrending = newValue.some(v => v === DownloadItem.Trending);
         }
     });
 
-    const internalOrganizations = computed<string[]>({
+    const pendingOrganizations = computed<string[]>({
         get() {
-            return pendingFilters.value.organizations ?? [];
+            return pendingFiltersBag.value.organizations ?? [];
         },
         set(newValue: string[]) {
-            pendingFilters.value.organizations = newValue;
+            pendingFiltersBag.value.organizations = newValue;
         }
     });
 
-    const internalPublishedDate = computed<SlidingDateRange>({
+    const pendingPublishedDate = computed<SlidingDateRange>({
         get(): SlidingDateRange {
-            if (pendingFilters.value.publishedDate) {
-                const slidingDateRange = parseSlidingDateRangeString(pendingFilters.value.publishedDate);
+            if (pendingFiltersBag.value.publishedDate) {
+                const slidingDateRange = parseSlidingDateRangeString(pendingFiltersBag.value.publishedDate);
 
                 if (slidingDateRange) {
                     return slidingDateRange;
@@ -274,53 +307,270 @@
         },
         set(newValue: SlidingDateRange) {
             if (newValue) {
-                pendingFilters.value.publishedDate = slidingDateRangeToString(newValue);
+                pendingFiltersBag.value.publishedDate = slidingDateRangeToString(newValue);
             }
             else {
-                pendingFilters.value.publishedDate = null;
+                pendingFiltersBag.value.publishedDate = null;
             }
         }
     });
 
-    const internalTopics = computed<string[]>({
+    const pendingTopics = computed<string[]>({
         get() {
-            return pendingFilters.value.topics ?? [];
+            return pendingFiltersBag.value.topics ?? [];
         },
         set(newValue: string[]) {
-            pendingFilters.value.topics = newValue;
+            pendingFiltersBag.value.topics = newValue;
         }
     });
 
-    const internalLicenseTypes = computed<string[]>({
+    const pendingLicenseTypes = computed<string[]>({
         get() {
-            return pendingFilters.value.licenseTypes ?? [];
+            return pendingFiltersBag.value.licenseTypes ?? [];
         },
         set(newValue: string[]) {
-            pendingFilters.value.licenseTypes = newValue;
+            pendingFiltersBag.value.licenseTypes = newValue;
         }
     });
 
-    const internalExperienceLevels = computed<string[]>({
+    const pendingExperienceLevels = computed<string[]>({
         get() {
-            return pendingFilters.value.experienceLevels?.map((e: ContentLibraryItemExperienceLevel): string => e.toString()) ?? [];
+            return pendingFiltersBag.value.experienceLevels?.map((e: ContentLibraryItemExperienceLevel): string => e.toString()) ?? [];
         },
         set(newValue: string[]) {
-            pendingFilters.value.experienceLevels = newValue.map((e: string) => ContentLibraryItemExperienceLevel[ContentLibraryItemExperienceLevelDescription[Number(e)]]);
+            pendingFiltersBag.value.experienceLevels = newValue.map((e: string) => ContentLibraryItemExperienceLevel[ContentLibraryItemExperienceLevelDescription[Number(e)]]);
         }
     });
+
+    type FilterOptions2 = {
+        filterDescriptions: string[],
+        filter(item: LibraryViewerItemBag): boolean
+    };
+
+    function getTopicFilter(bag: LibraryViewerItemFiltersBag): FilterOptions2 | null {
+        const topicGuids = bag.topics;
+
+        if (!topicGuids?.length) {
+            return null;
+        }
+
+        return {
+            filterDescriptions: topicGuids.map(topicGuid => getTopicName(topicGuid)).filter(topicName => !!topicName) as string[],
+            filter(item) {
+                const itemTopicGuid = item.topic?.value?.toLowerCase();
+
+                return topicGuids.some(topicGuid => topicGuid.toLowerCase() === itemTopicGuid);
+            }
+        };
+    }
+
+    function getOrganizationFilter(bag: LibraryViewerItemFiltersBag): FilterOptions2 | null {
+        const organizationNames = bag.organizations;
+
+        if (!organizationNames?.length) {
+            return null;
+        }
+
+        return {
+            filterDescriptions: organizationNames,
+            filter(item) {
+                const itemSourcePublisherName = item.sourcePublisherName?.toLowerCase();
+
+                return organizationNames.some(organizationName => organizationName.toLowerCase() === itemSourcePublisherName);
+            }
+        };
+    }
+
+    function getTrendingFilter(bag: LibraryViewerItemFiltersBag): FilterOptions2 | null {
+        if (!bag.mustBeTrending) {
+            return null;
+        }
+
+        return {
+            filterDescriptions: ["Trending"],
+            filter(item) {
+                return item.isTrending;
+            }
+        };
+    }
+
+    function getPopularFilter(bag: LibraryViewerItemFiltersBag): FilterOptions2 | null {
+        if (!bag.mustBePopular) {
+            return null;
+        }
+
+        return {
+            filterDescriptions: ["Popular"],
+            filter(item) {
+                return item.isPopular;
+            }
+        };
+    }
+
+    function getLicenseTypeFilter(bag: LibraryViewerItemFiltersBag): FilterOptions2 | null {
+        const licenseTypeGuids = bag.licenseTypes;
+
+        if (!licenseTypeGuids?.length) {
+            return null;
+        }
+
+        return {
+            filterDescriptions: licenseTypeGuids.map(licenseTypeGuid => getLicenseTypeName(licenseTypeGuid)).filter(licenseTypeName => !!licenseTypeName) as string[],
+            filter(item) {
+                const itemLicenseTypeGuid = item.licenseType?.value?.toLowerCase();
+
+                return licenseTypeGuids.some(licenseTypeGuid => licenseTypeGuid.toLowerCase() === itemLicenseTypeGuid);
+            }
+        };
+    }
+
+    function getExperienceLevelFilter(bag: LibraryViewerItemFiltersBag): FilterOptions2 | null {
+        const experienceLevels = bag.experienceLevels;
+
+        if (!experienceLevels?.length) {
+            return null;
+        }
+
+        return {
+            filterDescriptions: experienceLevels.map(experienceLevel => ContentLibraryItemExperienceLevelDescription[experienceLevel]),
+            filter(item) {
+                const itemExperienceLevel: ContentLibraryItemExperienceLevel = ContentLibraryItemExperienceLevel[ContentLibraryItemExperienceLevelDescription[Number(item.experienceLevel?.value)]];
+
+                return experienceLevels.indexOf(itemExperienceLevel) !== -1;
+            }
+        };
+    }
+
+    function getPublishDateFilter(bag: LibraryViewerItemFiltersBag): FilterOptions2 | null {
+        const publishedDate = bag.publishedDate;
+
+        if (!publishedDate) {
+            return null;
+        }
+
+        const slidingDateRange = parseSlidingDateRangeString(publishedDate);
+
+        if (!slidingDateRange) {
+            return null;
+        }
+
+        const dateRange = calculateSlidingDateRange(slidingDateRange);
+
+        if (!dateRange.start && !dateRange.end) {
+            return null;
+        }
+
+        return {
+            filterDescriptions: ["Publish Date"],
+            filter(item) {
+                const itemPublishedDate = RockDateTime.parseISO(item.publishedDateTime ?? "");
+
+                if (!itemPublishedDate) {
+                    return false;
+                }
+
+                if (dateRange.start && itemPublishedDate.toMilliseconds() < dateRange.start.toMilliseconds()) {
+                    return false;
+                }
+
+                if (dateRange.end && itemPublishedDate.toMilliseconds() >= dateRange.end.toMilliseconds()) {
+                    return false;
+                }
+
+                return true;
+            }
+        };
+    }
 
     //#endregion
 
     //#region Functions
 
+    /** Applies the current filters to the items. */
+    function applyFilters(bag: LibraryViewerItemFiltersBag): void {
+        appliedFilters.value = createFilters(bag);
+        emit("filteredItems", props.items.filter(appliedFilters.value.filter));
+    }
+
+    /** Saves the filter person preferences. */
+    function saveFilterPersonPreferences(bag: LibraryViewerItemFiltersBag): void {
+        const keyResolver = personPreferenceKeyResolver.value;
+
+        preferences.setValue(keyResolver(PersonPreferenceKey.FilterExperienceLevels), JSON.stringify(bag.experienceLevels));
+        preferences.setValue(keyResolver(PersonPreferenceKey.FilterLicenseTypes), JSON.stringify(bag.licenseTypes));
+        preferences.setValue(keyResolver(PersonPreferenceKey.FilterMustBePopular), JSON.stringify(bag.mustBePopular));
+        preferences.setValue(keyResolver(PersonPreferenceKey.FilterMustBeTrending), JSON.stringify(bag.mustBeTrending));
+        preferences.setValue(keyResolver(PersonPreferenceKey.FilterOrganizations), JSON.stringify(bag.organizations));
+        preferences.setValue(keyResolver(PersonPreferenceKey.FilterPublishedDate), JSON.stringify(bag.publishedDate));
+        preferences.setValue(keyResolver(PersonPreferenceKey.FilterTopics), JSON.stringify(bag.topics));
+
+        // There is no need to wait for the preferences to save,
+        // so just fire and forget.
+        preferences.save();
+    }
+
+    function createFilters(bag: LibraryViewerItemFiltersBag): FilterOptions {
+        // Filter the items whenever the applied filters change.
+        const filters: FilterOptions2[] = [
+            getTopicFilter(bag),
+            getOrganizationFilter(bag),
+            getTrendingFilter(bag),
+            getPopularFilter(bag),
+            getLicenseTypeFilter(bag),
+            getExperienceLevelFilter(bag),
+            getPublishDateFilter(bag)
+        ].filter(f => !!f) as FilterOptions2[];
+
+        if (filters.length === 0) {
+            return noFilterOptions;
+        }
+
+        const combinedFilters = {
+            filterDescriptions: filters.map(f => f.filterDescriptions).reduce((fd1, fd2) => fd1.concat(fd2), []),
+            filter(item: LibraryViewerItemBag): boolean {
+                return filters.every(f => f.filter(item));
+            }
+        };
+
+        return {
+            filterButtonText: combinedFilters.filterDescriptions.length === 1 ? `Filter: ${combinedFilters.filterDescriptions[0]}` : `Filters Applied: ${combinedFilters.filterDescriptions.length}`,
+            filter: combinedFilters.filter
+        };
+    }
+
+    /** Gets the filters person preferences. */
+    function getFiltersPersonPreference(): LibraryViewerItemFiltersBag {
+        try {
+            const keyResolver = personPreferenceKeyResolver.value;
+
+            const rawPreferences = {
+                experienceLevels: preferences.getValue(keyResolver(PersonPreferenceKey.FilterExperienceLevels)),
+                licenseTypes: preferences.getValue(keyResolver(PersonPreferenceKey.FilterLicenseTypes)),
+                mustBePopular: preferences.getValue(keyResolver(PersonPreferenceKey.FilterMustBePopular)),
+                mustBeTrending: preferences.getValue(keyResolver(PersonPreferenceKey.FilterMustBeTrending)),
+                organizations: preferences.getValue(keyResolver(PersonPreferenceKey.FilterOrganizations)),
+                publishedDate: preferences.getValue(keyResolver(PersonPreferenceKey.FilterPublishedDate)),
+                topics: preferences.getValue(keyResolver(PersonPreferenceKey.FilterTopics))
+            };
+
+            return {
+                experienceLevels: rawPreferences.experienceLevels ? JSON.parse(rawPreferences.experienceLevels) : null,
+                licenseTypes: rawPreferences.licenseTypes ? JSON.parse(rawPreferences.licenseTypes) : null,
+                mustBePopular: !!(rawPreferences.mustBePopular ? JSON.parse(rawPreferences.mustBePopular) : false),
+                mustBeTrending: !!(rawPreferences.mustBeTrending ? JSON.parse(rawPreferences.mustBeTrending) : false),
+                organizations: rawPreferences.organizations ? JSON.parse(rawPreferences.organizations) : null,
+                publishedDate: rawPreferences.publishedDate ? JSON.parse(rawPreferences.publishedDate) : null,
+                topics: rawPreferences.topics ? JSON.parse(rawPreferences.topics) : null
+            };
+        }
+        catch (e) {
+            return noFiltersBag;
+        }
+    }
+
     /** Gets the license type name for a license type guid. */
     function getLicenseTypeName(licenseTypeGuid: string | null | undefined): string | null | undefined {
         return licenseTypeOptions.value.find(o => o.value?.toLowerCase() === licenseTypeGuid?.toLowerCase())?.text;
-    }
-
-    /** Emits the `filteredItems` event. */
-    function onFilteredItemsChanged(): void {
-        emit("filteredItems", props.items.filter(appliedFilterOptions.value.filter));
     }
 
     /** Gets the topic name for a topic guid. */
@@ -336,129 +586,18 @@
      * Event handler for the Apply button being clicked.
      */
     function onApplyClicked(): void {
-        const selectedFilters: FilterOptions[] = [];
-
-        // Build the filter options.
-
-        const experienceLevels = pendingFilters.value.experienceLevels;
-        if (experienceLevels?.length) {
-            for (let experienceLevel of experienceLevels) {
-                selectedFilters.push({
-                    filterButtonText: ContentLibraryItemExperienceLevelDescription[experienceLevel],
-                    filter(item) {
-                        return experienceLevel === ContentLibraryItemExperienceLevel[ContentLibraryItemExperienceLevelDescription[Number(item.experienceLevel?.value)]];
-                    }
-                });
-            }
-        }
-
-        const licenseTypeGuids = pendingFilters.value.licenseTypes;
-        if (licenseTypeGuids?.length) {
-            for (let licenseTypeGuid of licenseTypeGuids) {
-                selectedFilters.push({
-                    filterButtonText: getLicenseTypeName(licenseTypeGuid) ?? licenseTypeGuid,
-                    filter(item) {
-                        return !!item.licenseType?.value && licenseTypeGuid.toLowerCase() === item.licenseType.value.toLowerCase();
-                    }
-                });
-            }
-        }
-
-        if (pendingFilters.value.mustBePopular) {
-            selectedFilters.push({
-                filterButtonText: "Popular",
-                filter(item) {
-                    return item.isPopular;
-                }
-            });
-        }
-
-        if (pendingFilters.value.mustBeTrending) {
-            selectedFilters.push({
-                filterButtonText: "Trending",
-                filter(item) {
-                    return item.isTrending;
-                }
-            });
-        }
-
-        const organizationNames = pendingFilters.value.organizations;
-        if (organizationNames?.length) {
-            for (let organizationName of organizationNames) {
-                selectedFilters.push({
-                    filterButtonText: organizationName,
-                    filter(item) {
-                        return !!item.sourcePublisherName && organizationName.toLowerCase() === item.sourcePublisherName.toLowerCase();
-                    }
-                });
-            }
-        }
-
-        const publishedDate = pendingFilters.value.publishedDate;
-        if (publishedDate) {
-            const slidingDateRange = parseSlidingDateRangeString(publishedDate);
-
-            if (slidingDateRange) {
-                const dateRange = calculateSlidingDateRange(slidingDateRange);
-
-                if (dateRange.start || dateRange.end) {
-                    selectedFilters.push({
-                        filterButtonText: "Publish Date",
-                        filter(item) {
-                            const itemPublishedDate = RockDateTime.parseISO(item.publishedDateTime ?? "");
-
-                            if (!itemPublishedDate) {
-                                return false;
-                            }
-
-                            if (dateRange.start && itemPublishedDate.toMilliseconds() < dateRange.start.toMilliseconds()) {
-                                return false;
-                            }
-
-                            if (dateRange.end && itemPublishedDate.toMilliseconds() >= dateRange.end.toMilliseconds()) {
-                                return false;
-                            }
-
-                            return true;
-                        }
-                    });
-                }
-            }
-        }
-
-        const topicGuids = pendingFilters.value.topics;
-        if (topicGuids?.length) {
-            for (let topicGuid of topicGuids) {
-                selectedFilters.push({
-                    filterButtonText: getTopicName(topicGuid) ?? topicGuid,
-                    filter(item) {
-                        return !!item.topic?.value && topicGuid.toLowerCase() === item.topic.value.toLowerCase();
-                    }
-                });
-            }
-        }
-
         // Update the `appliedFilterOptions` value with the selected filters.
         // There is a watcher observing this value. When the value is changed,
         // the `filteredItems` event is emitted.
-        if (selectedFilters.length) {
-            appliedFilterOptions.value = {
-                filterButtonText: selectedFilters.length === 1 ? `Filter: ${selectedFilters[0].filterButtonText}` : `Filters Applied: ${selectedFilters.length}`,
-                filter(item) {
-                    return selectedFilters.some(f => f.filter(item));
-                }
-            };
-        }
-        else {
-            appliedFilterOptions.value = defaultFilterOption;
-        }
+        applyFilters(pendingFiltersBag.value);
+        saveFilterPersonPreferences(pendingFiltersBag.value);
     }
 
     /**
      * Event handler for the Clear All button being clicked.
      */
     function onClearAllClicked(): void {
-        pendingFilters.value = {
+        pendingFiltersBag.value = {
             mustBePopular: false,
             mustBeTrending: false
         };
@@ -468,18 +607,26 @@
 
     //#region Watchers
 
-    watch(() => [props.items, appliedFilterOptions.value], () => {
-        onFilteredItemsChanged();
+    watch(() => [props.items], () => {
+        // Emit the filtered items whenever the items or the applied filters change.
+        applyFilters(pendingFiltersBag.value);
     });
 
-    watch(() => internalModelValue.value, (wasOpen, isOpen) => {
+    watch(() => internalIsOpen.value, (isOpen, wasOpen) => {
         // If the filters controls is closed
-        // AND if applyFiltersOnClose is true,
+        // AND if areFiltersAppliedOnClose is true,
         // then apply the filters.
-        if (!wasOpen && isOpen && props.areFiltersAppliedOnClose) {
-            onApplyClicked();
+        if (!isOpen && wasOpen && props.areFiltersAppliedOnClose) {
+            applyFilters(pendingFiltersBag.value);
+            saveFilterPersonPreferences(pendingFiltersBag.value);
         }
     });
 
     //#endregion
+
+    onMounted(() => {
+        // Set the initial applied filters when the component is mounted.
+        pendingFiltersBag.value = getFiltersPersonPreference();
+        applyFilters(pendingFiltersBag.value);
+    });
 </script>

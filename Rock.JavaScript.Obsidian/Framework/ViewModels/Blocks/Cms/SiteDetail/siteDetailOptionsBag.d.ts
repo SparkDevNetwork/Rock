@@ -22,10 +22,11 @@
 //
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 
 export type SiteDetailOptionsBag = {
-    siteAttributes?: PublicEditableAttributeBag[] | null;
+    /** Gets or sets the reserved key names. */
+    reservedKeyNames?: string[] | null;
 
+    /** The themes */
     themes?: ListItemBag[] | null;
 };

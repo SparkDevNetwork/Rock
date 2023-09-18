@@ -15,21 +15,22 @@
 // </copyright>
 //
 
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
-using Rock.ViewModels.Blocks.Groups.GroupRegistration;
-using Rock.ViewModels.Controls;
-using Rock.Web;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-namespace Rock.Blocks.Groups
+using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
+using Rock.ViewModels.Blocks.Group.GroupRegistration;
+using Rock.ViewModels.Controls;
+using Rock.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
+
+namespace Rock.Blocks.Group
 {
     /// <summary>
     /// Displays the details of a particular group.
@@ -185,6 +186,15 @@ namespace Rock.Blocks.Groups
         DefaultBooleanValue = false,
         Order = 14 )]
 
+    [CustomDropdownListField(
+        "Show SMS Opt-in",
+        Key = AttributeKey.DisplaySmsOptIn,
+        Description = "If selected this option will show the SMS Opt-In text and checkbox for the selected persons.",
+        ListSource = "Hide,First Adult,All Adults",
+        IsRequired = true,
+        DefaultValue = "Hide",
+        Order = 15 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "bbce9c47-b14d-4122-86a0-08441dee2759" )]
@@ -217,15 +227,10 @@ namespace Rock.Blocks.Groups
             public const string PreventOvercapacityRegistrations = "PreventOvercapacityRegistrations";
             public const string RequireEmail = "RequireEmail";
             public const string RequireMobilePhone = "RequireMobilePhone";
+            public const string DisplaySmsOptIn = "DisplaySmsOptIn";
         }
 
         #endregion Keys
-
-        #region Fields
-
-        private Rock.Model.Group _group = null;
-
-        #endregion
 
         #region Methods
 
@@ -298,36 +303,35 @@ namespace Rock.Blocks.Groups
 
         private Rock.Model.Group GetGroup( RockContext rockContext )
         {
-            if ( _group == null )
-            {
-                var groupService = new GroupService( rockContext );
-                Guid? groupGuid = GetAttributeValue( AttributeKey.Group ).AsGuidOrNull();
+            Rock.Model.Group group = null;
 
+            var groupService = new GroupService( rockContext );
+            Guid? groupGuid = GetAttributeValue( AttributeKey.Group ).AsGuidOrNull();
+
+            if ( groupGuid.HasValue )
+            {
+                group = groupService.Get( groupGuid.Value );
+            }
+
+            if ( group == null )
+            {
+                groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
                 if ( groupGuid.HasValue )
                 {
-                    _group = groupService.Get( groupGuid.Value );
-                }
-
-                if ( _group == null )
-                {
-                    groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
-                    if ( groupGuid.HasValue )
-                    {
-                        _group = groupService.Get( groupGuid.Value );
-                    }
-                }
-
-                if ( _group == null && GetAttributeValue( AttributeKey.EnablePassingGroupId ).AsBoolean( false ) )
-                {
-                    int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
-                    if ( groupId.HasValue )
-                    {
-                        _group = groupService.Get( groupId.Value );
-                    }
+                    group = groupService.Get( groupGuid.Value );
                 }
             }
 
-            return _group;
+            if ( group == null && GetAttributeValue( AttributeKey.EnablePassingGroupId ).AsBoolean( false ) )
+            {
+                int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+                if ( groupId.HasValue )
+                {
+                    group = groupService.Get( groupId.Value );
+                }
+            }
+
+            return group;
         }
 
         private void GetSettings( RockContext rockContext, GroupRegistrationBlockBox box )
@@ -339,10 +343,12 @@ namespace Rock.Blocks.Groups
             if ( group != null )
             {
                 // Show lava content
-                var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Group", group );
+                var mergeFields = new Dictionary<string, object>
+                {
+                    { "Group", group }
+                };
 
-                string template = GetAttributeValue( AttributeKey.LavaTemplate );
+                var template = GetAttributeValue( AttributeKey.LavaTemplate );
                 box.LavaOverview = template.ResolveMergeFields( mergeFields );
 
                 box.IsEmailRequired = GetAttributeValue( AttributeKey.RequireEmail ).AsBoolean();
@@ -351,9 +357,11 @@ namespace Rock.Blocks.Groups
                 box.AutoFill = GetAttributeValue(AttributeKey.AutoFillForm).AsBoolean();
                 box.RegisterButtonAltText = GetAttributeValue(AttributeKey.RegisterButtonAltText);
 
-                string phoneLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Value;
+                var phoneLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Value;
                 phoneLabel = phoneLabel.Trim().EndsWith( "Phone" ) ? phoneLabel : phoneLabel + " Phone";
                 box.PhoneLabel = phoneLabel;
+
+                SetSmsOptInSettings( box );
 
                 if ( currentPerson != null && box.AutoFill )
                 {
@@ -377,12 +385,11 @@ namespace Rock.Blocks.Groups
                         }
 
                         Guid cellPhoneType = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
-                        var cellPhone = person.PhoneNumbers
-                            .FirstOrDefault( n => n.NumberTypeValue.Guid.Equals( cellPhoneType ) );
+                        var cellPhone = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValue.Guid.Equals( cellPhoneType ) );
                         if ( cellPhone != null )
                         {
                             box.Entity.MobilePhone = cellPhone.Number;
-                            box.Entity.EnableSms = cellPhone.IsMessagingEnabled;
+                            box.Entity.IsMessagingEnabled = cellPhone.IsMessagingEnabled;
                         }
 
                         var homeAddress = person.GetHomeLocation();
@@ -408,12 +415,11 @@ namespace Rock.Blocks.Groups
                                 box.Entity.SpouseLastName = spouse.LastName;
                                 box.Entity.SpouseEmail = spouse.Email;
 
-                                var spouseCellPhone = spouse.PhoneNumbers
-                                    .FirstOrDefault( n => n.NumberTypeValue.Guid.Equals( cellPhoneType ) );
+                                var spouseCellPhone = spouse.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValue.Guid.Equals( cellPhoneType ) );
                                 if ( spouseCellPhone != null )
                                 {
                                     box.Entity.SpouseMobilePhone = spouseCellPhone.Number;
-                                    box.Entity.EnableSpouseSms = spouseCellPhone.IsMessagingEnabled;
+                                    box.Entity.SpouseIsMessagingEnabled = spouseCellPhone.IsMessagingEnabled;
                                 }
                             }
                         }
@@ -453,6 +459,42 @@ namespace Rock.Blocks.Groups
             }
         }
 
+        private void SetSmsOptInSettings( GroupRegistrationBlockBox box )
+        {
+            var displaySmsAttributeValue = this.GetAttributeValue( AttributeKey.DisplaySmsOptIn );
+            var smsOptInDisplayText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
+
+            //Options for displaying the SMS Opt-In checkbox: Hide,First Adult,All Adults
+            switch ( displaySmsAttributeValue )
+            {
+                case "Hide":
+                    box.SmsIsHidden = true;
+                    box.SmsIsShowFirstAdult = false;
+                    box.SmsIsShowAllAdults = false;
+                    break;
+
+                case "First Adult":
+                    box.SmsOptInDisplayText = smsOptInDisplayText;
+                    box.SmsIsHidden = false;
+                    box.SmsIsShowFirstAdult = true;
+                    box.SmsIsShowAllAdults = false;
+                    break;
+
+                case "All Adults":
+                    box.SmsOptInDisplayText = smsOptInDisplayText;
+                    box.SmsIsHidden = false;
+                    box.SmsIsShowFirstAdult = true;
+                    box.SmsIsShowAllAdults = true;
+                    break;
+
+                default:
+                    box.SmsIsHidden = true;
+                    box.SmsIsShowFirstAdult = false;
+                    box.SmsIsShowAllAdults = false;
+                    break;
+            }
+        }
+
         /// <summary>
         /// Sets the phone number.
         /// </summary>
@@ -464,40 +506,36 @@ namespace Rock.Blocks.Groups
         private void SetPhoneNumber( RockContext rockContext, Person person, string pnbNumber, bool enableSms, Guid phoneTypeGuid )
         {
             var phoneType = DefinedValueCache.Get( phoneTypeGuid );
-            if ( phoneType != null )
+            if ( phoneType == null )
             {
-                var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneType.Id );
+                return;
+            }
 
-                if ( phoneNumber == null )
+            var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneType.Id ) ?? new PhoneNumber { NumberTypeValueId = phoneType.Id };
+            phoneNumber.CountryCode = PhoneNumber.CleanNumber( Rock.Model.PhoneNumber.DefaultCountryCode() );
+            phoneNumber.Number = PhoneNumber.CleanNumber( pnbNumber );
+
+            if ( string.IsNullOrWhiteSpace( phoneNumber.Number ) )
+            {
+                if ( phoneNumber.Id > 0 )
                 {
-                    phoneNumber = new PhoneNumber { NumberTypeValueId = phoneType.Id };
+                    new PhoneNumberService( rockContext ).Delete( phoneNumber );
+                    person.PhoneNumbers.Remove( phoneNumber );
                 }
-
-                phoneNumber.CountryCode = PhoneNumber.CleanNumber( Rock.Model.PhoneNumber.DefaultCountryCode() );
-                phoneNumber.Number = PhoneNumber.CleanNumber( pnbNumber );
-
-                if ( string.IsNullOrWhiteSpace( phoneNumber.Number ) )
+            }
+            else
+            {
+                if ( phoneNumber.Id <= 0 )
                 {
-                    if ( phoneNumber.Id > 0 )
-                    {
-                        new PhoneNumberService( rockContext ).Delete( phoneNumber );
-                        person.PhoneNumbers.Remove( phoneNumber );
-                    }
+                    person.PhoneNumbers.Add( phoneNumber );
                 }
-                else
+                if ( enableSms )
                 {
-                    if ( phoneNumber.Id <= 0 )
-                    {
-                        person.PhoneNumbers.Add( phoneNumber );
-                    }
-                    if ( enableSms )
-                    {
-                        phoneNumber.IsMessagingEnabled = true;
-                        person.PhoneNumbers
-                            .Where( n => n.NumberTypeValueId != phoneType.Id )
-                            .ToList()
-                            .ForEach( n => n.IsMessagingEnabled = false );
-                    }
+                    phoneNumber.IsMessagingEnabled = true;
+                    person.PhoneNumbers
+                        .Where( n => n.NumberTypeValueId != phoneType.Id )
+                        .ToList()
+                        .ForEach( n => n.IsMessagingEnabled = false );
                 }
             }
         }
@@ -606,10 +644,10 @@ namespace Rock.Blocks.Groups
         /// <summary>
         /// Saves the entity contained in the box.
         /// </summary>
-        /// <param name="box">The box that contains all the information required to save.</param>
+        /// <param name="groupRegistrationBag">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( GroupRegistrationBag box )
+        public BlockActionResult Save( GroupRegistrationBag groupRegistrationBag )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -626,9 +664,12 @@ namespace Rock.Blocks.Groups
                 var isSimple = GetAttributeValue( AttributeKey.Mode ) == "Simple";
                 var isFullWithSpouse = GetAttributeValue( AttributeKey.Mode ) == "FullSpouse";
 
-                var isCurrentPerson = RequestContext.CurrentPerson != null && RequestContext.CurrentPerson.NickName.IsNotNullOrWhiteSpace() && RequestContext.CurrentPerson.LastName.IsNotNullOrWhiteSpace() &&
-                        box.FirstName.Trim().Equals( RequestContext.CurrentPerson.NickName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
-                        box.LastName.Trim().Equals( RequestContext.CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase );
+                var isCurrentPerson = RequestContext.CurrentPerson != null
+                    && RequestContext.CurrentPerson.NickName.IsNotNullOrWhiteSpace()
+                    && RequestContext.CurrentPerson.LastName.IsNotNullOrWhiteSpace()
+                    && groupRegistrationBag.FirstName.Trim().Equals( RequestContext.CurrentPerson.NickName.Trim(), StringComparison.OrdinalIgnoreCase )
+                    && groupRegistrationBag.LastName.Trim().Equals( RequestContext.CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase );
+
                 // Only use current person if the name entered matches the current person's name and autofill mode is true
                 if ( GetAttributeValue( AttributeKey.AutoFillForm ).AsBoolean() && isCurrentPerson )
                 {
@@ -638,18 +679,19 @@ namespace Rock.Blocks.Groups
                 // Try to find person by name/email 
                 if ( person == null )
                 {
-                    var personQuery = new PersonService.PersonMatchQuery( box.FirstName.Trim(), box.LastName.Trim(), box.Email.Trim(), box.MobilePhone.Trim() );
+                    var personQuery = new PersonService.PersonMatchQuery( groupRegistrationBag.FirstName.Trim(), groupRegistrationBag.LastName.Trim(), groupRegistrationBag.Email.Trim(), groupRegistrationBag.MobilePhone.Trim() );
                     person = personService.FindPerson( personQuery, true );
                 }
 
                 // Check to see if this is a new person
                 if ( person == null )
                 {
+                    var group = GetGroup( rockContext );
                     // If so, create the person and family record for the new person
                     person = new Person();
-                    person.FirstName = box.FirstName.Trim();
-                    person.LastName = box.LastName.Trim();
-                    person.Email = box.Email.Trim();
+                    person.FirstName = groupRegistrationBag.FirstName.Trim();
+                    person.LastName = groupRegistrationBag.LastName.Trim();
+                    person.Email = groupRegistrationBag.Email.Trim();
                     person.IsEmailActive = true;
                     person.EmailPreference = EmailPreference.EmailAllowed;
                     person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
@@ -657,12 +699,12 @@ namespace Rock.Blocks.Groups
                     person.RecordStatusValueId = recordStatus.Id;
                     person.Gender = Gender.Unknown;
 
-                    family = PersonService.SaveNewPerson( person, rockContext, _group.CampusId, false );
+                    family = PersonService.SaveNewPerson( person, rockContext, group.CampusId, false );
                 }
                 else
                 {
                     // updating current existing person
-                    person.Email = box.Email;
+                    person.Email = groupRegistrationBag.Email;
 
                     // Get the current person's families
                     var families = person.GetFamilies( rockContext );
@@ -695,18 +737,18 @@ namespace Rock.Blocks.Groups
                 // If using a 'Full' view, save the phone numbers and address
                 if ( !isSimple )
                 {
-                    if ( !string.IsNullOrWhiteSpace( box.HomePhone ) )
+                    if ( !string.IsNullOrWhiteSpace( groupRegistrationBag.HomePhone ) )
                     {
-                        SetPhoneNumber( rockContext, person, box.HomePhone, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
+                        SetPhoneNumber( rockContext, person, groupRegistrationBag.HomePhone, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
                     }
-                    if ( !string.IsNullOrWhiteSpace( box.MobilePhone ) )
+                    if ( !string.IsNullOrWhiteSpace( groupRegistrationBag.MobilePhone ) )
                     {
-                        SetPhoneNumber( rockContext, person, box.MobilePhone, box.EnableSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                        SetPhoneNumber( rockContext, person, groupRegistrationBag.MobilePhone, groupRegistrationBag.IsMessagingEnabled, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                     }
 
-                    if ( box.Address != null )
+                    if ( groupRegistrationBag.Address != null )
                     {
-                        var location = new LocationService( rockContext ).Get( box.Address.Street1, box.Address.Street2, box.Address.City, box.Address.State, box.Address.PostalCode, box.Address.Country );
+                        var location = new LocationService( rockContext ).Get( groupRegistrationBag.Address.Street1, groupRegistrationBag.Address.Street2, groupRegistrationBag.Address.City, groupRegistrationBag.Address.State, groupRegistrationBag.Address.PostalCode, groupRegistrationBag.Address.Country );
                         if ( location != null )
                         {
                             if ( homeLocation == null )
@@ -723,7 +765,7 @@ namespace Rock.Blocks.Groups
                     }
 
                     // Check for the spouse
-                    if ( isFullWithSpouse && box.SpouseFirstName.IsNotNullOrWhiteSpace() && box.SpouseLastName.IsNotNullOrWhiteSpace() )
+                    if ( isFullWithSpouse && groupRegistrationBag.SpouseFirstName.IsNotNullOrWhiteSpace() && groupRegistrationBag.SpouseLastName.IsNotNullOrWhiteSpace() )
                     {
                         spouse = person.GetSpouse( rockContext );
                         bool isSpouseMatch = true;
@@ -732,14 +774,14 @@ namespace Rock.Blocks.Groups
                         var adultRole = familyType?.Roles?.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
 
                         if ( spouse == null ||
-                            !box.SpouseFirstName.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
-                            !box.SpouseLastName.Trim().Equals( spouse.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                            !groupRegistrationBag.SpouseFirstName.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
+                            !groupRegistrationBag.SpouseLastName.Trim().Equals( spouse.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                         {
                             spouse = new Person();
                             isSpouseMatch = false;
 
-                            spouse.FirstName = box.SpouseFirstName.FixCase();
-                            spouse.LastName = box.SpouseLastName.FixCase();
+                            spouse.FirstName = groupRegistrationBag.SpouseFirstName.FixCase();
+                            spouse.LastName = groupRegistrationBag.SpouseLastName.FixCase();
 
                             spouse.ConnectionStatusValueId = connectionStatus.Id;
                             spouse.RecordStatusValueId = recordStatus.Id;
@@ -758,17 +800,17 @@ namespace Rock.Blocks.Groups
                             person.MaritalStatusValueId = married.Id;
                         }
 
-                        spouse.Email = box.Email;
+                        spouse.Email = groupRegistrationBag.Email;
 
-                        if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( box.HomePhone ) )
+                        if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( groupRegistrationBag.HomePhone ) )
                         {
-                            SetPhoneNumber( rockContext, spouse, box.HomePhone, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
+                            SetPhoneNumber( rockContext, spouse, groupRegistrationBag.HomePhone, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
                         }
 
-                        if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( box.SpouseMobilePhone ) )
+                        if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( groupRegistrationBag.SpouseMobilePhone ) )
                         {
                         
-                            SetPhoneNumber( rockContext, spouse, box.SpouseMobilePhone, box.EnableSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                            SetPhoneNumber( rockContext, spouse, groupRegistrationBag.SpouseMobilePhone, groupRegistrationBag.SpouseIsMessagingEnabled, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                         }
                     }
                 }
@@ -809,9 +851,11 @@ namespace Rock.Blocks.Groups
 
                 if ( isAddingPeopleToGroupSuccessful )
                 {
+                    var group = GetGroup( rockContext );
+
                     // Show lava content
                     var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Group", _group );
+                    mergeFields.Add( "Group", group );
                     mergeFields.Add( "GroupMembers", newGroupMembers );
 
                     string template = GetAttributeValue( "ResultLavaTemplate" );

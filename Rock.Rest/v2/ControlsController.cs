@@ -992,7 +992,7 @@ namespace Rock.Rest.v2
 
                 foreach ( var account in accountsList )
                 {
-                    var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions() );
                     mergeFields.Add( "Account", account );
                     var accountAmountLabel = accountHeaderTemplate.ResolveMergeFields( mergeFields );
                     items.Add(new CampusAccountAmountPickerGetAccountsResultItemBag
@@ -4898,7 +4898,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "PhoneNumberBoxGetConfiguration" )]
         [Rock.SystemGuid.RestActionGuid( "2f15c4a2-92c7-4bd3-bf48-7eb11a644142" )]
-        public IHttpActionResult PhoneNumberBoxGetConfiguration()
+        public IHttpActionResult PhoneNumberBoxGetConfiguration([FromBody] PhoneNumberBoxGetConfigurationOptionsBag options )
         {
             var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
@@ -4929,6 +4929,16 @@ namespace Rock.Rest.v2
 
                     countryCodeRules.Add( countryCode, rules );
                 }
+            }
+
+            if ( options?.ShowSmsOptIn ?? false )
+            {
+                return Ok( new PhoneNumberBoxGetConfigurationResultsBag
+                {
+                    Rules = countryCodeRules,
+                    DefaultCountryCode = defaultCountryCode,
+                    SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL )
+                } );
             }
 
             return Ok( new PhoneNumberBoxGetConfigurationResultsBag
@@ -5796,13 +5806,18 @@ namespace Rock.Rest.v2
                     continue;
                 }
 
-                var componentName = component.Value.Key;
+                var componentName = Rock.Reflection.GetDisplayName( entityType.GetEntityType() );
 
-                // If the component name already has a space then trust
-                // that they are using the exact name formatting they want.
-                if ( !componentName.Contains( ' ' ) )
+                // If it has a DisplayName use it as is, otherwise use the original logic
+                if ( string.IsNullOrWhiteSpace( componentName ) )
                 {
-                    componentName = componentName.SplitCase();
+                    componentName = component.Value.Key;
+                    // If the component name already has a space then trust
+                    // that they are using the exact name formatting they want.
+                    if ( !componentName.Contains( ' ' ) )
+                    {
+                        componentName = componentName.SplitCase();
+                    }
                 }
 
                 items.Add( new ListItemBag

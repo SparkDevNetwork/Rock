@@ -1209,7 +1209,7 @@ namespace RockWeb.Blocks.Cms
 
                         lContentLibraryDownloadedOn.Text = downloadedOn;
                         lContentLibraryDownloadedBy.Text = downloadedBy;
-                        aContentLibraryDownloadedLicense.HRef = $"https://rockrms.com/library/license/{license?.Guid}?utm_source=rock-item-uploaded";
+                        aContentLibraryDownloadedLicense.HRef = $"https://rockrms.com/library/licenses?utm_source=rock-item-uploaded";
                         aContentLibraryDownloadedLicense.InnerText = $"{license?.Value} License";
                     }
 
@@ -1321,7 +1321,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     pnlStatus.Visible = true;
 
-                    PendingCss = contentItem.Status == ContentChannelItemStatus.PendingApproval ? "btn-default active" : "btn-default";
+                    PendingCss = contentItem.Status == ContentChannelItemStatus.PendingApproval ? "btn-warning active" : "btn-default";
                     ApprovedCss = contentItem.Status == ContentChannelItemStatus.Approved ? "btn-success active" : "btn-default";
                     DeniedCss = contentItem.Status == ContentChannelItemStatus.Denied ? "btn-danger active" : "btn-default";
                 }

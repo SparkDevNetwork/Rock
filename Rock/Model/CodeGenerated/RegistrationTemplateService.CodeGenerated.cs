@@ -178,6 +178,7 @@ namespace Rock.Model
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             target.SetCostOnInstance = source.SetCostOnInstance;
             target.ShowCurrentFamilyMembers = source.ShowCurrentFamilyMembers;
+            target.ShowSmsOptIn = source.ShowSmsOptIn;
             target.SignatureDocumentAction = source.SignatureDocumentAction;
             target.SuccessText = source.SuccessText;
             target.SuccessTitle = source.SuccessTitle;

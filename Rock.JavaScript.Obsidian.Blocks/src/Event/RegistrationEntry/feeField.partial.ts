@@ -58,7 +58,7 @@ export default defineComponent({
         getItemLabel(item: RegistrationEntryBlockFeeItemViewModel): string {
             const formattedCost = Number.asFormattedString(item.cost, 2);
 
-            if (item.countRemaining) {
+            if (item.countRemaining !== null && item.countRemaining !== undefined) {
                 const formattedRemaining = Number.asFormattedString(item.countRemaining, 0);
                 return `${item.name} ($${formattedCost}) (${formattedRemaining} remaining)`;
             }
@@ -99,14 +99,15 @@ export default defineComponent({
         dropDownListOptions(): ListItemBag[] {
             return this.fee.items.map(i => ({
                 text: this.getItemLabel(i),
-                value: i.guid
+                value: i.guid,
+                disabled: (i.countRemaining != null && i.countRemaining < 1)
             }));
         },
         numberUpDownGroupOptions(): NumberUpDownGroupOption[] {
             return this.fee.items.map(i => ({
                 key: i.guid,
                 label: this.getItemLabel(i),
-                max: i.countRemaining || 100,
+                max: i.countRemaining ?? 100,
                 min: 0
             }));
         },
@@ -186,7 +187,7 @@ export default defineComponent({
     template: `
 <template v-if="!isHidden">
     <CheckBox v-if="isCheckbox" :label="label" v-model="checkboxValue" :rules="rules" :disabled="isDisabled" />
-    <NumberUpDown v-else-if="isNumberUpDown" :label="label" :min="0" :max="singleItem.countRemaining || 100" v-model="modelValue[singleItem.guid]" :rules="rules" />
+    <NumberUpDown v-else-if="isNumberUpDown" :label="label" :min="0" :max="singleItem.countRemaining ?? 100" v-model="modelValue[singleItem.guid]" :rules="rules" />
     <DropDownList v-else-if="isDropDown" :label="label" :items="dropDownListOptions" v-model="dropDownValue" :rules="rules" formControlClasses="input-width-md" />
     <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="modelValue" :rules="rules" />
     <NotificationBox v-else alertType="danger">This fee configuration is not supported</NotificationBox>

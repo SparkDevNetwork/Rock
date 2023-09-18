@@ -24,7 +24,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using Rock.Data;
+using Rock.Jobs;
 using Rock.Model;
+using Rock.Tests.Integration.Database;
 using Rock.Tests.Shared;
 using Rock.Utility;
 using Rock.Web;
@@ -42,12 +44,13 @@ namespace Rock.Tests.Integration
         // Force the database to be replaced if it exists.
         Force = 2
     }
+
     /// <summary>
     /// A helper class to manage database instances for the testing process.
     /// </summary>
     public class TestDatabaseHelper
     {
-        private const string SampleDataSourceKey = "com.rockrms.test.SampleDataSource";
+        public const string SampleDataSourceKey = "com.rockrms.test.SampleDataSource";
 
         private static bool _IsDatabaseInitialized = false;
         private static DatabaseRefreshStrategySpecifier _databaseDeleteStrategy = DatabaseRefreshStrategySpecifier.Verified;
@@ -57,6 +60,11 @@ namespace Rock.Tests.Integration
         public static string ConnectionString = null;
         public static string SampleDataUrl = null;
         public static bool DatabaseRemoteDeleteIsAllowed = false;
+        public static ITestDatabaseInitializer DatabaseInitializer = null;
+        public static string DefaultSnapshotName = null;
+        public static bool SampleDataIsEnabled = true;
+
+        #region Public Properties and Methods
 
         public static DatabaseRefreshStrategySpecifier DatabaseRefreshStrategy
         {
@@ -70,6 +78,136 @@ namespace Rock.Tests.Integration
             }
         }
 
+        /// <summary>
+        /// Initializes a new database and loads sample data.
+        /// </summary>
+        public static bool InitializeTestDatabase( string snapshotName = null )
+        {
+            snapshotName = snapshotName ?? DefaultSnapshotName;
+
+            if ( _IsDatabaseInitialized )
+            {
+                return true;
+            }
+             
+            _IsDatabaseInitialized = true;
+
+            bool success;
+            var forceReplaceExisting = ( DatabaseRefreshStrategy == DatabaseRefreshStrategySpecifier.Force );
+
+            if ( IsLocalDbInstance() )
+            {
+                success = InitializeSqlServerDatabaseForLocal( forceReplaceExisting, snapshotName );
+            }
+            else
+            {
+                success = InitializeSqlServerDatabaseForRemote( ConnectionString,
+                    snapshotName,
+                    SampleDataUrl,
+                    forceReplaceExisting );
+            }
+
+            return success;
+        }
+
+        /// <summary>
+        /// Checks if the database exists.
+        /// </summary>
+        /// <param name="connectionString">The connection.</param>
+        /// <returns><c>true</c> if the named database exists; otherwise <c>false</c>.</returns>
+        public static bool DatabaseExists( string connectionString )
+        {
+            var csb = new SqlConnectionStringBuilder( connectionString );
+            var dbName = csb.InitialCatalog;
+            csb.InitialCatalog = "master";
+            using ( var connection = new SqlConnection( csb.ConnectionString ) )
+            {
+                connection.Open();
+
+                using ( var cmd = connection.CreateCommand() )
+                {
+                    cmd.CommandText = "SELECT COUNT(*) FROM [sysdatabases] WHERE [name] = @dbName";
+                    cmd.Parameters.AddWithValue( "dbName", dbName );
+
+                    return ( int ) cmd.ExecuteScalar() != 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes the database from the SQL server so the next test can start clean.
+        /// </summary>
+        public static void DeleteDatabase()
+        {
+            DeleteDatabase( ConnectionString );
+        }
+
+        /// <summary>
+        /// Resets the database by using a previously stored snapshot.
+        /// </summary>
+        public static void CreateSnapshot( string snapshotName, bool overwriteExisting = false )
+        {
+            if ( !IsLocalDbInstance() )
+            {
+                throw new NotImplementedException( "Reset is not available for a remote database." );
+            }
+
+            CreateLocalDatabaseArchive( ConnectionString, snapshotName, overwriteExisting );
+        }
+
+        /// <summary>
+        /// Resets the database by using a previously stored snapshot.
+        /// </summary>
+        public static void RestoreSnapshot( string snapshotName = "default" )
+        {
+            if ( !IsLocalDbInstance() )
+            {
+                throw new NotImplementedException( "Reset is not available for a remote database." );
+            }
+
+            if ( DatabaseExists( ConnectionString ) )
+            {
+                // Remove the database from the local server.
+                DeleteDatabase( ConnectionString );
+            }
+
+            string archivePath;
+            if ( snapshotName == "default" )
+            {
+                // If the default snapshot does not exist, create it.
+                archivePath = GetArchiveFileNameForCurrentMigration();
+            }
+            else
+            {
+                archivePath = GetArchiveFileName( snapshotName );
+            }
+
+            RestoreLocalDatabaseFromArchive( ConnectionString, archivePath );
+        }
+
+        /// <summary>
+        /// Resets the database by using the default data source.
+        /// </summary>
+        public static void ResetDatabase()
+        {
+            if ( IsLocalDbInstance() )
+            {
+                if ( !DatabaseExists( ConnectionString ) )
+                {
+                    throw new Exception( "ResetDatabase failed. No database image is available to perform the reset. Use the InitializeTestDatabase() method to create a new local database image." );
+                }
+
+                // Reset the database from the archive image.
+                InitializeSqlServerDatabaseForLocal( recreateArchive: false );
+            }
+            else
+            {
+                throw new NotImplementedException( "Reset is not available for a remote database." );
+            }
+        }
+
+        #endregion
+
         private static bool IsLocalDbInstance()
         {
             var csb = new SqlConnectionStringBuilder( ConnectionString );
@@ -82,35 +220,7 @@ namespace Rock.Tests.Integration
             return false;
         }
 
-
-        /// <summary>
-        /// Initializes a new database and loads sample data.
-        /// </summary>
-        public static bool InitializeTestDatabase()
-        {
-            if ( _IsDatabaseInitialized )
-            {
-                return true;
-            }
-
-            _IsDatabaseInitialized = true;
-
-            bool success;
-            var forceReplaceExisting = ( DatabaseRefreshStrategy == DatabaseRefreshStrategySpecifier.Force );
-
-            if ( IsLocalDbInstance() )
-            {
-                success = InitializeSqlServerDatabaseForLocal( forceReplaceExisting );
-            }
-            else
-            {
-                success = InitializeSqlServerDatabaseForRemote( ConnectionString, SampleDataUrl, forceReplaceExisting );
-            }
-
-            return success;
-        }
-
-        private static bool InitializeSqlServerDatabaseForRemote( string connectionString, string sampleDataUrl, bool forceReplace = false )
+        private static bool InitializeSqlServerDatabaseForRemote( string connectionString, string snapshotName, string sampleDataUrl, bool forceReplace = false )
         {
             var csb = new SqlConnectionStringBuilder( connectionString );
             var dbName = csb.InitialCatalog;
@@ -206,7 +316,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
                 if ( createDatabase )
                 {
-                    AddSampleDataForActiveDatabase( sampleDataUrl );
+                    DatabaseInitializer?.InitializeSnapshot( snapshotName, sampleDataUrl );
                 }
 
                 TestHelper.Log( $"Task complete." );
@@ -226,67 +336,6 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             }
 
             TestHelper.Log( $"Sample data verified.  [SampleDataSource={sampleDataId}]" );
-            return true;
-        }
-
-        private static bool AddSampleDataForActiveDatabase( string sampleDataUrl )
-        {
-            TestHelper.Log( $"Loading sample data..." );
-
-            // Make sure all Entity Types are registered.
-            // This is necessary because some components are only registered at runtime,
-            // including the Rock.Bus.Transport.InMemory Type that is required to start the Rock Message Bus.
-            EntityTypeService.RegisterEntityTypes();
-
-            var factory = new SampleDataManager();
-            var args = new SampleDataManager.SampleDataImportActionArgs
-            {
-                FabricateAttendance = true,
-                EnableGiving = true
-            };
-
-            factory.CreateFromXmlDocumentFile( sampleDataUrl, args );
-
-            /*
-             * Run Rock Jobs to ensure calculated fields are updated.
-             */
-
-            // Rock Cleanup
-            TestHelper.Log( $"Running Job: RockCleanup..." );
-
-            var job = new Rock.Jobs.RockCleanup();
-
-            job.ExecuteInternal( new Dictionary<string, string>() );
-
-            TestHelper.Log( $"Running Job: CalculateFamilyAnalytics..." );
-
-            // Calculate Family Analytics
-            var jobFamilyAnalytics = new Rock.Jobs.CalculateFamilyAnalytics();
-
-            jobFamilyAnalytics.ExecuteInternal( new Dictionary<string, string>() );
-
-            // Process BI Analytics
-            TestHelper.Log( $"Running ProcessBiAnalytics Job..." );
-
-            var jobBIAnalytics = new Rock.Jobs.ProcessBIAnalytics();
-
-            var biAnalyticsSettings = new Dictionary<string, string>();
-            biAnalyticsSettings.AddOrReplace( Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessPersonBIAnalytics, "true" );
-            biAnalyticsSettings.AddOrReplace( Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessFamilyBIAnalytics, "true" );
-            biAnalyticsSettings.AddOrReplace( Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessAttendanceBIAnalytics, "true" );
-
-            jobBIAnalytics.ExecuteInternal( biAnalyticsSettings );
-
-            // Calculate Attribute "ValueAs..." columns.
-            var jobUpdateAttributeValueAs = new Rock.Jobs.PostV141UpdateValueAsColumns();
-            jobUpdateAttributeValueAs.ExecuteInternal( new Dictionary<string, string>() );
-
-            // Set the sample data identifiers.
-            SystemSettings.SetValue( SystemKey.SystemSetting.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );
-            SystemSettings.SetValue( SampleDataSourceKey, sampleDataUrl );
-
-            TestHelper.Log( $"Sample Data loaded." );
-
             return true;
         }
 
@@ -311,38 +360,6 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         }
 
         private static string _targetMigration;
-
-        /// <summary>
-        /// Checks if the database exists.
-        /// </summary>
-        /// <param name="connectionString">The connection.</param>
-        /// <returns><c>true</c> if the named database exists; otherwise <c>false</c>.</returns>
-        public static bool DatabaseExists( string connectionString )
-        {
-            var csb = new SqlConnectionStringBuilder( connectionString );
-            var dbName = csb.InitialCatalog;
-            csb.InitialCatalog = "master";
-            using ( var connection = new SqlConnection( csb.ConnectionString ) )
-            {
-                connection.Open();
-
-                using ( var cmd = connection.CreateCommand() )
-                {
-                    cmd.CommandText = "SELECT COUNT(*) FROM [sysdatabases] WHERE [name] = @dbName";
-                    cmd.Parameters.AddWithValue( "dbName", dbName );
-
-                    return ( int ) cmd.ExecuteScalar() != 0;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deletes the database from the SQL server so the next test can start clean.
-        /// </summary>
-        public static void DeleteDatabase()
-        {
-            DeleteDatabase( ConnectionString );
-        }
 
         /// <summary>
         /// Migrates the database.
@@ -402,12 +419,18 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// <summary>
         /// Resets the database by using the default data source.
         /// </summary>
-        private static bool InitializeSqlServerDatabaseForLocal( bool recreateArchive )
+        private static bool InitializeSqlServerDatabaseForLocal( bool recreateArchive, string snapshotName = null )
         {
             var restoreDatabase = ( TestDatabaseHelper.DatabaseRefreshStrategy != DatabaseRefreshStrategySpecifier.Never );
 
             if ( DatabaseExists( ConnectionString ) )
             {
+                // If the database exists and should never be replaced, continue without verifying the migration level.
+                if ( DatabaseRefreshStrategy == DatabaseRefreshStrategySpecifier.Never )
+                {
+                    return true;
+                }
+
                 if ( recreateArchive )
                 {
                     // Remove the database from the local server, and delete the associated archive file.
@@ -428,10 +451,12 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 restoreDatabase = true;
             }
 
+            var sampleDataUrl = SampleDataIsEnabled ? SampleDataUrl : string.Empty;
+
             if ( restoreDatabase )
             {
                 // Restore the database from the archive.
-                var testSource = GetOrGenerateLocalDatabaseArchive( ConnectionString, SampleDataUrl );
+                var testSource = GetOrGenerateLocalDatabaseArchive( ConnectionString, snapshotName, sampleDataUrl );
 
                 RestoreLocalDatabaseFromArchive( ConnectionString, testSource );
             }
@@ -440,81 +465,20 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             if ( restoreDatabase )
             {
-                // Verify that the test database is valid.
-                var valid = ValidateSampleDataForActiveDatabase( SampleDataUrl );
-
-                if ( !valid )
+                if ( SampleDataIsEnabled )
                 {
-                    TestHelper.Log( $"Invalid Sample Data. Sample data key does not match the sample data set specified for this test run. To refresh the test data set, delete the existing database. [Expected=\"{SampleDataUrl}\"]" );
-                    throw new Exception( $"Invalid Sample Data. Required sample data key not found in target database." );
+                    // Verify that the test database is valid.
+                    var valid = ValidateSampleDataForActiveDatabase( sampleDataUrl );
+
+                    if ( !valid )
+                    {
+                        TestHelper.Log( $"Invalid Sample Data. Sample data key does not match the sample data set specified for this test run. To refresh the test data set, delete the existing database. [Expected=\"{SampleDataUrl}\"]" );
+                        throw new Exception( $"Invalid Sample Data. Required sample data key not found in target database." );
+                    }
                 }
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Resets the database by using a previously stored snapshot.
-        /// </summary>
-        public static void CreateSnapshot( string snapshotName, bool overwriteExisting = false )
-        {
-            if ( !IsLocalDbInstance() )
-            {
-                throw new NotImplementedException( "Reset is not available for a remote database." );
-            }
-
-            CreateLocalDatabaseArchive( ConnectionString, snapshotName, overwriteExisting );
-        }
-
-        /// <summary>
-        /// Resets the database by using a previously stored snapshot.
-        /// </summary>
-        public static void RestoreSnapshot( string snapshotName = "default" )
-        {
-            if ( !IsLocalDbInstance() )
-            {
-                throw new NotImplementedException( "Reset is not available for a remote database." );
-            }
-
-            if ( DatabaseExists( ConnectionString ) )
-            {
-                // Remove the database from the local server.
-                DeleteDatabase( ConnectionString );
-            }
-
-            string archivePath;
-            if ( snapshotName == "default" )
-            {
-                // If the default snapshot does not exist, create it.
-                archivePath = GetArchiveFileNameForCurrentMigration();
-            }
-            else
-            {
-                archivePath = GetArchiveFileName( snapshotName );
-            }
-
-            RestoreLocalDatabaseFromArchive( ConnectionString, archivePath );
-        }
-
-        /// <summary>
-        /// Resets the database by using the default data source.
-        /// </summary>
-        public static void ResetDatabase()
-        {
-            if ( IsLocalDbInstance() )
-            {
-                if ( !DatabaseExists( ConnectionString ) )
-                {
-                    throw new Exception( "ResetDatabase failed. No database image is available to perform the reset. Use the InitializeTestDatabase() method to create a new local database image." );
-                }
-
-                // Reset the database from the archive image.
-                InitializeSqlServerDatabaseForLocal( recreateArchive: false );
-            }
-            else
-            {
-                throw new NotImplementedException( "Reset is not available for a remote database." );
-            }
         }
 
         /// <summary>
@@ -660,9 +624,15 @@ ALTER DATABASE [{targetDbName}] SET RECOVERY SIMPLE;";
             }
 
             var sql = $@"
-SELECT [Value]
-FROM [_TestDatabaseSettings]
-WHERE [Key] = 'DatabaseCreatorKey';";
+IF (EXISTS (SELECT * 
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_NAME = '_TestDatabaseSettings') )
+BEGIN
+    SELECT [Value]
+    FROM [_TestDatabaseSettings]
+    WHERE [Key] = 'DatabaseCreatorKey';
+END
+";
 
             var creatorId = DbService.ExecuteScalar( csbTarget.ConnectionString, sql ).ToStringSafe();
 
@@ -673,7 +643,7 @@ WHERE [Key] = 'DatabaseCreatorKey';";
             if ( DatabaseRefreshStrategy == DatabaseRefreshStrategySpecifier.Verified
                 && creatorId != DatabaseCreatorKey )
             {
-                throw new Exception( $"Delete database failed. Database Creator key mismatch. [Database={databaseDescription}, ExpectedCreatorId={DatabaseCreatorKey}, ActualCreatorId={creatorId}]" );
+                throw new Exception( $"Delete database failed. Database Creator key mismatch. [Database={databaseDescription}, ExpectedCreatorKey={DatabaseCreatorKey}, ActualCreatorKey={creatorId}]" );
             }
 
             var sqlDrop = $@"
@@ -775,8 +745,12 @@ DROP DATABASE [{name}];";
         /// This method checks to see if we have an archive for the most recent
         /// target migration already and if not it builds a new archive.
         /// </summary>
+        /// <param name="connectionString"></param>
+        /// <param name="sampleDataUrl">
+        /// The URL for the document containing the sample data. If not specified, sample data will not be added to the new database.
+        /// </param>
         /// <returns>A string containing the path to the archive.</returns>
-        private static string GetOrGenerateLocalDatabaseArchive( string connectionString, string sampleDataUrl )
+        private static string GetOrGenerateLocalDatabaseArchive( string connectionString, string snapshotName, string sampleDataUrl )
         {
             var archivePath = GetArchiveFileNameForCurrentMigration();
 
@@ -793,10 +767,6 @@ DROP DATABASE [{name}];";
             if ( string.IsNullOrWhiteSpace( connectionString ) )
             {
                 throw new Exception( "A database connection string must be provided." );
-            }
-            if ( string.IsNullOrWhiteSpace( sampleDataUrl ) )
-            {
-                throw new Exception( "A sample data file path or URL must be provided." );
             }
 
             var csbTarget = new SqlConnectionStringBuilder( connectionString );
@@ -856,8 +826,13 @@ SELECT DB_ID('{dbName}') AS [DatabaseId]
 
             MigrateDatabase( csbTarget.ConnectionString );
 
-            // Load the sample data.
-            AddSampleDataForActiveDatabase( sampleDataUrl );
+            // Initialize the new database with data specific to the requested snapshot.
+            DatabaseInitializer?.InitializeSnapshot( snapshotName, sampleDataUrl );
+
+            // Make sure all Entity Types are registered.
+            // This is necessary because some components are only registered at runtime,
+            // including the Rock.Bus.Transport.InMemory Type that is required to start the Rock Message Bus.
+            EntityTypeService.RegisterEntityTypes();
 
             // Shrink the database and log files.
             TestHelper.Log( $"Creating test database archive..." );

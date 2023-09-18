@@ -23,6 +23,10 @@ using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialBatchDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class FinancialBatchBag : EntityBagBase
     {
         /// <summary>

@@ -41,7 +41,6 @@
     import ViewPanel from "./WebFarmSettings/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./WebFarmSettings/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { WebFarmSettingsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsBag";
     import { WebFarmSettingsDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsDetailOptionsBag";
@@ -99,10 +98,28 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
-        if (webFarmSettingsViewBag.value?.isActive) {
+        if (!webFarmSettingsViewBag.value?.isEnabled && webFarmSettingsViewBag.value?.hasValidKey && webFarmSettingsViewBag.value?.isRunning) {
+            labels.push({
+                title: "Ready (Re-enable)",
+                type: "warning"
+            });
+        }
+        else if (webFarmSettingsViewBag.value?.isEnabled && webFarmSettingsViewBag.value?.hasValidKey && !webFarmSettingsViewBag.value?.isRunning) {
+            labels.push({
+                title: "Ready (Restart Rock)",
+                type: "warning"
+            });
+        }
+        else if (webFarmSettingsViewBag.value?.isEnabled && webFarmSettingsViewBag.value?.hasValidKey) {
             labels.push({
                 title: "Active",
                 type: "success"
+            });
+        }
+        else {
+            labels.push({
+                title: "Inactive",
+                type: "danger"
             });
         }
 

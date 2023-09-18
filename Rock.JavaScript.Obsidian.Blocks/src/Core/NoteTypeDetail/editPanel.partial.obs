@@ -8,11 +8,21 @@
                          label="Name"
                          rules="required" />
 
-                <EntityTypePicker v-model="entityType"
+                <EntityTypePicker v-if="showEntityTypePicker"
+                                  v-model="entityType"
                                   label="Entity Type"
                                   rules="required"
                                   :multiple="false"
                                   :includeGlobalOption="false" />
+
+                <div v-else class="form-group static-control ">
+                    <label class="control-label">Entity Type</label>
+                    <div class="control-wrapper">
+                        <div class="form-control-static">
+                            {{ entityType.text }}
+                        </div>
+                    </div>
+                </div>
 
                 <TextBox v-model="iconCssClass"
                          label="Icon CSS Class" />
@@ -21,15 +31,17 @@
                              label="Color"
                              help="The base color to use for notes of this type. The background and foreground colors will be automatically calculated from this color." />
 
-                <DropDownList v-model="formatType"
+                <DropDownList v-if="showContentFormatDropdown"
+                              v-model="formatType"
                               label="Content Format"
                               help="Structured format provides additional features and is the default for all new note types. Unstructured is a legacy format that is not checked for correctness and will be removed in the future."
                               :items="formatTypeItems"
-                              :showBlankItem="false" />
+                              :showBlankItem="true" />
 
                 <NotificationBox v-if="isChangingToStructuredFormat" alertType="warning">
                     Once you change a note type to the Structured format, it cannot be changed back. Be sure this is what you want to do.
                 </NotificationBox>
+
             </div>
 
             <div class="col-md-6">
@@ -74,8 +86,8 @@
                     </div>
                 </TransitionVerticalCollapse>
 
-                <TransitionVerticalCollapse>
-                    <div v-if="formatType !== NoteFormatType.Unstructured.toString()">
+                <TransitionVerticalCollapse v-if="showEnableMentions">
+                    <div v-if="showEnableMentions">
                         <CheckBox v-model="isMentionEnabled"
                                   label="Enable Mentions"
                                   text="Yes"
@@ -100,6 +112,7 @@
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
@@ -143,6 +156,8 @@
     const binaryFileType = propertyRef(props.modelValue.binaryFileType ?? {}, "BinaryFileTypeId");
     const formatType = propertyRef(props.modelValue.formatType.toString(), "FormatType");
     const isMentionEnabled = propertyRef(props.modelValue.isMentionEnabled, "IsMentionEnabled");
+    const showEntityTypePicker = ref(props.modelValue.showEntityTypePicker);
+    const showContentFormatDropdown = ref(props.modelValue.formatType !== NoteFormatType.Structured);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -157,7 +172,11 @@
     // #region Computed Values
 
     const isChangingToStructuredFormat = computed((): boolean => {
-        return props.modelValue.formatType !== NoteFormatType.Structured && formatType.value === NoteFormatType.Structured.toString();
+        return showContentFormatDropdown.value && formatType.value === NoteFormatType.Structured.toString();
+    });
+
+    const showEnableMentions = computed((): boolean => {
+        return showContentFormatDropdown.value && (formatType.value === NoteFormatType.Structured.toString() || formatType.value === NoteFormatType.Unknown.toString());
     });
 
     // #endregion

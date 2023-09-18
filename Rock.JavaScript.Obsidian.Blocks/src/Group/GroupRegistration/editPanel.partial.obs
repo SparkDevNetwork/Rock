@@ -2,8 +2,7 @@
 <template>
     <fieldset>
 
-        <NotificationBox v-if="isAtNearCapacity" :dismissable="false" alertType="warning">This group is near its capacity. Only one
-            individual can register.</NotificationBox>
+        <NotificationBox v-if="isAtNearCapacity" :dismissable="false" alertType="warning">This group is near its capacity. Only one individual can register.</NotificationBox>
         <div v-html="lavaOverview"></div>
 
         <div v-if="isFullWithSpouse">
@@ -11,23 +10,11 @@
                 <div class="col-md-6">
 
                     <TextBox v-model="firstName" label="First Name" rules="required" />
-
                     <TextBox v-model="lastName" label="Last Name" rules="required" />
-
-                    <PhoneNumberBox label="Home Phone" v-model="homePhone" />
-
-                    <div class="row">
-                        <div class="col-sm-7">
-                            <PhoneNumberBox :label="mobilePhoneLabel" v-model="mobilePhone"
-                                :rules="mobilePhoneValidationRule" />
-                        </div>
-                        <div class="col-sm-5">
-                            <CheckBox label="Enable SMS" v-model="enableSms" />
-                        </div>
-                    </div>
-
+                    <PhoneNumberBox :label="mobilePhoneLabel" v-model="mobilePhone" :rules="mobilePhoneValidationRule" />
+                    <CheckBox v-if="options.smsIsShowFirstAdult" label="" v-model="isMessagingEnabled" :text="options.smsOptInDisplayText ?? ''" />
                     <EmailBox label="Email" v-model="email" :rules="emailValidationRule" />
-
+                    <PhoneNumberBox label="Home Phone" v-model="homePhone" />
                     <AddressControl label="Address" v-model="address" />
 
                 </div>
@@ -35,19 +22,9 @@
                 <div class=col-md-6>
 
                     <TextBox v-model="spouseFirstName" :disabled="isAtNearCapacity" label="Spouse First Name" />
-
                     <TextBox v-model="spouseLastName" :disabled="isAtNearCapacity" label="Spouse Last Name" />
-
-                    <div class="row">
-                        <div class="col-sm-7">
-                            <PhoneNumberBox :label="spouseMobilePhoneLabel" :disabled="isAtNearCapacity"
-                                v-model="spouseMobilePhone" />
-                        </div>
-                        <div class="col-sm-5">
-                            <CheckBox label="Enable SMS" :disabled="isAtNearCapacity" v-model="enableSpouseSms" />
-                        </div>
-                    </div>
-
+                    <PhoneNumberBox :label="spouseMobilePhoneLabel" :disabled="isAtNearCapacity" v-model="spouseMobilePhone" />
+                    <CheckBox v-if="options.smsIsShowAllAdults" label="" :disabled="isAtNearCapacity" v-model="spouseIsMessagingEnabled" :text="options.smsOptInDisplayText ?? ''" />
                     <EmailBox label="Spouse Email" :disabled="isAtNearCapacity" v-model="spouseEmail" />
 
                 </div>
@@ -57,22 +34,13 @@
         <div v-else>
 
             <TextBox v-model="firstName" label="First Name" rules="required" />
-
             <TextBox v-model="lastName" label="Last Name" rules="required" />
 
-            <PhoneNumberBox v-if="isFullMode" label="Home Phone" v-model="homePhone" />
-
-            <div class="row" v-if="isFullMode">
-                <div class="col-sm-7">
-                    <PhoneNumberBox :label="mobilePhoneLabel" v-model="mobilePhone" :rules="mobilePhoneValidationRule" />
-                </div>
-                <div class="col-sm-5">
-                    <CheckBox label="Enable SMS" v-model="enableSms" />
-                </div>
-            </div>
-
+            <PhoneNumberBox v-if="isFullMode" :label="mobilePhoneLabel" v-model="mobilePhone" :rules="mobilePhoneValidationRule" />
+            <CheckBox v-if="isFullMode && !options.smsIsHidden" label="" v-model="isMessagingEnabled" :text="options.smsOptInDisplayText ?? ''" />
             <EmailBox label="Email" v-model="email" :rules="emailValidationRule" />
 
+            <PhoneNumberBox v-if="isFullMode" label="Home Phone" v-model="homePhone" />
             <AddressControl v-if="isFullMode" label="Address" v-model="address" />
 
         </div>
@@ -117,12 +85,12 @@ const email = ref(props.modelValue.email ?? "");
 const homePhone = ref(props.modelValue.homePhone ?? "");
 const mobilePhone = ref(props.modelValue.mobilePhone ?? "");
 const mobilePhoneLabel = ref(props.options.phoneLabel ?? "");
-const enableSms = ref(props.modelValue.enableSms);
+const isMessagingEnabled = ref(props.modelValue.isMessagingEnabled);
 const address = ref(props.modelValue.address ?? {});
 const spouseFirstName = ref(props.modelValue.spouseFirstName ?? "");
 const spouseLastName = ref(props.modelValue.spouseLastName ?? "");
 const spouseMobilePhone = ref(props.modelValue.spouseMobilePhone ?? "");
-const enableSpouseSms = ref(props.modelValue.enableSpouseSms);
+const spouseIsMessagingEnabled = ref(props.modelValue.spouseIsMessagingEnabled);
 const spouseEmail = ref(props.modelValue.spouseEmail ?? "");
 const lavaOverview = ref(props.options.lavaOverview ?? "");
 
@@ -152,33 +120,33 @@ watch(() => props.modelValue, () => {
     updateRefValue(lastName, props.modelValue.lastName ?? "");
     updateRefValue(homePhone, props.modelValue.homePhone ?? "");
     updateRefValue(mobilePhone, props.modelValue.mobilePhone ?? "");
-    updateRefValue(enableSms, props.modelValue.enableSms);
+    updateRefValue(isMessagingEnabled, props.modelValue.isMessagingEnabled);
     updateRefValue(email, props.modelValue.email ?? "");
     updateRefValue(address, props.modelValue.address ?? {});
     updateRefValue(spouseFirstName, props.modelValue.spouseFirstName ?? "");
     updateRefValue(spouseLastName, props.modelValue.spouseLastName ?? "");
     updateRefValue(spouseMobilePhone, props.modelValue.spouseMobilePhone ?? "");
-    updateRefValue(enableSpouseSms, props.modelValue.enableSpouseSms);
+    updateRefValue(spouseIsMessagingEnabled, props.modelValue.spouseIsMessagingEnabled);
     updateRefValue(spouseEmail, props.modelValue.spouseEmail ?? "");
     updateRefValue(lavaOverview, props.options.lavaOverview ?? "");
 });
 
 // Determines which values we want to track changes on (defined in the
 // array) and then emit a new object defined as newValue.
-watch([firstName, lastName, homePhone, mobilePhone, enableSms, email, address, spouseFirstName, spouseLastName, spouseMobilePhone, enableSpouseSms, spouseEmail], () => {
+watch([firstName, lastName, homePhone, mobilePhone, isMessagingEnabled, email, address, spouseFirstName, spouseLastName, spouseMobilePhone, spouseIsMessagingEnabled, spouseEmail], () => {
     const newValue: GroupRegistrationBag = {
         ...props.modelValue,
         firstName: firstName.value,
         lastName: lastName.value,
         homePhone: homePhone.value,
         mobilePhone: mobilePhone.value,
-        enableSms: enableSms.value,
+        isMessagingEnabled: isMessagingEnabled.value,
         email: email.value,
         address: address.value,
         spouseFirstName: spouseFirstName.value,
         spouseLastName: spouseLastName.value,
         spouseMobilePhone: spouseMobilePhone.value,
-        enableSpouseSms: enableSpouseSms.value,
+        spouseIsMessagingEnabled: spouseIsMessagingEnabled.value,
         spouseEmail: spouseEmail.value
     };
 

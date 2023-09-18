@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
     import { PropType, ref } from "vue";
-    import TextBox from "./textBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { onSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
     import { GatewayEmitStrings } from "@Obsidian/Enums/Controls/gatewayEmitStrings";

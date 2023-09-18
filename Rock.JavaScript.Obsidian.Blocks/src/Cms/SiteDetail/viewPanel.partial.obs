@@ -2,7 +2,7 @@
 <template>
     <fieldset>
         <NotificationBox v-if="isSystem" alertType="info">
-            <strong>Note</strong> Because this site is used by Rock, editing is not enabled.
+            <strong>Note</strong> Because this site is used by Rock, editing is restricted.
         </NotificationBox>
 
         <ValueDetailList :modelValue="topValues" />
@@ -62,12 +62,8 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.name) {
-            valueBuilder.addTextValue("Name", props.modelValue.name);
-        }
-
         if (props.modelValue.description) {
-            valueBuilder.addTextValue("Description", props.modelValue.description);
+            valueBuilder.addTextValue("", props.modelValue.description);
         }
 
         return valueBuilder.build();

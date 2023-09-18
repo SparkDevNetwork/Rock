@@ -34,6 +34,9 @@ export type TagBag = {
     /** Gets or sets the background color of each tag */
     backgroundColor?: string | null;
 
+    /** Gets or sets a value indicating whether the current user has Administrate Authorization. */
+    canAdministrate: boolean;
+
     /** Gets or sets the category. */
     category?: ListItemBag | null;
 

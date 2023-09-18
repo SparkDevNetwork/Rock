@@ -25,7 +25,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Select multiple Badges from a checkbox list. Stored as a comma-delimited list of Badge Guids
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( "602F273B-7EC2-42E6-9AA7-A36A268192A3")]
     public class BadgesFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {

@@ -362,7 +362,10 @@ namespace Rock.UI {
                 volume: this.options.volume,
                 muted: this.options.muted,
                 clickToPlay: this.options.clickToPlay,
-                hideControls: this.options.hideControls
+                hideControls: this.options.hideControls,
+                fullscreen: {
+                    iosNative: true
+                }
             };
 
             if (!this.isHls(this.options.mediaUrl)) {
@@ -914,6 +917,13 @@ namespace Rock.UI {
                 SessionGuid: this.options.sessionGuid,
                 OriginalUrl: window.location.href,
                 PageId: (Rock as any).settings.get("pageId")
+            }
+
+            if (typeof navigator.sendBeacon !== "undefined" && !async) {
+                var beaconData = new Blob([JSON.stringify(data)], { type: 'application/json; charset=UTF-8' });
+
+                navigator.sendBeacon("/api/MediaElements/WatchInteraction", beaconData);
+                return;
             }
 
             // Initialize the API request.

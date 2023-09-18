@@ -145,7 +145,11 @@ namespace Rock.Jobs
             // 
             // The 'Entity Sets' related endpoints.
             //
-            migrationHelper.AddSecurityAuthForRestAction( "POST", "EntitySets^IHttpActionResult PostEntitySetFromGuid(List`1[Guid], Guid)",
+            migrationHelper.AddRestAction( "50B248D7-C52A-4698-B4AF-C9DE305394EC",
+                "EntitySets",
+                "Rock.Rest.Controllers.EntitySetsController" );
+
+            migrationHelper.AddSecurityAuthForRestAction( "50B248D7-C52A-4698-B4AF-C9DE305394EC",
                 0,
                 Rock.Security.Authorization.VIEW,
                 true,
@@ -156,7 +160,15 @@ namespace Rock.Jobs
             //
             // The 'Followings' related endpoints.
             //
-            migrationHelper.AddSecurityAuthForRestAction( "POST", "Followings^HttpResponseMessage Follow(Int32, Int32, String)",
+            string followingControllerName = "Followings";
+            string followingControllerClass = "Rock.Rest.Controllers.FollowingsController";
+
+            // Follow( int, int, string ) POST.
+            migrationHelper.AddRestAction( "1C1F80FE-2567-463E-8BFE-E49ECB8450C7",
+                followingControllerName,
+                followingControllerClass );
+
+            migrationHelper.AddSecurityAuthForRestAction( "1C1F80FE-2567-463E-8BFE-E49ECB8450C7",
                 0,
                 Rock.Security.Authorization.VIEW,
                 true,
@@ -164,7 +176,12 @@ namespace Rock.Jobs
                 Model.SpecialRole.None,
                 "C5D068B8-A3CF-4C8F-BD2B-43BEF433BAC6" );
 
-            migrationHelper.AddSecurityAuthForRestAction( "DELETE", "Followings^Void Delete(Int32, Int32, String)",
+            // Delete( int, int, string ) DELETE.
+            migrationHelper.AddRestAction( "AAB5800B-A429-40D2-A402-D3DE7E15776E",
+                followingControllerName,
+                followingControllerClass );
+
+            migrationHelper.AddSecurityAuthForRestAction( "AAB5800B-A429-40D2-A402-D3DE7E15776E",
                 0,
                 Rock.Security.Authorization.VIEW,
                 true,
@@ -172,7 +189,12 @@ namespace Rock.Jobs
                 Model.SpecialRole.None,
                 "B2F664B7-F4E9-4CDA-A1B3-29B6A713070A" );
 
-            migrationHelper.AddSecurityAuthForRestAction( "POST", "Followings^HttpResponseMessage Follow(Guid, Guid, String)",
+            // Follow( Guid, Guid, string ) POST.
+            migrationHelper.AddRestAction( "3D09FD68-06F9-4860-9110-60A015004071",
+                followingControllerName,
+                followingControllerClass );
+
+            migrationHelper.AddSecurityAuthForRestAction( "3D09FD68-06F9-4860-9110-60A015004071",
                 0,
                 Rock.Security.Authorization.VIEW,
                 true,
@@ -180,7 +202,12 @@ namespace Rock.Jobs
                 Model.SpecialRole.None,
                 "865D2996-9A90-483C-9BD2-25122355229A" );
 
-            migrationHelper.AddSecurityAuthForRestAction( "DELETE", "Followings^Void Delete(Guid, Guid, Guid, String)",
+            // Delete( Guid, Guid, string ) DELETE.
+            migrationHelper.AddRestAction( "A3358897-942F-4332-B060-12718DC87CE6",
+                followingControllerName,
+                followingControllerClass );
+
+            migrationHelper.AddSecurityAuthForRestAction( "A3358897-942F-4332-B060-12718DC87CE6",
                 0,
                 Rock.Security.Authorization.VIEW,
                 true,
@@ -190,8 +217,12 @@ namespace Rock.Jobs
 
             //
             // The 'Prayer Requests' related endpoints.
-            // 
-            migrationHelper.AddSecurityAuthForRestAction( "PUT", "PrayerRequests^Void Prayed(Int32)",
+            //
+            migrationHelper.AddRestAction( "86675411-D420-4D8B-A421-2BD8C92F4069",
+                "PrayerRequests",
+                "Rock.Rest.Controllers.PrayerRequestsController" );
+
+            migrationHelper.AddSecurityAuthForRestAction( "86675411-D420-4D8B-A421-2BD8C92F4069",
                 0,
                 Rock.Security.Authorization.VIEW,
                 true,
@@ -199,7 +230,11 @@ namespace Rock.Jobs
                 Model.SpecialRole.None,
                 "98f43094-1188-491b-a43e-1993731ff313" );
 
-            migrationHelper.AddSecurityAuthForRestAction( "PUT", "PrayerRequests^IHttpActionResult Prayed(Guid, Nullable`1[Guid], Boolean)",
+            migrationHelper.AddRestAction( "9696DB0A-4CCC-4530-BC8D-E4E54A438BFA",
+                "PrayerRequests",
+                "Rock.Rest.Controllers.PrayerRequestsController" );
+
+            migrationHelper.AddSecurityAuthForRestAction( "9696DB0A-4CCC-4530-BC8D-E4E54A438BFA",
                 0,
                 Rock.Security.Authorization.VIEW,
                 true,
@@ -210,7 +245,11 @@ namespace Rock.Jobs
             // 
             // The 'Impersonation Token' related endpoints.
             //
-            migrationHelper.AddSecurityAuthForRestAction( "GET", "People^String GetCurrentPersonImpersonationToken(Nullable`1[DateTime], Nullable`1[Int32], Nullable`1[Int32])",
+            migrationHelper.AddRestAction( "A4765A37-043B-49CE-AA9F-C3FFF055176C",
+                "People",
+                "Rock.Rest.Controllers.PeopleController" );
+
+            migrationHelper.AddSecurityAuthForRestAction( "A4765A37-043B-49CE-AA9F-C3FFF055176C",
                 0,
                 Rock.Security.Authorization.VIEW,
                 true,

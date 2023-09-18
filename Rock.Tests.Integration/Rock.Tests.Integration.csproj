@@ -177,12 +177,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Issues\Issues_v16.cs" />
     <Compile Include="Issues\Issues_v15.cs" />
     <Compile Include="Modules\Core\MergeTemplateTests.cs" />
     <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
     <Compile Include="Modules\Core\Lava\Commands\CacheTests.cs" />
     <Compile Include="Modules\Core\Rock.Security\RockSigningCredentialsTests.cs" />
     <Compile Include="Modules\Crm\Following\FollowingTests.cs" />
+    <Compile Include="Modules\Core\Rock.Security\SecurityRoleTests.cs" />
     <Compile Include="Modules\Crm\Groups\GroupRequirementsTests.cs" />
     <Compile Include="Modules\Crm\PersonBulkUpdateProcessorTests.cs" />
     <Compile Include="Modules\Engagement\Achievement\GivingToAccountAchievementTest.cs" />
@@ -203,10 +205,12 @@
     <Compile Include="Modules\Core\FieldTypesListing.cs" />
     <Compile Include="Modules\Crm\CrmModuleTestHelper.cs" />
     <Compile Include="Modules\Crm\PersonAddressTests.cs" />
-    <Compile Include="Modules\Engagement\Interactions\TestDataHelper.Interactions.cs" />
+    <Compile Include="Modules\Engagement\Interactions\InteractionsDataManager.cs" />
     <Compile Include="Modules\Reporting\DataFilter\DataViewTests.cs" />
     <Compile Include="Modules\Reporting\DataFilter\NumericDataFilterFactoryBase.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
+    <Compile Include="TestData\Core\SecurityDataManager.cs" />
+    <Compile Include="TestData\Core\TestDataHelper.Organization.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Core.cs" />
     <Compile Include="TestData\Core\CoreModuleDataFactory.cs" />
     <Compile Include="TestData\Crm\HistoryDataFactory.cs" />
@@ -306,8 +310,9 @@
     <Compile Include="Modules\Core\Model\MetricValueTests.cs" />
     <Compile Include="Modules\Core\Model\RegistrationTests.cs" />
     <Compile Include="Modules\Core\Model\StepTests.cs" />
-    <Compile Include="Modules\Core\Lava\LegacyLavaUpdaterTest.cs" />
     <Compile Include="Modules\Core\Model\DeviceTests.cs" />
+    <Compile Include="TestFramework\IntegrationTestDatabaseInitializer.cs" />
+    <Compile Include="TestFramework\DatabaseRequiredAttribute.cs" />
     <Compile Include="TestFramework\TestExtensionMethods.cs" />
     <Compile Include="ThirdPartyIntegrations\NcoaApi\TrueNcoaApiTests.cs" />
     <Compile Include="Modules\Core\Rock.Logging\RockLogConfigurationTest.cs" />

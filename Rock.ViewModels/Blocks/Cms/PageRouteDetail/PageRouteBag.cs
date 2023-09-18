@@ -19,6 +19,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.PageRouteDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class PageRouteBag : EntityBagBase
     {
         /// <summary>

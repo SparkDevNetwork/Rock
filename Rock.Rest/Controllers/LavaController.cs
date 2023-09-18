@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,7 +48,6 @@ namespace Rock.Rest.Controllers
             lavaOptions.GetPageParameters = false;
             lavaOptions.GetCurrentPerson = true;
             lavaOptions.GetCampuses = true;
-            lavaOptions.GetLegacyGlobalMergeFields = false;
             var currentPerson = GetPerson();
 
             Dictionary<string, object> mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson, lavaOptions );

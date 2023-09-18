@@ -337,7 +337,7 @@ namespace Rock.Communication.Transport
                                             Data = GetPushNotificationData( communication.PushOpenAction, pushData, recipient )
                                         };
 
-                                        if( sound.IsNotNullOrWhiteSpace() )
+                                        if ( sound.IsNotNullOrWhiteSpace() )
                                         {
                                             notification.Android = new AndroidConfig
                                             {
@@ -380,7 +380,7 @@ namespace Rock.Communication.Transport
 
                                         recipient.Status = status;
                                         recipient.TransportEntityTypeName = this.GetType().FullName;
-                                        recipient.UniqueMessageId = response.Responses[0].MessageId;
+                                        recipient.UniqueMessageId = response.Responses?.FirstOrDefault()?.MessageId;
 
                                         if ( recipient.PersonAlias != null )
                                         {
@@ -635,7 +635,8 @@ namespace Rock.Communication.Transport
             // corresponding Firebase device identifier to a list.
             for ( int i = 0; i < response.Responses.Count; i++ )
             {
-                if ( response.Responses[i].Exception.ErrorCode == ErrorCode.NotFound )
+                var currentResponse = response.Responses[i];
+                if ( !currentResponse.IsSuccess && currentResponse.Exception?.ErrorCode == ErrorCode.NotFound )
                 {
                     if ( i < recipients.Count )
                     {

@@ -20,6 +20,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.BlockTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class BlockTypeBag : EntityBagBase
     {
         /// <summary>

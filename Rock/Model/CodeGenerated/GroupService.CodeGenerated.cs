@@ -59,11 +59,7 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<AuthAuditLog>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, AuthAuditLog.FriendlyTypeName );
-                return false;
-            }
+            // ignoring AuthAuditLog,GroupId
 
             if ( new Service<Campus>( Context ).Queryable().Any( a => a.TeamGroupId == item.Id ) )
             {

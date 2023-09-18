@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class MergeTemplateDetailOptionsBag
     {
     }

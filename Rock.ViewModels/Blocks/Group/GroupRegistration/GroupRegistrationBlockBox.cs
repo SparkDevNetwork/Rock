@@ -15,8 +15,12 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Groups.GroupRegistration
+namespace Rock.ViewModels.Blocks.Group.GroupRegistration
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Blocks.BlockBox" />
     public class GroupRegistrationBlockBox : BlockBox
     {
         /// <summary>
@@ -87,5 +91,25 @@ namespace Rock.ViewModels.Blocks.Groups.GroupRegistration
         /// Gets or sets the register button alt text
         /// </summary>
         public string RegisterButtonAltText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text to display for the SMS Opt In checkbox
+        /// </summary>
+        public string SmsOptInDisplayText { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the field is hidden.
+        /// </summary>
+        public bool SmsIsHidden { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the field is shown.
+        /// </summary>
+        public bool SmsIsShowFirstAdult { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the field is required.
+        /// </summary>
+        public bool SmsIsShowAllAdults { get; set; }
     }
 }

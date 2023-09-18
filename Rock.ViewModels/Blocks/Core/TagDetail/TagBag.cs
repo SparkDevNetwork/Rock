@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.TagDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class TagBag : EntityBagBase
     {
         /// <summary>
@@ -73,5 +77,13 @@ namespace Rock.ViewModels.Blocks.Core.TagDetail
         /// Gets or sets the owner person alias.
         /// </summary>
         public ListItemBag OwnerPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current user has Administrate Authorization.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can administrate; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanAdministrate { get; set; }
     }
 }

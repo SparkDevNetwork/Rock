@@ -74,6 +74,7 @@
     <Compile Include="Communication\CommunicationMessageFilter.cs" />
     <Compile Include="Communication\CommunicationRecipientStatus.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />
+    <Compile Include="Controls\CodeEditor.cs" />
     <Compile Include="Controls\DayOfWeek.cs" />
     <Compile Include="Communication\NotificationClassification.cs" />
     <Compile Include="Communication\SegmentCriteria.cs" />
@@ -160,6 +161,8 @@
     <Compile Include="Group\ParticipationType.cs" />
     <Compile Include="Group\RequirementCheckType.cs" />
     <Compile Include="Group\ScheduleConfirmationLogic.cs" />
+    <Compile Include="Net\CookieSameSiteMode.cs" />
+    <Compile Include="Net\ResponseElementLocation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\FieldFilterSourceType.cs" />
     <Compile Include="Reporting\FilterExpressionType.cs" />
@@ -168,6 +171,7 @@
     <Compile Include="Reporting\ReportFieldType.cs" />
     <Compile Include="Reporting\UnitType.cs" />
     <Compile Include="Blocks\Security\ConfirmAccount\ConfirmAccountViewType.cs" />
+    <Compile Include="Workflow\WorkflowActionFormShowHideOption.cs" />
     <Compile Include="Workflow\WorkflowActionFormPersonEntryOption.cs" />
     <Compile Include="Workflow\WorkflowLoggingLevel.cs" />
     <Compile Include="Workflow\WorkflowTriggerType.cs" />

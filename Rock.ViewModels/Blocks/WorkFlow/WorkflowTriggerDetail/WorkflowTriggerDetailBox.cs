@@ -20,6 +20,11 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Workflow.WorkflowTriggerDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Blocks.BlockBox" />
+    /// <seealso cref="Rock.ViewModels.Utility.IValidPropertiesBox" />
     public class WorkflowTriggerDetailBox : BlockBox, IValidPropertiesBox
     {
         /// <summary>

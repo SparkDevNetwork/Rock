@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class WebFarmSettingsDetailOptionsBag
     {
     }

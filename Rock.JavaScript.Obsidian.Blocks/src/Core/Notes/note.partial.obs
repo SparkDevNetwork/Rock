@@ -37,11 +37,9 @@
 
                         <span class="note-details">
                             <span v-if="!noteOptions.isLightMode" class="tag-flair">
-                                <span class="tag-color"></span>
-
                                 <i v-if="note.isWatching" class="fa fa-eye mr-1 note-watching-icon" title="You are watching this note."></i>
 
-                                <span class="tag-label">{{ note.noteType.name }}</span>
+                                <span class="tag-label" :class="{ 'has-color': !!colorPair }">{{ note.noteType.name }}</span>
                                 &nbsp;&middot;&nbsp;
                             </span>
 
@@ -145,8 +143,14 @@
     color: var(--state-danger-text, #fcf2f1);
 }
 
-.tag-color {
-    background-color: var(--note-dark-color, #999);
+.tag-label {
+    background-color: var(--note-light-color, inherit);
+    color: var(--note-dark-color, inherit);
+}
+
+.tag-label.has-color {
+    padding: 4px 16px;
+    border-radius: 4px;
 }
 
 .meta > .label-warning {
@@ -561,6 +565,10 @@
             setPropertiesBoxValue(request, "isAlert", editNoteBag.value.isAlert);
             setPropertiesBoxValue(request, "isPrivate", editNoteBag.value.isPrivate);
             setPropertiesBoxValue(request, "attributeValues", editNoteBag.value.attributeValues);
+
+            if (editNoteBag.value.createdDateTime) {
+                setPropertiesBoxValue(request, "createdDateTime", editNoteBag.value.createdDateTime);
+            }
 
             const result = await invokeBlockAction<NoteBag>("SaveNote", { request });
 

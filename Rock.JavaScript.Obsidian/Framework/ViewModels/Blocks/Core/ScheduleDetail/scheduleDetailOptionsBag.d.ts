@@ -24,15 +24,21 @@
 import { ScheduleExclusionBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleExclusionBag";
 
 export type ScheduleDetailOptionsBag = {
+    /** Gets or sets a value indicating whether this instance can delete. */
     canDelete: boolean;
 
+    /** Gets or sets the exclusions. */
     exclusions?: ScheduleExclusionBag[] | null;
 
+    /** Gets or sets a value indicating whether this instance has attendance. */
     hasAttendance: boolean;
 
+    /** Gets or sets a value indicating whether this instance has schedule warning. */
     hasScheduleWarning: boolean;
 
+    /** Gets or sets the help text. */
     helpText?: string | null;
 
+    /** Gets or sets the next occurrence. */
     nextOccurrence?: string | null;
 };

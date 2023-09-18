@@ -10,20 +10,22 @@
                 <div class="form-control-group">
                     <input
                            :id="uniqueId + '_lower'"
-                           @change="onChange"
                            type="number"
                            class="input-width-md form-control"
                            :class="inputClasses"
-                           v-model="internalValue.lower"
+                           :value="internalValue.lower"
+                           @input="onLowerInput"
+                           @change="onLowerChange"
                            :step="internalStep" />
                     <span class="to">to</span>
                     <input
                            :id="uniqueId + '_upper'"
-                           @change="onChange"
                            type="number"
                            class="input-width-md form-control"
                            :class="inputClasses"
-                           v-model="internalValue.upper"
+                           :value="internalValue.upper"
+                           @input="onUpperInput"
+                           @change="onUpperChange"
                            :step="internalStep" />
                 </div>
             </div>
@@ -37,6 +39,7 @@
     import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
     import RockFormField from "./rockFormField.obs";
+    import { deepEqual } from "@Obsidian/Utility/util";
 
     const props = defineProps({
         modelValue: {
@@ -89,15 +92,35 @@
         return value !== "," ? value : "";
     });
 
+    function onLowerInput(e: Event): void {
+        internalValue.value.lower = (e.target as HTMLInputElement).value;
+    }
+
+    function onLowerChange(e): void {
+        internalValue.value.lower = (e.target as HTMLInputElement).value;
+        onChange();
+    }
+
+    function onUpperInput(e: Event): void {
+        internalValue.value.upper = (e.target as HTMLInputElement).value;
+    }
+
+    function onUpperChange(e): void {
+        internalValue.value.upper = (e.target as HTMLInputElement).value;
+        onChange();
+    }
+
     function onChange(): void {
         internalValue.value = {
-            lower: asFormattedString(props.modelValue?.lower ?? null, props.decimalCount ?? undefined, { useGrouping: false }),
-            upper: asFormattedString(props.modelValue?.upper ?? null, props.decimalCount ?? undefined, { useGrouping: false })
+            lower: asFormattedString(parseFloat(internalValue.value?.lower ?? ""), props.decimalCount ?? undefined, { useGrouping: false }),
+            upper: asFormattedString(parseFloat(internalValue.value?.upper ?? ""), props.decimalCount ?? undefined, { useGrouping: false })
         };
     }
 
     watch(computedValue, () => {
-        emit("update:modelValue", computedValue.value);
+        if (!deepEqual(computedValue.value, props.modelValue, false)) {
+            emit("update:modelValue", computedValue.value);
+        }
     });
 
     watch(() => props.modelValue, () => {

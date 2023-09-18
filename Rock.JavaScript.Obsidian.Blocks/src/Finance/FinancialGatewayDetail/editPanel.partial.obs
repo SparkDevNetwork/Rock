@@ -1,0 +1,241 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-1">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+
+            <div class="col-md-5">
+                <NotificationBox v-if="!isActive"
+                                 alertType="warning"
+                                 v-html="inactiveGatewayMessage" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ComponentPicker label="Gateway Type"
+                                 v-model="gatewayType"
+                                 containerType="Rock.Financial.GatewayContainer"
+                                 showBlankItem
+                                 rules="required" />
+
+                <DropDownList label="Batch Schedule"
+                              v-model="batchSchedule"
+                              :items="scheduleOptions"
+                              help="By default Rock creates batches for transactions on a daily basis. If you choose, you can make the batches weekly (rather than daily) such that a new batch is started at the designated day of the week and time every week." />
+
+                <TimePicker label="Batch Time Offset"
+                            v-model="batchTimeOffsetTicks"
+                            help="By default online payments will be grouped into batches with a start time 12:00:00 AM. However if the payment gateway groups transactions into batches based on a different time, this offset can specified so that Rock will use the same time when creating batches for online transactions" />
+
+                <DayOfWeekPicker v-if="showDayOfWeekPicker"
+                                 label="Batch Start Day"
+                                 v-model="dayOfWeek"
+                                 :showBlankItem="true"
+                                 rules="required"
+                                 help="The day of the week that Rock will create new batches."
+                                 :multiple="false" />
+            </div>
+
+            <div class="col-md-6">
+                <AttributeValuesContainer v-model="attributeValues" :showCategoryLabel="false" :attributes="attributes" isEditMode :numberOfColumns="1" />
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import TimePicker from "@Obsidian/Controls/timePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { FinancialGatewayBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialGatewayDetail/financialGatewayBag";
+    import { FinancialGatewayDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialGatewayDetail/financialGatewayDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FinancialGatewayBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<FinancialGatewayDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FinancialGatewayBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const weeklySchedule = "Weekly";
+    const dailySchedule = "Daily";
+    const defaultInactiveMessage = "<strong>Important!</strong> An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const batchTimeOffsetTicks = propertyRef(getTimePickerValue(props.modelValue.batchTimeOffsetTicks), "BatchTimeOffsetTicks");
+    const gatewayType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
+    const batchSchedule = ref(props.modelValue.batchSchedule ?? "");
+    const dayOfWeek = ref(props.modelValue.batchStartDay ?? "");
+    const inactiveGatewayMessage = ref(props.modelValue.inactiveGatewayNotificationMessage ?? "");
+    const scheduleOptions = ref([
+        {
+            text: dailySchedule,
+            value: dailySchedule
+        },
+        {
+            text: weeklySchedule,
+            value: weeklySchedule
+        }
+    ] as ListItemBag[]);
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, gatewayType, batchTimeOffsetTicks];
+
+    // #endregion
+
+    // #region Computed Values
+    const showDayOfWeekPicker = computed(() => {
+        return batchSchedule.value == weeklySchedule;
+    });
+    // #endregion
+
+    // #region Functions
+    function getTimePickerValue(timeSpan: string | null | undefined): TimePickerValue {
+        const values = /^(\d+):(\d+)/.exec(timeSpan ?? "");
+
+        if (values !== null) {
+            return {
+                hour: toNumber(values[1]),
+                minute: toNumber(values[2])
+            };
+        }
+        else {
+            return {};
+        }
+    }
+
+    function getTimePickerValueString(timePickerValue: TimePickerValue): string {
+        return `${timePickerValue.hour}:${timePickerValue.minute}`;
+    }
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch(() => isActive.value, async () => {
+        // Show message when isInactive is false.
+        if (isActive.value) {
+            return;
+        }
+
+        // When in add mode don't send request at all, use default message.
+        if (props.modelValue?.idKey) {
+            if (!isActive.value && !inactiveGatewayMessage.value) {
+
+                inactiveGatewayMessage.value = defaultInactiveMessage;
+
+                const result = await invokeBlockAction<{ inactiveGatewayMessage: string }>("GetInactiveGatewayMessage", {
+                    key: props.modelValue?.idKey
+                });
+
+                if (result.isSuccess && result.data) {
+                    inactiveGatewayMessage.value = result.data.inactiveGatewayMessage;
+                }
+            }
+        }
+        else {
+            inactiveGatewayMessage.value = defaultInactiveMessage;
+        }
+    }, {
+        immediate: true
+    });
+
+    // Get the component description and set as description if description is empty.
+    watch(() => gatewayType.value, async () => {
+        // if user has already entered a description then return.
+        if (description.value) {
+            return;
+        }
+
+        const entityTypeGuid = gatewayType.value.value;
+        if (entityTypeGuid) {
+            const result = await invokeBlockAction<{ description: string }>("GetGatewayComponentDescription", {
+                entityTypeGuid: entityTypeGuid
+            });
+
+            if (result.isSuccess && result.data) {
+                description.value = result.data.description;
+            }
+        }
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(gatewayType, props.modelValue.entityType ?? {});
+        updateRefValue(batchTimeOffsetTicks, getTimePickerValue(props.modelValue.batchTimeOffsetTicks));
+        updateRefValue(dayOfWeek, props.modelValue.batchStartDay ?? "");
+        updateRefValue(batchSchedule, props.modelValue.batchSchedule ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, dayOfWeek, batchSchedule, ...propRefs], () => {
+        const newValue: FinancialGatewayBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            entityType: gatewayType.value,
+            batchTimeOffsetTicks: getTimePickerValueString(batchTimeOffsetTicks.value),
+            batchStartDay: dayOfWeek.value,
+            batchSchedule: batchSchedule.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

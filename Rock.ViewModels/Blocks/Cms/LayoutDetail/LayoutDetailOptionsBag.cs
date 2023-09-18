@@ -21,8 +21,14 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.LayoutDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class LayoutDetailOptionsBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public List<ListItemBag> LayoutFileOptions { get; set; }
     }
 }

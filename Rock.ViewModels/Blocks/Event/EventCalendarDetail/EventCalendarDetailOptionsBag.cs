@@ -19,6 +19,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Event.EventCalendarDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class EventCalendarDetailOptionsBag
     {
         /// <summary>

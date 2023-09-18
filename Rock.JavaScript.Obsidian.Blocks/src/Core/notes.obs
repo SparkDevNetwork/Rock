@@ -24,7 +24,7 @@
                                 :showSecurity="noteOptions.showSecurity"
                                 :hideCancel="config.addAlwaysVisible"
                                 autoSize
-                                autoFocus
+                                :autoFocus="!config.addAlwaysVisible"
                                 @cancel="onNoteAddCancel"
                                 @save="onNoteAddSave" />
                 </div>
@@ -42,7 +42,7 @@
                                 :showSecurity="noteOptions.showSecurity"
                                 :hideCancel="config.addAlwaysVisible"
                                 autoSize
-                                autoFocus
+                                :autoFocus="!config.addAlwaysVisible"
                                 @cancel="onNoteAddCancel"
                                 @save="onNoteAddSave" />
                 </div>
@@ -204,6 +204,10 @@
             setPropertiesBoxValue(request, "isAlert", addNoteBag.value.isAlert);
             setPropertiesBoxValue(request, "isPrivate", addNoteBag.value.isPrivate);
             setPropertiesBoxValue(request, "attributeValues", addNoteBag.value.attributeValues);
+
+            if (addNoteBag.value.createdDateTime) {
+                setPropertiesBoxValue(request, "createdDateTime", addNoteBag.value.createdDateTime);
+            }
 
             const result = await invokeBlockAction<NoteBag>("SaveNote", { request });
 

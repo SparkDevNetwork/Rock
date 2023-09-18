@@ -4,9 +4,9 @@
         <template #default="{uniqueId}">
             <div class="d-flex flex-nowrap js-mediaselector">
                 <template v-for="item in mediaItems">
-                    <div v-if="item.key != '' && item.value != ''" style="display: grid;" :class="cssClasses(internalValue, item)">
+                    <div v-if="item.key && item.value" style="display: grid;" :class="cssClasses(internalValue, item)">
                         <img v-if="mode == MediaSelectorMode.Image" :src="valueForItem(item)" alt="#" class="img-fluid" :style="{ width: itemWidth }" />
-                        <audio v-else :src="valueForItem(item)" controls></audio>
+                        <audio v-else :src="valueForItem(item)" controls controlslist="nodownload"></audio>
                         <div class="custom-control-label align-self-end" style="text-align: left;">
                             <div class="checkbox">
                                 <label>
@@ -66,7 +66,7 @@
 
     const valueForItem = (item: KeyValueItem): string => item.value ?? "";
     const cssClasses = (value: string[], item: KeyValueItem): string => {
-        let classes = "well well-message mr-2 p-2 js-media-selector-item";
+        let classes = "well well-message flex-eq mr-2 p-2 js-media-selector-item";
         if (value.includes(item.key ?? "")) {
             classes += " well-message-danger";
         }
@@ -75,12 +75,9 @@
     };
     const syncInternalValue = (): void => {
         let value = [...props.modelValue];
-
-        // Ensure they are all valid values and make sure they are the
-        // correct matching value from the item rather than what was
-        // originally provided.
+        var lastItem = value.slice(-1);
         value = props.mediaItems
-            .filter(o => value.some(v => props.compareValue(v, o.key ?? "")))
+            .filter(o => lastItem.some(v => props.compareValue(v, o.key ?? "")))
             .map(o => o.key ?? "");
 
         updateRefValue(internalValue, value);

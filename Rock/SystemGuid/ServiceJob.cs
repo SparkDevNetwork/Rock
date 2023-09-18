@@ -204,6 +204,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_160_UPDATE_NOTE_DATA = "3768889a-ba73-4cff-91f9-cc0f92780745";
 
         /// <summary>
+        /// The Job to run Post v16.0 Data Migrations to update the media element default urls.
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_UPDATE_MEDIA_ELEMENT_DEFAULT_URLS = "3f2a18ce-882d-4687-a4e4-b2a34af2777d";
+
+        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
@@ -277,10 +282,19 @@ namespace Rock.SystemGuid
         public const string UPDATE_PERSISTED_ATTRIBUTE_VALUE = "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70";
 
         /// <summary>
-        /// The Job to run data migration on Schedule Detail, Short Link Detail, Asset Storage Provider,
-        /// Streak Type Detial, Batch Detail, Event Detail, Prayer Request Detail, Streak Detail
-        /// Webforms blocks to chop them to obsidian blocks.
+        /// The Post Update Data Migration Job to swap the Notes Block
         /// </summary>
-        public const string DATA_MIGRATIONS_160_REPLACE_8_BLOCKS_WITH_OBSIDIAN_BLOCKS = "7EF9B02B-8FA5-4424-93B2-BABB819DC4B9";
+        public const string DATA_MIGRATIONS_SWAP_NOTES_BLOCK = "8390C1AC-88D6-474A-AC05-8FFBD358F75D";
+
+        /// <summary>
+        /// The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
+        /// Following Event Type Detail, Financial Batch Detail
+        /// </summary>
+        public const string DATA_MIGRATIONS_CHOP_BLOCKS_GROUP_1 = "54FACAE5-2175-4FE0-AC9F-5CDA957BCFB5";
+
+        /// <summary>
+        /// The post update data migration job to chop the Group Registration block
+        /// </summary>
+        public const string DATA_MIGRATIONS_160_CHOP_BLOCKS_GROUP_REGISTRATION = "72D9EC04-517A-4CA0-B631-9F9A41F1790D";
     }
 }
