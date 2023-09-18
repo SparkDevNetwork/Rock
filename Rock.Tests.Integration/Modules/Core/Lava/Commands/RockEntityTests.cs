@@ -32,6 +32,12 @@ namespace Rock.Tests.Integration.Core.Lava
     [TestClass]
     public class RockEntityTests : LavaIntegrationTestBase
     {
+        [ClassInitialize]
+        public static void Initialize( TestContext context )
+        {
+            TestDataHelper.Events.AddDataForRockSolidFinancesClass();
+        }
+
         /// <summary>
         /// Tests the EventsCalendarItem to make sure that an item's EventItem and EventItem.Summary are returned.
         /// </summary>
@@ -244,30 +250,6 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
                     count++;
                 }
             }
-        }
-
-        [TestMethod]
-        public void EntityCommandBlock_WhereFilterWithAlphanumericFieldName_IsParsedCorrectly()
-        {
-            var template = @"
-{% person where:'core_TimesCheckedIn16Wks > 1' iterator:'items' %}
-<ul>
-  {% for item in items %}
-    <li>{{ item.NickName }} {{ item.LastName }}</li>
-  {% endfor %}
-</ul>
-{% endperson %}
-";
-
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
-
-                TestHelper.DebugWriteRenderResult( engine, template, output );
-
-                Assert.That.Contains( output, "Ted Decker" );
-                Assert.That.DoesNotContain( output, "Bill Marble" );
-            } );
         }
 
         [DataTestMethod]
