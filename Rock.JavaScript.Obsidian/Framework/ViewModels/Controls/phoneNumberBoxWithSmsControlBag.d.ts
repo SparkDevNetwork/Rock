@@ -27,7 +27,7 @@ export type PhoneNumberBoxWithSmsControlBag = {
     countryCode?: string | null;
 
     /** Gets or sets a value indicating whether this instance is messaging enbabled. */
-    isMessagingEnbabled: boolean;
+    isMessagingEnabled: boolean;
 
     /** Gets or sets the numbers. */
     number?: string | null;
