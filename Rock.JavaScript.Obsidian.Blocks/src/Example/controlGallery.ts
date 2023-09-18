@@ -3762,6 +3762,12 @@ const modalGallery = defineComponent({
     setup() {
         return {
             isOpen: ref(false),
+            saveText: ref<string>("Save"),
+            cancelText: ref<string>("Cancel"),
+            isFooterHidden: ref(false),
+            isSaveButtonDisabled: ref(false),
+            isCloseButtonHidden: ref(false),
+            clickBackdropToClose: ref(false),
             value: "",
             importCode: getControlImportPath("modal"),
             exampleCode: `<Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
@@ -3775,11 +3781,42 @@ const modalGallery = defineComponent({
     :exampleCode="exampleCode">
     <CheckBox label="Is Open" v-model="isOpen" />
 
-    <Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
+    <Modal v-model="isOpen"
+           title="Modal Dialog Title"
+           :saveText="saveText"
+           :cancelText="cancelText"
+           :isFooterHidden="isFooterHidden"
+           :isSaveButtonDisabled="isSaveButtonDisabled"
+           :isCloseButtonHidden="isCloseButtonHidden"
+           :clickBackdropToClose="clickBackdropToClose"
+           @save="isOpen = false">
         <TextBox label="Required Value" v-model="value" rules="required" />
     </Modal>
 
     <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox label="Save Text" v-model="saveText" help="If an empty string is provided, the Save button will be hidden." />
+            </div>
+            <div class="col-md-4">
+                <TextBox label="Cancel Text" v-model="cancelText" help="If an empty string is provided, the Cancel button will be hidden." />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Is Footer Hidden" v-model="isFooterHidden" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Is Save Button Disabled" v-model="isSaveButtonDisabled" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Is Close Button Hidden" v-model="isCloseButtonHidden" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Click Backdrop to Close" v-model="clickBackdropToClose" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
