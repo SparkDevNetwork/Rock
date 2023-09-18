@@ -1374,7 +1374,7 @@ namespace Rock.Blocks.Event
 
                 foreach ( var field in fields )
                 {
-                    var value = GetCurrentFieldValue( rockContext, person, registrant, field );
+                    var value = GetCurrentFieldValue( rockContext, person, registrant, field, registrationContext );
 
                     if ( value != null )
                     {
@@ -1394,12 +1394,12 @@ namespace Rock.Blocks.Event
         /// <param name="registrant">The registrant to use when retrieving registrant attribute values..</param>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object GetCurrentFieldValue( RockContext rockContext, Person person, RegistrationRegistrant registrant, RegistrationTemplateFormField field )
+        private object GetCurrentFieldValue( RockContext rockContext, Person person, RegistrationRegistrant registrant, RegistrationTemplateFormField field, RegistrationContext registrationContext )
         {
             switch ( field.FieldSource )
             {
                 case RegistrationFieldSource.PersonField:
-                    return GetPersonCurrentFieldValue( rockContext, person, field );
+                    return GetPersonCurrentFieldValue( rockContext, person, field, registrationContext );
 
                 case RegistrationFieldSource.PersonAttribute:
                     return GetEntityCurrentClientAttributeValue( rockContext, person, field );
@@ -1418,7 +1418,7 @@ namespace Rock.Blocks.Event
         /// <param name="person">The person.</param>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object GetPersonCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field )
+        private object GetPersonCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field, RegistrationContext registrationContext )
         {
             switch ( field.PersonFieldType )
             {
@@ -1501,7 +1501,13 @@ namespace Rock.Blocks.Event
 
                 case RegistrationPersonFieldType.MobilePhone:
                     var mobilePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-                    return CreatePhoneNumberBoxWithSmsControlBag( mobilePhone );
+                    if ( registrationContext.RegistrationSettings.ShowSmsOptIn )
+                    {
+                        return CreatePhoneNumberBoxWithSmsControlBag( mobilePhone );
+                    }
+
+                    return mobilePhone?.Number;
+                    
             }
 
             return null;
