@@ -409,7 +409,8 @@
     <Compile Include="Rest\Controls\BlockTemplatePickerGetBlockTemplatesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsResultItemBag.cs" />
     <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsOptionsBag.cs" />
-    <Compile Include="Rest\Controls\EntityPickerGetFieldTypeGuidOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityPickerGetFieldTypeConfigurationResultsBag.cs" />
+    <Compile Include="Rest\Controls\EntityPickerGetFieldTypeConfigurationOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityPickerGetEntityTypeGuidsOptionsBag.cs" />
     <Compile Include="Rest\Controls\PhoneNumberBoxGetConfigurationOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemOptionsBag.cs" />

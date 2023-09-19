@@ -24,9 +24,12 @@
 import { Guid } from "@Obsidian/Types";
 
 /** The options that can be passed to the GetEntityTypeGuids API action of the EntityPicker control. */
-export type EntityPickerGetFieldTypeGuidOptionsBag = {
+export type EntityPickerGetFieldTypeConfigurationOptionsBag = {
     /** Gets or sets the entity type unique identifier. */
     entityTypeGuid?: Guid | null;
+
+    /** Value that represents the entity */
+    entityValue?: string | null;
 
     /** Gets or sets the security grant token to use when performing authorization checks. */
     securityGrantToken?: string | null;

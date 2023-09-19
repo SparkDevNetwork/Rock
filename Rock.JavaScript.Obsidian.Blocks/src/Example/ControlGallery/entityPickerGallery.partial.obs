@@ -1,7 +1,7 @@
 <template>
-    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+    <GalleryAndResult :value="{ value, entityType }" :importCode="importCode" :exampleCode="exampleCode" enableReflection hasMultipleValues>
 
-        <EntityPicker v-model="value" />
+        <EntityPicker v-model="value" v-model:entityType="entityType" />
 
         <template #settings>
             <div class="row">
@@ -18,7 +18,11 @@
     import EntityPicker from "@Obsidian/Controls/entityPicker.obs";
     import { getSfcControlImportPath } from "./utils.partial";
 
-    const value = ref(null);
+    const value = ref("{\"value\":\"50b94dc8-1a39-4537-93cf-93a5717f06a9\",\"text\":\"Bus 1\"}");
+    const entityType = ref({
+        "value": "9bbfda11-0d22-40d5-902f-60adfbc88987",
+        "text": "Group"
+    });
     const someBool = ref(false);
     const someVal = ref("");
 

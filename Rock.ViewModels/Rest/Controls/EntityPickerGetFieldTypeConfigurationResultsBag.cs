@@ -22,17 +22,16 @@ namespace Rock.ViewModels.Rest.Controls
     /// <summary>
     /// The options that can be passed to the GetEntityTypeGuids API action of the EntityPicker control.
     /// </summary>
-    public class EntityPickerGetFieldTypeGuidOptionsBag
+    public class EntityPickerGetFieldTypeConfigurationResultsBag
     {
         /// <summary>
-        /// Gets or sets the entity type unique identifier.
+        /// The GUID of the field type that is associated with the given entity
         /// </summary>
-        /// <value>The entity type unique identifier.</value>
-        public Guid EntityTypeGuid { get; set; }
+        public Guid FieldTypeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the security grant token to use when performing authorization checks.
+        /// Configuration Values to use for the field's Edit component
         /// </summary>
-        public string SecurityGrantToken { get; set; }
+        public Dictionary<string, string> ConfigurationValues { get; set; }
     }
 }

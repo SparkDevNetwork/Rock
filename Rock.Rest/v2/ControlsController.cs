@@ -2171,10 +2171,10 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe which items to load.</param>
         /// <returns>A GUID of the field type</returns>
         [HttpPost]
-        [System.Web.Http.Route( "EntityPickerGetFieldTypeGuid" )]
+        [System.Web.Http.Route( "EntityPickerGetFieldTypeConfiguration" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "6BDA28C3-E6D7-42EB-9011-0C076455D4A7" )]
-        public IHttpActionResult EntityPickerGetFieldTypeGuid( [FromBody] EntityPickerGetFieldTypeGuidOptionsBag options )
+        public IHttpActionResult EntityPickerGetFieldTypeConfiguration( [FromBody] EntityPickerGetFieldTypeConfigurationOptionsBag options )
         {
             if (options.EntityTypeGuid == null)
             {
@@ -2188,14 +2188,25 @@ namespace Rock.Rest.v2
                 return NotFound();
             }
 
-            var fieldTypeGuid = entityType.SingleValueFieldType.Guid;
+            var fieldType = entityType.SingleValueFieldType;
+            var fieldTypeGuid = fieldType.Guid;
 
-            if ( fieldTypeGuid == null )
+            if ( fieldType == null || fieldTypeGuid == null )
             {
                 return NotFound();
             }
 
-            return Ok( fieldTypeGuid );
+            var field = fieldType.Field;
+
+            var entityValue = options.EntityValue ?? "";
+            var privateValue = field.GetPrivateEditValue( entityValue, new Dictionary<string, string>() );
+            var configurationValues = field.GetPublicConfigurationValues( new Dictionary<string, string>(), Field.ConfigurationValueUsage.Edit, privateValue );
+
+            return Ok( new EntityPickerGetFieldTypeConfigurationResultsBag
+            {
+                FieldTypeGuid = fieldTypeGuid,
+                ConfigurationValues = configurationValues
+            } );
         }
 
         #endregion
