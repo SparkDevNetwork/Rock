@@ -2546,7 +2546,7 @@ namespace Rock.Data
 
                 // .ToTable( "name" )
                 var toTableMethod = entityTypeConfiguration.GetType().GetMethod( "ToTable", new [] { typeof( string ) } );
-                toTableMethod.Invoke( entityTypeConfiguration, new object[] { $"EntityAttributeValue_{entityTableName}" } );
+                toTableMethod.Invoke( entityTypeConfiguration, new object[] { $"AttributeValue_{entityTableName}" } );
             }
         }
     }

@@ -79,6 +79,12 @@ namespace Rock.Data
         public string PersistedCondensedHtmlValue { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether the persisted values are dirty.
+        /// </summary>
+        /// <value><c>true</c> if the peristed values are dirty; otherwise, <c>false</c>.</value>
+        public bool IsPersistedValueDirty { get; private set; }
+
+        /// <summary>
         /// Gets the value checksum. This is a hash of <see cref="Value"/> that
         /// is automatically calculated by the database.
         /// </summary>

@@ -763,7 +763,7 @@ SELECT
     [m].[definition] AS [Definition]
 FROM [sys].[sql_modules] AS [m]
 INNER JOIN [sys].[objects] AS [o] ON [o].[object_id] = [m].[object_id]
-WHERE [o].[name] LIKE 'EntityAttributeValue_%' AND [o].[type] = 'V'
+WHERE [o].[name] LIKE 'AttributeValue_%' AND [o].[type] = 'V'
 " ).ToList();
 
                 // Don't use the cache since it might not be safe yet.
@@ -799,9 +799,16 @@ WHERE [o].[name] LIKE 'EntityAttributeValue_%' AND [o].[type] = 'V'
                         entityTypeId = new EntityTypeService( rockContext ).Get( type, true, null ).Id;
                     }
 
-                    var viewName = CreateOrUpdateAttributeValueView( rockContext, type, entityTypeId, entityTableName, existingViews );
+                    try
+                    {
+                        var viewName = CreateOrUpdateAttributeValueView( rockContext, type, entityTypeId, entityTableName, existingViews );
 
-                    knownViews.Add( viewName );
+                        knownViews.Add( viewName );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( $"Failed to initialize attribute value view for '{type.FullName}'.", ex ) );
+                    }
                 }
 
                 // Drop any old views we no longer need.
@@ -823,7 +830,7 @@ WHERE [o].[name] LIKE 'EntityAttributeValue_%' AND [o].[type] = 'V'
         /// </remarks>
         private static string CreateOrUpdateAttributeValueView( RockContext rockContext, Type type, int entityTypeId, string entityTableName, List<SqlViewDefinition> viewDefinitions )
         {
-            var viewName = $"EntityAttributeValue_{entityTableName}";
+            var viewName = $"AttributeValue_{entityTableName}";
             var qualifierChecks = string.Empty;
             var additionalJoins = string.Empty;
 
@@ -869,6 +876,7 @@ SELECT
     [AV].[PersistedHtmlValue],
     [AV].[PersistedCondensedTextValue],
     [AV].[PersistedCondensedHtmlValue],
+    [AV].[IsPersistedValueDirty],
     [AV].[ValueChecksum]
 FROM [{entityTableName}] AS [E]
 INNER JOIN [AttributeValue] AS [AV] ON [AV].[EntityId] = [E].[Id]
@@ -887,12 +895,13 @@ SELECT
     [E].[Id] AS [EntityId],
     [A].[Id] AS [AttributeId],
     [A].[Key],
-    [A].[DefaultValue] AS [Value],
-    [A].[DefaultPersistedTextValue],
-    [A].[DefaultPersistedHtmlValue],
-    [A].[DefaultPersistedCondensedTextValue],
-    [A].[DefaultPersistedCondensedHtmlValue],
-    CHECKSUM([A].[DefaultValue]) AS [ValueChecksum]
+    ISNULL([A].[DefaultValue], '') AS [Value],
+    [A].[DefaultPersistedTextValue] AS [PersistedTextValue],
+    [A].[DefaultPersistedHtmlValue] AS [PersistedHtmlValue],
+    [A].[DefaultPersistedCondensedTextValue] AS [PersistedCondensedTextValue],
+    [A].[DefaultPersistedCondensedHtmlValue] AS [PersistedCondensedHtmlValue],
+    [A].[IsDefaultPersistedValueDirty] AS [IsPersistedValueDirty],
+    CHECKSUM(ISNULL([A].[DefaultValue], '')) AS [ValueChecksum]
 FROM [{entityTableName}] AS [E]
 INNER JOIN [Attribute] AS [A] ON [A].[EntityTypeId] = {entityTypeId}
 LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]{additionalJoins}
@@ -911,14 +920,12 @@ WHERE ([AV].[Value] IS NULL OR [AV].[Value] = '' OR [AV].[ValueChecksum] = CHECK
             {
                 // View doesn't exist.
                 rockContext.Database.ExecuteSqlCommand( sql );
-                //Debug.WriteLine( $"Created attribute view for '{entityTableName}'." );
             }
             else if ( existingDefinition != sql )
             {
                 // View exists but doesn't match definition.
                 rockContext.Database.ExecuteSqlCommand( $"DROP VIEW [dbo].[{viewName}]" );
                 rockContext.Database.ExecuteSqlCommand( sql );
-                //Debug.WriteLine( $"Updated attribute view for '{entityTableName}'." );
             }
 
             return viewName;
