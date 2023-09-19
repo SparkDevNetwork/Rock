@@ -64,6 +64,7 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_151_DUPLICATE_MOBILE_INTERACTIONS_CLEANUP.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_150_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_152_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_152_IX_VALUE_AS_PERSON_ID.AsGuid()
         };
 
 

@@ -149,6 +149,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_150_SYSTEM_PHONE_NUMBERS = "6DFE731E-F28B-40B3-8383-84212A301214";
 
         /// <summary>
+        /// The Job to run Post v15.2 Data Migrations for the AttributeValue.IX_ValueAsPersonId index.
+        /// </summary>
+        public const string DATA_MIGRATIONS_152_IX_VALUE_AS_PERSON_ID = "5DC19FB3-AB0B-48F3-817D-9023C65C5F8A";
+
+        /// <summary>
         /// The Job to run Post v15.1 Replace Web Forms Blocks with Obsidian Blocks.
         /// </summary>
         public const string DATA_MIGRATIONS_150_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS = "EA00D1D4-709A-4102-863D-08471AA2C345";
