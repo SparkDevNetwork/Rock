@@ -981,7 +981,7 @@ namespace Rock.Web
         [Obsolete( "Parent page references is handled internally." )]
         public static List<PageReference> GetParentPageReferences( RockPage rockPage, PageCache currentPage, PageReference currentPageReference )
         {
-            return GetParentPageReferences( rockPage, currentPage, currentPageReference, null );
+            return new List<PageReference>();
         }
 
         /// <summary>
@@ -996,14 +996,7 @@ namespace Rock.Web
         [Obsolete( "Parent page references is handled internally." )]
         public static List<PageReference> GetParentPageReferences( RockPage rockPage, PageCache currentPage, PageReference currentPageReference, string keySuffix )
         {
-            var references = GetBreadCrumbPageReferences( rockPage, currentPage, currentPageReference, keySuffix );
-
-            if ( references.Count > 0 )
-            {
-                return references.Take( references.Count - 1 ).ToList();
-            }
-
-            return references;
+            return new List<PageReference>();
         }
 
         /// <summary>
@@ -1014,7 +1007,6 @@ namespace Rock.Web
         [Obsolete( "Caching of page references for use as breadcrumbs is handled internally." )]
         public static void SavePageReferences( List<PageReference> pageReferences )
         {
-            SavePageReferences( pageReferences, null );
         }
 
         /// <summary>

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Net.Http;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -321,16 +322,22 @@ namespace RockWeb.Blocks.Groups
                 GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
                 if ( groupMember != null )
                 {
-                    var parentPageReference = PageReference.GetParentPageReferences( this.RockPage, this.PageCache, pageReference ).LastOrDefault();
+                    // This should be replaced with a block setting when converted to Obsidian. -dsh
+                    var pageReferenceHistory = ( Dictionary<int, List<BreadCrumb>> ) System.Web.HttpContext.Current.Session["RockPageReferenceHistory"];
 
-                    if ( parentPageReference != null )
+                    var queryString = pageReferenceHistory.Values
+                        .SelectMany( h => h )
+                        .Where( bc => bc.Url.IsNotNullOrWhiteSpace() && bc.Url.StartsWith( "/" ) )
+                        .Select( bc => Uri.TryCreate( "http://ignored" + bc.Url, UriKind.Absolute, out var uri ) ? uri : null )
+                        .Where( u => u != null && u.Query.IsNotNullOrWhiteSpace() && u.Query != "?" )
+                        .Select( u => u.ParseQueryString() )
+                        .FirstOrDefault( q => q.AllKeys.Contains( PageParameterKey.GroupId ) );
+
+                    var groupIdParam = queryString?[PageParameterKey.GroupId].AsIntegerOrNull();
+                    if ( !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId )
                     {
-                        var groupIdParam = parentPageReference.QueryString[PageParameterKey.GroupId].AsIntegerOrNull();
-                        if ( !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId )
-                        {
-                            // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
-                            breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
-                        }
+                        // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
+                        breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
                     }
 
                     breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );

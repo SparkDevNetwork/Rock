@@ -2333,6 +2333,48 @@ namespace Rock.Rest.v2
             } );
         }
 
+        /// <summary>
+        /// Gets the attribute configuration information provided and returns a new
+        /// set of configuration data. This is used by the attribute editor control
+        /// when a field type makes a change that requires new data to be retrieved
+        /// in order for it to continue editing the attribute.
+        /// </summary>
+        /// <param name="options">The view model that contains the update request.</param>
+        /// <returns>An instance of <see cref="FieldTypeEditorUpdateAttributeConfigurationResultBag"/> that represents the state of the attribute configuration.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "FieldTypeEditorUpdateAttributeConfigurationValue" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "EFB66E12-3330-4997-9174-9AB7E6E93198" )]
+        public IHttpActionResult FieldTypeEditorUpdateAttributeConfigurationValue( [FromBody] FieldTypeEditorUpdateAttributeConfigurationValueOptionsBag options )
+        {
+            var fieldType = Rock.Web.Cache.FieldTypeCache.Get( options.FieldTypeGuid )?.Field;
+
+            if ( fieldType == null )
+            {
+                return BadRequest( "Unknown field type." );
+            }
+
+            // Convert the public configuration options into our private
+            // configuration options (values).
+            var configurationValues = new Dictionary<string, string>();
+            configurationValues.Add( options.ConfigurationKey, options.ConfigurationValue );
+            var privateConfigurationValues = fieldType.GetPrivateConfigurationValues( configurationValues );
+            var rockContext = new RockContext();
+            // Save the updated list to the AttributeQualifier
+            var attributeQualifierService = new AttributeQualifierService( rockContext );
+            foreach ( var privateConfigurationValue in privateConfigurationValues )
+            {
+                var attributeQualifier = attributeQualifierService.Queryable().Where( q => q.Attribute.Guid == options.AttributeGuid && q.Key == privateConfigurationValue.Key ).FirstOrDefault();
+                if ( attributeQualifier != null && attributeQualifier.Value.IsNotNullOrWhiteSpace() )
+                {
+                    attributeQualifier.Value = privateConfigurationValues[privateConfigurationValue.Key];
+                }
+            }
+
+            rockContext.SaveChanges();
+            return Ok();
+        }
+
         #endregion
 
         #region Field Type Picker
