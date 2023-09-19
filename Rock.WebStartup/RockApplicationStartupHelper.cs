@@ -825,6 +825,7 @@ WHERE [o].[name] LIKE 'EntityAttributeValue_%' AND [o].[type] = 'V'
         {
             var viewName = $"EntityAttributeValue_{entityTableName}";
             var qualifierChecks = string.Empty;
+            var additionalJoins = string.Empty;
 
             // Find all properties that have been decorated as valid for use
             // with attribute qualification.
@@ -844,6 +845,17 @@ WHERE [o].[name] LIKE 'EntityAttributeValue_%' AND [o].[type] = 'V'
                 qualifierChecks = $"\n        OR {checks}";
             }
 
+            if ( type == typeof( Group ) || type == typeof( GroupMember ) )
+            {
+                additionalJoins = "\nLEFT OUTER JOIN [GroupTypeInheritance] AS [GTI] ON [GTI].[Id] = [E].[GroupTypeId]";
+                qualifierChecks += "\n       OR ([A].[EntityTypeQualifierColumn] = 'GroupTypeId' AND [A].[EntityTypeQualifierValue] = [GTI].[InheritedGroupTypeId])";
+            }
+            else if ( type == typeof( GroupType ) )
+            {
+                additionalJoins = "\nLEFT OUTER JOIN [GroupTypeInheritance] AS [GTI] ON [GTI].[Id] = [E].[Id]";
+                qualifierChecks += "\n       OR ([A].[EntityTypeQualifierColumn] = 'Id' AND [A].[EntityTypeQualifierValue] = [GTI].[InheritedGroupTypeId])";
+            }
+
             var sql = $@"
 CREATE VIEW [dbo].[{viewName}]
 AS
@@ -860,8 +872,10 @@ SELECT
     [AV].[ValueChecksum]
 FROM [{entityTableName}] AS [E]
 INNER JOIN [AttributeValue] AS [AV] ON [AV].[EntityId] = [E].[Id]
-INNER JOIN [Attribute] AS [A] ON [A].[Id] = [AV].[AttributeId]
+INNER JOIN [Attribute] AS [A] ON [A].[Id] = [AV].[AttributeId]{additionalJoins}
 WHERE [A].[EntityTypeId] = {entityTypeId}
+    AND [AV].[Value] IS NOT NULL AND [AV].[Value] != ''
+    AND [AV].[ValueChecksum] != CHECKSUM(CAST(NULL AS NVARCHAR(1))) AND [AV].[ValueChecksum] != CHECKSUM('')
     AND (
         (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = ''){qualifierChecks}
     )
@@ -869,7 +883,7 @@ WHERE [A].[EntityTypeId] = {entityTypeId}
 UNION
 
 SELECT
-    CAST([A].[Id] + 4294967295 AS BIGINT) AS [Id],
+    CAST([A].[Id] + 10000000000 AS BIGINT) AS [Id],
     [E].[Id] AS [EntityId],
     [A].[Id] AS [AttributeId],
     [A].[Key],
@@ -881,8 +895,8 @@ SELECT
     CHECKSUM([A].[DefaultValue]) AS [ValueChecksum]
 FROM [{entityTableName}] AS [E]
 INNER JOIN [Attribute] AS [A] ON [A].[EntityTypeId] = {entityTypeId}
-LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]
-WHERE [AV].[Id] IS NULL
+LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]{additionalJoins}
+WHERE ([AV].[Value] IS NULL OR [AV].[Value] = '' OR [AV].[ValueChecksum] = CHECKSUM(CAST(NULL AS NVARCHAR(1))) OR [AV].[ValueChecksum] = CHECKSUM(''))
     AND (
         (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = ''){qualifierChecks}
     )
