@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -59,6 +60,8 @@ namespace Rock.Model
         /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
         /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
         /// <returns>A list of attributes defined in the inheritance tree.</returns>
+        [Obsolete( "ConnectionRequest now has a ConnectionTypeId to handle inherited attributes." )]
+        [RockObsolete( "1.17" )]
         public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
         {
             var attributes = new List<AttributeCache>();

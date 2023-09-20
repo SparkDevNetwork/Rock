@@ -858,6 +858,19 @@ namespace Rock.Web.Cache
         {
             var groupTypeIds = GetInheritedGroupTypeIds();
 
+            return GetInheritedAttributesForQualifier( groupTypeIds, entityTypeId, entityTypeQualifierColumn );
+        }
+
+        /// <summary>
+        /// Gets a list of all attributes defined for the GroupTypes specified that
+        /// match the entityTypeQualifierColumn and the GroupType Ids.
+        /// </summary>
+        /// <param name="groupTypeIds">The list of group type ids that must be matched.</param>
+        /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
+        /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
+        /// <returns>A list of attributes defined in the inheritance tree.</returns>
+        internal static List<AttributeCache> GetInheritedAttributesForQualifier( List<int> groupTypeIds, int entityTypeId, string entityTypeQualifierColumn )
+        {
             var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
             groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<AttributeCache>() ) );
 

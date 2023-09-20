@@ -224,43 +224,13 @@ namespace Rock.Model
         /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
         /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
         /// <returns>A list of attributes defined in the inheritance tree.</returns>
+        [Obsolete( "Use GroupTypeCache.GetInheritedAttributesForQualifier() instead." )]
+        [RockObsolete( "1.17" )]
         public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
         {
             var groupTypeIds = GetInheritedGroupTypeIds( rockContext );
 
-            var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
-            groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<AttributeCache>() ) );
-
-            //
-            // Walk each group type and generate a list of matching attributes.
-            //
-            foreach ( var entityTypeAttribute in AttributeCache.GetByEntityType( entityTypeId ) )
-            {
-                // group type ids exist and qualifier is for a group type id
-                if ( string.Compare( entityTypeAttribute.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
-                {
-                    int groupTypeIdValue = int.MinValue;
-                    if ( int.TryParse( entityTypeAttribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
-                    {
-                        inheritedAttributes[groupTypeIdValue].Add( entityTypeAttribute );
-                    }
-                }
-            }
-
-            //
-            // Walk the generated list of attribute groups and put them, ordered, into a list
-            // of inherited attributes.
-            //
-            var attributes = new List<AttributeCache>();
-            foreach ( var attributeGroup in inheritedAttributes )
-            {
-                foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )
-                {
-                    attributes.Add( attribute );
-                }
-            }
-
-            return attributes;
+            return GroupTypeCache.GetInheritedAttributesForQualifier( groupTypeIds, TypeId, "Id" );
         }
 
         /// <summary>
@@ -269,7 +239,9 @@ namespace Rock.Model
         /// <returns>A list of all inherited AttributeCache objects.</returns>
         public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
-            return GetInheritedAttributesForQualifier( rockContext, TypeId, "Id" );
+            var groupTypeIds = GetInheritedGroupTypeIds( rockContext );
+
+            return GroupTypeCache.GetInheritedAttributesForQualifier( groupTypeIds, TypeId, "Id" );
         }
 
         /// <summary>
