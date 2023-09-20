@@ -30,6 +30,16 @@ namespace Rock.ViewModels.Rest.Controls
         public Guid FieldTypeGuid { get; set; }
 
         /// <summary>
+        /// The anem of the field type that is associated with the given entity
+        /// </summary>
+        public string FieldTypeName { get; set; }
+
+        /// <summary>
+        /// The name of the field type that is associated with the given entity, pluralized
+        /// </summary>
+        public string FieldTypePluralName { get; set; }
+
+        /// <summary>
         /// Configuration Values to use for the field's Edit component
         /// </summary>
         public Dictionary<string, string> ConfigurationValues { get; set; }

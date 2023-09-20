@@ -30,4 +30,10 @@ export type EntityPickerGetFieldTypeConfigurationResultsBag = {
 
     /** The GUID of the field type that is associated with the given entity */
     fieldTypeGuid?: Guid | null;
+
+    /** The anem of the field type that is associated with the given entity */
+    fieldTypeName?: string | null;
+
+    /** The name of the field type that is associated with the given entity, pluralized */
+    fieldTypePluralName?: string | null;
 };

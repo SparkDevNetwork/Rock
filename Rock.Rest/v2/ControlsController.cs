@@ -2205,6 +2205,8 @@ namespace Rock.Rest.v2
             return Ok( new EntityPickerGetFieldTypeConfigurationResultsBag
             {
                 FieldTypeGuid = fieldTypeGuid,
+                FieldTypeName = fieldType.Name.Replace( " ", string.Empty ),
+                FieldTypePluralName = fieldType.Name.Replace( " ", string.Empty ).Pluralize(),
                 ConfigurationValues = configurationValues
             } );
         }
