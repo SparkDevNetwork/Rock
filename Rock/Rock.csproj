@@ -1019,6 +1019,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateMediaElementDefaultUrls.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateNoteData.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdatePersonPrimaryAliasId.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV17InteractionIndexPostMigration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateWorkflowIds.cs" />
     <Compile Include="Jobs\PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
