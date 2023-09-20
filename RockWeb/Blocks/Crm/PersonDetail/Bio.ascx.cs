@@ -921,7 +921,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if ( !string.IsNullOrWhiteSpace( Person.GradeFormatted ) )
                 {
-                	lGrade.Text = $"<dt>{Person.GradeFormatted}</dt>";
+                    lGrade.Text = $"<dt>{Person.GradeFormatted}</dt>";
                 }
 
                 if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )

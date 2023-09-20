@@ -1432,7 +1432,7 @@ namespace RockWeb.Blocks.Connection
                 connectionRequest.AssignedGroupId = ddlRequestModalAddEditModePlacementGroup.SelectedValueAsId();
                 connectionRequest.AssignedGroupMemberRoleId = ddlRequestModalAddEditModePlacementRole.SelectedValueAsInt();
                 connectionRequest.AssignedGroupMemberStatus = ddlRequestModalAddEditModePlacementStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
-            connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValuesFromAddModal();
+                connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValuesFromAddModal();
             }
 
             // if the connectionRequest IsValid is false, and the UI controls didn't report any errors, it is probably
@@ -1873,8 +1873,8 @@ namespace RockWeb.Blocks.Connection
                 avcRequestModalAddEditModeGroupMember.Visible = request.ConnectionState != ConnectionState.Connected;
                 if ( request.ConnectionState != ConnectionState.Connected )
                 {
-		            BuildRequestModalAddEditModeGroupMemberAttributes( groupId, roleId, ddlRequestModalAddEditModePlacementStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
-		        }
+                    BuildRequestModalAddEditModeGroupMemberAttributes( groupId, roleId, ddlRequestModalAddEditModePlacementStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+                }
             }
         }
 

@@ -209,7 +209,7 @@ namespace Rock.Blocks.Event
                 RegistrationTemplateDiscountWithUsage discount = null;
                 var registration = registrationGuid != null ? new RegistrationService( rockContext ).Get( registrationGuid.ToString() ) : null;
 
-                if (code.IsNullOrWhiteSpace() && (registration == null || registration.DiscountCode.IsNullOrWhiteSpace()))
+                if ( code.IsNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
                 {
                     // if no code is provided and there is no code already saved in the registration check for an auto apply discount, if there are none discount will be null which returns ActionNotFound
                     var registrationTemplateDiscountCodes = registrationTemplateDiscountService
@@ -219,11 +219,11 @@ namespace Rock.Blocks.Event
                         .Select( d => d.Code )
                         .ToList();
 
-                    foreach (var registrationTemplateDiscountCode in registrationTemplateDiscountCodes)
+                    foreach( var registrationTemplateDiscountCode in registrationTemplateDiscountCodes )
                     {
                         discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, registrationTemplateDiscountCode );
 
-                        if (discount == null || (discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value))
+                        if ( discount == null || ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value ) )
                         {
                             // Empty discount so that the last discount code won't be tried by default
                             discount = null;
@@ -234,17 +234,17 @@ namespace Rock.Blocks.Event
                         break;
                     }
                 }
-                else if (code.IsNotNullOrWhiteSpace() && (registration == null || registration.DiscountCode.IsNullOrWhiteSpace()))
+                else if ( code.IsNotNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
                 {
                     // if code is provided and there is no code in saved in the registration check the provided code using GetDiscountByCodeIfValid( registrationInstanceId, code )
                     discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
                 }
-                else if (code.IsNotNullOrWhiteSpace() && registration != null && registration.DiscountCode.IsNotNullOrWhiteSpace() && !string.Equals( code, registration.DiscountCode, StringComparison.OrdinalIgnoreCase ))
+                else if ( code.IsNotNullOrWhiteSpace() && registration != null && registration.DiscountCode.IsNotNullOrWhiteSpace() && !string.Equals( code, registration.DiscountCode, StringComparison.OrdinalIgnoreCase ) )
                 {
                     // if code is provided and there is a code saved in the registration and they are different then check the provided code using GetDiscountByCodeIfValid( registrationInstanceId, code )
                     discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
                 }
-                else if (registration != null && registration.DiscountCode.IsNotNullOrWhiteSpace())
+                else if ( registration != null && registration.DiscountCode.IsNotNullOrWhiteSpace() )
                 {
                     // At this point use the code saved in the registration if it exists without checking in case the code is no longer valid (e.g. expired)
                     return ActionOk( new

@@ -847,14 +847,14 @@ namespace RockWeb.Blocks.Crm
 		                if ( mergedPersonIdList.Any() )
 		                {
 		                    DbService.ExecuteCommand( $"DELETE FROM [AnalyticsSourcePersonHistorical] WHERE [PersonId] IN ({ mergedPersonIdList.AsDelimited( "," ) })", commandTimeout: 90 );
-                    }
+		                }
 
                         // Run scripts to merge non-primary person data.
                         var personEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) );
-                foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
-                {
-                    var parms = new Dictionary<string, object>();
-                    parms.Add( "OldId", p.Id );
+                        foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
+                        {
+                            var parms = new Dictionary<string, object>();
+                            parms.Add( "OldId", p.Id );
                             parms.Add( "NewId", primaryPerson.Id );
                             parms.Add( "OldGuid", p.Guid );
                             parms.Add( "NewGuid", primaryPerson.Guid );
@@ -863,7 +863,7 @@ namespace RockWeb.Blocks.Crm
                             logger.Write( $"Merging non-primary person data... [SourcePerson={p.FullName}]" );
 
                             ExecutePersonMergeSqlScript( parms, rockContext, logger );
-                }
+                        }
 
                         logger.Write( $"Merge completed." );
                     }

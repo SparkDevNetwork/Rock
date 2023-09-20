@@ -654,7 +654,7 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         var groupTypeIds = groupTypeService
                             .GetCheckinAreaDescendantsOrdered( ddlAttendanceArea.SelectedGroupTypeId.Value )
-                            .Select(a => a.Id)
+                            .Select( a => a.Id )
                             .ToList();
 
                         return groupTypeService.GetByIds( groupTypeIds ).ToList();
@@ -1289,7 +1289,7 @@ var headerText = dp.label;
                 dateRange.End = RockDateTime.Now;
             }
             var start = dateRange.Start;
-            
+
             var endTime = dateRange.End.Value;
             // We need to pass '11/09/2020 11:59:59.000', because SQL Server rounds '11/09/2020 11:59:59.999' up to '11/10/2020 12:00:00.000'.
             // Since this is used for Sunday Date the milliseconds don't matter

@@ -752,6 +752,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                                         return true;
                                     }
+
                                 }
                             }
                         }

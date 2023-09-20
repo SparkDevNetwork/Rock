@@ -121,8 +121,11 @@
                                 <asp:Panel runat="server" CssClass="badge-bar margin-b-sm" ID="pnlBadges">
                                     <Rock:BadgeListControl ID="blStatus" runat="server" />
                                 </asp:Panel>
+
                             </div>
+
                         </div>
+
                         <div class="row">
                             <div class="col-md-12">
                                 <Rock:RockLiteral ID="lComments" runat="server" />

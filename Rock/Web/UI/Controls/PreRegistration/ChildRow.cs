@@ -949,12 +949,12 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 ValidationErrors.Clear();
 
-                if( _tbNickName.Required && _tbNickName.Text.IsNullOrWhiteSpace())
+                if( _tbNickName.Required && _tbNickName.Text.IsNullOrWhiteSpace() )
                 {
                     return false;
                 }
 
-                if( _tbLastName.Required && _tbLastName.Text.IsNullOrWhiteSpace())
+                if( _tbLastName.Required && _tbLastName.Text.IsNullOrWhiteSpace() )
                 {
                     return false;
                 }
@@ -964,12 +964,12 @@ namespace Rock.Web.UI.Controls
                     return false;
                 }
 
-                if ( _bpBirthdate.Required && _bpBirthdate.SelectedDate == null)
+                if ( _bpBirthdate.Required && _bpBirthdate.SelectedDate == null )
                 {
                     return false;
                 }
 
-                if( _ddlGradePicker.Required && _ddlGradePicker.SelectedIndex == 0)
+                if( _ddlGradePicker.Required && _ddlGradePicker.SelectedIndex == 0 )
                 {
                     return false;
                 }

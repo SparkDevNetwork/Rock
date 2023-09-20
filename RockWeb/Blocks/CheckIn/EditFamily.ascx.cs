@@ -1070,7 +1070,7 @@ namespace RockWeb.Blocks.CheckIn
                 epEthnicity.Visible = displayEthnicity;
                 epEthnicity.Required = ethnicityIsRequired;
             }
-            
+
             var displayGrade = !isAdult && !DisplayGradeOnChildren.Equals( ControlOptions.HIDE );
             var gradeRequired = displayGrade && DisplayGradeOnChildren.Equals( ControlOptions.REQUIRED );
             gpGradePicker.Visible = displayGrade;

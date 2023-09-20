@@ -18,9 +18,7 @@
 import { Guid } from "@Obsidian/Types";
 import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import { newGuid } from "@Obsidian/Utility/guid";
-// MODIFIED LPC CODE
-import { RegistrantBasicInfo, RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationPersonFieldType } from "./types.partial";
-// END MODIFIED LPC CODE
+import { RegistrantBasicInfo, RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType, RegistrationFieldSource } from "./types.partial";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
  *  then this guid is used as a common family guid */
@@ -68,12 +66,12 @@ export function getDefaultRegistrantInfo(currentPerson: PersonBag | null, viewMo
 export function getRegistrantBasicInfo(registrant: RegistrantInfo, registrantForms: RegistrationEntryBlockFormViewModel[]): RegistrantBasicInfo {
     const fields = registrantForms?.reduce((acc, f) => acc.concat(f.fields), [] as RegistrationEntryBlockFormFieldViewModel[]) || [];
 
-    // MODIFIED LPC CODE
     const firstNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.FirstName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
     const lastNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.LastName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
     const emailGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.Email && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
+    // LPC CODE
     const mobilePhoneGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.MobilePhone && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
-    // END MODIFIED LPC CODE
+    // END LPC CODE
 
     return {
         firstName: (registrant?.fieldValues[firstNameGuid] || "") as string,

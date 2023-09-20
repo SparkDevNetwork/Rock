@@ -681,11 +681,11 @@ namespace RockWeb.Blocks.Connection
 
                     if ( oldState != ConnectionState.Connected )
                     {
-	                    connectionRequest.CampusId = cpCampus.SelectedCampusId;
-	                    connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
-	                    connectionRequest.AssignedGroupMemberRoleId = ddlPlacementGroupRole.SelectedValueAsInt();
-	                    connectionRequest.AssignedGroupMemberStatus = ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
-	                    connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
+                        connectionRequest.CampusId = cpCampus.SelectedCampusId;
+                        connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
+                        connectionRequest.AssignedGroupMemberRoleId = ddlPlacementGroupRole.SelectedValueAsInt();
+                        connectionRequest.AssignedGroupMemberStatus = ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
+                        connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
                     }
 
                     connectionRequest.Comments = tbComments.Text.SanitizeHtml();
@@ -2628,8 +2628,8 @@ namespace RockWeb.Blocks.Connection
             cpCampus.Enabled = enableConnectionRelatedControl;
             if ( enableConnectionRelatedControl )
             {
-	            BuildGroupMemberAttributes( groupId, roleId, ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
-	        }
+                BuildGroupMemberAttributes( groupId, roleId, ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+            }
         }
 
         private void CheckGroupRequirement()
