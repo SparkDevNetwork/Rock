@@ -59,16 +59,6 @@ namespace RockWeb.Blocks.Prayer
         private static readonly string _PrayerRequestKeyParameter = "PrayerRequestId";
 
         /// <summary>
-        /// Holds whether or not the person can add, edit, and delete.
-        /// </summary>
-        private bool _canAddEditDelete = false;
-
-        /// <summary>
-        /// Holds whether or not the person can approve requests.
-        /// </summary>
-        private bool _canApprove = false;
-
-        /// <summary>
         /// Gets or sets the available attributes.
         /// </summary>
         /// <value>
@@ -115,17 +105,23 @@ namespace RockWeb.Blocks.Prayer
             gPrayerRequests.GridRebind += gPrayerRequests_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of View)
-            _canApprove = IsUserAuthorized( "Approve" );
-            _canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-            gPrayerRequests.Actions.ShowAdd = _canAddEditDelete;
-            gPrayerRequests.IsDeleteEnabled = _canAddEditDelete;
+            var canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+            gPrayerRequests.Actions.ShowAdd = canAddEditDelete;
+            gPrayerRequests.IsDeleteEnabled = canAddEditDelete;
 
-            // if there is a Person as the ContextEntity, there is no need to show the Name column
+            // If there is a Person as the ContextEntity, there is no need to show the Name column
             gPrayerRequests.GetColumnByHeaderText( "Name" ).Visible = this.ContextEntity<Rock.Model.Person>() == null;
-
-
             gPrayerRequests.GetColumnByHeaderText( "Prayer Count" ).Visible = GetAttributeValue( "ShowPrayerCount" ).AsBoolean();
-            gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
+
+            // Is the Approved columnn supposed to show?
+            var showApprovedColumn = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
+            gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = showApprovedColumn;
+
+            // But if showing, check if the person is not authorized to approve and hide the column anyhow
+            if ( showApprovedColumn && !IsUserAuthorized( Authorization.APPROVE ) )
+            {
+                gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = false;
+            }
 
             AddDynamicControls();
         }
@@ -770,21 +766,6 @@ namespace RockWeb.Blocks.Prayer
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                if ( !_canApprove )
-                {
-                    foreach ( TableCell cell in e.Row.Cells )
-                    {
-                        foreach ( Control c in cell.Controls )
-                        {
-                            Toggle toggle = c as Toggle;
-                            if ( toggle != null )
-                            {
-                                toggle.Enabled = false;
-                            }
-                        }
-                    }
-                }
-
                 var prayerRequest = e.Row.DataItem as PrayerRequest;
 
                 Literal lFullname = e.Row.FindControl( "lFullname" ) as Literal;
