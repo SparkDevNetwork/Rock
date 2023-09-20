@@ -855,57 +855,33 @@ WHERE [o].[name] LIKE 'AttributeValue_%' AND [o].[type] = 'V'
             if ( type == typeof( Group ) || type == typeof( GroupMember ) )
             {
                 additionalJoins = "\nLEFT OUTER JOIN [GroupTypeInheritance] AS [GTI] ON [GTI].[Id] = [E].[GroupTypeId]";
-                qualifierChecks += "\n       OR ([A].[EntityTypeQualifierColumn] = 'GroupTypeId' AND [A].[EntityTypeQualifierValue] = [GTI].[InheritedGroupTypeId])";
+                qualifierChecks += "\n        OR ([A].[EntityTypeQualifierColumn] = 'GroupTypeId' AND [A].[EntityTypeQualifierValue] = [GTI].[InheritedGroupTypeId])";
             }
             else if ( type == typeof( GroupType ) )
             {
                 additionalJoins = "\nLEFT OUTER JOIN [GroupTypeInheritance] AS [GTI] ON [GTI].[Id] = [E].[Id]";
-                qualifierChecks += "\n       OR ([A].[EntityTypeQualifierColumn] = 'Id' AND [A].[EntityTypeQualifierValue] = [GTI].[InheritedGroupTypeId])";
+                qualifierChecks += "\n        OR ([A].[EntityTypeQualifierColumn] = 'Id' AND [A].[EntityTypeQualifierValue] = [GTI].[InheritedGroupTypeId])";
             }
 
             var sql = $@"
 CREATE VIEW [dbo].[{viewName}]
 AS
 SELECT
-    CAST([AV].[Id] AS BIGINT) AS [Id],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Id] ELSE CAST([A].[Id] + 10000000000 AS BIGINT) END AS [Id],
     [E].[Id] AS [EntityId],
     [A].[Id] AS [AttributeId],
     [A].[Key],
-    [AV].[Value],
-    [AV].[PersistedTextValue],
-    [AV].[PersistedHtmlValue],
-    [AV].[PersistedCondensedTextValue],
-    [AV].[PersistedCondensedHtmlValue],
-    [AV].[IsPersistedValueDirty],
-    [AV].[ValueChecksum]
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Value] ELSE ISNULL([A].[DefaultValue], '') END AS [Value],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedTextValue] ELSE [A].[DefaultPersistedTextValue] END AS [PersistedTextValue],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedHtmlValue] ELSE [A].[DefaultPersistedHtmlValue] END AS [PersistedHtmlValue],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
 FROM [{entityTableName}] AS [E]
-INNER JOIN [AttributeValue] AS [AV] ON [AV].[EntityId] = [E].[Id]
-INNER JOIN [Attribute] AS [A] ON [A].[Id] = [AV].[AttributeId]{additionalJoins}
-WHERE [A].[EntityTypeId] = {entityTypeId}
-    AND [AV].[Value] IS NOT NULL AND [AV].[Value] != ''
-    AND [AV].[ValueChecksum] != CHECKSUM(CAST(NULL AS NVARCHAR(1))) AND [AV].[ValueChecksum] != CHECKSUM('')
-    AND (
-        (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = ''){qualifierChecks}
-    )
-
-UNION
-
-SELECT
-    CAST([A].[Id] + 10000000000 AS BIGINT) AS [Id],
-    [E].[Id] AS [EntityId],
-    [A].[Id] AS [AttributeId],
-    [A].[Key],
-    ISNULL([A].[DefaultValue], '') AS [Value],
-    [A].[DefaultPersistedTextValue] AS [PersistedTextValue],
-    [A].[DefaultPersistedHtmlValue] AS [PersistedHtmlValue],
-    [A].[DefaultPersistedCondensedTextValue] AS [PersistedCondensedTextValue],
-    [A].[DefaultPersistedCondensedHtmlValue] AS [PersistedCondensedHtmlValue],
-    [A].[IsDefaultPersistedValueDirty] AS [IsPersistedValueDirty],
-    CHECKSUM(ISNULL([A].[DefaultValue], '')) AS [ValueChecksum]
-FROM [{entityTableName}] AS [E]
-INNER JOIN [Attribute] AS [A] ON [A].[EntityTypeId] = {entityTypeId}
+CROSS JOIN [Attribute] AS [A]
 LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]{additionalJoins}
-WHERE ([AV].[Value] IS NULL OR [AV].[Value] = '' OR [AV].[ValueChecksum] = CHECKSUM(CAST(NULL AS NVARCHAR(1))) OR [AV].[ValueChecksum] = CHECKSUM(''))
+WHERE [A].[EntityTypeId] = {entityTypeId}
     AND (
         (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = ''){qualifierChecks}
     )
