@@ -14,16 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Data;
-using Rock.Jobs;
+using Rock.Field.Types;
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Model;
 using Rock.Tests.Integration.Core.Lava;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Tests.Integration.BugFixes
 {
@@ -34,11 +32,12 @@ namespace Rock.Tests.Integration.BugFixes
     /// These tests are developed to verify bugs and fixes that are difficult or time-consuming to reproduce.
     /// They are only relevant to the Rock version in which the bug is fixed, and should be removed in subsequent versions.
     /// </remarks>
-    /// 
     [TestClass]
     [RockObsolete( "1.16" )]
-    public class BugFixVerificationTests_v16 : LavaIntegrationTestBase
+    public class BugFixVerificationTests_v16
     {
+        private LavaIntegrationTestHelper LavaTestHelper = LavaIntegrationTestHelper.CurrentInstance;
+
         /// <summary>
         /// Verifies the resolution of Issue #5389.
         /// </summary>
@@ -73,7 +72,51 @@ Property Filter: 1
             {
                 EnabledCommands = "RockEntity"
             };
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaTestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        public void Issue3760_PhoneNumberFieldTypeWithCountryCode_PreservesCountryCode()
+        {
+            /*
+             * Issue:
+             * The Phone Number Field Type does not store the country code associated with the phone number,
+             * so the information is lost.
+             * For details, see:
+             * https://github.com/SparkDevNetwork/Rock/issues/3760
+             * https://github.com/SparkDevNetwork/Rock/issues/5468
+             * 
+             * Resolution:
+             * Modify the Phone Number Field Type to parse and format country code information.
+             */
+
+            // Add a second country code.
+            GlobalSettingsDataManager.Instance.AddOrUpdatePhoneNumberCountryCode( "81",
+                "Japan",
+                @"^(\d{2})(\d{4})(\d{4})$",
+                @"$1-$2-$3" );
+
+            var phoneNumberFieldType = new PhoneNumberFieldType();
+            var phoneNumberControl = new PhoneNumberBox();
+
+            // Test 1: Set the edit control to a phone number value with a non-default country code.
+            phoneNumberControl.CountryCode = "81";
+            phoneNumberControl.Number = "1122223333";
+
+            // Read the field value from the control and verify that the country code is preserved.
+            var editValue = phoneNumberFieldType.GetEditValue( phoneNumberControl, null );
+            var textValue = phoneNumberFieldType.GetTextValue( editValue, null );
+
+            Assert.That.AreEqual( "+81 11-2222-3333", textValue );
+
+            // Test 2: Set the edit control to a phone number value with the default country code.
+            phoneNumberControl.CountryCode = "1";
+            phoneNumberControl.Number = "1122223333";
+
+            // Read the field value from the control and verify that the country code is omitted.
+            editValue = phoneNumberFieldType.GetEditValue( phoneNumberControl, null );
+            textValue = phoneNumberFieldType.GetTextValue( editValue, null );
+
+            Assert.That.AreEqual( "(112) 222-3333", textValue );
         }
 
         /// <summary>
