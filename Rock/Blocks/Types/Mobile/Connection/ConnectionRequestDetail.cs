@@ -357,18 +357,20 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 .Select( a => new ActivityViewModel
                 {
                     ActivityTypeGuid = a.ConnectionActivityType.Guid,
-                    ConnectorGuid = a.ConnectorPersonAlias.Person.Guid,
+                    ConnectorGuid = a.ConnectorPersonAlias?.Person.Guid,
                     CreatedDateTime = ( DateTimeOffset ) a.CreatedDateTime,
                     IsModifiable = IsActivityModifiable(a),
                     Note = a.Note.StripHtml(),
                     Guid = a.Guid,
                     ActivityType = a.ConnectionActivityType.ToString(),
-                    Connector = new ConnectorItemViewModel
-                    {
-                        FirstName = a.ConnectorPersonAlias.Person.FirstName,
-                        LastName = a.ConnectorPersonAlias.Person.LastName,
-                        PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( a.ConnectorPersonAlias.Person.PhotoUrl )
-                    }
+                    Connector = a.ConnectorPersonAlias?.Person != null ?
+                        new ConnectorItemViewModel
+                        {
+                            FirstName = a.ConnectorPersonAlias.Person.FirstName,
+                            LastName = a.ConnectorPersonAlias.Person.LastName,
+                            PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( a.ConnectorPersonAlias.Person.PhotoUrl )
+                        }
+                        : null
                 } )
                 .ToList();
 
