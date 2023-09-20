@@ -42,6 +42,9 @@ namespace Rock.Migrations
             //  Site: Rock RMS
             RockMigrationHelper.AddPage( true, SystemGuid.Page.CMS_CONFIGURATION, "C2467799-BB45-4251-8EE6-F0BF27201535", "Library Viewer", string.Empty, SystemGuid.Page.LIBRARY_VIEWER, "fa fa-book" );
 
+            // Set 'Display in Nav When' to [Never=2]
+            Sql( $"UPDATE [Page] SET [DisplayInNavWhen] = 2 WHERE [Guid] = '{SystemGuid.Page.LIBRARY_VIEWER}'" );
+
             // Add Page Route
             //   Page:Library Viewer
             //   Route:admin/cms/library-viewer
