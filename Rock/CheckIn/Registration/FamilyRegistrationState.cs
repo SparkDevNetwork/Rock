@@ -50,8 +50,16 @@ namespace Rock.CheckIn.Registration
                 familyState.FamilyName = "Add Family";
             }
 
-            familyState.FamilyAttributeValuesState = group.AttributeValues.ToDictionary( k => k.Key, v => v.Value );
+            var homeLocation = DefinedValueCache.Get( SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
 
+            familyState.FamilyHomeAddressLocation = new GroupLocationService( new RockContext() ).Queryable()
+                .Where( gl => gl.GroupId == group.Id )
+                .Where( gl => gl.GroupLocationTypeValueId == homeLocation.Id )
+                .Select(gl => gl.Location)
+                .FirstOrDefault();
+
+            familyState.FamilyAttributeValuesState = group.AttributeValues.ToDictionary( k => k.Key, v => v.Value );
+            
             return familyState;
         }
 
@@ -104,6 +112,14 @@ namespace Rock.CheckIn.Registration
         /// The state of the family person list.
         /// </value>
         public List<FamilyPersonState> FamilyPersonListState { get; set; }
+
+        /// <summary>
+        /// Home address of the family
+        /// </summary>
+        /// <value>
+        /// The Location of the family home address.
+        /// </value>
+        public Location FamilyHomeAddressLocation { get; set; }
 
         /// <summary>
         /// A Member of the Family or a Person with a "Can Check-in, etc"  Relationship

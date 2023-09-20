@@ -57,7 +57,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.10"
-        [Obsolete( "Use InviteSystemCommunicationId instead.", true )]
+        [Obsolete( "Use InviteSystemCommunicationId instead.", false )]
         public int? InviteSystemEmailId { get; set; }
 
         /// <summary />
@@ -123,6 +123,9 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
+            #pragma warning disable 612, 618
+            this.InviteSystemEmailId = source.InviteSystemEmailId;
+            #pragma warning restore 612, 618
             this.IsActive = source.IsActive;
             this.LavaTemplate = source.LavaTemplate;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

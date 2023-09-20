@@ -1,2 +1,1 @@
-# Ignore all subfolders, but include files in this folder (like readme)
-*/*
+/*.dll

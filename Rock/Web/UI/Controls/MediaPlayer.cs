@@ -619,20 +619,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="page">The page.</param>
         public static void AddLinksForMediaToPage( string mediaUrl, Page page )
         {
-            /*
-                6/16/2023 - JPH
+            RockPage.AddScriptLink( page, "~/Scripts/plyr/3.6.8/plyr.min.js", false );
+            RockPage.AddCSSLink( page, "~/Scripts/plyr/3.6.8/plyr.min.css", false );
 
-                Make sure we always "fingerprint" these resources so we can control the browser's caching behavior.
-                The libraries represented within the plyr.js file (Plyr, hls.js) are doing the heavy lifting for
-                us with respect to video streaming compatibility with modern browsers, and we might need to be able
-                to instruct individuals how to manually deploy hotfixes by overwriting the final JS file. Without
-                fingerprinting in place, the browser will cache this file far too aggressively.
+            if ( mediaUrl != null && mediaUrl.IndexOf( ".m3u8", StringComparison.OrdinalIgnoreCase ) != -1 )
+            {
+                RockPage.AddScriptLink( page, "~/Scripts/plyr/3.6.8/hls.min.js", false );
+            }
 
-                Reason: Issue #5445: v15 media player endless buffering with tracking through video
-                (https://github.com/SparkDevNetwork/Rock/issues/5445)
-            */
-            RockPage.AddScriptLink( page, "~/Scripts/Rock/plyr.js", true );
-            RockPage.AddScriptLink( page, "~/Scripts/Rock/UI/mediaplayer/mediaplayer.js", true );
+            RockPage.AddScriptLink( page, page.ResolveUrl( "~/Scripts/Rock/UI/mediaplayer/mediaplayer.js" ) );
         }
 
         /// <inheritdoc/>

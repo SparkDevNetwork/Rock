@@ -1,0 +1,128 @@
+//
+// header.less
+// Extended from Bootstrap 
+//
+
+
+/* Background Header Image Info */
+	
+.billboard {
+	position: relative;
+	overflow: hidden;
+	height: unset;
+	border-radius: 0 0 @border-radius-base @border-radius-base;
+	.item {
+		justify-content: center;
+		background: no-repeat;
+		background-size: cover;
+		background-position: 50%;
+	} 
+	.hero-image {
+		display: none;
+	}
+	.mobile-hero-image {
+		display: flex;
+		height: 220px;
+	}	
+}
+
+#billboard {
+	margin-top: 75px;
+}
+
+.billboard {
+	.hero-image {
+		height: 220px;
+	}
+	.billboardInnerContent {
+		padding-right: 0;
+		padding-left: 0;
+		top: 0;
+		position: absolute;
+		display:flex;
+		flex-direction: column;
+		flex-wrap: wrap;
+		justify-content: center;
+		height: 100%;
+		width: 80%;
+		#divImagePageTitle,
+		#divDefaultPageTitle {
+			padding: 0;
+			max-width: unset;
+			margin-top: -6px;
+			margin-bottom: 0;
+			margin-left: 0;
+			padding-bottom: 12px;
+		}
+	}
+	.page__title {
+		position: relative;
+		text-align: left;
+		z-index: 9;
+		color: @theme-1-text;
+		font-size: 45px;
+		font-family: inherit;
+		font-weight: 700;
+		text-transform: uppercase;
+		line-height: 1;
+	}
+	.page-title-underline {
+		width: 100px;
+		height: 2px;
+		border-top-color: @brand-primary;
+		border-top-width: 2px;
+		border-top-style: solid;
+	}
+	.page_description {
+		text-align: left;
+		text-transform: uppercase;
+		color: @theme-3-text;
+		font-size: 24px;
+		font-weight: 500;
+		line-height: 1em;
+		padding-top:0;
+	}
+	#zone-pageheader {
+		position: absolute;
+		font-size: 16px;
+		color: @theme-1-text;
+		bottom: 20px;
+		right: 0;
+		left: 0;
+		text-align: left;
+	}
+}
+
+ 
+//For pages that have no header image selected
+#pnlTextHeader {
+	.hero-image {
+		background-color: @theme-2;
+	}
+	.mobile-hero-image {
+		background-color: @theme-2;
+	}
+}
+
+ 
+@media (min-width: @grid-float-breakpoint-min) {
+    .billboard {
+		.page__title {
+			font-size: 60px!important;
+			margin-top: 0;
+		}
+		.hero-image {
+			display: flex;
+		}
+		.mobile-hero-image {
+			display: none;
+		}
+	}
+
+	.noheader .billboard {
+		.page__title {
+			text-align: left;
+			font-size: 40px;	
+		}
+	}
+}

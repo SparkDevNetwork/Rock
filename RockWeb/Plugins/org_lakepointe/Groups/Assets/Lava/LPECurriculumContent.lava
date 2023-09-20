@@ -1,0 +1,140 @@
+<!-- LG Curriculum Preview Content Channel -->
+<style>
+    [style*="--aspect-ratio"] > :first-child {
+        width: 100%;
+    }
+        [style*="--aspect-ratio"] > img {
+        height: auto;
+    }
+    @supports (--custom:property) {
+        [style*="--aspect-ratio"] {
+            position: relative;
+        }
+        [style*="--aspect-ratio"]::before {
+            content: "";
+            display: block;
+            padding-bottom: calc(100% / (var(--aspect-ratio)));
+        }
+        [style*="--aspect-ratio"] > :first-child {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+        }
+    }
+</style>
+{% assign curriculumId = 'Global' | PageParameter:'CurriculumId' | Default:'{{ results[0].Id }}' %}
+{% assign testDate = 'Global' | PageParameter:'Date' | AsDateTime %}
+{% if testDate == null %}
+    {% assign testDate = 'Now' | Date %}
+{% endif %}
+<div class="container-fluid">
+    {% assign odd = true %}
+    {% for item in Items %}
+        {% assign cid = item | Attribute:'CurriculumType','Object' | Property:'Id' %}
+        {% if cid == curriculumId %}
+            {% if odd %}
+                {% assign odd = false %}
+                {% assign bg = '#ffffff' %}
+            {% else %}
+                {% assign odd = true %}
+                {% assign bg = '#f8f8f8' %}
+            {% endif %}
+            <div style="background-color:{{ bg }}; padding: 0px 20px; margin-bottom: 5em; ">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h1>{{ item.Title }}</h1>
+                        <hr>
+                    </div>
+                </div>
+                <div class="row">
+                    {% assign lessonPlanGuid = item | Attribute:'LessonPlan','RawValue' %}
+                    {% assign discussionGuideGuid = item | Attribute:'DiscussionGuide','RawValue' %}
+                    {% assign presentationGuid = item | Attribute:'Presentation','RawValue' %}
+                    {% assign mediaEmbedCode = item | Attribute:'Video','RawValue' %}
+                    {% assign videoLessonCode = item | Attribute:'VideoLesson','RawValue' %}
+                    {% assign lessonDocGuid = item | Attribute:'LessonGuideWordDoc','RawValue' %}
+                    {% assign commentaryUrl = item.ContentChannel | Attribute:'AdditionalCommentary','RawValue' %}
+                    {% if mediaEmbedCode != '' %}
+                        <div class="col-md-6" align="center">
+                            <div style="--aspect-ratio: 16/9;">
+                                <iframe src="//fast.wistia.net/embed/iframe/{{ mediaEmbedCode }}?playerColor=f04b28" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                                <script src="//fast.wistia.net/assets/external/E-v1.js" async></script>
+                            </div>
+                            <br>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    {{ item.Content }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    {% if lessonPlanGuid != '' %}
+                                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ lessonPlanGuid }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Lección (Formato imprimible)</a></p>
+                                    {% endif %}
+                                    {% if discussionGuideGuid != '' %}
+                                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ discussionGuideGuid }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Guía de discusión</a></p>
+                                    {% endif %}
+                                    {% if presentationGuid != '' %}
+                                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ presentationGuid }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Presentación</a><br></p>
+                                    {% endif %}
+                                    {% if videoLessonCode != '' %}
+                                        <p><a href="/Wistia?embedCode={{ videoLessonCode }}" target="_blank" class="btn btn-primary" style="width:100%; white-space:normal;">VIDEO DE LA LECCIÓN</a><br></p>
+                                    {% endif %}
+                                    {% if commentaryUrl != '' %}
+                                        <p><a href="{{ commentaryUrl }}" target="_blank" class="btn btn-primary" style="width:100%; white-space:normal;">Comentario Bíblico Adicional</a><br></p>
+                                    {% endif %}
+                                    {% if lessonDocGuid != '' %}
+                                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ lessonDocGuid }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Lección (Formato Word)</a></p>
+                                    {% endif %}
+                                    {% comment %}
+                                        {% if lessonPlanGuid != '' or discussionGuideGuid != '' or presentationGuid != '' %}
+                                            <p><a href="/Content/LifeGroups/Bible Study Methods Guide.pdf" download class="btn btn-primary" style="width:100%; white-space:normal;">Bible Study Methods Guide</a><br></p>
+                                        {% endif %}
+                                    {% endcomment %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    {{ item.Content }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    {% if lessonPlanGuid != '' %}
+                                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ lessonPlanGuid }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Lección (Formato imprimible)</a></p>
+                                    {% endif %}
+                                    {% if discussionGuideGuid != '' %}
+                                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ discussionGuideGuid }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Guía de discusión</a></p>
+                                    {% endif %}
+                                    {% if presentationGuid != '' %}
+                                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ presentationGuid }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Presentación</a><br></p>
+                                    {% endif %}
+                                    {% if videoLessonCode != '' %}
+                                        <p><a href="/Wistia?embedCode={{ videoLessonCode }}" target="_blank" class="btn btn-primary" style="width:100%; white-space:normal;">VIDEO DE LA LECCIÓN</a><br></p>
+                                    {% endif %}
+                                    {% if lessonDocGuid != '' %}
+                                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ lessonDocGuid }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Lección (Formato Word)</a></p>
+                                    {% endif %}
+                                    {% comment %}
+                                        {% if commentaryUrl != '' %}
+                                            <p><a href="{{ commentaryUrl }}" target="_blank" class="btn btn-primary" style="width:100%; white-space:normal;">Comentario Bíblico Adicional</a><br></p>
+                                        {% endif %}
+                                        {% if lessonPlanGuid != '' or discussionGuideGuid != '' or presentationGuid != '' %}
+                                            <p><a href="/Content/LifeGroups/Bible Study Methods Guide.pdf" download class="btn btn-primary" style="width:100%; white-space:normal;">Bible Study Methods Guide</a><br></p>
+                                        {% endif %}
+                                    {% endcomment %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>

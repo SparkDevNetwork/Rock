@@ -159,6 +159,21 @@ namespace RockWeb.Blocks.Event
                                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                                 emailMessage.CreateCommunicationRecord = true;
+
+                                // LPC CODE
+                                var attributeValueService = new AttributeValueService( rockContext );
+                                var attributeValue = attributeValueService.Queryable()
+                                    .Where( a => a.Attribute.Key == "PreferredLanguage" && a.EntityId == registration.PersonAlias.PersonId ).FirstOrDefault();
+                                if ( attributeValue?.PersistedTextValue == "Spanish" || attributeValue?.PersistedTextValue == "Español" )
+                                {
+                                    emailMessage.Message += "<style>.EnglishText { display: none !important; }</style>";
+                                }
+                                else
+                                {
+                                    emailMessage.Message += "<style>.SpanishText { display: none !important; }</style>";
+                                }
+                                // END LPC CODE
+
                                 emailMessage.Send();
 
                                 registration.LastPaymentReminderDateTime = RockDateTime.Now;

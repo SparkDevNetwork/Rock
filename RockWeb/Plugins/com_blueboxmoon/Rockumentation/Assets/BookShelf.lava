@@ -1,0 +1,24 @@
+﻿<div class="row">
+  {% for book in Books %}
+    <div class="col-md-3 col-sm-4 col-xs-6">
+      <a class="book-container" href="{{ book.Url }}">
+        {% assign bookCover = book | Attribute:'bbm_BookCover','Url' %}
+        {% if bookCover != '' %}
+					<div class="book-cover" style="background-image: url('{{ bookCover | Escape }}'); background-size: cover; background-position: center;">
+            <div class="book-spine"></div>
+          </div>
+        {% else %}
+          <div class="book-cover">
+            <div class="book-spine"></div>
+            <div class="book-title">
+              <span class="text">{{ book.Title | Escape }}</span>
+            </div>
+            <div class="book-subtitle">
+              <span class="text"></span>
+            </div>
+          </div>
+        {% endif %}
+      </a>
+    </div>
+  {% endfor %}
+</div>

@@ -1,0 +1,47 @@
+{% assign languageFlag = 'Global' | PageParameter:'lang' | Downcase %}
+
+{% if CurrentPerson == null %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="alert alert-info">
+                {% if languageFlag == 'es' %}
+                    Para registrarte más rápido, por favor da click en el botón de “Login” arriba para iniciar sesión en tu cuenta de my.lakepointe.org.
+                {% else %}
+                    For a better experience, please click the "Login" button above to login to your my.lakepointe.org account.
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% assign modalTitle = "Would you like to log in?" %}
+{% assign modalSubTitle = "¿TE GUSTARÍA INICIAR SESIÓN?" %}
+{% assign modalText  = "If you have a My Lakepointe Church account, you can log in for an improved experience." %}
+{% assign loginText  = "Log In Now" %}
+{% assign cancelText = "Continue as Guest" %}
+{% capture expression %}\?.*{% endcapture %}
+{% unless CurrentPerson and CurrentPerson != null %}
+    <script>
+        $(function(){
+            bootbox.dialog({
+                message: "<h3>{{ modalTitle }}</h3><h4>{{ modalSubTitle }}</h4><p>{{ modalText }}</p>",
+                buttons: {
+                    ok: {
+                        label: '{{ loginText }}',
+                        className: 'btn-primary',
+                        callback: function () {
+                            window.location.href = '/login?returnurl={{ 'Global' | Page:'Path' | EscapeDataString }}{{ 'Global' | Page:'Url' | RegExMatchValue:expression | EscapeDataString }}';
+                        }
+                    },
+                    cancel: {
+                        label: '{{ cancelText }}',
+                        className: 'btn-default',
+                        callback: function () {
+                            // Do Nothing
+                        }
+                    }
+                }
+            })
+        });
+    </script>
+{% endunless %}

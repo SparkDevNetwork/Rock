@@ -1,0 +1,47 @@
+﻿{% for item in Items %}
+<article class="margin-b-lg">
+  <h3>{{ item.Title }}</h3>
+
+  <div>
+    {% assign verses = item | Attribute:'Summary' | Split:'+'%}
+    <ul type="disc">
+    {% for verse in verses %}
+      {% if verse != '' %}
+        <li>{{ verse | Trim }}</li>
+      {% endif %}
+    {% endfor %}
+    </ul>
+  </div>
+
+  <p class="margin-t-lg">
+    <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}" class="btn btn-default btn-xs">
+      Leer Más <i class="fa fa-chevron-right"></i>
+    </a>
+  </p>
+</article>
+{% endfor %}
+
+<div class="clearfix">
+  {% assign nextPageString = Pagination.NextPage | ToString %}
+  {% assign prevPageString = Pagination.PreviousPage | ToString %}
+
+  {% if Pagination.PreviousPage == -1 %}
+  <!--<div class="btn btn-default pull-left">
+    <i class="fa fa-chevron-left"></i> Prev
+  </div>-->
+  {% else %}
+  <a class="btn btn-primary pull-left" href="{{ Pagination.UrlTemplate | Replace:'PageNum', prevPageString }}">
+    <i class="fa fa-chevron-left"></i> Anterior
+  </a>
+  {% endif %}
+
+  {% if Pagination.NextPage == -1 %}
+  <!--<div class="btn btn-default pull-right">
+    Next <i class="fa fa-chevron-right"></i>
+  </div>-->
+  {% else %}
+  <a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum', nextPageString }}">
+    Siguiente <i class="fa fa-chevron-right"></i>
+  </a>
+  {% endif %}
+</div>

@@ -1,0 +1,31 @@
+{% comment %}
+  Series List Page
+{% endcomment %}
+<style type="text/css">
+  .seriesItem{
+    padding-bottom: 50px;
+  }
+ .seriesItem h3 {
+    margin-top: 0;
+  }
+</style>
+
+<h1> Available Series </h1>
+
+<div class="row">
+  <div class="col-xs-12">
+    {% for item in Items %}
+      <div class="row seriesItem">
+       <div class="col-sm-4">
+        {% assign fileGuid = item | Attribute:'SeriesLogo','RawValue'%}
+        <img src="/GetImage.ashx?Guid={{fileGuid}}&width=250"  class="img-responsive" />
+      </div>
+      <div class="col-sm-8">
+          <h3>{{item.Title }}</h3>
+          {{ item.Summary}}
+          <a href="/MinistryPointSeries/{{item.Id}}" class="btn btn-primary">View Series</a>
+      </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>

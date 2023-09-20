@@ -28,6 +28,20 @@ import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 
 const store = useStore();
 
+// LPC CODE
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+// END LPC CODE
+
 export default defineComponent({
     name: "Event.RegistrationEntry.Intro",
     components: {
@@ -84,7 +98,13 @@ export default defineComponent({
                 return "";
             }
 
+            // MODIFIED LPC CODE
+            if (this.getLang() == 'es') {
+                return pluralConditional(spots, `1 ${this.registrantTerm} más`, `${spots} ${this.registrantTermPlural} más`);
+            } else {
             return pluralConditional(spots, `1 more ${this.registrantTerm}`, `${spots} more ${this.registrantTermPlural}`);
+            }
+            // END MODIFIED LPC CODE
         },
 
         /** Is this instance full and no one else can register? */
@@ -101,24 +121,44 @@ export default defineComponent({
             return !(this.isFull && this.numberToAddToWaitlist !== this.numberOfRegistrants);
         },
 
+        // MODIFIED LPC CODE
         registrantTerm(): string {
-            this.viewModel.instanceName;
+            if (this.getLang() == 'es') {
+                return 'persona';
+            } else {
             return (this.viewModel.registrantTerm || "registrant").toLowerCase();
+            }
         },
         registrantTermPlural(): string {
+            if (this.getLang() == 'es') {
+                return 'personas';
+            } else {
             return (this.viewModel.pluralRegistrantTerm || "registrants").toLowerCase();
+            }
         },
         registrationTerm(): string {
+            if (this.getLang() == 'es') {
+                return 'registro';
+            } else {
             return (this.viewModel.registrationTerm || "registration").toLowerCase();
+            }
         },
         registrationTermPlural(): string {
+            if (this.getLang() == 'es') {
+                return 'registros';
+            } else {
             return (this.viewModel.pluralRegistrationTerm || "registrations").toLowerCase();
+            }
         },
+        // END MODIFIED LPC CODE
         registrationTermTitleCase(): string {
             return toTitleCase(this.registrationTerm);
         }
     },
     methods: {
+        // LPC CODE
+        getLang,
+        // END LPC CODE
         pluralConditional,
         onNext(): void {
             // If the person is authenticated and the setting is to put registrants in the same family, then we force that family guid
@@ -166,21 +206,28 @@ export default defineComponent({
     template: `
 <div class="registrationentry-intro">
     <NotificationBox v-if="isFull && numberToAddToWaitlist !== numberOfRegistrants" class="text-left" alertType="warning">
-        <strong>{{registrationTermTitleCase}} Full</strong>
-        <p>
-            There are not any more {{registrationTermPlural}} available for {{viewModel.instanceName}}.
-        </p>
+        <!-- MODIFIED LPC CODE -->
+            <strong v-if="getLang() == 'es'">{{registrationTermTitleCase}} Lleno</strong>
+            <strong v-else>{{registrationTermTitleCase}} Full. </strong>
+            <p v-if="getLang() == 'es'">No hay más {{registrationTermPlural}} disponibles para {{viewModel.instanceName}}.</p>
+            <p v-else>There are not any more {{registrationTermPlural}} available for {{viewModel.instanceName}}.</p>
+        <!-- END MODIFIED LPC CODE -->
     </NotificationBox>
     <NotificationBox v-if="showRemainingCapacity" class="text-left" alertType="warning">
-        <strong>{{registrationTermTitleCase}} Full</strong>
-        <p>
-            This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.
-        </p>
+        <!-- MODIFIED LPC CODE -->
+            <strong v-if="getLang() == 'es'">{{registrationTermTitleCase}} Lleno</strong>
+            <strong v-else>{{registrationTermTitleCase}} Full. </strong>
+            <p v-if="getLang() == 'es'">Este {{registrationTerm}} solo tiene capacidad para {{remainingCapacityPhrase}}.</p>
+            <p v-else>This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.</p>
+       <!-- END MODIFIED LPC CODE -->
     </NotificationBox>
     <div class="text-left" v-html="viewModel.instructionsHtml">
     </div>
     <div v-if="viewModel.maxRegistrants > 1" class="registrationentry-intro">
-        <h1>How many {{viewModel.pluralRegistrantTerm}} will you be registering?</h1>
+        <!-- MODIFIED LPC CODE -->
+            <h1 v-if="getLang() == 'es'"> ¿Cuántas Personas Estarás Registrando?</h1>
+            <h1 v-else>How many {{viewModel.pluralRegistrantTerm}} will you be registering?</h1>
+        <!-- END MODIFIED LPC CODE -->
         <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" :max="viewModel.maxRegistrants" />
     </div>
     <NotificationBox v-if="viewModel.timeoutMinutes" alertType="info" class="text-left">
@@ -189,18 +236,32 @@ export default defineComponent({
         of inactivity.
     </NotificationBox>
     <NotificationBox v-if="numberToAddToWaitlist === numberOfRegistrants" class="text-left" alertType="warning">
-        This {{registrationTerm}} has reached its capacity. Complete the registration to be added to the waitlist.
+        <!-- MODIFIED LPC CODE -->
+            <p v-if="getLang() == 'es'">Este {{registrationTerm}} ha llegado a su capacidad. Si lo deseas, puedes completar el registro para agregarte a una lista de espera.</p>
+            <p v-else>This {{registrationTerm}} has reached its capacity. Complete the registration to be added to the waitlist.</p>
+        <!-- END MODIFIED LPC CODE -->
     </NotificationBox>
     <NotificationBox v-else-if="numberToAddToWaitlist" class="text-left" alertType="warning">
+		<!-- MODIFIED LPC CODE -->
+        <p v-if="getLang() == 'es'">
+            Este {{registrationTerm}} solo tiene capacidad para {{remainingCapacityPhrase}}.
+            La primera {{pluralConditional(viewModel.spotsRemaining, registrantTerm, viewModel.spotsRemaining + ' ' + registrantTermPlural)}} que agregue se registrará para {{viewModel.instanceName}}.
+            El resto se agregarán a la lista de espera. 
+        </p>
+        <p v-else>
         This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.
         The first {{pluralConditional(viewModel.spotsRemaining, registrantTerm, viewModel.spotsRemaining + ' ' + registrantTermPlural)}} you add will be registered for {{viewModel.instanceName}}.
         The remaining {{pluralConditional(numberToAddToWaitlist, registrantTerm, numberToAddToWaitlist + ' ' + registrantTermPlural)}} will be added to the waitlist.
+    	</p>
+        <!-- END MODIFIED LPC CODE -->
     </NotificationBox>
 
     <div v-if="canContinue" class="actions text-right">
+        <!-- MODIFIED LPC CODE -->
         <RockButton btnType="primary" @click="onNext">
-            Next
+            {{ getLang() == 'es' ? 'Siguiente' : 'Next' }}
         </RockButton>
+        <!-- END MODIFIED LPC CODE -->
     </div>
 </div>`
 });

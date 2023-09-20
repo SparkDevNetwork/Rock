@@ -61,6 +61,16 @@ namespace Rock.Tasks
                         emailMessage.FromName = template.ConfirmationFromName;
                         emailMessage.Subject = template.ConfirmationSubject;
                         emailMessage.Message = template.ConfirmationEmailTemplate;
+                        // LPC CODE
+                        if ( message.Language == "es" )
+                        {
+                            emailMessage.Message += "<style>.EnglishText { display: none !important; }</style>";
+                        }
+                        else
+                        {
+                            emailMessage.Message += "<style>.SpanishText { display: none !important; }</style>";
+                        }
+                        // END LPC CODE
                         emailMessage.AppRoot = message.AppRoot;
                         emailMessage.ThemeRoot = message.ThemeRoot;
                         emailMessage.CurrentPerson = currentPersonOverride;
@@ -98,6 +108,16 @@ namespace Rock.Tasks
             /// The theme root.
             /// </value>
             public string ThemeRoot { get; set; }
+
+            // LPC CODE
+            /// <summary>
+            /// Gets or sets the language to send the message in.
+            /// </summary>
+            /// <value>
+            /// The language to send the message in.
+            /// </value>
+            public string Language { get; set; }
+            // END LPC CODE
         }
     }
 }

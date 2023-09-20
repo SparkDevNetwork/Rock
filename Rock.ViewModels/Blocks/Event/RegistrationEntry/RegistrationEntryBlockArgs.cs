@@ -269,6 +269,24 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// </value>
         public bool UpdateEmail { get; set; }
 
+        // LPC CODE
+        /// <summary>
+        /// Gets or sets the registrar's mobile phone number.
+        /// </summary>
+        /// <value>
+        /// The registrar's mobile phone number.
+        /// </value>
+        public string MobilePhone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrar's preferred language.
+        /// </summary>
+        /// <value>
+        /// The registrar's preferred language.
+        /// </value>
+        public string PreferredLanguage { get; set; }
+        // END LPC CODE
+
         /// <summary>
         /// Gets or sets the family unique identifier.
         /// </summary>

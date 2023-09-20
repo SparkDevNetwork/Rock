@@ -423,6 +423,10 @@ namespace RockWeb.Blocks.Event
             foreach ( var occurrenceDates in occurrencesWithDates )
             {
                 var eventItemOccurrence = occurrenceDates.EventItemOccurrence;
+                // LPC CODE
+                eventItemOccurrence.LoadAttributes(rockContext);
+                eventItemOccurrence.EventItem.LoadAttributes(rockContext);
+                // END LPC CODE
                 foreach ( var scheduleOccurrence in occurrenceDates.ScheduleOccurrences )
                 {
 
@@ -459,22 +463,34 @@ namespace RockWeb.Blocks.Event
                             Description = eventItemOccurrence.EventItem.Description,
                             Summary = eventItemOccurrence.EventItem.Summary,
                             OccurrenceNote = eventItemOccurrence.Note.SanitizeHtml(),
-                            DetailPage = string.IsNullOrWhiteSpace( eventItemOccurrence.EventItem.DetailsUrl ) ? null : eventItemOccurrence.EventItem.DetailsUrl
+                            // LPC MODIFIED
+                            DetailPage = string.IsNullOrWhiteSpace( eventItemOccurrence.EventItem.DetailsUrl ) ? null : eventItemOccurrence.EventItem.DetailsUrl,
+                            DisplayPriority = eventItemOccurrence.EventItem.GetAttributeValue("DisplayPriority").AsIntegerOrNull() ?? 50
+                            // END LPC MODIFIED
                         } );
                     }
                 }
             }
 
+			// LPC MODIFIED
             var eventSummaries = eventOccurrenceSummaries
-                .OrderBy( e => e.DateTime )
-                .GroupBy( e => e.Name )
-                .Select( e => e.ToList() )
+                .GroupBy(e => e.Name)
+                .Select(e => new
+                {
+                    Occurrences = e.ToList(),
+                    DisplayPriority = e.Max(eo => eo.DisplayPriority),
+                    DisplayDate = e.Min(eo => eo.DateTime)
+                })
+                .OrderByDescending(e => e.DisplayPriority)
+                .ThenBy(e => e.DisplayDate)
                 .ToList();
 
             eventOccurrenceSummaries = eventOccurrenceSummaries
+                .OrderByDescending(e => e.DisplayPriority)
                 .OrderBy( e => e.DateTime )
                 .ThenBy( e => e.Name )
                 .ToList();
+            // END LPC MODIFIED
 
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "TimeFrame", ViewMode );
@@ -755,6 +771,10 @@ namespace RockWeb.Blocks.Event
             public string OccurrenceNote { get; set; }
 
             public string DetailPage { get; set; }
+			
+			// LPC CODE
+            public int DisplayPriority { get; set; }
+            // END LPC CODE
         }
 
         /// <summary>

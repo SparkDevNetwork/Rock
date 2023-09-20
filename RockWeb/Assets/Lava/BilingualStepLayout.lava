@@ -1,0 +1,54 @@
+<div class="card-top">
+    {% assign lang = 'Global' | PageParameter:'lang' %}
+    {% if lang and lang != empty %}
+        {% assign preferredLanguage = lang %}
+    {% else %}
+        {% assign personId = Person.Id %}
+        {% capture preferredLanguage %}{[ GetLanguage personid:personId ]}{% endcapture %}
+    {% endif %}
+    {% assign spanishName = StepType | Attribute:'Name-es' %}
+    {% if spanishName and spanishName != empty %}
+        {% if preferredLanguage == 'es' %}
+            {% assign name = spanishName %}
+        {% else %}
+            {% assign name = StepType.Name %}
+        {% endif %}
+    {% else %}
+        {% assign name = StepType.Name %}
+    {% endif %}
+    <h3 class="step-name">{{ name }}</h3>
+</div>
+<div class="card-middle">
+    {% if StepType.HighlightColor == '' or IsComplete == false %}
+        <i class="{{ StepType.IconCssClass }} fa-4x"></i>
+    {% else %}
+        <i class="{{ StepType.IconCssClass }} fa-4x" style="color: {{ StepType.HighlightColor }};"></i>
+    {% endif %}
+</div>
+<div class="card-bottom">
+    <p class="step-status">
+        {% if LatestStepStatus %}
+            {% assign statuses = LatestStepStatus.Name |  Split:'/' %}
+            {% if statuses[1] and statuses[1] != empty %}
+                {% if preferredLanguage == 'es' %}
+                    {% capture status %}{{statuses[1] | Trim }}{% endcapture%}
+                {% else %}
+                    {% capture status %}{{statuses[0] | Trim }}{% endcapture%}
+                {% endif %}
+            {% else %}
+                {% assign status = LatestStepStatus.Name %}
+            {% endif %}
+            <span class="label" style="background-color: {{ LatestStepStatus.StatusColor }};">{{ status }}</span>
+        {% endif %}
+        {% if ShowCampus and LatestStep and LatestStep.Campus != '' %}
+            <span class="label label-campus">{{ LatestStep.Campus.Name }}</span>
+        {% endif %}
+        {% if LatestStep and LatestStep.CompletedDateTime != '' %}
+            <br />
+            <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
+        {% endif %}
+    </p>
+    {% if StepCount > 1 %}
+        <span class="badge">{{ StepCount }}</span>
+    {% endif %}
+</div>

@@ -1,0 +1,284 @@
+//
+// forms.less
+// Extended from Bootstrap
+//
+
+
+//
+// Bootstrap Overrides ===================================
+//
+
+
+//----------------------------------------------- general -----------------------------
+
+
+
+
+//------------------------------------------- specific forms ------------------------------------
+
+.control-wrapper select {
+	border: none;
+	background: #eee;
+	color: @theme-8;
+	-webkit-appearance: none;
+	appearance: none;
+	-moz-appearance: none;
+	background-image: url(/Themes/LPC2020/Assets/images/black_arrow_down.png);
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    appearance: none;
+	opacity: .75;
+	background-size: 13px;
+	-webkit-transition: opacity 0.2s ease-in-out;
+    -moz-transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.ant-select-clear {
+    opacity: 1 !important; // Make the "x" always show on Obsidian dropdowns instead of only on hover
+}
+
+
+
+//Login 
+
+
+
+//login page
+.block-instance.login {
+	.btn.btn-primary {
+		margin-left: auto;
+		display: block;
+		width: min-content;
+	}
+	fieldset {
+		legend {
+			font-weight: 700;
+			text-transform: uppercase;
+			font-size: 24px;
+			padding-top: 0;
+			&:after {
+				content: "Please login to you LP account to access your profile and information.";
+				font-size: 16px;
+				position: absolute;
+				top: 35px;
+				width: 100%;
+				left: 0;
+				margin-left: auto;
+				margin-right: auto;
+				font-weight: 500;
+				text-transform: none;
+				color: #888;
+			}
+		}
+		.form-group.rock-text-box {
+			float: none;
+		}
+		.form-control {
+			box-shadow: none;
+			height: unset;
+			padding: 12px 12px;
+		}
+	}
+	.control-label {
+		text-transform: uppercase;
+		font-weight: 500;
+		color: @gray;
+	}
+	.checkbox>label {
+		width: 100%;
+		text-align: right;
+	}	
+	.btn.btn-action,
+	.btn.btn-link {
+		float: right;
+		margin-top: 0;
+		color: @link-color!important;
+		background: none!important;
+		border: none;
+		text-transform: uppercase;
+		font-size: 16px;
+		padding-top: 25px;
+		padding-right: 0;
+		width:unset;
+		&:hover, &:focus {
+			color: @link-hover-color!important;
+		}
+		&:focus {
+			outline: none;
+			text-decoration: none;
+		}
+	}
+}
+
+@media (min-width: @grid-float-breakpoint-min) {
+	
+	.block-instance.login {
+		fieldset {
+			.form-group {
+				width: 50%!important;
+			}
+		}	
+		fieldset {
+			>.row {
+				>div {
+					display: flex;
+					flex-wrap: wrap;
+					margin: 0 -1%;
+					.checkbox {
+						width: 100%;
+					}
+					>*:not(.btn-primary) {
+						padding-right: 1%!important;
+						padding-left: 1%!important;
+					}
+					.btn.btn-primary {
+						margin-right: 1%;
+					}
+					.btn.btn-action {
+						width: 100%;
+						text-align: right;
+						margin-top: 15px;
+						padding-top: 5px;
+						&:hover, &:focus {
+							text-decoration: none;
+						}
+					}
+					.btn.btn-link {
+						width: 100%;
+						text-align: right;
+						margin-top: 0;
+						padding-top: 0;
+						&:hover, &:focus {
+							text-decoration: none;
+						}
+					}
+				
+				}
+			}
+		}
+	}
+}
+
+
+
+.form-control {
+  box-shadow: none;
+  transition: @input-focus-transition;
+
+  &:focus {
+    border: 1px solid @input-border-focus;
+    box-shadow: @input-focus-box-shadow;
+  }
+}
+
+.has-error .form-control,
+.has-error .input-group-addon {
+  box-shadow: 0;
+}
+
+.has-error .form-control:focus {
+  border-color: @brand-danger;
+  box-shadow: 0 0 0 3px rgba(red(@brand-danger), green(@brand-danger), blue(@brand-danger), .2);
+}
+
+.has-error .control-label {
+  color: @brand-danger;
+}
+
+
+
+.form-horizontal > .form-group .form-group {
+  margin-bottom: 0;
+}
+
+
+
+// Pills
+// -------------------------
+
+
+.nav-stacked.nav-pills {
+	> li {
+		text-align: center;
+		margin-bottom: 10px;
+		> a {
+			display: inline-block;
+			margin-bottom: 0;
+			font-weight: normal;
+			text-align: center;
+			vertical-align: middle;
+			touch-action: manipulation;
+			cursor: pointer;
+			background-image: none;
+			border: 1px solid;
+			font-size: 14px;
+			line-height: 1.7em;
+			border-radius: @border-radius-base;
+			border-color: @brand-primary;
+			color: @theme-6-text;
+			padding: 10px 5px;
+			text-transform: uppercase;
+			width: 100%;
+			max-width: 250px;
+		
+			&:hover, &:focus {
+				background-color: @theme-1;
+				color: @theme-1-text;
+			}
+		}
+		&.active > a {
+			background-color: @theme-1;
+			color: @theme-1-text;
+		}
+	}
+}
+
+
+label {
+  font-weight: 500;
+}
+
+
+.form-group.static-control .form-control-static {
+  display: block;
+  width: 100%;
+  padding: 8px 12px !important;
+  margin: 5px 0 2px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: @gray-light;
+
+  background-color: @gray-lightest;
+  background-image: none;
+  border: 1px solid @gray-lighter;
+  border-radius: @border-radius-base;
+  opacity: 1;
+}
+
+.form-row {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-right: -5px;
+  margin-left: -5px;
+}
+
+.form-row>.col, .form-row>[class*=col-] {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+

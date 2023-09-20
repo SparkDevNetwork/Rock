@@ -1,0 +1,22 @@
+{% for eventOccurrenceSummary in EventOccurrenceSummaries %}
+  <div class="margin-b-lg">
+
+    {% if DetailsPage != empty %}
+      {% capture eventName %}<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}">{{ eventOccurrenceSummary.Name }}</a>{% endcapture %}
+    {% else %}
+      {% assign eventName = eventOccurrenceSummary.Name %}
+    {% endif %}
+
+    <h4>{{ eventName }}
+      <small>
+      {% if eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate != eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate %}
+        {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d'}}
+      {% else %}
+        {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
+      {% endif %}
+      </small>
+    </h4>
+
+    <p>{{ eventOccurrenceSummary.Summary }}</p>
+  </div>
+{% endfor %}

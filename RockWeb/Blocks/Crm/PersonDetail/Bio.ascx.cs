@@ -507,6 +507,51 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         private void ShowPersonImage()
         {
             lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400 )}&Style=icon"" alt class=""img-profile"">";
+
+            // LPC CODE
+            TaggedItemService taggedItemService = new TaggedItemService( new RockContext() );
+            List<TaggedItem> taggedItems = taggedItemService
+                .Queryable()
+                .Where( t => (t.TagId == 1 || t.TagId == 256) && t.EntityGuid == Person.Guid )
+                .ToList();
+
+            string color = "";
+            string icon = "";
+            string tooltip = "";
+            string fontSize = "";
+
+            foreach ( var taggedItem in taggedItems )
+            {
+                if ( taggedItem.TagId == 1 && icon == "" )
+                {
+                    // Staff
+                    color = "#008000";
+                    icon = "fa-id-badge";
+                    tooltip = "Lakepointe Staff";
+                    fontSize = "1.5rem";
+                }
+                else if ( taggedItem.TagId == 256 )
+                {
+                    // Security Alert
+                    color = "#ad0000";
+                    icon = "fa-exclamation-triangle";
+                    tooltip = "Security Alert";
+                    fontSize = "1.3rem";
+                }
+            }
+            if ( icon != "" )
+            {
+                litPersonAlerts.Text = $@"
+                    <div style=""z-index: 1011; position: relative; padding: 0.5rem; background: linear-gradient(225deg, {color} 0%, {color} 50%, transparent 50%, transparent 100%); width: 4rem; height: 4rem; margin-left: auto; text-align: right;""
+                        data-toggle=""tooltip""
+                        data-placement=""left""
+                        title=""{tooltip}"">
+                        <i class=""fas {icon}"" 
+                        style=""z-index: 1012; font-size: {fontSize}; color: white;""></i>
+                    </div>
+                    ";
+            }
+            // END LPC CODE
         }
 
         private void ShowProtectionLevel()
@@ -876,7 +921,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if ( !string.IsNullOrWhiteSpace( Person.GradeFormatted ) )
                 {
-                    lGrade.Text = $"<dt>{Person.GradeFormatted}</dt>";
+                	lGrade.Text = $"<dt>{Person.GradeFormatted}</dt>";
                 }
 
                 if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )

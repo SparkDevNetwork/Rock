@@ -1,0 +1,408 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+
+<%@ Import Namespace="System.Web.Optimization" %>
+<%@ Import Namespace="Rock" %>
+<%@ Import Namespace="Rock.Web" %>
+<%@ Import Namespace="Rock.Web.UI" %>
+<%@ Import Namespace="Rock.Web.Cache" %>
+
+<!DOCTYPE html>
+<script runat="server">
+
+    protected override void OnInit( EventArgs e )
+    {
+	    base.OnInit( e );
+	}
+	 
+	protected override void OnLoad( EventArgs e )
+	{
+		base.OnLoad( e );
+		
+		try 
+		{
+		
+			var page = (RockPage)this.Page;
+			if ( page != null )
+			{
+				var pageCache = Rock.Web.Cache.PageCache.Get( page.PageId );
+				if (pageCache != null )
+				{
+					if (pageCache.PageDisplayTitle == false || string.IsNullOrWhiteSpace( page.PageTitle ) )
+					{
+						lTextPageTitle.Visible = false;
+						lImagePageTitle.Visible = false;
+					}
+					
+					lDefaultPageDescriptionText.Visible = pageCache.PageDisplayDescription;
+					lDefaultPageDescriptionText.Text = pageCache.Description;
+					lDefaultPageDescriptionImage.Visible = pageCache.PageDisplayDescription;
+					lDefaultPageDescriptionImage.Text = pageCache.Description;
+					if (pageCache.PageDisplayDescription == false || pageCache.Description == "") {
+						pnlPageDescriptionText.Visible = false;
+						pnlPageDescriptionImage.Visible = false;
+					}
+					else {
+						pnlPageDescriptionText.Visible = true;
+						pnlPageDescriptionImage.Visible = true;
+					}
+				}
+				
+				var pageTitle = page.Title;
+				var headerImage = page.GetAttributeValue( "HeaderImage" );
+				var mobileFeatureImage = page.GetAttributeValue( "MobileFeatureImage" );
+
+				var occId = page.PageParameter( "EventOccurrenceId" ).AsIntegerOrNull();
+				var messageId = page.PageParameter( "MessageId" ).AsIntegerOrNull();
+				var opportunityId = page.PageParameter( "OpportunityId" ).AsIntegerOrNull();
+				var contentId = page.PageParameter( "Item" ).AsIntegerOrNull();
+
+				var rockContext = new Rock.Data.RockContext();
+				string imageUrl = string.Empty;
+
+				if ( occId.HasValue )
+				{
+					var eventOccurrence = new Rock.Model.EventItemOccurrenceService( rockContext ).Get( occId.Value );
+					if ( eventOccurrence != null )
+					{
+						var eventItemId = eventOccurrence.EventItemId;
+						var eventItem = new Rock.Model.EventItemService( rockContext ).Get( eventItemId );
+						eventItem.LoadAttributes( rockContext );
+						pageTitle = eventItem.Name;
+						var eventImage = eventItem.GetAttributeValue( "EventHeaderImage" );
+						if ( !string.IsNullOrWhiteSpace( eventImage ) )
+						{
+							imageUrl = page.ResolveRockUrl( string.Format( "~/GetImage.ashx?guid={0}", eventImage ) );
+						}
+					}
+				}
+
+				if ( imageUrl.IsNullOrWhiteSpace() && messageId.HasValue )
+				{
+					var seriesMessage = new Rock.Model.ContentChannelItemService( rockContext ).Get( messageId.Value );
+					if ( seriesMessage != null )
+					{
+						seriesMessage.LoadAttributes( rockContext );
+						var messageseriesImage = seriesMessage.GetAttributeValue( "SeriesImage" );
+						if ( !string.IsNullOrWhiteSpace( messageseriesImage ) )
+						{
+							imageUrl = page.ResolveRockUrl( string.Format( "~/GetImage.ashx?guid={0}", messageseriesImage ) );
+						}
+					}
+				}
+
+				if ( imageUrl.IsNullOrWhiteSpace() && opportunityId.HasValue )
+				{
+					var opportunity = new Rock.Model.ConnectionOpportunityService( rockContext ).Get( opportunityId.Value );
+					if ( opportunity != null )
+					{
+						opportunity.LoadAttributes( rockContext );
+						var opImage = opportunity.GetAttributeValue( "PhotoHeader" );
+						if ( !string.IsNullOrWhiteSpace( opImage ) )
+						{
+							imageUrl = page.ResolveRockUrl( string.Format( "~/GetImage.ashx?guid={0}", opImage ) );
+						}
+					}
+				}
+
+				if ( imageUrl.IsNullOrWhiteSpace() && contentId.HasValue )
+				{
+					var content = new Rock.Model.ContentChannelItemService( rockContext ).Get( contentId.Value );
+					if ( content != null )
+					{
+						pageTitle = content.Title;
+						content.LoadAttributes( rockContext );
+						var contentImage = content.GetAttributeValue( "HeaderImage" );
+						if ( string.IsNullOrWhiteSpace( contentImage ) )
+						{
+							contentImage = content.GetAttributeValue( "DetailImage" );
+						}
+						if ( string.IsNullOrWhiteSpace( contentImage ) )
+						{
+							foreach( var parent in content.ParentItems.OrderBy( p => p.ContentChannelItem.Priority ) )
+							{
+								var parentContent = parent.ContentChannelItem;
+								parentContent.LoadAttributes();
+								contentImage = parentContent.GetAttributeValue( "HeaderImage" );
+								if ( !string.IsNullOrWhiteSpace( contentImage ) )
+								{
+									break;
+								}
+							}
+						}
+						
+						if ( !string.IsNullOrWhiteSpace( contentImage ) )
+						{
+							imageUrl = page.ResolveRockUrl( string.Format( "~/GetImage.ashx?guid={0}&maxWidth=2000", contentImage ) );
+						}
+					}
+				}
+
+				if ( imageUrl.IsNullOrWhiteSpace() && !string.IsNullOrWhiteSpace( headerImage ) )
+				{
+					imageUrl = page.ResolveRockUrl( string.Format( "~/GetImage.ashx?guid={0}", headerImage ) );
+				}
+				
+				if ( imageUrl.IsNotNullOrWhiteSpace() )
+				{
+					pnlImageHeader.Visible = true;
+					pnlTextHeader.Visible = false;
+					lImagePageTitleUnderline.Visible = pageCache.PageDisplayTitle;
+
+					string deliminator = imageUrl.Contains( "?" ) ? "&" : "?";
+					pnlImage.Attributes["style"] = string.Format( "background-image: url('{0}{1}width=1680&mode=max'); filter: grayscale(1); box-shadow: inset 0 0 0 2000px rgba(52,52,52,0.95);", imageUrl, deliminator );
+					
+					string mobileImageUrl = string.IsNullOrWhiteSpace( mobileFeatureImage ) 
+						? imageUrl 
+						: page.ResolveRockUrl( string.Format( "~/GetImage.ashx?guid={0}", mobileFeatureImage ) );
+					if ( mobileImageUrl.IsNotNullOrWhiteSpace() )
+					{
+						deliminator = mobileImageUrl.Contains( "?" ) ? "&" : "?";
+						pnlMobileImage.Attributes["style"] = string.Format( "background-image: url('{0}{1}width=1680&mode=max'); filter: grayscale(1); box-shadow: inset 0 0 0 2000px rgba(52,52,52,0.95);", mobileImageUrl, deliminator );
+					}
+					
+					divImagePageTitle.Visible = ShowPageTitle;
+					lImagePageTitle.Text = pageTitle;
+					
+				}
+				else if ( pageCache.PageDisplayTitle == false ) {
+					pnlImageHeader.Visible = false;
+					pnlTextHeader.Visible = true;
+					lTextPageTitleUnderline.Visible = false;
+					divDefaultPageTitle.Visible = false;
+					svgHero.Visible = true;
+				}
+				else
+				{
+					pnlImageHeader.Visible = false;
+					pnlTextHeader.Visible = ShowPageTitle;
+					lTextPageTitle.Text = pageTitle;
+					lTextPageTitleUnderline.Visible = pageCache.PageDisplayTitle;
+				}
+				
+				page.Title = pageTitle;
+			}
+		}
+		catch ( Exception ex )
+		{
+			pnlError.Controls.Add( new LiteralControl( ex.Message ) );
+			pnlError.Visible = true;
+		}
+	}
+
+</script>
+
+
+<html lang="en" class="no-js">
+<head runat="server">
+
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+    <!-- Included CSS Files -->
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Montserrat%3A100%2C100italic%2C200%2C200italic%2C300%2C300italic%2Cregular%2Citalic%2C500%2C500italic%2C600%2C600italic%2C700%2C700italic%2C800%2C800italic%2C900%2C900italic&#038;ver=4.9.8#038;subset=latin,latin-ext' type='text/css' media='all' />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>"></script>
+	<script src="<%# ResolveRockUrl("~~/Scripts/theme.js" ) %>"></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+	
+</head>
+<body runat="server" id="body">
+
+    <form id="form1" runat="server">
+
+        <div>
+			<Rock:Zone Name="Top" runat="server" />
+		</div>
+		
+        <!-- Page Header -->
+        <header>
+			<!-- Brand Bar -->
+			
+			<nav id="fixed" class="navbar navbar-default navbar-fixed-top">
+				<div id="navTransparency" runat="server">
+					<div class="container-fluid">
+						<div class="navbar-header">
+							<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+								<span class="icon">
+									<span class="icon-bar top-bar"></span>
+									<span class="icon-bar middle-bar"></span>
+									<span class="icon-bar bottom-bar"></span>
+								</span>
+							</button>
+							<div class="navbar-logo">
+								<Rock:Zone Name="Header" runat="server" />
+							</div>
+						</div>
+						<div class="navbar-collapse collapse" id="navbar">
+							<!-- Top Navigation -->
+							<Rock:Zone Name="Top Navigation" runat="server" />
+						</div>
+					</div>
+				</div>
+            </nav>
+			
+			
+			<!-- Title with image -->
+			<asp:Panel id="pnlImageHeader" runat="server" visible="false" >
+				<section id="billboard">  
+					<div class="billboard slide">
+						<div id="divImageBillboardInner" runat="server" class="billboard-inner">
+						
+							<asp:Panel id="pnlImage" runat="server" cssClass="item overlay hero-image">
+								<div class="billboard-innermost">
+								</div>
+							</asp:Panel>
+							
+							<asp:Panel id="pnlMobileImage" runat="server" cssClass="item overlay mobile-hero-image" >
+								<div class="billboard-innermost">
+								</div>
+							</asp:Panel>
+							
+							<div style="width: 80%; margin: auto;">
+							<div class="col-sm-12 align-self-center billboardInnerContent">
+								<div id="divImagePageTitle" runat="server" class="container" visible="false">
+									<div class="page__title">
+										<h1 style="font-weight: 700; font-size: 38px; color: #FFFFFF; margin: 0;"><asp:Literal id="lImagePageTitle" runat="server" /></h1>
+									</div>
+								</div>
+								<Rock:Zone Name="PageHeader" runat="server" />
+								<div>
+									<div class="page-title-underline" id="lImagePageTitleUnderline" runat="server"></div>
+									<asp:Panel runat="server" id="pnlPageDescriptionImage" visible="false" CssClass="page_description" style="margin-top: 21px;">
+										<h3 style="margin: 0; padding: 0; color: #fff; font-size: 20px; font-weight: 400;"><asp:Literal id="lDefaultPageDescriptionImage" runat="server" /></h3>
+									</asp:Panel>
+								</div>
+							</div>								
+						</div>
+					</div>
+				</section>
+			</asp:Panel>
+			
+			<!-- Title without image -->
+			<asp:Panel id="pnlTextHeader" runat="server" visible="false">
+				<section id="billboard" class="noheader">  
+					<div class="billboard">
+						<div id="divTextBillboardInner" runat="server" class="billboard-inner">
+							<div class="item overlay mobile-hero-image" >
+								<div class="billboard-innermost">
+								</div>
+							</div>
+							<div class="item overlay hero-image">
+								<div class="billboard-innermost">
+								</div>
+							</div>
+							<div style="width: 80%; margin: auto;">
+							<div class="col-sm-12 align-self-center billboardInnerContent">
+								<div id="divDefaultPageTitle" class="container" runat="server">	
+									<div class="page__title">
+											<h1 style="font-weight: 700; font-size: 38px; color: #FFFFFF; margin: 0;"><asp:Literal id="lTextPageTitle" runat="server" /></h1>
+									</div>
+								</div>
+								<div>
+									<div class="page-title-underline" id="lTextPageTitleUnderline" runat="server"></div>
+									<asp:Panel runat="server" id="pnlPageDescriptionText" visible="false" CssClass="page_description" style="margin-top: 21px;">
+										<h3 style="margin: 0; padding: 0; color: #fff; font-size: 20px; font-weight: 400;"><asp:Literal id="lDefaultPageDescriptionText" runat="server" /></h3>
+									</asp:Panel>
+								</div>
+								<svg id="svgHero" runat="server" visible="false"
+									xmlns="http://www.w3.org/2000/svg"
+									version="1.1"
+									viewBox="0 0 268.65866 288"
+									fill="#282828"
+									style="scale: 5; width: 100%; height: 15vw; min-height: 75px;">
+									<g
+										transform="matrix(1.3333333,0,0,-1.3333333,-261.67066,443.99999)"><g
+										transform="translate(321.877,183.627)"><path
+											d="M 0,0 V 34.063 L -49.783,83.955 V 49.782 Z M -95.926,149.373 13.642,39.547 13.641,39.546 h 10e-4 V -13.643 L 30.43,-30.43 v 80.179 l -99.475,99.624 h 19.132 L 44.07,55.237 44.069,55.236 H 44.07 L 44.071,-44.07 62.229,-62.229 V 66.847 l -82.491,82.526 H -1.129 L 75.87,72.274 V 72.216 -66.627 H 47.494 L -62.367,43.31 l -1.056,0.824 v 0.233 h -0.002 l 0.002,0.001 V 97.625 L -81.11,115.35 V 32.747 L 18.265,-66.627 H -0.868 l -93.883,94.001 v 0.021 l 0.043,101.584 -17.274,17.31 V 15.963 l 82.59,-82.59 h -19.132 l -77.1,77.156 v 0.222 138.622 z" /></g></g></svg>
+							</div>
+						</div>
+					</div>
+				</section>
+			</asp:Panel>
+			
+        </header>
+		
+		<!-- Sub Navigation under header area -->
+		<nav id="NavbarLPC" runat="server">
+            <div class="navbar navbar-lpc">
+				<div class="container">
+					<Rock:Zone Name="Login" runat="server" />
+					<Rock:Zone Name="Navigation" runat="server" />
+				</div>
+			</div>
+		</nav>
+		
+		<asp:Panel id="pnlError" runat="server" visible="false" />		
+
+        <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+        <footer class="page-footer">
+            <Rock:Zone Name="Footer" runat="server" />
+        </footer>
+
+ <!--Existing code from previous theme
+		<script>
+           $(document).ready(function() {
+                $('.dropdown-toggle').removeAttr('data-toggle');
+            });
+        </script>
+-->
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server" />
+        <asp:UpdateProgress ID="updateProgress" runat="server" DisplayAfter="800">
+            <ProgressTemplate>
+                <div class="updateprogress-status">
+                    <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
+                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+	<script>
+		Sys.Application.add_load(HandleBackForwardCache);
+
+		// Fixes an issue with the wait spinner caused by browser Back/Forward caching.
+		function HandleBackForwardCache() {
+			// Forcibly hide the wait spinner, and clear the pending request if the page is being reloaded from bfcache. (Currently WebKit only)
+			// Browsers that implement bfcache will otherwise trigger updateprogress because the pending request is still in the PageRequestManager state.
+			// This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
+			// (https://bugs.webkit.org/show_bug.cgi?id=156356)
+			window.addEventListener('pageshow', function (e) {
+				if ( e.persisted ) {
+					document.querySelector('#updateProgress').style.display = 'none';
+					// Check if the page is in postback, and if so, reset the PageRequestManager state.
+					if (Sys.WebForms.PageRequestManager.getInstance().get_isInAsyncPostBack()) {
+						// Reset the PageRequestManager state. & Manually clear the request object
+						Sys.WebForms.PageRequestManager.getInstance()._processingRequest = false;
+						Sys.WebForms.PageRequestManager.getInstance()._request = null;
+					}
+				}
+			});
+		}
+
+    </script>
+
+</body>
+
+</html>

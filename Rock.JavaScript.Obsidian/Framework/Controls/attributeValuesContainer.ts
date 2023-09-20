@@ -23,6 +23,10 @@ import TabbedContent from "./tabbedContent";
 import RockField from "./rockField";
 import { PublicAttributeCategoryBag } from "@Obsidian/ViewModels/Utility/publicAttributeCategoryBag";
 import { emptyGuid } from "@Obsidian/Utility/guid";
+// LPC CODE - Pulled in v15.2 changes
+import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "./itemsWithPreAndPostHtml";
+import { Guid } from "@Obsidian/Types";
+// END LPC CODE - Pulled in v15.2 changes
 
 type CategorizedAttributes = PublicAttributeCategoryBag & {
     attributes: PublicAttributeBag[]
@@ -35,6 +39,9 @@ export default defineComponent({
         LoadingIndicator,
         RockSuspense,
         TabbedContent,
+        // LPC CODE - Pulled in v15.2 changes
+        ItemsWithPreAndPostHtml
+        // END LPC CODE - Pulled in v15.2 changes
     },
     props: {
         modelValue: {
@@ -42,7 +49,9 @@ export default defineComponent({
             required: true
         },
         isEditMode: {
-            type: Boolean as PropType<boolean>,
+            // MODIFIED LPC CODE - Pulled in v15.2 changes
+            type: Boolean,
+            // END MODIFIED LPC CODE - Pulled in v15.2 changes
             default: false
         },
         attributes: {
@@ -50,11 +59,15 @@ export default defineComponent({
             required: true
         },
         showEmptyValues: {
-            type: Boolean as PropType<boolean>,
+            // MODIFIED LPC CODE - Pulled in v15.2 changes
+            type: Boolean,
+            // END MODIFIED LPC CODE - Pulled in v15.2 changes
             default: true
         },
         showAbbreviatedName: {
-            type: Boolean as PropType<boolean>,
+            // MODIFIED LPC CODE - Pulled in v15.2 changes
+            type: Boolean,
+            // END MODIFIED LPC CODE - Pulled in v15.2 changes
             default: false
         },
         displayWithinExistingRow: {
@@ -62,19 +75,33 @@ export default defineComponent({
             default: false
         },
         displayAsTabs: {
-            type: Boolean as PropType<boolean>,
+            // MODIFIED LPC CODE - Pulled in v15.2 changes
+            type: Boolean,
+            // END MODIFIED LPC CODE - Pulled in v15.2 changes
             default: false
         },
         showCategoryLabel: {
-            type: Boolean as PropType<boolean>,
+            // MODIFIED LPC CODE - Pulled in v15.2 changes
+            type: Boolean,
+            // END MODIFIED LPC CODE - Pulled in v15.2 changes
             default: true
         },
+        // LPC CODE - Pulled in v15.2 changes
+        showPrePostHtml: {
+            type: Boolean,
+            default: true
+        },
+        // END LPC CODE - Pulled in v15.2 changes
         numberOfColumns: {
-            type: Number as PropType<number>,
+            // MODIFIED LPC CODE - Pulled in v15.2 changes
+            type: Number,
+            // END MODIFIED LPC CODE - Pulled in v15.2 changes
             default: 1
         },
         entityTypeName: {
-            type: String as PropType<string>,
+            // MODIFIED LPC CODE - Pulled in v15.2 changes
+            type: String,
+            // END MODIFIED LPC CODE - Pulled in v15.2 changes
             default: ""
         }
     },
@@ -174,6 +201,37 @@ export default defineComponent({
             emit("update:modelValue", values.value);
         };
 
+        // LPC CODE - Pulled in v15.2 changes
+        const prePostHtmlItems = computed<Record<Guid, ItemWithPreAndPostHtml[]>>(() => {
+            const items: Record<Guid, ItemWithPreAndPostHtml[]> = {};
+
+            attributeCategories.value.forEach((ac) => {
+                items[ac.guid ?? emptyGuid] = items[ac.guid ?? emptyGuid] || [];
+
+                ac.attributes.forEach(attr => {
+                    let preHtml = attr.preHtml ?? "";
+                    let postHtml = attr.postHtml ?? "";
+
+                    if (props.numberOfColumns > 1) {
+                        preHtml = `<div class="${columnClass.value}">` + preHtml;
+                        postHtml += "</div>";
+                    }
+
+                    items[ac.guid ?? emptyGuid].push({
+                        slotName: attr.attributeGuid ?? "",
+                        preHtml,
+                        postHtml,
+                        // LPC CODE - Bilingual
+                        isRequired: attr.isRequired
+                        // END LPC CODE - Bilingual
+                    });
+                });
+            });
+            // END LPC CODE - Pulled in v15.2 changes
+
+            return items;
+        });
+
         watch(() => props.modelValue, () => {
             values.value = { ...props.modelValue };
         });
@@ -185,7 +243,10 @@ export default defineComponent({
             attributeCategories,
             actuallyDisplayAsTabs,
             defaultCategoryHeading,
-            columnClass
+            columnClass,
+            // LPC CODE - Pulled in v15.2 changes
+            prePostHtmlItems,
+            // END LPC CODE - Pulled in v15.2 changes
         };
     },
 
@@ -226,8 +287,22 @@ export default defineComponent({
                 <h4 v-if="showCategoryLabel && cat.guid == '0' && !isEditMode">{{defaultCategoryHeading}}</h4>
                 <h4 v-else-if="showCategoryLabel && cat.guid != '0'">{{cat.name}}</h4>
 
-                <div class="attribute-value-container-display row">
-                    <div :class="columnClass" v-for="a in cat.attributes" :key="a.attributeGuid">
+                <!-- MODIFIED LPC CODE - Pulled in v15.2 changes -->
+                <div :class="{'attribute-value-container-display': true, 'row': numberOfColumns > 1}">
+                    <ItemsWithPreAndPostHtml :items="prePostHtmlItems[cat.guid]" v-if="isEditMode && showPrePostHtml" >
+                        <template v-slot:[a.attributeGuid] v-for="a in cat.attributes" :key="a.attributeGuid ?? ''">
+                            <RockField
+                                :isEditMode="isEditMode"
+                                :attribute="a"
+                                :modelValue="values[a.key]"
+                                @update:modelValue="onUpdateValue(a.key, $event)"
+                                :showEmptyValue="showEmptyValues"
+                                :showAbbreviatedName="showAbbreviatedName"
+                            />
+                        </template>
+                    </ItemsWithPreAndPostHtml>
+                    <div v-else :class="columnClass" v-for="a in cat.attributes" :key="a.attributeGuid">
+                <!-- END MODIFIED LPC CODE - Pulled in v15.2 changes -->
                         <RockField
                             :isEditMode="isEditMode"
                             :attribute="a"

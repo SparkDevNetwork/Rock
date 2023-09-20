@@ -1,0 +1,627 @@
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/vue-multiselect@2.1.0"></script>
+{% page where:'Guid == "86D1DB87-021E-49F3-A547-1E096667DF63"'%}
+{% for page in pageItems %}
+  {% assign linkedPage = page %}
+{% endfor %}
+{% endpage %}
+
+{% assign groupTypeIds = '327,25,381' %}
+{% assign sortByGroupTypeOrder = 0 %}
+{% assign groupTypeParameter = 'Global' | PageParameter:'GroupTypeId' | AsInteger %}
+{% if groupTypeParameter > 0 %}
+  {% assign groupTypeIds = groupTypeParameter %}
+{% endif %}
+
+{% assign categoryIdParameter = 'Global' | PageParameter:'CategoryId' | AsInteger %}
+{% if categoryIdParameter > 0 %}
+  {% definedvalue id:'{{categoryIdParameter}}' securityenabled:'false' %}
+    {% assign dvSortByGroupType = definedvalue | Attribute:'PrimarySortByType' |  AsBoolean %}
+    {% if dvSortByGroupType == true %}
+      {% assign sortByGroupTypeOrder = 1 %}
+    {% endif %}
+    {% assign groupTypeIds = definedvalue | Attribute:'GroupTypes' %}
+  {% enddefinedvalue%}
+{% endif %}
+
+{% assign campusIdString = 'Global' | PageParameter:'CampusIds' | ToString | SanitizeSql %}
+{% assign campusIds = campusIdString | Split:',' %}
+{% capture selectedCampuses %}
+  [
+    {% if campusIdString != '' %}
+      {% campus where:'IsActive == true' %}
+        {% for campus in campusItems %}
+          {% assign idString = campus.Id | ToString %}
+          {% for campusId in campusIds %}
+            {% if campusId == idString %}
+              { Id:{{campus.Id}}, Name:"{{campus.Name | Replace:'"',"'" }}"},
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endcampus %}
+    {% else %}
+      {% assign person = CurrentPerson %}
+      {% if person != null %}
+        {% assign campus = person | Campus %}
+        {% if campus != empty %}
+          { Id:{{campus.Id}}, Name:"{{campus.Name | Replace:'"',"'"}}"},
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  ]
+{% endcapture %}
+
+{% assign meetingDayString = 'Global' | PageParameter:'MeetingDays' | ToString | SanitizeSql %}
+{% assign meetingDays = meetingDayString | Split:',' %}
+{% capture selectedMeetingDays %}
+  {% if meetingDayString != '' %}
+    {% for meetingDay in meetingDays %}
+      {% if meetingDay == '0' %}
+        { WeeklyDayOfWeek:0, WeeklyDayOfWeekName:'Sunday'},
+      {% endif %}
+      {% if meetingDay == '1' %}
+        { WeeklyDayOfWeek:1, WeeklyDayOfWeekName:'Monday'},
+      {% endif %}
+      {% if meetingDay == '2' %}
+        { WeeklyDayOfWeek:2, WeeklyDayOfWeekName:'Tuesday'},
+      {% endif %}
+      {% if meetingDay == '3' %}
+        { WeeklyDayOfWeek:3, WeeklyDayOfWeekName:'Wednesday'},
+      {% endif %}
+      {% if meetingDay == '4' %}
+        { WeeklyDayOfWeek:4, WeeklyDayOfWeekName:'Thursday'},
+      {% endif %}
+      {% if meetingDay == '5' %}
+        { WeeklyDayOfWeek:5, WeeklyDayOfWeekName:'Friday'},
+      {% endif %}
+      {% if meetingDay == '6' %}
+        { WeeklyDayOfWeek:6, WeeklyDayOfWeekName:'Saturday'},
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endcapture %}
+
+{% assign categoryIdString = 'Global' | PageParameter:'CategoryIds' | ToString %}
+{% assign categoryIds = categoryIdString | Split:',' %}
+{% capture selectedCategories %}
+  [
+    {% if categoryIdString != '' %}
+      {% definedtype where:'Guid == "8BF1BECD-9B0C-4689-8204-8405327DCBCF"' %}
+        {% for definedtype in definedtypeItems %}
+          {% for definedValue in definedtype.DefinedValues %}
+            {% if definedValue.Value != 'Featured' and definedValue.Value != 'New' %}
+              {% assign idString = definedValue.Id | ToString %}
+              {% for categoryId in categoryIds %}
+                {% if categoryId == idString %}
+                  { CategoryId:{{definedValue.Id}}, CategoryName:"{{definedValue.Value | Replace:'"',"'"}}"},
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% enddefinedtype %}
+    {% endif %}
+  ]
+{% endcapture %}
+
+{% assign ageRangeIdString = 'Global' | PageParameter:'AgeRanges' | ToString %}
+{% assign ageRangeIds = ageRangeIdString | Split:',' %}
+{% capture selectedAgeRanges %}
+  [
+    {% if ageRangeIdString != '' %}
+      {% definedtype id:'418' %}
+        {% for definedtype in definedtypeItems %}
+          {% for definedValue in definedtype.DefinedValues %}
+            {% if definedValue.Value != 'Featured' and definedValue.Value != 'New' %}
+              {% assign idString = definedValue.Id | ToString %}
+              {% for ageRangeId in ageRangeIds %}
+                {% if ageRangeId == idString %}
+                  { AgeRangeId:{{definedValue.Id}}, AgeRangeName:"{{definedValue.Value | Replace:'"',"'"}}"},
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% enddefinedtype %}
+    {% endif %}
+  ]
+{% endcapture %}
+
+{% sql return:'groupInfo' %}
+  Declare @GroupTypeIds nvarchar(max) = '{{groupTypeIds}}'
+  Declare @CampusIds nvarchar(max) = '{{campusIds}}'
+  Declare @MeetingDays nvarchar(max) = '{{meetingDays}}'
+  Declare @CategoryIds nvarchar(max) = '{{categoryIds}}'
+  Declare @AgeRangeIds nvarchar(max) = '{{ageRangeIds}}'
+  Declare @SortByGroupTypeOrder bit = {{sortByGroupTypeOrder}}
+
+  Create table #CategoryAttributeIdTable (CategoryId Int)
+                              Insert into #CategoryAttributeIdTable
+                              Select a.Id
+                              from Attribute a
+                              Join EntityType et on et.Id = a.EntityTypeId
+                              Where [Key] = 'Category'
+                              and et.Name = 'Rock.Model.Group';
+
+  Create table #AgeRangeAttributeIdTable (CategoryId Int)
+                              Insert into #AgeRangeAttributeIdTable
+                              Select a.Id
+                              from Attribute a
+                              Join EntityType et on et.Id = a.EntityTypeId
+                              Where [Key] = 'AgeRange'
+                              and et.Name = 'Rock.Model.Group';
+
+	Create table #MemberCountTable (GroupId Int, MemberCount Int)
+                              Insert into #MemberCountTable
+                              Select GroupId, Count(0)
+                              From GroupMember gm
+                              Join [Group] g on g.Id = gm.GroupId
+                              Where gm.GroupMemberStatus != 0 and gm.IsArchived != 0
+                              And g.GroupTypeId in (Select value from string_split(@GroupTypeIds,','))
+                              Group by gm.GroupId;
+						  
+Create table #MeetingLocationTable (GroupId Int, MeetingLocation nvarchar(max))
+                              Insert into #MeetingLocationTable
+                              Select g.Id, STRING_AGG(convert(nvarchar(max),Geopoint.Lat) +','+convert(nvarchar(max),Geopoint.Long),'|') as Coordinates
+                              From [Group] g
+                              Join GroupLocation gl on gl.GroupId = g.Id
+                              Join [Location] l on gl.LocationId = l.Id
+                              Where g.GroupTypeId in (Select value from string_split(@GroupTypeIds,','))
+                              And l.GeoPoint is not null
+                              Group by g.Id;
+
+  With GroupTypeOrder as (
+  Select *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) as GroupTypeOrder from ufnUtility_CsvToTable(@GroupTypeIds)
+  )
+  Select g.Id
+    , g.Name
+	, g.Guid
+  ,g.GroupTypeId
+    , g.Description
+    , g.GroupCapacity
+    , mct.MemberCount as GroupMemberCount
+	, mlt.MeetingLocation as Coordinates
+    , c.Id as CampusId
+    , c.Name as CampusName
+    , dvCategory.Id as CategoryId
+    , dvCategory.Value as CategoryName
+    , dvCategory.[Order] as CategoryOrder
+    , avColor.Value as Color
+    , dvAgeRange.Id as AgeRangeId
+    , dvAgeRange.Value as AgeRangeName
+    , dvAgeRange.[Order] as AgeRangeOrder
+    , s.WeeklyDayOfWeek
+    , case
+      when s.WeeklyDayOfWeek = 0 then 'Sunday'
+      when s.WeeklyDayOfWeek = 1 then 'Monday'
+      when s.WeeklyDayOfWeek = 2 then 'Tuesday'
+      when s.WeeklyDayOfWeek = 3 then 'Wednesday'
+      when s.WeeklyDayOfWeek = 4 then 'Thursday'
+      when s.WeeklyDayOfWeek = 5 then 'Friday'
+      when s.WeeklyDayOfWeek = 6 then 'Saturday'
+      else '' end as WeeklyDayOfWeekName
+    , Format(Cast(s.WeeklyTimeOfDay AS DATETIME), 'hh:mm tt') as WeeklyTimeOfDay
+    , Case When @SortByGroupTypeOrder = 1 then gto.GroupTypeOrder else 0 end as GroupTypeSortOrder
+  From [Group] g
+  Join GroupTypeOrder gto on gto.Item = g.GroupTypeId
+  Join GroupType gt on gt.Id = g.GroupTypeId
+  Join AttributeValue avCategory on avCategory.EntityId = g.Id and avCategory.AttributeId in (Select CategoryId from #CategoryAttributeIdTable)
+  Join DefinedValue dvCategory on convert(nvarchar(max),dvCategory.Guid) = avCategory.Value
+  Join AttributeValue avColor on avColor.EntityId = dvCategory.Id and avColor.AttributeId = 66951
+  Join AttributeValue avAgeRange on avAgeRange.EntityId = g.Id and avAgeRange.AttributeId in (Select CategoryId from #AgeRangeAttributeIdTable)
+  Join DefinedValue dvAgeRange on convert(nvarchar(max),dvAgeRange.Guid) = avAgeRange.Value
+  Join Schedule s on s.Id = g.ScheduleId
+  Left Join Campus c on g.CampusId = c.Id
+  Left Join #MemberCountTable mct on mct.GroupId = g.Id
+  Left Join #MeetingLocationTable mlt on mlt.GroupId = g.Id
+  Where gt.Id in (Select value from string_split(@GroupTypeIds,','))
+  And (@CampusIds = '' or g.CampusId is null or g.CampusId in (Select value from string_split(@CampusIds,',')))
+  And (@CategoryIds = '' or dvCategory.Id in (Select value from string_split(@CategoryIds,',')))
+  And (@AgeRangeIds = '' or dvAgeRange.Id in (Select value from string_split(@AgeRangeIds,',')))
+  And (@MeetingDays = '' or s.WeeklyDayOfWeek in (Select value from string_split(@MeetingDays,',')))
+  And (g.GroupCapacity is null or mct.MemberCount < g.GroupCapacity)
+  Order By GroupTypeSortOrder, g.Name
+{% endsql %}
+
+<div id="app">
+
+  <div class="row margin-b-md">
+    <div class="col-md-2 col-md-offset-3">
+      <div class="form-group">
+        <label class="control-label">Meeting Day</label>
+        <div class="control-wrapper">
+          <multiselect v-model="meetingDayValues" :options="meetingDayOptions" :multiple="true"
+              :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder=""
+              label="WeeklyDayOfWeekName" track-by="WeeklyDayOfWeekName" :preselect-first="false" @input="meetingDayFilterChange()">
+            <template slot="selection" slot-scope="{ meetingDayValues, search, isOpen }">
+              <span class="multiselect__single" v-if="meetingDayValues.length &amp;&amp; !isOpen">
+                {{ meetingDayValues.length }} options selected
+              </span>
+            </template>
+          </multiselect>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="form-group">
+        <label class="control-label">Category</label>
+        <div class="control-wrapper">
+          <multiselect v-model="categoryValues" :options="categoryOptions" :multiple="true"
+              :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder=""
+              label="CategoryName" track-by="CategoryName" :preselect-first="false" @input="categoryFilterChange()">
+            <template slot="selection" slot-scope="{ categoryValues, search, isOpen }">
+              <span class="multiselect__single" v-if="categoryValues.length &amp;&amp; !isOpen">
+                {{ categoryValues.length }} options selected
+              </span>
+            </template>
+          </multiselect>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="form-group">
+        <label class="control-label">Age Range</label>
+        <div class="control-wrapper">
+          <multiselect v-model="ageRangeValues" :options="ageRangeOptions" :multiple="true"
+              :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder=""
+              label="AgeRangeName" track-by="AgeRangeName" :preselect-first="false" @input="ageRangeFilterChange()">
+            <template slot="selection" slot-scope="{ ageRangeValues, search, isOpen }">
+              <span class="multiselect__single" v-if="ageRangeValues.length &amp;&amp; !isOpen">
+                {{  ageRangeValues.length }} options selected
+              </span>
+            </template>
+          </multiselect>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h5>
+    <span v-if="groupCount >= 0">{*groupCount*} Groups Found</span>
+    <span v-else>Searching for Groups...</span>
+  </h5>
+  <!--The div element for the map -->
+  <div id="map_wrapper">
+        <div id="map" class="mapping"></div>
+    </div>
+
+  <div v-if="groups.length === 0 && groupCount > 0" class="loading">Loading Groups...</div>
+  <div v-for="i in Math.ceil(groups.length / 3)" class="row">
+    <div v-for="group in groups.slice((i - 1) * 3, i * 3)" class="col-md-4">
+      <div class="columns column-block">
+        <div class="sg-card border-radius-md">
+          <div class="sg-card-content p-t-1">
+            <p v-if="group.GroupCapacity > 0" class="sg-card-campus fontSize-xs">
+              Open Spots: {*group.GroupCapacity -
+              group.GroupMemberCount*}
+            </p>
+            <h2 class="sg-card-name fontSize-body">{*group.Name*}</h2>
+            <p class="sg-card-campus fontSize-xs">{*group.CampusName*}</p>
+            <p class="sg-card-description">{*group.Description*}.</p>
+            <div class="description-fade"></div>
+          </div>
+          <div class="sg-card-side-bar">
+            <div class="sg-card-meta" :style="'background-color:' + group.Color+';'">
+              <div class="fontSize-body sg-day-of-week">{*group.WeeklyDayOfWeekName*}</div>
+              <div class="fontSize-xxs">{*group.WeeklyTimeOfDay*}</div>
+              <div class="fontSize-xxs">Weekly</div>
+            </div>
+            <div class="sg-card-info m-b-half" :style="'color:' + group.Color+';'">{*group.CategoryName*}</div>
+            <div class="fontSize-xxs m-b-half sg-card-info-age">
+              <span v-if="group.AgeRangeName != null">
+                {* group.AgeRangeName *}
+              </span>
+            </div>
+          </div>
+          <a class="more-info-Text" :href="'/page/{{linkedPage.Id}}?Group=' + group.Guid">
+            More
+            Info
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var infoWindow = new google.maps.InfoWindow()
+
+  function openInfoWindowById(id) {
+    marker = $.grep(allMarkers, function (m) { return m.id == id })[0];
+    openInfoWindow(marker);
+  }
+
+  function openInfoWindow(marker) {
+    infoWindow.setContent($('<div/>').html(marker.info_window).text());
+    infoWindow.open(map, marker);
+  }
+
+  var app = new Vue({
+    el: '#app',
+    delimiters: ['{*', '*}'],
+    components: {
+      Multiselect: window.VueMultiselect.default
+    },
+    data() {
+      return {
+        request: null,
+        bottom: false,
+        groups: {{groupInfo | ToJSON }},
+        limit: 39,
+        keywords: "{{'Global' | PageParameter:'Keywords' | ToString }}",
+        meetingDayValues: [{{ selectedMeetingDays | ReplaceLast: ',', '' }}],
+        campusValues: {{ selectedCampuses | ReplaceLast: ',', '' }},
+        categoryValues: {{ selectedCategories | ReplaceLast: ',', '' }},
+        ageRangeValues: {{ selectedAgeRanges | ReplaceLast: ',', '' }},
+        markerScale: 1,
+        allMarkers: [],
+        map: null,
+        bounds: new google.maps.LatLngBounds(),
+        min: .999999,
+        max: 1.000001,
+      }
+    },
+    computed: {
+      meetingDayOptions(){
+        return [...new Map(this.groups.map(item =>
+          [item['WeeklyDayOfWeek'], item])).values()].sort((a, b) => { return a.WeeklyDayOfWeek - b.WeeklyDayOfWeek;});
+      },
+      categoryOptions(){
+        return [...new Map(this.groups.map(item =>
+          [item['CategoryId'], item])).values()].sort((a, b) => { return a.CategoryOrder - b.CategoryOrder;});
+      },
+      campusOptions(){
+        return [...new Map(this.groups.map(item =>
+          [item['CampusId'], item])).values()].sort((a, b) => { return a.CampusId - b.CampusId;});
+      },
+      ageRangeOptions(){
+        return [...new Map(this.groups.map(item =>
+          [item['AgeRangeId'], item])).values()].sort((a, b) => { return a.AgeRangeOrder - b.AgeRangeOrder;});
+      },
+      groupCount(){
+        return this.groups.length;
+      }
+    },
+    mounted() {
+      {% if categoryIdParameter == '6502' or categoryIdParameter == '6503' %}
+        this.initializeMap();
+      {% else %}
+        var mapElement = document.getElementById('map');
+        mapElement.style.display = 'none';
+      {% endif %}
+    },
+    methods: {
+      initializeMap() {
+
+        var mapStyle = [
+        {
+          "elementType": "labels.text.stroke",
+          "stylers": [ { "visibility": "off" } ]
+        },
+        {
+          "featureType": "poi",
+          "stylers": [ { "visibility": "off" } ]
+        },
+        {
+          "featureType": "road",
+          "elementType": "geometry",
+          "stylers": [ { "visibility": "simplified" } ]
+        },
+        {
+          "featureType": "water",
+          "stylers": [ { "visibility": "on" }, { "color": "#c6dfec" } ]
+        },
+        {
+          "featureType": "administrative.neighborhood",
+          "elementType": "labels.text.fill",
+          "stylers": [ { "visibility": "off" } ]
+        },
+        {
+          "featureType": "road.local",
+          "elementType": "labels.text",
+          "stylers": [ { "weight": 0.5 }, { "color": "#333333" }
+          ]
+        },
+        {
+          "featureType": "transit.station",
+          "elementType": "labels.icon",
+          "stylers": [ { "visibility": "off" } ]
+        } ]
+
+        // Set default map options
+        var mapOptions = {
+          mapTypeId: 'roadmap'
+          , styles: mapStyle
+          , center: new google.maps.LatLng(32.89759249275533, -96.46578705117611)
+          , maxZoom: 14
+          , minZoom: null
+          , zoom: null
+          , streetViewControl: false
+        };
+
+        // Display a map on the page
+        this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
+        this.map.setTilt(45);
+
+        if (this.groups != null) {
+          for (var i = 0; i < this.groups.length; i++) {
+            if(this.groups[i].Coordinates != null){
+              var items = this.addMapItem(i, this.groups[i], this.groups[i].Color ? this.groups[i].Color : 'FE7569');
+              for (var j = 0; j < items.length; j++) {
+                  items[j].setMap(this.map);
+              }
+            }            
+          }
+        }
+
+        // adjust any markers that may overlap
+        this.adjustOverlappedMarkers();
+
+        if (!this.bounds.isEmpty()) {
+          if (mapOptions.zoom || mapOptions.zoom === 0) {
+            this.map.setCenter(this.bounds.getCenter());
+          } else {
+            this.map.fitBounds(this.bounds);
+          }
+        }
+
+      },
+      addMapItem(i, mapItem, color) {
+        var contentString = "<h4 class='margin-t-none'>" + mapItem.Name + "</h4>" +
+          "<a class='more-info-Text' href='/page/{{linkedPage.Id}}?Group=" + mapItem.Guid + "' target='_blank'>More Info</a>";
+
+        var encodedStr = contentString.replace(/[\u00A0-\u9999<>\&]/g, function (i) {
+          return '&#' + i.charCodeAt(0) + ';';
+        });
+
+        var items = [];
+
+        var meetingLocations = mapItem.Coordinates.split('|');
+
+        meetingLocations.forEach((value, index) => {
+          var coordinates = value.split(',');
+          var position = new google.maps.LatLng(coordinates[0], coordinates[1]);
+          this.bounds.extend(position);
+
+          if (!color) {
+            color = '#FE7569';
+          }
+
+          if (color.length > 0 && color.toLowerCase().indexOf('rgb') < 0 && color[0] != '#') {
+            color = '#' + color;
+          }
+
+          var pinImage = {
+            path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+            fillColor: color,
+            fillOpacity: 1,
+            strokeColor: '#000',
+            strokeWeight: 0,
+            scale: this.markerScale,
+            labelOrigin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(0, 0),
+          };
+
+          marker = new google.maps.Marker({
+            id: mapItem.Id,
+            position: position,
+            map: this.map,
+            title: this.htmlDecode(mapItem.Name),
+            icon: pinImage,
+            info_window: encodedStr,
+          });
+
+          items.push(marker);
+          this.allMarkers.push(marker);
+
+          google.maps.event.addListener(marker, 'click', (function (marker, i) {
+            return function () {
+              openInfoWindow(marker);
+            }
+          })(marker, i));
+        });
+        return items;
+      },
+      setAllMap(markers, map) {
+        for (var i = 0; i < markers.length; i++) {
+          markers[i].setMap(map);
+        }
+      },
+      htmlDecode(input) {
+          var e = document.createElement('div');
+          e.innerHTML = input;
+          return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+      },
+      adjustOverlappedMarkers() {
+        if (this.allMarkers.length > 1) {
+          for (i = 0; i < this.allMarkers.length - 1; i++) {
+            var marker1 = this.allMarkers[i];
+            var pos1 = marker1.getPosition();
+            for (j = i + 1; j < this.allMarkers.length; j++) {
+              var marker2 = this.allMarkers[j];
+              var pos2 = marker2.getPosition();
+              if (pos1.equals(pos2)) {
+                var newLat = pos1.lat() * (Math.random() * (this.max - this.min) + this.min);
+                var newLng = pos1.lng() * (Math.random() * (this.max - this.min) + this.min);
+                marker1.setPosition(new google.maps.LatLng(newLat, newLng));
+              }
+            }
+          }
+        }
+      },
+      insertParam(key, value) {
+        if ('URLSearchParams' in window) {
+          var searchParams = new URLSearchParams(window.location.search)
+          searchParams.set(key, value);
+          var newRelativePathQuery = window.location.pathname + '?' + searchParams.toString();
+          history.pushState(null, '', newRelativePathQuery);
+        }
+      },
+      categoryFilterChange(){
+        var categoryIdsString = "";
+        this.categoryValues.forEach(function (categoryValue) {
+          categoryIdsString += categoryValue.CategoryId + ",";
+        });
+
+        if (categoryIdsString != "") {
+          categoryIdsString = categoryIdsString.slice(0, -1);
+        }
+
+        this.insertParam("CategoryIds", categoryIdsString);
+        this.filterChange();
+      },
+      ageRangeFilterChange(){
+        var ageRangeIdsString = "";
+        this.ageRangeValues.forEach(function (ageRangeValue) {
+         ageRangeIdsString += ageRangeValue.AgeRangeId + ",";
+        });
+
+        if (ageRangeIdsString != "") {
+          ageRangeIdsString = ageRangeIdsString.slice(0, -1);
+        }
+
+        this.insertParam("AgeRanges", ageRangeIdsString);
+        this.filterChange();
+      },
+      ageFilterChange(){
+        this.insertParam("Age", this.age);
+        this.filterChange();
+      },
+      keywordFilterChange(){
+        this.insertParam("Keywords", this.keywords);
+        this.filterChange();
+      },
+      campusFilterChange(){
+        var campusIdsString = "";
+        this.campusValues.forEach(function (campusValue) {
+          campusIdsString += campusValue.CampusId + ",";
+        });
+        if (campusIdsString != "") {
+          campusIdsString = campusIdsString.slice(0, -1);
+        }
+
+        this.insertParam("CampusIds", campusIdsString);
+        this.filterChange();
+      },
+      meetingDayFilterChange(){
+        var meetingDaysString = "";
+        this.meetingDayValues.forEach(function (meetingDayValue) {
+          meetingDaysString += meetingDayValue.WeeklyDayOfWeek + ",";
+        });
+
+        if (meetingDaysString != "") {
+          meetingDaysString = meetingDaysString.slice(0, -1);
+        }
+
+        this.insertParam("MeetingDays", meetingDaysString);
+        this.filterChange();
+      },
+      filterChange(){
+        window.location.reload(true);
+      }
+    }
+  })
+</script>

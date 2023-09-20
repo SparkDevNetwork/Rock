@@ -1,0 +1,115 @@
+{% comment %}
+    Serving Opportunities
+    Ministry Area Opportunity List
+{% endcomment %}
+
+<style>
+    h1 
+    {
+        padding-bottom: 10px;
+        border-bottom: 1px solid #0b1d2d;
+    }
+
+    }
+    h1.small
+    {
+        font-size:85%;
+    }
+</style>
+
+{% assign areaId = 'Global' | PageParameter:'AreaId' | AsInteger %}
+{% assign campusPage = '~/page/2042?SelectCampus=1' | ResolveRockUrl %}
+{% assign userCanEdit = CurrentPerson | HasRightsTo:'Edit' %}
+{% assign showContent = true %}
+
+{% if Context.Campus == null  %}
+    {% assign showContent = false %}
+    {% if userCanEdit == false %}
+        {{ campusPage | PageRedirect }}
+    {% else %}
+        <p class="alert alert-warning">
+            <strong>No Campus Selected!</strong> If you could not edit you would have been
+            redirected to <a href="{{ campusPage }}">{{ campusPage }}</a>.</p>
+        </p>
+    {% endif %}
+{% endif %}
+
+{% capture areaPage %}~/Page/2043?CampusId={{ Context.Campus.Id }}{% endcapture %}
+{% assign areaPage = areaPage | Trim | ResolveRockUrl %}
+
+{% if areaId == null %}
+    {% assign showContent = false %}
+    {% if userCanEdit == false %}
+        {{ areaPage | PageRedirect }}
+    {% else %}
+        <p class="alert alert-warning">
+            <strong>No Serving Area Selected!</strong> If you could not edit you would have been
+            redirected to <a href="{{ areaPage }}">{{ areaPage }}</a>.</p>
+        </p>
+    {% endif %}
+    {% assign areaId = 0 %}
+{% endif %}
+
+{% definedvalue id:'{{ areaId }}' %}
+    {% assign area = definedvalue %}
+{% enddefinedvalue%}
+
+{% if showContent %}
+    {% assign connectionTypeId = area | Attribute:'ConnectionType','Object' | Property:'Id' %}
+
+
+    {% sql CampusId:'{{ Context.Campus.Id }}' ConnectionTypeId:'{{ connectionTypeId }}' return:'opportunities' %}
+        SELECT 
+            co.Id,
+            co.Name,
+            co.PublicName,
+            co.Summary
+        FROM 
+            ConnectionType ct
+            INNER JOIN ConnectionOpportunity co on ct.Id = co.ConnectionTypeId
+            INNER JOIN ConnectionOpportunityCampus cc on co.Id = cc.ConnectionOpportunityId
+        WHERE
+            ct.Id = @ConnectionTypeId
+            and cc.CampusId = @CampusId
+            and ct.IsActive = 1
+            and co.IsActive = 1
+        ORDER BY 
+            co.PublicName
+    {% endsql %}
+
+    {% capture title %}{{ area.Value }} Opportunities{% endcapture %}
+    {{ title | SetPageTitle }}
+
+    <div id="servingOpportunities" class="row">
+        <div class="col-md-3">
+            
+            {% assign imageRaw =  area | Attribute:'Image','RawValue' %}
+            {% if imageRaw != '' %}
+                {{ area | Attribute:'Image'}}   
+            {% else %} 
+                <img src='//www.lakepointe.org/wp-content/uploads/2018/10/LP2-150x150.png' alt='{{ area.Value }}' class='img-responsive'></img>
+            {% endif %}
+        </div>
+        <div class="col-md-9">
+            <h1>{{ area.Value }}</h1>
+            <div><small><a href=' {{areaPage}} '>Change</a></small></div>
+            {% assign oppCount = opportunities | Size %}
+
+            {% if oppCount == 0 %}
+                <h3>No opportunities currently available </h3>
+            {% else %}
+                {% for o in opportunities %}
+                    <h3>{{ o.PublicName }}</h3>
+                    {{ o.Summary }}
+                {% endfor %}
+                {% assign connectLink = area | Attribute:'AlternateLink','RawValue' %}
+                {% if connectLink == null or  connectLink == '' %}
+                    {% assign connectLink = '~/page/2053?CampusID=' | Append: Context.Campus.Id  | Append:'&AreaId=' | Append:areaId %}
+                    {% assign connectLink = connectLink | ResolveRockUrl %}
+                {% endif %}
+ 
+                <a href="{{ connectLink }}" class="btn btn-default">Connect</a>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}

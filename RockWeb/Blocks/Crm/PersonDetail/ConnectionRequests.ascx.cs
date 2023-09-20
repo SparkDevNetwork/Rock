@@ -170,7 +170,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         connectionRequestDetailPage.Parameters.Add( "ConnectionRequestId", connectRequest.ConnectionRequestId.ToString() );
                         connectionRequestDetailPage.Parameters.Add( "ConnectionOpportunityId", connectRequest.ConnectionOpportunity.Id.ToString() );
 
-                        connectionNameHtml = string.Format( "<a href='{0}'>{1}</a>", connectionRequestDetailPage.BuildUrl(), connectionName );
+                        // LPC MODIFIED CODE
+                        if (connectRequest.AssignedGroup != null)
+                        {
+                            connectionNameHtml = string.Format( "<a href='{0}'>{1}</a><br>[{2}]", connectionRequestDetailPage.BuildUrl(), connectionName, connectRequest.AssignedGroup.Name );
+                        }
+                        else
+                        {
+                            connectionNameHtml = string.Format( "<a href='{0}'>{1}</a>", connectionRequestDetailPage.BuildUrl(), connectionName );
+                        }
+                        // END LPC MODIFIED CODE
                     }
                     else
                     {
@@ -182,25 +191,59 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         listHtml += string.Format( "<div class='card-subheader'>{0}</div>", connectRequest.ConnectionType.Name );
                     }
 
+                    // LPC MODIFIED CODE
                     const string evenTemplate = @"
-<dl class='m-0 px-3 py-3 d-flex justify-content-between text-sm font-medium'>
-    <dt class='text-gray-900'>{0}</dt>
-    <dd class='text-gray-500'>{1}</dd>
+<dl class='m-0 p-0 d-flex text-sm font-medium'>
+    <div class='d-flex py-3 pl-3 pr-2 justify-content-between' style='width: 97%;'>
+        <dt class='text-gray-900'>{0}</dt>
+        <dd class='text-gray-500' style='text-align: right;'>{1}</dd>
+    </div>
+    <div style='background-color: {2}; width: 3%;' data-toggle='tooltip' data-placement='left' title='{3}'></div>
  </dl>";
                     const string oddTemplate = @"
-<dl class='bg-gray-100 m-0 px-3 py-3 d-flex justify-content-between text-sm font-medium'>
-    <dt class='text-gray-900'>{0}</dt>
-    <dd class='text-gray-500'>{1}</dd>
+<dl class='bg-gray-100 m-0 p-0 d-flex text-sm font-medium'>
+    <div class='d-flex py-3 pl-3 pr-2 justify-content-between' style='width: 97%;'>
+        <dt class='text-gray-900'>{0}</dt>
+        <dd class='text-gray-500' style='text-align: right;'>{1}</dd>
+    </div>
+    <div style='background-color: {2}; width: 3%;' data-toggle='tooltip' data-placement='left' title='{3}'></div>
 </dl>
 ";
+                    // END LPC MODIFIED CODE
+
                     string connectionStatus = connectRequest.ConnectionRequestConnectionState == ConnectionState.Connected ? "Connected" : connectRequest.ConnectionStatus.ToString();
+
+                    // LPC CODE
+                    string color = "#d9d9d9";
+                    string state = "Inactive";
+                    switch ( connectRequest.ConnectionRequestConnectionState )
+                    {
+                        case ConnectionState.Active:
+                            color = "#16c98d";
+                            state = "Active";
+                            break;
+                        case ConnectionState.FutureFollowUp:
+                            color = "#ffc870";
+                            state = "Future Follow Up";
+                            break;
+                        case ConnectionState.Connected:
+                            color = "#009ce3";
+                            state = "Connected";
+                            break;
+                    }
+                    // END LPC CODE
+
                     if ( e.Item.ItemIndex % 2 == 0 )
                     {
-                        listHtml += string.Format( evenTemplate, connectionNameHtml, connectionStatus );
+                        // LPC MODIFIED CODE
+                        listHtml += string.Format( evenTemplate, connectionNameHtml, connectionStatus, color, state );
+                        // END LPC MODIFIED CODE
                     }
                     else
                     {
-                        listHtml += string.Format( oddTemplate, connectionNameHtml, connectionStatus );
+                        // LPC MODIFIED CODE
+                        listHtml += string.Format( oddTemplate, connectionNameHtml, connectionStatus, color, state );
+                        // END LPC MODIFIED CODE
                     }
 
                     lConnectionOpportunityList.Text = listHtml;
@@ -240,6 +283,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             PersonId = cr.PersonAlias.PersonId,
                             IsActive = cr.ConnectionOpportunity.IsActive,
                             FollowupDate = cr.FollowupDate,
+                            AssignedGroup = cr.AssignedGroup,  // LPC CODE
                         } )
                         .Where( crvm => crvm.PersonId == Person.Id );
 
@@ -300,6 +344,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public DateTime? FollowupDate { get; set; }
 
             public ConnectionType ConnectionType { get; set; }
+
+            public Group AssignedGroup { get; set; }   // LPC CODE
         }
     }
 }

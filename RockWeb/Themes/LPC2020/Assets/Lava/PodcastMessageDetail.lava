@@ -1,0 +1,51 @@
+﻿<style>
+	
+</style>
+
+{% assign item = Items | First %}
+{% if item  %}
+	
+	{% assign videoLink = item | Attribute:'VideoLink','RawValue' %}
+	{% assign videoEmbed = item | Attribute:'VideoEmbed' %}
+	{% assign audioLink = item | Attribute:'AudioLink','RawValue' %}
+	
+	<artcile class="message-detail">
+		
+		{% if videoEmbed != '' %}
+			{{ videoEmbed }}
+		{% endif %}
+		
+		<h1>{{ item.Title }}</h1>
+	
+		<p>
+			<strong> {{ item | Attribute:'Speaker' }} - {{ item.StartDateTime | Date:'M/d/yyyy' }}</strong>
+		</p>
+	
+		<div class="row">
+			<div class="col-md-8">
+				{{ item.Content }}
+			</div>
+			<div class="col-md-4">
+				{% if videoLink != '' or audioLink != '' %}
+					<div class="panel panel-default">
+						<div class="panel-heading">Downloads &amp; Resources</div>
+						<div class="list-group">
+							
+							{% if videoLink != '' %}
+								<a href="{{ videoLink }}" class="list-group-item"><i class="fa fa-film"></i> Video Download</a>
+							{% endif %}
+							
+							{% if audioLink != '' %}
+								<a href="{{ audioLink }}" class="list-group-item"><i class="fa fa-volume-up"></i> Audio Download</a>
+							{% endif %}
+							
+						</div>
+					</div>
+				{% endif %}
+			</div>
+		</row>
+	</article>
+	
+{% else %}
+	<h1>Could not find message.</h1>
+{% endif %}

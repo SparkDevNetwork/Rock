@@ -8,7 +8,12 @@
             });
         </script>
 
-        <div id="profile-image" class="img-card-top profile-squish">
+        <!-- LPC MODIFIED CODE -->
+        <div id="profile-image" class="img-card-top profile-squish" style="height: 0;">
+        <!-- END LPC MODIFIED CODE -->
+            <!-- LPC CODE -->
+            <asp:Literal ID="litPersonAlerts" runat="server" />
+            <!-- END LPC CODE -->
             <div class="fluid-crop">
                 <a href="#" class="fluidbox fluidbox-closed">
                     <asp:Literal ID="lImage" runat="server" />

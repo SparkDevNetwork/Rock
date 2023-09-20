@@ -1,0 +1,37 @@
+﻿
+
+<div class="row card-container">
+	<div class="section">
+		<div class="container">
+			<div class="row">
+			{% for item in Items %}
+			 {%- assign icon = item | Attribute:'Icon','RawValue' -%}
+			 {%- assign image = item | Attribute:'Image' -%}
+				<div class="col-md-6 col-sm-12">
+					<div class="card">
+						<div class="image-wrap img-wrapper"> 
+							{% if image != "" -%}
+								{{ item | Attribute:'Image' }}
+							{% endif -%}
+						</div>
+						<div class="title-section">
+							<h3 class="header-title">{{ item.Title }}</h3>
+						</div>
+						<div class="content-section">
+							<p class="content-text">{{ item | Attribute:'SummaryText' }}</p>
+						</div>
+						<p>
+						  <a class="view-details btn btn-simple" href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}" role="button">Search Now</a>
+						</p>
+					</div>
+				</div>
+			{% capture breakNow %}{{ forloop.index | Modulo:2 }}{% endcapture %}
+			{% if breakNow == 0 -%}
+			</div>
+			<div class="row">
+			{% endif -%}
+			{% endfor -%}
+			</div>
+		</div>
+	</div>	
+</div>

@@ -24,6 +24,24 @@ import { ValidationRule } from "@Obsidian/ValidationRules";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 import { RegistrationEntryBlockArgs, RegistrationEntryState } from "./types.partial";
 
+// LPC CODE
+import { useStore } from "@Obsidian/PageState";
+
+const store = useStore();
+
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+// END LPC CODE
+
 enum RegistrationCostSummaryType {
     Cost = 0,
     Fee = 1,
@@ -219,6 +237,9 @@ export default defineComponent({
         },
     },
     methods: {
+        // LPC CODE
+        getLang,
+        // END LPC CODE
         /** Retrieve the line item costs from the server */
         async fetchData(): Promise<void> {
             this.isLoading = true;
@@ -257,48 +278,54 @@ export default defineComponent({
 <Loading :isLoading="isLoading">
     <div class="fee-table">
         <div class="row hidden-xs fee-header">
+            <!-- MODIFIED LPC CODE -->
             <div class="col-sm-6">
-                <strong>Description</strong>
+                <strong>{{getLang() == 'es' ? 'Descripción' : 'Description'}}</strong>
             </div>
             <div v-if="hasDiscount" class="col-sm-3 fee-value">
-                <strong>Discounted Amount</strong>
+                <strong>{{getLang() == 'es' ? 'Cantidad con Descuento' : 'Discounted Amount'}}</strong>
             </div>
             <div class="col-sm-3 fee-value">
-                <strong>Amount</strong>
+                <strong>{{getLang() == 'es' ? 'Cantidad' : 'Amount'}}</strong>
             </div>
+            <!-- END MODIFIED LPC CODE -->
         </div>
         <div v-for="lineItem in augmentedLineItems" class="row" :class="lineItem.isFee ? 'fee-row-fee' : 'fee-row-cost'">
             <div class="col-sm-6 fee-caption">
                 {{lineItem.description}}
             </div>
+            <!-- MODIFIED LPC CODE -->
             <div v-if="hasDiscount" class="col-sm-3 fee-value">
                 <HelpBlock v-if="lineItem.discountHelp" :text="lineItem.discountHelp" />
-                <span class="visible-xs-inline">Discounted Amount:</span>
+                <span class="visible-xs-inline">{{getLang() == 'es' ? 'Cantidad con Descuento' : 'Discounted Amount'}} :</span>
                 $ {{lineItem.discountedAmountFormatted}}
             </div>
             <div class="col-sm-3 fee-value">
-                <span class="visible-xs-inline">Amount:</span>
+                <span class="visible-xs-inline">{{getLang() == 'es' ? 'Cantidad' : 'Amount'}}:</span>
                 $ {{lineItem.amountFormatted}}
             </div>
+            <!-- END MODIFIED LPC CODE -->
         </div>
         <div class="row fee-row-total">
             <div class="col-sm-6 fee-caption">
                 Total
             </div>
+             <!-- MODIFIED LPC CODE -->
             <div v-if="hasDiscount" class="col-sm-3 fee-value">
-                <span class="visible-xs-inline">Discounted Amount:</span>
+                <span class="visible-xs-inline">{{getLang() == 'es' ? 'Cantidad con Descuento' : 'Discounted Amount'}}:</span>
                 {{discountedTotalFormatted}}
             </div>
             <div class="col-sm-3 fee-value">
-                <span class="visible-xs-inline">Amount:</span>
+                <span class="visible-xs-inline">{{getLang() == 'es' ? 'Cantidad' : 'Amount'}}:</span>
                 {{totalFormatted}}
             </div>
         </div>
     </div>
     <div class="row fee-totals">
         <div class="col-sm-offset-8 col-sm-4 fee-totals-options">
+            <!-- MODIFIED LPC CODE -->
             <div class="form-group static-control">
-                <label class="control-label">Total Cost</label>
+                <label class="control-label">{{getLang() == 'es' ? 'Costo Total' : 'Total Cost'}}</label>
                 <div class="control-wrapper">
                     <div class="form-control-static">
                         {{discountedTotalFormatted}}
@@ -306,7 +333,7 @@ export default defineComponent({
                 </div>
             </div>
             <div v-if="amountPreviouslyPaid" class="form-group static-control">
-                <label class="control-label">Previously Paid</label>
+                <label class="control-label">{{getLang() == 'es' ? 'Pago Previamente' : 'Previously Paid'}}</label>
                 <div class="control-wrapper">
                     <div class="form-control-static">
                         {{amountPreviouslyPaidFormatted}}
@@ -315,16 +342,16 @@ export default defineComponent({
             </div>
             <template v-if="showAmountDueToday && maxAmountCanBePaid">
                 <div class="form-group static-control">
-                    <label class="control-label">Minimum Due Today</label>
+                    <label class="control-label">{{getLang() == 'es' ? 'Mínimo a Pagar Hoy' : 'Minimum Due Today'}}</label>
                     <div class="control-wrapper">
                         <div class="form-control-static">
                             {{amountDueTodayFormatted}}
                         </div>
                     </div>
                 </div>
-                <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="registrationEntryState.amountToPayToday" formGroupClasses="form-right" inputGroupClasses="input-width-md amount-to-pay" />
+                <CurrencyBox :label="getLang() == 'es' ? 'Cantidad a Pagar Hoy' : 'Amount To Pay Today'" :rules="amountToPayTodayRules" v-model="registrationEntryState.amountToPayToday" formGroupClasses="form-right" inputGroupClasses="input-width-md amount-to-pay" />
                 <div class="form-group static-control">
-                    <label class="control-label">Amount Remaining After Payment</label>
+                    <label class="control-label">{{getLang() == 'es' ? 'Cantidad Restante de Pago' : 'Amount Remaining After Payment'}}</label>
                     <div class="control-wrapper">
                         <div class="form-control-static">
                             {{amountRemainingFormatted}}
@@ -333,13 +360,14 @@ export default defineComponent({
                 </div>
             </template>
             <div v-else class="form-group static-control">
-                <label class="control-label">Amount Due</label>
+                <label class="control-label">{{getLang() == 'es' ? 'Cantidad a Pagar' : 'Amount Due'}}</label>
                 <div class="control-wrapper">
                     <div class="form-control-static">
                         {{maxAmountCanBePaidFormatted}}
                     </div>
                 </div>
             </div>
+            <!-- END MODIFIED LPC CODE -->
         </div>
     </div>
 </Loading>`

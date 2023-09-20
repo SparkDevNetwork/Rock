@@ -21,6 +21,23 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import RockButton from "@Obsidian/Controls/rockButton";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { RegistrationEntryState } from "./types.partial";
+// LPC CODE
+import { useStore } from "@Obsidian/PageState";
+
+const store = useStore();
+
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+// END LPC CODE
 
 export default defineComponent({
     name: "Event.RegistrationEntry.RegistrationStart",
@@ -81,16 +98,18 @@ export default defineComponent({
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showCategoryLabel="false" />
 
         <div class="actions row">
+            <!-- MODIFIED LPC CODE -->
             <div class="col-xs-6">
                 <RockButton v-if="showPrevious" btnType="default" @click="onPrevious">
-                    Previous
+                    {{ getLang() == 'es' ? 'Anterior' : 'Previous' }}
                 </RockButton>
             </div>
             <div class="col-xs-6 text-right">
                 <RockButton btnType="primary" type="submit">
-                    Next
+                    {{ getLang() == 'es' ? 'Siguiente' : 'Next' }}
                 </RockButton>
             </div>
+            <!-- END MODIFIED LPC CODE -->
         </div>
     </RockForm>
 </div>`

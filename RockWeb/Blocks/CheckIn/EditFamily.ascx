@@ -132,6 +132,14 @@
                                 </Columns>
                             </Rock:Grid>
 
+                            <%-- Family Address --%>
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <asp:HiddenField ID="hfLocationId" runat="server" />
+                                    <Rock:AddressControl Id="addHome" runat="server" Label="Home Address" />
+                                </div>
+                            </div>
+
                             <%-- Family Attributes --%>
 
                             <Rock:AttributeValuesContainer ID="avcFamilyAttributes" runat="server" />

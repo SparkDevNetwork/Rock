@@ -118,12 +118,7 @@ namespace Rock.Client
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary />
-        // Made Obsolete in Rock "1.15"
-        [Obsolete( "Use SmsFromSystemPhoneNumberId instead.", false )]
         public int? SMSFromDefinedValueId { get; set; }
-
-        /// <summary />
-        public int? SmsFromSystemPhoneNumberId { get; set; }
 
         /// <summary />
         public string SMSMessage { get; set; }
@@ -191,10 +186,7 @@ namespace Rock.Client
             this.PushTitle = source.PushTitle;
             this.ReplyToEmail = source.ReplyToEmail;
             this.SenderPersonAliasId = source.SenderPersonAliasId;
-            #pragma warning disable 612, 618
             this.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
-            #pragma warning restore 612, 618
-            this.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
             this.SMSMessage = source.SMSMessage;
             this.Subject = source.Subject;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -237,7 +229,7 @@ namespace Rock.Client
         public PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary />
-        public SystemPhoneNumber SmsFromSystemPhoneNumber { get; set; }
+        public DefinedValue SMSFromDefinedValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

@@ -16,9 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Humanizer;
+using Newtonsoft.Json;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -43,6 +45,8 @@ namespace Rock.Web.UI.Controls
         private PlaceHolder _phAttributes;
         private RockRadioButtonList _rblCommunicationPreference;
         private LinkButton _lbDelete;
+        private Toggle _tgHasAllergy;
+        private RockTextBox _tbAllergy;
         private ImageEditor _imgProfile;
         private RacePicker _rpRace;
         private EthnicityPicker _epEthnicity;
@@ -57,6 +61,46 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["Caption"] as string ?? "Child"; }
             set { ViewState["Caption"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the language.
+        /// </summary>
+        /// <value>
+        /// The language.
+        /// </value>
+        public string Path{ get; set; }
+
+        private Dictionary<string, string> _translation;
+        /// <summary>
+        /// The Dictionary of the localized strings for ChildRow.
+        /// </summary>
+        /// <value>
+        /// The localized strings.
+        /// </value>
+        public Dictionary<string, string> Translation
+        {
+            get
+            {
+                if (_translation == null)
+                {
+                    _translation = new Dictionary<string, string>();
+                    try
+                    {
+                        using ( StreamReader r = new StreamReader( Path ) )
+                        {
+                            string json = r.ReadToEnd();
+                            _translation = JsonConvert.DeserializeObject<Dictionary<string, string>>( json );
+                        }
+                    }
+                    catch { }
+                }
+                return _translation;
+            }
+            set
+            {
+                _translation = value;
+            }
         }
 
         /// <summary>
@@ -549,6 +593,51 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets HasAllergy.
+        /// </summary>
+        /// <value>
+        /// If the child has an allergy.
+        /// </value>
+        public bool HasAllergy
+        {
+            // values are reversed because bools defualt to false and the toggle needed a default of true.
+            get
+            {
+                EnsureChildControls();
+                return _tgHasAllergy.Checked;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _tgHasAllergy.Checked = value;
+                VerifyTBAllergy();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets Allergy.
+        /// </summary>
+        /// <value>
+        /// What the allergy of the child is.
+        /// </value>
+        public string Allergy
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbAllergy.Text;
+
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _tbAllergy.Text = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the suffix value id.
         /// </summary>
         /// <value>
@@ -809,6 +898,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _tbNickName.ValidationGroup = value;
                 _tbLastName.ValidationGroup = value;
+                _tbAllergy.ValidationGroup = value;
                 _ddlSuffix.ValidationGroup = value;
                 _ddlGender.ValidationGroup = value;
                 _bpBirthdate.ValidationGroup = value;
@@ -859,12 +949,12 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 ValidationErrors.Clear();
 
-                if( _tbNickName.Required && _tbNickName.Text.IsNullOrWhiteSpace() )
+                if( _tbNickName.Required && _tbNickName.Text.IsNullOrWhiteSpace())
                 {
                     return false;
                 }
 
-                if( _tbLastName.Required && _tbLastName.Text.IsNullOrWhiteSpace() )
+                if( _tbLastName.Required && _tbLastName.Text.IsNullOrWhiteSpace())
                 {
                     return false;
                 }
@@ -874,12 +964,12 @@ namespace Rock.Web.UI.Controls
                     return false;
                 }
 
-                if ( _bpBirthdate.Required && _bpBirthdate.SelectedDate == null )
+                if ( _bpBirthdate.Required && _bpBirthdate.SelectedDate == null)
                 {
                     return false;
                 }
 
-                if( _ddlGradePicker.Required && _ddlGradePicker.SelectedIndex == 0 )
+                if( _ddlGradePicker.Required && _ddlGradePicker.SelectedIndex == 0)
                 {
                     return false;
                 }
@@ -917,7 +1007,7 @@ namespace Rock.Web.UI.Controls
                 var communicationPreference = (CommunicationType)_rblCommunicationPreference.SelectedValue.AsInteger();
                 if (communicationPreference == CommunicationType.SMS && _pnbMobile.Visible && _pnbMobile.Number.IsNullOrWhiteSpace())
                 {
-                    ValidationErrors.Add( "SMS Number is required if SMS communication preference is selected." );
+                    ValidationErrors.Add(Translation.GetValueOrDefault( "ErrorSMS", "SMS Number is required if SMS communication preference is selected." ) );
                     return false;
                 }
 
@@ -934,13 +1024,16 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="NewGroupMembersRow" /> class.
         /// </summary>
-        public PreRegistrationChildRow()
+        public PreRegistrationChildRow(string path = "")
             : base()
         {
+            Path = path;
             _lNickName = new RockLiteral();
             _lLastName = new RockLiteral();
             _tbNickName = new RockTextBox();
             _tbLastName = new RockTextBox();
+            _tgHasAllergy = new Toggle();
+            _tbAllergy = new RockTextBox();
             _ddlSuffix = new DefinedValuePicker();
             _ddlGender = new RockDropDownList();
             _bpBirthdate = new BirthdayPicker();
@@ -969,6 +1062,8 @@ namespace Rock.Web.UI.Controls
             _lLastName.ID = "_lLastName";
             _tbNickName.ID = "_tbNickName";
             _tbLastName.ID = "_tbLastName";
+            _tgHasAllergy.ID = "_tgHasAllergy";
+            _tbAllergy.ID = "_tbAllergy";
             _ddlSuffix.ID = "_ddlSuffix";
             _ddlGender.ID = "_ddlGender";
             _bpBirthdate.ID = "_bpBirthdate";
@@ -987,6 +1082,8 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lLastName );
             Controls.Add( _tbNickName );
             Controls.Add( _tbLastName );
+            Controls.Add( _tgHasAllergy );
+            Controls.Add( _tbAllergy );
             Controls.Add( _ddlSuffix );
             Controls.Add( _bpBirthdate );
             Controls.Add( _ddlGender );
@@ -1001,21 +1098,35 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _rpRace );
             Controls.Add( _epEthnicity );
 
-            _lNickName.Label = "First Name";
+            _lNickName.Label = Translation.GetValueOrDefault( "LabelFirstName", "First Name" );
 
-            _lLastName.Label = "Last Name";
+            _lLastName.Label = Translation.GetValueOrDefault( "LabelLastName", "Last Name" );
 
             _tbNickName.CssClass = "form-control";
             _tbNickName.Required = true;
-            _tbNickName.RequiredErrorMessage = "First Name is required for all children";
-            _tbNickName.Label = "First Name";
+            _tbNickName.RequiredErrorMessage = Translation.GetValueOrDefault( "ErrorFirstName", "First Name is required for all children." );
+            _tbNickName.Label = Translation.GetValueOrDefault( "LabelFirstName", "First Name" );
 
             _tbLastName.Required = true;
-            _tbLastName.RequiredErrorMessage = "Last Name is required for all children";
-            _tbLastName.Label = "Last Name";
+            _tbLastName.RequiredErrorMessage = Translation.GetValueOrDefault( "ErrorLastName", "Last Name is required for all children." );
+            _tbLastName.Label = Translation.GetValueOrDefault( "LabelLastName", "Last Name" );
+
+            _tgHasAllergy.Required = true;
+            _tgHasAllergy.Label = Translation.GetValueOrDefault( "LabelHasAllergy", "Does the child have and allergy?" );
+            _tgHasAllergy.OnText = Translation.GetValueOrDefault( "Yes", "Yes" );
+            _tgHasAllergy.OffText = Translation.GetValueOrDefault( "No", "No" );
+            _tgHasAllergy.Checked = false;
+            _tgHasAllergy.Help = Translation.GetValueOrDefault( "HelpHasAllergy", "If the child is allergic to something. Selecting 'Yes' will allow you to enter what the allergy is." );
+            _tgHasAllergy.ValueChanged += tgHasAllergy_ValueChanged;
+
+            _tbAllergy.Label = Translation.GetValueOrDefault( "LabelAllergy", "Allergy" );
+            _tbAllergy.Help = Translation.GetValueOrDefault( "HelpAllergy", "The item(s) this child is allergic to." );
+            _tbAllergy.Visible = false;
+            _tbAllergy.MaxLength = 38;
+            _tbAllergy.ShowCountDown = true;
 
             _ddlSuffix.CssClass = "form-control";
-            _ddlSuffix.Label = "Suffix";
+            _ddlSuffix.Label = Translation.GetValueOrDefault( "LabelSuffix", "Suffix" );
             string suffixValue = _ddlSuffix.SelectedValue;
             _ddlSuffix.Items.Clear();
             _ddlSuffix.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).Id;
@@ -1024,8 +1135,8 @@ namespace Rock.Web.UI.Controls
                 _ddlSuffix.SelectedValue = suffixValue;
             }
 
-            _ddlGender.RequiredErrorMessage = "Gender is required for all children";
-            _ddlGender.Label = "Gender";
+            _ddlGender.RequiredErrorMessage = Translation.GetValueOrDefault( "ErrorGender", "Gender is required for all children." );
+            _ddlGender.Label = Translation.GetValueOrDefault( "LabelGender", "Gender" );
             string genderValue = _ddlGender.SelectedValue;
             _ddlGender.Items.Clear();
             _ddlGender.BindToEnum<Gender>( true, new Gender[] { Gender.Unknown } );
@@ -1034,12 +1145,15 @@ namespace Rock.Web.UI.Controls
                 _ddlGender.SelectedValue = genderValue;
             }
 
-            _bpBirthdate.RequiredErrorMessage = "Birth date is required for all children";
-            _bpBirthdate.Label = "Birth Date";
+            _bpBirthdate.RequiredErrorMessage = Translation.GetValueOrDefault( "ErrorBirthDate", "Birth Date is required for all children." );
+            _bpBirthdate.Label = Translation.GetValueOrDefault( "LabelBirthDate", "Birth Date" );
+            //_bpBirthdate.AllowFutureDateSelection = false;
+            //_bpBirthdate.ShowOnFocus = false;
+            //_bpBirthdate.StartView = DatePicker.StartViewOption.decade;
 
             _ddlGradePicker.CssClass = "form-control";
-            _ddlGradePicker.RequiredErrorMessage = "Grade is required for all children";
-            _ddlGradePicker.Label = "Grade";
+            _ddlGradePicker.RequiredErrorMessage = Translation.GetValueOrDefault( "ErrorGrade", "Grade is required for all children." );
+            _ddlGradePicker.Label = Translation.GetValueOrDefault( "LabelGrade", "Grade" );
 
             /*
                     06/03/2020 - SK
@@ -1047,23 +1161,23 @@ namespace Rock.Web.UI.Controls
              */
             //_pnbMobile.CssClass = "form-control";
 
-            _pnbMobile.Label = "Mobile Phone";
-            _pnbMobile.RequiredErrorMessage = "A valid phone number is required for all children.";
+            _pnbMobile.Label = Translation.GetValueOrDefault( "LabelMobilePhone", "Mobile Phone" );
+            _pnbMobile.RequiredErrorMessage = Translation.GetValueOrDefault( "ErrorMobilePhone", "A valid phone number is required for all children." );
 
-            _ebEmail.Label = "Email Address";
+            _ebEmail.Label = Translation.GetValueOrDefault( "LabelEmail", "Email" );
 
-            _rblCommunicationPreference.Label = "Communication Preference";
+            _rblCommunicationPreference.Label = Translation.GetValueOrDefault( "LabelCommunicationPreference", "Communication Preference" );
             _rblCommunicationPreference.RepeatDirection = RepeatDirection.Horizontal;
 
             if ( _rblCommunicationPreference.Items.Count == 0 )
             {
-                _rblCommunicationPreference.Items.Add( new ListItem( "Email", "1" ) );
-                _rblCommunicationPreference.Items.Add( new ListItem( "SMS", "2" ) );
+                _rblCommunicationPreference.Items.Add( new ListItem( Translation.GetValueOrDefault( "OptionEmail", "Email" ), "1" ) );
+                _rblCommunicationPreference.Items.Add( new ListItem( Translation.GetValueOrDefault( "OptionSMS", "SMS" ), "2" ) );
             }
 
             _ddlRelationshipType.CssClass = "form-control";
             _ddlRelationshipType.Required = true;
-            _ddlRelationshipType.Label = "Relationship to Adult";
+            _ddlRelationshipType.Label = Translation.GetValueOrDefault( "LabelRelationship", "Relationship to Adult" );
             _ddlRelationshipType.DataValueField = "Key";
             _ddlRelationshipType.DataTextField = "Value";
             string relationshipTypeValue = _ddlRelationshipType.SelectedValue;
@@ -1110,9 +1224,10 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _ddlRelationshipType.RenderControl( writer );
                 writer.RenderEndTag();
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 6 ) ); // filler/blocker column
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.RenderEndTag();
+                // Removed - redundant
+                //writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 6 ) ); // filler/blocker column
+                //writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                //writer.RenderEndTag();
                 writer.RenderEndTag(); // end Relationship row
 
                 writer.AddAttribute( "rowid", ID );
@@ -1125,23 +1240,48 @@ namespace Rock.Web.UI.Controls
                 _tbNickName.Visible = !existingPerson;
                 _tbLastName.Visible = !existingPerson;
 
+                // Write first row
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, "row");
+                writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+                // Write nickname
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _lNickName.RenderControl( writer );
                 _tbNickName.RenderControl( writer );
                 writer.RenderEndTag();
 
+                // Write last name
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _lLastName.RenderControl( writer );
                 _tbLastName.RenderControl( writer );
                 writer.RenderEndTag();
 
-                if ( this.ShowGender )
+                // Write allergy toggle
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, GetColumnStyle(3));
+                writer.RenderBeginTag(HtmlTextWriterTag.Div);
+                _tgHasAllergy.RenderControl(writer);
+                writer.RenderEndTag();
+
+                // Write allergy text box
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, GetColumnStyle(3));
+                writer.RenderBeginTag(HtmlTextWriterTag.Div);
+                _tbAllergy.RenderControl(writer);
+                writer.RenderEndTag();
+
+                writer.RenderEndTag(); // End first row
+
+                // Write second row
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, "row");
+                writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+                // Write gender
+                if (this.ShowGender)
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    _ddlGender.RenderControl( writer );
+                    writer.AddAttribute(HtmlTextWriterAttribute.Class, GetColumnStyle(3));
+                    writer.RenderBeginTag(HtmlTextWriterTag.Div);
+                    _ddlGender.RenderControl(writer);
                     writer.RenderEndTag();
                 }
 
@@ -1155,7 +1295,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( this.ShowBirthDate )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 6 ) );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _bpBirthdate.RenderControl( writer );
                     writer.RenderEndTag();
@@ -1239,7 +1379,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                writer.RenderEndTag(); // End Attributes row
+                writer.RenderEndTag(); // End second row
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Hr );
                 writer.RenderEndTag();
@@ -1322,6 +1462,36 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Handles the ValueChanged event of the tgHasAllergy control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void tgHasAllergy_ValueChanged(object sender, EventArgs e)
+        {
+            VerifyTBAllergy();
+        }
+        /// <summary>
+        /// Verifies that _tbAllergy is only Visible when it is supposed to be.
+        /// </summary>
+        private void VerifyTBAllergy()
+        {
+            // Only shows tbAllergy when HasAllergy is Yes
+            _tbAllergy.Visible = _tgHasAllergy.Checked;
+        }
+
+        /// <summary>
+        /// Sets the Caption variable using an integer (n) as the nth Child. Converts the n into localized ordinal words (1 -> First or Primer, 2 -> Second or Segundo, etc.)
+        /// </summary>
+        /// <param name="n">The nth child.</param>
+        public void SetCaptionFromInt(int n)
+        {
+            // The following line generates the heading for each child row (First Child, Second Child, etc.)
+            // Get the LCID from the JSON file and pass it into the ordial words method to translate the ordinal words.
+            int lcid = Translation.GetValueOrDefault("LCID", "1033").ToIntSafe(1033);
+            Caption = $"{n.ToOrdinalWords(System.Globalization.CultureInfo.GetCultureInfo(lcid)).Titleize()} {Translation.GetValueOrDefault("Child", "Child")}";
+        }
+
+        /// <summary>
         /// Occurs when delete is clicked.
         /// </summary>
         public event EventHandler DeleteClick;
@@ -1364,6 +1534,22 @@ namespace Rock.Web.UI.Controls
         /// The last name.
         /// </value>
         public string LastName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the allergy.
+        /// </summary>
+        /// <value>
+        /// The allergy.
+        /// </value>
+        public string Allergy{ get; set; }
+
+        /// <summary>
+        /// Gets or sets if the child has an allergy.
+        /// </summary>
+        /// <value>
+        /// If the child has an allergy.
+        /// </value>
+        public bool HasAllergy { get; set; }
 
         /// <summary>
         /// Gets or sets the suffix value identifier.
@@ -1500,6 +1686,10 @@ namespace Rock.Web.UI.Controls
             var mobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             MobilePhoneNumber = mobilePhone?.Number;
             MobileCountryCode = mobilePhone?.CountryCode;
+
+            person.LoadAttributes();
+            Allergy = person.GetAttributeValue("Allergy");
+            HasAllergy = !person.GetAttributeValue("Allergy").IsNullOrWhiteSpace();
         }
 
         /// <summary>

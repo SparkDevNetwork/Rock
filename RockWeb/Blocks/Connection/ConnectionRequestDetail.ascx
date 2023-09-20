@@ -115,23 +115,25 @@
                                     <div class="col-sm-12 col-md-3 text-left text-md-right mb-3">
                                         <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
                                         <Rock:RockLiteral ID="lPlacementGroup" runat="server" Label="Placement Group" />
-                                        <Rock:DynamicPlaceholder ID="phGroupMemberAttributesView" runat="server" />
                                     </div>
                                 </div>
 
                                 <asp:Panel runat="server" CssClass="badge-bar margin-b-sm" ID="pnlBadges">
                                     <Rock:BadgeListControl ID="blStatus" runat="server" />
                                 </asp:Panel>
-
                             </div>
-
                         </div>
-
                         <div class="row">
                             <div class="col-md-12">
                                 <Rock:RockLiteral ID="lComments" runat="server" />
                             </div>
                         </div>
+                        <div class="row"> <!-- moved this here to give more room to display the attributes -->
+                            <div class="col-md-12 mb-3">
+                                <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
+                            </div>
+                        </div>
+
                         <asp:Literal ID="lBadgeBar" runat="server" />
                         <div class="row">
                             <div class="col-md-12">

@@ -1,0 +1,59 @@
+{% comment %} Life Group Links {% endcomment %}
+
+<div>
+    <div id="LGLeaderLinks" >
+        <section class="nav-sub">
+            <ul class="nav nav-pills nav-stacked nav-categories">
+                {% comment %} Group Leader Application {% endcomment %}
+
+                {% person dataview:'2704' where:'Id == {{CurrentPerson.Id}}'  %}
+                    {% assign personGroupLeaderApplicationCount = personItems | Size %}
+                    {% if personGroupLeaderApplicationCount > 0 %}
+                        <li> <a href="/page/2617">Potential Group Leader Application</a></li>
+                    {% endif %}
+                {% endperson %}
+
+{% sql pag:'{{ CurrentPerson.PrimaryAlias.Guid }}' %}
+    EXEC _org_lakepointe_sp_CanViewLgCurriculum @PersonAliasGuid = @pag
+{% endsql %}
+
+{% for result in results %}
+    {% if result.DisplayOnGLT == 'True' %}
+        <li> <a href="/page/{% case result.LanguageId %}{% when 5658 %}2322{% when 5659 %}2548{% endcase %}?CurriculumId={{ result.Id }}">{{ result.Value }}</a></li>
+    {% endif %}
+{% endfor %}
+
+{% sql pag:'{{ CurrentPerson.PrimaryAlias.Guid }}' %}
+    EXEC _org_lakepointe_sp_CanViewAdultLeaderResources @PersonAliasGuid = @pag
+{% endsql %}
+
+{% for result in results %}
+    {% case result.Id %}
+    {% when 5658 %}
+        <li><a href="/page/2543">Leader Resources</a></li>
+    {% when 5659 %}
+        <li><a href="/page/3835">RECURSOS DE LIDERAZGO</a></li>
+    {% endcase %}
+{% endfor %}
+
+{% sql pag:'{{ CurrentPerson.PrimaryAlias.Guid }}' gti:'408,412,414,422,424,425,527' %}
+    EXEC _org_lakepointe_sp_CanViewNextGenLeaders @PersonAliasGuid = @pag, @GroupTypeIds = @gti
+{% endsql %}
+
+{% if results[0].Leader == 1 %}
+    {% comment %} Kids Leaders {% endcomment %}
+    <li> <a href="/LPKidsLeader">LP Kids Leaders</a></li>
+{% endif %}
+
+{% sql pag:'{{ CurrentPerson.PrimaryAlias.Guid }}' gti:'431,432' %}
+    EXEC _org_lakepointe_sp_CanViewNextGenLeaders @PersonAliasGuid = @pag, @GroupTypeIds = @gti
+{% endsql %}
+
+{% if results[0].Leader == 1 %}
+    {% comment %} Student Leaders {% endcomment %}
+    <li> <a href="/LPStudentVolunteers">LP Student Volunteers</a></li>
+{% endif %}
+            </ul>
+        </section>
+    </div>
+</div>

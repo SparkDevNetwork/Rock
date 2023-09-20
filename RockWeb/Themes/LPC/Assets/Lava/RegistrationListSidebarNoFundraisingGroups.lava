@@ -1,0 +1,47 @@
+{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
+{%- assign fundraisingGroupGuid = '4BE7FC44-332D-40A8-978E-47B7035D7A0C' | Downcase -%}
+{% assign registrationCount = Registrations | Size %}
+{% assign displayedRegistrations = 0 %}
+{% if registrationCount > 0 %}
+
+<div id="pnlRegistrations" class="panel panel-default">
+  <div class="panel-heading">Recent Registrations</div>
+  <div class="panel-body">
+      <ul class="list-group list-group-panel">
+        {% for registration in Registrations %}
+            {%- assign registrationInstanceId = registration.RegistrationInstance.Id -%}
+            {%- eventitemoccurrencegroupmap where:'RegistrationInstanceId == {{ registrationInstanceId }}' -%}
+                {%- assign groupMap = eventitemoccurrencegroupmapItems | First -%}
+                {%- if groupMap.Group.GroupType.Guid == fundraisingGroupGuid -%}
+                    {%- continue -%}
+                {%- endif -%}
+            {%- endeventitemoccurrencegroupmap -%}
+
+        <li class="list-group-item">
+          <a href="{{ externalSite }}Registration?RegistrationId={{ registration.Id }}" class="js-group-item" >{{ registration.RegistrationInstance.Name }}</a> 
+		    {% if registration.BalanceDue > 0 %} <label class='label label-warning'>{{ 'Global' | Attribute:'CurrencySymbol' }}</label> {% endif %}
+        </li>
+
+        {% assign displayedRegistrations = displayedRegistrations | Plus:1 %}
+        {% endfor %}
+	    </ul>
+    </div>
+</div>
+{% endif %}
+
+<div id="pnlNoRegistrations" class="panel panel-default" style="display: none;">
+    <div class="panel-heading">Recent Registrations</div>
+    <div class="panel-body">
+        <strong>No Registrations Found</strong>
+    </div> 
+</div>
+
+{% if displayedRegistrations == 0 %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $("#pnlRegistrations").css("display", "none");
+            $("#pnlNoRegistrations").css("display","block");
+        });
+    </script>
+{% endif %}
+

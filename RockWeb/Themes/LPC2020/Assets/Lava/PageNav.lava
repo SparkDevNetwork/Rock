@@ -1,0 +1,131 @@
+{% assign jsonString = 'Global' | Attribute:'FGPageTargets' %}
+{% assign jsonObject = jsonString | FromJSON %}
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+<div class="top-nav-container">
+	<div class="nav navbar-nav header-social">
+		<div class="lp_social_media_follow text-center">
+			<div class="lp-social-icon">
+				<a href="https://www.facebook.com/lpconnect" target="_blank">
+					<span>
+						<svg version="1.2" baseProfile="tiny" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 24 24" xml:space="preserve">
+	<path id="facebook" d="M14,8.5V6.2c0-1.2,0.1-2,1.8-2H18V0.5c-1.1-0.1-2.1-0.2-3.2-0.2c-3.2,0-5.5,1.9-5.5,5.5v2.7H5.9v4.7h3.5v10.5H14V13.2h3.6
+		l0.5-4.7H14z"></path>
+						</svg>
+					</span>
+				</a>
+			</div>
+			<div class="lp-social-icon">
+				<a href="https://www.instagram.com/lpconnect/" target="_blank">
+					<span>
+						<svg version="1.2" baseProfile="tiny" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 24 24" xml:space="preserve">
+	<g>
+		<path d="M12,8.2c-2.1,0-3.8,1.7-3.8,3.8s1.7,3.8,3.8,3.8s3.8-1.7,3.8-3.8S14.1,8.2,12,8.2z"></path>
+		<path d="M16.7,0.6H7.3c-3.7,0-6.6,3-6.6,6.6v9.5c0,3.7,3,6.6,6.6,6.6h9.5c3.7,0,6.6-3,6.6-6.6V7.3C23.4,3.6,20.4,0.6,16.7,0.6z
+			 M12,17.7c-3.1,0-5.7-2.5-5.7-5.7S8.9,6.3,12,6.3s5.7,2.5,5.7,5.7S15.1,17.7,12,17.7z M18.6,6.3c-0.5,0-0.9-0.4-0.9-0.9
+			c0-0.5,0.4-0.9,0.9-0.9s0.9,0.4,0.9,0.9C19.6,5.9,19.2,6.3,18.6,6.3z"></path>
+	</g>
+						</svg>
+					</span>
+				</a>
+			</div>
+			<div class="lp-social-icon">
+				<a href="https://www.youtube.com/channel/UC5f7yO3WU_Ns0WDCQuP5bAw" target="_blank">
+					<span>
+						<svg version="1.2" baseProfile="tiny" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 24 24" xml:space="preserve">
+	<path d="M23,6.3c-0.2-1.2-1.2-2.1-2.4-2.3c-1.8-0.4-5.1-0.7-8.7-0.7C8.3,3.3,5,3.6,3.2,4C2,4.2,1,5.1,0.7,6.3
+		C0.5,7.7,0.3,9.6,0.3,12c0,2.4,0.2,4.3,0.5,5.7C1,18.9,2,19.8,3.2,20c1.9,0.4,5.2,0.7,8.7,0.7s6.8-0.3,8.7-0.7
+		c1.2-0.3,2.2-1.1,2.4-2.3c0.2-1.4,0.5-3.3,0.5-5.7C23.6,9.6,23.3,7.7,23,6.3z M9,15.8V8.2l6.6,3.8L9,15.8z"></path>
+						</svg>
+					</span>
+				</a>
+			</div>
+		</div> <!-- .et_pb_counters -->
+	</div>
+	<ul class="nav navbar-nav">
+
+		{% for childPage in Page.Pages %}
+		{% if childPage.DisplayChildPages == 'true' and childPage.Pages and childPage.Pages != empty %}
+		{% assign displayChildPages = true %}
+		{% assign grandChildPageCheck = childPage.Pages | First %}
+		{% if grandChildPageCheck.DisplayChildPages == 'true' and grandChildPageCheck.Pages and grandChildPageCheck.Pages != empty %}
+		{% assign greatGrandChildCheck = true %}
+		{% else %}
+		{% assign greatGrandChildCheck = false %}
+		{% endif %}
+		{% assign childCount = childPage.Pages | Size %}
+		{% else %}
+		{% assign displayChildPages = false %}
+		{% endif %}
+		<li class="{% if displayChildPages %} dropdown {% if childCount > 1 and greatGrandChildCheck == 'true' %}mega-dropdown{% endif %}
+	{% endif %}
+	{% if childPage.Current == 'true' or childPage.IsParentOfCurrent == 'true'  %} active{% endif%}">
+			{% assign openTarget = '' %}
+			{% for pageT in jsonObject.TargetPages %}
+			{% if pageT.PageId == childPage.Id %}
+			{% assign openTarget = pageT.target %}
+			{% endif %}
+			{% endfor %}
+			<a href="{{ childPage.Url }}" {% if openTarget !='' %} target="{{openTarget}}" {% endif %}
+			   {% if displayChildPages %} data-toggle="dropdown" class="dropdown-toggle" {% endif %}>{{ childPage.Title }}</a>
+			{% if displayChildPages %}
+			<ul class="dropdown-menu {% if childCount > 1 and greatGrandChildCheck == 'true' %}mega-dropdown-menu{% endif %}">
+				{% assign countModP = 0 %}
+				{% for grandChildPage in childPage.Pages %}
+				{% if grandChildPage.DisplayChildPages == 'true' and grandChildPage.Pages and grandChildPage.Pages != empty %}
+				{% assign displayGrandChildPages = true %}
+				{% assign grandChildCount = grandChildPage.Pages | Size %}
+				{% assign countModM = 0 %}
+				{% assign grandChildLast = childPage.Pages | Last %}
+				{% if grandChildLast.DisplayChildPages == 'true' and grandChildLast.Pages and grandChildLast.Pages != empty %}
+				{% assign grandChildLastCount = grandChildLast.Pages | Size %}
+				{% else %}
+				{% assign grandChildLastCount = 0 %}
+				{% endif %}
+				{% else %}
+				{% assign displayGrandChildPages = false %}
+				{% endif %}
+				<li class="{% if displayGrandChildPages %} dropdown-submenu {% endif %}{% if grandChildPage.Current == 'true' or grandChildPage.IsParentOfCurrent == 'true' %}active {% endif%}
+					{% if displayGrandChildPages %}
+					{% endif %}
+					{% if childCount > 1 and greatGrandChildCheck == 'true' %} col-sm-{% if childCount == 2 %}{% if grandChildCount > 7 and countModP == 0 %}{% assign countModP = countModP | Plus:'2' %}{% else %}{% assign countModM = countModM | Plus:'2' %}{% assign countModP = 0 %}{% endif %}{% endif %}{{ 12 | DividedBy:childCount | Plus:countModP | Minus:countModM }}{% endif %}">
+					{% assign openTarget = '' %}
+					{% for pageT in jsonObject.TargetPages %}
+					{% if pageT.PageId == greatGrandChildPage.Id %}
+					{% assign openTarget = pageT.target %}
+					{% endif %}
+					{% endfor %}
+					<a href="{{ grandChildPage.Url }}" {% if openTarget !='' %} target="{{openTarget}}" {% endif %} {% if displayGrandChildPages %} data-toggle="dropdown" class="dropdown-toggle" {% endif %}>{{ grandChildPage.Title }}</a>
+					{% if displayGrandChildPages %}
+					<div class="dropdown-menu">
+						<ul class="{% if childCount == 2 and grandChildCount > 7 and countModP != 0 %}col-sm-6{% endif %}">
+							{% for greatGrandChildPage in grandChildPage.Pages %}
+							<li class="{% if greatGrandChildPage.Current == 'true' %}active{% endif %}">
+								{% assign openTarget = '' %}
+								{% for pageT in jsonObject.TargetPages %}
+								{% if pageT.PageId == greatGrandChildPage.Id %}
+								{% assign openTarget = pageT.target %}
+								{% endif %}
+								{% endfor %}
+								<a href="{{ greatGrandChildPage.Url }}" {% if openTarget !='' %} target="{{openTarget}}" {% endif %}>&nbsp;{{ greatGrandChildPage.Title }}</a>
+							</li>
+							{% if childCount == 2 and grandChildCount > 7 and countModP != 0 %}
+							{% assign forloopDivided = forloop.length | DividedBy:'2' | Ceiling %}
+							{% if forloop.index == 7 and forloop.length < 15 %}
+						</ul><ul class="col-sm-6">
+							{% elseif forloop.length > 14 and forloop.index == forloopDivided %}
+						</ul><ul class="col-sm-6">
+							{% endif %}
+							{% endif %}
+							{% endfor %}
+						</ul>
+					</div>
+					{% endif %}
+				</li>
+				{% endfor %}
+			</ul>
+			{% endif %}
+		</li>
+	{% endfor %}
+	</ul>
+</div>
+{% endif %}

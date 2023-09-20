@@ -1,0 +1,55 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="WorkflowBulkSelect.ascx.cs" Inherits="RockWeb.Plugins.org_secc.WorkFlowUpdate.WorkflowBulkSelect" %>
+
+<asp:UpdatePanel ID="upnlSettings" runat="server">
+    <ContentTemplate>
+        <asp:Panel ID="pnlWorkflowTypeSelect" runat="server" CssClass="panel panel-block">
+            <div class="panel-heading">
+                <h1 class="panel-title">Select A Workflow Type</h1>
+            </div>
+            <div class="panel-body">
+                <Rock:WorkflowTypePicker runat="server" ID="pWorkflowType"
+                    OnSelectItem="pWorkflowType_SelectItem" Label="Workflow Type" />
+            </div>
+        </asp:Panel>
+
+        <asp:Panel ID="pnlWorkflowList" CssClass="panel panel-block" runat="server">
+
+            <div class="panel-heading">
+                <h1 class="panel-title">
+                    <asp:Literal ID="lHeadingIcon" runat="server"><i class="fa fa-list"></i></asp:Literal>
+                    <asp:Literal ID="lGridTitle" runat="server" Text="Workflows" /></h1>
+            </div>
+            <div class="panel-body">
+
+                <div class="grid grid-panel">
+                    <Rock:GridFilter ID="gfWorkflows" runat="server">
+                        <Rock:RockTextBox ID="tbName" runat="server" Label="Name"></Rock:RockTextBox>
+                        <Rock:PersonPicker ID="ppInitiator" runat="server" Label="Initiator" />
+                        <Rock:RockTextBox ID="tbStatus" runat="server" Label="Status Text"></Rock:RockTextBox>
+                        <Rock:DateRangePicker ID="drpActivated" runat="server" Label="Activated" />
+                        <Rock:DateRangePicker ID="drpCompleted" runat="server" Label="Completed" />
+                        <Rock:RockCheckBoxList ID="cblState" runat="server" Label="State" RepeatDirection="Horizontal">
+                            <asp:ListItem Selected="True" Text="Active" Value="Active" />
+                            <asp:ListItem Selected="True" Text="Completed" Value="Completed" />
+                        </Rock:RockCheckBoxList>
+                        <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
+                    </Rock:GridFilter>
+                    <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" DisplayType="Full">
+                        <Columns>
+                            <Rock:SelectField />
+                            <Rock:RockBoundField DataField="WorkflowId" HeaderText="Id" SortExpression="WorkflowId" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:PersonField DataField="Initiator" HeaderText="Initiated By" SortExpression="Initiator" />
+                            <Rock:ListDelimitedField DataField="Activities" HeaderText="Activities" HtmlEncode="false" Delimiter="," />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+
+            </div>
+
+
+
+        </asp:Panel>
+
+    </ContentTemplate>
+</asp:UpdatePanel>

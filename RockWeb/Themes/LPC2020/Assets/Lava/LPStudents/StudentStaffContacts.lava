@@ -1,0 +1,287 @@
+{% comment %}
+    Title: Student Ministry Staff Contacts
+    Description:
+        Staff Contacts page
+{% endcomment %}
+
+<style text="text/css">
+    div.spacer:before{
+        position: relative;
+        display: inline-block;
+        content: '';
+        border-bottom: 2px solid #323232;
+        width: 50%;
+        left:25%;
+        bottom:0;
+    }
+
+</style>
+<div id="channelHeader">
+    <div class="row">
+        <div class="col-xs-12" style="text-align:center;">
+            <img src="/content/LPStudents/LPStudents_Logo_Color.png" style="width: 50%;" alt="LPStudents_Logo_Color.png">
+        </div>
+        <div class="col-xs-12">
+            <h2 style="text-align:center;">Staff Contacts</h2>
+
+        </div>
+    </div>
+</div>
+<div class="spacer"></div>
+<div class="row">
+    <div class="col-xs-12">
+        {[ accordion firstopen:'false' ]}
+            [[item title:'Rockwall']]
+                <h3>David Hanson</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign leader = 107087 | PersonByAliasId  %}
+                        <img src='//lakepointe.church/wp-content/uploads/2020/08/Lakepointe-Leaders-Student-Pastor-David.jpg' style='height:100px;' class="img-responsive responsive" alt="David Hanson"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Student Pastor</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:4696982400" class="phoneLink">(469) 698-2400</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:davidh@lakepointe.church">Email David</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3>Kingsley Demakpor</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign leader = 323495 | PersonByAliasId  %}
+                        <img src='{{leader.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Kingsley Demakpor"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Student Pastor</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:8174493250" class="phoneLink">(817) 449-3250</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:kingsleyd@lakepointe.church">Email Kingsley</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3>Felipe Castro</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign leader = 147661 | PersonByAliasId  %}
+                        <img src='{{leader.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Felipe Castro"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Lakepointe en Español Student Pastor</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:4696982427" class="phoneLink">(469) 698-2427</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:felipec@lakepointe.church">Email Felipe</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3>Kristyn May</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign leader = 317752 | PersonByAliasId  %}
+                        <img src='{{leader.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Kristyn May"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>High School Ministry Associate</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:5125845566" class="phoneLink">(512) 584-5566</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:kristynm@lakepointe.church">Email Kristyn</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3>Mary-Claire Leigh-Manuell</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign leader = 297922 | PersonByAliasId  %}
+                        <img src='{{leader.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Mary-Claire Leigh-Manuell"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Middle School Ministry Associate</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:8063418093" class="phoneLink">(806) 341-8093</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:maryclairem@lakepointe.church">Email Mary-Claire</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3>Joe Dalrymple</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign leader = 353924 | PersonByAliasId  %}
+                        <img src='{{leader.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Joe Dalrymple"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Middle School Ministry Associate</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:9802429781" class="phoneLink">(980) 242-9781</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:joed@lakepointe.church">Email Joe</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            [[enditem ]]
+            [[ item title:'Town East']]
+            [[ enditem ]]
+            [[ item title:'Firewheel']]
+                 <h3>Andre Norasith</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign peyton = 356263 | PersonByAliasId  %}
+                        <img src='{{peyton.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Andre Norasith"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Student Pastor</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:9728352765" class="phoneLink">(972) 835-2765</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:andren@lakepointe.church">Email Andre</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            [[ enditem ]]
+            [[ item title:'Forney']]
+               <h3>Austin Patton</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+
+                        <img src='//lakepointe.church/wp-content/uploads/2020/08/Lakepointe-Leaders-Campus-Pastor-Austin.jpg' style='height:100px;' class="img-responsive responsive" alt="Austin Patton"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Student Pastor</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:9725642338" class="phoneLink">(972) 564-2338</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:austinp@lakepointe.church">Email Austin</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            [[ enditem]]
+            [[ item title:'North Dallas']]
+                <h3>John Brock</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign leader = 315283 | PersonByAliasId  %}
+                        <img src='{{leader.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Stephen Green"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Student Pastor</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:9722856361" class="phoneLink">(972) 285-6361</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:johnb@lakepointe.church">Email John</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            [[ enditem]]
+            [[ item title:'White Rock']]
+               <h3>Nate Miller</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        <img src='//lakepointe.church/wp-content/uploads/2020/08/Lakepointe-Leaders-Student-Pastor-Nate.jpg' style='height:100px;' class="img-responsive responsive" alt="Nate Miller"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Student Pastor</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:9375325246" class="phoneLink">(937) 532-5246</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:natemi@lakepointe.church">Email Nate</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            [[ enditem]]
+        {[ endaccordion ]}
+    </div>
+</div>

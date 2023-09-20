@@ -1,0 +1,1227 @@
+{% comment %}
+    Title: LPKidsVolunteeerPortal.lava
+    Description:
+        Lava content formatting and filtering for the LPKids
+        Volunteer Portal page.
+{% endcomment %}
+<div class="lpKidsVolunteerPortal">
+<style>
+    [style*="--aspect-ratio"] > :first-child {
+        width: 100%;
+    }
+        [style*="--aspect-ratio"] > img {
+        height: auto;
+    }
+    @supports (--custom:property) {
+        [style*="--aspect-ratio"] {
+            position: relative;
+        }
+        [style*="--aspect-ratio"]::before {
+            content: "";
+            display: block;
+            padding-bottom: calc(100% / (var(--aspect-ratio)));
+        }
+        [style*="--aspect-ratio"] > :first-child {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+        }
+    }
+
+    .contentItem{
+        padding-top:15px;
+        padding-bottom:15px;
+    }
+    .contentItem h1, .contentItem h2, .contentItem h3 {
+        margin-top:11px !important;
+    }
+    .lpKidsVolunteerPortal h2 {
+        font-size: 45px;
+    }
+    .contentItem h3 {
+        text-align: center;
+    }
+
+    .lpKidsVolunteerPortal .video {
+        margin-bottom: 13.5px;
+    }
+
+    div.spacer:before{
+        position: relative;
+        display: inline-block;
+        content: '';
+        border-bottom: 2px solid #e2e2e2;
+        width: 50%;
+        left:25%;
+        bottom:0;
+
+    }
+
+    #tools {
+        text-align:center;
+    }
+    #tools a:hover{
+        text-decoration:none;
+
+    }
+    #tools a{
+
+        border: 1px solid #e2e2e2;
+        text-align:center;
+        width:250px;
+        overflow:hidden;
+        padding-top:15px;
+        margin:10px;
+        display: inline-block;
+    }
+    .toolIcon{
+        font-Size: 24pt;
+    }
+</style>
+
+{% assign today = 'Global' | PageParameter:'Date' | AsDateTime %}
+{% if today == null %}
+    {% assign today = 'Now' | Date | AsDateTime %}
+{% endif %}
+
+{% sql personId:'{{ CurrentPerson.Id }}' return:'roles' %}
+    DECLARE
+        @groupId INT = null,
+        @columns NVARCHAR(MAX) = '',
+        @aggColumns NVARCHAR(MAX) = '',
+        @sql NVARCHAR(MAX) = '';
+
+    -- curriculum names
+    SELECT @columns += QUOTENAME(dv.Value) + ','
+    FROM dbo.[DefinedValue] dv
+    WHERE dv.DefinedTypeId = 495 AND dv.IsActive = 1
+    ORDER BY dv.[Order];
+
+    SET @columns = LEFT(@columns, LEN(@columns) - 1); -- remove the last comma
+
+    -- column definitions
+    SELECT @aggColumns += FORMATMESSAGE('SUM([%s]) as [%s], ', dv.Value, dv.Value)
+    FROM dbo.[DefinedValue] dv
+    WHERE dv.DefinedTypeId = 495 AND dv.IsActive = 1
+    ORDER BY dv.[Order];
+
+    SET @aggColumns = LEFT(@aggColumns, LEN(@aggColumns) - 1); -- remove the last comma
+
+    -- override group
+    SET @groupId = (SELECT TOP 1 gm.GroupId FROM GroupMember gm WHERE gm.PersonId = @personId AND gm.GroupId = 927999 AND gm.GroupMemberStatus != 0 AND gm.IsArchived = 0);
+
+    IF @groupId = 927999
+    BEGIN
+        -- person is in curriculum team - override all roles to 1
+        -- dynamic sql
+        SET @sql = '
+        SELECT TOP 1 '+ @aggColumns +', STRING_AGG(Campuses, '','') AS Campuses
+        FROM (
+            SELECT dv.[Value], a.[Count], a.Campuses
+            FROM DefinedValue dv
+            LEFT JOIN (
+                SELECT dv.Id, 1 AS [Count], MAX(c.[Campuses]) AS [Campuses]
+                FROM DefinedValue dv
+                CROSS JOIN (
+                    SELECT convert(nvarchar(36), c.[Guid]) AS [Campuses]
+                    FROM Person p
+                    JOIN Campus c ON c.Id = p.PrimaryCampusId
+                    WHERE p.Id = '+ @personId +'
+                ) AS c
+                WHERE dv.DefinedTypeId = 495 AND dv.IsActive = 1
+                GROUP BY dv.Id
+            ) a ON a.Id = dv.Id
+            WHERE dv.DefinedTypeId = 495 AND dv.IsActive = 1
+        ) AS sourceTable
+        PIVOT (
+            SUM(sourceTable.[Count])
+            FOR sourceTable.[Value] IN ('+ @columns +')
+        ) AS pt;';
+
+        EXECUTE sp_executesql @sql;
+    END
+    ELSE
+    BEGIN
+        -- dynamic sql
+        SET @sql = '
+        SELECT TOP 1 '+ @aggColumns +', STRING_AGG(Campuses, '','') AS Campuses
+        FROM (
+            SELECT dv.[Value], a.[Count], a.Campuses
+            FROM DefinedValue dv
+            LEFT JOIN (
+                SELECT dv.Id, COUNT(gm.Id) AS [Count], STRING_AGG(convert(nvarchar(36), c.Guid), '','') AS [Campuses]
+                FROM GroupMember gm
+                JOIN [Group] g ON g.Id = gm.GroupId
+                JOIN AttributeValue av ON CHARINDEX('','' + CAST(gm.GroupTypeId AS NVARCHAR(255)) + '','', '','' + av.[Value] + '','') > 0 AND av.AttributeId = 123094
+                JOIN DefinedValue dv ON dv.Id = av.EntityId AND dv.IsActive = 1
+                LEFT JOIN Campus c ON c.Id = g.CampusId
+                WHERE gm.PersonId = '+ @personId +'
+                    AND gm.GroupMemberStatus != 0 AND gm.IsArchived = 0
+                    AND g.IsActive = 1 AND g.IsArchived = 0
+                GROUP BY dv.Id
+            ) a ON a.Id = dv.Id
+            WHERE dv.DefinedTypeId = 495 AND dv.IsActive = 1
+        ) AS sourceTable
+        Pivot (
+            SUM(sourceTable.[Count])
+            FOR sourceTable.[Value] IN ('+ @columns +')
+        ) AS pt;';
+
+        EXECUTE sp_executesql @sql;
+    END
+{% endsql %}
+
+{% assign roleCount = roles | Size %}
+{% assign role = roles | First %}
+{% assign itemCount = 0 %}
+
+<div id="channelHeader">
+    <div class="row">
+        <div class="col-xs-12" style="text-align:center;">
+            <img src="/content/LPKidsLeaderNews/LPKidsLogo.png" style="width: 50%;" alt="LPKids_Logo_Color.png"/>
+        </div>
+        <div class="col-xs-12">
+            <h2 style="text-align:center;">Welcome to the LPKids Leader News Portal</h2>
+        </div>
+    </div>
+</div>
+
+<div class="spacer"></div>
+
+<!-- Campus -->
+{% assign campuses = '' %}
+{% assign campuses = role | Property:'Campuses' %}
+{% if campuses != null and campuses != '' %}{% assign isServing = true %}{% else %}{% assign isServing = false %}{% endif %}
+
+{% if isServing %}
+    {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' campuses:'{{ campuses }}' return:'Items' %}
+        SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+            image.Value AS [Image], video.Value AS [Video], (
+                SELECT c.[Name]
+                FROM (
+                SELECT TOP 1 [Value]
+                FROM STRING_SPLIT(campuses.Value, ',')
+                INTERSECT
+                SELECT [Value]
+                FROM STRING_SPLIT(@campuses, ',')
+                ) AS a
+                JOIN Campus c ON c.[Guid] = a.[Value]
+            ) AS FirstApplicableCampus
+        FROM [ContentChannelItem] cci
+        JOIN [AttributeValue] campuses ON campuses.EntityId = cci.Id AND campuses.AttributeId = 88709
+        LEFT JOIN [AttributeValue] image ON image.EntityId = cci.Id AND image.AttributeId = 88710
+        LEFT JOIN [AttributeValue] video ON video.EntityId = cci.Id AND video.AttributeId = 88711
+        WHERE cci.ContentChannelId = 67
+            AND (StartDateTime IS NULL OR StartDateTime <= @now)
+            AND (ExpireDateTime IS NULL OR ExpireDateTime >= @now)
+            AND EXISTS (
+                SELECT [value]
+                FROM STRING_SPLIT(campuses.Value, ',')
+                INTERSECT
+                SELECT [value]
+                FROM STRING_SPLIT(@campuses, ',')
+            )
+        ORDER BY (
+                SELECT TOP 1 [value]
+                FROM STRING_SPLIT(campuses.Value, ',')
+                INTERSECT
+                SELECT [value]
+                FROM STRING_SPLIT(@campuses, ',')
+            ), cci.Priority, cci.StartDateTime
+    {% endsql %}
+
+    {% assign itemcount = Items | Size %}
+    {% assign previousCampus = '' %}
+
+    {% for item in Items %}
+        {% if previousCampus != item.FirstApplicableCampus %}
+            {% assign previousCampus = item.FirstApplicableCampus %}
+            <h2>{{ item.FirstApplicableCampus }}</h2>
+        {% endif %}
+
+        {% assign itemCount = itemCount | Plus:1 %}
+        {% assign x = 0 %}
+        {% if item.Video and item.Video != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Image and item.Image != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Content and item.Content != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% case x %}
+            {% when 1 %}{% assign cw = 'col-md-12' %}
+            {% when 2 %}{% assign cw = 'col-md-6' %}
+            {% when 3 %}{% assign cw = 'col-md-4' %}
+            {% else %}{% assign cw = '' %}
+        {% endcase %}
+        {% if cw != '' %}
+            <div class="contentItem row" >
+            {% if item.Video and item.Video != '' %}
+                <div class='{{ cw }}' style="text-align:center;">
+                    <div class="video" style="--aspect-ratio: 16/9;">
+                        <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                    </div>
+                </div>
+            {% endif %}
+            {% if item.Content and item.Content != '' %}
+                <div class='{{ cw }}'>
+                    {{ item.Content }}
+                </div>
+            {% endif %}
+            {% if item.Image and item.Image != '' %}
+                <div class='{{ cw }}' style="text-align:center;">
+                    <img src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?Guid={{ item.Image }}" style="width: 100%;">
+                </div>
+            {% endif %}
+            </div>
+        {% endif %}
+        <div class="spacer"></div>
+    {% endfor %}
+{% endif %}
+
+<!-- Central -->
+{% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+    SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+		image.Value AS [Image], video.Value AS [Video],
+		(
+			CASE
+				WHEN curricula.Value = '' THEN ''
+				ELSE
+				(
+					SELECT STRING_AGG(dv.[Value], ', ') AS list
+					FROM STRING_SPLIT(curricula.Value, ',') AS curriculaDVGuid
+					JOIN [DefinedValue] dv ON dv.[Guid] = curriculaDVGuid.value
+				)
+			END
+		) AS [Curricula]
+    FROM [ContentChannelItem] cci
+    LEFT JOIN [AttributeValue] image ON image.EntityId = cci.Id AND image.AttributeId = 88736
+    LEFT JOIN [AttributeValue] video ON video.EntityId = cci.Id AND video.AttributeId = 88735
+    LEFT JOIN [AttributeValue] curricula ON curricula.EntityId = cci.Id AND curricula.AttributeId = 93358
+    WHERE cci.ContentChannelId = 66
+        AND (StartDateTime IS NULL OR StartDateTime <= @now)
+        AND (ExpireDateTime IS NULL OR ExpireDateTime >= @now)
+    ORDER BY cci.Priority, cci.StartDateTime
+{% endsql %}
+
+{% for item in Items %}
+    {% assign contentAudienceRaw = item.Curricula | Trim %}
+    {% assign contentAudienceSize = contentAudienceRaw | Size %}
+    {% if contentAudienceSize == 0 %}
+        {% assign isInAudience = true %}
+    {% else %}
+        {% assign contentAudiences = contentAudienceRaw | Replace:', ',',' | Split:','  %}
+        {% assign contentAudienceCount = contentAudiences | Size %}
+        {% if contentAudienceCount == 0 %}
+            {% assign isInAudience = true %}
+        {% elseif roleCount == 0 %}
+            {% assign isInAudience = false %}
+        {% else %}
+            {% assign isInAudience = false %}
+            {% for contentAudience in contentAudiences %}
+                {% assign x = role | Property:contentAudience %}
+                {% if x > 0 %}
+                    {% assign isInAudience = true %}
+                {% endif %}
+                {% if isInAudience %}
+                    {% break %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endif %}
+
+    {% if isInAudience %}
+        {% assign itemCount = itemCount | Plus:1 %}
+        {% assign x = 0 %}
+        {% if item.Video and item.Video != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Image and item.Image != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Content and item.Content != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% case x %}
+            {% when 1 %}{% assign cw = 'col-md-12' %}
+            {% when 2 %}{% assign cw = 'col-md-6' %}
+            {% when 3 %}{% assign cw = 'col-md-4' %}
+            {% else %}{% assign cw = '' %}
+        {% endcase %}
+        {% if cw != '' %}
+            <div class="contentItem row" >
+            {% if item.Video and item.Video != '' %}
+                <div class='{{ cw }}' style="text-align:center;">
+                <div class="video" style="--aspect-ratio: 16/9;">
+                <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                </div>
+                </div>
+            {% endif %}
+            {% if item.Content and item.Content != '' %}
+                <div class='{{ cw }}'>
+                    {{ item.Content }}
+                </div>
+            {% endif %}
+            {% if item.Image and item.Image != '' %}
+                <div class='{{ cw }}' style="text-align:center;">
+                    <img src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?Guid={{ item.Image }}" style="width: 100%;">
+                </div>
+            {% endif %}
+            </div>
+        {% endif %}
+        <div class="spacer"></div>
+    {% endif %}
+{% endfor %}
+
+<!-- Preschool -->
+{% assign isServing = false %}
+{% assign count = role | Property:'Preschool' %}
+{% if count > 0 %}{% assign isServing = true %}{% else %}{% assign isServing = false %}{% endif %}
+
+{% if isServing %}
+    {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+        SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+            monthlyToddlerLesson.Value as [MonthlyToddlerLesson],
+            lesson1.Value as [Lesson1],
+            lesson2.Value as [Lesson2],
+            lesson3.Value as [Lesson3],
+            lesson4.Value as [Lesson4],
+            lesson5.Value as [Lesson5],
+            video1.Value as [Video1],
+            video2.Value as [Video2],
+            video3.Value as [Video3],
+            video4.Value as [Video4],
+            video5.Value as [Video5]
+        FROM [ContentChannelItem] cci
+        LEFT JOIN [AttributeValue] monthlyToddlerLesson ON monthlyToddlerLesson.EntityId = cci.Id AND monthlyToddlerLesson.AttributeId = 123238
+        LEFT JOIN [AttributeValue] lesson1 ON lesson1.EntityId = cci.Id AND lesson1.AttributeId = 123239
+        LEFT JOIN [AttributeValue] lesson2 ON lesson2.EntityId = cci.Id AND lesson2.AttributeId = 123240
+        LEFT JOIN [AttributeValue] lesson3 ON lesson3.EntityId = cci.Id AND lesson3.AttributeId = 123241
+        LEFT JOIN [AttributeValue] lesson4 ON lesson4.EntityId = cci.Id AND lesson4.AttributeId = 123242
+        LEFT JOIN [AttributeValue] lesson5 ON lesson5.EntityId = cci.Id AND lesson5.AttributeId = 123243
+        LEFT JOIN [AttributeValue] video1 ON video1.EntityId = cci.Id AND video1.AttributeId = 123244
+        LEFT JOIN [AttributeValue] video2 ON video2.EntityId = cci.Id AND video2.AttributeId = 123245
+        LEFT JOIN [AttributeValue] video3 ON video3.EntityId = cci.Id AND video3.AttributeId = 123246
+        LEFT JOIN [AttributeValue] video4 ON video4.EntityId = cci.Id AND video4.AttributeId = 123247
+        LEFT JOIN [AttributeValue] video5 ON video5.EntityId = cci.Id AND video5.AttributeId = 123248
+        WHERE cci.ContentChannelId = 112
+            AND (StartDateTime IS NULL OR StartDateTime <= @now)
+            AND (ExpireDateTime IS NULL OR ExpireDateTime >= @now)
+        ORDER BY cci.Priority, cci.StartDateTime
+    {% endsql %}
+
+    {% assign preschoolItemCount = Items | Size %}
+    {% if preschoolItemCount > 0 %}
+        <h2>Preschool</h2>
+    {% endif %}
+
+    {% for item in Items %}
+        {% assign itemCount = itemCount | Plus:1 %}
+        <div class="contentItem" >
+            <div class="row">
+                <div class="col-md-12">
+                    {{ item.Content }}
+                </div>
+            </div>
+
+            {% if item.MonthlyToddlerLesson and item.MonthlyToddlerLesson != '' %}
+                <div class="row">
+                    <h3>Toddler Lesson</h3>
+                    <div class="col-xs-12">
+                        <p style="width: 50%; margin: auto;"><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.MonthlyToddlerLesson }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Toddler Lesson</a></p>
+                    </div>
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+
+            <div class="row">
+            {% assign isVideo1 = item.Video1 and item.Video1 != '' %}
+            {% assign isLesson1 = item.Lesson1 and item.Lesson1 != '' %}
+            {% if isVideo1 or isLesson1 %}
+                <div class="col-md-6">
+                    <h3>Week 1</h3>
+                    {% if isVideo1 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video1 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson1 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Preschool Lesson Week 1</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo2 = item.Video2 and item.Video2 != '' %}
+            {% assign isLesson2 = item.Lesson2 and item.Lesson2 != '' %}
+            {% if isVideo2 or isLesson2 %}
+                <div class="col-md-6">
+                    <h3>Week 2</h3>
+                    {% if isVideo2 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video2 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson2 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Preschool Lesson Week 2</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo3 = item.Video3 and item.Video3 != '' %}
+            {% assign isLesson3 = item.Lesson3 and item.Lesson3 != '' %}
+            {% if isVideo3 or isLesson3 %}
+                <div class="col-md-6">
+                    <h3>Week 3</h3>
+                    {% if isVideo3 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video3 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson3 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Preschool Lesson Week 3</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo4 = item.Video4 and item.Video4 != '' %}
+            {% assign isLesson4 = item.Lesson4 and item.Lesson4 != '' %}
+            {% if isVideo4 or isLesson4 %}
+                <div class="col-md-6">
+                    <h3>Week 4</h3>
+                    {% if isVideo4 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video4 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson4 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Preschool Lesson Week 4</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo5 = item.Video5 and item.Video5 != '' %}
+            {% assign isLesson5 = item.Lesson5 and item.Lesson5 != '' %}
+            {% if isVideo5 or isLesson5 %}
+                <div class="col-md-6">
+                    <h3>Week 5</h3>
+                    {% if isVideo5 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video5 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson5 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Preschool Lesson Week 5</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+            </div>
+            <div class="spacer"></div>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Studio -->
+{% assign isServing = false %}
+{% assign count = role | Property:'Studio' %}
+{% if count > 0 %}{% assign isServing = true %}{% else %}{% assign isServing = false %}{% endif %}
+
+{% if isServing %}
+    {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+        SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+            lesson1.Value as [Lesson1],
+            lesson2.Value as [Lesson2],
+            lesson3.Value as [Lesson3],
+            lesson4.Value as [Lesson4],
+            lesson5.Value as [Lesson5],
+            video1.Value as [Video1],
+            video2.Value as [Video2],
+            video3.Value as [Video3],
+            video4.Value as [Video4],
+            video5.Value as [Video5],
+            musicVideo1.Value as [MusicVideo1],
+            musicVideo2.Value as [MusicVideo2]
+        FROM [ContentChannelItem] cci
+        LEFT JOIN [AttributeValue] lesson1 ON lesson1.EntityId = cci.Id AND lesson1.AttributeId = 123249
+        LEFT JOIN [AttributeValue] lesson2 ON lesson2.EntityId = cci.Id AND lesson2.AttributeId = 123250
+        LEFT JOIN [AttributeValue] lesson3 ON lesson3.EntityId = cci.Id AND lesson3.AttributeId = 123251
+        LEFT JOIN [AttributeValue] lesson4 ON lesson4.EntityId = cci.Id AND lesson4.AttributeId = 123252
+        LEFT JOIN [AttributeValue] lesson5 ON lesson5.EntityId = cci.Id AND lesson5.AttributeId = 123253
+        LEFT JOIN [AttributeValue] video1 ON video1.EntityId = cci.Id AND video1.AttributeId = 123254
+        LEFT JOIN [AttributeValue] video2 ON video2.EntityId = cci.Id AND video2.AttributeId = 123255
+        LEFT JOIN [AttributeValue] video3 ON video3.EntityId = cci.Id AND video3.AttributeId = 123256
+        LEFT JOIN [AttributeValue] video4 ON video4.EntityId = cci.Id AND video4.AttributeId = 123257
+        LEFT JOIN [AttributeValue] video5 ON video5.EntityId = cci.Id AND video5.AttributeId = 123258
+        LEFT JOIN [AttributeValue] musicVideo1 ON musicVideo1.EntityId = cci.Id AND musicVideo1.AttributeId = 123259
+        LEFT JOIN [AttributeValue] musicVideo2 ON musicVideo2.EntityId = cci.Id AND musicVideo2.AttributeId = 123260
+        WHERE cci.ContentChannelId = 113
+            AND (StartDateTime IS NULL OR StartDateTime <= @now)
+            AND (ExpireDateTime IS NULL OR ExpireDateTime >= @now)
+        ORDER BY cci.Priority, cci.StartDateTime
+    {% endsql %}
+
+    {% for item in Items %}
+        {% if forloop.first %}
+            <h2>Studio</h2>
+        {% endif %}
+
+        {% assign itemCount = itemCount | Plus:1 %}
+        <div class="contentItem" >
+            <div class="row">
+                <div class="col-md-12">
+                    {{ item.Content }}
+                </div>
+            </div>
+
+            <div class="row">
+            {% assign isVideo1 = item.Video1 and item.Video1 != '' %}
+            {% assign isLesson1 = item.Lesson1 and item.Lesson1 != '' %}
+            {% if isVideo1 or isLesson1 %}
+                <div class="col-md-6">
+                    <h3>Week 1</h3>
+                    {% if isVideo1 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video1 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson1 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Studio Lesson Week 1</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo2 = item.Video2 and item.Video2 != '' %}
+            {% assign isLesson2 = item.Lesson2 and item.Lesson2 != '' %}
+            {% if isVideo2 or isLesson2 %}
+                <div class="col-md-6">
+                    <h3>Week 2</h3>
+                    {% if isVideo2 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video2 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson2 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Studio Lesson Week 2</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo3 = item.Video3 and item.Video3 != '' %}
+            {% assign isLesson3 = item.Lesson3 and item.Lesson3 != '' %}
+            {% if isVideo3 or isLesson3 %}
+                <div class="col-md-6">
+                    <h3>Week 3</h3>
+                    {% if isVideo3 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video3 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson3 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Studio Lesson Week 3</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo4 = item.Video4 and item.Video4 != '' %}
+            {% assign isLesson4 = item.Lesson4 and item.Lesson4 != '' %}
+            {% if isVideo4 or isLesson4 %}
+                <div class="col-md-6">
+                    <h3>Week 4</h3>
+                    {% if isVideo4 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video4 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson4 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Studio Lesson Week 4</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo5 = item.Video5 and item.Video5 != '' %}
+            {% assign isLesson5 = item.Lesson5 and item.Lesson5 != '' %}
+            {% if isVideo5 or isLesson5 %}
+                <div class="col-md-6">
+                    <h3>Week 5</h3>
+                    {% if isVideo5 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video5 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                            </div>
+                    {% endif %}
+                    {% if isLesson5 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Studio Lesson Week 5</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+            </div>
+            <div class="spacer"></div>
+
+            {% assign isMusicVideo1 = item.MusicVideo1 and item.MusicVideo1 != '' %}
+            {% assign isMusicVideo2 = item.MusicVideo2 and item.MusicVideo2 != '' %}
+            {% if isMusicVideo1 or isMusicVideo2 %}
+                <div class="row">
+                    <h3>Music Videos</h3>
+                    {% if isMusicVideo1 %}
+                        <div class="col-md-6">
+                            <div class="video" style="--aspect-ratio: 16/9;">
+                                <iframe src="//fast.wistia.net/embed/iframe/{{ item.MusicVideo1 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if isMusicVideo2 %}
+                        <div class="col-md-6">
+                            <div class="video" style="--aspect-ratio: 16/9;">
+                                <iframe src="//fast.wistia.net/embed/iframe/{{ item.MusicVideo2 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Warehouse 45 -->
+{% assign isServing = false %}
+{% assign count = role | Property:'Warehouse 45' %}
+{% if count > 0 %}{% assign isServing = true %}{% else %}{% assign isServing = false %}{% endif %}
+
+{% if isServing %}
+    {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+        SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+            lgLesson1.Value as [LGLesson1],
+            lgLesson2.Value as [LGLesson2],
+            lgLesson3.Value as [LGLesson3],
+            lgLesson4.Value as [LGLesson4],
+            lgLesson5.Value as [LGLesson5],
+            sgLesson1.Value as [SGLesson1],
+            sgLesson2.Value as [SGLesson2],
+            sgLesson3.Value as [SGLesson3],
+            sgLesson4.Value as [SGLesson4],
+            sgLesson5.Value as [SGLesson5]
+        FROM [ContentChannelItem] cci
+        LEFT JOIN [AttributeValue] lgLesson1 ON lgLesson1.EntityId = cci.Id AND lgLesson1.AttributeId = 123261
+        LEFT JOIN [AttributeValue] lgLesson2 ON lgLesson2.EntityId = cci.Id AND lgLesson2.AttributeId = 123262
+        LEFT JOIN [AttributeValue] lgLesson3 ON lgLesson3.EntityId = cci.Id AND lgLesson3.AttributeId = 123263
+        LEFT JOIN [AttributeValue] lgLesson4 ON lgLesson4.EntityId = cci.Id AND lgLesson4.AttributeId = 123264
+        LEFT JOIN [AttributeValue] lgLesson5 ON lgLesson5.EntityId = cci.Id AND lgLesson5.AttributeId = 123265
+        LEFT JOIN [AttributeValue] sgLesson1 ON sgLesson1.EntityId = cci.Id AND sgLesson1.AttributeId = 123266
+        LEFT JOIN [AttributeValue] sgLesson2 ON sgLesson2.EntityId = cci.Id AND sgLesson2.AttributeId = 123267
+        LEFT JOIN [AttributeValue] sgLesson3 ON sgLesson3.EntityId = cci.Id AND sgLesson3.AttributeId = 123268
+        LEFT JOIN [AttributeValue] sgLesson4 ON sgLesson4.EntityId = cci.Id AND sgLesson4.AttributeId = 123269
+        LEFT JOIN [AttributeValue] sgLesson5 ON sgLesson5.EntityId = cci.Id AND sgLesson5.AttributeId = 123270
+        WHERE cci.ContentChannelId = 114
+            AND (StartDateTime IS NULL OR StartDateTime <= @now)
+            AND (ExpireDateTime IS NULL OR ExpireDateTime >= @now)
+        ORDER BY cci.Priority, cci.StartDateTime
+    {% endsql %}
+
+    {% for item in Items %}
+        {% if forloop.first %}
+            <h2>Warehouse 45</h2>
+        {% endif %}
+
+        {% assign itemCount = itemCount | Plus:1 %}
+        <div class="contentItem" >
+            <div class="row">
+                <div class="col-md-12">
+                    {{ item.Content }}
+                </div>
+            </div>
+
+            {% assign isLGLesson1 = item.LGLesson1 and item.LGLesson1 != '' %}
+            {% assign isSGLesson1 = item.SGLesson1 and item.SGLesson1 != '' %}
+            {% if isLGLesson1 or isSGLesson1 %}
+                <div class="row">
+                    <h3>Week 1</h3>
+                    {% if isLGLesson1 %}
+                        <div class="col-md-6">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.LGLesson1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Large Group Lesson Week 1</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isSGLesson1 %}
+                        <div class="col-md-6">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.SGLesson1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Small Group Lesson Week 1</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+
+            {% assign isLGLesson2 = item.LGLesson2 and item.LGLesson2 != '' %}
+            {% assign isSGLesson2 = item.SGLesson2 and item.SGLesson2 != '' %}
+            {% if isLGLesson2 or isSGLesson2 %}
+                <div class="row">
+                    <h3>Week 2</h3>
+                    {% if isLGLesson2 %}
+                        <div class="col-md-6">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.LGLesson2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Large Group Lesson Week 2</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isSGLesson2 %}
+                        <div class="col-md-6">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.SGLesson2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Small Group Lesson Week 2</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+
+            {% assign isLGLesson3 = item.LGLesson3 and item.LGLesson3 != '' %}
+            {% assign isSGLesson3 = item.SGLesson3 and item.SGLesson3 != '' %}
+            {% if isLGLesson3 or isSGLesson3 %}
+                <div class="row">
+                    <h3>Week 3</h3>
+                    {% if isLGLesson3 %}
+                        <div class="col-md-6">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.LGLesson3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Large Group Lesson Week 3</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isSGLesson3 %}
+                        <div class="col-md-6">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.SGLesson3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Small Group Lesson Week 3</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+
+            {% assign isLGLesson4 = item.LGLesson4 and item.LGLesson4 != '' %}
+            {% assign isSGLesson4 = item.SGLesson4 and item.SGLesson4 != '' %}
+            {% if isLGLesson4 or isSGLesson4 %}
+                <div class="row">
+                    <h3>Week 4</h3>
+                    {% if isLGLesson4 %}
+                        <div class="col-md-6">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.LGLesson4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Large Group Lesson Week 4</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isSGLesson4 %}
+                        <div class="col-md-6">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.SGLesson4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Small Group Lesson Week 4</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+
+            {% assign isLGLesson5 = item.LGLesson5 and item.LGLesson5 != '' %}
+            {% assign isSGLesson5 = item.SGLesson5 and item.SGLesson5 != '' %}
+            {% if isLGLesson5 or isSGLesson5 %}
+                <div class="row">
+                    <h3>Week 5</h3>
+                    {% if isLGLesson5 %}
+                        <div class="col-md-6">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.LGLesson5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Large Group Lesson Week 5</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isSGLesson5 %}
+                        <div class="col-md-6">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.SGLesson5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Small Group Lesson Week 5</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Kid Zone -->
+{% assign isServing = false %}
+{% assign count = role | Property:'Kid Zone' %}
+{% if count > 0 %}{% assign isServing = true %}{% else %}{% assign isServing = false %}{% endif %}
+
+{% if isServing %}
+    {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+        SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+            lesson1.Value as [Lesson1],
+            lesson2.Value as [Lesson2],
+            lesson3.Value as [Lesson3],
+            lesson4.Value as [Lesson4],
+            lesson5.Value as [Lesson5],
+            video1.Value as [Video1],
+            video2.Value as [Video2],
+            video3.Value as [Video3],
+            video4.Value as [Video4],
+            video5.Value as [Video5]
+        FROM [ContentChannelItem] cci
+        LEFT JOIN [AttributeValue] lesson1 ON lesson1.EntityId = cci.Id AND lesson1.AttributeId = 123272
+        LEFT JOIN [AttributeValue] lesson2 ON lesson2.EntityId = cci.Id AND lesson2.AttributeId = 123273
+        LEFT JOIN [AttributeValue] lesson3 ON lesson3.EntityId = cci.Id AND lesson3.AttributeId = 123274
+        LEFT JOIN [AttributeValue] lesson4 ON lesson4.EntityId = cci.Id AND lesson4.AttributeId = 123275
+        LEFT JOIN [AttributeValue] lesson5 ON lesson5.EntityId = cci.Id AND lesson5.AttributeId = 123276
+        LEFT JOIN [AttributeValue] video1 ON video1.EntityId = cci.Id AND video1.AttributeId = 123277
+        LEFT JOIN [AttributeValue] video2 ON video2.EntityId = cci.Id AND video2.AttributeId = 123278
+        LEFT JOIN [AttributeValue] video3 ON video3.EntityId = cci.Id AND video3.AttributeId = 123279
+        LEFT JOIN [AttributeValue] video4 ON video4.EntityId = cci.Id AND video4.AttributeId = 123280
+        LEFT JOIN [AttributeValue] video5 ON video5.EntityId = cci.Id AND video5.AttributeId = 123281
+        WHERE cci.ContentChannelId = 115
+            AND (StartDateTime IS NULL OR StartDateTime <= @now)
+            AND (ExpireDateTime IS NULL OR ExpireDateTime >= @now)
+        ORDER BY cci.Priority, cci.StartDateTime
+    {% endsql %}
+
+    {% for item in Items %}
+        {% if forloop.first %}
+            <h2>Kid Zone</h2>
+        {% endif %}
+
+        {% assign itemCount = itemCount | Plus:1 %}
+        <div class="contentItem" >
+            <div class="row">
+                <div class="col-md-12">
+                    {{ item.Content }}
+                </div>
+            </div>
+
+            <div class="row">
+            {% assign isVideo1 = item.Video1 and item.Video1 != '' %}
+            {% assign isLesson1 = item.Lesson1 and item.Lesson1 != '' %}
+            {% if isVideo1 or isLesson1 %}
+                <div class="col-md-6">
+                    <h3>Week 1</h3>
+                    {% if isVideo1 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video1 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson1 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Kid Zone Lesson Week 1</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo2 = item.Video2 and item.Video2 != '' %}
+            {% assign isLesson2 = item.Lesson2 and item.Lesson2 != '' %}
+            {% if isVideo2 or isLesson2 %}
+                <div class="col-md-6">
+                    <h3>Week 2</h3>
+                    {% if isVideo2 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video2 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson2 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Kid Zone Lesson Week 2</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo3 = item.Video3 and item.Video3 != '' %}
+            {% assign isLesson3 = item.Lesson3 and item.Lesson3 != '' %}
+            {% if isVideo3 or isLesson3 %}
+                <div class="col-md-6">
+                    <h3>Week 3</h3>
+                    {% if isVideo3 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video3 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson3 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Kid Zone Lesson Week 3</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo4 = item.Video4 and item.Video4 != '' %}
+            {% assign isLesson4 = item.Lesson4 and item.Lesson4 != '' %}
+            {% if isVideo4 or isLesson4 %}
+                <div class="col-md-6">
+                    <h3>Week 4</h3>
+                    {% if isVideo4 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video4 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson4 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Kid Zone Lesson Week 4</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% assign isVideo5 = item.Video5 and item.Video5 != '' %}
+            {% assign isLesson5 = item.Lesson5 and item.Lesson5 != '' %}
+            {% if isVideo5 or isLesson5 %}
+                <div class="col-md-6">
+                    <h3>Week 5</h3>
+                    {% if isVideo5 %}
+                        <div class="video" style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video5 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    {% endif %}
+                    {% if isLesson5 %}
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Kid Zone Lesson Week 5</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+            </div>
+            <div class="spacer"></div>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Special Needs -->
+{% assign isServing = false %}
+{% assign count = role | Property:'Special Needs' %}
+{% if count > 0 %}{% assign isServing = true %}{% else %}{% assign isServing = false %}{% endif %}
+
+{% if isServing %}
+    {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+        SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+            soarLesson1.Value as [SoarLesson1],
+            soarLesson2.Value as [SoarLesson2],
+            soarLesson3.Value as [SoarLesson3],
+            soarLesson4.Value as [SoarLesson4],
+            soarLesson5.Value as [SoarLesson5],
+            exploreLesson1.Value as [ExploreLesson1],
+            exploreLesson2.Value as [ExploreLesson2],
+            exploreLesson3.Value as [ExploreLesson3],
+            exploreLesson4.Value as [ExploreLesson4],
+            exploreLesson5.Value as [ExploreLesson5],
+            adultLesson1.Value as [AdultLesson1],
+            adultLesson2.Value as [AdultLesson2],
+            adultLesson3.Value as [AdultLesson3],
+            adultLesson4.Value as [AdultLesson4],
+            adultLesson5.Value as [AdultLesson5]
+        FROM [ContentChannelItem] cci
+        LEFT JOIN [AttributeValue] soarLesson1 ON soarLesson1.EntityId = cci.Id AND soarLesson1.AttributeId = 123282
+        LEFT JOIN [AttributeValue] soarLesson2 ON soarLesson2.EntityId = cci.Id AND soarLesson2.AttributeId = 123283
+        LEFT JOIN [AttributeValue] soarLesson3 ON soarLesson3.EntityId = cci.Id AND soarLesson3.AttributeId = 123284
+        LEFT JOIN [AttributeValue] soarLesson4 ON soarLesson4.EntityId = cci.Id AND soarLesson4.AttributeId = 123285
+        LEFT JOIN [AttributeValue] soarLesson5 ON soarLesson5.EntityId = cci.Id AND soarLesson5.AttributeId = 123286
+        LEFT JOIN [AttributeValue] exploreLesson1 ON exploreLesson1.EntityId = cci.Id AND exploreLesson1.AttributeId = 123287
+        LEFT JOIN [AttributeValue] exploreLesson2 ON exploreLesson2.EntityId = cci.Id AND exploreLesson2.AttributeId = 123288
+        LEFT JOIN [AttributeValue] exploreLesson3 ON exploreLesson3.EntityId = cci.Id AND exploreLesson3.AttributeId = 123289
+        LEFT JOIN [AttributeValue] exploreLesson4 ON exploreLesson4.EntityId = cci.Id AND exploreLesson4.AttributeId = 123290
+        LEFT JOIN [AttributeValue] exploreLesson5 ON exploreLesson5.EntityId = cci.Id AND exploreLesson5.AttributeId = 123291
+        LEFT JOIN [AttributeValue] adultLesson1 ON adultLesson1.EntityId = cci.Id AND adultLesson1.AttributeId = 123292
+        LEFT JOIN [AttributeValue] adultLesson2 ON adultLesson2.EntityId = cci.Id AND adultLesson2.AttributeId = 123293
+        LEFT JOIN [AttributeValue] adultLesson3 ON adultLesson3.EntityId = cci.Id AND adultLesson3.AttributeId = 123294
+        LEFT JOIN [AttributeValue] adultLesson4 ON adultLesson4.EntityId = cci.Id AND adultLesson4.AttributeId = 123295
+        LEFT JOIN [AttributeValue] adultLesson5 ON adultLesson5.EntityId = cci.Id AND adultLesson5.AttributeId = 123296
+
+        WHERE cci.ContentChannelId = 116
+            AND (StartDateTime IS NULL OR StartDateTime <= @now)
+            AND (ExpireDateTime IS NULL OR ExpireDateTime >= @now)
+        ORDER BY cci.Priority, cci.StartDateTime
+    {% endsql %}
+
+    {% for item in Items %}
+        {% if forloop.first %}
+            <h2>Special Needs</h2>
+        {% endif %}
+
+        {% assign itemCount = itemCount | Plus:1 %}
+        <div class="contentItem" >
+            <div class="row">
+                <div class="col-md-12">
+                    {{ item.Content }}
+                </div>
+            </div>
+
+            {% assign isSoarLesson1 = item.SoarLesson1 and item.SoarLesson1 != '' %}
+            {% assign isExploreLesson1 = item.ExploreLesson1 and item.ExploreLesson1 != '' %}
+            {% assign isAdultLesson1 = item.AdultLesson1 and item.AdultLesson1 != '' %}
+            {% if isSoarLesson1 or isExploreLesson1 or isAdultLesson1 %}
+                <div class="row">
+                    <h3>Week 1</h3>
+                    {% if isSoarLesson1 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.SoarLesson1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Soar Lesson Week 1</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isExploreLesson1 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.ExploreLesson1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Explore Lesson Week 1</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isAdultLesson1 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.AdultLesson1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Adult Lesson Week 1</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+
+            {% assign isSoarLesson2 = item.SoarLesson2 and item.SoarLesson2 != '' %}
+            {% assign isExploreLesson2 = item.ExploreLesson2 and item.ExploreLesson2 != '' %}
+            {% assign isAdultLesson2 = item.AdultLesson2 and item.AdultLesson2 != '' %}
+            {% if isSoarLesson2 or isExploreLesson2 or isAdultLesson2 %}
+                <div class="row">
+                    <h3>Week 2</h3>
+                    {% if isSoarLesson2 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.SoarLesson2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Soar Lesson Week 2</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isExploreLesson2 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.ExploreLesson2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Explore Lesson Week 2</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isAdultLesson2 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.AdultLesson2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Adult Lesson Week 2</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+
+            {% assign isSoarLesson3 = item.SoarLesson3 and item.SoarLesson3 != '' %}
+            {% assign isExploreLesson3 = item.ExploreLesson3 and item.ExploreLesson3 != '' %}
+            {% assign isAdultLesson3 = item.AdultLesson3 and item.AdultLesson3 != '' %}
+            {% if isSoarLesson3 or isExploreLesson3 or isAdultLesson3 %}
+                <div class="row">
+                    <h3>Week 3</h3>
+                    {% if isSoarLesson3 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.SoarLesson3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Soar Lesson Week 3</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isExploreLesson3 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.ExploreLesson3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Explore Lesson Week 3</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isAdultLesson3 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.AdultLesson3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Adult Lesson Week 3</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+
+            {% assign isSoarLesson4 = item.SoarLesson4 and item.SoarLesson4 != '' %}
+            {% assign isExploreLesson4 = item.ExploreLesson4 and item.ExploreLesson4 != '' %}
+            {% assign isAdultLesson4 = item.AdultLesson4 and item.AdultLesson4 != '' %}
+            {% if isSoarLesson4 or isExploreLesson4 or isAdultLesson4 %}
+                <div class="row">
+                    <h3>Week 4</h3>
+                    {% if isSoarLesson4 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.SoarLesson4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Soar Lesson Week 4</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isExploreLesson4 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.ExploreLesson4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Explore Lesson Week 4</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isAdultLesson4 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.AdultLesson4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Adult Lesson Week 4</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+
+            {% assign isSoarLesson5 = item.SoarLesson5 and item.SoarLesson5 != '' %}
+            {% assign isExploreLesson5 = item.ExploreLesson5 and item.ExploreLesson5 != '' %}
+            {% assign isAdultLesson5 = item.AdultLesson5 and item.AdultLesson5 != '' %}
+            {% if isSoarLesson5 or isExploreLesson5 or isAdultLesson5 %}
+                <div class="row">
+                    <h3>Week 5</h3>
+                    {% if isSoarLesson5 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.SoarLesson5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Soar Lesson Week 5</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isExploreLesson5 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.ExploreLesson5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Explore Lesson Week 5</a></p>
+                        </div>
+                    {% endif %}
+                    {% if isAdultLesson5 %}
+                        <div class="col-md-4">
+                            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.AdultLesson5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Adult Lesson Week 5</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Young Christians -->
+{% assign isServing = false %}
+{% assign count = role | Property:'Young Christians' %}
+{% if count > 0 %}{% assign isServing = true %}{% else %}{% assign isServing = false %}{% endif %}
+
+{% if isServing %}
+    {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+        SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+            v1.Value AS [Video1], v2.Value AS [Video2], l1.Value AS [Lesson1], l2.Value AS [Lesson2], l3.Value AS [Lesson3]
+        FROM [ContentChannelItem] cci
+        LEFT JOIN [AttributeValue] v1 ON v1.EntityId = cci.Id AND v1.AttributeId = 96270
+        LEFT JOIN [AttributeValue] v2 ON v2.EntityId = cci.Id AND v2.AttributeId = 96271
+        LEFT JOIN [AttributeValue] l1 ON l1.EntityId = cci.Id AND l1.AttributeId = 96272
+        LEFT JOIN [AttributeValue] l2 ON l2.EntityId = cci.Id AND l2.AttributeId = 96273
+        LEFT JOIN [AttributeValue] l3 ON l3.EntityId = cci.Id AND l3.AttributeId = 96274
+        WHERE cci.ContentChannelId = 82
+            AND (StartDateTime IS NULL OR StartDateTime <= @now)
+            AND (ExpireDateTime IS NULL OR ExpireDateTime >= @now)
+        ORDER BY cci.Priority, cci.StartDateTime
+    {% endsql %}
+
+    {% for item in Items %}
+        {% if forloop.first %}
+            <h2>Young Christians</h2>
+        {% endif %}
+
+        {% assign itemCount = itemCount | Plus:1 %}
+    <div class="contentItem row" >
+        <div class="col-sm-6" style="text-align:center;">
+        {% if item.Video1 and item.Video1 != '' %}
+            <div class="video" style="--aspect-ratio: 16/9;">
+                <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video1 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+            </div>
+        {% endif %}
+        {% if item.Video2 and item.Video2 != '' %}
+            <div class="video" style="--aspect-ratio: 16/9;">
+                <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video2 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+            </div>
+        {% endif %}
+        </div>
+        <div class="col-sm-6">
+            {{ item.Content }}
+        {% if item.Lesson1 and item.Lesson1 != '' %}
+            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">English Lesson</a></p>
+        {% endif %}
+        {% if item.Lesson2 and item.Lesson2 != '' %}
+            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Spanish Lesson</a></p>
+        {% endif %}
+        {% if item.Lesson3 and item.Lesson3 != '' %}
+            <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Lesson3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Lesson</a></p>
+        {% endif %}
+        </div>
+    </div>
+    <div class="spacer"></div>
+    {% endfor %}
+{% endif %}
+
+<!-- footer -->
+{% if itemCount == 0 %}
+    <h2 style="text-align:center;">No Content is available at this time</h2>
+    <div class="spacer"></div>
+{% endif %}
+
+<div id="channelFooter">
+    <div class="row">
+        <div class="col-xs-12">
+            <h2 style="text-align:center;">Leader Tools</h2>
+            <div id="tools">
+                <a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/2804" class="btn btn-primary">
+                    <div class="toolIcon"><i class="far fa-sign-out"></i></div>
+                    Gonna be out
+                </a>
+                <a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/3313?Campus={{ CurrentPerson.PrimaryCampus.Guid }}" class="btn btn-primary">
+                    <div class="toolIcon"><i class="far fa-book-user"></i></div>
+                    Staff Contacts
+                </a>
+                <a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/3312" class="btn btn-primary">
+                    <div class="toolIcon"><i class="far fa-feather-alt"></i></div>
+                    Curriculum Feedback
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="//fast.wistia.net/assets/external/E-v1.js" async></script>
+</div>

@@ -92,7 +92,9 @@ export function toCurrencyOrNull(value?: string | number | null): string | null 
  * Ex: 1 => 1st
  * @param num
  */
-export function toOrdinalSuffix(num?: number | null): string {
+// MODIFIED LPC CODE
+export function toOrdinalSuffix(num?: number | null, language = "en"): string {
+// END MODIFIED LPC CODE
     if (!num) {
         return "";
     }
@@ -100,6 +102,21 @@ export function toOrdinalSuffix(num?: number | null): string {
     const j = num % 10;
     const k = num % 100;
 
+    // LPC CODE
+    if (language == "es") {
+        if (j == 1 && k != 11) {
+            return num + "º";
+        }
+        if (j == 2 && k != 12) {
+            return num + "o";
+        }
+        if (j == 3 && k != 13) {
+            return num + "ro";
+        }
+        return num + "mo";
+    }
+    else {
+    // END LPC CODE
     if (j == 1 && k != 11) {
         return num + "st";
     }
@@ -110,6 +127,9 @@ export function toOrdinalSuffix(num?: number | null): string {
         return num + "rd";
     }
     return num + "th";
+    //LPC CODE
+    }
+    // END LPC CODE
 }
 
 /**
@@ -117,11 +137,31 @@ export function toOrdinalSuffix(num?: number | null): string {
  * Ex: 1 => first
  * @param num
  */
-export function toOrdinal(num?: number | null): string {
+// MODIFIED LPC CODE
+export function toOrdinal(num?: number | null, language = "en"): string {
+// END MODIFIED LPC CODE
     if (!num) {
         return "";
     }
 
+    // LPC CODE
+    if (language == "es") {
+        switch (num) {
+            case 1: return "primera";
+            case 2: return "segunda";
+            case 3: return "tercera";
+            case 4: return "cuarta";
+            case 5: return "quinta";
+            case 6: return "sexta";
+            case 7: return "séptima";
+            case 8: return "octava";
+            case 9: return "novena";
+            case 10: return "décima";
+            default: return toOrdinalSuffix(num, "es");
+        }
+    }
+    else {
+    // END LPC CODE
     switch (num) {
         case 1: return "first";
         case 2: return "second";
@@ -134,6 +174,9 @@ export function toOrdinal(num?: number | null): string {
         case 9: return "ninth";
         case 10: return "tenth";
         default: return toOrdinalSuffix(num);
+        // LPC CODE
+        }
+        // END LPC CODE
     }
 }
 
@@ -142,11 +185,30 @@ export function toOrdinal(num?: number | null): string {
  * Ex: 1 => one
  * @param num
  */
-export function toWord(num?: number | null): string {
+// MODIFIED LPC CODE
+export function toWord(num?: number | null, language = "en"): string {
+// END MODIFIED LPC CODE
     if (num === null || num === undefined) {
         return "";
     }
-
+    // LPC CODE
+    if (language == "es") {
+        switch (num) {
+            case 1: return "uno";
+            case 2: return "dos";
+            case 3: return "tres";
+            case 4: return "cuatro";
+            case 5: return "cinco";
+            case 6: return "seis";
+            case 7: return "siete";
+            case 8: return "ocho";
+            case 9: return "nueve";
+            case 10: return "diez";
+            default: return toOrdinalSuffix(num, "es");
+        }
+    }
+    else {
+    // END LPC CODE
     switch (num) {
         case 1: return "one";
         case 2: return "two";
@@ -160,6 +222,9 @@ export function toWord(num?: number | null): string {
         case 10: return "ten";
         default: return `${num}`;
     }
+    // LPC CODE
+    }
+    // END LPC CODE
 }
 
 export function zeroPad(num: number, length: number): string {

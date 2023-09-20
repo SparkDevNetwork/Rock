@@ -1,0 +1,21 @@
+<!-- figure out which plans should be visible -->
+{% sql pag:'{{ CurrentPerson.PrimaryAlias.Guid }}' %}
+    EXEC _org_lakepointe_sp_CanViewLgCurriculum @PersonAliasGuid = @pag
+{% endsql %}
+
+{% assign count = results | Size %}
+{% assign curriculumId = 'Global' | PageParameter:'CurriculumId' | Default:'{{ results[0].Id }}' %}
+
+<!-- Display curriculum categories as Tabs -->
+<ul class="nav nav-tabs">
+    {% for result in results %}
+        {% if result.DisplayOnGLT == 'True' %}
+            {% if result.LanguageId == 5658 %}
+                <li {% if curriculumId == result.Id %}{% assign currentSection = result %}class='active'{% endif %}>
+                    <a href="?CurriculumId={{ result.Id }}">{{ result.Value }}</a>
+                </li>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</ul>
+</br>

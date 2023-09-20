@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{FDCA79EA-D361-49E9-9B79-0441C738D241}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>org.lakepointe.Workflow</RootNamespace>
+    <AssemblyName>org.lakepointe.Workflow</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DotLiquid">
+      <HintPath>..\RockWeb\Bin\DotLiquid.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock">
+      <HintPath>..\RockWeb\Bin\Rock.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock.Rest">
+      <HintPath>..\RockWeb\Bin\Rock.Rest.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Migrations\001_CreateAttributes.cs" />
+    <Compile Include="Migrations\002_CreateWorkflowActions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AssemblyInfo.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Workflow\Action\CheckIn\CustomCalculateLastAttended.cs" />
+    <Compile Include="Workflow\Action\CheckIn\AddGroupsByAbsoluteGradeAndAge.cs" />
+    <Compile Include="Workflow\Action\Communications\SendEmail.cs" />
+    <Compile Include="Workflow\Action\Communications\SendSms.cs" />
+    <Compile Include="Workflow\Action\People\GetPersonByPhone.cs" />
+    <Compile Include="Workflow\Action\People\GetPersonFromFields.cs" />
+    <Compile Include="Workflow\Action\Utility\SetEntityProperty.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Properties\AssemblyInfo.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>AssemblyInfo.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
+      <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
+      <Name>Rock.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
+      <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
+      <Name>Rock.Enums</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+      <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
+      <Name>Rock.Lava.Shared</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- ******************************************************************** -->
+  <!-- Kung Fu to run the T4 template which updates the assembly version    -->
+  <!-- ******************************************************************** -->
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <TransformOnBuild Condition="'$(Configuration)' == 'Release'">true</TransformOnBuild>
+    <OverwriteReadOnlyOutputFiles>true</OverwriteReadOnlyOutputFiles>
+    <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
+  </PropertyGroup>
+  <!-- This is the important line: -->
+  <Import Project="$(VSToolsPath)\TextTemplating\Microsoft.TextTemplating.targets" />
+  <!-- ******************************************************************** -->
+  <!-- Get the path to the project assembly                                 -->
+  <!-- ******************************************************************** -->
+  <PropertyGroup>
+    <TheAssembly>$(OutputPath)org.lakepointe.Workflow.dll</TheAssembly>
+  </PropertyGroup>
+  <!-- ******************************************************************** -->
+  <!-- The name of the plugin.  This will be used in the zip filename.      -->
+  <!-- ******************************************************************** -->
+  <PropertyGroup>
+    <PluginName>org.lakepointe.Workflow</PluginName>
+  </PropertyGroup>
+  <!-- ******************************************************************** -->
+  <!-- Tell the developer we're automatically updating the vssembly version -->
+  <!-- for the plugin                                                       -->
+  <!-- ******************************************************************** -->
+  <Target Name="UpdateAssemblyVersion" BeforeTargets="CoreBuild" Condition="'$(Configuration)' == 'Release'">
+    <Message Importance="High" Text="Automatically updated assembly version." />
+  </Target>
+  <!-- ******************************************************************** -->
+  <!-- Now automatically package the plugin                                 -->
+  <!-- ******************************************************************** -->
+  <Target Name="PackagePlugin" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <!-- Read the version number from the assembly -->
+    <GetAssemblyIdentity AssemblyFiles="$(TheAssembly)">
+      <Output TaskParameter="Assemblies" ItemName="TheVersion" />
+    </GetAssemblyIdentity>
+    <MakeDir Directories="$(SolutionDir)Releases" Condition="!Exists('$(SolutionDir)Releases')" />
+    <Message Importance="High" Text="Packaging version: %(TheVersion.Version)" />
+    <Message Importance="High" Text="Zipping to $(SolutionDir)Releases\$(PluginName).%(TheVersion.Version).zip" />
+    <!-- Zip it real good -->
+    <Exec Command="(powershell Compress-Archive -Path '$(TheAssembly)' -DestinationPath '$(SolutionDir)Releases\$(PluginName).%(TheVersion.Version).zip' -Force)" />
+  </Target>
+</Project>

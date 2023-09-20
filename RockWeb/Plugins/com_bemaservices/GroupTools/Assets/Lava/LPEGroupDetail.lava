@@ -1,0 +1,222 @@
+﻿<style>
+    .sg-group-details {
+        box-shadow: 0px 1px 2px rgba(0,0,0,0.24);
+        background-color: #fff;
+        border: 1px solid #f4f4f4;
+        padding-left: 15px;
+        padding-right: 15px;
+
+        margin-top: 20px;
+        border-radius: 6px;
+        margin-bottom: 40px;
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+     .sg-name {
+        font-weight: bold;
+        font-size: 23px;
+        line-height: 32px;
+        margin: 2rem 0px 0px 0px;
+    }
+
+      .sg-campus {
+        font-size: 16px;
+        color: #777779;
+    }
+
+      .sg-description, .sg-moreinfo {
+        line-height: 28px;
+        font-size: 18px;
+        /*color: #404041;*/
+        margin: 10px 0px 15px 0px;
+    }
+
+      .sg-interested-text {
+        text-align: center;
+        font-size: 28px;
+
+        color: #f04b28;
+        font-weight: bold;
+    }
+
+      .sg-sub-head {
+        font-size: 14px;
+        text-align: center;
+        color: #8a8a8c;
+        margin-bottom: 30px;
+    }
+
+    .table>tbody>tr>td {
+        border-top: none;
+        font-size: 16px;
+        padding: 8px 0px !important;
+    }
+
+    .btn-primary {
+        color: #fff;
+        height: 48px;
+        border-radius: 30px !important;
+        width: 75%;
+        margin-left: 12.5%;
+        font-size: 18px !important;
+        letter-spacing: -0.225px;
+        padding: 10px 0 0 0 !important;
+        margin-top: 3rem;
+    }
+</style>
+
+    {% assign group = Workflow | Attribute:'Group','Object' %}
+    {% case group.CampusId  %}
+    {% when '3' or '7' %}
+    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Rockwall-Interior-Map.png' %}
+    {% when '2' or '13' %}
+    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Town%20East-Interior-Map.png' %}
+    {% when '4' %}
+    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Firewheel-Interior-Map.png' %}
+    {% when '5' %}
+    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Forney-Interior-Map.png' %}
+    {% when '12' %}
+    {% assign mapLink = 'https://lakepointe.church/wp-content/uploads/2023/01/Lakepointe-White-Rock-Interior-Map.png' %}
+    {% when '8' or '14' %}
+    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-North%20Dallas-Interior-Map.png' %}
+    {% endcase %}
+
+
+    <div class="sg-group-details">
+        <div class="sg-name">{{group.Name}}</div>
+        <div class="sg-campus"> {{group.Campus.Name}} </div>
+        <div class="sg-description"> {{group.Description}} </div>
+
+        {% assign moreInfo = group | Attribute:'MoreInfo' | Trim %}
+        {% if moreInfo != ''  %}
+        <div class="sg-moreinfo"> {{group | Attribute:'MoreInfo' }}</div>
+        {% endif %}
+
+        <table class="sg-table table table-borderless">
+            <tbody>
+                <tr>
+                    <td style="width: 50%">
+                        <strong>Edad</strong>
+                        <br>
+                        {% assign groupAge = group | Attribute:'AgeRange' %}
+                        {% if groupAge == 'Multi-Generational' %}
+                            {% assign groupAge ='Multi-Generacional' %}
+                        {% endif %}
+                        {{groupAge}}
+                    </td>
+                    <td style="width: 50%">
+                        <strong>Tipo de Grupo</strong><br>
+                        {% assign categoryArr = group | Attribute:'Category' | Split:',' %}
+                        {% capture category %}
+                            {% for categoryItem in categoryArr %}
+                            {% assign categoryValue = categoryItem | Trim %}
+                                {% if categoryValue == 'Married' %}
+                                    {% assign categoryValue = 'Matrimonios' %}
+                                {% endif %}
+                                {% if categoryValue == 'Single' %}
+                                    {% assign categoryValue = 'Solteros' %}
+                                {% endif %}
+                                {% if categoryValue == "Women's" %}
+                                    {% assign categoryValue = 'Mujeres' %}
+                                {% endif %}
+                                {% if categoryValue == "Men's" %}
+                                    {% assign categoryValue = 'Hombres' %}
+                                {% endif %}
+                                {% if categoryValue == 'Everyone Welcome' %}
+                                    {% assign categoryValue = 'Mixto' %}
+                                {% endif %}
+                                {% if categoryValue == 'Recovery' %}
+                                    {% assign categoryValue = 'Recuperación' %}
+                                {% endif %}
+                                {% if categoryValue != 'New' and categoryValue != 'Featured' %}
+                                    {{ categoryValue }}
+                                {% endif %}
+                            {% endfor %}
+                        {% endcapture %}
+                        {{ category | ReplaceLast:',','' | Trim }}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 50%">
+                        <strong>Horario</strong> <br>
+                        {% assign schedulefull = group.Schedule.FriendlyScheduleText | Split: " at " %}
+                        {% assign day = schedulefull[0] %}
+                        {% assign time = schedulefull[1] %}
+                            {% if  day  == 'Sunday' %}
+                                {% assign  day  = 'Domingo' %}
+                            {% endif %}
+                            {% if  day  == 'Monday' %}
+                                {% assign  day  = 'Lunes' %}
+                            {% endif %}
+                            {% if  day  == 'Tuesday' %}
+                                {% assign  day  = 'Martes' %}
+                            {% endif %}
+                            {% if day  == 'Wednesday' %}
+                                {% assign  day  = 'Miércoles' %}
+                            {% endif %}
+                            {% if day  == 'Thursday' %}
+                                {% assign  day  = 'Jueves' %}
+                            {% endif %}
+                            {% if day  == 'Friday' %}
+                                {% assign  day  = 'Viernes' %}
+                            {% endif %}
+                            {% if day  == 'Saturday' %}
+                                {% assign  day  = 'Sábado' %}
+                            {% endif %}
+
+                            {{ day }} : {{ time }} <br><br>
+
+                        </br>
+                        {% assign roomNumber = group | Attribute:'RoomNumber1' %}
+                        {% if roomNumber != empty %}
+                        </br>
+                        <strong>Número de Salón</strong>
+                            {% if mapLink != '' %}<small>&nbsp;&nbsp;&nbsp;<a href='{{mapLink}}' target="_blank">Mapa</a></small>
+                            {% endif %} <br>
+                            {{roomNumber}}
+                        </br>
+                        {% endif %}
+
+                        {% assign groupImage = group | Attribute:'Image' %}
+                        {% if groupImage != empty %}
+                        </br>
+                        <strong>Imagen</strong> <br>
+                            {{groupImage}}
+                        </br>
+                        {% endif %}
+                    </td>
+                    <td style="width: 50%">
+                        <strong>Lideres</strong>
+                        {% for member in group.Members %}
+                        {% if member.GroupRole.IsLeader and member.GroupMemberStatus == 1 %}
+                        <br>
+                            {{ member.Person.FullName }} <small>({{ member.GroupRole.Name }})</small>
+                            {% endif %}
+                            {% endfor %}
+                        </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% assign groupTypeName = group.GroupType | Attribute:'PublicName' %}
+        {% if groupTypeName == ''%}
+            {% assign groupTypeName = group.GroupType.Name %}
+        {% endif %}
+        {% if groupTypeName == 'On Campus Life Group' %}
+            {% assign groupTypeName = 'Grupo de Vida en el Campus' %}
+        {% endif %}
+        {% if groupTypeName == 'Off Campus Life Group' %}
+            {% assign groupTypeName = 'Grupo de Vida en Casa' %}
+        {% endif %}
+        {% if groupTypeName == 'Short-Term Group' %}
+            {% assign groupTypeName = 'Grupo de Vida a Corto Plazo' %}
+        {% endif %}
+        {% if groupTypeName == 'Small Group' %}
+            {% assign groupTypeName = 'Grupo de Vida de Apoyo' %}
+        {% endif %}
+
+
+        <p id="sg-header" class="sg-interested-text">¿Interesado en este {{groupTypeName}}?</p>
+        <p class=" sg-sub-head">
+            Le informaremos al líder del {{groupTypeName}} para que pueda hacer un seguimiento con más detalles.
+        </p>

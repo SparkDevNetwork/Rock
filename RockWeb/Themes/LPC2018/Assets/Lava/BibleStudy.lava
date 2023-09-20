@@ -1,0 +1,265 @@
+{% comment %}
+    Calendar based off of Event Items instead of details
+{% endcomment%}
+
+{% assign eventItemCount = EventItems | Size %}
+
+{% if eventItemCount == 0 %}
+    <div class="panel panel-default margin-t-md">
+        <div class="margin-all-md">There are currently no events for this selection</div>
+    </div>
+{% endif %}
+
+<div class="event-calendar">
+    {% assign eventCount = 0 %}
+    {% assign EventItemsOrdered = EventItems | Sort:'DisplayPriority desc' %}
+    {% for eventItem in EventItemsOrdered %}
+        {% assign multipleDates = false %}
+        {% assign multipleLocations = false %}
+        {% assign eventDate = null %}
+        {% assign locationNameTemp = '' %}
+        {% for occurrence in eventItem.Occurrences %}
+            {% if eventDate == null %}
+                {% assign eventDate = occurrence.DateTime %}
+            {% elseif eventDate != occurrence.DateTime %}
+                {% assign multipleDates = true %} 
+            {% endif %}
+        
+            {% if locationNameTemp == '' %}
+                {% assign locationNameTemp = occurrence.LocationDescription %}
+            {% endif %}
+            {% if locationNameTemp != occurrence.LocationDescription %}
+                {% assign multipleLocations = true %}
+            {% endif %}
+
+            {% if multipleDates == true and multipleLocations == true %}
+              {% break %} 
+            {% endif %}
+        {% endfor %}
+
+        {% assign eventItemOccurrence = eventItem.Occurrences | First %}
+        {% assign currentLocalPath = 'Global' | Page:'Path' %}
+      <div class="col-xs-12 col-sm-6 col-md-4">
+      {% if eventItemOccurrence.DetailPage != null %}
+          <a href="{{ eventItemOccurrence.DetailPage }}">
+      {% elseif currentLocalPath contains '/page/' %}
+        <a href="{{DetailsPage}}?EventItemId={{eventItemOccurrence.EventItemOccurrence.EventItem.Id}}">
+      {% else %}
+        <a href="{{'~/studies/' | ResolveRockUrl }}{{ eventItemOccurrence.EventItemOccurrence.EventItem.Id }}">
+      {% endif %}
+
+        
+            <div class="card">
+            {% comment %}
+              {% sql %}
+                SELECT [EventItemId] FROM [EventItemOccurrence]
+                WHERE [Id] = {{ eventItemOccurrence.EventItemOccurrence.Id }}
+              {% endsql %}
+      
+              {% for item in results %}
+                {% assign eventId = item.EventItemId %}
+              {% endfor %}
+      
+                {% if eventId != null %}
+                {% sql %}
+                  SELECT [PhotoId] FROM [EventItem]
+                  WHERE [Id] = {{ eventId }}
+                {% endsql %}
+        
+                {% for item in results %}
+                  {% assign PhotoId = item.PhotoId %}
+                {% endfor %}
+        
+              {% endif %}
+            {% endcomment %}
+            {% assign PhotoId = eventItemOccurrence.EventItemOccurrence.EventItem.PhotoId %}
+        
+              <div>
+                  <img src="/GetImage.ashx?id={{ PhotoId }}" class="img-responsive img-rounded"></img>    
+              </div>
+
+                <h4 class="">
+                  {{ eventItemOccurrence.Name }}
+                  {% assign currentName = eventItemOccurrence.Name %}
+                </h4>
+
+                    {% assign currentItemDate = '' %}
+                    {% assign scheduleText = eventItemOccurrence.EventItemOccurrence | Attribute:'ScheduleText' %}
+					{% assign scheduleTextNoHtml = scheduleText | StripHtml | Trim %}
+                    <div style="margin-bottom: 5px;">
+                        
+                        <i class="fa fa-calendar" aria-hidden="true" style="color: #202e45"></i>
+                        {% if scheduleTextNoHtml and scheduleTextNoHtml != '' %}
+                          {{ scheduleText }}
+                        {% elseif multipleDates == true %}
+                            Multiple Dates
+                        {% else %}
+                          {% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
+                            {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d' }}  &#9679;  {{ eventItemOccurrence.Time }}
+                            {% assign currentItemDate = eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' %}
+                          {% else %}
+                            {{ eventItemOccurrence.Date | Date: 'ddd' }}. &#9679;
+                            {{ eventItemOccurrence.Date | Date: 'MMM d' }}
+                            {% assign currentItemDate = eventItemOccurrence.Date | Date: 'MMM d' %}  
+                            {% if eventItemOccurrence.Time != '12:00 AM' %}
+                              &#9679;  {{ eventItemOccurrence.Time }}
+                            {% endif %}
+                          {% endif %}
+                        {% endif  %}
+                    </div>
+
+                    <div>
+                      
+                    </div>
+
+                    {% if eventItemOccurrence.LocationDescription != '' and multipleLocations == false  %}
+                    <div style="margin-bottom: 5px;">
+                      <i class="fa fa-map-marker" style="color: #202e45"></i>
+                      {{ eventItemOccurrence.LocationDescription }}
+                    </div>
+                    {% endif %}
+
+                    <div>
+                      {{ eventItemOccurrence.Summary }}
+                    </div>
+                    {% assign childcareAvailable = eventItemOccurrence.EventItemOccurrence | Attribute: 'ChildcareAvailable' %}
+
+                    {% if childcareAvailable == 'Yes' %}
+                        <div style="margin-bottom: 5px;"><i class="fal fa-child"></i> Childcare Available</div>
+                    {% endif %}
+                    {% assign icons = '' %}
+                    {% for eventItemOccurrence in eventItem.Occurrences %}
+                      {% if eventItemOccurrence.Name == currentName %}
+                      {% assign alternateCampuses = eventItemOccurrence.EventItemOccurrence | Attribute:'AlternativeCampusSelections','RawValue' | Trim %}
+                      {% if alternateCampuses != ''  %}
+                        {% sql %}
+                            SELECT [Id], [ShortCode]
+                            FROM [dbo].[Campus]
+                            WHERE [Guid] in (SELECT LTRIM(RTRIM([splitdata])) FROM dbo.fnSplitString( '{{ alternateCampuses }}', ','))
+                            ORDER BY [Order], [Name]
+                        {% endsql %}
+                        {% for item in results %}
+                            {% if icons contains item.ShortCode %}
+                                {% continue %}
+                            {% endif %}
+                            {% assign icons = icons | Append:item.ShortCode | Append:'^' %}
+                        {% endfor %}
+                      {% else %}
+                        {% if eventItemOccurrence.Campus == 'All Campuses' %}
+                          {% assign icons = 'RW^TE^FW^FY^RI^WR^'%}
+                          {% break %}
+                        {% elseif eventItemOccurrence.Campus == 'Rockwall' %}
+                          {% if icons contains 'RW'%}
+                            {% continue %}
+                          {% else %}
+                            {% assign icons = icons | Append:'RW^' %}
+                          {%endif %}
+                        {% elseif eventItemOccurrence.Campus == 'Town East' %}
+                          {% if icons contains 'TE'%}
+                            {% continue %}
+                          {% else %}
+                            {% assign icons = icons | Append:'TE^' %}
+                          {%endif %}
+                        {% elseif eventItemOccurrence.Campus == 'Firewheel' %}
+                          {% if icons contains 'FW'%}
+                            {% continue %}
+                          {% else %}
+                            {% assign icons = icons | Append:'FW^' %}
+                          {%endif %}
+                        {% elseif eventItemOccurrence.Campus == 'Forney' %}
+                          {% if icons contains 'FY'%}
+                            {% continue %}
+                          {% else %}
+                            {% assign icons = icons | Append:'FY^' %}
+                          {%endif %}
+                        {% elseif eventItemOccurrence.Campus == 'Richland' %}
+                          {% if icons contains 'RI'%}
+                            {% continue %}
+                          {% else %}
+                            {% assign icons = icons | Append:'RI^' %}
+                          {%endif %}  
+                       {% elseif eventItemOccurrence.Campus == 'White Rock' %}
+                          {% if icons contains 'WR'%}
+                            {% continue %}
+                          {% else %}
+                            {% assign icons = icons | Append:'WR^' %}
+                          {%endif %}   
+                        {% endif %}                                                                                                                               
+                      {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                    {% assign icons = icons | ReplaceLast:'^' %}
+                    {% assign iconArr = icons | Split:'^' %}
+                    {% assign iconCount = iconArr | Size %}
+
+                    {% if iconCount > 0 %}
+                      <div class="campus-logo-list">
+                        <h4>
+                        {% for icon in iconArr %}
+                          <span class='campus-logo'>{{ icon }}</span>
+                        {% endfor %}
+                        </h4>
+                      </div>
+                    {% endif %}
+                    {% comment %}
+                    <div>
+                        <h4>
+                        {% for eventItemOccurrence in eventItem.Occurrences %}
+                          {% if eventItemOccurrence.Name == currentName %}
+                              {% if eventItemOccurrence.Campus == "Rockwall"  %}
+                                  {% if loadedIcons contains 'RW' %}
+                                    {% continue %}
+                                  {% endif %}
+                                  <span class="campus-logo">RW</span>    
+                                  {% assign loadedIcons = loadedIcons | Append:'RW^' %}
+                              {% endif %}
+                              {% if eventItemOccurrence.Campus == "Town East" %}
+                                  {% if loadedIcons contains 'TE' %}  
+                                    {% continue %}
+                                  {%endif %}
+                                  <span class="campus-logo">TE</span>    
+                                  {% assign loadedIcons = loadedIcons | Append:'TE^' %}
+                              {% endif %}
+                              {% if eventItemOccurrence.Campus == "Firewheel" %}
+                                  {% if loadedIcons contains 'FW' %}
+                                    {% continue %}
+                                  {% endif %}
+                                  <span class="campus-logo">FW</span>    
+                                  {% assign loadedIcons = loadedIcons | Append:'FW^' %}
+                              {% endif %}
+                              {% if eventItemOccurrence.Campus == "Forney" %}
+                                  {% if loadedIcons contains 'FY' %}
+                                    {% continue %}
+                                  {% endif %}
+                                  <span class="campus-logo">FY</span>
+                                  {% assign loadedIcons = loadedIcons | Append:'FY^' %}
+                              {% endif %}
+                              {% if eventItemOccurrence.Campus == "Richland" %}
+                                  {% if loadedIcons contains 'RI' %}
+                                    {% continue %}
+                                  {% endif %}
+                                  <span class="campus-logo">RI</span>    
+                                  {% assign loadedIcons = loadedIcons | Append:'RI^'%}
+                              {% endif %}
+                              {% if eventItemOccurrence.Campus == "White Rock" %}
+                                  {% if loadedIcons contains 'WR' %}
+                                    {% continue %}
+                                  {% endif %}
+                                  <span class="campus-logo">WR</span>    
+                                  {% assign loadedIcons = | loadedIcons | Append:'WR^'%}
+                              {% endif %}
+                              
+                          {% endif %}
+                        {% endfor %}
+                        </h4>
+                    </div>
+                    {% endcomment %}
+
+              </div>
+              </a>
+            </div>
+
+
+
+    {% endfor %}
+</div>

@@ -1,0 +1,31 @@
+{% assign personId = CurrentPerson.Id %}
+{% assign allAuthGroups = null %}
+{% assign show = 0 %}
+
+{% page id:'3066' securityenabled:'false' %}
+    {% for childPage in page.Pages %}
+        {% auth where:'EntityTypeId == 2 && EntityId == {{childPage.Id}} && Action == "view" && AllowOrDeny == "A"' securityenabled:'false' %}
+            {% for auth in authItems %}
+                {% if auth.GroupId != null %}
+                    {% assign allAuthGroups = allAuthGroups | AddToArray:auth.GroupId %}
+                {% endif %}
+            {% endfor %}
+        {% endauth %}
+    {% endfor %}
+{% endpage %}
+
+{% assign allAuthGroups = allAuthGroups | Distinct %}
+{% for item in allAuthGroups %}
+    {% groupmember where:'GroupId == {{item}} && PersonId == {{personId}}' securityenabled:'false' %}
+        {% assign groupmemberItemsSize = groupmemberItems | Size %}
+        {% if groupmemberItemsSize > 0 %}
+            {% assign show = 1 %}
+            {% break %}
+        {% endif %}
+    {% endgroupmember %}
+{% endfor %}
+
+{% if show == 1 %}
+<h5 style="text-align: center; ">Serve Ministries</h5>
+<hr style="margin-top: 0; margin-bottom: 10px;">
+{% endif %}

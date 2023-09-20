@@ -1,0 +1,19 @@
+﻿<ul id="top-menu" class="nav navbar-nav">
+    <li id="menu-item-3588" class="menu-item-3588"><a href="https://new-lpc.msjlpum7-liquidwebsites.com/watch/">WATCH NOW</a></li>
+    <li id="menu-item-3355" class=""><a href="https://new-lpc.msjlpum7-liquidwebsites.com/about-us/">NEXT STEPS</a></li>
+    <li id="menu-item-3336" class="menu-item-3336"><a href="https://new-lpc.msjlpum7-liquidwebsites.com/events/">EVENTS</a></li>
+    <li id="menu-item-3582" class="dropdown menu-item-3582"><a href="https://new-lpc.msjlpum7-liquidwebsites.com/serve/">GET INVOLVED</a>
+    <ul class="dropdown-menu">
+	    <li id="menu-item-3640" class=""><a href="https://new-lpc.msjlpum7-liquidwebsites.com/missions/">MISSIONS</a></li>
+	    <li id="menu-item-3639" class=""><a href="https://new-lpc.msjlpum7-liquidwebsites.com/volunteer/">VOLUNTEER</a></li>
+    </ul>
+    </li>
+    <li id="menu-item-3583" class="menu-item-3583"><a href="https://new-lpc.msjlpum7-liquidwebsites.com/ministries/">GET CONNECTED</a></li>
+    <li id="menu-item-3395" class="menu-item-3395"><a href="https://new-lpc.msjlpum7-liquidwebsites.com/give/">GIVE</a></li>
+    <li class="hidden-xs"><a href="/search/" onclick="$('header nav .navbar-nav').slideUp(function () { $('header nav .navbar-form').slideDown(function () { $('#input-hdr-search').focus();}); }); return false;"><i class="icon_search"></i></a></li>
+</ul>
+<div class="navbar-form" style="display: none;">
+    <a href="/search/" onclick="inputHdrSearch(); return false;" class="pull-right visible-xs"><i class="icon_search"></i></a>
+    <input type="text" name="query" placeholder="Search …" class="form-control" id="input-hdr-search">
+    <a href="#" onclick="$('header nav .navbar-form').slideUp(function () { $('header nav .navbar-nav').slideDown(); }); return false;" class="pull-right close hidden-xs"><i class="icon_close"></i></a>
+</div>

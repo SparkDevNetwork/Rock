@@ -791,6 +791,7 @@ namespace RockWeb.Blocks.CheckIn
             var fileGuids = hfLabelFileGuids.Value.SplitDelimitedValues().AsGuidList();
             var personId = hfSelectedPersonId.ValueAsInt();
             var selectedAttendanceIds = hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
+            selectedAttendanceIds = new List<int> { selectedAttendanceIds[0] };  // LPC CODE -- only print the labels corresponding to the first attendance; our labels contain content for everything they checked into
 
             List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, pnlReprintResults, this.Request, ( ReprintLabelOptions ) null );
 

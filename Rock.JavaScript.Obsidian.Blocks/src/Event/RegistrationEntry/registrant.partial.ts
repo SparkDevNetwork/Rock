@@ -36,8 +36,49 @@ import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
+// LPC CODE
+import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationPersonFieldType } from "./types.partial";
+import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { getDefaultAddressControlModel } from "@Obsidian/Utility/address";
+import { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
+// END LPC CODE
 
 const store = useStore();
+// LPC CODE
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+
+function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryBlockFormFieldViewModel[]): boolean {
+    const value = fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
+
+    if (typeof value !== "string") {
+        return false;
+    }
+
+    const comparedToFormField = formFields.find(ff => areEqual(ff.guid, rule.comparedToRegistrationTemplateFormFieldGuid));
+    if (!comparedToFormField?.attribute?.fieldTypeGuid) {
+        return false;
+    }
+
+    const fieldType = getFieldType(comparedToFormField.attribute.fieldTypeGuid);
+
+    if (!fieldType) {
+        return false;
+    }
+
+    return fieldType.doesValueMatchFilter(value, rule.comparisonValue, comparedToFormField.attribute.configurationValues ?? {});
+}
+// END LPC CODE
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Registrant",
@@ -136,20 +177,132 @@ export default defineComponent({
         },
 
         /** The filtered fields to show on the current form */
+        // MODIFIED LPC CODE
         currentFormFields(): RegistrationEntryBlockFormFieldViewModel[] {
-            return (this.currentForm?.fields || [])
-                .filter(f => !this.isWaitList || f.showOnWaitList);
+            var formFields = (this.currentForm?.fields || []).filter(f => !this.isWaitList || f.showOnWaitList);
+            // END MODIFIED LPC CODE
+            // LPC CODE
+            if (getLang() == 'es') {
+                // Get Translations
+                var optionTranslations = new Map();
+                var allFields = this.currentForm?.fields || [];
+
+                // Search all fields' Pre-HTML for elements with the class "SpanishOption"
+                // For each element found, add its "option" attribute and its text content to the optionTranslations dictionary
+                for (let i = 0; i < allFields.length; i++) {
+                    var el = document.createElement('div');
+                    if (allFields[i] != null && allFields[i].preHtml != null) {
+                        el.innerHTML = allFields[i].preHtml;
+                        let options = el.getElementsByClassName("SpanishOption");
+                        for (var j = 0; j < options.length; j++) {
+                            optionTranslations.set(options[j].getAttribute("option"), options[j].textContent);
+                        }
+                    }
+                }
+
+                // Translate Options
+                for (var x = 0; x < formFields.length; x++) {
+                    if (formFields[x] != null && formFields[x].attribute != null && formFields[x].attribute!.configurationValues != null) {
+                        var configValues = formFields[x].attribute!.configurationValues ?? {};
+                        var values = configValues["values"];
+                        var trueText = configValues["truetext"];
+                        var falseText = configValues["falsetext"];
+                        var output = "";
+
+                        // Handle Booleans
+                        if (trueText != null && trueText != "") {
+                            if (optionTranslations.has(trueText)) {
+                                formFields[x].attribute!.configurationValues!["truetext"] = optionTranslations.get(trueText);
+                            }
+                        }
+                        if (falseText != null && falseText != "") {
+                            if (optionTranslations.has(falseText)) {
+                                formFields[x].attribute!.configurationValues!["falsetext"] = optionTranslations.get(falseText);
+                            }
+                        }
+
+                        // Expected values examples:
+                        // [{"value":"1","text":"One"},{"value":"2","text":"Two"},{"value":"3","text":"Three"}]
+                        // [{"value":"1","text":"One","description":"The first value"},{"value":"2","text":"Two","description":"The second value"},{"value":"3","text":"Three","description":"The third value"}]
+                        if (values != null && values != "" && values.includes("value") && values.includes("text")) {
+                            let valuesObjects = JSON.parse(values);
+
+                            for (var y = 0; y < valuesObjects.length; y++) {
+                                if (valuesObjects[y].hasOwnProperty('text')) {
+                                    let originalText = valuesObjects[y].text;
+
+                                    if (optionTranslations.has(originalText)) {
+                                        valuesObjects[y].text = optionTranslations.get(originalText);
+
+                                        if (valuesObjects[y].hasOwnProperty('description')) {
+                                            valuesObjects[y].description = optionTranslations.get(originalText);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Replace values property with the results
+                            formFields[x].attribute!.configurationValues!["values"] = JSON.stringify(valuesObjects);
+                        }
+                    }
+                }
+            }
+
+            return formFields;
         },
 
+        /** The filtered fields to show on the current form augmented to remove pre/post HTML from non-visible fields */
+        currentFormFieldsAugmented (): RegistrationEntryBlockFormFieldViewModel[] {
+            var fields = JSON.parse(JSON.stringify(this.currentFormFields));
+
+            fields.forEach((value, index) => {
+                if (value.fieldSource != this.fieldSources.personField) {
+                    let isVisible = true;
+                    switch (value.visibilityRuleType) {
+                        case FilterExpressionType.GroupAll:
+                            isVisible = value.visibilityRules.every(vr => isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAllFalse:
+                            isVisible = value.visibilityRules.every(vr => !isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAny:
+                            isVisible = value.visibilityRules.some(vr => isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAnyFalse:
+                            isVisible = value.visibilityRules.some(vr => !isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        default:
+                            isVisible = true;
+                            break;
+                    }
+
+                    if (isVisible == false) {
+                        value.preHtml = "";
+                        value.postHtml = "";
+                    }
+                }
+            })
+
+            return fields;
+        },
+        // END LPC CODE
+
         /** The current fields as pre-post items to allow pre-post HTML to be rendered */
+        // MODIFIED LPC CODE
         prePostHtmlItems(): ItemWithPreAndPostHtml[] {
-            return this.currentFormFields
+            return this.currentFormFieldsAugmented
                 .map(f => ({
                     preHtml: f.preHtml,
                     postHtml: f.postHtml,
-                    slotName: f.guid
+                    slotName: f.guid,
+                    isRequired: f.isRequired
                 }));
         },
+        // END MODIFIED LPC CODE
         currentPerson(): PersonBag | null {
             return store.state.currentPerson;
         },
@@ -196,7 +349,9 @@ export default defineComponent({
                 ? newGuid()
                 : this.currentRegistrant.familyGuid;
             options.push({
-                text: "None of the above",
+                // MODIFIED LPC CODE
+                text: getLang() == 'es' ? 'Ninguno de los anteriores' : 'None of the above',
+                // END MODIFIED LPC CODE
                 value: familyGuid
             });
 
@@ -218,7 +373,10 @@ export default defineComponent({
                 }));
         },
         uppercaseRegistrantTerm(): string {
-            return StringFilter.toTitleCase(this.viewModel.registrantTerm);
+            // MODIFIED LPC CODE
+            const defaultTerm = (this.viewModel.registrantTerm).toLowerCase();
+            return StringFilter.toTitleCase(getLang() == 'es' ? 'registrante' : defaultTerm);
+            // END MODIFIED LPC CODE
         },
         firstName(): string {
             return getRegistrantBasicInfo(this.currentRegistrant, this.viewModel.registrantForms).firstName;
@@ -237,6 +395,9 @@ export default defineComponent({
         }
     },
     methods: {
+        // LPC CODE
+        getLang,
+        // END LPC CODE
         onPrevious(): void {
             this.clearFormErrors();
             if (this.currentFormIndex <= 0) {
@@ -359,7 +520,24 @@ export default defineComponent({
                     // If the family member selection is cleared then clear all form fields
                     for (const form of this.viewModel.registrantForms) {
                         for (const field of form.fields) {
+                            // MODIFIED LPC CODE
+                            switch (field.personFieldType) {
+                                case RegistrationPersonFieldType.Birthdate:
+                                    this.currentRegistrant.fieldValues[field.guid] = getDefaultDatePartsPickerModel();
+                                    break;
+
+                                case RegistrationPersonFieldType.AnniversaryDate:
+                                    this.currentRegistrant.fieldValues[field.guid] = getDefaultDatePartsPickerModel();
+                                    break;
+
+                                case RegistrationPersonFieldType.Address:
+                                    this.currentRegistrant.fieldValues[field.guid] = getDefaultAddressControlModel();
+                                    break;
+
+                                default:
                             delete this.currentRegistrant.fieldValues[field.guid];
+                        }
+                            // END MODIFIED LPC CODE
                         }
                     }
                 }
@@ -379,11 +557,15 @@ export default defineComponent({
         <template v-if="isDataForm">
             <template v-if="currentFormIndex === 0">
                 <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
-                    <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules='required:{"allowEmptyString": true}' v-model="currentRegistrant.familyGuid" :items="familyOptions" validationTitle="Family" />
+                    <!-- MODIFIED LPC CODE -->
+                    <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' ' + (getLang() == 'es'? 'está en la misma familia inmediata que' : 'is in the same immediate family as')" rules='required:{"allowEmptyString": true}' v-model="currentRegistrant.familyGuid" :items="familyOptions" validationTitle="Family" />
+                    <!-- END MODIFIED LPC CODE -->
                 </div>
                 <div v-if="familyMemberOptions.length" class="row">
                     <div class="col-md-6">
-                        <DropDownList v-model="currentRegistrant.personGuid" :items="familyMemberOptions" label="Family Member to Register" />
+                        <!-- MODIFIED LPC CODE -->
+                        <DropDownList v-model="currentRegistrant.personGuid" :items="familyMemberOptions" :label="(getLang() == 'es' ? 'Miembro de la familia para registrarse' : 'Family Member to Register')" />
+                        <!-- END MODIFIED LPC CODE -->
                     </div>
                 </div>
             </template>
@@ -405,7 +587,10 @@ export default defineComponent({
         </template>
 
         <div v-if="isSignatureForm" class="registrant-signature-document styled-scroll">
-            <h2 class="signature-header">Please Sign the {{ signatureDocumentTerm }} for {{ firstName }}</h2>
+            <!-- MODIFIED LPC CODE -->
+            <h2 class="signature-header" v-if="getLang() == 'es'">Por favor firma la exoneración para {{ firstName }}</h2>
+            <h2 class="signature-header" v-else>Please Sign the {{ signatureDocumentTerm }} for {{ firstName }}</h2>
+            <!-- END MODIFIED LPC CODE -->
             <div class="signaturedocument-container">
                 <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" onload="this.style.height = this.contentWindow.document.body.scrollHeight + 'px'" class="signaturedocument-iframe" border="0" frameborder="0" :srcdoc="signatureSource"></iframe>
             </div>
@@ -416,16 +601,18 @@ export default defineComponent({
         </div>
 
         <div class="actions row">
+            <!-- MODIFIED LPC CODE -->
             <div class="col-xs-6">
                 <RockButton v-if="showPrevious" btnType="default" @click="onPrevious">
-                    Previous
+                    {{ getLang() == 'es' ? 'Anterior' : 'Previous' }}
                 </RockButton>
             </div>
             <div class="col-xs-6 text-right">
                 <RockButton v-if="isNextVisible" btnType="primary" type="submit" :disabled="isNextDisabled">
-                    Next
+                  {{ getLang() == 'es' ? 'Siguiente' : 'Next' }}
                 </RockButton>
             </div>
+            <!-- END MODIFIED LPC CODE -->
         </div>
     </RockForm>
 </div>`

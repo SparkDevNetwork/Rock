@@ -1,0 +1,324 @@
+﻿
+// Load Master Styles
+// -------------------------
+
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_root.less";
+@import "_print.less";
+
+
+// The order below of the linked LESS files are in order of how they load to the page. So, the content of files later in the list will overwrite content in files earlier in the list. So, order is important.
+
+@import "components/_header.less";
+@import "components/_footer.less";
+@import "components/_topnavbar.less";
+@import "components/_subnavbarhorizontal.less";
+@import "components/_socialicons.less";
+@import "components/_events.less";
+@import "components/_bootstrapfourclasses.less";
+@import "components/_forms.less";
+@import "components/_buttons.less";
+@import "components/_cards.less";
+@import "components/_new-group-scheduler.less";
+
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Theme Styling
+    4. Responsive Overrides
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+@font-face {
+  font-family: ETmodules;
+  src: url(../Assets/fonts/modules.eot);
+  src: url(../Assets/fonts/modules.eot?#iefix) format("embedded-opentype"),url(../Assets/fonts/modules.ttf) format("truetype"),url(../Assets/fonts/modules.woff) format("woff"),url(../Assets/fonts/modules.svg#ETmodules) format("svg");
+	font-weight: 500;
+  font-style: normal;
+}
+
+html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+	max-width: 1600px;
+	margin: auto;
+}
+
+#fixed {
+	max-width: 1600px;
+	margin: auto;
+}
+
+main {
+    display: block;
+}
+
+.container {
+  position: relative;
+  width: 85%;
+  max-width: 1450px;
+  margin: auto;
+  @media (max-width: @screen-sm) {
+	width: 100%;
+  }
+}
+
+ul {
+	list-style-type: disc;
+}
+
+h1,h2,h3,h4,h5,h6 {
+	text-transform: uppercase;
+	padding-bottom: 6px;
+	color: @theme-2;
+}
+
+.form-group.required>.control-label::after, .required-indicator::after {
+	line-height: 1;
+	font-weight: bold;
+}
+
+.updateprogress-status .spinner > div {
+	margin-right: 0;
+}
+
+// 2. Bootstrap Overrides
+// -------------------------
+
+.transform(@string) {
+  -webkit-transform: @string;
+  -moz-transform: @string;
+  -ms-transform: @string;
+  -o-transform: @string;
+  transform: @string;
+}
+
+a:hover, &:focus,
+a:hover i.fs, &:focus i.fs {
+    text-decoration: none;
+}
+
+
+// 3. Theme Styling
+// -------------------------
+
+/*when 'section' is added as a class, it removes the excess side margins on smaller screens - used in content channels and 'side-by-side' layouts*/
+
+.gray-background {
+	background-color: #f4f4f4!important;
+}
+
+.section {
+	.col-md-6 {
+		padding-left: 0;
+		padding-right: 0;
+	}
+}
+
+
+
+
+/*default title/subtitle areas with smaller subtitle and larger title*/ 
+
+.title-section {
+	margin-bottom: 5%;
+}
+
+.section-title, .header-title {
+	font-weight: 700;	
+}
+
+.section-title {
+	color: @theme-1;
+}
+
+
+
+/*default content*/  
+
+.content-section {
+	margin-bottom: 4%;
+}
+
+.section p {
+	padding-bottom: 10px;
+}
+
+
+
+/*specific to 'side by side' layout*/
+
+.side-by-side {
+	.section:first-of-type {
+		padding-top: 0;
+	}
+	
+	.col-md-6:first-of-type {
+		margin-bottom: 30px;
+	}
+	
+	p {
+		font-size: 16px;
+		line-height: 1.85em;
+	}
+	
+	.section {
+		padding: 15% 0;
+		
+		&:nth-of-type(even) {
+			background-color: #f4f4f4;
+		}
+	}
+}
+
+
+
+
+
+/*Pre-existing styles prior to current theme*/
+
+h1.pagetitle:empty { // hides the page title h1 tag if the page has the title hidden
+  display: none;
+}
+
+#splash.error {
+	background-color: @gray-lighter;
+
+    #content {
+		margin-top: 20px;
+		background-color: @body-bg;
+		border-radius: @border-radius-base;
+		padding: 20px;
+    }
+}
+
+.not-found h2 {
+    font-size: 200px;
+    font-weight: @font-weight-bold;
+    letter-spacing: -5px;
+    line-height: 210px;
+
+    i {
+		color: @brand-primary;
+		font-size: 210px;
+		position: relative;
+		top: -12px;
+    }
+}
+
+.panel.panel-block {
+    border: 0;
+    box-shadow: none;
+
+    & > .panel-heading,
+    & > .rock-panel-drawer {
+      display: none;
+    }
+
+    & > .panel-body {
+      padding: 0;
+
+      .grid.grid-panel {
+        margin: 0;
+      }
+    }
+}
+
+.block-highlight {
+    padding-top: 0;
+    padding-bottom: 50px;
+
+    .topbar {
+		.pull-right {
+			float: none !important;
+		}
+    }
+
+    .navbar-fixed-top {
+		position: static !important;
+    }
+
+    .navbar-collapse {
+		position: static !important;
+    }
+
+    .hide-block {
+		display: block !important;
+		opacity: 1 !important;
+    }
+}
+
+.zone-highlight {
+    padding-bottom: 50px;
+
+    .hide-block {
+		display: block !important;
+		opacity: 1 !important;
+    }
+
+    header .navbar-header {
+		position: static;
+    }
+}
+
+.ace_content {
+    text-transform: none !important;
+}
+  
+  
+// 4. Responsive Overrides
+// -------------------------
+
+
+@media (min-width: @grid-float-breakpoint) {
+	.section {
+		.col-md-6 {
+			&:first-of-type { 
+				padding-right: 15px;
+				padding-left: 0;
+				padding-bottom: 0px;
+			}
+			&:last-of-type {
+				padding-left: 15px;
+				padding-right: 0;
+			}
+		}
+	}
+	
+	.side-by-side {
+		.col-md-6:first-of-type {
+			margin-bottom: 0;
+		}
+		.section {
+			padding: 4%;
+			&:nth-of-type(even) {
+				.col-md-6:first-of-type {
+					float: right;
+					padding-right: 0;
+					padding-left: 15px;
+				}
+				.col-md-6:last-of-type {
+					padding-right: 15px;
+					padding-left: 0;
+				}
+			}
+		}
+	}
+}
+
+
+/*Pre-existing imports prior to current theme*/
+
+@import "_animations.less";
+@import "_css-overrides.less";

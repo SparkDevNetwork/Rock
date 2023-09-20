@@ -44,11 +44,11 @@ using System.Reflection;
 // match the correct version exactly.
 [assembly: AssemblyVersion( "1.15.1.1" )]
 
-[assembly: AssemblyFileVersion( "1.15.1.1" )]
+[assembly: AssemblyFileVersion( "1.15.1.104" )]
 
 // This is the "official" product name that will be shown to people. 
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.
-[assembly: AssemblyInformationalVersion( "Rock McKinley 15.1" )]
+[assembly: AssemblyInformationalVersion( "Rock Lakepointe 15.1" )]
 
   
 

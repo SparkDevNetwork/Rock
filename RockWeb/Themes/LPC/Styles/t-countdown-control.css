@@ -1,0 +1,119 @@
+/*above the dashboard*/
+.lakepointe-tophtml, .lakepointe-bothtml a {
+	position: absolute;
+	right: 210px;
+	top: 11px;
+	font-size: 16px;
+	font-weight: bold;
+	color: #828282;
+}
+
+/*above the dashboard*/
+.lakepointe-dashboard {
+	margin: auto;
+	background: transparent;
+	padding: 3px 4px 3px 0;
+
+}
+
+.lakepointe-dash {
+	width: 31px;
+	height: 23px;
+	float: left;
+	margin-left: 13px;
+	padding-left: 0px;
+	margin-top: -2px;
+	position: relative;
+	color: #828282;
+}
+
+.lakepointe-tripdash {
+	width: 49px;
+	height: 23px;
+	float: left;
+	margin-left: 20px;
+	padding-left: 3px;
+	margin-top: -2px;
+	position: relative;
+}
+
+.lakepointe-digit {
+	font: bold 14pt Verdana;
+	font-weight: bold;
+	float: left;
+	width: 14px;
+	text-align: center;
+	position: relative;
+	height: 30px;
+	}
+
+.lakepointe-dash_title {
+	display: block;
+	position: absolute;
+	left: -3px;
+	top: 18px;
+	width: 32px;
+	padding: 0 3px;
+	text-align: center;
+	font-size: 8px;
+	margin: 0;
+}
+
+/*-------------------[768px]------------------*/
+@media only screen and ( min-width: 768px ) and ( max-width: 980px ) {
+.lakepointe-tophtml, .lakepointe-bothtml a { right: 180px; }
+
+}
+
+/*-------------------[480px]------------------*/
+@media only screen and ( max-width: 767px ) {
+.lakepointe-tophtml, .lakepointe-bothtml a { right: 180px; }
+#et-secondary-menu { float: right;}
+.lakepointe-tophtml, .lakepointe-bothtml a {
+	position: absolute;
+	left: 0px;
+	top: 11px;
+	font-size: 18px;
+}
+.lakepointe-dashboard {
+	margin: auto;
+	background: transparent;
+	padding: 3px 4px 3px 0;
+	float: right;
+}
+.lakepointe-digit {
+	font: bold 12pt Verdana;
+	}
+.lakepointe-dash {
+	margin-left: 7px;
+}
+.lakepointe-tophtml, .lakepointe-bothtml a {
+	position: relative;
+	left: 10px;
+	top: 2px;
+	font-size: 14px;
+}
+.lakepointe-dash_title { top: 15px; }
+}
+
+
+
+/*-------------------[320px]------------------*/
+@media only screen and ( max-width: 479px ) {
+
+.lakepointe-tophtml, .lakepointe-bothtml a {
+	position: absolute;
+	left: 0;
+	top: 10px;
+	font-size: 14px;
+}
+.lakepointe-dashboard {
+	margin: auto;
+	background: transparent;
+	padding: 3px 4px 3px 0;
+	float: right;
+	font-size: 14px;
+}
+
+}
+

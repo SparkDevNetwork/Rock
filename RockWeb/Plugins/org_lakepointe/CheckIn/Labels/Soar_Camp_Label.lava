@@ -1,0 +1,123 @@
+{% assign day = 'Now' | Date:'dddd' %}
+
+CT~~CD,~CC^~CT~
+^XA~JSN^LT0^MNW^MTD^PON^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^PW800^LL0400^LS0
+
+{% comment %} Person Label {% endcomment %}
+
+^FO7,40^A0N,83,83^TBN,800,83^FH\^FD{{ Person.NickName }}^FS
+^FO7,120^A0N,60,60^TBN,800,60^FH\^FD{{ Person.LastName }}^FS
+
+^FO7,200^FB547,1,0,L^A0N,30,30^FH\^FD{{ Person.GradeFormatted }}^FS
+^FO7,240^FB547,1,0,L^A0N,30,30^FH\^FD{{Group.Id | GroupById | Property:'Name'}}^FS
+
+^FO640,180^FB547,1,0,L^A0N,25,25^FH\^FDSecurity Code^FS
+^FO580,220^FB290,1,0,C^A0N,75,75^FD{{ Person.SecurityCode }}^FS
+^FO615,330^FB200,1,0,L^A0N,75,75^FD
+{% case day %}
+{% when 'Monday' %}
+Day 1
+{% when 'Tuesday' %}
+Day 2
+{% when 'Wednesday' %}
+Day 3
+{% when 'Thursday' %}
+Day 4
+{% endcase %}
+^FS
+
+^FO7,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personAllergy = Person | Attribute:'Allergy' %}{% if personAllergy != '' %}A{% endif %}^FS
+^FO73,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personMedicalAlert = Person | Attribute:'Arena-16-81' %}{% if personMedicalAlert  != '' %}M{% endif %}^FS
+^FO140,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personLegalNotes = Person | Attribute:'LegalNotes' %}{% if personLegalNotes != '' %}C{% endif %}^FS
+^FO207,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personBaptized = Person | Attribute:'Arena-15-73' %}{% if personBaptized  != ''  %}B{% endif %}^FS
+^FO273,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personSelfRelease = Person | Attribute:'Arena-16-384' %}{% if personSelfRelease == 'Yes' %}S{% endif %}^FS
+^FO340,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personFoster = Person | FosterAdoptedChildCheck %}{% if personFoster == 'true' %}P{% endif %}^FS
+
+^MMT
+^XZ
+
+
+
+
+{% comment %} In Slip {% endcomment %}
+^XA~JSN^LT0^MNW^MTD^POI^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^PW800^LL0400^LS0^FWI,0
+
+^FO740,327^FB67,1,0,R^A0R,50,50^FDIN^FS
+^FO700,227^FB167,1,0,R^A0R,37,37^FH\^FD{{ 'Now' | Date:"M/d/yyyy" }}^FS
+^FO660,227^FB167,1,0,R^A0R,37,37^FH\^FD{{ 'Now' | Date:'hh:mm tt'}}^FS
+
+^FO700,7^FB300,L^A0R,90,90^FH\^FD
+{% case day %}
+{% when 'Monday' %}
+Day 1
+{% when 'Tuesday' %}
+Day 2
+{% when 'Wednesday' %}
+Day 3
+{% when 'Thursday' %}
+Day 4
+{% endcase %}
+^FS
+
+^FO617,7^FB387,1,0,L^A0R,33,33^FH\^FD{{ Person.NickName }}^FS
+^FO583,7^FB387,1,0,L^A0R,33,33^FH\^FD{{ Person.LastName }}^FS
+^FO540,7^FB387,1,0,L^A0R,27,27^FH\^FD{{ Person.BirthDate | Date:'M/d/yyyy'}}^FS
+^FO500,7^FB387,1,0,L^A0R,30,30^FH\^FD{{ Person.GradeFormatted }}^FS
+
+^FO477,133^FB100,1,0,L^A0R,80,80^FH\^FD{% assign personSelfRelease = Person | Attribute:'Arena-16-384' %}{% if personSelfRelease == 'Yes' %}S{% endif %}^FS
+^FO380,7^FB100,L^A0R,100,100^FH\^FD{% assign personAllergy = Person | Attribute:'Allergy' %}{% if personAllergy != '' %}A{% endif %}^FS
+^FO380,80^FB100,1,0,L^A0R,100,100^FH\^FD{% assign personMedicalAlert = Person | Attribute:'Arena-16-81' %}{% if personMedicalAlert  != '' %}M{% endif %}^FS
+
+^FO360,7^FB325,1,0,L^A0R,20,20^FH\^FD{% assign personAllergy = Person | Attribute:'Allergy' %}{% if personAllergy != '' %}{{ personAllergy | Truncate:50,'...' }}{% endif %}^FS
+
+^FO280,7^FB325,1,0,L^A0R,30,30^FH\^FD{{Group.Id | GroupById | Property:'Name'}}^FS
+
+^FO100,7^FB325,1,0,L^A0R,33,33^FH\^FDSecurity Code^FS
+^FO0,7^FB325,L^A0R,100,100^FH\^FD{{ Person.SecurityCode }}^FS
+^FO10,345^FB410,L^A0,40,40^FH\^FD*Give this label to leader^FS
+
+^MMT
+^XZ
+
+
+
+
+{% comment %} Out Slip {% endcomment %}
+^XA~JSN^LT0^MNW^MTD^POI^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^PW800^LL0400^LS0^FWI,0
+
+^FO740,293^FB100,1,0,R^A0R,50,50^FDOUT^FS
+^FO700,227^FB167,1,0,R^A0R,37,37^FH\^FD{{ 'Now' | Date:"M/d/yyyy" }}^FS
+^FO660,227^FB167,1,0,R^A0R,37,37^FH\^FD{{ 'Now' | Date:'hh:mm tt'}}^FS
+
+^FO617,7^FB387,1,0,L^A0R,33,33^FH\^FD{{ Person.NickName }}^FS
+^FO583,7^FB387,1,0,L^A0R,33,33^FH\^FD{{ Person.LastName }}^FS
+
+^FO540,7^FB387,1,0,L^A0R,30,30^FH\^FD{{ Person.GradeFormatted }}^FS
+
+^FO280,7^FB325,1,0,L^A0R,30,30^FH\^FD{{Group.Id | GroupById | Property:'Name'}}^FS
+^FO200,7^FB325,1,0,L^A0R,75,75^FH\^FD
+{% for groupMember in GroupMembers %}
+    {% if groupMember.PersonId == Person.Id %}
+        {% assign color = groupMember | Attribute:'ColorGroup','Object' | Property:'Description'%}
+        {{color}} {{groupMember | Attribute:'Pack'}}
+        {% break %}
+    {% endif %}
+{% endfor %}
+{% for groupMember in Group.Members %}
+    {% if groupMember.PersonId == Person.Id %}
+        {{groupMember | Attribute:'ColorGroup','Object' | Property:'Description'}} {{groupMember | Attribute:'Pack'}}
+        {% break %}
+    {% endif %}
+{% endfor %}
+^FS
+
+^FO100,7^FB325,1,0,L^A0R,33,33^FH\^FDSecurity Code^FS
+^FO0,7^FB300,L^A0R,100,100^FH\^FD{{ Person.SecurityCode }}^FS
+
+^FO10,345^FB445,L^A0,40,40^FH\^FD*Keep this label for pickup^FS
+
+^MMC
+^XZ

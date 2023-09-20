@@ -33,7 +33,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.PERSON_RACE, "White", "For people of White/Caucasian race", Rock.SystemGuid.DefinedValue.PERSON_RACE_WHITE, false );
             RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.PERSON_RACE, "Black or African American", "For people of Black or African American race", Rock.SystemGuid.DefinedValue.PERSON_RACE_BLACK_OR_AFRICAN_AMERICAN, false );
             RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.PERSON_RACE, "American Indian or Alaska Native", "For people of American Indian or Alaska Native race", Rock.SystemGuid.DefinedValue.PERSON_RACE_AMERICAN_INDIAN_OR_ALASKAN_NATIVE, false );
-            RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.PERSON_RACE, "Asian", "For people of Asian race", Rock.SystemGuid.DefinedValue.PERSON_RACE_ASIAN, false );
+            RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.PERSON_RACE, "Asian", "For people of Asianrace", Rock.SystemGuid.DefinedValue.PERSON_RACE_ASIAN, false );
             RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.PERSON_RACE, "Native Hawaiian or Pacific Islander", "For people of Native Hawaiian or Pacific Islander race", Rock.SystemGuid.DefinedValue.PERSON_RACE_NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER, false );
             RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.PERSON_RACE, "Other", "For people of race not specified as an option", Rock.SystemGuid.DefinedValue.PERSON_RACE_OTHER, false );
 

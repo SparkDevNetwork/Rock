@@ -24,7 +24,21 @@ import { updateRefValue } from "@Obsidian/Utility/component";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
 import RockForm from "./rockForm";
 import { useStore } from "@Obsidian/PageState";
+// LPC CODE
+const store = useStore();
 
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+// END LPC CODE
 // #region SignaturePad library types.
 
 interface ISignaturePadOptions {
@@ -104,7 +118,7 @@ export default defineComponent({
         // #region Computed Values
 
         const signedByEmailLabel = computed((): string => {
-            return `Please enter an email address below where we can send a copy of the ${props.documentTerm.toLowerCase()} to.`;
+            return getLang() == 'es' ? 'Por favor ingresa una direcci\u00f3n de email donde podamos enviar una copia del documento.' : `Please enter an email address below where we can send a copy of the ${props.documentTerm.toLowerCase()} to.`;
         });
 
         // #endregion
@@ -243,7 +257,13 @@ export default defineComponent({
             signatureData,
         };
     },
+    // LPC CODE
+    methods: {
+        getLang
+    },
+    // END LPC CODE
 
+    // Template modified by LPC for language support
     template: `
 <div>
     <div v-if="isSigning" class="signature-entry">
@@ -268,16 +288,17 @@ export default defineComponent({
 
             <div v-else class="signature-entry-typed">
                 <TextBox v-model="signedByName"
-                    label="Type Name"
+                    :label="getLang() == 'es' ? 'Escribe tu Nombre' : 'Type Name'"
                     rules="required" />
             </div>
 
             <div class="signature-entry-agreement">
-                By clicking the sign button below, I agree to the above document and understand this is a legal representation of my signature.
+                {{getLang() == 'es' ? 'Al hacer click en el bot&oacute;n de Firmar, acepto el documento anterior y entiendo que esta es una representaci&oacute;n legal de mi firma.' : 'By clicking the sign button below, I agree to the above document and understand this is a legal representation of my signature.'}}
             </div>
 
             <div class="text-right">
-                <RockButton type="submit" btnType="primary" btnSize="xs">Sign</RockButton>
+                <RockButton type="submit" btnType="primary" btnSize="xs">
+                    {{getLang() == 'es' ? 'Firmar' : 'Sign'}}</RockButton>
             </div>
         </RockForm>
     </div>
@@ -286,7 +307,7 @@ export default defineComponent({
         <RockForm @submit="onSubmit">
             <TextBox v-if="isDrawn"
                 v-model="signedByName"
-                label="Please enter your legal name"
+                :label="getLang() == 'es' ? 'Nombre Legal' : 'Please enter your legal name'"
                 rules="required" />
 
             <EmailBox v-model="signedByEmail"
@@ -294,7 +315,7 @@ export default defineComponent({
                 rules="required" />
 
             <div class="text-right">
-                <RockButton type="submit" btnType="primary" btnSize="xs">Complete</RockButton>
+                <RockButton type="submit" btnType="primary" btnSize="xs">{{getLang() == 'es' ? 'Completar' : 'Complete'}}</RockButton>
             </div>
         </RockForm>
     </div>

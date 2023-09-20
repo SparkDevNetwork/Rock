@@ -1,0 +1,96 @@
+@font-face {
+  font-family: 'icomoon';
+  src:  url('fonts/icomoon.eot?w8xfxb');
+  src:  url('fonts/icomoon.eot?w8xfxb#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?w8xfxb') format('truetype'),
+    url('fonts/icomoon.woff?w8xfxb') format('woff'),
+    url('fonts/icomoon.svg?w8xfxb#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-alicorn:before {
+  content: "\41";
+}
+.icon-pegasus:before {
+  content: "\42";
+}
+.icon-unicorn:before {
+  content: "\43";
+}
+.icon-sparkles:before {
+  content: "\44";
+}
+.icon-birthday-cake:before {
+  content: "\45";
+}
+.icon-notes-medical:before {
+  content: "\46";
+}
+.icon-allergies:before {
+  content: "\47";
+}
+.icon-users-class:before {
+  content: "\48";
+}
+.icon-tint:before {
+  content: "\49";
+}
+.icon-keynote:before {
+  content: "\4a";
+}
+.icon-fire-alt:before {
+  content: "\4b";
+}
+.icon-user-graduate:before {
+  content: "\4c";
+}
+.icon-user-shield:before {
+  content: "\4d";
+}
+.icon-shield-check:before {
+  content: "\4e";
+}
+.icon-hand-paper:before {
+  content: "\4f";
+}
+.icon-code-commit:before {
+  content: "\50";
+}
+.icon-space-shuttle:before {
+  content: "\51";
+}
+.icon-shapes:before {
+  content: "\52";
+}
+.icon-chalkboard-teacher:before {
+  content: "\53";
+}
+.icon-check-circle:before {
+  content: "\54";
+}
+.icon-check-square:before {
+  content: "\55";
+}
+.icon-child:before {
+  content: "\56";
+}
+.icon-baby:before {
+  content: "\57";
+}

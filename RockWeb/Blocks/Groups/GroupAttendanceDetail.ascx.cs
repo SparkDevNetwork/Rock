@@ -610,6 +610,12 @@ namespace RockWeb.Blocks.Groups
                 {
                     displayName = data.NickName + " " + data.LastName;
                 }
+                // LPC CODE to clarify nameless person records
+                if (displayName.IsNullOrWhiteSpace() || displayName.Trim().Equals(","))
+                {
+                    displayName = string.Concat("Nameless Person", data.MobileNumber.IsNotNullOrWhiteSpace()  ? string.Format(" - {0}", data.MobileNumber) : String.Empty); 
+                }
+                // END OF LPC CODE
 
                 checkBox.Text = string.Format( "{0} {1}", data.MergedTemplate, displayName );
             }
@@ -950,9 +956,14 @@ namespace RockWeb.Blocks.Groups
                 string template = GetAttributeValue( AttributeKey.LavaTemplate );
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
 
+				// LPC CODE
+                var mobilePhoneDefinedValue = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), _rockContext);
+                // END LPC CODE 
+                
                 // Bind the attendance roster
+                // LPC MODIFIED
                 _attendees = new PersonService( _rockContext )
-                    .Queryable().AsNoTracking()
+                    .Queryable(new Rock.Model.PersonService.PersonQueryOptions() { IncludeNameless = true }).Include("PhoneNumbers").AsNoTracking()
                     .Where( p => attendedIds.Contains( p.Id ) || unattendedIds.Contains( p.Id ) )
                     .ToList()
                     .Select( p => new GroupAttendanceAttendee()
@@ -962,9 +973,11 @@ namespace RockWeb.Blocks.Groups
                         LastName = p.LastName,
                         Attended = attendedIds.Contains( p.Id ),
                         CampusIds = p.GetCampusIds(),
+                        MobileNumber = p.PhoneNumbers.Where(pn => pn.NumberTypeValueId == mobilePhoneDefinedValue.Id).Select(pn => pn.NumberFormatted).FirstOrDefault(),
                         MergedTemplate = template.ResolveMergeFields( mergeFields.Union( new Dictionary<string, object>() { { "Person", p } } ).ToDictionary( x => x.Key, x => x.Value ) )
                     } )
                     .ToList();
+                // END LPC MODIFIED
 
                 BindAttendees();
 
@@ -1427,6 +1440,10 @@ cbDidNotMeet.ClientID );
             /// The campus ids.
             /// </value>
             public List<int> CampusIds { get; set; }
+
+			// LPC CODE
+            public string MobileNumber { get; set; }
+            // END LPC CODE
 
             public string MergedTemplate { get; set; }
         }

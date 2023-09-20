@@ -1,0 +1,134 @@
+//
+// _socialicons.less
+//
+
+
+//background color and radius for all icons (includes header icons and both sets of footer icons)
+
+.page-footer .lp_social_media_follow li a,
+.header-social .lp_social_media_follow .lp-social-icon {
+	border-radius: @border-radius-base;
+}
+
+
+//common styles for all HEADER icons in all screen sizes
+		
+.header-social {
+	.lp_social_media_follow {
+		float:right;
+		padding:0; 
+		display: flex;
+		list-style-type: none!important;
+		.lp-social-icon {
+			padding: 7px;
+			box-sizing: content-box !important;
+			border-radius: @border-radius-base;
+			transition: all .4s ease-in-out;
+			display: flex;
+			box-sizing: content-box;
+			width: 15px;
+			height: 15px;
+			transform: scale(1);
+			a {
+				padding: 0 !important;
+				border-bottom: 0 !important;
+				width: 100%;
+				height: 100%;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				opacity: 1;
+				span {
+					width: 100%;
+					height: 100%;
+					overflow: hidden;
+					display: grid;
+					svg {
+						fill: @theme-3;
+					}
+				}
+			}
+			&:not(:last-child) {
+				margin: 0 10px 0 0;
+			}
+		}
+	}
+}
+
+
+//common styles for all FOOTER icons in all screen sizes
+
+.page-footer {
+	.lp_social_media_follow {
+		list-style-type: none!important;
+		padding: 0;
+		line-height: .8em;
+		li {
+			display: inline-block; 
+			margin-bottom: 8px; 
+			position: relative; 
+			padding-right: 0;
+			margin-right: 8px!important;
+			&:last-of-type {
+				margin-right: 0!important;
+			}
+			a {
+				width: 36px;
+				height: 36px;
+				text-align: center;
+				font-size: 18px !important;
+				padding: 0;
+				display: inline-block;
+				border: none;
+				padding: 4px;
+			}
+		}
+	}
+}
+
+
+//specific styles for HEADER icons in SMALL screen size
+
+.header-social {
+	ul.lp_social_media_follow {
+		margin: 0 0 0 0;
+	}
+}
+
+
+//specific styles for FOOTER icons in SMALL screen size
+
+
+.page-footer {
+	ul.lp_social_media_follow {
+		margin-bottom: 16px!important;
+		margin-top: 0;
+	}
+}	
+
+
+
+
+
+@media (min-width: @grid-float-breakpoint-min) {
+
+//specific styles for HEADER icons in LARGE screen size
+
+	.header-social {
+		ul.lp_social_media_follow {
+			margin: 0 0 0 22px!important;
+		}
+	}
+	
+//specific styles for FOOTER icons in LARGE screen size
+	
+	.page-footer {
+		ul.lp_social_media_follow {
+			margin-bottom: 9px!important;
+			margin-top: 1px;
+			&:last-of-type {
+				margin-bottom: 0!important;
+			}
+		}
+	}	
+}

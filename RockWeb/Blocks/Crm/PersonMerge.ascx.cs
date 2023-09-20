@@ -847,14 +847,14 @@ namespace RockWeb.Blocks.Crm
 		                if ( mergedPersonIdList.Any() )
 		                {
 		                    DbService.ExecuteCommand( $"DELETE FROM [AnalyticsSourcePersonHistorical] WHERE [PersonId] IN ({ mergedPersonIdList.AsDelimited( "," ) })", commandTimeout: 90 );
-		                }
+                    }
 
                         // Run scripts to merge non-primary person data.
                         var personEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) );
-                        foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
-                        {
-                            var parms = new Dictionary<string, object>();
-                            parms.Add( "OldId", p.Id );
+                foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
+                {
+                    var parms = new Dictionary<string, object>();
+                    parms.Add( "OldId", p.Id );
                             parms.Add( "NewId", primaryPerson.Id );
                             parms.Add( "OldGuid", p.Guid );
                             parms.Add( "NewGuid", primaryPerson.Guid );
@@ -863,7 +863,7 @@ namespace RockWeb.Blocks.Crm
                             logger.Write( $"Merging non-primary person data... [SourcePerson={p.FullName}]" );
 
                             ExecutePersonMergeSqlScript( parms, rockContext, logger );
-                        }
+                }
 
                         logger.Write( $"Merge completed." );
                     }
@@ -1539,6 +1539,14 @@ namespace RockWeb.Blocks.Crm
                                               .ToList();
 
             var showWarning = conflictingHiddenProperties.Any();
+            // LPC ADD -- identify the attributes that are forcing escalation.
+            if ( showWarning )
+            {
+                var conflictedAttributeIds = conflictingHiddenProperties.Select( v => v.AttributeId.ToString() ).JoinStrings( ", " );
+                nbPermissionNotice.Text = string.Format( "{0} [{1}]", nbPermissionNotice.Text, conflictedAttributeIds );
+            }
+            // END OF LPC ADD
+
             nbPermissionNotice.Visible = showWarning;
 
             var conflictingGroupMemberProperties = MergeData.GroupMemberProperties.Where( p => p.Values.Select( v => v.Value ).Distinct().Count() > 1 || !p.Values.Any( v => v.PersonId == MergeData.PrimaryPersonId ) ).ToList();

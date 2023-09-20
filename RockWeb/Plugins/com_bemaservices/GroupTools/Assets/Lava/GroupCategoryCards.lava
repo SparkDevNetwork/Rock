@@ -1,0 +1,80 @@
+{% assign ministry = 'Global' | PageParameter:'Ministry' %}
+{% if ministry != null and ministry != empty and ministry != '' %}
+    {% sql %}
+        Select top 1 dv.Id
+        From DefinedValue dv
+        Join AttributeValue av on av.EntityId = dv.Id and av.AttributeId = 86626
+        Where dv.DefinedTypeId = 318
+        And dv.IsActive = 1
+        And av.Value = '{{ministry}}'
+        Order By dv.[Order]
+    {% endsql %}
+    {% for item in results %}
+        {% assign parentDefinedValueId = item.Id %}
+
+        {% definedvalue id:'{{parentDefinedValueId}}' %}
+            {% assign parentDefinedValue = definedvalue %}
+        {% enddefinedvalue %}
+    {% endfor %}
+{% endif %}
+
+{% if parentDefinedValue == null %}
+    {% definedvalue where:'DefinedTypeId == 318 && IsActive == true' sort:'Order' %}
+        {% assign definedValues = definedvalueItems%}
+    {% enddefinedvalue %}
+{% else %}
+    {% definedvalue where:'DefinedTypeId == 335 && IsActive == true && ParentCategories *= "{{parentDefinedValue.Guid}}"' sort:'Order' %}
+        {% assign definedValues = definedvalueItems%}
+    {% enddefinedvalue %}
+{% endif %}
+
+{% if parentDefinedValue != null %}
+    <div class='container padding-v-xlg'>
+    <div class='row d-flex justify-content-center'>
+        <div class='col-md-8 text-center'>
+            <h1 class='margin-b-lg'>{{parentDefinedValue.Value | Possessive}} Groups</h1>
+            <p class='margin-b-lg'>{{parentDefinedValue.Description}}</p>
+        <a class="btn btn-lg btn-default" href="https://rock.lakepointe.church/grouplocator-option1?Ministry={{parentDefinedValue | Attribute:'ShortCode'}}">View All {{parentDefinedValue.Value | Possessive}} Groups</a>
+        </div>
+    </div>
+
+{% endif %}
+
+<div class="container section-margin-bottom-xl">
+    <div class="row">
+        {% for definedValue in definedValues %}
+            <div class="col-md-4 d-inline-block">
+                {% assign externalLink = definedValue | Attribute:'ExternalLink','RawValue' | AsString %}
+                {% if externalLink != '' %}
+                    {% assign groupsLink = externalLink %}
+                {% else %}
+                    {% if parentDefinedValue == null %}
+                        {% capture groupsLink %}https://rock.lakepointe.church/Ministries/{{definedValue | Attribute:'ShortCode'}}{% endcapture%}
+                    {% else %}
+                        {% capture groupsLink %}https://rock.lakepointe.church/grouplocator-option1?Ministry={{parentDefinedValue | Attribute:'ShortCode'}}&CategoryIds={{definedValue.Id}}{% endcapture%}
+                    {% endif %}
+                {% endif %}
+                <a class="card-link" href="{{groupsLink}}">
+                    <div class="zoom card margin-v-md theme-border-radius theme-shadow">
+                        <div class="overflow-hide">
+                            <img src="/GetImage.ashx?Guid={{definedValue | Attribute:'Image','RawValue'}}&amp;W=711&amp;H=400&amp;mode=crop&amp;scale=both&amp;anchor=middlecenter" class="img-responsive border-radius-top">
+                        </div>
+                        <div class="card-body padding-all-md">
+                            <h3 class="card-title-lg margin-t-none margin-b-none">
+                            {{definedValue.Value}}
+                            </h3>
+                            <div class="card-text padding-all-none text-left">
+                            <p>{{definedValue.Description}}</p><br>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            {% assign dividend = forloop.index0 | Modulo:3 %}
+            {% if dividend == 2 %}
+                </div><div class="row">
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

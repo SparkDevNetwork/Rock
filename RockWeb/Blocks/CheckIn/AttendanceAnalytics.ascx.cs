@@ -187,6 +187,15 @@ namespace RockWeb.Blocks.CheckIn
         DefaultIntegerValue = 180,
         Order = 15 )]
 
+    [GroupField(
+        name: "Root Group",
+        description: "Optional group to use as the root of the group hierarchy",
+        required: false,
+        defaultGroupGuid: "",
+        category: "",
+        order: 15,
+        key: AttributeKeys.RootGroup )]
+
     [Rock.SystemGuid.BlockTypeGuid( "3CD3411C-C076-4344-A9D5-8F3B4F01E31D" )]
     public partial class AttendanceAnalytics : RockBlock
     {
@@ -208,6 +217,7 @@ namespace RockWeb.Blocks.CheckIn
             public const string FilterColumnDirection = "FilterColumnDirection";
             public const string ChartStyle = "ChartStyle";
             public const string DatabaseTimeoutSeconds = "DatabaseTimeoutSeconds";
+            public const string RootGroup = "RootGroup";
         }
 
         #region Fields
@@ -519,7 +529,7 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        gpGroups.IncludedGroupTypeIds = groupTypes.Select( t => t.Id ).ToList();
+                        //gpGroups.IncludedGroupTypeIds = groupTypes.Select( t => t.Id ).ToList();
                         if ( clearSelection )
                         {
                             gpGroups.SetValues( null );
@@ -554,10 +564,34 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        private void BindSelectedGroupsGP()
+        {
+            var includeNullCampus = clbCampuses.SelectedValues.Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
+            var campusIdList = clbCampuses.SelectedValues.AsIntegerList();
+            campusIdList.Remove( 0 ); // remove 0 from the list, just in case it is there
+            if ( !includeNullCampus && !campusIdList.Any() )
+            {
+                campusIdList = null;
+            }
+
+            using ( var rockContextAnalytics = new RockContextAnalytics() )
+            {
+                gpGroups.RootGroupId = new GroupService( rockContextAnalytics ).GetId( GetAttributeValue( AttributeKeys.RootGroup ).AsGuid() );
+            }
+        }
+
         private void BindSelectedGroups()
         {
             var selectedGroupIds = GetSelectedGroupIds();
             bool showGroupAncestry = GetAttributeValue( AttributeKeys.ShowGroupAncestry ).AsBoolean( true );
+
+            var includeNullCampus = clbCampuses.SelectedValues.Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
+            var campusIdList = clbCampuses.SelectedValues.AsIntegerList();
+            campusIdList.Remove( 0 ); // remove 0 from the list, just in case it is there
+            if ( !includeNullCampus && !campusIdList.Any() )
+            {
+                campusIdList = null;
+            }
 
             using ( var rockContextAnalytics = new RockContextAnalytics() )
             {
@@ -571,7 +605,7 @@ namespace RockWeb.Blocks.CheckIn
                 foreach ( int id in selectedGroupIds )
                 {
                     var group = groups.FirstOrDefault( g => g.Id == id );
-                    if ( group != null )
+                    if ( group != null && group.GroupLocations.Where( l => campusIdList.Contains( l.Location.CampusId ?? 0 ) ).Any() )
                     {
                         groupList.Add( showGroupAncestry ? groupService.GroupAncestorPathName( id ) : group.Name );
                     }
@@ -620,7 +654,7 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         var groupTypeIds = groupTypeService
                             .GetCheckinAreaDescendantsOrdered( ddlAttendanceArea.SelectedGroupTypeId.Value )
-                            .Select( a => a.Id )
+                            .Select(a => a.Id)
                             .ToList();
 
                         return groupTypeService.GetByIds( groupTypeIds ).ToList();
@@ -1023,7 +1057,7 @@ var headerText = dp.label;
             else
             {
                 gpGroups.SetValues( groupIdList.AsIntegerList() );
-                BindSelectedGroups();
+                BindSelectedGroupsGP();
             }
 
             ShowBy showBy = GetSetting( keyPrefix, "ShowBy" ).ConvertToEnumOrNull<ShowBy>() ?? ShowBy.Chart;
@@ -1255,7 +1289,7 @@ var headerText = dp.label;
                 dateRange.End = RockDateTime.Now;
             }
             var start = dateRange.Start;
-
+            
             var endTime = dateRange.End.Value;
             // We need to pass '11/09/2020 11:59:59.000', because SQL Server rounds '11/09/2020 11:59:59.999' up to '11/10/2020 12:00:00.000'.
             // Since this is used for Sunday Date the milliseconds don't matter
@@ -2496,17 +2530,28 @@ var headerText = dp.label;
             {
                 if ( !_addedGroupIds.Contains( group.Id ) )
                 {
-                    _addedGroupIds.Add( group.Id );
-                    if ( cbIncludeGroupsWithoutSchedule.Checked || group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
+                    var includeNullCampus = clbCampuses.SelectedValues.Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
+                    var campusIdList = clbCampuses.SelectedValues.AsIntegerList();
+                    campusIdList.Remove( 0 ); // remove 0 from the list, just in case it is there
+                    if ( !includeNullCampus && !campusIdList.Any() )
                     {
-                        string displayName = showGroupAncestry ? service.GroupAncestorPathName( group.Id ) : group.Name;
-                        checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
+                        campusIdList = null;
                     }
 
-                    bool showInactive = GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean();
+                    if ( ( includeNullCampus && !group.CampusId.HasValue ) || ( campusIdList != null ) && campusIdList.Contains( group.CampusId ?? 0 ) )
+                    {
+                        _addedGroupIds.Add( group.Id );
+                        if ( cbIncludeGroupsWithoutSchedule.Checked || group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
+                        {
+                            string displayName = showGroupAncestry ? service.GroupAncestorPathName( group.Id ) : group.Name;
+                            checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
+                        }
+                    }
 
                     if ( group.Groups != null )
                     {
+                        bool showInactive = GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean();
+
                         foreach ( var childGroup in group.Groups
                             .Where( a => a.IsActive || showInactive )
                             .OrderBy( a => a.Order )

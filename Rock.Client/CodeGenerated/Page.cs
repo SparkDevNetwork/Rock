@@ -133,12 +133,6 @@ namespace Rock.Client
         public int? ParentPageId { get; set; }
 
         /// <summary />
-        public int? RateLimitPeriod { get; set; }
-
-        /// <summary />
-        public int? RateLimitRequestPerPeriod { get; set; }
-
-        /// <summary />
         public bool RequiresEncryption { get; set; }
 
         /// <summary>
@@ -206,8 +200,6 @@ namespace Rock.Client
             this.PageDisplayTitle = source.PageDisplayTitle;
             this.PageTitle = source.PageTitle;
             this.ParentPageId = source.ParentPageId;
-            this.RateLimitPeriod = source.RateLimitPeriod;
-            this.RateLimitRequestPerPeriod = source.RateLimitRequestPerPeriod;
             this.RequiresEncryption = source.RequiresEncryption;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

@@ -28,6 +28,23 @@ import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
 import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, RegistrationEntryState } from "./types.partial";
 import { FormError } from "@Obsidian/Utility/form";
+// LPC CODE
+import { useStore } from "@Obsidian/PageState";
+
+const store = useStore();
+
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+// END LPC CODE
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Payment",
@@ -87,7 +104,9 @@ export default defineComponent({
 
         /** The text to be displayed on the "Finish" button */
         finishButtonText(): string {
-            return "Pay";
+            // MODIFIED LPC CODE
+            return getLang() == 'es' ? 'Pagar' : 'Pay';
+            // END MODIFIED LPC CODE
         },
 
         /** true if there are any saved accounts to be selected. */
@@ -139,6 +158,9 @@ export default defineComponent({
     },
 
     methods: {
+        // LPC CODE
+        getLang,
+        // END LPC CODE
         /** User clicked the "previous" button */
         onPrevious() {
             this.$emit("previous");
@@ -283,10 +305,12 @@ export default defineComponent({
     template: `
 <div class="registrationentry-payment">
     <RockForm @submit="onNext">
-        <h4>Payment Information</h4>
+        <!-- MODIFIED LPC CODE -->
+        <h4>{{ getLang() == 'es' ? 'Informaci?n De Pago' : 'Payment Information' }}</h4>
         <div>
-            Payment Amount: {{ amountToPayText }}
+            {{ getLang() == 'es' ? 'Cantidad de Pago:' : 'Payment Amount:' }} {{ amountToPayText }}
         </div>
+        <!-- END MODIFIED LPC CODE -->
 
         <hr/>
 

@@ -1,0 +1,21 @@
+
+<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#subnavbar" aria-expanded="false" aria-controls="subnavbar">
+	<span class="sr-only">Toggle navigation</span>
+	<span class="icon">
+		<span class="icon-bar top-bar"></span>
+		<span class="icon-bar middle-bar"></span>
+		<span class="icon-bar bottom-bar"></span>
+	</span>
+</button>
+<div class="navbar-collapse collapse" id="subnavbar">
+	{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+		<ul class="nav">
+			{% for childPage in Page.Pages %}
+			  <li{% if childPage.Current == 'true' or childPage.IsParentOfCurrent == 'true' %} class="active"{% endif%}>
+				  <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+			  </li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+</div>
+		

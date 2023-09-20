@@ -42,7 +42,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.10"
-        [Obsolete( "Use ExitSystemCommunicationId instead.", true )]
+        [Obsolete( "Use ExitSystemCommunicationId instead.", false )]
         public int? ExitSystemEmailId { get; set; }
 
         /// <summary />
@@ -76,7 +76,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.10"
-        [Obsolete( "Use WelcomeSystemCommunicationId instead.", true )]
+        [Obsolete( "Use WelcomeSystemCommunicationId instead.", false )]
         public int? WelcomeSystemEmailId { get; set; }
 
         /// <summary>
@@ -114,6 +114,9 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AddUserAccountsDuringSync = source.AddUserAccountsDuringSync;
             this.ExitSystemCommunicationId = source.ExitSystemCommunicationId;
+            #pragma warning disable 612, 618
+            this.ExitSystemEmailId = source.ExitSystemEmailId;
+            #pragma warning restore 612, 618
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
@@ -123,6 +126,9 @@ namespace Rock.Client
             this.ScheduleIntervalMinutes = source.ScheduleIntervalMinutes;
             this.SyncDataViewId = source.SyncDataViewId;
             this.WelcomeSystemCommunicationId = source.WelcomeSystemCommunicationId;
+            #pragma warning disable 612, 618
+            this.WelcomeSystemEmailId = source.WelcomeSystemEmailId;
+            #pragma warning restore 612, 618
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

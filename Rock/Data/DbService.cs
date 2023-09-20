@@ -298,6 +298,7 @@ namespace Rock.Data
             return 0;
         }
 
+        // LPC MODIFIED CODE
         /// <summary>
         /// Executes the query, and returns the first column of the first row in the
         /// result set returned by the query. Additional columns or rows are ignored.
@@ -305,8 +306,9 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
+        /// <param name="commandTimeout">The command timeout (seconds)</param>
         /// <returns></returns>
-        public static object ExecuteScaler( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null )
+        public static object ExecuteScaler( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null, int? commandTimeout = null )
         {
             string connectionString = GetRockContextConnectionString();
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
@@ -318,6 +320,11 @@ namespace Rock.Data
                     using ( SqlCommand sqlCommand = new SqlCommand( query, con ) )
                     {
                         sqlCommand.CommandType = commandType;
+                        if ( commandTimeout.HasValue )
+                        {
+                            sqlCommand.CommandTimeout = commandTimeout.Value;
+                        }
+                        // END OF LPC MODIFIED CODE
 
                         if ( parameters != null )
                         {

@@ -172,7 +172,11 @@ namespace Rock.Attribute
                 Key = attribute.Key,
                 IsRequired = attribute.IsRequired,
                 Description = attribute.Description,
-                ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues, ConfigurationValueUsage.Edit, null )
+                ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues, ConfigurationValueUsage.Edit, null ),
+                // LPC CODE - Pulled in v15.2 changes
+                PreHtml = attribute.PreHtml,
+                PostHtml = attribute.PostHtml
+                // END LPC CODE - Pulled in v15.2 changes
             };
         }
 

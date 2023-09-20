@@ -292,7 +292,7 @@ namespace RockWeb.Blocks.Groups
 
             string template = GetAttributeValue( AttributeKey.LavaTemplate );
 
-            lContent.Text = template.ResolveMergeFields( mergeFields );
+            lContent.Text = template.ResolveMergeFields( mergeFields, "Sql,RockEntity" ); // SNS 2022-09-23 SQL and RockEntity needed to enable hack to pick up Group Coaches on GLT Group List
         }
 
         /// <summary>

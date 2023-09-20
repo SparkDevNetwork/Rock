@@ -29,6 +29,23 @@ import ComponentFromUrl from "@Obsidian/Controls/componentFromUrl";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType, RegistrationEntryState } from "./types.partial";
+// LPC CODE
+import { useStore } from "@Obsidian/PageState";
+
+const store = useStore();
+
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+// END LPC CODE
 
 export default defineComponent({
     name: "Event.RegistrationEntry.RegistrantPersonField",
@@ -115,18 +132,19 @@ export default defineComponent({
             };
 
             switch (props.field.personFieldType) {
+                // MODIFIED LPC CODE
                 case RegistrationPersonFieldType.FirstName:
-                    componentProps.label = "First Name";
+                    componentProps.label = getLang() == 'es' ? "Nombre" : "First Name";
                     componentProps.disabled = props.isKnownFamilyMember;
                     break;
 
                 case RegistrationPersonFieldType.LastName:
-                    componentProps.label = "Last Name";
+                    componentProps.label = getLang() == 'es' ? "Apellido" : "Last Name";
                     componentProps.disabled = props.isKnownFamilyMember;
                     break;
 
                 case RegistrationPersonFieldType.MiddleName:
-                    componentProps.label = "Middle Name";
+                    componentProps.label = getLang() == 'es' ? "Segundo Nombre" : "Middle Name";
                     break;
 
                 case RegistrationPersonFieldType.Campus:
@@ -139,46 +157,48 @@ export default defineComponent({
                     break;
 
                 case RegistrationPersonFieldType.Gender:
+                    componentProps.label = getLang() == 'es' ? "Género" : "Gender";
                     break;
 
                 case RegistrationPersonFieldType.Birthdate:
-                    componentProps.label = "Birthday";
+                    componentProps.label = getLang() == 'es' ? "Fecha de Nacimiento" : "Birthday";
                     break;
 
                 case RegistrationPersonFieldType.AnniversaryDate:
-                    componentProps.label = "Anniversary Date";
+                    componentProps.label = getLang() == 'es' ? "Fecha de Aniversario" : "Anniversary Date";
                     break;
 
                 case RegistrationPersonFieldType.Address:
-                    componentProps.label = "Address";
+                    componentProps.label = getLang() == 'es' ? "Dirección" : "Address";
                     break;
 
                 case RegistrationPersonFieldType.MaritalStatus:
-                    componentProps.label = "Marital Status";
+                    componentProps.label = getLang() == 'es' ? "Estado Civil" : "Marital Status";
                     componentProps.items = [...registrationEntryState.viewModel.maritalStatuses];
                     break;
 
                 case RegistrationPersonFieldType.ConnectionStatus:
-                    componentProps.label = "Connection Status";
+                    componentProps.label = getLang() == 'es' ? "Estatus de Conexión" : "Connection Status";
                     componentProps.items = [...registrationEntryState.viewModel.connectionStatuses];
                     break;
 
                 case RegistrationPersonFieldType.Grade:
-                    componentProps.label = "Grade";
+                    componentProps.label = getLang() == 'es' ? "Grado Escolar" : "Grade";
                     componentProps.items = [...registrationEntryState.viewModel.grades];
                     break;
 
                 case RegistrationPersonFieldType.HomePhone:
-                    componentProps.label = "Home Phone";
+                    componentProps.label = getLang() == 'es' ? "Teléfono de Casa" : "Home Phone";
                     break;
 
                 case RegistrationPersonFieldType.WorkPhone:
-                    componentProps.label = "Work Phone";
+                    componentProps.label = getLang() == 'es' ? "Teléfono de Trabajo" : "Work Phone";
                     break;
 
                 case RegistrationPersonFieldType.MobilePhone:
-                    componentProps.label = "Mobile Phone";
+                    componentProps.label = getLang() == 'es' ? "Teléfono Celular" : "Mobile Phone";
                     break;
+                // END MODIFIED LPC CODE
 
                 case RegistrationPersonFieldType.Race:
                     componentProps.label = "Race";

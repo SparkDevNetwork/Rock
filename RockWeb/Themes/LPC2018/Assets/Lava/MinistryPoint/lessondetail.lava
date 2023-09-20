@@ -1,0 +1,95 @@
+{% comment %}
+  Lesson Detail
+{% endcomment %}
+<style type="text/css">
+  div.details {
+    margin-bottom:25px;
+  }
+</style>
+{% assign parentItem = Item.ParentItems | First %}
+{% capture ministryPointSeriesList%}/MinistryPointSeries{% endcapture %}
+{% capture seriesPage %}/MinistryPointSeries/{{ parentItem.ContentChannelItem.Id}}{% endcapture%}
+
+<div class="row breadcrumbs">
+  <div class="col-xs-12">
+    <a href="{{ministryPointSeriesList}}">Ministry Point Series List</a> &gt;
+    <a href="{{seriesPage}}">{{parentItem.ContentChannelItem.Title}}</a> &gt;
+    {{ Item.Title }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-12">
+    <h1 style="text-align:center;">{{ parentItem.ContentChannelItem.Title}}</h1>
+    <h3 style="text-align:center;">{{ Item.Title }}</h3>
+  </div>
+</div>
+<div class="row details">
+  <div class="col-sm-6">
+       {% assign fileGuid = parentItem.ContentChannelItem | Attribute:'SeriesGraphic','RawValue' %}
+      {%capture imageUrl %}/GetImage.ashx?Guid={{fileGuid}}&height=250{% endcapture %}
+      <img src="{{ imageUrl }}" alt="{{ item.Title }}" class="img-responsive" />
+  </div>
+  <div class="col-sm-6">
+      {{ Item.Content }}
+  </div>
+</div>
+
+<div class="row ">
+  <div class="col-xs-12">
+      {% assign videoRaw = Item | Attribute:'Video','RawValue'%}
+      <ul class="nav nav-tabs" role="tablist">
+        {% if videoRaw != '' %}
+          <li role="presentation"><a href="#Video" role="tab" aria-controls="Video" data-toggle="tab">Video</a></li>
+        {% endif %}
+          <li role="presentation"><a href="#Resources" role="tab" aria-controls="Resources" data-toggle="tab">Resources</a></li>
+      </ul>
+
+      <div class="tab-content">
+        {% if videoRaw != '' %}
+          <div role="tabpanel" class="tab-pane fade" id="Video">
+              <h3>Video</h3>
+              {% capture videoSource%}https://fast.wistia.net/embed/iframe/{{videoRaw}}?videoFoam=true{% endcapture%}
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+              <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                <iframe src="{{videoSource}}"
+                  allow="autoplay; fullscreen"
+                  allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed"
+                  allowfullscreen msallowfullscreen width="100%" height="100%"></iframe></div>
+            </div>
+
+          </div>
+      {% endif %}
+      <div role="tabpanel" class="tab-pane fade" id="Resources">
+        {% assign presentation = Item | Attribute:'Presentation','RawValue'%}
+        {% assign lessonPlan = Item | Attribute:'LessonPlan','RawValue' %}
+        {% assign discussionGuide = Item | Attribute:'DiscussionGuide','RawValue'%}
+
+        {% if presentation != '' %}
+          <h3>Presentation</h3>
+          <a href="/GetFile.ashx?Guid={{presentation}}">View</a>
+        {% endif %}
+        {% if lessonPlan != '' %}
+          <h3>Lesson Plan</h3>
+          <a href="/GetFile.ashx?Guid={{lessonPlan}}">View</a>
+        {% endif %}
+        {% if discussionGuide != ''%}
+          <h3>Discussion Guide</h3>
+          <a href="/GetFile.ashx?Guid={{discussionGuide}}">View</a>
+        {% endif %}
+      </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(document).ready(function (){
+      {% if videoRaw != '' %}
+      $("a[href='#Video']").tab("show");
+      {% else %}
+        $("a[href='#Resources']").tab("show");
+      {% endif %}
+    });
+</script>
+
+{% if videoRaw != '' %}
+  <script src="https://fast.wistia.net/assets/external/E-v1.js" async></script>
+{% endif %}

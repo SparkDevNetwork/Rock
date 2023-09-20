@@ -1,0 +1,118 @@
+//
+// _events.less
+//
+
+
+//For calendar
+
+.calendar-filters {
+	.col-md-12 {
+		padding:0 15px!important;
+	}
+	.col-md-6 {
+		padding:0;
+	}
+}
+
+.event-calendar {
+	display: flex;
+	flex-wrap: wrap;
+	padding-bottom: 30px;
+	a {
+		text-decoration: none;
+		color: inherit !important;
+	}
+	.card {
+		padding: 30px!important;
+		.title-section {
+			flex-grow:1;
+		}
+		h5 {
+			padding-bottom: 8px;
+			display: flex;
+			text-align: left;
+			margin-bottom: 0;
+			i {
+				color: @brand-primary;
+				font-size: 20px;
+				padding-right: 20px;
+				font-weight: 500;
+			}
+			p {
+				margin:0;
+			}
+		}
+	}
+}
+
+.card-static {
+  background-color: @theme-3;
+  padding-top: 50px;
+  padding-right: 40px;
+  padding-bottom: 50px;
+  padding-left: 40px;
+  box-shadow: 0 20px 150px rgba(0,0,0,.1);
+  -webkit-box-shadow: 0 20px 150px rgba(0,0,0,.1);
+  -moz-box-shadow: 0 20px 150px rgba(0,0,0,.1);
+  border-radius: @border-radius-base;
+  -webkit-border-radius: @border-radius-base;
+  margin-bottom: 0px !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.card-sidebar {
+  background-color: @theme-3;
+  border-right: none;
+  border-radius: @border-radius-base;
+  padding-top: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  margin-bottom: 80px;
+  padding-left: 20px;
+  box-shadow: 0px 10px 60px -7px rgba(0,0,0,0.06);
+}
+
+.campus-logo {
+  background-color: @theme-1-text;
+  color: @theme-1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  border: none !important;
+  display: inline-block;
+  text-transform: uppercase !important;
+  font-weight: 900 !important;
+  font-family: "proxima-nova-n6", "proxima-nova", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  width: 2.55em !important;
+  line-height: 2.4em !important;
+  text-align: center !important;
+  font-size: 15px;
+  padding: 0 !important;
+  outline: none !important;
+}
+
+
+
+
+//------------------------------------media queries------------------------
+
+@media (min-width: @screen-md-min) {
+	.calendar-filters {
+		.col-md-12 {
+			padding: 0 30px!important;
+		}
+		.col-md-6 {
+			&:first-of-type {
+				padding-left:0;
+				padding-right:15px;
+			}
+			&:last-of-type {
+				padding-right:0;
+				padding-left: 15px;
+			}
+		}
+	}
+}
+
+
+

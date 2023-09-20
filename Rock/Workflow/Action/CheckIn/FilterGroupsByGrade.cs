@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -66,7 +66,13 @@ namespace Rock.Workflow.Action.CheckIn
                     int? personsGradeOffset = person.Person.GradeOffset;
                     if ( personsGradeOffset == null && !gradeRequired )
                     {
-                        continue;
+                        // LPC CHANGE
+                        // If a person has no grade, it makes no sense to fail to remove groups that require a grade.
+                        // Continue execution of the algorithm and let it remove any groups that require a grade.
+
+                        // continue;
+
+                        // END LPC CHANGE
                     }
 
                     foreach ( var groupType in person.GroupTypes.ToList() )

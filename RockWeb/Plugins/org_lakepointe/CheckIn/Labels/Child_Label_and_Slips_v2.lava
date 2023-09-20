@@ -1,0 +1,216 @@
+{% comment %} Child Label and Slips {% endcomment %}
+
+{% comment %} Determine Group Information {% endcomment %}
+
+{% assign groupTimeJSONString = '[' %}
+{% assign groupMap = '' %}
+
+{% assign isNursery = false %}
+{% assign isSelfReleaseEligible = false %}
+{% assign memo = '' %}
+
+{% for gt in Person.GroupTypes %}
+
+    {% if gt.Id == 626 or gt.Id == 627 %}
+        {% assign isSelfReleaseEligible = true %}
+    {% endif %}
+
+    {%  for g in gt.Groups %}
+        {% assign groupObject = g.Id | GroupById %}
+
+        {% if isNursery == false %}
+            {% assign isNursery = groupObject | Attribute:'IncludeNurseryCareOnLabel' | AsBoolean %}
+        {% endif %}
+
+        {% if memo == '' %}
+            {% assign memo = groupObject | Attribute:'MEMO' %}
+        {% endif %}
+
+        {% capture groupScheduleStartTime %}{[ GetGroupScheduleStartTime group:groupObject ]}{% endcapture %}
+        {% assign cleanGroupScheduleStartTime = groupScheduleStartTime | Date:'H:mm' | Remove:':' %}
+        {% capture groupTimeObject %}{"Time":{{cleanGroupScheduleStartTime}},"Value":"{{groupObject.Id}}"},{% endcapture %}
+        {% assign groupTimeJSONString = groupTimeJSONString | Append:groupTimeObject %}
+
+        {% assign groupMap = groupMap | AddToDictionary:groupObject.Id, groupObject %}
+    {% endfor %}
+{% endfor %}
+
+{% assign groupTimeJSONString = groupTimeJSONString | ReplaceLast:',','' | Append:']' %}
+{% assign sortedGroupTimeJSON = groupTimeJSONString | FromJSON | Sort:'Time' %}
+{% assign groupCount = sortedGroupTimeJSON | Size %}
+
+{% assign g1Id = sortedGroupTimeJSON | Index:0 | Property:'Value'%}
+{% assign g1 = groupMap[g1Id] %}
+
+{% if groupCount > 1 %}
+    {% assign g2Id = sortedGroupTimeJSON | Index:1 | Property:'Value'%}
+    {% assign g2 = groupMap[g2Id] %}
+{% endif%}
+
+{% if groupCount > 2 %}
+    {% assign g3Id = sortedGroupTimeJSON | Index:2 | Property:'Value'%}
+    {% assign g3 = groupMap[g3Id] %}
+{% endif%}
+
+{% assign memoSize = memo | Size %}
+
+
+{% comment %} Determine Person Information {% endcomment %}
+
+{% assign personAllergy = Person | Attribute:'Allergy' %}
+{% assign personMedicalAlert = Person | Attribute:'Arena-16-81' %}
+{% assign personLegalNotes = Person | Attribute:'LegalNotes' %}
+{% assign personBaptized = Person | Attribute:'Arena-15-73' %}
+{% assign personFoster = Person | FosterAdoptedChildCheck %}
+{% assign personSelfRelease = Person | Attribute:'Arena-16-384' %}
+{% assign personGrade = Person | Property:'GradeFormatted' %}
+
+
+{% comment %} Child Label {% endcomment %}
+
+CT~~CD,~CC^~CT~
+^XA~JSN^LT0^MNW^MTD^PON^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^PW800^LL0400^LS0
+
+^FO7,20^A0N,83,83^TBN,800,83^FH\^FD{{ Person.NickName }}^FS
+^FO7,100^A0N,60,60^TBN,800,60^FH\^FD{{ Person.LastName }}^FS
+
+^FO7,180^FB780,1,0,L^A0N,40,40^FH\^FD{{ g1.Name }}^FS
+
+{% if g2 != '' %}
+^FO7,230^FB780,1,0,L^A0N,40,40^FH\^FD{{ g2.Name }}^FS
+{% endif %}
+
+{% if g3 != '' %}
+^FO7,280^FB780,1,0,L^A0N,40,40^FH\^FD{{ g3.Name }}^FS
+{% endif %}
+
+^FO560,340^FB290,1,0,C^A0N,60,60^FD{{ Person.SecurityCode }}^FS
+
+^FO7,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if personAllergy != '' %}A{% endif %}^FS
+^FO73,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if personMedicalAlert  != '' %}M{% endif %}^FS
+^FO140,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if personLegalNotes != '' %}C{% endif %}^FS
+^FO207,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if personBaptized  != ''  %}B{% endif %}^FS
+^FO273,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if personFoster == 'true' %}P{% endif %}^FS
+^FO340,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if personSelfRelease == 'Yes' %}S{% endif %}^FS
+
+^MMT
+^XZ
+
+
+{% comment %} In Slip {% endcomment %}
+
+^XA~JSN^LT0^MNW^MTD^POI^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^PW800^LL0400^LS0^FWI,0
+
+^FO740,327^FB67,1,0,R^A0R,50,50^FDIN^FS
+^FO710,227^FB167,1,0,R^A0R,37,37^FH\^FD{{ "Now" | Date:"M/d/yyyy" }}^FS
+^FO670,227^FB167,1,0,R^A0R,37,37^FH\^FD{{ "Now" | Date:"hh:mm tt" }}^FS
+
+^FO710,7^FB500,L^A0R,75,75^FH\^FD{{ Person.SecurityCode }}^FS
+
+^FO620,7^FB387,1,0,L^A0R,40,40^FH\^FD{{ Person.NickName }}^FS
+^FO585,7^FB387,1,0,L^A0R,40,40^FH\^FD{{ Person.LastName }}^FS
+^FO550,7^FB387,1,0,L^A0R,30,30^FH\^FD{{ Person.BirthDate | Date:"M/d/yyyy" }}^FS
+
+^FO430,7^FB100,L^A0R,100,100^FH\^FD{% if personAllergy != '' %}A{% endif %}^FS
+^FO430,63^FB100,1,0,L^A0R,100,100^FH\^FD{% if personMedicalAlert  != '' %}M{% endif %}^FS
+^FO430,133^FB100,1,0,L^A0R,100,100^FH\^FD{% if personSelfRelease == 'Yes' %}S{% endif %}^FS
+
+{% if isNursery == true %}
+^FO573,200^GB1,194,4^FS
+^FO455,200^GB1,194,4^FS
+^FO455,390^GB120,1,4^FS
+^FO543,200^FB193,1,0,L^A0R,27,27^FDBottle/Nursing^FS
+^FO545,200^GB1,193,1^FS
+^FO513,200^FB193,1,0,L^A0R,27,27^FDCrackers^FS
+^FO515,200^GB1,193,1^FS
+^FO483,200^FB193,1,0,L^A0R,27,27^FDGF Cheerios^FS
+^FO485,200^GB1,193,1^FS
+^FO453,200^FB193,1,0,L^A0R,27,27^FDOther^FS
+{% else %}
+    {% if personGrade == 'Kindergarten' %}
+        ^FO470,230^FB193,1,0,L^A0R,40,40^FDKinder^FS
+    {% else %}
+        ^FO470,230^FB193,1,0,L^A0R,40,40^FD{{ personGrade }}^FS
+    {% endif %}
+{% endif %}
+
+^FO410,7^FB325,1,0,L^A0R,20,20^FH\^FD{% if personAllergy != '' %}{{ personAllergy | Truncate:50,'...' }}{% endif %}^FS
+
+{% assign g1Split = g1.Name | Split:'-' %}
+{% assign g1ClassName = g1Split[0] %}
+{% assign g1LeaderName = g1Split[1] %}
+^FO350,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g1ClassName }}^FS
+^FO320,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g1LeaderName }}^FS
+^FO290,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g1 | Attribute:'LOCATION' }}^FS
+^FO270,7^FB325,1,0,L^A0R,20,20^FH\^FD{{ g1 | Attribute:'SNACK' }}^FS
+
+{% if g2 != '' %}
+{% assign g2Split = g2.Name | Split:'-' %}
+{% assign g2ClassName = g2Split[0] %}
+{% assign g2LeaderName = g2Split[1] %}
+^FO220,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g2ClassName }}^FS
+^FO190,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g2LeaderName }}^FS
+^FO160,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g2 | Attribute:'LOCATION' }}^FS
+^FO140,7^FB325,1,0,L^A0R,20,20^FH\^FD{{ g2 | Attribute:'SNACK' }}^FS
+{% endif %}
+
+{% if g3 != '' %}
+{% assign g3Split = g3.Name | Split:'-' %}
+{% assign g3ClassName = g3Split[0] %}
+{% assign g3LeaderName = g3Split[1] %}
+^FO90,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g3ClassName }}^FS
+^FO60,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g3LeaderName }}^FS
+^FO30,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g3 | Attribute:'LOCATION' }}^FS
+^FO10,7^FB325,1,0,L^A0R,20,20^FH\^FD{{ g3 | Attribute:'SNACK' }}^FS
+{% endif %}
+
+^FO10,345^FB410,L^A0,40,40^FH\^FD*Give this label to leader^FS
+
+{% if memoSize > 0 or personSelfRelease != 'Yes' or isSelfReleaseEligible == false %}^MMT{% else %}^MMC{% endif %}
+^XZ
+
+
+{% comment %} Out Slip if not Self Release {% endcomment %}
+{% if personSelfRelease != 'Yes' or isSelfReleaseEligible == false %}
+
+^XA~JSN^LT0^MNW^MTD^POI^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^PW800^LL0400^LS0^FWI,0
+
+^FO740,293^FB100,1,0,R^A0R,50,50^FDOUT^FS
+^FO710,227^FB167,1,0,R^A0R,37,37^FH\^FD{{ "Now" | Date:"M/d/yyyy" }}^FS
+^FO670,227^FB167,1,0,R^A0R,37,37^FH\^FD{{ "Now" | Date:"hh:mm tt" }}^FS
+
+^FO710,7^FB500,L^A0R,75,75^FH\^FD{{ Person.SecurityCode }}^FS
+
+^FO350,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g1ClassName }}^FS
+^FO320,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g1LeaderName }}^FS
+^FO290,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g1 | Attribute:'LOCATION' }}^FS
+
+{% if g2 != '' %}
+^FO220,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g2ClassName }}^FS
+^FO190,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g2LeaderName }}^FS
+^FO160,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g2 | Attribute:'LOCATION' }}^FS
+{% endif %}
+
+{% if g3 != '' %}
+^FO90,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g3ClassName }}^FS
+^FO60,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g3LeaderName }}^FS
+^FO30,7^FB325,1,0,L^A0R,30,30^FH\^FD{{ g3 | Attribute:'LOCATION' }}^FS
+{% endif %}
+
+^FO10,345^FB445,L^A0,40,40^FH\^FD*Keep this label for pickup^FS
+
+{% if memoSize > 0%}^MMT{% else %}^MMC{% endif %}
+^XZ
+
+{% endif %}
+
+{% comment %} Print Memo Label {% endcomment %}
+{% if memoSize > 0 %}
+    ^XA
+    ^FO33,13^FB350,17,0,L^A0R,27,27^FH\^FD{{ memo }}^FS
+    ^MMC
+    ^XZ
+{% endif %}

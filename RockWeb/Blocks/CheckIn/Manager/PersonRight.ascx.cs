@@ -420,6 +420,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             var selectedAttendanceIds = hfCurrentAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
+            selectedAttendanceIds = new List<int> { selectedAttendanceIds[0] };  // LPC CODE -- only print the labels corresponding to the first attendance; our labels contain content for everything they checked into
 
             var fileGuids = cblLabels.SelectedValues.AsGuidList();
 

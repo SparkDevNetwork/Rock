@@ -32,12 +32,6 @@ namespace Rock.Client
     public partial class AnalyticsSourceDateEntity
     {
         /// <summary />
-        public int? Age { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.Crm.AgeBracket? AgeBracket { get; set; }
-
-        /// <summary />
         public int CalendarMonth { get; set; }
 
         /// <summary />
@@ -175,8 +169,6 @@ namespace Rock.Client
         /// <param name="source">The source.</param>
         public void CopyPropertiesFrom( AnalyticsSourceDate source )
         {
-            this.Age = source.Age;
-            this.AgeBracket = source.AgeBracket;
             this.CalendarMonth = source.CalendarMonth;
             this.CalendarMonthName = source.CalendarMonthName;
             this.CalendarMonthNameAbbreviated = source.CalendarMonthNameAbbreviated;

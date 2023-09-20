@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// This is the legacy version. Use ContributionStatementGenerator instead.
     /// </summary>
-    [DisplayName( "Contribution Statement Lava (Legacy)" )]
+    [DisplayName( "Contribution Statement Lava ( Legacy )" )]
     [Category( "Finance" )]
     [Description( "Obsolete. Use ContributionStatementGenerator instead." )]
     [AccountsField( "Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be used.", false, order: 0 )]
@@ -321,7 +321,9 @@ namespace RockWeb.Blocks.Finance
                                         m => m.PersonId,
                                         ( p, m ) => new { p, m } )
                                     .SelectMany( x => x.m.DefaultIfEmpty(), ( y, z ) => new { Person = y.p, GroupMember = z } )
-                                    .Select( p => new { FirstName = p.Person.NickName, LastName = p.Person.LastName, FamilyRoleOrder = p.GroupMember.GroupRole.Order, Gender = p.Person.Gender, PersonId = p.Person.Id } )
+                                    // LPC MODIFIED - Contribution Statements need a legal name, not a nickname
+                                    .Select( p => new { FirstName = p.Person.FirstName, LastName = p.Person.LastName, FamilyRoleOrder = p.GroupMember.GroupRole.Order, Gender = p.Person.Gender, PersonId = p.Person.Id } )
+                                    // END LPC MODIFIED
                                     .DistinctBy( p => p.PersonId )
                                     .OrderBy( p => p.FamilyRoleOrder ).ThenBy( p => p.Gender )
                                     .ToList();

@@ -1,0 +1,81 @@
+{% comment %} Volunteer Label {% endcomment %}
+
+{% comment %} Determine Group Information {% endcomment %}
+
+{% assign groupTimeJSONString = '[' %}
+{% assign groupMap = '' %}
+
+{% for gt in Person.GroupTypes %}
+    {%  for g in gt.Groups %}
+        {% assign groupObject = g.Id | GroupById %}
+
+        {% capture groupScheduleStartTime %}{[ GetGroupScheduleStartTime group:groupObject ]}{% endcapture %}
+        {% assign cleanGroupScheduleStartTime = groupScheduleStartTime | Date:'H:mm' | Remove:':' %}
+        {% capture groupTimeObject %}{"Time":{{cleanGroupScheduleStartTime}},"Value":"{{groupObject.Id}}"},{% endcapture %}
+        {% assign groupTimeJSONString = groupTimeJSONString | Append:groupTimeObject %}
+
+        {% assign groupMap = groupMap | AddToDictionary:groupObject.Id, groupObject %}
+    {% endfor %}
+{% endfor %}
+
+{% assign groupTimeJSONString = groupTimeJSONString | ReplaceLast:',','' | Append:']' %}
+{% assign sortedGroupTimeJSON = groupTimeJSONString | FromJSON | Sort:'Time' %}
+{% assign groupCount = sortedGroupTimeJSON | Size %}
+
+{% assign g1Id = sortedGroupTimeJSON | Index:0 | Property:'Value'%}
+{% assign g1 = groupMap[g1Id] %}
+
+{% if groupCount > 1 %}
+    {% assign g2Id = sortedGroupTimeJSON | Index:1 | Property:'Value'%}
+    {% assign g2 = groupMap[g2Id] %}
+{% endif%}
+
+{% if groupCount > 2 %}
+    {% assign g3Id = sortedGroupTimeJSON | Index:2 | Property:'Value'%}
+    {% assign g3 = groupMap[g3Id] %}
+{% endif%}
+
+
+CT~~CD,~CC^~CT~
+^XA~JSN^LT0^MNW^MTD^PON^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^MMC^PW800^LL0400^LS0
+
+{% comment %} Print Name {% endcomment %}
+^FO7,15^A0N,83,83^TBN,490,83^FH\^FD{{ Person.NickName }}^FS
+^FO7,90^A0N,60,60^TBN,490,60^FH\^FD{{ Person.LastName }}^FS
+
+{% comment %} Print Group Information {% endcomment %}
+^FO7,160^FB490,1,0,L^A0N,30,30^FH\^FD{{g1.Name}}^FS
+
+{% if g2 != '' %}
+^FO7,190^FB490,1,0,L^A0N,30,30^FH\^FD{{g2.Name}}^FS
+{% endif %}
+
+{% if g3 != '' %}
+^FO7,220^FB490,1,0,L^A0N,30,30^FH\^FD{{g3.Name}}^FS
+{% endif %}
+
+^FO700,305^GFA,521,1032,12,:Z64:eJxFkjFOxDAQRSdKYQkKH8E3WV/MIpE4CJQrDoFMRblHIBINZegsrbGZmT9OUo2efvz+OHm70pUeVpJn2alRyDrfGy2r33ROlQK5Xefa17DNBTySz1PVucRXV/h15Ux3WpD3ZW4UVZD4jGqCwukhSK5SNEH1pyC5fgiK66vbIUjulmcTVH87BMl9HoLivg9BcvkQVJ/7GiFgvgxBcTkOgfAhkPwQCB8CyRfifpvyNAScf2przCIQPgScvwyBcG8Czjf/M8vrynFFkt8uswgC+CSJgPNJBMZJBAHnc0m/DR5YgHwjFhhfuOS0B9t3LoMHLjlZnldqg3OdZeS5zmVwrhMsz+mDy0rghdNxNS7pbHlO+804SR1wueG5gPMZLADv8gkbeNA64F4+YXxXziux4Ev5o/yEHv2ZsqArhwAcAuMQgIdzXxM8K4fgA1wF38oh+FUOwV05BH/gKujgEIBDAA6BcRWAQwBuV4RZBTZjA8x2RZhV8EKnADMEnU4Bz/99D0Rf:EE30
+
+{% comment %} Print L3 Shield {% endcomment %}
+^FO312,260^GFA,753,2760,20,:Z64:eJzlls1u3CAQxyFWhNQ97DFHPwp5iT4PfpQ9bw99hPAoPkY57aGVrMj11MAMMzAo50pFysb727/nCxgw5v8cl0OzK2jm4dYjG+ChX4Vj6dgMAK8tejpR//KU2N57TaM1GDKL6lWAT8leCmtSeUO2iiQQwa8miTJEbWZiwmBF8E7omVlNxTOrqQTBYpNEGVthTrJdRvdxlxE6jOxFRDjj7xfheKa6B2aeKuI7XX2IVZfn9sosUFiu1e01IfbxqOVm3Wa+vRcd23sYt/e69fxcTGtvPdWvSlf+iKXwo03fOt1EuqXRrTkC1n380LpcLtvVD8a6aLv5QN9jXWtv0bq91Fmug7OEV9YVFsUEElvQsGR5CytdXi+4iR2y/P9odU+CkS777XT5odc5qOu5rPv7LT8ckp170vY6KOsAGe3emOZta3WrYKR7JEZ9B6iAvupM1c1jHbEw1t1/om5l3eJQF5H5MreNLjGbdL7VmdRbPPeNueSa8yV2pf3RsmjmPzkAI3WXLQVae7Sj8EWzc1iOSbCJ9+8u2IF2K7PIHJc0F2Yp+TAL5Uzw8hiA0khBNuiQjT+D7PhpId9wv9NIC+/39wDytJiBBrPa20UfH/X72nnFiTQNWD0/5Gk2YuEL3SoYBR0F8yoNDlAgSqQ5ga0KuSaySYYBtoeyDo8CjA3zKjw+k5Tj7sZhtdviuGdeuS1s6ZhT14js+LNnZnB/Oa8Iq2JucB+atLl/YvwFBTTc/A==:D859
+
+
+{% comment %} Obtain Icon Information and Print Icons {% endcomment %}
+{% assign trainingDate = Person | Attribute:'TrainingDate' %}
+{% assign trainingResult = Person | Attribute:'TrainingResult' %}
+{% if trainingDate != blank and trainingResult == 'Pass' %}
+    ^FO12,334^GFA,329,804,12,:Z64:eJzF0s1pxDAQBeARPug4JagUNRZWXnzI0SWkFXWQFtTBCnxRQPhFv7NeSG6BCAyfYDQaPUykAsky59MO66QCpGgB4rTOnMRxEXNQWexJmpqVbj+ayE7bP/Kvd13meZkzLmKdtbzl+t6Wg/V9A3jCKLMgDczDZQs/zwCzqLR6oN1RMjmw720Ol/SReTt7exyR1zqrrg7dfLFJFtuoMUHFpfitTrCW/sOOuutdtU6lF9+r66cy39MwlRnEJ29x+sbv1e0NjvcwbfenzeeHFz/af9PMPZPWR+MccZTH9Biav3o8rjq72NOsNhLhf69vzJapGw==:79BA
+{% endif %}
+
+{% assign cb = Person | Attribute:'CoreBeliefClr' %}
+{% if cb != '' %}
+    ^FO97,333^GFA,193,708,12,:Z64:eJzN0bENgCAQBdAjFJSO4Ca6mdK5Fp1rOIIlJsqpBD6nMdaQmDwKz39foiqOYQu3vMIj7zBzyNQ8MRwILxtPvUtuFmqXPNLdV9jkD/SWNEyk/Ic74eF6fApz+4jxssOPx+gtrVPmPOe/MmhY5JT5rwWxV7OWfWUPsh/FM3qTfT56lv1r8V+qPSebmlQV:9688
+{% endif %}
+
+{% assign tClear = Person | Attribute:'Arena-29-259' %}
+{% if tClear != '' %}
+    ^FO181,333^GFA,209,792,12,:Z64:eJzF0kEKwyAQBdARFy5zBI/izWKPZm9S6AUC3WQR/K1OnBnIJimU/oU8MBM/KBHlhUYcNrFHFQfjCIhRko6qPfSbAJ2dXsZPPSsWSId4k79TVFK6ZoeWInWAx6jzyXLw1Lb9ym5jbt2rNW+mGjt1V3Ps3Nds1tnsVjMFzlfeGx58ZjazuUnnuI1w1zfwY3u5inP+U949460Z:5FD5
+{% endif %}
+
+^XZ

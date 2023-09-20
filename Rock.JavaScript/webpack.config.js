@@ -13,10 +13,6 @@ module.exports = {
                 type: "assign-properties",
                 name: ["Rock", "RealTime"]
             }
-        },
-        Plyr: {
-            import: "./src/plyr/index.ts",
-            filename: "plyr.js"
         }
     },
     output: {
@@ -39,12 +35,7 @@ module.exports = {
             {
                 test: /\.ts$/,
                 loader: "ts-loader"
-            },
-            /* `.css` files are plain CSS, configure standard loader. */
-            {
-                test: /\.css$/,
-                use: ["style-loader", "css-loader"]
-            },
+            }
         ],
     },
     optimization: {

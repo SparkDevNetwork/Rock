@@ -1,0 +1,56 @@
+{%- comment -%} Child Label for All Campuses {%- endcomment -%}
+
+{%- comment -%}
+    Zebra 200 DPI Label
+{%- endcomment -%}
+
+{%- comment -%}
+    LABEL HEADER FOR PRINTER
+{%- endcomment -%}
+CT~~CD,~CC^~CT~
+^XA~JSN^LT0^MNW^MTD^PON^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^MMC^PW800^LL0400^LS0
+
+{%- comment -%}
+    Obtain Picture
+{%- endcomment -%}
+^FD{{ Person | ZebraPhoto:'290',1.15,0.9,'LOGO.PNG',0 }}^FS
+
+{%- comment -%}
+    Print Picture & Title
+{%- endcomment -%}
+^FO503,7^GB290,290^FS
+^FO503,7^XGR:LOGO.PNG^FS
+^IDR:LOGO.PNG^FS
+
+{%- comment -%}
+    Print Name
+{%- endcomment -%}
+^FO7,67^A0N,83,83^TBN,490,83^FH\^FD{{ Person.NickName }}^FS
+^FO7,153^A0N,60,60^TBN,490,60^FH\^FD{{ Person.LastName }}^FS
+
+{%- comment -%}
+    Print Group Information
+{%- endcomment -%}
+^FO7,320^FB547,1,0,L^A0N,20,20^FH\^FD{{Group.Id | GroupById | Property:'Name'}}^FS
+^FO520,313^FB240,1,0,R^A0N,100,100^FD{{- Group.Id | GroupById | Attribute:'GROUPID' -}}^FS
+
+{%- comment -%}
+    Print Personal Information
+{%- endcomment -%}
+^FO7,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personAllergy = Person | Attribute:'Allergy' %}{% if personAllergy != '' %}A{% endif %}^FS
+^FO73,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personMedicalAlert = Person | Attribute:'Arena-16-81' %}
+{% if personMedicalAlert  != '' %}M{% endif %}^FS
+^FO140,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personLegalNotes = Person | Attribute:'LegalNotes' %}
+{% if personLegalNotes != '' %}C{% endif %}^FS
+^FO207,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personBaptized = Person | Attribute:'Arena-15-73' %}
+{% if personBaptized  != ''  %}B{% endif %}^FS
+^FO273,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if Person.FirstTime == true %}F{% endif %}^FS
+^FO340,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personSelfRelease = Person | Attribute:'Arena-16-384' %}
+{% if personSelfRelease == 'Yes' %}S{% endif %}^FS
+^FO410,363^FB67,1,0,L^A0N,43,43^FH\^FD{% assign personFoster = Person | FosterAdoptedChildCheck %}{% if personFoster == 'true' %}P{% endif %}^FS
+
+{%- comment -%}
+    LABEL END FOR PRINTER
+{%- endcomment -%}
+^XZ

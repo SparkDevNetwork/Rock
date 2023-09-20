@@ -97,12 +97,7 @@ namespace Rock.Client
         public string PushTitle { get; set; }
 
         /// <summary />
-        // Made Obsolete in Rock "1.15"
-        [Obsolete( "Use SmsFromSystemPhoneNumberId instead.", false )]
         public int? SMSFromDefinedValueId { get; set; }
-
-        /// <summary />
-        public int? SmsFromSystemPhoneNumberId { get; set; }
 
         /// <summary />
         public string SMSMessage { get; set; }
@@ -169,10 +164,7 @@ namespace Rock.Client
             this.PushOpenMessage = source.PushOpenMessage;
             this.PushSound = source.PushSound;
             this.PushTitle = source.PushTitle;
-            #pragma warning disable 612, 618
             this.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
-            #pragma warning restore 612, 618
-            this.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
             this.SMSMessage = source.SMSMessage;
             this.Subject = source.Subject;
             this.Title = source.Title;
@@ -199,7 +191,7 @@ namespace Rock.Client
         public Dictionary<string, string> LavaFields { get; set; }
 
         /// <summary />
-        public SystemPhoneNumber SmsFromSystemPhoneNumber { get; set; }
+        public DefinedValue SMSFromDefinedValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

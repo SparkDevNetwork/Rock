@@ -586,18 +586,26 @@ const attributeValuesContainerGallery = defineComponent({
                 key: "text",
                 name: "Text Attribute",
                 order: 2,
-                configurationValues: {}
+                configurationValues: {},
+                // LPC CODE - Pulled in v15.2 changes
+                preHtml: "<div class='bg-primary p-3'>"
+                // END LPC CODE - Pulled in v15.2 changes
             },
             color: {
                 attributeGuid: newGuid(),
                 categories: [categories[0], categories[2]],
                 description: "Favorite color? Or just a good one?",
                 fieldTypeGuid: FieldType.Color,
-                isRequired: false,
+                // MODIFIED LPC CODE - Pulled in v15.2 changes
+                isRequired: true,
+                // END MODIFIED LPC CODE - Pulled in v15.2 changes
                 key: "color",
                 name: "Random Color",
                 order: 4,
-                configurationValues: {}
+                configurationValues: {},
+                // LPC CODE - Pulled in v15.2 changes
+                postHtml: "</div>"
+                // END LPC CODE - Pulled in v15.2 changes
             },
             bool: {
                 attributeGuid: newGuid(),
@@ -619,7 +627,10 @@ const attributeValuesContainerGallery = defineComponent({
                 key: "textAgain",
                 name: "Some Text",
                 order: 5,
-                configurationValues: {}
+                configurationValues: {},
+                // LPC CODE - Pulled in v15.2 changes
+                preHtml: "<h5>PRE HTML!</h5>"
+                // END LPC CODE - Pulled in v15.2 changes
             },
             single: {
                 attributeGuid: newGuid(),
@@ -2024,8 +2035,8 @@ const itemsWithPreAndPostHtmlGallery = defineComponent({
     setup() {
         return {
             value: ref<ItemWithPreAndPostHtml[]>([
-                { preHtml: '<div class="row"><div class="col-sm-6">', postHtml: "</div>", slotName: "item1" },
-                { preHtml: '<div class="col-sm-6">', postHtml: "</div></div>", slotName: "item2" }
+                { preHtml: '<div class="row"><div class="col-sm-6">', postHtml: "</div>", slotName: "item1", isRequired:false },
+                { preHtml: '<div class="col-sm-6">', postHtml: "</div></div>", slotName: "item2", isRequired: false }
             ]),
             importCode: getControlImportPath("itemsWithPreAndPostHtml"),
             exampleCode: `<ItemsWithPreAndPostHtml :items="value">
