@@ -971,7 +971,6 @@ GO
                 && type != typeof( Rock.Model.Attribute )
                 && type != typeof( Rock.Model.AttributeValue );
 
-            var modelInheritance = new List<string>();
             var properties = GetEntityProperties( type, false, true, true );
 
             var sb = new StringBuilder();
@@ -1009,12 +1008,6 @@ GO
             sb.AppendLine( "" );
             sb.AppendLine( @"using Rock.Data;
 " );
-
-
-            if ( hasQueryableAttributes )
-            {
-                modelInheritance.Add( $"IHasQueryableAttributes<{type.Name}.QueryableAttributeValue>" );
-            }
 
             sb.AppendFormat( "namespace {0}" + Environment.NewLine, type.Namespace );
             sb.AppendLine( "{" );
