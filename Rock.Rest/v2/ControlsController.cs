@@ -2140,6 +2140,79 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Entity Picker
+
+        /// <summary>
+        /// Gets the entity type GUIDs to be displayed in the entity type picker part of the entity picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="Guid"/> of the entity types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityPickerGetEntityTypeGuids" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "8E92F72E-235A-4192-9C09-742F94849D62" )]
+        public IHttpActionResult EntityPickerGetEntityTypeGuids( [FromBody] EntityPickerGetEntityTypeGuidsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeGuids = new EntityTypeService( new RockContext() )
+                    .Queryable()
+                    .Where( e => e.IsEntity == true && e.SingleValueFieldTypeId.HasValue )
+                    .Select( e => e.Guid.ToString() )
+                    .ToList();
+
+                return Ok( entityTypeGuids );
+            }
+        }
+
+        /// <summary>
+        /// Gets the single value field type Guid of the given entity type
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A GUID of the field type</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityPickerGetFieldTypeConfiguration" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6BDA28C3-E6D7-42EB-9011-0C076455D4A7" )]
+        public IHttpActionResult EntityPickerGetFieldTypeConfiguration( [FromBody] EntityPickerGetFieldTypeConfigurationOptionsBag options )
+        {
+            if (options.EntityTypeGuid == null)
+            {
+                return NotFound();
+            }
+
+            var entityType = EntityTypeCache.Get( options.EntityTypeGuid );
+
+            if ( entityType == null )
+            {
+                return NotFound();
+            }
+
+            var fieldType = entityType.SingleValueFieldType;
+            var fieldTypeGuid = fieldType.Guid;
+
+            if ( fieldType == null || fieldTypeGuid == null )
+            {
+                return NotFound();
+            }
+
+            var field = fieldType.Field;
+
+            var entityValue = options.EntityValue ?? "";
+            var privateValue = field.GetPrivateEditValue( entityValue, new Dictionary<string, string>() );
+            var configurationValues = field.GetPublicConfigurationValues( new Dictionary<string, string>(), Field.ConfigurationValueUsage.Edit, privateValue );
+
+            return Ok( new EntityPickerGetFieldTypeConfigurationResultsBag
+            {
+                FieldTypeGuid = fieldTypeGuid,
+                FieldTypeName = fieldType.Name.Replace( " ", string.Empty ),
+                FieldTypePluralName = fieldType.Name.Replace( " ", string.Empty ).Pluralize(),
+                ConfigurationValues = configurationValues
+            } );
+        }
+
+        #endregion
+
         #region Entity Type Picker
 
         /// <summary>
@@ -2155,8 +2228,15 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var items = EntityTypeCache.All( rockContext )
-                    .Where( t => t.IsEntity )
+                var itemQuery = EntityTypeCache.All( rockContext )
+                    .Where( t => t.IsEntity );
+
+                if ( options.EntityTypeGuids != null && options.EntityTypeGuids.Any() )
+                {
+                    itemQuery = itemQuery.Where( t => options.EntityTypeGuids.Contains( t.Guid ) );
+                }
+
+                var items = itemQuery
                     .OrderByDescending( t => t.IsCommon )
                     .ThenBy( t => t.FriendlyName )
                     .Select( t => new ListItemBag

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="internalValue" name="step-program-step-type-picker">
+    <RockFormField :modelValue="internalValue" name="interaction-channel-interaction-component-picker">
         <InteractionChannelPicker
                                   v-if="!defaultInteractionChannelGuid"
                                   v-model="internalChannelValue"

@@ -14,21 +14,31 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to the GetEntityTypes API action of
-    /// the EntityTypePicker control.
+    /// The options that can be passed to the GetEntityTypeGuids API action of the EntityPicker control.
     /// </summary>
-    public class EntityTypePickerGetEntityTypesOptionsBag
+    public class EntityPickerGetFieldTypeConfigurationOptionsBag
     {
         /// <summary>
-        /// List of GUIDs of Entity Types that you wish to include in the list. If blank, it will load all.
+        /// Gets or sets the entity type unique identifier.
         /// </summary>
-        public List<Guid> EntityTypeGuids { get; set; }
+        /// <value>The entity type unique identifier.</value>
+        public Guid EntityTypeGuid { get; set; }
+
+        /// <summary>
+        /// Value that represents the entity
+        /// </summary>
+        /// <value>The entity value.</value>
+        public string EntityValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token to use when performing authorization checks.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

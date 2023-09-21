@@ -21,13 +21,8 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
-/**
- * The options that can be passed to the GetEntityTypes API action of
- * the EntityTypePicker control.
- */
-export type EntityTypePickerGetEntityTypesOptionsBag = {
-    /** List of GUIDs of Entity Types that you wish to include in the list. If blank, it will load all. */
-    entityTypeGuids?: Guid[] | null;
+/** The options that can be passed to the GetEntityTypeGuids API action of the EntityPicker control. */
+export type EntityPickerGetEntityTypeGuidsOptionsBag = {
+    /** Gets or sets the security grant token to use when performing authorization checks. */
+    securityGrantToken?: string | null;
 };
