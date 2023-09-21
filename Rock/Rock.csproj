@@ -1169,6 +1169,7 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\187_MigrationRollupsForV15_2_6.cs" />
     <Compile Include="Plugin\HotFixes\186_MigrationRollupsForV15_2_5.cs" />
     <Compile Include="Plugin\HotFixes\185_MigrationRollupsForV15_2_4.cs" />
     <Compile Include="Plugin\HotFixes\184_MigrationRollupsForV15_2_3.cs" />
