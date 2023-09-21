@@ -16,9 +16,7 @@
 //
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -29,6 +27,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            AddServiceJobIX_ValueAsPersonId();
             ReplaceBinaryFileTypeForPersonPhotos();
         }
 
@@ -39,7 +38,37 @@ namespace Rock.Migrations
         {
         }
 
-        // JMH: Replaces the DEFAULT BinaryFileType associated with Person.Photos with the PERSON_IMAGE BinaryFileType.
+        /// <summary>
+        /// Add ServiceJob: Rock Update Helper v15.2 - IX_ValueAsPersonId
+        /// </summary>
+        private void AddServiceJobIX_ValueAsPersonId()
+        {
+            Sql( $@"IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Guid] = '{Rock.SystemGuid.ServiceJob.DATA_MIGRATIONS_152_IX_VALUE_AS_PERSON_ID}' )
+            BEGIN
+               INSERT INTO [ServiceJob] (
+                    [IsSystem]
+                  , [IsActive]
+                  , [Name]
+                  , [Description]
+                  , [Class]
+                  , [CronExpression]
+                  , [NotificationStatus]
+                  , [Guid] )
+               VALUES (
+                    0
+                  , 1
+                  , 'Rock Update Helper v15.2 - IX_ValueAsPersonId'
+                  , 'This job will add an index related to Person Merge.'
+                  , 'Rock.Jobs.PostV152CreateAttributeValue_ValueAsPersonId_Index'
+                  , '0 0 21 1/1 * ? *'
+                  , 1
+                  , '{Rock.SystemGuid.ServiceJob.DATA_MIGRATIONS_152_IX_VALUE_AS_PERSON_ID}');
+            END" );
+        }
+
+        /// <summary>
+        /// JMH: Replaces the DEFAULT BinaryFileType associated with Person.Photos with the PERSON_IMAGE BinaryFileType.
+        /// </summary>
         private void ReplaceBinaryFileTypeForPersonPhotos()
         {
             Sql( $@"DECLARE @DefaultBinaryFileTypeId AS INT = (SELECT TOP 1 [Id] FROM [BinaryFileType] WHERE [Guid] = '{Rock.SystemGuid.BinaryFiletype.DEFAULT}')
