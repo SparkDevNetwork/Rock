@@ -3274,7 +3274,7 @@ mission. We are so grateful for your commitment.</p>
                     if ( scheduledTransactionAlreadyExists != null )
                     {
                         // Hopefully shouldn't happen, but just in case the scheduledtransaction already went through, show the success screen.
-                        ShowSuccess( gateway, person, paymentInfo );
+                        ShowSuccess( gateway, person, paymentInfo, givingAsBusiness );
                         return true;
                     }
 
@@ -3296,7 +3296,7 @@ mission. We are so grateful for your commitment.</p>
                     if ( transactionAlreadyExists != null )
                     {
                         // hopefully shouldn't happen, but just in case the transaction already went thru, show the success screen
-                        ShowSuccess( gateway, person, paymentInfo );
+                        ShowSuccess( gateway, person, paymentInfo, givingAsBusiness );
                         return true;
                     }
 
@@ -3313,7 +3313,7 @@ mission. We are so grateful for your commitment.</p>
                     paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
                 }
 
-                ShowSuccess( gateway, person, paymentInfo );
+                ShowSuccess( gateway, person, paymentInfo, givingAsBusiness );
 
                 return true;
             }
@@ -3552,7 +3552,7 @@ mission. We are so grateful for your commitment.</p>
             }
         }
 
-        private void ShowSuccess( IHostedGatewayComponent gatewayComponent, Person person, ReferencePaymentInfo paymentInfo )
+        private void ShowSuccess( IHostedGatewayComponent gatewayComponent, Person person, ReferencePaymentInfo paymentInfo, bool givingAsBusiness )
         {
             var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
             var finishLavaTemplate = this.GetAttributeValue( AttributeKey.FinishLavaTemplate );
@@ -3649,7 +3649,7 @@ mission. We are so grateful for your commitment.</p>
                     CreateSavedAccount( accountTitle, rockContext, true );
                 }
             }
-            else if ( !isSavedAccount && !string.IsNullOrWhiteSpace( TransactionCode ) && gatewayComponent.SupportsSavedAccount( paymentInfo.CurrencyTypeValue ) )
+            else if ( !givingAsBusiness && !isSavedAccount && !string.IsNullOrWhiteSpace( TransactionCode ) && gatewayComponent.SupportsSavedAccount( paymentInfo.CurrencyTypeValue ) )
             {
                 cbSaveAccount.Visible = true;
                 pnlSaveAccount.Visible = true;
