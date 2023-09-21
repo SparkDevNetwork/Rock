@@ -26,21 +26,18 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import Loading from "@Obsidian/Controls/loading.obs";
 import { DefinedValuePickerGetAttributesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetAttributesOptionsBag";
 import { DefinedValuePickerSaveNewValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerSaveNewValueOptionsBag";
-import { FieldTypeEditorUpdateAttributeConfigurationValueOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationValueOptionsBag";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
-import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, DefinedValueFieldType, ValueItem } from "./definedValueField.partial";
+import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./definedValueField.partial";
 import { getFieldEditorProps } from "./utils";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { useHttp } from "@Obsidian/Utility/http";
 import { useSecurityGrantToken } from "@Obsidian/Utility/block";
-import { Guid } from "@Obsidian/Types";
-import { json } from "stream/consumers";
+import { useFieldTypeAttributeGuid } from "@Obsidian/Utility/fieldTypes";
 
 function parseModelValue(modelValue: string | undefined): string {
     try {
@@ -133,7 +130,7 @@ export const EditComponent = defineComponent({
         });
 
         const isMultiple = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultiple]));
-        const attributeGuid = inject("attributeGuid") as Guid;
+        const attributeGuid = useFieldTypeAttributeGuid();
         const configAttributes = computed((): Record<string, unknown> => {
             const attributes: Record<string, unknown> = {};
 
@@ -215,7 +212,8 @@ export const EditComponent = defineComponent({
                 securityGrantToken: securityGrantToken.value,
                 value: newValue.value,
                 description: newDescription.value,
-                attributeValues: attributeValues.value
+                attributeValues: attributeValues.value,
+                updateAttributeGuid: attributeGuid.value
             };
             const url = "/api/v2/Controls/DefinedValuePickerSaveNewValue";
             const result = await http.post<ListItemBag>(url, undefined, options);
@@ -239,22 +237,15 @@ export const EditComponent = defineComponent({
                     internalValue.value = result.data.value ?? "";
                 }
 
-                emit("updateConfiguration");
                 const selectableValues = (props.configurationValues[ConfigurationValueKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
                 if(selectableValues.length > 0 && result.data.value){
                     selectableValues.push(result.data.value);
-                    const update: FieldTypeEditorUpdateAttributeConfigurationValueOptionsBag = {
-                        fieldTypeGuid: FieldTypeGuids.DefinedValue,
-                        attributeGuid: attributeGuid,
-                        configurationKey: "selectableValues",
-                        configurationValue: selectableValues.join(",")
-                    };
 
-                    const response = await http.post<void>("/api/v2/Controls/FieldTypeEditorUpdateAttributeConfigurationValue", null, update);
-                    if (!response.isSuccess) {
-                        console.error(response.errorMessage || "Unable to save person preferences.");
-                    }
+                    emit("updateConfigurationValue", "selectableValues", selectableValues.join(","));
                 }
+
+                emit("updateConfiguration");
+
                 hideAddForm();
                 newValue.value = "";
                 newDescription.value = "";

@@ -212,6 +212,43 @@ namespace Rock.Field.Types
             return privateConfigurationValues;
         }
 
+        /// <summary>
+        /// Adds the defined value to the attribute configuration. This only
+        /// updates the configuration if it is required. If the id already is
+        /// selected or the configuration already specifies all values to be
+        /// shown then no changes are made. This makes the change but does not
+        /// save the changes to the database.
+        /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="definedValueId">The defined value identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if SaveChanges() should be called, <c>false</c> otherwise.</returns>
+        internal static bool AddValueToAttributeConfiguration( int attributeId, int definedValueId, RockContext rockContext )
+        {
+            var qualifier = new AttributeQualifierService( rockContext )
+                .Queryable()
+                .Where( q => q.AttributeId == attributeId && q.Key == SELECTABLE_VALUES_KEY )
+                .FirstOrDefault();
+
+            if ( qualifier == null || qualifier.Value.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var ids = qualifier.Value.SplitDelimitedValues().AsIntegerList();
+
+            if ( ids.Contains( definedValueId ) )
+            {
+                return false;
+            }
+
+            ids.Add( definedValueId );
+
+            qualifier.Value = string.Join( ",", ids.Select( id => id.ToString() ) );
+
+            return true;
+        }
+
         #endregion
 
         #region EntityQualifierConfiguration
