@@ -61,19 +61,7 @@ namespace Rock.Rest.Utility
             ApiV1Formatter.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Unspecified;
 
             // Configure the v2 formatter.
-            ApiV2Formatter = new JsonMediaTypeFormatter();
-            ApiV2Formatter.SerializerSettings.ContractResolver = new DefaultContractResolver
-            {
-                NamingStrategy = new CamelCaseNamingStrategy
-                {
-                    // Do not process dictionaries, this messes up attribute keys
-                    // and generally with a dictionary they are specifying a specific
-                    // key that it should be anyway.
-                    ProcessDictionaryKeys = false,
-                    OverrideSpecifiedNames = true
-                }
-            };
-            ApiV2Formatter.SerializerSettings.Converters.Add( new RockOrganizationDateTimeJsonConverter() );
+            ApiV2Formatter = CreateV2Formatter<ExcludeNavigationPropertiesContractResolver>();
         }
 
         /// <inheritdoc/>
@@ -87,6 +75,33 @@ namespace Rock.Rest.Utility
             {
                 return ApiV1Formatter.GetPerRequestFormatterInstance( type, request, mediaType );
             }
+        }
+
+        /// <summary>
+        /// Creates a new v2 formatter instance with the specified resolver.
+        /// </summary>
+        /// <typeparam name="TResolver">The type of the contract resolver.</typeparam>
+        /// <returns>A new instance of <see cref="JsonMediaTypeFormatter"/>.</returns>
+        private static JsonMediaTypeFormatter CreateV2Formatter<TResolver>()
+            where TResolver : DefaultContractResolver, new()
+        {
+            var formatter = new JsonMediaTypeFormatter();
+
+            formatter.SerializerSettings.ContractResolver = new TResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy
+                {
+                    // Do not process dictionaries, this messes up attribute keys
+                    // and generally with a dictionary they are specifying a specific
+                    // key that it should be anyway.
+                    ProcessDictionaryKeys = false,
+                    OverrideSpecifiedNames = true
+                }
+            };
+
+            formatter.SerializerSettings.Converters.Add( new RockOrganizationDateTimeJsonConverter() );
+
+            return formatter;
         }
     }
 }

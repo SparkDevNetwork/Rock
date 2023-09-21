@@ -171,6 +171,8 @@
     <Compile Include="Controllers\RemindersController.Partial.cs" />
     <Compile Include="Handler\RockHttpControllerSelector.cs" />
     <Compile Include="HttpRequestMessageWrapper.cs" />
+    <Compile Include="RestApiHelper.cs" />
+    <Compile Include="Utility\ExcludeNavigationPropertiesContractResolver.cs" />
     <Compile Include="Utility\RockMessageResponseContext.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\TvController.cs" />
