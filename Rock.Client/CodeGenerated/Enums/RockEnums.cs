@@ -1379,6 +1379,28 @@ namespace Rock.Client.Enums.Cms
 
 }
 
+namespace Rock.Client.Enums.Net
+{
+    /// <summary>
+    /// </summary>
+    public enum CookieSameSiteMode
+    {
+        None = 0x0,
+        Lax = 0x1,
+        Strict = 0x2,
+        Unspecified = -1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ResponseElementLocation
+    {
+        Header = 0x0,
+        Footer = 0x1,
+    }
+
+}
+
 namespace Rock.Client.Enums.Controls
 {
     /// <summary>

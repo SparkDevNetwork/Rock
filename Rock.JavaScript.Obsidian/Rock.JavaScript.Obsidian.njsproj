@@ -279,6 +279,7 @@
     <Folder Include="Framework\Enums\Event\" />
     <Folder Include="Framework\Enums\Finance\" />
     <Folder Include="Framework\Enums\Group\" />
+    <Folder Include="Framework\Enums\Net\" />
     <Folder Include="Framework\Enums\Reporting\" />
     <Folder Include="Framework\Enums\Workflow\" />
     <Folder Include="Framework\FieldTypes\" />
@@ -569,6 +570,8 @@
     <TypeScriptCompile Include="Framework\Enums\Group\participationType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\requirementCheckType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\scheduleConfirmationLogic.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Net\cookieSameSiteMode.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Net\responseElementLocation.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\fieldFilterSourceType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\filterExpressionType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\metricNumericDataType.ts" />
