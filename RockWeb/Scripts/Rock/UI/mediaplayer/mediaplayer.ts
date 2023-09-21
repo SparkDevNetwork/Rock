@@ -362,7 +362,10 @@ namespace Rock.UI {
                 volume: this.options.volume,
                 muted: this.options.muted,
                 clickToPlay: this.options.clickToPlay,
-                hideControls: this.options.hideControls
+                hideControls: this.options.hideControls,
+                fullscreen: {
+                    iosNative: true
+                }
             };
 
             if (!this.isHls(this.options.mediaUrl)) {

@@ -94,6 +94,7 @@
     <Content Include="Framework\Controls\groupPicker.obs" />
     <Content Include="Framework\Controls\groupTypeGroupPicker.obs" />
     <Content Include="Framework\Controls\helpBlock.obs" />
+    <Content Include="Framework\Controls\imageEditor.obs" />
     <Content Include="Framework\Controls\imageUploader.obs" />
     <Content Include="Framework\Controls\inlineCheckBox.obs" />
     <Content Include="Framework\Controls\inlineSwitch.obs" />
@@ -189,6 +190,7 @@
     <Content Include="Framework\Controls\registrationInstanceBasePicker.obs" />
     <Content Include="Framework\Controls\registrationInstancePicker.obs" />
     <Content Include="Framework\Controls\registryEntry.obs" />
+    <Content Include="Framework\Controls\rockFormField.obs" />
     <Content Include="Framework\Controls\rockLiteral.obs" />
     <Content Include="Framework\Controls\slidingDateRangePicker.obs" />
     <Content Include="Framework\Controls\reminderTypePicker.obs" />
@@ -369,6 +371,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\" />
@@ -894,6 +897,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\setBulkBatchStatusResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\financialGatewayBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\financialGatewayDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\financialStatementTemplateBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\financialStatementTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailAddPersonRequestBag.d.ts" />
@@ -1041,6 +1046,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorGetAvailableFieldTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationResultBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationValueOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\gatewayControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthDayValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthYearValue.d.ts" />

@@ -147,10 +147,10 @@ namespace Rock.Model
                     this.Entity.NickName = this.Entity.NickName.StandardizeQuotes();
 
                     // Remove extra spaces between words (Issue #2990)
-                    this.Entity.FirstName = Regex.Replace( this.Entity.FirstName, @"\s+", " " ).Trim();
-                    this.Entity.LastName = Regex.Replace( this.Entity.LastName, @"\s+", " " ).Trim();
-                    this.Entity.NickName = Regex.Replace( this.Entity.NickName, @"\s+", " " ).Trim();
-                    this.Entity.MiddleName = Regex.Replace( this.Entity.MiddleName, @"\s+", " " ).Trim();
+                    this.Entity.FirstName = this.Entity.FirstName != null ? Regex.Replace( this.Entity.FirstName, @"\s+", " " ).Trim() : null;
+                    this.Entity.LastName = this.Entity.LastName != null ? Regex.Replace( this.Entity.LastName, @"\s+", " " ).Trim() : null;
+                    this.Entity.NickName = this.Entity.NickName != null ? Regex.Replace( this.Entity.NickName, @"\s+", " " ).Trim() : null;
+                    this.Entity.MiddleName = this.Entity.MiddleName != null ? Regex.Replace( this.Entity.MiddleName, @"\s+", " " ).Trim() : null;
                 }
 
                 if ( this.Entity.AnniversaryDate.HasValue )

@@ -1418,7 +1418,7 @@ namespace Rock.Blocks.Event
 
                 foreach ( var field in fields )
                 {
-                    var value = GetCurrentFieldValue( rockContext, person, registrant, field );
+                    var value = GetCurrentFieldValue( rockContext, person, registrant, field, registrationContext );
 
                     if ( value != null )
                     {
@@ -1438,12 +1438,12 @@ namespace Rock.Blocks.Event
         /// <param name="registrant">The registrant to use when retrieving registrant attribute values..</param>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object GetCurrentFieldValue( RockContext rockContext, Person person, RegistrationRegistrant registrant, RegistrationTemplateFormField field )
+        private object GetCurrentFieldValue( RockContext rockContext, Person person, RegistrationRegistrant registrant, RegistrationTemplateFormField field, RegistrationContext registrationContext )
         {
             switch ( field.FieldSource )
             {
                 case RegistrationFieldSource.PersonField:
-                    return GetPersonCurrentFieldValue( rockContext, person, field );
+                    return GetPersonCurrentFieldValue( rockContext, person, field, registrationContext );
 
                 case RegistrationFieldSource.PersonAttribute:
                     return GetEntityCurrentClientAttributeValue( rockContext, person, field );
@@ -1462,7 +1462,7 @@ namespace Rock.Blocks.Event
         /// <param name="person">The person.</param>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object GetPersonCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field )
+        private object GetPersonCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field, RegistrationContext registrationContext )
         {
             switch ( field.PersonFieldType )
             {
@@ -1545,7 +1545,13 @@ namespace Rock.Blocks.Event
 
                 case RegistrationPersonFieldType.MobilePhone:
                     var mobilePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-                    return CreatePhoneNumberBoxWithSmsControlBag( mobilePhone );
+                    if ( registrationContext.RegistrationSettings.ShowSmsOptIn )
+                    {
+                        return CreatePhoneNumberBoxWithSmsControlBag( mobilePhone );
+                    }
+
+                    return mobilePhone?.Number;
+                    
             }
 
             return null;
@@ -1558,7 +1564,7 @@ namespace Rock.Blocks.Event
                 return new PhoneNumberBoxWithSmsControlBag
                 {
                     Number = string.Empty,
-                    IsMessagingEnbabled = false,
+                    IsMessagingEnabled = false,
                     CountryCode = string.Empty
                 };
             }
@@ -1566,7 +1572,7 @@ namespace Rock.Blocks.Event
             return new PhoneNumberBoxWithSmsControlBag
             {
                 Number = phone.Number,
-                IsMessagingEnbabled = phone.IsMessagingEnabled,
+                IsMessagingEnabled = phone.IsMessagingEnabled,
                 CountryCode = phone.CountryCode
             };
         }
@@ -1738,14 +1744,27 @@ namespace Rock.Blocks.Event
         /// <param name="changes">The changes.</param>
         private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, History.HistoryChangeList changes )
         {
+            string phoneNumber = string.Empty;
+            bool? isMessagingEnabled = null;
+
             var phoneData = fieldValue.ToStringSafe().FromJsonOrNull<PhoneNumberBoxWithSmsControlBag>();
-            if ( phoneData == null )
+            if ( phoneData != null )
             {
+                // We got the number and SMS selection, so set both.
+                phoneNumber = phoneData.Number;
+                isMessagingEnabled = phoneData.IsMessagingEnabled;
+            }
+            else if( fieldValue is string )
+            {
+                // Only got the number, so leave IsMessagingEnabled null so it isn't changed
+                phoneNumber = fieldValue.ToStringSafe();
+            }
+            else
+            {
+                // No usable data, just return without doing anything.
                 return;
             }
-
-            var phoneNumber = phoneData.Number;
-            var isMessagingEnabled = phoneData.IsMessagingEnbabled;
+            
             string cleanNumber = PhoneNumber.CleanNumber( phoneNumber );
             var numberType = DefinedValueCache.Get( phoneTypeGuid );
 
@@ -1762,8 +1781,7 @@ namespace Rock.Blocks.Event
             {
                 phone = new PhoneNumber
                 {
-                    NumberTypeValueId = numberType.Id,
-                    IsMessagingEnabled = isMessagingEnabled
+                    NumberTypeValueId = numberType.Id
                 };
 
                 person.PhoneNumbers.Add( phone );
@@ -1775,10 +1793,13 @@ namespace Rock.Blocks.Event
             }
 
             phone.Number = cleanNumber;
-            phone.IsMessagingEnabled = isMessagingEnabled;
-
             History.EvaluateChange( changes, $"{numberType.Value} Phone", oldPhoneNumber, phone.NumberFormattedWithCountryCode );
-            History.EvaluateChange( changes, $"{numberType.Value} IsMessagingEnabled", oldIsMessagingEnabled, phone.IsMessagingEnabled );
+
+            if( isMessagingEnabled != null )
+            {
+                phone.IsMessagingEnabled = isMessagingEnabled.Value;
+                History.EvaluateChange( changes, $"{numberType.Value} IsMessagingEnabled", oldIsMessagingEnabled, phone.IsMessagingEnabled );
+            }
         }
 
         /// <summary>

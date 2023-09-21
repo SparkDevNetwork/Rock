@@ -90,6 +90,19 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnInit( e );
 
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultWorkflowType" ) ) )
+            {
+                Guid workflowTypeGuid = Guid.Empty;
+                Guid.TryParse( GetAttributeValue( "DefaultWorkflowType" ), out workflowTypeGuid );
+                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
+            }
+            else
+            {
+                int workflowTypeId = 0;
+                workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
+                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
+            }
+
             if ( _workflowType != null )
             {
                 _canEdit = UserCanEdit || _workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson );
@@ -161,23 +174,24 @@ namespace RockWeb.Blocks.WorkFlow
         public override List<BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )
         {
             var breadCrumbs = new List<BreadCrumb>();
+            WorkflowType workflowType;
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultWorkflowType" ) ) )
             {
                 Guid workflowTypeGuid = Guid.Empty;
                 Guid.TryParse( GetAttributeValue( "DefaultWorkflowType" ), out workflowTypeGuid );
-                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
+                workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
             }
             else
             {
                 int workflowTypeId = 0;
                 workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
-                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
+                workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
             }
 
-            if ( _workflowType != null )
+            if ( workflowType != null )
             {
-                breadCrumbs.Add( new BreadCrumb( _workflowType.Name, pageReference ) );
+                breadCrumbs.Add( new BreadCrumb( workflowType.Name, pageReference ) );
             }
 
             return breadCrumbs;

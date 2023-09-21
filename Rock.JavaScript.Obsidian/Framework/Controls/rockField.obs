@@ -21,7 +21,9 @@
                    :label="label"
                    :help="helpText"
                    :configurationValues="configurationValues"
-                   :rules="rules" />
+                   :rules="rules"
+                   @updateConfiguration="$emit('updateConfiguration')"
+                   @updateConfigurationValue="$emit('updateConfigurationValue')" />
     </div>
 </template>
 
@@ -76,6 +78,9 @@
     /** True if this field is required and must be filled in. */
     const isRequired = computed(() => props.attribute.isRequired);
 
+     /** attribute Guid. */
+     const attributeGuid = computed(() => props.attribute.attributeGuid);
+
     /** Indicates to the editor component if this field is required or not. */
     const rules = computed(() => isRequired.value ? "required" : "");
 
@@ -118,5 +123,6 @@
         return props.attribute.configurationValues ?? {};
     });
 
+    provide("attributeGuid", attributeGuid.value);
     provide("isRequired", isRequired);
 </script>

@@ -103,7 +103,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     var formBuilderEntityTypeId = EntityTypeCache.Get( typeof( Rock.Workflow.Action.FormBuilder ) ).Id;
                     var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId.Value );
 
-                    if ( workflowType != null && workflowType.IsFormBuilder && workflowType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                    if ( workflowType != null && workflowType.IsFormBuilder && workflowType.Category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                     {
                         var actionForm = workflowType.ActivityTypes
                             .SelectMany( a => a.ActionTypes )

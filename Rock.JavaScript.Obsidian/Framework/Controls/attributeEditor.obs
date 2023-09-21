@@ -72,7 +72,7 @@
             </div>
 
             <div class="col-md-6">
-                <FieldTypeEditor v-model="fieldTypeValue" :isFieldTypeReadOnly="isFieldTypeReadOnly" />
+                <FieldTypeEditor v-model="fieldTypeValue" :isFieldTypeReadOnly="isFieldTypeReadOnly" :attributeGuid="attributeGuid" />
             </div>
         </div>
 
@@ -184,6 +184,7 @@
         (e: "update:modelValue", value: PublicEditableAttributeBag | null): void;
     }>();
 
+    const attributeGuid = ref<Guid | undefined>(props.modelValue?.guid ?? undefined);
     const attributeName = ref(props.modelValue?.name ?? "");
     const abbreviatedName = ref(props.modelValue?.abbreviatedName ?? "");
     const attributeKey = ref(props.modelValue?.key ?? "");
@@ -220,6 +221,7 @@
     const isFieldTypeReadOnly = computed((): boolean => !!props.modelValue?.guid);
 
     watch([
+        attributeGuid,
         attributeName,
         abbreviatedName,
         attributeKey,

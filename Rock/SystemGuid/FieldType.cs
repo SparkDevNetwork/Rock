@@ -644,6 +644,11 @@ namespace Rock.SystemGuid
         public const string SSN = "4722C99A-C078-464A-968F-13AB5E8E318F";
 
         /// <summary>
+        /// Streak Type field type
+        /// </summary>
+        public const string STREAK_TYPE = "F1411F4A-BD4B-4F80-9A83-94026C009F4D";
+
+        /// <summary>
         /// System Email field type
         /// </summary>
         public const string SYSTEM_EMAIL = "08F3003B-F3E2-41EC-BDF1-A2B7AC2908CF";

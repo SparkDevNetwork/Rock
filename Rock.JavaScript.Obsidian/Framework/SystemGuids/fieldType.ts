@@ -271,6 +271,8 @@ export const FieldType = {
     SocialMediaAccount: "92C0E3A1-9F63-49D4-B23B-73624AC42546",
     /** Social Security Number */
     Ssn: "4722C99A-C078-464A-968F-13AB5E8E318F",
+    /** Streak Type field type */
+    StreakType: "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
     /** System Communication field type */
     SystemCommunication: "72ED40C7-4D64-4D60-9411-4FFB2B9E833E",
     /** System Email field type */

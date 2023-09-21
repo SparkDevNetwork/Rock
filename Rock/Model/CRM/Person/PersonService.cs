@@ -3458,10 +3458,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Removes duplicate and empty number phone numbers from a person
+        /// Removes duplicate and empty number phone numbers from a person.
+        /// NOTE: This method deletes the all the Person's phone numbers which have a phone number type not present in the provided
+        /// phoneNumberTypeIds list of phone number types.
         /// </summary>
         /// <param name="person">The Person.</param>
-        /// <param name="phoneNumberTypeIds">The list of phone number type ids.</param>
+        /// <param name="phoneNumberTypeIds">The list of phone number type ids. The phone numbers with a phone number type not in this list would be deleted.</param>
         /// <param name="rockContext">The rock context.</param>
         public void RemoveEmptyAndDuplicatePhoneNumbers( Person person, List<int> phoneNumberTypeIds, RockContext rockContext )
         {

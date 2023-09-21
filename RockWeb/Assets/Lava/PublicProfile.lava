@@ -277,7 +277,7 @@
         	                                    {% assign numberTypeValue = phoneNumber.NumberTypeValueId | FromCache:'DefinedValue' %}
         	                                    {% assign displayPhoneType = DisplayedPhoneTypeValueIds | Contains:numberTypeValue.Id %}
         	                                    {% if displayPhoneType %}
-        	                                        <li>{{ phoneNumber.NumberFormatted }}<small>{{ numberTypeValue.Value }} {% if phoneNumber.IsUnlisted %}Unlisted{% endif %}</small></li>
+        	                                        <li>{{ phoneNumber.NumberFormatted }} <small>{{ numberTypeValue.Value }} {% if phoneNumber.IsUnlisted %}Unlisted{% endif %}</small></li>
         	                                    {% endif %}
         	                                {% endfor %}
         	                                </ul>
