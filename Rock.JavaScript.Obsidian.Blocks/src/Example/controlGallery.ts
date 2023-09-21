@@ -241,6 +241,7 @@ import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
 import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
 import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
+import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -2317,7 +2318,7 @@ const entityTypePickerGallery = defineComponent({
             includeGlobalOption: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
-            value: ref({ value: EntityType.Person, text: "Default Person" }),
+            value: ref({ value: EntityType.Person, text: "Person" }),
             importCode: getControlImportPath("entityTypePicker"),
             exampleCode: `<EntityTypePicker label="Entity Type" v-model="value" :multiple="false" :includeGlobalOption="false" />`
         };
@@ -2335,7 +2336,8 @@ const entityTypePickerGallery = defineComponent({
         :includeGlobalOption="includeGlobalOption"
         :enhanceForLongLists="enhanceForLongLists"
         :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
+        :showBlankItem="showBlankItem"
+        :entityTypeGuids="['5c144b51-3d2e-4bc2-b6c7-7e4cb890e15f','72657ed8-d16e-492e-ac12-144c5e7567e7']" />
 
     <template #settings>
         <div class="row">
@@ -2366,7 +2368,7 @@ const entityTypePickerGallery = defineComponent({
             </div>
         </div>
 
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p class="mt-3 text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -3762,6 +3764,12 @@ const modalGallery = defineComponent({
     setup() {
         return {
             isOpen: ref(false),
+            saveText: ref<string>("Save"),
+            cancelText: ref<string>("Cancel"),
+            isFooterHidden: ref(false),
+            isSaveButtonDisabled: ref(false),
+            isCloseButtonHidden: ref(false),
+            clickBackdropToClose: ref(false),
             value: "",
             importCode: getControlImportPath("modal"),
             exampleCode: `<Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
@@ -3775,11 +3783,42 @@ const modalGallery = defineComponent({
     :exampleCode="exampleCode">
     <CheckBox label="Is Open" v-model="isOpen" />
 
-    <Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
+    <Modal v-model="isOpen"
+           title="Modal Dialog Title"
+           :saveText="saveText"
+           :cancelText="cancelText"
+           :isFooterHidden="isFooterHidden"
+           :isSaveButtonDisabled="isSaveButtonDisabled"
+           :isCloseButtonHidden="isCloseButtonHidden"
+           :clickBackdropToClose="clickBackdropToClose"
+           @save="isOpen = false">
         <TextBox label="Required Value" v-model="value" rules="required" />
     </Modal>
 
     <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox label="Save Text" v-model="saveText" help="If an empty string is provided, the Save button will be hidden." />
+            </div>
+            <div class="col-md-4">
+                <TextBox label="Cancel Text" v-model="cancelText" help="If an empty string is provided, the Cancel button will be hidden." />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Is Footer Hidden" v-model="isFooterHidden" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Is Save Button Disabled" v-model="isSaveButtonDisabled" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Is Close Button Hidden" v-model="isCloseButtonHidden" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Click Backdrop to Close" v-model="clickBackdropToClose" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -8131,6 +8170,7 @@ const controlGalleryComponents: Record<string, Component> = [
     HighlightLabelGallery,
     PdfViewerGallery,
     ChartGallery,
+    EntityPickerGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

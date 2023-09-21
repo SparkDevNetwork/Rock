@@ -144,7 +144,7 @@ namespace Rock.Client
         public bool PersonEntryShowHeadingSeparator { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntrySmsOptInEntryOption { get; set; }
+        public Rock.Client.Enums.WorkflowActionFormShowHideOption PersonEntrySmsOptInEntryOption { get; set; }
 
         /// <summary />
         public Guid? PersonEntrySpouseAttributeGuid { get; set; }

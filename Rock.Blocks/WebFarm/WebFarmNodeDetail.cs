@@ -228,7 +228,7 @@ namespace Rock.Blocks.WebFarm
             {
                 var metrics = bag.WebFarmNodeMetrics.ConvertAll( x => new Rock.Model.WebFarmNodeMetricService.MetricViewModel() { MetricValue = x.MetricValue, MetricValueDateTime = x.MetricValueDateTime } );
                 var samples = WebFarmNodeMetricService.CalculateMetricSamples( metrics, _cpuMetricSampleCount, ChartMinDate, ChartMaxDate );
-                bag.ChartHtml = GetChartHtml( samples );
+                bag.ChartData = GetChartData( samples );
             }
 
             return bag;
@@ -409,7 +409,7 @@ namespace Rock.Blocks.WebFarm
         /// Gets the chart HTML.
         /// </summary>
         /// <returns></returns>
-        private string GetChartHtml( decimal[] samples )
+        private string GetChartData( decimal[] samples )
         {
             if ( samples == null || samples.Length <= 1 )
             {
@@ -417,20 +417,19 @@ namespace Rock.Blocks.WebFarm
             }
 
             return string.Format(
-@"<canvas
-    class='js-chart''
-    data-chart='{{
-        ""labels"": [{0}],
-        ""datasets"": [{{
-            ""data"": [{1}],
-            ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
-            ""borderColor"": ""#009CE3"",
-            ""borderWidth"": 2,
-            ""pointRadius"": 0,
-            ""pointHoverRadius"": 0
-        }}]
-    }}'>
-</canvas>",
+@"{{
+            ""labels"": [{0}],
+            ""datasets"": [{{
+                ""data"": [{1}],
+                ""fill"": true,
+                ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
+                ""borderColor"": ""#009CE3"",
+                ""borderWidth"": 2,
+                ""pointRadius"": 0,
+                ""pointHoverRadius"": 0,
+                ""tension"": 0.5
+            }}]
+        }}",
                 samples.Select( s => "\"\"" ).JoinStrings( "," ),
                 samples.Select( s => ( ( int ) s ).ToString() ).JoinStrings( "," )
             );

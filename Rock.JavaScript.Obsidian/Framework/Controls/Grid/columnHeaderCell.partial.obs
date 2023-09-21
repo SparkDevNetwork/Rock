@@ -24,6 +24,7 @@
 
         <div v-if="isFilterOpen" ref="filterElement" class="grid-filter-popup">
             <div class="grid-filter-popup-content">
+                <component v-if="column.filterPrependComponent" :is="column.filterPrependComponent" :column="column" :grid="grid" />
                 <component :is="column.filter!.component" v-model="internalFilterValue" :column="column" :grid="grid" />
             </div>
 

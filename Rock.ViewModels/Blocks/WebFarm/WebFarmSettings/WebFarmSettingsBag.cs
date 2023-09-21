@@ -33,7 +33,21 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
         /// <value>
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
-        public bool IsActive { get; set; }
+        public bool IsEnabled { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has valid key.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has valid key; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasValidKey { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is running.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is running; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRunning { get; set; }
         /// <summary>
         /// Gets or sets the web farm key.
         /// </summary>

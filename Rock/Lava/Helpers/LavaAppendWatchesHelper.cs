@@ -197,10 +197,10 @@ namespace Rock.Lava.Helpers
         /// <summary>
         /// Appends media watches for a collection of media entities.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="startDate"></param>
-        /// <param name="currentPerson"></param>
-        /// <param name="rockContext"></param>
+        /// <param name="source">The source.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         internal static dynamic AppendMediaForMediaElements( ICollection source, DateTime? startDate, Person currentPerson, RockContext rockContext )
         {

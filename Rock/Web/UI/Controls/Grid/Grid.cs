@@ -1556,6 +1556,45 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         }
 
         /// <summary>
+        /// Sets the grid data source from a paginated data source object.
+        /// This type of data source can provide efficient querying of the total number of items and a single page of data for display.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dataSource">A grid data source.</param>
+        [RockInternal("1.16.0")]
+        public void SetDataSource<T>( IPaginatedDataSource<T> dataSource )
+        {
+            if ( this.AllowPaging )
+            {
+                this.AllowCustomPaging = true;
+
+                var currentPageData = dataSource.GetItems( this.PageIndex, this.PageSize );
+                this.DataSource = currentPageData;
+
+                if ( currentPageData.Count < this.PageSize )
+                {
+                    // The current page has fewer records than the page size, so this is the last page.
+                    // We can calculate the total number of records without requerying the data source.
+                    this.VirtualItemCount = ( this.PageIndex * this.PageSize ) + currentPageData.Count;
+                }
+                else
+                {
+                    this.VirtualItemCount = dataSource.GetTotalItemCount();
+                }
+
+                PreDataBound = false;
+                CurrentPageRows = currentPageData.Count();
+            }
+            else
+            {
+                // Get all of the items.
+                this.DataSource = dataSource.GetItems();
+            }
+
+            this.DatasourceSQL = string.Empty;
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
@@ -4571,6 +4610,76 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         {
             return string.Format( "{0} [{1}]", this.Property, this.Direction );
         }
+    }
+
+    /// <summary>
+    /// Provides base functionality for a data source that can be queried to provide a page of data items.
+    /// </summary>
+    /// <typeparam name="T">The <see cref="System.Type"/> of the items returned by the data source.</typeparam>
+    [RockInternal("1.16.0")]
+    public abstract class PaginatedDataSourceBase<T> : IPaginatedDataSource<T>
+    {
+        /// <inheritdoc />
+        public virtual int DefaultPageSize { get; set; } = 50;
+
+        /// <inheritdoc />
+        public virtual int MaximumPageSize => 5000;
+
+        /// <inheritdoc />
+        public abstract int GetTotalItemCount();
+
+        /// <inheritdoc />
+        public List<T> GetItems()
+        {
+            return GetItems( 0, this.MaximumPageSize );
+        }
+
+        /// <inheritdoc />
+        public List<T> GetItems( int pageIndex )
+        {
+            return GetItems( pageIndex, this.DefaultPageSize );
+        }
+
+        /// <inheritdoc />
+        public abstract List<T> GetItems( int pageIndex, int pageSize );
+    }
+
+    /// <summary>
+    /// Represents a data source that can be queried to provide a page of data items.
+    /// </summary>
+    /// <typeparam name="T">The <see cref="System.Type"/> of the items returned by the data source.</typeparam>
+    [RockInternal("1.16.0")]
+    public interface IPaginatedDataSource<T>
+    {
+        /// <summary>
+        /// The default number of items that will be retrieved per request.
+        /// </summary>
+        int DefaultPageSize { get; }
+
+        /// <summary>
+        /// Get the items for the specified page.
+        /// </summary>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        List<T> GetItems( int pageIndex, int pageSize );
+
+        /// <summary>
+        /// Get all of the items.
+        /// </summary>
+        /// <returns></returns>
+        List<T> GetItems();
+
+        /// <summary>
+        /// The maximum number of items that can be returned per request.
+        /// </summary>
+        int MaximumPageSize { get; }
+
+        /// <summary>
+        /// Gets the total number of items available from the data source.
+        /// </summary>
+        /// <returns></returns>
+        int GetTotalItemCount();
     }
 
     #endregion

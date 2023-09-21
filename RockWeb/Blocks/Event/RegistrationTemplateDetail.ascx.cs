@@ -3270,8 +3270,7 @@ The logged-in person's information will be used to complete the registrar inform
                 fieldSource == RegistrationFieldSource.PersonField;
 
             // If this is a RegistrantAttribute, the ShowOnGrid is determined by the Attribute's ShowOnGrid, so we don't need to show the top ShowOnGrid option
-            // Also, if this is a GroupMemberAttribute, we'll hide the ShowOnGrid and they'll have to go the GroupMemberList block to see those
-            cbShowOnGrid.Visible = ( fieldSource != RegistrationFieldSource.RegistrantAttribute ) && ( fieldSource != RegistrationFieldSource.GroupMemberAttribute );
+            cbShowOnGrid.Visible = ( fieldSource != RegistrationFieldSource.RegistrantAttribute );
             cbRequireInInitialEntry.Visible = fieldSource != RegistrationFieldSource.RegistrantAttribute;
 
             edtRegistrantAttribute.Visible = fieldSource == RegistrationFieldSource.RegistrantAttribute;

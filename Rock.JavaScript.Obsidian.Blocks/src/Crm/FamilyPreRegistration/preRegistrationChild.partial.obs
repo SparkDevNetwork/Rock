@@ -21,7 +21,7 @@
                 :disabled="disabled"
                 :items="config.childRelationshipTypes ?? undefined"
                 label="Relationship to Adult"
-                rules="required"
+                :rules="requiredRules"
                 :showBlankItem="false" />
         </div>
         <div class="col-sm-6"></div><!-- filler/blocker column -->
@@ -37,7 +37,7 @@
                 v-model="child.firstName"
                 :disabled="disabled"
                 label="First Name"
-                rules="required" />
+                :rules="requiredRules" />
         </div>
 
         <div class="col-sm-6">
@@ -49,7 +49,7 @@
                 v-model="child.lastName"
                 :disabled="disabled"
                 label="Last Name"
-                rules="required" />
+                :rules="requiredRules" />
         </div>
     </div>
     <div class="row clearfix">
@@ -58,7 +58,7 @@
                 v-model="child.genderStringValue"
                 :disabled="disabled"
                 label="Gender"
-                :rules="config.childGenderField.isRequired ? 'required' : ''" />
+                :rules="config.childGenderField.isRequired ? requiredGenderRules : ''" />
         </div>
 
         <div v-if="config.childSuffixField?.isShown" class="col-sm-6">
@@ -77,7 +77,7 @@
                 v-model="child.birthDate"
                 :disabled="disabled"
                 label="Birth Date"
-                :rules="config.childBirthDateField.isRequired ? 'required' : ''" />
+                :rules="config.childBirthDateField.isRequired ? requiredBirthdayRules : ''" />
         </div>
 
         <div v-if="config.childGradeField?.isShown" class="col-sm-6">
@@ -87,7 +87,7 @@
                 label="Grade"
                 lazyMode="lazy"
                 :useGuidAsValue="true"
-                :rules="config.childGradeField.isRequired ? 'required' : ''"
+                :rules="config.childGradeField.isRequired ? requiredRules : ''"
                 :showBlankItem="true" />
         </div>
     </div>
@@ -98,7 +98,7 @@
                 v-model:countryCode="child.mobilePhoneCountryCode"
                 :disabled="disabled"
                 label="Mobile Phone"
-                :rules="config.childMobilePhoneField.isRequired ? 'required' : ''" />
+                :rules="config.childMobilePhoneField.isRequired ? requiredRules : ''" />
         </div>
         <div v-if="config.displaySmsOptIn?.isShowChildren" class="col-sm-6">
             <CheckBox
@@ -114,7 +114,7 @@
                 v-model="child.email"
                 :disabled="disabled"
                 label="Email"
-                :rules="config.childEmailField.isRequired ? 'required' : ''" />
+                :rules="config.childEmailField.isRequired ? requiredRules : ''" />
         </div>
 
         <div v-if="config.childCommunicationPreferenceField?.isShown" class="col-sm-6">
@@ -127,7 +127,7 @@
                     { text: 'SMS', value: CommunicationPreference.SMS.toString() }
                 ]"
                 label="Communication Preference"
-                :rules="config.childCommunicationPreferenceField.isRequired ? 'required' : ''" />
+                :rules="config.childCommunicationPreferenceField.isRequired ? requiredRules : ''" />
         </div>
     </div>
     <div class="row clearfix">
@@ -135,7 +135,7 @@
             <RacePicker
                 v-model="child.raceListItemBag"
                 :disabled="disabled"
-                :rules="config.childRaceField.isRequired ? 'required' : ''"
+                :rules="config.childRaceField.isRequired ? requiredRules : ''"
                 :showBlankItem="true" />
         </div>
 
@@ -143,17 +143,18 @@
             <EthnicityPicker
                 v-model="child.ethnicityListItemBag"
                 :disabled="disabled"
-                :rules="config.childEthnicityField.isRequired ? 'required' : ''"
+                :rules="config.childEthnicityField.isRequired ? requiredRules : ''"
                 :showBlankItem="true" />
         </div>
     </div>
     <div v-if="config.childProfilePhotoField?.isShown" class="row">
         <div class="col-sm-6">
-            <ImageUploader
+            <ImageEditor
                 v-model="child.profileImageListItemBag"
+                :binaryFileTypeGuid="BinaryFiletype.PersonImage"
                 :disabled="disabled"
                 label="Profile Photo"
-                :rules="config.childProfilePhotoField.isRequired ? 'required' : ''" />
+                :rules="config.childProfilePhotoField.isRequired ? requiredRules : ''" />
         </div>
         <div class="col-sm-6"></div><!-- filler/blocker column -->
     </div>
@@ -180,7 +181,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { ChildRequestBag } from "./types.partial";
-    import { createPersonViewModel, getNumberAsOrdinalString, useGetBootstrapColumnClass } from "./utils.partial";
+    import { createNotEqualRule, createPersonViewModel, createRuleWithReplacement, createRuleWithSuffix, getNumberAsOrdinalString, monthAndDayAndYearRequiredRule, required } from "./utils.partial";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
@@ -190,7 +191,7 @@
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
     import GradePicker from "@Obsidian/Controls/gradePicker.obs";
-    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
@@ -198,12 +199,15 @@
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { toTitleCase } from "@Obsidian/Utility/stringUtils";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
     import { FamilyPreRegistrationInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationInitializationBox";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
-    const getColumnClass = useGetBootstrapColumnClass(2);
 
     const props = defineProps({
         childNumber: {
@@ -222,7 +226,7 @@
         }
     });
 
-    const emit = defineEmits<{
+    defineEmits<{
         (e: "remove", value: ChildRequestBag): void
     }>();
 
@@ -236,8 +240,30 @@
     //#region Computed Values
 
     const caption = computed<string>(() => {
-        return `${getNumberAsOrdinalString(props.childNumber)} Child`;
+        return toTitleCase(`${getNumberAsOrdinalString(props.childNumber)} Child`);
     });
+
+    /*
+       Validation rules are executed in order but only return the first error message.
+       Even though the first rule is a required rule,
+       we need to add the special "required" rule to get the required indicator to display.
+     */
+
+    const requiredRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for ${caption.value}`),
+        "required"
+    ]);
+
+    const requiredGenderRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for ${caption.value}`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), `is required for ${caption.value}`),
+        "required"
+    ]);
+
+    const requiredBirthdayRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(monthAndDayAndYearRequiredRule, `for ${caption.value}`),
+        "required"
+    ]);
 
     //#endregion
 

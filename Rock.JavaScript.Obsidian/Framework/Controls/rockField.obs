@@ -21,12 +21,13 @@
                    :label="label"
                    :help="helpText"
                    :configurationValues="configurationValues"
-                   :rules="rules" />
+                   :rules="rules"
+                   @updateConfigurationValue="onUpdateConfigurationValue" />
     </div>
 </template>
 
 <script setup lang="ts">
-    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { getFieldType, provideFieldTypeAttributeGuid } from "@Obsidian/Utility/fieldTypes";
     import { computed, PropType, provide } from "vue";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
@@ -62,6 +63,7 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: string): void;
+        (e: "updateConfigurationValue", key: string, value: string): void;
     }>();
 
     const field = computed(() => {
@@ -75,6 +77,9 @@
 
     /** True if this field is required and must be filled in. */
     const isRequired = computed(() => props.attribute.isRequired);
+
+     /** attribute Guid. */
+     const attributeGuid = computed(() => props.attribute.attributeGuid);
 
     /** Indicates to the editor component if this field is required or not. */
     const rules = computed(() => isRequired.value ? "required" : "");
@@ -118,5 +123,11 @@
         return props.attribute.configurationValues ?? {};
     });
 
+    /** Called when the component emits the updateConfigurationValue event. */
+    function onUpdateConfigurationValue(key: string, value: string): void {
+        emit("updateConfigurationValue", key, value);
+    }
+
+    provideFieldTypeAttributeGuid(attributeGuid);
     provide("isRequired", isRequired);
 </script>

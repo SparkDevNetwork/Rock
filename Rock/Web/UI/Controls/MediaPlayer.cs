@@ -700,7 +700,7 @@ namespace Rock.Web.UI.Controls
             };
 
             // Update the options with any values from the MediaElement.
-            _playerOptions.UpdateValuesFromMedia( MediaElementId, null, AutoResumeInDays, CombinePlayStatisticsInDays, rockPage?.CurrentPerson );
+            _playerOptions.UpdateValuesFromMedia( MediaElementId, null, AutoResumeInDays, CombinePlayStatisticsInDays, rockPage?.CurrentPerson, rockPage?.CurrentVisitor?.Id );
 
             // Add the CSS and JavaScript links to the page.
             AddLinksForMediaToPage( _playerOptions.MediaUrl, Page );

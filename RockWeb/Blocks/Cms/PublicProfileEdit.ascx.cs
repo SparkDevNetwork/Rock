@@ -1058,8 +1058,22 @@ namespace RockWeb.Blocks.Cms
 
                         var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypeValueGuids ).Split( ',' ).AsGuidList();
 
-                        // Remove any duplicates and blank numbers
-                        personService.RemoveEmptyAndDuplicatePhoneNumbers( person, phoneNumberTypeIds, rockContext );
+                        var phoneNumberService = new PhoneNumberService( rockContext );
+
+                        // Remove any duplicate numbers
+                        var hasDuplicate = person.PhoneNumbers.GroupBy( pn => pn.Number ).Where( g => g.Count() > 1 ).Any();
+
+                        if ( hasDuplicate )
+                        {
+                            var listOfValidNumbers = person.PhoneNumbers
+                                .OrderBy( o => o.NumberTypeValueId )
+                                .GroupBy( pn => pn.Number )
+                                .Select( y => y.First() )
+                                .ToList();
+                            var removedNumbers = person.PhoneNumbers.Except( listOfValidNumbers ).ToList();
+                            phoneNumberService.DeleteRange( removedNumbers );
+                            person.PhoneNumbers = listOfValidNumbers;
+                        }
                     }
 
                     person.Email = tbEmail.Text.Trim();

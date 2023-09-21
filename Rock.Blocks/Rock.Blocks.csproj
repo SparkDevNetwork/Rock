@@ -72,9 +72,12 @@
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
+	<Compile Include="Engagement\AchievementTypeDetail.cs" />
+    <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
+    <Compile Include="Finance\FinancialStatementTemplateDetail.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
     <Compile Include="Engagement\StepTypeDetail.cs" />
     <Compile Include="Tv\AppleTvAppDetail.cs" />

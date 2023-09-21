@@ -19,15 +19,30 @@ namespace Rock.Web.UI
     /// <summary>
     /// Helper class to work with page navigation
     /// </summary>
-    public class BreadCrumb : IBreadCrumb
+    public class BreadCrumb
     {
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
         public string Url { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="BreadCrumb" /> is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if active; otherwise, <c>false</c>.
+        /// </value>
         public bool Active { get; set; }
 
         /// <summary>
@@ -75,6 +90,5 @@ namespace Rock.Web.UI
         {
             return this.Name;
         }
-
     }
 }

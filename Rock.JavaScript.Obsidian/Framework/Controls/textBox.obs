@@ -12,7 +12,7 @@
                 <div :class="controlContainerClass">
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                     <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field"></textarea>
-                    <input v-else v-model="internalValue" :id="uniqueId" :type="type" :class="formControlClass" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" />
+                    <input v-else v-model="internalValue" :id="uniqueId" :type="type" :class="formControlClass" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" :autocomplete="disableAutocomplete ? null : 'off'" />
                     <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                 </div>
                 <slot name="append" :isInputGroupSupported="true" />
@@ -44,9 +44,13 @@
             type: Boolean as PropType<boolean>,
             default: false
         },
+        disableAutocomplete: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
         placeholder: {
             type: String as PropType<string>,
-            default: ""
+            default: null
         },
         inputClasses: {
             type: String as PropType<string>,

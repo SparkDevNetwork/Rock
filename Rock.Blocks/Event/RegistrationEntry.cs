@@ -40,7 +40,7 @@ using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Web.UI;
+using Rock.Web;
 
 namespace Rock.Blocks.Event
 {
@@ -132,7 +132,7 @@ namespace Rock.Blocks.Event
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
-    public class RegistrationEntry : RockBlockType
+    public class RegistrationEntry : RockBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -200,15 +200,22 @@ namespace Rock.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 var viewModel = GetViewModel( rockContext );
+                var instanceName = viewModel.InstanceName;
 
-                if ( viewModel.InstanceName.IsNotNullOrWhiteSpace() )
+                if ( instanceName.IsNullOrWhiteSpace() && viewModel.RegistrationInstanceNotFoundMessage?.Contains( " closed on " ) == true )
                 {
-                    ResponseContext.SetPageTitle( viewModel.InstanceName );
-                    ResponseContext.SetBrowserTitle( viewModel.InstanceName );
+                    // The view model did not have a name filled in even though
+                    // we found the registration instance. Get the instance name
+                    // only so we can fill in the page name.
+                    var registrationInstanceId = GetRegistrationInstanceId( rockContext );
+                    instanceName = new RegistrationInstanceService( rockContext )
+                        .GetSelect( registrationInstanceId, ri => ri.Name );
+                }
 
-                    // This is temporary until we have an interface to properly
-                    // update the breadcrumbs.
-                    ResponseContext.AddBreadCrumb( new BreadCrumb( viewModel.InstanceName, RequestContext.RequestUri.PathAndQuery ) );
+                if ( instanceName.IsNotNullOrWhiteSpace() )
+                {
+                    ResponseContext.SetPageTitle( instanceName );
+                    ResponseContext.SetBrowserTitle( instanceName );
                 }
 
                 return viewModel;
@@ -671,7 +678,32 @@ namespace Rock.Blocks.Event
 
         #endregion Block Actions
 
-        #region Helpers
+        #region Methods
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstanceId = GetRegistrationInstanceId( rockContext, pageReference );
+                var instanceName = new RegistrationInstanceService( rockContext )
+                    .GetSelect( registrationInstanceId, ri => ri.Name );
+
+                if ( instanceName.IsNotNullOrWhiteSpace() )
+                {
+                    return new BreadCrumbResult
+                    {
+                        BreadCrumbs = new List<IBreadCrumb>
+                        {
+                            new BreadCrumbLink( instanceName, pageReference )
+                        }
+                    };
+                }
+
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Updates or Inserts the session.
@@ -1386,7 +1418,7 @@ namespace Rock.Blocks.Event
 
                 foreach ( var field in fields )
                 {
-                    var value = GetCurrentFieldValue( rockContext, person, registrant, field );
+                    var value = GetCurrentFieldValue( rockContext, person, registrant, field, registrationContext );
 
                     if ( value != null )
                     {
@@ -1406,12 +1438,12 @@ namespace Rock.Blocks.Event
         /// <param name="registrant">The registrant to use when retrieving registrant attribute values..</param>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object GetCurrentFieldValue( RockContext rockContext, Person person, RegistrationRegistrant registrant, RegistrationTemplateFormField field )
+        private object GetCurrentFieldValue( RockContext rockContext, Person person, RegistrationRegistrant registrant, RegistrationTemplateFormField field, RegistrationContext registrationContext )
         {
             switch ( field.FieldSource )
             {
                 case RegistrationFieldSource.PersonField:
-                    return GetPersonCurrentFieldValue( rockContext, person, field );
+                    return GetPersonCurrentFieldValue( rockContext, person, field, registrationContext );
 
                 case RegistrationFieldSource.PersonAttribute:
                     return GetEntityCurrentClientAttributeValue( rockContext, person, field );
@@ -1430,7 +1462,7 @@ namespace Rock.Blocks.Event
         /// <param name="person">The person.</param>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object GetPersonCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field )
+        private object GetPersonCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field, RegistrationContext registrationContext )
         {
             switch ( field.PersonFieldType )
             {
@@ -1506,16 +1538,20 @@ namespace Rock.Blocks.Event
                     }
 
                 case RegistrationPersonFieldType.HomePhone:
-                    var homePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
-                    return CreatePhoneNumberBoxWithSmsControlBag( homePhone );
+                    return person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() )?.Number;
 
                 case RegistrationPersonFieldType.WorkPhone:
-                    var workPhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
-                    return CreatePhoneNumberBoxWithSmsControlBag( workPhone );
+                    return person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() )?.Number;
 
                 case RegistrationPersonFieldType.MobilePhone:
                     var mobilePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-                    return CreatePhoneNumberBoxWithSmsControlBag( mobilePhone );
+                    if ( registrationContext.RegistrationSettings.ShowSmsOptIn )
+                    {
+                        return CreatePhoneNumberBoxWithSmsControlBag( mobilePhone );
+                    }
+
+                    return mobilePhone?.Number;
+                    
             }
 
             return null;
@@ -1528,7 +1564,7 @@ namespace Rock.Blocks.Event
                 return new PhoneNumberBoxWithSmsControlBag
                 {
                     Number = string.Empty,
-                    IsMessagingEnbabled = false,
+                    IsMessagingEnabled = false,
                     CountryCode = string.Empty
                 };
             }
@@ -1536,7 +1572,7 @@ namespace Rock.Blocks.Event
             return new PhoneNumberBoxWithSmsControlBag
             {
                 Number = phone.Number,
-                IsMessagingEnbabled = phone.IsMessagingEnabled,
+                IsMessagingEnabled = phone.IsMessagingEnabled,
                 CountryCode = phone.CountryCode
             };
         }
@@ -1708,14 +1744,27 @@ namespace Rock.Blocks.Event
         /// <param name="changes">The changes.</param>
         private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, History.HistoryChangeList changes )
         {
+            string phoneNumber = string.Empty;
+            bool? isMessagingEnabled = null;
+
             var phoneData = fieldValue.ToStringSafe().FromJsonOrNull<PhoneNumberBoxWithSmsControlBag>();
-            if ( phoneData == null )
+            if ( phoneData != null )
             {
+                // We got the number and SMS selection, so set both.
+                phoneNumber = phoneData.Number;
+                isMessagingEnabled = phoneData.IsMessagingEnabled;
+            }
+            else if( fieldValue is string )
+            {
+                // Only got the number, so leave IsMessagingEnabled null so it isn't changed
+                phoneNumber = fieldValue.ToStringSafe();
+            }
+            else
+            {
+                // No usable data, just return without doing anything.
                 return;
             }
-
-            var phoneNumber = phoneData.Number;
-            var isMessagingEnabled = phoneData.IsMessagingEnbabled;
+            
             string cleanNumber = PhoneNumber.CleanNumber( phoneNumber );
             var numberType = DefinedValueCache.Get( phoneTypeGuid );
 
@@ -1732,8 +1781,7 @@ namespace Rock.Blocks.Event
             {
                 phone = new PhoneNumber
                 {
-                    NumberTypeValueId = numberType.Id,
-                    IsMessagingEnabled = isMessagingEnabled
+                    NumberTypeValueId = numberType.Id
                 };
 
                 person.PhoneNumbers.Add( phone );
@@ -1745,10 +1793,13 @@ namespace Rock.Blocks.Event
             }
 
             phone.Number = cleanNumber;
-            phone.IsMessagingEnabled = isMessagingEnabled;
-
             History.EvaluateChange( changes, $"{numberType.Value} Phone", oldPhoneNumber, phone.NumberFormattedWithCountryCode );
-            History.EvaluateChange( changes, $"{numberType.Value} IsMessagingEnabled", oldIsMessagingEnabled, phone.IsMessagingEnabled );
+
+            if( isMessagingEnabled != null )
+            {
+                phone.IsMessagingEnabled = isMessagingEnabled.Value;
+                History.EvaluateChange( changes, $"{numberType.Value} IsMessagingEnabled", oldIsMessagingEnabled, phone.IsMessagingEnabled );
+            }
         }
 
         /// <summary>
@@ -2532,7 +2583,7 @@ namespace Rock.Blocks.Event
             var session = GetRegistrationEntryBlockSession( rockContext, context.RegistrationSettings );
 
             /*
-	            9/7/2022 - SMC / DSH / NA
+                9/7/2022 - SMC / DSH / NA
                 
                 isExistingRegistration is true if we have a RegistrationId in the page parameters, OR if we have a saved
                 RegistrationGuid in the RegistrationSession temporary table.  This is true because redirection payment gateways
@@ -2919,6 +2970,7 @@ namespace Rock.Blocks.Event
                 Fees = fees,
                 FamilyMembers = familyMembers,
                 MaxRegistrants = context.RegistrationSettings.MaxRegistrants ?? 25,
+                ShowSmsOptIn = context.RegistrationSettings.ShowSmsOptIn,
                 RegistrantsSameFamily = ( int ) context.RegistrationSettings.RegistrantsSameFamily,
                 ForceEmailUpdate = forceEmailUpdate,
                 RegistrarOption = ( int ) context.RegistrationSettings.RegistrarOption,
@@ -3463,16 +3515,22 @@ namespace Rock.Blocks.Event
         /// Gets the registration session page parameter value from all possible sources.
         /// </summary>
         /// <returns>The session unique identifier or <c>null</c> if it could not be obtained.</returns>
-        private Guid? GetRegistrationSessionPageParameter()
+        private Guid? GetRegistrationSessionPageParameter( PageReference pageReference )
         {
-            var sessionGuid = PageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull();
+            var sessionGuid = pageReference != null
+                ? pageReference.GetPageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull()
+                : PageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull();
 
             if ( sessionGuid.HasValue )
             {
                 return sessionGuid;
             }
 
-            var prefixedSessionValue = RequestContext.GetPageParameters()
+            var pageParameters = pageReference != null
+                ? pageReference.GetPageParameters()
+                : RequestContext.GetPageParameters();
+
+            var prefixedSessionValue = pageParameters
                 .Select( k => k.Value )
                 .Where( v => v != null && v.StartsWith( ReturnUrlSessionPrefix ) )
                 .FirstOrDefault();
@@ -3492,8 +3550,36 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private int GetRegistrationInstanceId( RockContext rockContext )
         {
+            return GetRegistrationInstanceId( rockContext, null );
+        }
+
+        /// <summary>
+        /// Gets the registration instance identifier.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="pageReference">The page reference to use when accessing page parameters.</param>
+        /// <returns></returns>
+        private int GetRegistrationInstanceId( RockContext rockContext, PageReference pageReference )
+        {
+            string registrationParameter;
+            string registrationInstanceParameter;
+            string slugParameter;
+
+            if ( pageReference != null )
+            {
+                registrationParameter = pageReference.GetPageParameter( PageParameterKey.RegistrationId );
+                registrationInstanceParameter = pageReference.GetPageParameter( PageParameterKey.RegistrationInstanceId );
+                slugParameter = pageReference.GetPageParameter( PageParameterKey.Slug );
+            }
+            else
+            {
+                registrationParameter = PageParameter( PageParameterKey.RegistrationId );
+                registrationInstanceParameter = PageParameter( PageParameterKey.RegistrationInstanceId );
+                slugParameter = PageParameter( PageParameterKey.Slug );
+            }
+
             // The page param is the least costly since there is no database call, so try that first
-            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+            var registrationInstanceId = registrationInstanceParameter.AsIntegerOrNull();
 
             if ( registrationInstanceId.HasValue )
             {
@@ -3501,7 +3587,7 @@ namespace Rock.Blocks.Event
             }
 
             // Try a session. This is typically from a redirect
-            var registrationSessionGuid = GetRegistrationSessionPageParameter();
+            var registrationSessionGuid = GetRegistrationSessionPageParameter( pageReference );
 
             if ( registrationSessionGuid.HasValue )
             {
@@ -3522,15 +3608,13 @@ namespace Rock.Blocks.Event
             }
 
             // Try a url slug
-            var slug = PageParameter( PageParameterKey.Slug );
-
-            if ( !slug.IsNullOrWhiteSpace() )
+            if ( !slugParameter.IsNullOrWhiteSpace() )
             {
                 var linkage = new EventItemOccurrenceGroupMapService( rockContext )
                     .Queryable()
                     .AsNoTracking()
                     .Where( l =>
-                        l.UrlSlug == slug &&
+                        l.UrlSlug == slugParameter &&
                         l.RegistrationInstanceId.HasValue )
                     .Select( l => new
                     {
@@ -3545,7 +3629,7 @@ namespace Rock.Blocks.Event
             }
 
             // Try the registration id
-            var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+            var registrationId = registrationParameter.AsIntegerOrNull();
 
             if ( registrationId.HasValue )
             {
@@ -3577,7 +3661,7 @@ namespace Rock.Blocks.Event
         private RegistrationEntryBlockSession GetRegistrationEntryBlockSession( RockContext rockContext, RegistrationSettings settings )
         {
             // Try to restore the session from the RegistrationSessionGuid, which is typically a PushPay redirect
-            var registrationSessionGuid = GetRegistrationSessionPageParameter();
+            var registrationSessionGuid = GetRegistrationSessionPageParameter( null );
 
             if ( registrationSessionGuid.HasValue )
             {

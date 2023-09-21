@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, inject, ref, watch } from "vue";
+import { PropType, computed, defineComponent, inject, ref, watch } from "vue";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { getFieldEditorProps } from "./utils";
 import RockFormField from "@Obsidian/Controls/rockFormField.obs";
-import { ClientValue, ConfigurationValueKey, ValueItem } from "./definedValueRangeField.partial";
+import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./definedValueRangeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { List } from "@Obsidian/Utility/linq";
 
 function parseModelValue(modelValue: string | undefined): string[] {
@@ -145,5 +147,105 @@ export const EditComponent = defineComponent({
         </select>
     </div>
 </RockFormField>
+`
+});
+
+export const ConfigurationComponent = defineComponent({
+    name: "DefinedValueRangeField.Configuration",
+
+    components: {
+        DropDownList,
+        CheckBox
+    },
+
+    props: {
+        modelValue: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
+        configurationProperties: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        }
+    },
+
+    setup(props, { emit }) {
+        // Define the properties that will hold the current selections.
+        const definedTypeValue = ref("");
+        const displayDescriptions = ref(false);
+
+        /** The defined types that are available to be selected from. */
+        const definedTypeItems = ref<ListItemBag[]>([]);
+
+        /** The options to show in the defined type picker. */
+        const definedTypeOptions = computed((): ListItemBag[] => {
+            return definedTypeItems.value;
+        });
+
+        /**
+         * Update the modelValue property if any value of the dictionary has
+         * actually changed. This helps prevent unwanted postbacks if the value
+         * didn't really change - which can happen if multiple values get updated
+         * at the same time.
+         *
+         * @returns true if a new modelValue was emitted to the parent component.
+         */
+        const maybeUpdateModelValue = (): boolean => {
+            const newValue: Record<string, string> = {
+                ...props.modelValue
+            };
+
+            // Construct the new value that will be emitted if it is different
+            // than the current value.
+            newValue[ConfigurationValueKey.DefinedType] = definedTypeValue.value;
+            newValue[ConfigurationValueKey.DisplayDescription] = asTrueFalseOrNull(displayDescriptions.value) ?? "False";
+
+            // Compare the new value and the old value.
+            const anyValueChanged = newValue[ConfigurationValueKey.DefinedType] !== props.modelValue[ConfigurationValueKey.DefinedType]
+                || newValue[ConfigurationValueKey.DisplayDescription] !== (props.modelValue[ConfigurationValueKey.DisplayDescription] ?? "False");
+
+            // If any value changed then emit the new model value.
+            if (anyValueChanged) {
+                emit("update:modelValue", newValue);
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+
+
+        // Watch for changes coming in from the parent component and update our
+        // data to match the new information.
+        watch(() => [props.modelValue, props.configurationProperties], () => {
+            const definedTypes = props.configurationProperties[ConfigurationPropertyKey.DefinedTypes];
+            definedTypeItems.value = definedTypes ? JSON.parse(props.configurationProperties.definedTypes) as ListItemBag[] : [];
+            definedTypeValue.value = props.modelValue.definedtype;
+            displayDescriptions.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayDescription]);
+        }, {
+            immediate: true
+        });
+
+        // Watch for changes in properties that require new configuration
+        // properties to be retrieved from the server.
+        watch([definedTypeValue, displayDescriptions], () => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfiguration");
+            }
+        });
+
+
+        return {
+            definedTypeValue,
+            definedTypeOptions,
+            displayDescriptions,
+        };
+    },
+
+    template: `
+<div>
+    <DropDownList v-model="definedTypeValue" label="Defined Type" :items="definedTypeOptions" :showBlankItem="false" />
+    <CheckBox v-model="displayDescriptions" label="Display Descriptions" text="Yes" help="When set, the defined value descriptions will be displayed instead of the values." />
+</div>
 `
 });

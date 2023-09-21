@@ -841,6 +841,7 @@ mission. We are so grateful for your commitment.</p>
                 referencePaymentInfo = new ReferencePaymentInfo();
                 referencePaymentInfo.GatewayPersonIdentifier = financialScheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier;
                 referencePaymentInfo.FinancialPersonSavedAccountId = financialScheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccountId;
+                referencePaymentInfo.ReferenceNumber = financialGatewayComponent.GetReferenceNumber( financialScheduledTransaction, out errorMessage );
             }
             else if ( useSavedAccount )
             {
@@ -883,7 +884,12 @@ mission. We are so grateful for your commitment.</p>
             var originalGatewayScheduleId = financialScheduledTransaction.GatewayScheduleId;
             try
             {
-                financialScheduledTransaction.FinancialPaymentDetail.ClearPaymentInfo();
+                // If we are using the existing payment method, DO NOT clear out the FinancialPaymentDetail record.
+                if ( !useExistingPaymentMethod )
+                {
+                    financialScheduledTransaction.FinancialPaymentDetail.ClearPaymentInfo();
+                }
+
                 var successfullyUpdated = financialGatewayComponent.UpdateScheduledPayment( financialScheduledTransaction, referencePaymentInfo, out errorMessage );
 
                 if ( !successfullyUpdated )

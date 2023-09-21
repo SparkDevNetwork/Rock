@@ -212,7 +212,7 @@ namespace Rock.Model
         /// The person entry SMS opt in entry option.
         /// </value>
         [DataMember]
-        public WorkflowActionFormPersonEntryOption PersonEntrySmsOptInEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Hidden;
+        public WorkflowActionFormShowHideOption PersonEntrySmsOptInEntryOption { get; set; } = WorkflowActionFormShowHideOption.Hide;
 
         /// <summary>
         /// Gets or sets the person entry birthdate entry option.

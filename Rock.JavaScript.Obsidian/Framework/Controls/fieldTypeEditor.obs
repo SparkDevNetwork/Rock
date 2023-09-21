@@ -9,7 +9,7 @@
             {{ fieldErrorMessage }}
         </NotificationBox>
         <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationValues" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
-        <RockField v-if="hasDefaultValue && !showConfigOnly" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode />
+        <RockField v-if="hasDefaultValue && !showConfigOnly" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode @updateConfigurationValue="onUpdateFieldConfigurationValue" />
     </div>
 </template>
 
@@ -28,6 +28,7 @@
     import { FieldTypeEditorUpdateAttributeConfigurationResultBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationResultBag";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         modelValue: {
@@ -43,6 +44,11 @@
         showConfigOnly: {
             type: Boolean,
             default: false
+        },
+
+        attributeGuid: {
+            type: String as PropType<Guid | null>,
+            required: false
         }
     });
 
@@ -121,7 +127,7 @@
     const defaultValueAttribute = computed((): PublicAttributeBag => {
         return {
             fieldTypeGuid: fieldTypeValue.value,
-            attributeGuid: newGuid(),
+            attributeGuid: props.attributeGuid ?? newGuid(),
             configurationValues: configurationValues.value,
             name: "Default Value",
             key: "DefaultValue",
@@ -237,6 +243,18 @@
      */
     function onUpdateConfigurationValue(_key: string, _value: string): void {
         updateModelValue();
+    }
+
+    /**
+     * Called when the field component has updated one of the configuration
+     * values.
+     *
+     * @param key The key of the configuration value that was changed.
+     * @param value The new value of the configuration value.
+     */
+     function onUpdateFieldConfigurationValue(key: string, value: string): void {
+        configurationValues.value[key] = value;
+        updateFieldConfiguration(defaultValue.value ?? "");
     }
 
     // Called when the field type drop down value is changed.

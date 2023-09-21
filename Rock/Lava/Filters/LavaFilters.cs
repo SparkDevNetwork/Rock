@@ -2501,6 +2501,11 @@ namespace Rock.Lava
                             modelCacheType = typeof( CampusCache );
                             break;
                         }
+                    case "EntityType":
+                        {
+                            modelCacheType = typeof( EntityTypeCache );
+                            break;
+                        }
                     case "Category":
                         {
                             modelCacheType = typeof( CategoryCache );
@@ -2849,10 +2854,10 @@ namespace Rock.Lava
         /// <summary>
         /// Appends watch data to various types of objects.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="source"></param>
-        /// <param name="attributeKey"></param>
-        /// <param name="startValue"></param>
+        /// <param name="context">The context.</param>
+        /// <param name="source">The source.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="startValue">The start value.</param>
         /// <returns></returns>
         public static object AppendWatches( ILavaRenderContext context, object source, string attributeKey = "", object startValue = null )
         {
@@ -4079,7 +4084,6 @@ namespace Rock.Lava
 
                 input = input.EscapeQuotes();
 
-                input = input.EscapeQuotes();
                 if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
                 {
                     var quickReturnScript = "" +

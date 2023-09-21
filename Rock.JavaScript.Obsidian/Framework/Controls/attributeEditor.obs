@@ -72,7 +72,7 @@
             </div>
 
             <div class="col-md-6">
-                <FieldTypeEditor v-model="fieldTypeValue" :isFieldTypeReadOnly="isFieldTypeReadOnly" />
+                <FieldTypeEditor v-model="fieldTypeValue" :isFieldTypeReadOnly="isFieldTypeReadOnly" :attributeGuid="attributeGuid" />
             </div>
         </div>
 
@@ -218,6 +218,8 @@
     });
 
     const isFieldTypeReadOnly = computed((): boolean => !!props.modelValue?.guid);
+
+    const attributeGuid = computed((): Guid | undefined | null => props.modelValue?.guid);
 
     watch([
         attributeName,

@@ -18,13 +18,16 @@
 import { Guid } from "@Obsidian/Types";
 import { isValidGuid, normalize } from "./guid";
 import { IFieldType } from "@Obsidian/Types/fieldType";
+import { Ref, inject, provide, ref } from "vue";
 
 const fieldTypeTable: Record<Guid, IFieldType> = {};
+const fieldTypeAttributeGuidSymbol = Symbol();
+
 
 /**
  * Register a new field type in the system. This must be called for all field
  * types a plugin registers.
- * 
+ *
  * @param fieldTypeGuid The unique identifier of the field type.
  * @param fieldType The class instance that will handle the field type.
  */
@@ -46,7 +49,7 @@ export function registerFieldType(fieldTypeGuid: Guid, fieldType: IFieldType): v
  * Get the field type handler for a given unique identifier.
  *
  * @param fieldTypeGuid The unique identifier of the field type.
- * 
+ *
  * @returns The field type instance or null if not found.
  */
 export function getFieldType(fieldTypeGuid: Guid): IFieldType | null {
@@ -64,3 +67,21 @@ export function getFieldType(fieldTypeGuid: Guid): IFieldType | null {
     return null;
 }
 
+/**
+ * Provides the attribute guid for a field type component to use.
+ *
+ * @param guid A reference to the attribute guid value.
+ */
+export function provideFieldTypeAttributeGuid(guid: Ref<Guid | undefined | null>): void {
+    provide(fieldTypeAttributeGuidSymbol, guid);
+}
+
+/**
+ * Gets a reference to the attribute guid value for this field. The value may be
+ * undefined or null.
+ *
+ * @returns A function that will cause the block component to be reloaded.
+ */
+export function useFieldTypeAttributeGuid(): Ref<Guid | undefined | null> {
+    return inject<Ref<Guid | undefined | null>>(fieldTypeAttributeGuidSymbol, ref());
+}

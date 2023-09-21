@@ -423,14 +423,17 @@ namespace RockWeb.Blocks.Mobile
         /// <returns>System.String.</returns>
         private string RemoveMobileCategoryPrefix( string category )
         {
-            var text = category;
-
-            if ( text.StartsWith( "Mobile >" ) )
+            if ( category.IsNullOrWhiteSpace() )
             {
-                text = category.Replace( "Mobile >", string.Empty ).Trim();
+                return category;
             }
 
-            return text;
+            if ( category.StartsWith( "Mobile >" ) )
+            {
+                category = category.Replace( "Mobile >", string.Empty ).Trim();
+            }
+
+            return category;
         }
 
         /// <summary>

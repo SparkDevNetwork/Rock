@@ -86,5 +86,21 @@ namespace Rock.ViewModels.Blocks.Core.SignatureDocumentTemplateDetail
         /// The signature input types.
         /// </value>
         public List<ListItemBag> SignatureInputTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PDF URL.
+        /// </summary>
+        /// <value>
+        /// The PDF URL.
+        /// </value>
+        public string PdfUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can administrate.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can administrate; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanAdministrate { get; set; }
     }
 }
