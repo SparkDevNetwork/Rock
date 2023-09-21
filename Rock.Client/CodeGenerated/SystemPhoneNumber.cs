@@ -27,27 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for DataView that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for SystemPhoneNumber that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class DataViewEntity
+    public partial class SystemPhoneNumberEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? CategoryId { get; set; }
-
-        /// <summary />
-        public int? DataViewFilterId { get; set; }
+        public int? AssignedToPersonAliasId { get; set; }
 
         /// <summary />
         public string Description { get; set; }
-
-        /// <summary />
-        public bool DisableUseOfReadOnlyContext { get; set; }
-
-        /// <summary />
-        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -56,13 +47,16 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IncludeDeceased { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
-        public bool IsSystem { get; set; }
+        public bool IsSmsEnabled { get; set; }
 
         /// <summary />
-        public DateTime? LastRunDateTime { get; set; }
+        public bool IsSmsForwardingEnabled { get; set; }
+
+        /// <summary />
+        public int? MobileApplicationSiteId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -73,28 +67,19 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public DateTime? PersistedLastRefreshDateTime { get; set; }
+        public string Number { get; set; }
 
         /// <summary />
-        public int? PersistedLastRunDurationMilliseconds { get; set; }
+        public int Order { get; set; }
 
         /// <summary />
-        public int? PersistedScheduleId { get; set; }
+        public string ProviderIdentifier { get; set; }
 
         /// <summary />
-        public int? PersistedScheduleIntervalMinutes { get; set; }
+        public int? SmsNotificationGroupId { get; set; }
 
         /// <summary />
-        public int? RunCount { get; set; }
-
-        /// <summary />
-        public DateTime? RunCountLastRefreshDateTime { get; set; }
-
-        /// <summary />
-        public double? TimeToRunDurationMilliseconds { get; set; }
-
-        /// <summary />
-        public int? TransformEntityTypeId { get; set; }
+        public int? SmsReceivedWorkflowTypeId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -123,32 +108,27 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source DataView object
+        /// Copies the base properties from a source SystemPhoneNumber object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( DataView source )
+        public void CopyPropertiesFrom( SystemPhoneNumber source )
         {
             this.Id = source.Id;
-            this.CategoryId = source.CategoryId;
-            this.DataViewFilterId = source.DataViewFilterId;
+            this.AssignedToPersonAliasId = source.AssignedToPersonAliasId;
             this.Description = source.Description;
-            this.DisableUseOfReadOnlyContext = source.DisableUseOfReadOnlyContext;
-            this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IncludeDeceased = source.IncludeDeceased;
-            this.IsSystem = source.IsSystem;
-            this.LastRunDateTime = source.LastRunDateTime;
+            this.IsActive = source.IsActive;
+            this.IsSmsEnabled = source.IsSmsEnabled;
+            this.IsSmsForwardingEnabled = source.IsSmsForwardingEnabled;
+            this.MobileApplicationSiteId = source.MobileApplicationSiteId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
-            this.PersistedLastRunDurationMilliseconds = source.PersistedLastRunDurationMilliseconds;
-            this.PersistedScheduleId = source.PersistedScheduleId;
-            this.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
-            this.RunCount = source.RunCount;
-            this.RunCountLastRefreshDateTime = source.RunCountLastRefreshDateTime;
-            this.TimeToRunDurationMilliseconds = source.TimeToRunDurationMilliseconds;
-            this.TransformEntityTypeId = source.TransformEntityTypeId;
+            this.Number = source.Number;
+            this.Order = source.Order;
+            this.ProviderIdentifier = source.ProviderIdentifier;
+            this.SmsNotificationGroupId = source.SmsNotificationGroupId;
+            this.SmsReceivedWorkflowTypeId = source.SmsReceivedWorkflowTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -160,24 +140,21 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for DataView that includes all the fields that are available for GETs. Use this for GETs (use DataViewEntity for POST/PUTs)
+    /// Client model for SystemPhoneNumber that includes all the fields that are available for GETs. Use this for GETs (use SystemPhoneNumberEntity for POST/PUTs)
     /// </summary>
-    public partial class DataView : DataViewEntity
+    public partial class SystemPhoneNumber : SystemPhoneNumberEntity
     {
         /// <summary />
-        public Category Category { get; set; }
+        public PersonAlias AssignedToPersonAlias { get; set; }
 
         /// <summary />
-        public DataViewFilter DataViewFilter { get; set; }
+        public Site MobileApplicationSite { get; set; }
 
         /// <summary />
-        public EntityType EntityType { get; set; }
+        public Group SmsNotificationGroup { get; set; }
 
         /// <summary />
-        public Schedule PersistedSchedule { get; set; }
-
-        /// <summary />
-        public EntityType TransformEntityType { get; set; }
+        public WorkflowType SmsReceivedWorkflowType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

@@ -27,27 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for DataView that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for NotificationMessageType that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class DataViewEntity
+    public partial class NotificationMessageTypeEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? CategoryId { get; set; }
+        public string ComponentDataJson { get; set; }
 
         /// <summary />
-        public int? DataViewFilterId { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public bool DisableUseOfReadOnlyContext { get; set; }
-
-        /// <summary />
-        public int? EntityTypeId { get; set; }
+        public int EntityTypeId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -56,13 +47,19 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IncludeDeceased { get; set; }
+        public bool IsDeletedOnRead { get; set; }
 
         /// <summary />
-        public bool IsSystem { get; set; }
+        public bool IsMobileApplicationSupported { get; set; }
 
         /// <summary />
-        public DateTime? LastRunDateTime { get; set; }
+        public bool IsTvApplicationSupported { get; set; }
+
+        /// <summary />
+        public bool IsWebSupported { get; set; }
+
+        /// <summary />
+        public string Key { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -70,31 +67,13 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public int? RelatedMobileApplicationSiteId { get; set; }
 
         /// <summary />
-        public DateTime? PersistedLastRefreshDateTime { get; set; }
+        public int? RelatedTvApplicationSiteId { get; set; }
 
         /// <summary />
-        public int? PersistedLastRunDurationMilliseconds { get; set; }
-
-        /// <summary />
-        public int? PersistedScheduleId { get; set; }
-
-        /// <summary />
-        public int? PersistedScheduleIntervalMinutes { get; set; }
-
-        /// <summary />
-        public int? RunCount { get; set; }
-
-        /// <summary />
-        public DateTime? RunCountLastRefreshDateTime { get; set; }
-
-        /// <summary />
-        public double? TimeToRunDurationMilliseconds { get; set; }
-
-        /// <summary />
-        public int? TransformEntityTypeId { get; set; }
+        public int? RelatedWebSiteId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -123,32 +102,25 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source DataView object
+        /// Copies the base properties from a source NotificationMessageType object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( DataView source )
+        public void CopyPropertiesFrom( NotificationMessageType source )
         {
             this.Id = source.Id;
-            this.CategoryId = source.CategoryId;
-            this.DataViewFilterId = source.DataViewFilterId;
-            this.Description = source.Description;
-            this.DisableUseOfReadOnlyContext = source.DisableUseOfReadOnlyContext;
+            this.ComponentDataJson = source.ComponentDataJson;
             this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IncludeDeceased = source.IncludeDeceased;
-            this.IsSystem = source.IsSystem;
-            this.LastRunDateTime = source.LastRunDateTime;
+            this.IsDeletedOnRead = source.IsDeletedOnRead;
+            this.IsMobileApplicationSupported = source.IsMobileApplicationSupported;
+            this.IsTvApplicationSupported = source.IsTvApplicationSupported;
+            this.IsWebSupported = source.IsWebSupported;
+            this.Key = source.Key;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
-            this.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
-            this.PersistedLastRunDurationMilliseconds = source.PersistedLastRunDurationMilliseconds;
-            this.PersistedScheduleId = source.PersistedScheduleId;
-            this.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
-            this.RunCount = source.RunCount;
-            this.RunCountLastRefreshDateTime = source.RunCountLastRefreshDateTime;
-            this.TimeToRunDurationMilliseconds = source.TimeToRunDurationMilliseconds;
-            this.TransformEntityTypeId = source.TransformEntityTypeId;
+            this.RelatedMobileApplicationSiteId = source.RelatedMobileApplicationSiteId;
+            this.RelatedTvApplicationSiteId = source.RelatedTvApplicationSiteId;
+            this.RelatedWebSiteId = source.RelatedWebSiteId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -160,24 +132,24 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for DataView that includes all the fields that are available for GETs. Use this for GETs (use DataViewEntity for POST/PUTs)
+    /// Client model for NotificationMessageType that includes all the fields that are available for GETs. Use this for GETs (use NotificationMessageTypeEntity for POST/PUTs)
     /// </summary>
-    public partial class DataView : DataViewEntity
+    public partial class NotificationMessageType : NotificationMessageTypeEntity
     {
-        /// <summary />
-        public Category Category { get; set; }
-
-        /// <summary />
-        public DataViewFilter DataViewFilter { get; set; }
-
         /// <summary />
         public EntityType EntityType { get; set; }
 
         /// <summary />
-        public Schedule PersistedSchedule { get; set; }
+        public ICollection<NotificationMessage> NotificationMessages { get; set; }
 
         /// <summary />
-        public EntityType TransformEntityType { get; set; }
+        public Site RelatedMobileApplicationSite { get; set; }
+
+        /// <summary />
+        public Site RelatedTvApplicationSite { get; set; }
+
+        /// <summary />
+        public Site RelatedWebSite { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

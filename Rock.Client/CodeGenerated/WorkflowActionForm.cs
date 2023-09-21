@@ -71,7 +71,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.10"
-        [Obsolete( "Use NotificationSystemCommunicationId instead.", false )]
+        [Obsolete( "Use NotificationSystemCommunicationId instead.", true )]
         public int? NotificationSystemEmailId { get; set; }
 
         /// <summary />
@@ -199,9 +199,6 @@ namespace Rock.Client
             this.IncludeActionsInNotification = source.IncludeActionsInNotification;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NotificationSystemCommunicationId = source.NotificationSystemCommunicationId;
-            #pragma warning disable 612, 618
-            this.NotificationSystemEmailId = source.NotificationSystemEmailId;
-            #pragma warning restore 612, 618
             this.PersonEntryAddressEntryOption = source.PersonEntryAddressEntryOption;
             this.PersonEntryAutofillCurrentPerson = source.PersonEntryAutofillCurrentPerson;
             this.PersonEntryBirthdateEntryOption = source.PersonEntryBirthdateEntryOption;

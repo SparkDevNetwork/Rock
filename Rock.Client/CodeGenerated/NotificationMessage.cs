@@ -27,21 +27,24 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for PersonAlias that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for NotificationMessage that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PersonAliasEntity
+    public partial class NotificationMessageEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public DateTime? AliasedDateTime { get; set; }
+        public string ComponentDataJson { get; set; }
 
         /// <summary />
-        public Guid? AliasPersonGuid { get; set; }
+        public int Count { get; set; } = 1;
 
         /// <summary />
-        public int? AliasPersonId { get; set; }
+        public string Description { get; set; }
+
+        /// <summary />
+        public DateTime ExpireDateTime { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -50,16 +53,22 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string InternalMessage { get; set; }
+        public bool IsRead { get; set; }
 
         /// <summary />
-        public DateTime? LastVisitDateTime { get; set; }
+        public string Key { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public DateTime MessageDateTime { get; set; }
 
         /// <summary />
-        public int PersonId { get; set; }
+        public int NotificationMessageTypeId { get; set; }
+
+        /// <summary />
+        public int PersonAliasId { get; set; }
+
+        /// <summary />
+        public string Title { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -68,21 +77,24 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source PersonAlias object
+        /// Copies the base properties from a source NotificationMessage object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PersonAlias source )
+        public void CopyPropertiesFrom( NotificationMessage source )
         {
             this.Id = source.Id;
-            this.AliasedDateTime = source.AliasedDateTime;
-            this.AliasPersonGuid = source.AliasPersonGuid;
-            this.AliasPersonId = source.AliasPersonId;
+            this.ComponentDataJson = source.ComponentDataJson;
+            this.Count = source.Count;
+            this.Description = source.Description;
+            this.ExpireDateTime = source.ExpireDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.InternalMessage = source.InternalMessage;
-            this.LastVisitDateTime = source.LastVisitDateTime;
-            this.Name = source.Name;
-            this.PersonId = source.PersonId;
+            this.IsRead = source.IsRead;
+            this.Key = source.Key;
+            this.MessageDateTime = source.MessageDateTime;
+            this.NotificationMessageTypeId = source.NotificationMessageTypeId;
+            this.PersonAliasId = source.PersonAliasId;
+            this.Title = source.Title;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -90,12 +102,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for PersonAlias that includes all the fields that are available for GETs. Use this for GETs (use PersonAliasEntity for POST/PUTs)
+    /// Client model for NotificationMessage that includes all the fields that are available for GETs. Use this for GETs (use NotificationMessageEntity for POST/PUTs)
     /// </summary>
-    public partial class PersonAlias : PersonAliasEntity
+    public partial class NotificationMessage : NotificationMessageEntity
     {
         /// <summary />
-        public Person Person { get; set; }
+        public NotificationMessageType NotificationMessageType { get; set; }
+
+        /// <summary />
+        public PersonAlias PersonAlias { get; set; }
 
     }
 }

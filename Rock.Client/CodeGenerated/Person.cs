@@ -38,10 +38,19 @@ namespace Rock.Client
         public int /* AccountProtectionProfile*/ AccountProtectionProfile { get; set; }
 
         /// <summary />
+        public int? Age { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.Crm.AgeBracket AgeBracket { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.AgeClassification AgeClassification { get; set; }
 
         /// <summary />
         public DateTime? AnniversaryDate { get; set; }
+
+        /// <summary />
+        public int? BirthDateKey { get; set; }
 
         /// <summary />
         public int? BirthDay { get; set; }
@@ -225,8 +234,11 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AccountProtectionProfile = source.AccountProtectionProfile;
+            this.Age = source.Age;
+            this.AgeBracket = source.AgeBracket;
             this.AgeClassification = source.AgeClassification;
             this.AnniversaryDate = source.AnniversaryDate;
+            this.BirthDateKey = source.BirthDateKey;
             this.BirthDay = source.BirthDay;
             this.BirthMonth = source.BirthMonth;
             this.BirthYear = source.BirthYear;

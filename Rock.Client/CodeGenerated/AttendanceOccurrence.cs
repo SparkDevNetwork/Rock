@@ -41,6 +41,9 @@ namespace Rock.Client
         public int? AnonymousAttendanceCount { get; set; }
 
         /// <summary />
+        public DateTime? AttendanceReminderLastSentDateTime { get; set; }
+
+        /// <summary />
         public int? AttendanceTypeValueId { get; set; }
 
         /// <summary />
@@ -125,6 +128,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AcceptConfirmationMessage = source.AcceptConfirmationMessage;
             this.AnonymousAttendanceCount = source.AnonymousAttendanceCount;
+            this.AttendanceReminderLastSentDateTime = source.AttendanceReminderLastSentDateTime;
             this.AttendanceTypeValueId = source.AttendanceTypeValueId;
             this.DeclineConfirmationMessage = source.DeclineConfirmationMessage;
             this.DeclineReasonValueIds = source.DeclineReasonValueIds;

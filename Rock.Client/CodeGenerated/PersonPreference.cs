@@ -27,21 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for PersonAlias that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for PersonPreference that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PersonAliasEntity
+    public partial class PersonPreferenceEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public DateTime? AliasedDateTime { get; set; }
+        public int? EntityId { get; set; }
 
         /// <summary />
-        public Guid? AliasPersonGuid { get; set; }
-
-        /// <summary />
-        public int? AliasPersonId { get; set; }
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -50,16 +47,19 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string InternalMessage { get; set; }
+        public bool IsEnduring { get; set; }
 
         /// <summary />
-        public DateTime? LastVisitDateTime { get; set; }
+        public string Key { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public DateTime LastAccessedDateTime { get; set; }
 
         /// <summary />
-        public int PersonId { get; set; }
+        public int PersonAliasId { get; set; }
+
+        /// <summary />
+        public string Value { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -68,21 +68,21 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source PersonAlias object
+        /// Copies the base properties from a source PersonPreference object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PersonAlias source )
+        public void CopyPropertiesFrom( PersonPreference source )
         {
             this.Id = source.Id;
-            this.AliasedDateTime = source.AliasedDateTime;
-            this.AliasPersonGuid = source.AliasPersonGuid;
-            this.AliasPersonId = source.AliasPersonId;
+            this.EntityId = source.EntityId;
+            this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.InternalMessage = source.InternalMessage;
-            this.LastVisitDateTime = source.LastVisitDateTime;
-            this.Name = source.Name;
-            this.PersonId = source.PersonId;
+            this.IsEnduring = source.IsEnduring;
+            this.Key = source.Key;
+            this.LastAccessedDateTime = source.LastAccessedDateTime;
+            this.PersonAliasId = source.PersonAliasId;
+            this.Value = source.Value;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -90,12 +90,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for PersonAlias that includes all the fields that are available for GETs. Use this for GETs (use PersonAliasEntity for POST/PUTs)
+    /// Client model for PersonPreference that includes all the fields that are available for GETs. Use this for GETs (use PersonPreferenceEntity for POST/PUTs)
     /// </summary>
-    public partial class PersonAlias : PersonAliasEntity
+    public partial class PersonPreference : PersonPreferenceEntity
     {
         /// <summary />
-        public Person Person { get; set; }
+        public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public PersonAlias PersonAlias { get; set; }
 
     }
 }
