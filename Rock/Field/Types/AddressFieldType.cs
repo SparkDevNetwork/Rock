@@ -290,7 +290,18 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new AddressControl { ID = id, SetDefaultValues = false };
+            var dataEntryMode = configurationValues.GetConfigurationValueAsString( "DataEntryMode" ).ToLower();
+            
+            var control = new AddressControl { ID = id };
+            if ( dataEntryMode == "defaultvalue" )
+            {
+                // If we are configuring the default value for this field,
+                // accept partial addresses.
+                control.PartialAddressIsAllowed = true;
+                control.SetDefaultValues = false;
+            }
+
+            return control;
         }
 
         /// <summary>
@@ -330,6 +341,21 @@ namespace Rock.Field.Types
 
                     result = guid.ToString();
                 }
+                else
+                {
+                    // Store the value as a partial address serialized to Json.
+                    var locationValue = new AddressFieldValue
+                    {
+                        Street1 = editLocation.Street1,
+                        Street2 = editLocation.Street2,
+                        City = editLocation.City,
+                        State = editLocation.State,
+                        PostalCode = editLocation.PostalCode,
+                        Country = editLocation.Country
+                    };
+
+                    result = locationValue.ToCamelCaseJson( false, true );
+                }
 
                 return result;
             }
@@ -343,39 +369,43 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            if ( value == null )
             {
-                var addressControl = control as AddressControl;
+                return;
+            }
 
-                if ( addressControl != null )
+            var addressControl = control as AddressControl;
+            if ( addressControl == null )
+            {
+                return;
+            }
+
+            Location location;
+            Guid guid;
+            var isGuid = Guid.TryParse( value, out guid );
+
+            if ( isGuid )
+            {
+                location = new LocationService( new RockContext() ).Get( guid );
+            }
+            else
+            {
+                // Try to parse the value as a partial address.
+                var fieldValue = value.FromJsonOrNull<AddressFieldValue>();
+                location = new Location()
                 {
-                    Guid guid;
-                    Guid.TryParse( value, out guid );
-                    var location = new LocationService( new RockContext() ).Get( guid );
-                    if ( location != null )
-                    {
-                        /* 22-Sep-2020 - SK
-                          Always Set Country first as it loads all the related state in the dropdown before it's being set.
-                        */
-                        addressControl.Country = location.Country;
-                        addressControl.Street1 = location.Street1;
-                        addressControl.Street2 = location.Street2;
-                        addressControl.City = location.City;
-                        addressControl.State = location.State;
-                        addressControl.PostalCode = location.PostalCode;
-                        addressControl.County = location.County;
-                    }
-                    else
-                    {
-                        addressControl.Country = addressControl.GetDefaultCountry();
-                        addressControl.Street1 = string.Empty;
-                        addressControl.Street2 = string.Empty;
-                        addressControl.City = string.Empty;
-                        addressControl.County = string.Empty;
-                        addressControl.State = addressControl.GetDefaultState();
-                        addressControl.PostalCode = string.Empty;
-                    }
-                }
+                    Street1 = fieldValue.Street1,
+                    Street2 = fieldValue.Street2,
+                    City = fieldValue.City,
+                    State = fieldValue.State,
+                    PostalCode = fieldValue.PostalCode,
+                    Country = fieldValue.Country
+                };
+
+            }
+            if ( location != null )
+            {
+                addressControl.SetValues( location );
             }
         }
 

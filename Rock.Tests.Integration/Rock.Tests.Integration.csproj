@@ -207,6 +207,7 @@
     <Compile Include="Modules\Engagement\Interactions\TestDataHelper.Interactions.cs" />
     <Compile Include="Modules\Reporting\DataFilter\DataViewTests.cs" />
     <Compile Include="Modules\Reporting\DataFilter\NumericDataFilterFactoryBase.cs" />
+    <Compile Include="Modules\Web\Controls\AddressControlTests.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Organization.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Core.cs" />
