@@ -22,13 +22,12 @@
                    :help="helpText"
                    :configurationValues="configurationValues"
                    :rules="rules"
-                   @updateConfiguration="$emit('updateConfiguration')"
-                   @updateConfigurationValue="$emit('updateConfigurationValue')" />
+                   @updateConfigurationValue="onUpdateConfigurationValue" />
     </div>
 </template>
 
 <script setup lang="ts">
-    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { getFieldType, provideFieldTypeAttributeGuid } from "@Obsidian/Utility/fieldTypes";
     import { computed, PropType, provide } from "vue";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
@@ -64,6 +63,7 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: string): void;
+        (e: "updateConfigurationValue", key: string, value: string): void;
     }>();
 
     const field = computed(() => {
@@ -123,6 +123,11 @@
         return props.attribute.configurationValues ?? {};
     });
 
-    provide("attributeGuid", attributeGuid.value);
+    /** Called when the component emits the updateConfigurationValue event. */
+    function onUpdateConfigurationValue(key: string, value: string): void {
+        emit("updateConfigurationValue", key, value);
+    }
+
+    provideFieldTypeAttributeGuid(attributeGuid);
     provide("isRequired", isRequired);
 </script>

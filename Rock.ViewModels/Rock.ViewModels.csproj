@@ -74,6 +74,8 @@
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialStatementTemplateDetail\FinancialStatementTemplateBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialStatementTemplateDetail\FinancialStatementTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
@@ -367,7 +369,6 @@
     <Compile Include="Cms\ObsidianBlockPreferencesBag.cs" />
     <Compile Include="Communication\ConversationAttachmentBag.cs" />
     <Compile Include="Communication\ConversationMessageBag.cs" />
-    <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationValueOptionsBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\RockCacheabilityBag.cs" />
@@ -410,6 +411,9 @@
     <Compile Include="Rest\Controls\BlockTemplatePickerGetBlockTemplatesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsResultItemBag.cs" />
     <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityPickerGetFieldTypeConfigurationResultsBag.cs" />
+    <Compile Include="Rest\Controls\EntityPickerGetFieldTypeConfigurationOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityPickerGetEntityTypeGuidsOptionsBag.cs" />
     <Compile Include="Rest\Controls\PhoneNumberBoxGetConfigurationOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemOptionsBag.cs" />
     <Compile Include="Rest\Controls\ContentChannelItemPickerGetAllForContentChannelItemResultsBag.cs" />

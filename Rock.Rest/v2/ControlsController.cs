@@ -770,7 +770,7 @@ namespace Rock.Rest.v2
         /// <returns>A list of badge types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BadgePickerGetBadges" )]
-        [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
+        [Rock.SystemGuid.RestActionGuid( "6D50B8E4-985E-4AC6-B491-74B827108882" )]
         public IHttpActionResult BadgePickerGetBadges( [FromBody] BadgePickerGetBadgesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -1752,6 +1752,21 @@ namespace Rock.Rest.v2
                     definedValue.SaveAttributeValues( rockContext );
                 } );
 
+                // Update the attribute configuration if requested.
+                var updateAttribute = options.UpdateAttributeGuid.HasValue
+                    ? AttributeCache.Get( options.UpdateAttributeGuid.Value )
+                    : null;
+
+                if ( updateAttribute?.FieldType?.Field is DefinedValueFieldType )
+                {
+                    var needSave = DefinedValueFieldType.AddValueToAttributeConfiguration( updateAttribute.Id, definedValue.Id, rockContext );
+
+                    if ( needSave )
+                    {
+                        rockContext.SaveChanges();
+                    }
+                }
+
                 return Ok( new ListItemBag { Text = definedValue.Value, Value = definedValue.Guid.ToString() } );
             }
         }
@@ -2140,6 +2155,79 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Entity Picker
+
+        /// <summary>
+        /// Gets the entity type GUIDs to be displayed in the entity type picker part of the entity picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="Guid"/> of the entity types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityPickerGetEntityTypeGuids" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "8E92F72E-235A-4192-9C09-742F94849D62" )]
+        public IHttpActionResult EntityPickerGetEntityTypeGuids( [FromBody] EntityPickerGetEntityTypeGuidsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeGuids = new EntityTypeService( new RockContext() )
+                    .Queryable()
+                    .Where( e => e.IsEntity == true && e.SingleValueFieldTypeId.HasValue )
+                    .Select( e => e.Guid.ToString() )
+                    .ToList();
+
+                return Ok( entityTypeGuids );
+            }
+        }
+
+        /// <summary>
+        /// Gets the single value field type Guid of the given entity type
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A GUID of the field type</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityPickerGetFieldTypeConfiguration" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6BDA28C3-E6D7-42EB-9011-0C076455D4A7" )]
+        public IHttpActionResult EntityPickerGetFieldTypeConfiguration( [FromBody] EntityPickerGetFieldTypeConfigurationOptionsBag options )
+        {
+            if (options.EntityTypeGuid == null)
+            {
+                return NotFound();
+            }
+
+            var entityType = EntityTypeCache.Get( options.EntityTypeGuid );
+
+            if ( entityType == null )
+            {
+                return NotFound();
+            }
+
+            var fieldType = entityType.SingleValueFieldType;
+            var fieldTypeGuid = fieldType.Guid;
+
+            if ( fieldType == null || fieldTypeGuid == null )
+            {
+                return NotFound();
+            }
+
+            var field = fieldType.Field;
+
+            var entityValue = options.EntityValue ?? "";
+            var privateValue = field.GetPrivateEditValue( entityValue, new Dictionary<string, string>() );
+            var configurationValues = field.GetPublicConfigurationValues( new Dictionary<string, string>(), Field.ConfigurationValueUsage.Edit, privateValue );
+
+            return Ok( new EntityPickerGetFieldTypeConfigurationResultsBag
+            {
+                FieldTypeGuid = fieldTypeGuid,
+                FieldTypeName = fieldType.Name.Replace( " ", string.Empty ),
+                FieldTypePluralName = fieldType.Name.Replace( " ", string.Empty ).Pluralize(),
+                ConfigurationValues = configurationValues
+            } );
+        }
+
+        #endregion
+
         #region Entity Type Picker
 
         /// <summary>
@@ -2155,8 +2243,15 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var items = EntityTypeCache.All( rockContext )
-                    .Where( t => t.IsEntity )
+                var itemQuery = EntityTypeCache.All( rockContext )
+                    .Where( t => t.IsEntity );
+
+                if ( options.EntityTypeGuids != null && options.EntityTypeGuids.Any() )
+                {
+                    itemQuery = itemQuery.Where( t => options.EntityTypeGuids.Contains( t.Guid ) );
+                }
+
+                var items = itemQuery
                     .OrderByDescending( t => t.IsCommon )
                     .ThenBy( t => t.FriendlyName )
                     .Select( t => new ListItemBag
@@ -2331,48 +2426,6 @@ namespace Rock.Rest.v2
                 ConfigurationValues = publicConfigurationValues,
                 DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
             } );
-        }
-
-        /// <summary>
-        /// Gets the attribute configuration information provided and returns a new
-        /// set of configuration data. This is used by the attribute editor control
-        /// when a field type makes a change that requires new data to be retrieved
-        /// in order for it to continue editing the attribute.
-        /// </summary>
-        /// <param name="options">The view model that contains the update request.</param>
-        /// <returns>An instance of <see cref="FieldTypeEditorUpdateAttributeConfigurationResultBag"/> that represents the state of the attribute configuration.</returns>
-        [HttpPost]
-        [System.Web.Http.Route( "FieldTypeEditorUpdateAttributeConfigurationValue" )]
-        [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "EFB66E12-3330-4997-9174-9AB7E6E93198" )]
-        public IHttpActionResult FieldTypeEditorUpdateAttributeConfigurationValue( [FromBody] FieldTypeEditorUpdateAttributeConfigurationValueOptionsBag options )
-        {
-            var fieldType = Rock.Web.Cache.FieldTypeCache.Get( options.FieldTypeGuid )?.Field;
-
-            if ( fieldType == null )
-            {
-                return BadRequest( "Unknown field type." );
-            }
-
-            // Convert the public configuration options into our private
-            // configuration options (values).
-            var configurationValues = new Dictionary<string, string>();
-            configurationValues.Add( options.ConfigurationKey, options.ConfigurationValue );
-            var privateConfigurationValues = fieldType.GetPrivateConfigurationValues( configurationValues );
-            var rockContext = new RockContext();
-            // Save the updated list to the AttributeQualifier
-            var attributeQualifierService = new AttributeQualifierService( rockContext );
-            foreach ( var privateConfigurationValue in privateConfigurationValues )
-            {
-                var attributeQualifier = attributeQualifierService.Queryable().Where( q => q.Attribute.Guid == options.AttributeGuid && q.Key == privateConfigurationValue.Key ).FirstOrDefault();
-                if ( attributeQualifier != null && attributeQualifier.Value.IsNotNullOrWhiteSpace() )
-                {
-                    attributeQualifier.Value = privateConfigurationValues[privateConfigurationValue.Key];
-                }
-            }
-
-            rockContext.SaveChanges();
-            return Ok();
         }
 
         #endregion
@@ -3481,7 +3534,7 @@ namespace Rock.Rest.v2
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "LocationListGetLocations" )]
-        [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
+        [Rock.SystemGuid.RestActionGuid( "DA17BFF5-B9B8-4CD1-AAB4-2F703EDBEF46" )]
         public IHttpActionResult LocationListGetLocations( [FromBody] LocationListGetLocationsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )

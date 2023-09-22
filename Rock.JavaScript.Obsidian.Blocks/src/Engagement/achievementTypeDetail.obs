@@ -41,7 +41,7 @@
             </template>
             <template #footerSecondaryActions>
                 <RockButton :btnSize="BtnSize.Default"
-                            :btnType="BtnType.Default"
+                            :btnType="BtnType.Danger"
                             @click="onRebuild">
                         Rebuild
                     </RockButton>

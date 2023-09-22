@@ -292,6 +292,7 @@
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialBatchList\" />
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
+    <Folder Include="src\Finance\FinancialStatementTemplateDetail\" />
     <Folder Include="src\Prayer\" />
     <Folder Include="src\Prayer\PrayerRequestDetail\" />
     <Folder Include="src\Finance\FinancialPledgeDetail\" />

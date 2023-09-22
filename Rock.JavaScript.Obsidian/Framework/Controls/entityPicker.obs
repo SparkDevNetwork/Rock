@@ -1,0 +1,203 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="formFieldProps" :modelValue="internalValue" name="entity-picker">
+        <EntityTypePicker v-if="!(entityType && entityType.value && hideEntityTypePicker)"
+                          v-model="internalTypeValue"
+                          label="Entity Type"
+                          :multiple="false"
+                          :disabled="disabled"
+                          showBlankItem
+                          formGroupClasses="mt-0"
+                          :entityTypeGuids="entityTypeGuidsFilter"
+                          :rules="entityTypeRules" />
+        <RockField v-if="fieldConfiguration" :attribute="fieldConfiguration" v-model="internalValue" isEditMode />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, PropType, ref, watch } from "vue";
+    import EntityTypePicker from "./entityTypePicker.obs";
+    import RockFormField from "./rockFormField.obs";
+    import RockField from "./rockField.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { EntityPickerGetEntityTypeGuidsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityPickerGetEntityTypeGuidsOptionsBag";
+    import { EntityPickerGetFieldTypeConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityPickerGetFieldTypeConfigurationOptionsBag";
+    import { EntityPickerGetFieldTypeConfigurationResultsBag } from "@Obsidian/ViewModels/Rest/Controls/entityPickerGetFieldTypeConfigurationResultsBag";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { containsRequiredRule } from "@Obsidian/ValidationRules";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+
+
+    const props = defineProps({
+        /**
+         * This is the value that will come back from the field of the entity. All fields return strings
+         * and it's the same with this. The string will be a JSON serialized ListItemBag for most entity
+         * field types (probably all once all of the field types are implemented).
+         */
+        modelValue: {
+            type: Object as PropType<string | null>,
+            required: true
+        },
+
+        /**
+         * V-model ListItemBag of the entity type with `value` being the GUID and `text` being the name
+         */
+        entityType: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+
+        /** If an entity type is provided, you can set this to try to hide the entity type picker. */
+        hideEntityTypePicker: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * The entity control help text format.
+         * Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included
+         * and/or a {1} in places where you want the pluralized EntityType name (Campuses, Groups, etc) to be included.
+         */
+        entityControlHelpTextFormat: {
+            type: String,
+            default: ""
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string | null): void
+        (e: "update:entityType", value: ListItemBag | null): void
+    }>();
+
+    // #region Values
+
+    const internalTypeValue = ref<ListItemBag | null>(props.entityType);
+    const internalValue = ref<string | undefined>(props.modelValue ?? undefined);
+
+    const http = useHttp();
+    const securityGrantToken = useSecurityGrantToken();
+    const formFieldProps = useStandardRockFormFieldProps(props);
+
+    const entityTypeGuidsFilter = ref<Guid[]>([]);
+    const fieldType = ref<Guid | null>(null);
+    const fieldConfigurationValues = ref<Record<string, string> | null>(null);
+    const fieldTypeName = ref("");
+    const fieldTypePluralName = ref("");
+
+    const entityTypeRules = computed(() => containsRequiredRule(props.rules) ? "required" : "");
+
+    const fieldConfiguration = computed<PublicAttributeBag | null>(() => {
+        if (fieldType.value && internalTypeValue.value && fieldConfigurationValues.value) {
+            /*
+            * 9/20/2023 - JJZ
+            * The campus field is hidden when only one active campus is visible normally. This ensures it is not hidden
+            * because it doesn't make sense to hide it in this instance.
+            */
+            if (areEqual(fieldType.value, FieldType.Campus)) {
+                fieldConfigurationValues.value["forceVisible"] = "true";
+            }
+
+            return {
+                isRequired: containsRequiredRule(props.rules),
+                order: 1,
+                name: internalTypeValue.value.text,
+                fieldTypeGuid: fieldType.value,
+                configurationValues: fieldConfigurationValues.value,
+                disabled: props.disabled,
+                description: props.entityControlHelpTextFormat.replace("{0}", fieldTypeName.value).replace("{1}", fieldTypePluralName.value)
+            };
+        }
+
+        return null;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        if (!deepEqual(internalValue.value, props.modelValue, false)) {
+            internalValue.value = props.modelValue ?? undefined;
+        }
+    });
+
+    watch(internalValue, () => {
+        if (!deepEqual(internalValue.value, props.modelValue, false)) {
+            emit("update:modelValue", internalValue.value ?? null);
+        }
+    });
+
+    watch(() => props.entityType, () => {
+        if (!deepEqual(internalTypeValue.value, props.entityType, false)) {
+            internalTypeValue.value = props.entityType;
+        }
+    });
+
+    watch(internalTypeValue, () => {
+        if (!deepEqual(internalTypeValue.value, props.entityType, false)) {
+            emit("update:entityType", internalTypeValue.value);
+            fieldType.value = null;
+            fieldConfigurationValues.value = null;
+            internalValue.value = undefined;
+        }
+
+        if (internalTypeValue.value) {
+            getFieldTypeFromEntityType();
+        }
+    }, { immediate: true });
+
+    // #endregion
+
+    // #region Functions
+
+    async function getEntityTypeGuids(): Promise<void> {
+        const options: EntityPickerGetEntityTypeGuidsOptionsBag = {
+            securityGrantToken: securityGrantToken.value
+        };
+
+        const result = await http.post<Guid[]>("/api/v2/Controls/EntityPickerGetEntityTypeGuids", null, options);
+
+        if (result.isSuccess && result.data) {
+            entityTypeGuidsFilter.value = result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
+
+    async function getFieldTypeFromEntityType(): Promise<void> {
+        const options: EntityPickerGetFieldTypeConfigurationOptionsBag = {
+            entityTypeGuid: internalTypeValue.value?.value,
+            securityGrantToken: securityGrantToken.value
+        };
+
+        const result = await http.post<EntityPickerGetFieldTypeConfigurationResultsBag>("/api/v2/Controls/EntityPickerGetFieldTypeConfiguration", null, options);
+
+        if (result.isSuccess && result.data) {
+            fieldType.value = result.data.fieldTypeGuid ?? null;
+            fieldConfigurationValues.value = result.data.configurationValues ?? null;
+            fieldTypeName.value = result.data.fieldTypeName ?? "";
+            fieldTypePluralName.value = result.data.fieldTypePluralName ?? "";
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
+
+    // #endregion
+
+    getEntityTypeGuids();
+</script>

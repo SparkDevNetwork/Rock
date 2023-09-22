@@ -40,6 +40,12 @@ export type DefinedValuePickerSaveNewValueOptionsBag = {
     /** Gets or sets the security grant token to use when performing authorization checks. */
     securityGrantToken?: string | null;
 
+    /**
+     * Gets or sets the attribute identifier that should be updated. This
+     * must be null or represent a Defined Value field type attribute.
+     */
+    updateAttributeGuid?: Guid | null;
+
     /** The value property of the new defined value */
     value?: string | null;
 };

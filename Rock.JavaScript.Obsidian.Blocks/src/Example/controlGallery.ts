@@ -241,6 +241,7 @@ import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
 import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
 import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
+import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -2317,7 +2318,7 @@ const entityTypePickerGallery = defineComponent({
             includeGlobalOption: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
-            value: ref({ value: EntityType.Person, text: "Default Person" }),
+            value: ref({ value: EntityType.Person, text: "Person" }),
             importCode: getControlImportPath("entityTypePicker"),
             exampleCode: `<EntityTypePicker label="Entity Type" v-model="value" :multiple="false" :includeGlobalOption="false" />`
         };
@@ -2335,7 +2336,8 @@ const entityTypePickerGallery = defineComponent({
         :includeGlobalOption="includeGlobalOption"
         :enhanceForLongLists="enhanceForLongLists"
         :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
+        :showBlankItem="showBlankItem"
+        :entityTypeGuids="['5c144b51-3d2e-4bc2-b6c7-7e4cb890e15f','72657ed8-d16e-492e-ac12-144c5e7567e7']" />
 
     <template #settings>
         <div class="row">
@@ -2366,7 +2368,7 @@ const entityTypePickerGallery = defineComponent({
             </div>
         </div>
 
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p class="mt-3 text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -8168,6 +8170,7 @@ const controlGalleryComponents: Record<string, Component> = [
     HighlightLabelGallery,
     PdfViewerGallery,
     ChartGallery,
+    EntityPickerGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

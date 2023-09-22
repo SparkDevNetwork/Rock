@@ -50,5 +50,11 @@ namespace Rock.ViewModels.Rest.Controls
         /// Gets or sets the security grant token to use when performing authorization checks.
         /// </summary>
         public string SecurityGrantToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute identifier that should be updated. This
+        /// must be null or represent a Defined Value field type attribute.
+        /// </summary>
+        public Guid? UpdateAttributeGuid { get; set; }
     }
 }
