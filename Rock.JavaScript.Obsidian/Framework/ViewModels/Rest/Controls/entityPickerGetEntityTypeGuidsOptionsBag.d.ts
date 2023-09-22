@@ -21,19 +21,8 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
-/** Contains information required to update a field type's configuration. */
-export type FieldTypeEditorUpdateAttributeConfigurationValueOptionsBag = {
-    /** Gets or sets the attribute unique identifier. */
-    attributeGuid?: Guid | null;
-
-    /** Gets or sets the configuration value Key. */
-    configurationKey?: string | null;
-
-    /** Gets or sets the configuration value currently set. */
-    configurationValue?: string | null;
-
-    /** Gets or sets the field type unique identifier. */
-    fieldTypeGuid?: Guid | null;
+/** The options that can be passed to the GetEntityTypeGuids API action of the EntityPicker control. */
+export type EntityPickerGetEntityTypeGuidsOptionsBag = {
+    /** Gets or sets the security grant token to use when performing authorization checks. */
+    securityGrantToken?: string | null;
 };

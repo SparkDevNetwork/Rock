@@ -18,8 +18,6 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
-import { CodeEditorTheme, CodeEditorThemeDescription } from "@Obsidian/Enums/Controls/codeEditorTheme";
-import { CodeEditorMode, CodeEditorModeDescription } from "@Obsidian/Enums/Controls/codeEditorMode";
 import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
 import { ConfigurationPropertyKey, ConfigurationValueKey } from "./codeEditorField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -40,17 +38,13 @@ export const EditComponent = defineComponent({
         const internalValue = ref<string>("");
 
         // The selected code editor mode from the field type's configuration.
-        const editorMode = computed((): string => {
-            const editorModeValue = toNumber(props.configurationValues[ConfigurationValueKey.EditorMode]);
-            const editorMode = CodeEditorModeDescription[editorModeValue];
-            return editorMode;
+        const editorMode = computed((): number => {
+            return toNumber(props.configurationValues[ConfigurationValueKey.EditorMode]);
         });
 
         // The selected code editor theme from the field type's configuration.
-        const editorTheme = computed((): string => {
-            const editorThemeValue = toNumber(props.configurationValues[ConfigurationValueKey.EditorTheme]);
-            const editorTheme = CodeEditorThemeDescription[editorThemeValue];
-            return editorTheme;
+        const editorTheme = computed((): number => {
+            return toNumber(props.configurationValues[ConfigurationValueKey.EditorTheme]);
         });
 
         // The selected code editor theme from the field type's configuration.
@@ -161,8 +155,8 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            editorMode.value = props.modelValue[ConfigurationValueKey.EditorMode] ?? CodeEditorMode["Text"];
-            editorTheme.value = props.modelValue[ConfigurationValueKey.EditorTheme] ?? CodeEditorTheme["Rock"];
+            editorMode.value = props.modelValue[ConfigurationValueKey.EditorMode] ?? 0;
+            editorTheme.value = props.modelValue[ConfigurationValueKey.EditorTheme] ?? 0;
             editorHeight.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.EditorHeight]);
         }, {
             immediate: true

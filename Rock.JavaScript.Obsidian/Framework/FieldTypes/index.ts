@@ -245,6 +245,9 @@ registerFieldType(FieldTypeGuids.SocialMediaAccount, new SocialMediaAccountField
 import { SSNFieldType } from "./ssnField.partial";
 registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
 
+import { StreakTypeFieldType } from "./streakTypeField.partial";
+registerFieldType(FieldTypeGuids.StreakType, new StreakTypeFieldType());
+
 import { TextFieldType } from "./textField.partial";
 registerFieldType(FieldTypeGuids.Text, new TextFieldType());
 

@@ -51,8 +51,6 @@
 
                     <h1 runat="server">General Information</h1>
 
-                    <Rock:BlockTemplatePicker ID="lfkjs" runat="server" />
-
                     <h2 id="input-sizing">Input Sizing Rules</h2>
 
                     <div class="alert alert-warning">

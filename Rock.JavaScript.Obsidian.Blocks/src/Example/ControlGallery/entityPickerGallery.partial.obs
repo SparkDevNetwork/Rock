@@ -1,0 +1,48 @@
+<template>
+    <GalleryAndResult :value="{ value, entityType }" :importCode="importCode" :exampleCode="exampleCode" enableReflection hasMultipleValues>
+
+        <EntityPicker v-model="value" v-model:entityType="entityType" :disabled="disabled" :hideEntityTypePicker="hideEntityTypePicker" :entityControlHelpTextFormat="entityControlHelpTextFormat" rules="required" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="disabled" label="Disabled" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="hideEntityTypePicker" label="Hide Entity Type Picker" help="This only takes effect if an entity type is assigned." />
+                </div>
+                <div class="col-md-6">
+                    <TextBox v-model="entityControlHelpTextFormat" label="Entity Control Help Text Template" help="This help text shows up along side the entity picker. {0} gets replaced with the entity type name. {1} gets replaced with the plural form of the entity type name. This is empty by default." />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import EntityPicker from "@Obsidian/Controls/entityPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref("{\"value\":\"50b94dc8-1a39-4537-93cf-93a5717f06a9\",\"text\":\"Bus 1\"}");
+    const entityType = ref({
+        "value": "9bbfda11-0d22-40d5-902f-60adfbc88987",
+        "text": "Group"
+    });
+    const disabled = ref(false);
+    const hideEntityTypePicker = ref(false);
+    const entityControlHelpTextFormat = ref("This is the help text. Single Entity: {0}; Multiple Entities: {1}");
+
+    const importCode = getSfcControlImportPath("entityPicker");
+    const exampleCode = computed(() => {
+        const entityTypeProp = entityType.value ? ` v-model:entityType="entityType"` : "";
+        const entityControlHelpTextFormatProp = entityControlHelpTextFormat.value ? ` entityControlHelpTextFormat="${entityControlHelpTextFormat.value}"` : "";
+        const disabledProp = disabled.value ? " disabled" : "";
+        const hideEntityTypePickerProp = hideEntityTypePicker.value ? " hideEntityTypePicker" : "";
+
+        return `<EntityPicker v-model="value"${entityTypeProp}${entityControlHelpTextFormatProp}${disabledProp}${hideEntityTypePickerProp} />`;
+    });
+</script>

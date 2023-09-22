@@ -479,99 +479,97 @@ namespace RockWeb.Blocks.Reminders
             var includedReminderTypeIds = GetIncludedReminderTypeIds();
             var excludedReminderTypeIds = GetExcludedReminderTypeIds();
 
-            using ( var rockContext = new RockContext() )
+            var rockContext = new RockContext();
+            var reminderService = new ReminderService( rockContext );
+            var reminders = reminderService.GetReminders( CurrentPersonId.Value, entityTypeId, entityId, reminderTypeId );
+
+            // Filter by include/exclude block attribute.
+            if ( includedReminderTypeIds.Any() )
             {
-                var reminderService = new ReminderService( rockContext );
-                var reminders = reminderService.GetReminders( CurrentPersonId.Value, entityTypeId, entityId, reminderTypeId );
+                reminders = reminders.Where( r => includedReminderTypeIds.Contains( r.ReminderTypeId ) );
+            }
+            else if ( excludedReminderTypeIds.Any() )
+            {
+                reminders = reminders.Where( r => !excludedReminderTypeIds.Contains( r.ReminderTypeId ) );
+            }
 
-                // Filter by include/exclude block attribute.
-                if ( includedReminderTypeIds.Any() )
+            // Filter for completion status.
+            lCompletionFilter.Text = completionFilter;
+            if ( completionFilter == "Active")
+            {
+                reminders = reminders.Where( r => !r.IsComplete );
+            }
+            else if ( completionFilter == "Complete" )
+            {
+                reminders = reminders.Where( r => r.IsComplete );
+            }
+
+            // Filter for overdue timeframe.
+            lDueFilter.Text = dueFilter;
+            hfDueFilterSetting.Value = dueFilter;
+            if ( dueFilter == "Due")
+            {
+                var currentDate = RockDateTime.Now;
+                reminders = reminders.Where( r => r.ReminderDate <= currentDate );
+            }
+            else if ( dueFilter == "Due This Week")
+            {
+                var nextWeekStartDate = RockDateTime.Now.EndOfWeek( RockDateTime.FirstDayOfWeek ).AddDays( 1 );
+                var startOfWeek = nextWeekStartDate.AddDays( -7 );
+                reminders = reminders.Where( r => r.ReminderDate >= startOfWeek && r.ReminderDate < nextWeekStartDate );
+            }
+            else if ( dueFilter == "Due This Month")
+            {
+                var startOfMonth = RockDateTime.Now.StartOfMonth();
+                var nextMonthDate = RockDateTime.Now.AddMonths( 1 );
+                var nextMonthStartDate = new DateTime( nextMonthDate.Year, nextMonthDate.Month, 1 );
+                reminders = reminders.Where( r => r.ReminderDate >= startOfMonth && r.ReminderDate < nextMonthStartDate );
+            }
+            else
+            {
+                // Custom date range.
+                var selectedDateRange = PageParameter( PageParameterKey.DueDateRange );
+                if ( selectedDateRange.IsNotNullOrWhiteSpace() )
                 {
-                    reminders = reminders.Where( r => includedReminderTypeIds.Contains( r.ReminderTypeId ) );
+                    drpCustomDate.DelimitedValues = selectedDateRange;
+                    lDueFilter.Text = "Custom Date Range";
+                    hfDueFilterSetting.Value = "Custom Date Range";
+                    var dateRange = new TimePeriod( selectedDateRange ).GetDateRange();
+                    var startDate = dateRange.Start;
+                    var endDate = dateRange.End;
+                    reminders = reminders.Where( r => r.ReminderDate >= startDate && r.ReminderDate < endDate );
                 }
-                else if ( excludedReminderTypeIds.Any() )
+            }
+
+            var invalidReminders = new List<Reminder>();
+            var reminderEntities = reminderService.GetReminderEntities( reminders );
+
+            foreach ( var reminder in reminders.ToList() )
+            {
+                var entity = reminderEntities[reminder.Id];
+                if ( entity == null )
                 {
-                    reminders = reminders.Where( r => !excludedReminderTypeIds.Contains( r.ReminderTypeId ) );
+                    invalidReminders.Add( reminder );
+                    continue;
                 }
 
-                // Filter for completion status.
-                lCompletionFilter.Text = completionFilter;
-                if ( completionFilter == "Active")
+                string personProfilePhoto = string.Empty;
+                if ( entity.TypeId == personAliasEntityTypeId )
                 {
-                    reminders = reminders.Where( r => !r.IsComplete );
-                }
-                else if ( completionFilter == "Complete" )
-                {
-                    reminders = reminders.Where( r => r.IsComplete );
-                }
-
-                // Filter for overdue timeframe.
-                lDueFilter.Text = dueFilter;
-                hfDueFilterSetting.Value = dueFilter;
-                if ( dueFilter == "Due")
-                {
-                    var currentDate = RockDateTime.Now;
-                    reminders = reminders.Where( r => r.ReminderDate <= currentDate );
-                }
-                else if ( dueFilter == "Due This Week")
-                {
-                    var nextWeekStartDate = RockDateTime.Now.EndOfWeek( RockDateTime.FirstDayOfWeek ).AddDays( 1 );
-                    var startOfWeek = nextWeekStartDate.AddDays( -7 );
-                    reminders = reminders.Where( r => r.ReminderDate >= startOfWeek && r.ReminderDate < nextWeekStartDate );
-                }
-                else if ( dueFilter == "Due This Month")
-                {
-                    var startOfMonth = RockDateTime.Now.StartOfMonth();
-                    var nextMonthDate = RockDateTime.Now.AddMonths( 1 );
-                    var nextMonthStartDate = new DateTime( nextMonthDate.Year, nextMonthDate.Month, 1 );
-                    reminders = reminders.Where( r => r.ReminderDate >= startOfMonth && r.ReminderDate < nextMonthStartDate );
+                    var person = ( entity as PersonAlias ).Person;
+                    reminderViewModels.Add( new ReminderViewModel( reminder, person, Person.GetPersonPhotoUrl( person ) ) );
                 }
                 else
                 {
-                    // Custom date range.
-                    var selectedDateRange = PageParameter( PageParameterKey.DueDateRange );
-                    if ( selectedDateRange.IsNotNullOrWhiteSpace() )
-                    {
-                        drpCustomDate.DelimitedValues = selectedDateRange;
-                        lDueFilter.Text = "Custom Date Range";
-                        hfDueFilterSetting.Value = "Custom Date Range";
-                        var dateRange = new TimePeriod( selectedDateRange ).GetDateRange();
-                        var startDate = dateRange.Start;
-                        var endDate = dateRange.End;
-                        reminders = reminders.Where( r => r.ReminderDate >= startDate && r.ReminderDate < endDate );
-                    }
+                    reminderViewModels.Add( new ReminderViewModel( reminder, entity ) );
                 }
+            }
 
-                var invalidReminders = new List<Reminder>();
-                var reminderEntities = reminderService.GetReminderEntities( reminders );
-
-                foreach ( var reminder in reminders.ToList() )
-                {
-                    var entity = reminderEntities[reminder.Id];
-                    if ( entity == null )
-                    {
-                        invalidReminders.Add( reminder );
-                        continue;
-                    }
-
-                    string personProfilePhoto = string.Empty;
-                    if ( entity.TypeId == personAliasEntityTypeId )
-                    {
-                        var person = ( entity as PersonAlias ).Person;
-                        reminderViewModels.Add( new ReminderViewModel( reminder, person, Person.GetPersonPhotoUrl( person ) ) );
-                    }
-                    else
-                    {
-                        reminderViewModels.Add( new ReminderViewModel( reminder, entity ) );
-                    }
-                }
-
-                if ( invalidReminders.Any() )
-                {
-                    reminderService.DeleteRange( invalidReminders );
-                    rockContext.SaveChanges();
-                    NavigateToCurrentPageReference();
-                }
+            if ( invalidReminders.Any() )
+            {
+                reminderService.DeleteRange( invalidReminders );
+                rockContext.SaveChanges();
+                NavigateToCurrentPageReference();
             }
 
             return reminderViewModels;
