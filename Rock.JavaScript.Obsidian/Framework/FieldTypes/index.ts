@@ -263,6 +263,9 @@ registerFieldType(FieldTypeGuids.SlidingDateRange, new SlidingDateRangeFieldType
 import { SocialMediaAccountFieldType } from "./socialMediaAccountField.partial";
 registerFieldType(FieldTypeGuids.SocialMediaAccount, new SocialMediaAccountFieldType());
 
+import { SiteFieldType } from "./siteField.partial";
+registerFieldType(FieldTypeGuids.Site, new SiteFieldType());
+
 import { SSNFieldType } from "./ssnField.partial";
 registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
 
