@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WEBFORMS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Rock.Rest.XML</DocumentationFile>
@@ -175,6 +175,7 @@
     <Compile Include="Utility\ExcludeNavigationPropertiesContractResolver.cs" />
     <Compile Include="Utility\RockMessageResponseContext.cs" />
     <Compile Include="v2\ControlsController.cs" />
+    <Compile Include="v2\Models\GroupsController.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
     <Compile Include="v2\BlockActionsController.cs" />

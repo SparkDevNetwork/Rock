@@ -23,6 +23,7 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Results;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -67,6 +68,8 @@ namespace Rock.Rest
         {
             _controller = controller;
         }
+
+        #region API Methods
 
         /// <summary>
         /// POST endpoint. Use this to INSERT a new <typeparamref name="TEntity"/> entity.
@@ -285,19 +288,19 @@ namespace Rock.Rest
                 using ( var rockContext = new RockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
-                    var targetEntity = service.Get( key );
+                    var entity = service.Get( key );
 
-                    if ( targetEntity == null )
+                    if ( entity == null )
                     {
                         return NotFound( "The item was not found." );
                     }
 
-                    if ( !CheckAuthorized( Security.Authorization.EDIT, targetEntity, out var authorizationResult ) )
+                    if ( !CheckAuthorized( Security.Authorization.EDIT, entity, out var authorizationResult ) )
                     {
                         return authorizationResult;
                     }
 
-                    var type = targetEntity.GetType();
+                    var type = entity.GetType();
                     var properties = type.GetProperties( BindingFlags.Public | BindingFlags.Instance ).ToList();
 
                     // Loop over every key in the values dictionary and look
@@ -315,7 +318,7 @@ namespace Rock.Rest
                         var propertyType = Nullable.GetUnderlyingType( property.PropertyType ) ?? property.PropertyType;
                         var newValue = values[propKey];
 
-                        if ( property.GetValue( targetEntity ) == newValue )
+                        if ( property.GetValue( entity ) == newValue )
                         {
                             continue;
                         }
@@ -327,7 +330,7 @@ namespace Rock.Rest
                         if ( newValue == null )
                         {
                             // No need to parse anything
-                            property.SetValue( targetEntity, null );
+                            property.SetValue( entity, null );
                         }
                         else if ( propertyType == typeof( int ) || propertyType == typeof( int? ) || propertyType.IsEnum )
                         {
@@ -335,7 +338,7 @@ namespace Rock.Rest
                             try
                             {
                                 var int32 = Convert.ToInt32( newValue );
-                                property.SetValue( targetEntity, int32 );
+                                property.SetValue( entity, int32 );
                             }
                             catch ( OverflowException )
                             {
@@ -346,14 +349,14 @@ namespace Rock.Rest
                         {
                             var castedValue = Convert.ChangeType( newValue, propertyType );
 
-                            property.SetValue( targetEntity, castedValue );
+                            property.SetValue( entity, castedValue );
                         }
                     }
 
                     // Verify model is valid before saving
-                    if ( !targetEntity.IsValid )
+                    if ( !entity.IsValid )
                     {
-                        var errorMessage = targetEntity.ValidationResults.Select( r => r.ErrorMessage ).JoinStrings( ", " );
+                        var errorMessage = entity.ValidationResults.Select( r => r.ErrorMessage ).JoinStrings( ", " );
 
                         return BadRequest( errorMessage );
                     }
@@ -373,6 +376,148 @@ namespace Rock.Rest
                 return InternalServerError( ex.Message );
             }
         }
+
+        /// <summary>
+        /// Get all the attribute values for the <typeparamref name="TEntity"/>.
+        /// </summary>
+        /// <param name="key">The identifier, unique identifier or IdKey of the item.</param>
+        /// <returns>The response that should be sent back.</returns>
+        public IActionResult GetAttributeValues( string key )
+        {
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return BadRequest( "Invalid key specified." );
+            }
+
+            if ( !typeof( IHasAttributes ).IsAssignableFrom( typeof( TEntity ) ) )
+            {
+                return BadRequest( "This item does not support attributes." );
+            }
+
+            try
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
+                    var entity = service.Get( key );
+
+                    if ( entity == null )
+                    {
+                        return NotFound( "The item was not found." );
+                    }
+
+                    if ( !CheckAuthorized( Security.Authorization.VIEW, entity, out var authorizationResult ) )
+                    {
+                        return authorizationResult;
+                    }
+
+                    var attributedEntity = ( IHasAttributes ) entity;
+                    var values = new Dictionary<string, object>();
+
+                    attributedEntity.LoadAttributes( rockContext );
+
+                    foreach ( var attributeKey in attributedEntity.Attributes.Keys)
+                    {
+                        values.AddOrIgnore( attributeKey, new
+                        {
+                            Value = attributedEntity.GetAttributeValue( attributeKey ),
+                            TextValue = attributedEntity.GetAttributeTextValue( attributeKey  ),
+                            HtmlValue = attributedEntity.GetAttributeHtmlValue( attributeKey ),
+                            CondensedTextValue = attributedEntity.GetAttributeCondensedTextValue( attributeKey ),
+                            CondensedHtmlValue = attributedEntity.GetAttributeCondensedHtmlValue( attributeKey ),
+                            NullValue = (string)null
+                        } );
+                    }
+
+                    return new OkNegotiatedContentResult<Dictionary<string, object>>( values, _controller );
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+
+                return InternalServerError( ex.Message );
+            }
+        }
+
+        /// <summary>
+        /// PATCH endpoint. Use this to perform a partial update of attribute
+        /// values to an existing <typeparamref name="TEntity"/>.
+        /// </summary>
+        /// <param name="key">The identifier, unique identifier or IdKey of the item.</param>
+        /// <param name="values">The new values to be set on the entity.</param>
+        /// <returns>The response that should be sent back.</returns>
+        public IActionResult PatchAttributeValues( string key, Dictionary<string, string> values )
+        {
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return BadRequest( "Invalid key specified." );
+            }
+
+            if ( !typeof( IHasAttributes ).IsAssignableFrom( typeof( TEntity ) ) )
+            {
+                return BadRequest( "This item does not support attributes." );
+            }
+
+            try
+            {
+                // Check that something was sent in the body
+                if ( values == null || !values.Keys.Any() )
+                {
+                    return BadRequest( "No values were sent in the body." );
+                }
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
+                    var entity = service.Get( key );
+
+                    if ( entity == null )
+                    {
+                        return NotFound( "The item was not found." );
+                    }
+
+                    if ( !CheckAuthorized( Security.Authorization.EDIT, entity, out var authorizationResult ) )
+                    {
+                        return authorizationResult;
+                    }
+
+                    var attributedEntity = ( IHasAttributes ) entity;
+
+                    attributedEntity.LoadAttributes( rockContext );
+
+                    // Loop over every key in the values dictionary and look
+                    // for  matching attribute.
+                    foreach ( var attrKey in values.Keys )
+                    {
+                        if ( !attributedEntity.Attributes.ContainsKey( attrKey ) )
+                        {
+                            return BadRequest( $"{typeof( TEntity ).Name} does not have attribute {attrKey}" );
+
+                        }
+
+                        attributedEntity.SetAttributeValue( attrKey, values[attrKey] ?? string.Empty );
+                    }
+
+                    // TODO: Do something with this.
+                    // System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
+
+                    attributedEntity.SaveAttributeValues( rockContext );
+
+                    return NoContent();
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+
+                return InternalServerError( ex.Message );
+            }
+        }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Check if the current person is authorized to the entity with the
@@ -460,6 +605,8 @@ namespace Rock.Rest
 
             return new NegotiatedContentResult<HttpError>( HttpStatusCode.InternalServerError, error, _controller );
         }
+
+        #endregion
 
         /// <summary>
         /// The response to be sent for a newly created item.
