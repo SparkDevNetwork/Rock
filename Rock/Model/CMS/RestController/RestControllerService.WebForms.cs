@@ -127,13 +127,18 @@ namespace Rock.Model
                 var reflectedHttpActionDescriptor = ( ReflectedHttpActionDescriptor ) apiDescription.ActionDescriptor;
                 var action = apiDescription.ActionDescriptor;
                 var name = action.ControllerDescriptor.ControllerName;
+                var className = action.ControllerDescriptor.ControllerType.FullName;
                 var method = apiDescription.HttpMethod.Method;
+                var controllerRockGuid = action.ControllerDescriptor.ControllerType.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>( inherit: false )?.Guid;
 
-                var controller = discoveredControllers.Where( c => c.Name == name ).FirstOrDefault();
+                var controller = discoveredControllers
+                    .Where( c => c.ClassName == className
+                        || ( c.ReflectedGuid.HasValue && controllerRockGuid.HasValue && c.ReflectedGuid.Value == controllerRockGuid.Value ) )
+                    .OrderByDescending( c => c.ReflectedGuid.HasValue && controllerRockGuid.HasValue && c.ReflectedGuid.Value == controllerRockGuid.Value )
+                    .FirstOrDefault();
+
                 if ( controller == null )
                 {
-                    var controllerRockGuid = action.ControllerDescriptor.ControllerType.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>( inherit: false )?.Guid;
-
                     controller = new DiscoveredControllerFromReflection
                     {
                         Name = name,
@@ -191,7 +196,11 @@ namespace Rock.Model
                 var apiIdMap = controllerApiIdMap[discoveredController.ClassName];
 
                 var controller = restControllerService.Queryable( "Actions" )
-                    .Where( c => c.Name == discoveredController.Name ).FirstOrDefault();
+                    .Where( c => c.ClassName == discoveredController.ClassName
+                        || ( discoveredController.ReflectedGuid.HasValue && c.Guid == discoveredController.ReflectedGuid.Value ) )
+                    .OrderByDescending( c => discoveredController.ReflectedGuid.HasValue && c.Guid == discoveredController.ReflectedGuid.Value )
+                    .FirstOrDefault();
+
                 if ( controller == null )
                 {
                     controller = new RestController
@@ -255,8 +264,8 @@ namespace Rock.Model
                 }
             }
 
-            var controllers = discoveredControllers.Select( d => d.Name ).ToList();
-            foreach ( var controller in restControllerService.Queryable().Where( c => !controllers.Contains( c.Name ) ).ToList() )
+            var controllers = discoveredControllers.Select( d => d.ClassName ).ToList();
+            foreach ( var controller in restControllerService.Queryable().Where( c => !controllers.Contains( c.ClassName ) ).ToList() )
             {
                 restControllerService.Delete( controller );
             }
