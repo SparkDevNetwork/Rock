@@ -424,8 +424,7 @@ namespace Rock.Rest
                             TextValue = attributedEntity.GetAttributeTextValue( attributeKey  ),
                             HtmlValue = attributedEntity.GetAttributeHtmlValue( attributeKey ),
                             CondensedTextValue = attributedEntity.GetAttributeCondensedTextValue( attributeKey ),
-                            CondensedHtmlValue = attributedEntity.GetAttributeCondensedHtmlValue( attributeKey ),
-                            NullValue = (string)null
+                            CondensedHtmlValue = attributedEntity.GetAttributeCondensedHtmlValue( attributeKey )
                         } );
                     }
 
