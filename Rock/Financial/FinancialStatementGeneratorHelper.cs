@@ -78,210 +78,214 @@ namespace Rock.Financial
         /// <returns></returns>
         public static List<FinancialStatementGeneratorRecipient> GetFinancialStatementGeneratorRecipients( FinancialStatementGeneratorOptions financialStatementGeneratorOptions )
         {
-            if ( financialStatementGeneratorOptions == null )
+            using ( var activity = ObservabilityHelper.StartActivity( $"ACT: Get Statement Recipients" ) )
             {
-                throw new FinancialGivingStatementArgumentException( "FinancialStatementGeneratorOptions options must be specified" );
-            }
 
-            using ( var rockContext = new RockContext() )
-            {
-                FinancialStatementTemplate financialStatementTemplate = new FinancialStatementTemplateService( rockContext ).Get( financialStatementGeneratorOptions.FinancialStatementTemplateId ?? 0 );
-                if ( financialStatementTemplate == null )
+                if ( financialStatementGeneratorOptions == null )
                 {
-                    throw new FinancialGivingStatementArgumentException( "FinancialStatementTemplate must be specified." );
+                    throw new FinancialGivingStatementArgumentException( "FinancialStatementGeneratorOptions options must be specified" );
                 }
 
-                var reportSettings = financialStatementTemplate.ReportSettings;
-                var transactionSettings = reportSettings.TransactionSettings;
-
-                var financialTransactionQry = FinancialStatementGeneratorHelper.GetFinancialTransactionQuery( financialStatementGeneratorOptions, rockContext, true );
-                var financialPledgeQry = FinancialStatementGeneratorHelper.GetFinancialPledgeQuery( financialStatementGeneratorOptions, rockContext, true );
-
-                // Get distinct Giving Groups for Persons that have a specific GivingGroupId and have transactions that match the filter
-                // These are Persons that give as part of a Group.For example, Husband and Wife
-                var qryGivingGroupIdsThatHaveTransactions = financialTransactionQry.Select( a => a.AuthorizedPersonAlias.Person.GivingGroupId ).Where( a => a.HasValue )
-                    .Select( a => new
-                    {
-                        PersonId = ( int? ) null,
-                        GroupId = a.Value
-                    } ).Distinct();
-
-                var qryGivingGroupIdsThatHavePledges = financialPledgeQry.Select( a => a.PersonAlias.Person.GivingGroupId ).Where( a => a.HasValue )
-                    .Select( a => new
-                    {
-                        PersonId = ( int? ) null,
-                        GroupId = a.Value
-                    } ).Distinct();
-
-                // Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.
-                // These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order
-                // to determine which address(es) the statements need to be mailed to
-                var groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
-                var groupMembersQry = new GroupMemberService( rockContext ).Queryable( true ).Where( m => m.Group.GroupTypeId == groupTypeIdFamily );
-
-                var qryIndividualGiversThatHaveTransactions = financialTransactionQry
-                    .Where( a => !a.AuthorizedPersonAlias.Person.GivingGroupId.HasValue )
-                    .Select( a => a.AuthorizedPersonAlias.PersonId ).Distinct()
-                    .Join( groupMembersQry, p => p, m => m.PersonId, ( p, m ) => new { PersonId = ( int? ) p, GroupId = m.GroupId } );
-
-                var qryIndividualGiversThatHavePledges = financialPledgeQry
-                    .Where( a => !a.PersonAlias.Person.GivingGroupId.HasValue )
-                    .Select( a => a.PersonAlias.PersonId ).Distinct()
-                    .Join( groupMembersQry, p => p, m => m.PersonId, ( p, m ) => new { PersonId = ( int? ) p, GroupId = m.GroupId } );
-
-                var unionQry = qryGivingGroupIdsThatHaveTransactions.Union( qryIndividualGiversThatHaveTransactions );
-
-                if ( reportSettings.PledgeSettings.AccountIds.Any() )
+                using ( var rockContext = new RockContext() )
                 {
-                    unionQry = unionQry.Union( qryGivingGroupIdsThatHavePledges ).Union( qryIndividualGiversThatHavePledges );
-                }
-
-                /*  Limit to Mailing Address and sort by ZipCode */
-                IQueryable<GroupLocation> groupLocationsQry = FinancialStatementGeneratorHelper.GetGroupLocationQuery( rockContext );
-
-                // Do an outer join on location so we can include people that don't have an address (if options.IncludeIndividualsWithNoAddress) //
-                var unionJoinLocationQry = from pg in unionQry
-                                           join l in groupLocationsQry on pg.GroupId equals l.GroupId into u
-                                           from l in u.DefaultIfEmpty()
-                                           select new
-                                           {
-                                               PersonId = pg.PersonId,
-                                               GroupId = pg.GroupId,
-                                               LocationId = ( int? ) l.Location.Id,
-                                               Street1 = l.Location.Street1,
-                                               PostalCode = l.Location.PostalCode,
-                                               Country = l.Location.Country
-                                           };
-
-                var givingIdsQry = unionJoinLocationQry.Select( a => new { a.PersonId, a.GroupId, a.LocationId, a.PostalCode, a.Country, a.Street1 } );
-
-                var localCountry = GlobalAttributesCache.Get().OrganizationLocation?.Country;
-
-                var recipientList = givingIdsQry.ToList().Select( a =>
-                    new FinancialStatementGeneratorRecipient
+                    FinancialStatementTemplate financialStatementTemplate = new FinancialStatementTemplateService( rockContext ).Get( financialStatementGeneratorOptions.FinancialStatementTemplateId ?? 0 );
+                    if ( financialStatementTemplate == null )
                     {
-                        GroupId = a.GroupId,
-                        PersonId = a.PersonId,
-                        LocationId = a.LocationId,
-                        PostalCode = a.PostalCode,
-                        Country = a.Country,
-                        HasValidMailingAddress = a.LocationId.HasValue && a.PostalCode.IsNotNullOrWhiteSpace() && a.Street1.IsNotNullOrWhiteSpace(),
+                        throw new FinancialGivingStatementArgumentException( "FinancialStatementTemplate must be specified." );
+                    }
 
-                        // Indicate if it is a international address. Which is if Country is different than OrganizationLocation Country (and country is not blank)
-                        IsInternationalAddress = a.Country.IsNotNullOrWhiteSpace() && localCountry.IsNotNullOrWhiteSpace() && !a.Country.Equals( localCountry, StringComparison.OrdinalIgnoreCase )
-                    } ).ToList();
+                    var reportSettings = financialStatementTemplate.ReportSettings;
+                    var transactionSettings = reportSettings.TransactionSettings;
 
-                if ( financialStatementGeneratorOptions.DataViewId.HasValue )
-                {
-                    var dataView = new DataViewService( new RockContext() ).Get( financialStatementGeneratorOptions.DataViewId.Value );
-                    if ( dataView != null )
-                    {
-                        var personList = dataView.GetQuery().OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();
-                        HashSet<int> personIds = new HashSet<int>( personList.Select( a => a.Id ) );
-                        HashSet<int> groupsIds = new HashSet<int>( personList.Where( a => a.GivingGroupId.HasValue ).Select( a => a.GivingGroupId.Value ).Distinct() );
+                    var financialTransactionQry = FinancialStatementGeneratorHelper.GetFinancialTransactionQuery( financialStatementGeneratorOptions, rockContext, true );
+                    var financialPledgeQry = FinancialStatementGeneratorHelper.GetFinancialPledgeQuery( financialStatementGeneratorOptions, rockContext, true );
 
-                        foreach ( var recipient in recipientList.ToList() )
+                    // Get distinct Giving Groups for Persons that have a specific GivingGroupId and have transactions that match the filter
+                    // These are Persons that give as part of a Group.For example, Husband and Wife
+                    var qryGivingGroupIdsThatHaveTransactions = financialTransactionQry.Select( a => a.AuthorizedPersonAlias.Person.GivingGroupId ).Where( a => a.HasValue )
+                        .Select( a => new
                         {
-                            if ( recipient.PersonId.HasValue )
+                            PersonId = ( int? ) null,
+                            GroupId = a.Value
+                        } ).Distinct();
+
+                    var qryGivingGroupIdsThatHavePledges = financialPledgeQry.Select( a => a.PersonAlias.Person.GivingGroupId ).Where( a => a.HasValue )
+                        .Select( a => new
+                        {
+                            PersonId = ( int? ) null,
+                            GroupId = a.Value
+                        } ).Distinct();
+
+                    // Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.
+                    // These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order
+                    // to determine which address(es) the statements need to be mailed to
+                    var groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+                    var groupMembersQry = new GroupMemberService( rockContext ).Queryable( true ).Where( m => m.Group.GroupTypeId == groupTypeIdFamily );
+
+                    var qryIndividualGiversThatHaveTransactions = financialTransactionQry
+                        .Where( a => !a.AuthorizedPersonAlias.Person.GivingGroupId.HasValue )
+                        .Select( a => a.AuthorizedPersonAlias.PersonId ).Distinct()
+                        .Join( groupMembersQry, p => p, m => m.PersonId, ( p, m ) => new { PersonId = ( int? ) p, GroupId = m.GroupId } );
+
+                    var qryIndividualGiversThatHavePledges = financialPledgeQry
+                        .Where( a => !a.PersonAlias.Person.GivingGroupId.HasValue )
+                        .Select( a => a.PersonAlias.PersonId ).Distinct()
+                        .Join( groupMembersQry, p => p, m => m.PersonId, ( p, m ) => new { PersonId = ( int? ) p, GroupId = m.GroupId } );
+
+                    var unionQry = qryGivingGroupIdsThatHaveTransactions.Union( qryIndividualGiversThatHaveTransactions );
+
+                    if ( reportSettings.PledgeSettings.AccountIds.Any() )
+                    {
+                        unionQry = unionQry.Union( qryGivingGroupIdsThatHavePledges ).Union( qryIndividualGiversThatHavePledges );
+                    }
+
+                    /*  Limit to Mailing Address and sort by ZipCode */
+                    IQueryable<GroupLocation> groupLocationsQry = FinancialStatementGeneratorHelper.GetGroupLocationQuery( rockContext );
+
+                    // Do an outer join on location so we can include people that don't have an address (if options.IncludeIndividualsWithNoAddress) //
+                    var unionJoinLocationQry = from pg in unionQry
+                                               join l in groupLocationsQry on pg.GroupId equals l.GroupId into u
+                                               from l in u.DefaultIfEmpty()
+                                               select new
+                                               {
+                                                   PersonId = pg.PersonId,
+                                                   GroupId = pg.GroupId,
+                                                   LocationId = ( int? ) l.Location.Id,
+                                                   Street1 = l.Location.Street1,
+                                                   PostalCode = l.Location.PostalCode,
+                                                   Country = l.Location.Country
+                                               };
+
+                    var givingIdsQry = unionJoinLocationQry.Select( a => new { a.PersonId, a.GroupId, a.LocationId, a.PostalCode, a.Country, a.Street1 } );
+
+                    var localCountry = GlobalAttributesCache.Get().OrganizationLocation?.Country;
+
+                    var recipientList = givingIdsQry.ToList().Select( a =>
+                        new FinancialStatementGeneratorRecipient
+                        {
+                            GroupId = a.GroupId,
+                            PersonId = a.PersonId,
+                            LocationId = a.LocationId,
+                            PostalCode = a.PostalCode,
+                            Country = a.Country,
+                            HasValidMailingAddress = a.LocationId.HasValue && a.PostalCode.IsNotNullOrWhiteSpace() && a.Street1.IsNotNullOrWhiteSpace(),
+
+                            // Indicate if it is a international address. Which is if Country is different than OrganizationLocation Country (and country is not blank)
+                            IsInternationalAddress = a.Country.IsNotNullOrWhiteSpace() && localCountry.IsNotNullOrWhiteSpace() && !a.Country.Equals( localCountry, StringComparison.OrdinalIgnoreCase )
+                        } ).ToList();
+
+                    if ( financialStatementGeneratorOptions.DataViewId.HasValue )
+                    {
+                        var dataView = new DataViewService( new RockContext() ).Get( financialStatementGeneratorOptions.DataViewId.Value );
+                        if ( dataView != null )
+                        {
+                            var personList = dataView.GetQuery().OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();
+                            HashSet<int> personIds = new HashSet<int>( personList.Select( a => a.Id ) );
+                            HashSet<int> groupsIds = new HashSet<int>( personList.Where( a => a.GivingGroupId.HasValue ).Select( a => a.GivingGroupId.Value ).Distinct() );
+
+                            foreach ( var recipient in recipientList.ToList() )
                             {
-                                if ( !personIds.Contains( recipient.PersonId.Value ) )
+                                if ( recipient.PersonId.HasValue )
                                 {
-                                    recipientList.Remove( recipient );
+                                    if ( !personIds.Contains( recipient.PersonId.Value ) )
+                                    {
+                                        recipientList.Remove( recipient );
+                                    }
+                                }
+                                else
+                                {
+                                    if ( !groupsIds.Contains( recipient.GroupId ) )
+                                    {
+                                        recipientList.Remove( recipient );
+                                    }
                                 }
                             }
-                            else
+                        }
+                    }
+
+                    var personGivingIdsQuery = givingIdsQry.Where( a => a.PersonId.HasValue );
+                    var personQuery = new PersonService( rockContext ).Queryable( true, true );
+
+                    // get a query to look up LastName for recipients that give as a group
+                    var qryNickNameLastNameAsIndividual = from p in personQuery
+                                                          join gg in personGivingIdsQuery on p.Id equals gg.PersonId.Value
+                                                          select new { gg.PersonId, p.NickName, p.LastName };
+
+                    var nickNameLastNameLookupByPersonId = qryNickNameLastNameAsIndividual
+                        .Select( a => new { a.PersonId, a.NickName, a.LastName } )
+                        .ToList()
+                        .Where( a => a.PersonId.HasValue )
+                        .GroupBy( a => a.PersonId.Value )
+                        .ToDictionary( k => k.Key, v => v.Select( a => new { a.NickName, a.LastName } ).FirstOrDefault() );
+
+                    var givingLeaderGivingIdsQuery = givingIdsQry.Where( a => !a.PersonId.HasValue );
+                    var qryNickNameLastNameAsGivingLeader = from p in personQuery.Where( a => a.GivingGroupId.HasValue )
+                                                            join gg in givingLeaderGivingIdsQuery on p.GivingGroupId equals gg.GroupId
+                                                            select new { gg.GroupId, p.NickName, p.LastName, p.GivingLeaderId, PersonId = p.Id };
+
+                    // Get the NickName and LastName of the GivingLeader of each group.
+                    // If the Group somehow doesn't have a GivingLeader( which shouldn't happen ), use another person in that group.
+                    var nickNameLastNameLookupByGivingGroupId = qryNickNameLastNameAsGivingLeader
+                        .Select( a => new { a.GroupId, a.NickName, a.LastName, a.GivingLeaderId, a.PersonId } )
+                        .ToList()
+                        .GroupBy( a => a.GroupId )
+                        .ToDictionary(
+                            k => k.Key,
+                            v => v
+                                .Select( a => new { a.NickName, a.LastName, IsGivingLeader = a.PersonId == a.GivingLeaderId } )
+                                .OrderByDescending( a => a.IsGivingLeader )
+                                .FirstOrDefault() );
+
+                    foreach ( var recipient in recipientList )
+                    {
+                        if ( recipient.PersonId.HasValue )
+                        {
+                            var lookupValue = nickNameLastNameLookupByPersonId.GetValueOrNull( recipient.PersonId.Value );
+
+                            // lookupValue for individual giver should never be null, but just in case, do a null check
+                            recipient.NickName = lookupValue?.NickName ?? string.Empty;
+                            recipient.LastName = lookupValue?.LastName ?? string.Empty;
+                        }
+                        else
+                        {
+                            var lookupValue = nickNameLastNameLookupByGivingGroupId.GetValueOrNull( recipient.GroupId );
+                            recipient.NickName = lookupValue?.NickName ?? string.Empty;
+                            recipient.LastName = lookupValue?.LastName ?? string.Empty;
+                        }
+                    }
+
+                    // A statement Generator can have more than report configuration. If they have more than one, then
+                    // the generator will be in charge of sorting. However, let's take care of sorting the first
+                    // Report Configuration. That'll help in cases where the caller doesn't support more than one report configuration
+                    var defaultReportConfiguration = financialStatementGeneratorOptions.ReportConfigurationList?.OrderByDescending( x => x.CreatedDateTime ).FirstOrDefault();
+
+                    if ( defaultReportConfiguration != null )
+                    {
+                        // use C# to sort the recipients by specified PrimarySortOrder and SecondarySortOrder
+                        if ( defaultReportConfiguration.PrimarySortOrder == FinancialStatementOrderBy.LastName )
+                        {
+                            var sortedRecipientList = recipientList.OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+                            if ( defaultReportConfiguration.SecondarySortOrder == FinancialStatementOrderBy.PostalCode )
                             {
-                                if ( !groupsIds.Contains( recipient.GroupId ) )
-                                {
-                                    recipientList.Remove( recipient );
-                                }
+                                sortedRecipientList = sortedRecipientList.ThenBy( a => a.PostalCode );
                             }
+
+                            recipientList = sortedRecipientList.ToList();
                         }
-                    }
-                }
-
-                var personGivingIdsQuery = givingIdsQry.Where( a => a.PersonId.HasValue );
-                var personQuery = new PersonService( rockContext ).Queryable( true, true );
-
-                // get a query to look up LastName for recipients that give as a group
-                var qryNickNameLastNameAsIndividual = from p in personQuery
-                                                      join gg in personGivingIdsQuery on p.Id equals gg.PersonId.Value
-                                                      select new { gg.PersonId, p.NickName, p.LastName };
-
-                var nickNameLastNameLookupByPersonId = qryNickNameLastNameAsIndividual
-                    .Select( a => new { a.PersonId, a.NickName, a.LastName } )
-                    .ToList()
-                    .Where( a => a.PersonId.HasValue )
-                    .GroupBy( a => a.PersonId.Value )
-                    .ToDictionary( k => k.Key, v => v.Select( a => new { a.NickName, a.LastName } ).FirstOrDefault() );
-
-                var givingLeaderGivingIdsQuery = givingIdsQry.Where( a => !a.PersonId.HasValue );
-                var qryNickNameLastNameAsGivingLeader = from p in personQuery.Where( a => a.GivingGroupId.HasValue )
-                                                        join gg in givingLeaderGivingIdsQuery on p.GivingGroupId equals gg.GroupId
-                                                        select new { gg.GroupId, p.NickName, p.LastName, p.GivingLeaderId, PersonId = p.Id };
-
-                // Get the NickName and LastName of the GivingLeader of each group.
-                // If the Group somehow doesn't have a GivingLeader( which shouldn't happen ), use another person in that group.
-                var nickNameLastNameLookupByGivingGroupId = qryNickNameLastNameAsGivingLeader
-                    .Select( a => new { a.GroupId, a.NickName, a.LastName, a.GivingLeaderId, a.PersonId } )
-                    .ToList()
-                    .GroupBy( a => a.GroupId )
-                    .ToDictionary(
-                        k => k.Key,
-                        v => v
-                            .Select( a => new { a.NickName, a.LastName, IsGivingLeader = a.PersonId == a.GivingLeaderId } )
-                            .OrderByDescending( a => a.IsGivingLeader )
-                            .FirstOrDefault() );
-
-                foreach ( var recipient in recipientList )
-                {
-                    if ( recipient.PersonId.HasValue )
-                    {
-                        var lookupValue = nickNameLastNameLookupByPersonId.GetValueOrNull( recipient.PersonId.Value );
-
-                        // lookupValue for individual giver should never be null, but just in case, do a null check
-                        recipient.NickName = lookupValue?.NickName ?? string.Empty;
-                        recipient.LastName = lookupValue?.LastName ?? string.Empty;
-                    }
-                    else
-                    {
-                        var lookupValue = nickNameLastNameLookupByGivingGroupId.GetValueOrNull( recipient.GroupId );
-                        recipient.NickName = lookupValue?.NickName ?? string.Empty;
-                        recipient.LastName = lookupValue?.LastName ?? string.Empty;
-                    }
-                }
-
-                // A statement Generator can have more than report configuration. If they have more than one, then
-                // the generator will be in charge of sorting. However, let's take care of sorting the first
-                // Report Configuration. That'll help in cases where the caller doesn't support more than one report configuration
-                var defaultReportConfiguration = financialStatementGeneratorOptions.ReportConfigurationList?.OrderByDescending( x => x.CreatedDateTime ).FirstOrDefault();
-
-                if ( defaultReportConfiguration != null )
-                {
-                    // use C# to sort the recipients by specified PrimarySortOrder and SecondarySortOrder
-                    if ( defaultReportConfiguration.PrimarySortOrder == FinancialStatementOrderBy.LastName )
-                    {
-                        var sortedRecipientList = recipientList.OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
-                        if ( defaultReportConfiguration.SecondarySortOrder == FinancialStatementOrderBy.PostalCode )
+                        else if ( defaultReportConfiguration.PrimarySortOrder == FinancialStatementOrderBy.PostalCode )
                         {
-                            sortedRecipientList = sortedRecipientList.ThenBy( a => a.PostalCode );
-                        }
+                            var sortedRecipientList = recipientList.OrderBy( a => a.PostalCode );
+                            if ( defaultReportConfiguration.SecondarySortOrder == FinancialStatementOrderBy.LastName )
+                            {
+                                sortedRecipientList = sortedRecipientList.ThenBy( a => a.LastName ).ThenBy( a => a.NickName );
+                            }
 
-                        recipientList = sortedRecipientList.ToList();
-                    }
-                    else if ( defaultReportConfiguration.PrimarySortOrder == FinancialStatementOrderBy.PostalCode )
-                    {
-                        var sortedRecipientList = recipientList.OrderBy( a => a.PostalCode );
-                        if ( defaultReportConfiguration.SecondarySortOrder == FinancialStatementOrderBy.LastName )
-                        {
-                            sortedRecipientList = sortedRecipientList.ThenBy( a => a.LastName ).ThenBy( a => a.NickName );
+                            recipientList = sortedRecipientList.ToList();
                         }
-
-                        recipientList = sortedRecipientList.ToList();
                     }
+
+                    return recipientList;
                 }
-
-                return recipientList;
             }
         }
 
@@ -299,7 +303,7 @@ namespace Rock.Financial
                 activity?.AddTag( "rock-activity-type", "generate-statement" );
 
                 // START PREP
-                var prepActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement Prep" );
+                var prepActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Statement Prep" );
 
                 if ( financialStatementGeneratorRecipientRequest == null )
                 {
@@ -355,11 +359,11 @@ namespace Rock.Financial
                     }
 
                     // if *any* giving unit member has opted out, set the recipient as opted out
-                    recipientResult.OptedOut = FinancialStatementGeneratorHelper.GetOptedOutPersonIds( personList ).Any();
+                    recipientResult.OptedOut = FinancialStatementGeneratorHelper.GetFamilyOptOutStatus( personList );
 
 
                     List<int> personAliasIds;
-                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Get Person Alias Ids" ) ) {
+                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Person Alias Ids" ) ) {
                         personAliasIds = personList.SelectMany( a => a.Aliases.Select( x => x.Id ) ).ToList();
 
                         if ( personAliasIds.Count == 1 )
@@ -373,7 +377,7 @@ namespace Rock.Financial
                         }
                     }
 
-                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Configure Query" ) )
+                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Configure Transaction Query" ) )
                     {
                         financialTransactionQry = financialTransactionQry.Include( a => a.FinancialPaymentDetail )
                         .Include( a => a.FinancialPaymentDetail.CurrencyTypeValue )
@@ -383,12 +387,12 @@ namespace Rock.Financial
                     }
 
                     List<FinancialTransaction> financialTransactionsList;
-                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Load Financial Transactions" ) )
+                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Load Financial Transactions" ) )
                     {
                         financialTransactionsList = financialTransactionQry.AsNoTracking().ToList();
                     }
 
-                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Post-processing Account Removal" ) )
+                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Post-processing Account Removal" ) )
                     {
                         var transactionAccountIds = transactionSettings.GetIncludedAccountIds( rockContext );
 
@@ -420,7 +424,7 @@ namespace Rock.Financial
 
 
                     // START SALUTATION
-                    var salutationActivity = ObservabilityHelper.StartActivity( $"ACT: Calculate Salutation" );
+                    var salutationActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Calculate Salutation" );
 
                     string salutation;
                     if ( personId.HasValue )
@@ -480,21 +484,25 @@ namespace Rock.Financial
                     mergeFields.Add( MergeFieldKey.Salutation, salutation );
 
                     // START DETERMINE MAILING ADDRESS
-                    var addressActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement Prep" );
+                    var addressActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Determine Mailing Address" );
 
-                    Location mailingAddress;
+                    Location mailingAddress = null;
 
                     if ( locationId.HasValue )
                     {
                         // get the location that was specified for the recipient
                         mailingAddress = new LocationService( rockContext ).Get( locationId.Value );
                     }
+                    /*  JME 9/22/2023
+                        This query below was taking 4 seconds on the Life.Church server and appears to be redundant to the original query. Said
+                        a different way, if the request above didn't find a location this one won't either.
                     else
                     {
                         // for backwards compatibility, get the first address
                         IQueryable<GroupLocation> groupLocationsQry = FinancialStatementGeneratorHelper.GetGroupLocationQuery( rockContext );
                         mailingAddress = groupLocationsQry.Where( a => a.GroupId == groupId ).Select( a => a.Location ).FirstOrDefault();
                     }
+                    */
 
                     mergeFields.Add( MergeFieldKey.MailingAddress, mailingAddress );
 
@@ -522,7 +530,7 @@ namespace Rock.Financial
 
 
                     // START GROOM TRANSACTIONS
-                    var groomActivity = ObservabilityHelper.StartActivity( $"ACT: Groom Activities" );
+                    var groomActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Groom Transactions" );
 
                     var transactionDetailListAll = financialTransactionsList.SelectMany( a => a.TransactionDetails ).ToList();
 
@@ -655,7 +663,7 @@ namespace Rock.Financial
                             .OrderBy( s => s.Order ) );
 
                     // START PLEDGES
-                    var pledgeActivity = ObservabilityHelper.StartActivity( $"ACT: Load Pledges" );
+                    var pledgeActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Load Pledges" );
 
                     var pledgeSettings = reportSettings.PledgeSettings;
                     pledgeSettings.AccountIds = pledgeSettings.AccountIds.Where( a => a > 0 ).ToList();
@@ -674,14 +682,14 @@ namespace Rock.Financial
 
                     mergeFields.Add( MergeFieldKey.Options, financialStatementGeneratorOptions );
 
-                    using ( var renderActivity = ObservabilityHelper.StartActivity( $"ACT: Render Statement Lava" ) )
+                    using ( var renderActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Render Statement Lava" ) )
                     {
                         recipientResult.Html = lavaTemplateLava.ResolveMergeFields( mergeFields, currentPerson );
                     }
 
                     if ( !string.IsNullOrEmpty( lavaTemplateFooterHtmlFragment ) )
                     {
-                        using ( var footerActivity = ObservabilityHelper.StartActivity( $"ACT: Render Footer Lava" ) )
+                        using ( var footerActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Render Footer Lava" ) )
                         {
                             recipientResult.FooterHtmlFragment = lavaTemplateFooterHtmlFragment.ResolveMergeFields( mergeFields, currentPerson );
                         }
@@ -803,19 +811,21 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Gets the opted out person ids.
+        /// Returns if the family is opted out of getting a statement.
         /// </summary>
-        /// <param name="personList">The person list.</param>
+        /// <param name="personList"></param>
         /// <returns></returns>
-        private static int[] GetOptedOutPersonIds( List<Person> personList )
+        private static bool GetFamilyOptOutStatus( List<Person> personList )
         {
-            using ( var optOutActivity = ObservabilityHelper.StartActivity( $"ACT: Process Opt-Outs" ) )
+            using ( var optOutActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Process Opt-Outs" ) )
             {
 
                 int? doNotSendGivingStatementAttributeId = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.Id;
+                var defaultIsOptOut = (AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.DefaultValue).AsBoolean();
+
                 if ( !doNotSendGivingStatementAttributeId.HasValue )
                 {
-                    return new int[0];
+                    return false;
                 }
 
                 var personIds = personList.Select( a => a.Id ).ToList();
@@ -830,14 +840,27 @@ namespace Rock.Financial
                     optedOutPersonQry = optedOutPersonQry.Where( a => personIds.Contains( a.EntityId.Value ) );
                 }
 
-                var optedOutPersonIds = optedOutPersonQry
+                // Get the opt-out status of the individuals
+                var optedOutPersonValues = optedOutPersonQry
                     .Select( a => new
                     {
                         PersonId = a.EntityId.Value,
                         a.Value
-                    } ).ToList().Where( a => a.Value.AsBoolean() == true ).Select( a => a.PersonId ).ToArray();
+                    } ).ToList();
 
-                return optedOutPersonIds;
+                // Process results based on the default opt-out status. This is stored as a person attribute "Do Not Send Giving Statement". When
+                // the default value is False (typical) then we'd only return those with a value as true. When the default is True (simulates an
+                // opt-in strategy then we will only return those who have an existing attribute value of false.
+                if ( defaultIsOptOut )
+                {
+                    // The default value is that everyone is opted out. If any of them are false return false (don't opt out if anyone has a "Do Not Send" value of false)
+                    return !optedOutPersonValues.Where( a => a.Value.AsBoolean() == false ).Select( a => a.PersonId ).Any();
+                }
+                else
+                {
+                    // The default is only those with values are opted out.If any have said they want to opt out then don't send a statement.
+                    return optedOutPersonValues.Where( a => a.Value.AsBoolean() == true ).Select( a => a.PersonId ).Any();
+                }
             }
         }
 
