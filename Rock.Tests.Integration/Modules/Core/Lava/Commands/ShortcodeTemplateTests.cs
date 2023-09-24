@@ -807,6 +807,10 @@ $( document ).ready(function() {
         [TestMethod]
         public void GoogleStaticMapShortcode_DefaultOptions_EmitsCorrectHtml()
         {
+
+            // TODO: This causes a problem because it contains the string literal: '//', which truncates the line.
+
+
             var input = @"
 {[ googlemap ]}
     [[ marker location:'33.640705,-112.280198' ]] [[ endmarker ]]
