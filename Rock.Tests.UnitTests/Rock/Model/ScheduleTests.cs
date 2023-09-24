@@ -136,12 +136,13 @@ namespace Rock.Tests.Rock.Model
         {
             DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
             {
-                var singleDayEvent = ScheduleTestHelper.GetCalendarEvent( GetFirstTestScheduleDate(), new TimeSpan( 24, 0, 0 ) );
+                // Create an event that has a duration of more than 1 day.
+                var eventDate = GetFirstTestScheduleDate();
+                var singleDayEvent = ScheduleTestHelper.GetCalendarEvent( eventDate, new TimeSpan( 25, 0, 0 ) );
 
                 var schedule = ScheduleTestHelper.GetSchedule( ScheduleTestHelper.GetCalendar( singleDayEvent ) );
 
-                var endDateExpected = _specificDates.FirstOrDefault().AddDays( 1 );
-
+                var endDateExpected = eventDate.AddDays( 1 );
                 var endDateReturned = schedule.EffectiveEndDate;
 
                 Assert.That.IsNotNull( endDateReturned );
