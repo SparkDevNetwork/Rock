@@ -382,6 +382,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\" />
+    <Folder Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\" />
@@ -943,6 +944,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSchedulesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSendNowResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerUpdatePreferenceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\mobileLayoutBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\mobileLayoutDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\prayerRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\prayerRequestDetailAddPersonResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\prayerRequestDetailOptionsBag.d.ts" />

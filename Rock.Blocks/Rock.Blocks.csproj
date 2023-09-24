@@ -78,6 +78,7 @@
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Finance\FinancialStatementTemplateDetail.cs" />
+    <Compile Include="Mobile\MobileLayoutDetail.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
     <Compile Include="Engagement\StepTypeDetail.cs" />
     <Compile Include="Tv\AppleTvAppDetail.cs" />
