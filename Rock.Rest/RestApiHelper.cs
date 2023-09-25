@@ -418,7 +418,7 @@ namespace Rock.Rest
 
                     foreach ( var attributeKey in attributedEntity.Attributes.Keys)
                     {
-                        values.AddOrIgnore( attributeKey, new
+                        values.AddOrIgnore( attributeKey, new AttributeValueRestBag
                         {
                             Value = attributedEntity.GetAttributeValue( attributeKey ),
                             TextValue = attributedEntity.GetAttributeTextValue( attributeKey  ),
@@ -606,29 +606,65 @@ namespace Rock.Rest
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// The response to be sent for a newly created item.
+    /// </summary>
+    internal class CreatedAtResult
+    {
+        /// <summary>
+        /// Gets or sets the integer identifier.
+        /// </summary>
+        /// <value>The integer identifier.</value>
+        public int Id { get; set; }
 
         /// <summary>
-        /// The response to be sent for a newly created item.
+        /// Gets or sets the unique identifier.
         /// </summary>
-        private class CreatedAtResult
-        {
-            /// <summary>
-            /// Gets or sets the integer identifier.
-            /// </summary>
-            /// <value>The integer identifier.</value>
-            public int Id { get; set; }
+        /// <value>The unique identifier.</value>
+        public Guid Guid { get; set; }
 
-            /// <summary>
-            /// Gets or sets the unique identifier.
-            /// </summary>
-            /// <value>The unique identifier.</value>
-            public Guid Guid { get; set; }
+        /// <summary>
+        /// Gets or sets the identifier key.
+        /// </summary>
+        /// <value>The identifier key.</value>
+        public string IdKey { get; set; }
+    }
 
-            /// <summary>
-            /// Gets or sets the identifier key.
-            /// </summary>
-            /// <value>The identifier key.</value>
-            public string IdKey { get; set; }
-        }
+    /// <summary>
+    /// The object that contains the attribute value data.
+    /// </summary>
+    internal class AttributeValueRestBag
+    {
+        /// <summary>
+        /// Gets or sets the raw value.
+        /// </summary>
+        /// <value>The raw value.</value>
+        public string Value { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text value.
+        /// </summary>
+        /// <value>The text value.</value>
+        public string TextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTML value.
+        /// </summary>
+        /// <value>The HTML value.</value>
+        public string HtmlValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the condensed text value.
+        /// </summary>
+        /// <value>The condensed text value.</value>
+        public string CondensedTextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the condensed HTML value.
+        /// </summary>
+        /// <value>The condensed HTML value.</value>
+        public string CondensedHtmlValue { get; set; }
     }
 }
