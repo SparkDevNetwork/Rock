@@ -120,6 +120,9 @@
     <Content Include="src\Finance\financialGatewayDetail.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\viewPanel.partial.obs" />
+    <Content Include="src\Group\groupMemberScheduleTemplateDetail.obs" />
+    <Content Include="src\Group\GroupMemberScheduleTemplateDetail\editPanel.partial.obs" />
+    <Content Include="src\Group\GroupMemberScheduleTemplateDetail\viewPanel.partial.obs" />
     <Content Include="src\Prayer\prayerRequestDetail.obs" />
     <Content Include="src\Prayer\PrayerRequestDetail\editPanel.partial.obs" />
     <Content Include="src\Prayer\PrayerRequestDetail\viewPanel.partial.obs" />
@@ -293,6 +296,7 @@
     <Folder Include="src\Finance\FinancialBatchList\" />
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
     <Folder Include="src\Finance\FinancialStatementTemplateDetail\" />
+    <Folder Include="src\Group\GroupMemberScheduleTemplateDetail\" />
     <Folder Include="src\Prayer\" />
     <Folder Include="src\Prayer\PrayerRequestDetail\" />
     <Folder Include="src\Finance\FinancialPledgeDetail\" />
@@ -443,6 +447,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialBatchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\GroupMemberScheduleTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Prayer\PrayerRequestDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Bus\QueueDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchDetail\types.partial.ts" />

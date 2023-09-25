@@ -22,7 +22,6 @@ using System.Web.UI.WebControls;
 using Rock.Field.Types;
 using Rock.Web.Cache;
 using Rock.Model;
-using Rock.Data;
 using System.Collections.Generic;
 
 namespace Rock.Web.UI.Controls
@@ -220,6 +219,33 @@ namespace Rock.Web.UI.Controls
                     return this.HasValue || ( CustomValidator == null || CustomValidator.IsValid );
                 }
             }
+        }
+
+        /// <summary>
+        /// Validates the current control content.
+        /// </summary>
+        /// <param name="messages">If the validation is unsuccessful, contains the list of validation messages.</param>
+        /// <returns>
+        /// <c>true</c> if the content is valid; otherwise, <c>false</c>.
+        /// </returns>
+        internal bool Validate( out List<string> messages )
+        {
+            messages = new List<string>();
+
+            if ( CustomValidator != null )
+            {
+                CustomValidator.Validate();
+                if ( !CustomValidator.IsValid )
+                {
+                    messages.Add( CustomValidator.ErrorMessage );
+                }
+            }
+            if ( RequiredFieldValidator != null && !RequiredFieldValidator.IsValid )
+            {
+                messages.Add( RequiredFieldValidator.ErrorMessage );
+            }
+
+            return !messages.Any();
         }
 
         /// <summary>
@@ -495,6 +521,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the Country field should be shown.
+        /// </summary>
+        public bool ShowCountry
+        {
+            get
+            {
+                var show = ViewState["ShowCountry"] as bool?;
+                if ( show == null )
+                {
+                    show = GlobalAttributesCache.Get().GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull() ?? false;
+                }
+                return show.Value;
+            }
+
+            set
+            {
+                ViewState["ShowCountry"] = value;
+            }
+        }
+
+        /// <summary>
         /// Display an abbreviated state name
         /// </summary>
         public bool UseStateAbbreviation
@@ -506,13 +553,13 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                if ( ( ViewState["UseStateAbbreviation"] as bool? ?? false ) != value )
+                var oldValue = this.UseStateAbbreviation;
+                ViewState["UseStateAbbreviation"] = value;
+                if ( oldValue != value )
                 {
                     EnsureChildControls();
                     BindStates( _ddlCountry.SelectedValue );
                 }
-
-                ViewState["UseStateAbbreviation"] = value;
             }
         }
 
@@ -615,6 +662,26 @@ namespace Rock.Web.UI.Controls
                 {
                     this.RequiredFieldValidator.Display = value;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating if the entry must satisfy the address requirements for the selected country to be considered valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if partial and invalid addresses should be allowed; otherwise, <c>false</c>.
+        /// </value>
+        public bool PartialAddressIsAllowed
+        {
+            get
+            {
+                return ViewState["PartialAddressIsAllowed"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["PartialAddressIsAllowed"] = value;
+                RecreateChildControls();
             }
         }
 
@@ -761,6 +828,10 @@ namespace Rock.Web.UI.Controls
             CustomValidator.CssClass = "validation-error";
             CustomValidator.Enabled = true;
             CustomValidator.ServerValidate += _CustomValidator_ServerValidate;
+
+            // Disable required field validation if partial address input is enabled.
+            CustomValidator.Enabled = !this.PartialAddressIsAllowed;
+
             Controls.Add( CustomValidator );
         }
 
@@ -774,6 +845,11 @@ namespace Rock.Web.UI.Controls
 
             // Get the edited Location, and include any default values to avoid incorrect validation messages for the fields
             // to which they apply.
+            if ( this.PartialAddressIsAllowed )
+            {
+                return;
+            }
+
             var editedLocation = new Location();
             GetValues( editedLocation, includeDefaultValues:true );
 
@@ -829,14 +905,18 @@ namespace Rock.Web.UI.Controls
                 _StateLabel = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateLabel );
                 _PostalCodeLabel = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeLabel );
 
-                var requirementField = new DataEntryRequirementLevelFieldType();
+                if ( !this.PartialAddressIsAllowed )
+                {
+                    // Set the field requirements for valid data entry.
+                    var requirementField = new DataEntryRequirementLevelFieldType();
 
-                _AddressLine1Requirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ), DataEntryRequirementLevelSpecifier.Optional );
-                _AddressLine2Requirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ), DataEntryRequirementLevelSpecifier.Optional );
-                _CityRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
-                _LocalityRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
-                _StateRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateRequirement ), DataEntryRequirementLevelSpecifier.Optional );
-                _PostalCodeRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                    _AddressLine1Requirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ), DataEntryRequirementLevelSpecifier.Optional );
+                    _AddressLine2Requirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ), DataEntryRequirementLevelSpecifier.Optional );
+                    _CityRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                    _LocalityRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                    _StateRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                    _PostalCodeRequirement = requirementField.GetDeserializedValue( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ), DataEntryRequirementLevelSpecifier.Optional );
+                }
             }
 
             _CityLabel = _CityLabel.ToStringOrDefault( "City" );
@@ -844,17 +924,22 @@ namespace Rock.Web.UI.Controls
             _StateLabel = _StateLabel.ToStringOrDefault( "State" );
             _PostalCodeLabel = _PostalCodeLabel.ToStringOrDefault( "Postal Code" );
 
-            // Hide Address Line 2 if it is not required, and not specified to show in the control settings.
-            if ( _AddressLine2Requirement == DataEntryRequirementLevelSpecifier.Optional && !this.ShowAddressLine2 )
+            if ( !this.PartialAddressIsAllowed )
             {
-                _AddressLine2Requirement = DataEntryRequirementLevelSpecifier.Unavailable;
-            }
+                // Hide Address Line 2 if it is not required, and not specified to show in the control settings.
+                if ( _AddressLine2Requirement == DataEntryRequirementLevelSpecifier.Optional
+                     && !this.ShowAddressLine2 )
+                {
+                    _AddressLine2Requirement = DataEntryRequirementLevelSpecifier.Unavailable;
+                }
 
-            // Hide Locality if specified in the control settings and it is not required.
-            // The ShowCounty property is probably not necessary now because this setting can be specified per-country.
-            if ( _LocalityRequirement == DataEntryRequirementLevelSpecifier.Optional && !this.ShowCounty )
-            {
-                _LocalityRequirement = DataEntryRequirementLevelSpecifier.Unavailable;
+                // Hide Locality if specified in the control settings and it is not required.
+                // The ShowCounty property is probably not necessary now because this setting can be specified per-country.
+                if ( _LocalityRequirement == DataEntryRequirementLevelSpecifier.Optional
+                     && !this.ShowCounty )
+                {
+                    _LocalityRequirement = DataEntryRequirementLevelSpecifier.Unavailable;
+                }
             }
         }
 
@@ -898,7 +983,7 @@ namespace Rock.Web.UI.Controls
             _ddlState.Attributes["placeholder"] = _StateLabel;
             _tbPostalCode.Attributes["placeholder"] = _PostalCodeLabel;
 
-            _ddlCountry.Visible = _ShowCountrySelection;
+            _ddlCountry.Visible = this.ShowCountry;
         }
 
         /// <summary>
@@ -938,6 +1023,29 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "data-itemlabel", this.Label != string.Empty ? this.Label : "Address" );
             writer.AddAttribute( "id", this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // Country
+            if ( this.ShowCountry )
+            {
+                writer.AddAttribute( "class", "form-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( "class", "form-row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( "class", "col-sm-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _ddlCountry.RenderControl( writer );
+                writer.RenderEndTag();  // div.form-group
+
+                writer.AddAttribute( "class", "col-sm-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderEndTag();  // div.form-group
+
+                writer.RenderEndTag();  // div.form-row
+
+                writer.RenderEndTag();  // div.form-group
+            }
 
             // Address Line 1
             if ( _AddressLine1Requirement != DataEntryRequirementLevelSpecifier.Unavailable )
@@ -1126,7 +1234,7 @@ namespace Rock.Web.UI.Controls
                 var postalCode = GetLocationFieldValue( this.PostalCode, _PostalCodeRequirement );
 
                 // If country selection is available, get the selected value otherwise use the system default.
-                if ( _ShowCountrySelection )
+                if ( this.ShowCountry )
                 {
                     location.Country = _ddlCountry.SelectedValue;
                 }
@@ -1199,8 +1307,14 @@ namespace Rock.Web.UI.Controls
                 .ThenBy( v => v.Value )
                 .ToList();
 
+            if ( this.PartialAddressIsAllowed )
+            {
+                // Country is optional, so add a placeholder entry.
+                _ddlCountry.Items.Add( new ListItem( "Country", string.Empty ) );
+            }
+
             // Move default country to the top of the list
-            string defaultCountryCode = GetDefaultCountry();
+            var defaultCountryCode = GetDefaultCountry();
             if ( !string.IsNullOrWhiteSpace( defaultCountryCode ) )
             {
                 var defaultCountry = countryValues
@@ -1208,7 +1322,10 @@ namespace Rock.Web.UI.Controls
                     .FirstOrDefault();
                 if ( defaultCountry != null )
                 {
-                    _ddlCountry.Items.Add( new ListItem( "Countries", string.Empty ) );
+                    if ( !this.PartialAddressIsAllowed )
+                    {
+                        _ddlCountry.Items.Add( new ListItem( "Countries", string.Empty ) );
+                    }
                     _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, defaultCountry.Value ) );
                     _ddlCountry.Items.Add( new ListItem( "------------------------", "------------------------" ) );
                 }
@@ -1249,7 +1366,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="country">The currently selected country.</param>
         private void BindStates( string country )
         {
-            string countryGuid = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+            var showStateList = false;
+            var countryGuid = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                 .DefinedValues
                 .Where( v => v.Value.Equals( country, StringComparison.OrdinalIgnoreCase ) )
                 .Select( v => v.Guid )
@@ -1280,14 +1398,17 @@ namespace Rock.Web.UI.Controls
                     .Select( v => new StateListSelectionItem { Id = v.Value, Value = v.Description } )
                     .ToList();
 
-                this.HasStateList = stateList.Any();
-            }
-            else
-            {
-                this.HasStateList = false;
+                showStateList = stateList.Any();
+
+                if ( showStateList && this.PartialAddressIsAllowed )
+                {
+                    // If partial addresses are allowed, add an empty entry to the state list.
+                    stateList.Insert( 0, new StateListSelectionItem { Id = string.Empty, Value = string.Empty } );
+                }
             }
 
-            if ( this.HasStateList )
+            this.HasStateList = showStateList;
+            if ( showStateList )
             {
 
                 _ddlState.Visible = true;
@@ -1317,6 +1438,12 @@ namespace Rock.Web.UI.Controls
         {
             SetOrganizationAddressDefaults();
 
+            // If partial addresses are allowed, the default value is empty.
+            if ( this.PartialAddressIsAllowed )
+            {
+                return string.Empty;
+            }
+
             // Return the default state for the Organization if no Country is selected
             // or the selected Country matches the Organization Address.
             if ( string.IsNullOrWhiteSpace( this.Country )
@@ -1337,6 +1464,13 @@ namespace Rock.Web.UI.Controls
         public string GetDefaultCountry()
         {
             SetOrganizationAddressDefaults();
+
+            // If partial addresses are allowed, the default value is empty.
+            if ( this.PartialAddressIsAllowed )
+            {
+                return string.Empty;
+            }
+
             return string.IsNullOrWhiteSpace( _orgCountry ) ? "US" : _orgCountry;
         }
 
@@ -1355,7 +1489,7 @@ namespace Rock.Web.UI.Controls
 
             if ( selectedState == null )
             {
-                selectedState = _ddlState.SelectedValue;
+                selectedState = this.HasStateList ? _ddlState.SelectedValue : _tbState.Text;
             }
 
             LoadCountryConfiguration( selectedCountry );
@@ -1370,15 +1504,18 @@ namespace Rock.Web.UI.Controls
                 _ddlCountry.SetValue( selectedCountry );
             }
 
-            // Set the State
-            if ( string.IsNullOrEmpty( selectedCountry ) )
+            // Set the State to align with the selected Country, unless partial addresses are allowed.
+            if ( !this.PartialAddressIsAllowed )
             {
-                // If no country is selected, reset the State field.
-                selectedState = null;
-            }
-            else if ( string.IsNullOrEmpty( selectedState ) )
-            {
-                selectedState = GetDefaultState();
+                if ( string.IsNullOrEmpty( selectedCountry ) )
+                {
+                    // If no country is selected, reset the State field.
+                    selectedState = null;
+                }
+                else if ( string.IsNullOrEmpty( selectedState ) )
+                {
+                    selectedState = GetDefaultState();
+                }
             }
 
             if ( this.HasStateList )
