@@ -439,6 +439,9 @@ var options = {
         }
     },
     scales: {
+        xAxes:[ {
+            display: true,
+        } ],
         yAxes:[ {
             display: true,
             ticks: {
@@ -461,12 +464,11 @@ var data = {
           pointHoverBackgroundColor: 'rgba(5,155,255,.6)',
           pointHoverBorderColor: 'rgba(5,155,255,.6)',
           pointHoverRadius: '3',
-                              data: [45,38,34,12],
+          data: [45,38,34,12],
       }
       ],
     borderWidth: 0
 };
-
 
 Chart.defaults.global.defaultFontColor = '#777';
 Chart.defaults.global.defaultFontFamily = ``sans-serif``;
@@ -476,7 +478,7 @@ var chart = new Chart(ctx, {
     type: 'bar',
     data: data,
     options: options
-});    
+});
 
 </script>";
 
@@ -805,6 +807,10 @@ $( document ).ready(function() {
         [TestMethod]
         public void GoogleStaticMapShortcode_DefaultOptions_EmitsCorrectHtml()
         {
+
+            // TODO: This causes a problem because it contains the string literal: '//', which truncates the line.
+
+
             var input = @"
 {[ googlemap ]}
     [[ marker location:'33.640705,-112.280198' ]] [[ endmarker ]]

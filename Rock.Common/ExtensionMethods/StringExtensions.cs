@@ -34,6 +34,21 @@ namespace Rock
         #region String Extensions
 
         /// <summary>
+        /// Prepends a character to a string if it doesn't already exist.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="prepend"></param>
+        /// <returns></returns>
+        public static string AddStringAtBeginningIfItDoesNotExist( this string text, string prepend )
+        {
+            if ( text == null )
+                return prepend;
+            if ( prepend == null )
+                prepend = "";
+            return text.StartsWith( prepend ) ? text : prepend + text;
+        }
+
+        /// <summary>
         /// Gets the nth occurrence of a string within a string. Pass 0 for the first occurrence, 1 for the second.
         /// </summary>
         /// <param name="str"></param>

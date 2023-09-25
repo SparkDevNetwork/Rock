@@ -570,24 +570,19 @@ namespace Rock.Lava.Fluid
             }
         }
 
-        private static LavaToLiquidTemplateConverter _lavaToLiquidConverter = new LavaToLiquidTemplateConverter();
-
         /// <summary>
         /// Pre-parses a Lava template to ensure it is using Liquid-compliant syntax, and creates a new template object.
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <param name=""></param>
         /// <returns></returns>
-        private FluidTemplate CreateNewFluidTemplate( string lavaTemplate, out string liquidTemplate )
+        private FluidTemplate CreateNewFluidTemplate( string lavaTemplate )
         {
             FluidTemplate template;
-
-            liquidTemplate = _lavaToLiquidConverter.RemoveLavaComments( lavaTemplate );
-
             string error;
             IFluidTemplate fluidTemplate;
 
-            var success = _parser.TryParse( liquidTemplate, out fluidTemplate, out error );
+            var success = _parser.TryParse( lavaTemplate, out fluidTemplate, out error );
 
             var fluidTemplateObject = ( FluidTemplate ) fluidTemplate;
 
@@ -597,7 +592,7 @@ namespace Rock.Lava.Fluid
             }
             else
             {
-                throw new LavaParseException( this.EngineName, liquidTemplate, error );
+                throw new LavaParseException( this.EngineName, lavaTemplate, error );
             }
 
             return template;
@@ -731,7 +726,7 @@ namespace Rock.Lava.Fluid
 
         protected override ILavaTemplate OnParseTemplate( string lavaTemplate )
         {
-            var fluidTemplate = CreateNewFluidTemplate( lavaTemplate, out _ );
+            var fluidTemplate = CreateNewFluidTemplate( lavaTemplate );
 
             var newTemplate = new FluidTemplateProxy( fluidTemplate, lavaTemplate );
 

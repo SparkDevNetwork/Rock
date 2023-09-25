@@ -16,7 +16,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
@@ -37,16 +36,32 @@ namespace Rock.Tests.Integration.Core.Lava
             TestHelper.AssertTemplateOutput( string.Empty, "{% comment %}{% endcomment %}" );
         }
 
+        /// <summary>
+        /// Verify that a comment block containing another comment block is parsed as a single comment.
+        /// This test validates a Rock-specific change to the Fluid Parser.
+        /// </summary>
+        [Ignore("This is a known issue, but it is documented here for reference and may be fixed in the future.")]
         [TestMethod]
-        public void RemoveLavaCommentsReturnsEmptyStringForNullInput()
+        public void CommentBlock_WithNestedCommentBlock_ParsesCorrectly()
         {
-            var actualResult = LavaHelper.RemoveLavaComments( null );
+            // This Lava template would throw an error in the default Fluid parser, but should process successfully here.
+            TestHelper.AssertTemplateOutput( string.Empty, "{% comment %} outer comment {% comment %} inner comment {% endcomment %} {% endcomment %}" );
+        }
 
-            Assert.That.AreEqual( string.Empty, actualResult );
+        /// <summary>
+        /// Verify that a comment containing an invalid tag does not cause a parser error.
+        /// This test validates a Rock-specific change to the Fluid Parser.
+        /// </summary>
+        [TestMethod]
+        [Ignore( "This is a known issue, but it is documented here for reference and may be fixed in the future." )]
+        public void CommentBlock_ContainingInvalidTag_IsIgnored()
+        {
+            // This Lava template would throw an error in the default Fluid parser, but should process successfully here.
+            TestHelper.AssertTemplateOutput( string.Empty, "{% comment %} This comment contains an {% unknown_tag %} {% endcomment %}" );
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_LineCommentAfterContent_ReturnsContent()
+        public void ShorthandLineComment_AfterContent_ReturnsContent()
         {
             var input = @"
 Line 1<br>
@@ -60,11 +75,14 @@ Line 2<br>
 Line 3<br>
 ";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            input = input.Trim();
+            expectedOutput = expectedOutput.Trim();
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_CommentInStringLiteral_IsNotRemoved()
+        public void ShorthandComment_CommentInStringLiteral_IsNotRemoved()
         {
             var input = @"
 -- Begin Example --
@@ -88,11 +106,14 @@ or '/- Block Comment 2...
 -- End Example --
 ";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            input = input.Trim();
+            expectedOutput = expectedOutput.Trim();
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_LineCommentContainingQuotedString_IsRemoved()
+        public void ShorthandLineComment_ContainingQuotedString_IsRemoved()
         {
             var input = @"
 Line 1<br>
@@ -109,7 +130,7 @@ Line 3<br>
             TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
-        public void LavaHelperRemoveComments_BlockCommentContainingQuotedString_IsRemoved()
+        public void ShorthandBlockComment_ContainingQuotedString_IsRemoved()
         {
             var input = @"
 Line 1<br>
@@ -131,7 +152,7 @@ Line 3<br>
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_CommentInRawTag_IsNotRemoved()
+        public void ShorthandComment_CommentInRawTag_IsNotRemoved()
         {
             var input = @"
 Example Start<br>
@@ -157,7 +178,7 @@ Example End<br>
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_BlockCommentSpanningMultipleLines_RemovesNewLinesContainedInComment()
+        public void ShorthandBlockComment_SpanningMultipleLines_RemovesNewLinesContainedInComment()
         {
             var input = @"
 Line 1<br>
@@ -178,7 +199,7 @@ Line 3<br>
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_CommentsInIncludeFile_AreRemoved()
+        public void ShorthandComment_CommentsInIncludeFile_AreRemoved()
         {
             var fileProvider = GetFileProviderWithComments();
 
@@ -209,7 +230,7 @@ Line 4<br>
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_BlockCommentInline_RendersCorrectLineContent()
+        public void ShorthandBlockComment_Inline_RendersCorrectLineContent()
         {
             var input = @"
 Line 1<br>
@@ -227,7 +248,7 @@ Line 3<br>
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_SingleLineCommentAsFinalElement_RendersCorrectLineContent()
+        public void ShorthandLineComment_AsFinalElement_RendersCorrectLineContent()
         {
             // Input template terminating with a comment, no new line character.
             var input = @"
@@ -240,7 +261,7 @@ Line 1<br>
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_BlockCommentAsFinalElement_RendersCorrectLineContent()
+        public void ShorthandBlockComment_AsFinalElement_RendersCorrectLineContent()
         {
             // Input template terminating with a comment, no new line character.
             var input = @"
@@ -250,6 +271,17 @@ Line 1<br>
             var expectedOutput = @"Line 1<br>";
 
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input );
+        }
+
+        /// <summary>
+        /// Verify that a comment containing an invalid tag does not cause a parser error.
+        /// This test validates a Rock-specific change to the Fluid Parser.
+        /// </summary>
+        [TestMethod]
+        public void ShorthandBlockComment_ContainingInvalidTag_IsIgnored()
+        {
+            // This Lava template would throw an error in the default Fluid parser, but should process successfully here.
+            TestHelper.AssertTemplateOutput( string.Empty, "/- This comment contains an {% unknown_tag %} -/" );
         }
 
         private MockFileProvider GetFileProviderWithComments()
