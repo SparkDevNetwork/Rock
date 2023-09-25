@@ -20,6 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Integration.Core.Lava;
 using Rock.Tests.Shared;
@@ -73,6 +74,57 @@ Property Filter: 1
                 EnabledCommands = "RockEntity"
             };
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        /// <summary>
+        /// Verifies the resolution of a specific Issue.
+        /// </summary>
+        [TestMethod]
+        public void Issue5560_LavaCommentsDisplayedInOutput()
+        {
+            /* The Lava Engine may render inline comments to output where an unmatched quote delimiter is present in the preceding template text.
+             * For details, see https://github.com/SparkDevNetwork/Rock/issues/5560.
+             * 
+             * Resolution: This issue is caused by the inadequacy of Regex to encapsulate the complex logic required to identify comments vs literal text.
+             * This issue has been fixed for the Fluid Engine by implementing shorthand comments in the custom parser.
+             * A fix for DotLiquid would require additional work to replace Regex with a custom parser to strip comments from the source template,
+             * which is not justified because the DotLiquid engine will be removed in v17.
+             */
+
+            var engineOptions = new LavaEngineConfigurationOptions
+            {
+                InitializeDynamicShortcodes = false
+            };
+            var engine = LavaService.NewEngineInstance( typeof( FluidEngine ), engineOptions );
+
+            LavaIntegrationTestHelper.SetEngineInstance( engine );
+
+            var template = @"
+<h3>Testing issue 5560</h3>
+
+{% comment %}By Jim M...{% endcomment %}
+{% comment %}By Stan Y...{% endcomment %}
+{% comment %} By Jim M Jan 2021. This block gets a person's Explo Online group, Zoom Link, schedule, and Leader details.{% endcomment %} 
+
+/- GroupType 67 = Explo Online - assume person is in only 1 group of this type -/
+Did you see those comments ^^^
+
+{% assign groupMember = CurrentPerson | Groups: ""67"" | First %}
+{% assign grp = groupMember.Group.Id | GroupById %}
+
+            //- proceed if we found a group
+
+            {% if grp != null and grp != empty %}
+    < b > Welcome...</ b >
+{% endif %}
+";
+            var expectedOutput = @"
+<h3>Testing issue 5560</h3>
+Did you see those comments ^^^
+";
+            var actualOutput = LavaService.RenderTemplate( template ).Text;
+
+            Assert.That.AreEqualIgnoreWhitespace( expectedOutput, actualOutput );
         }
     }
 }

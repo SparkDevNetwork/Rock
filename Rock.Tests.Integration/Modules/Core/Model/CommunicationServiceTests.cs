@@ -39,9 +39,8 @@ namespace Rock.Tests.Integration.Communications
         [ClassInitialize]
         public static void TestInitialize( TestContext context )
         {
+            IntegrationTestInitializer.InitializeDatabase();
             TestDatabaseHelper.ResetDatabase();
-
-            RemoveTestData();
 
             CreateCommunicationsTestData( _expirationDays, _delayMinutes );
         }
@@ -207,9 +206,11 @@ namespace Rock.Tests.Integration.Communications
 
         private static void CreateCommunicationsTestData( int expirationDays, int delayMinutes )
         {
+            LogHelper.Log( "Create Communications test data: working..." );
+
             var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays ).AddDays( 0 - 2 );
             var endWindow = RockDateTime.Now.AddMinutes( 0 - delayMinutes ).AddDays( 2 );
-            var currentDateTime = beginWindow;
+
             var sender = GetNewPersonAlias();
 
             var communications = new List<Rock.Model.Communication>();
@@ -230,6 +231,8 @@ namespace Rock.Tests.Integration.Communications
                 communicationService.AddRange( communications );
                 rockContext.SaveChanges();
             }
+
+            LogHelper.Log( "Create Communications test data: complete." );
         }
 
         private static void RemoveTestData()

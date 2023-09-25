@@ -28,7 +28,9 @@ namespace Rock.Lava.Fluid
     public enum LavaTagFormatSpecifier
     {
         LiquidTag = 0,
-        LavaShortcode = 1
+        LavaShortcode = 1,
+        BlockComment = 2,
+        InlineComment = 3
     }
 
     /// <summary>
@@ -54,43 +56,54 @@ namespace Rock.Lava.Fluid
 
         /*
          * A Lava Element is any recognized portion of a Lava document, including tags, shortcodes, output and literal text.
-         * A Lava Token is a Lava Element that is delimited by a recognized string of characters, such as a tag or shortcode.
+         * A Lava Token is a Lava Element that is delimited by a recognized string of characters, such as a tag, a shortcode, or a shorthand comment.
          * 
          * Elements must be defined before they are referenced by other elements.
          * Take care when altering the sequence of these definitions, or runtime errors may occur.
          */
 
-        public static Parser<LavaTagResult> LavaTokenStart => OneOf( LavaTagParsers.LavaTagStart(), LavaTagParsers.LavaShortcodeStart() );
-        public static Parser<LavaTagResult> LavaTokenEnd => OneOf( LavaTagParsers.LavaTagEnd(), LavaTagParsers.LavaShortcodeEnd() );
+        #region Internal Parsers
 
-        private static readonly Parser<char> Space = Terms.Char( ' ' );
+        private static readonly Parser<char> SpaceParser = Terms.Char( ' ' );
 
-        private static readonly Parser<LavaDocumentToken> LavaOutputTokenParser = OutputStart.SkipAnd( AnyCharBefore( OutputEnd, canBeEmpty: true ) )
+        private static readonly Parser<LavaDocumentToken> LavaOutputTokenParser = OutputStart
+            .SkipAnd( AnyCharBefore( OutputEnd, canBeEmpty: true ) )
             .AndSkip( OutputEnd )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Output, x.ToString() ) );
 
-        private static readonly Parser<LavaDocumentToken> LavaTagTokenParser = LavaTokenStart.SkipAnd( AnyCharBefore( LavaTokenEnd, canBeEmpty: true ) )
-            .AndSkip( LavaTokenEnd )
+        private static readonly Parser<LavaDocumentToken> LavaTagTokenParser = LavaTokenStartParser.SkipAnd( AnyCharBefore( LavaTokenEndParser, canBeEmpty: true ) )
+            .AndSkip( LavaTokenEndParser )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Tag, x.ToString() ) );
 
-        private static readonly Parser<LavaDocumentToken> LavaTextTokenParser = AnyCharBefore( OutputStart.Or( LavaTokenStart.AsFluidTagResultParser() ) )
+        private static readonly Parser<LavaDocumentToken> LavaTextTokenParser = AnyCharBefore( OutputStart.Or( LavaTokenStartParser.AsFluidTagResultParser() ) )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Literal, x.ToString() ) );
 
-        private static Parser<LavaTagResult> ShortcodeTagStart = LavaTagParsers.LavaShortcodeStart();
-        private static Parser<LavaTagResult> ShortcodeTagEnd = LavaTagParsers.LavaShortcodeEnd();
+        private static Parser<LavaTagResult> ShortcodeTagStartParser = LavaTagParsers.LavaShortcodeStart();
+        private static Parser<LavaTagResult> ShortcodeTagEndParser = LavaTagParsers.LavaShortcodeEnd();
 
-        private static readonly Parser<LavaDocumentToken> LavaShortcodeTokenParser = ShortcodeTagStart.SkipAnd( AnyCharBefore( ShortcodeTagEnd, canBeEmpty: true ) )
-            .AndSkip( ShortcodeTagEnd )
+        private static readonly Parser<LavaDocumentToken> LavaShortcodeTokenParser = ShortcodeTagStartParser.SkipAnd( AnyCharBefore( ShortcodeTagEndParser, canBeEmpty: true ) )
+            .AndSkip( ShortcodeTagEndParser )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Shortcode, x.ToString() ) );
+
+        private Parser<List<Statement>> _anyTagsListParser;
+        private Parser<List<Statement>> _knownTagsListParser;
+
+        #endregion
+
+        public static Parser<LavaTagResult> LavaTokenStartParser => OneOf( LavaTagParsers.LavaTagStart(),
+            LavaTagParsers.LavaShortcodeStart(),
+            LavaTagParsers.LavaBlockCommentStart,
+            LavaTagParsers.LavaInlineCommentStart );
+        public static Parser<LavaTagResult> LavaTokenEndParser => OneOf( LavaTagParsers.LavaTagEnd(),
+            LavaTagParsers.LavaShortcodeEnd(),
+            LavaTagParsers.LavaBlockCommentEnd,
+            LavaTagParsers.LavaInlineCommentEnd );
 
         // The complete list of valid tokens in a Lava document.
         public static readonly Parser<List<LavaDocumentToken>> LavaTokensListParser = ZeroOrMany( LavaOutputTokenParser.Or( LavaShortcodeTokenParser ).Or( LavaTagTokenParser ).Or( LavaTextTokenParser ) );
 
         public Parser<List<FilterArgument>> ArgumentsListParser => ArgumentsList;
         public Parser<List<FilterArgument>> LavaArgumentsListParser;
-
-        private Parser<List<Statement>> _anyTagsListParser;
-        private Parser<List<Statement>> _knownTagsListParser;
 
         #endregion
 
@@ -117,8 +130,8 @@ namespace Rock.Lava.Fluid
             // Define a parser for a named argument list separated by spaces in the form:
             // [name1:]value1 [name2:]value2 ...
             // This parser can also return an empty argument list.
-            LavaArgumentsListParser = OneOf( LavaTokenEnd.Then( x => new List<FilterArgument>() ),
-                Separated( Space,
+            LavaArgumentsListParser = OneOf( LavaTokenEndParser.Then( x => new List<FilterArgument>() ),
+                Separated( SpaceParser,
                             OneOf(
                                 Identifier.AndSkip( Colon ).And( Primary ).Then( x => new FilterArgument( x.Item1, x.Item2 ) ),
                                 Primary.Then( x => new FilterArgument( null, x ) )
@@ -181,16 +194,40 @@ namespace Rock.Lava.Fluid
                 .Or( range );
         }
 
+        /// <summary>
+        /// Defines the root-level parsers for a Lava document.
+        /// </summary>
         private void CreateLavaDocumentParsers()
         {
-            // Define the top-level parsers.
+            // Tag Elements: {% tag %} or {[ shortcode ]}
             var anyTags = CreateKnownTagsParser( throwOnUnknownTag: false );
             var knownTags = CreateKnownTagsParser( throwOnUnknownTag: true );
 
-            var outputElement = OutputStart.SkipAnd( FilterExpression.And( OutputEnd.ElseError( ErrorMessages.ExpectedOutputEnd ) )
+            // Output Element: {{ output }}
+            var outputElement = OutputStart
+                .SkipAnd( FilterExpression.And( OutputEnd.ElseError( ErrorMessages.ExpectedOutputEnd ) )
                 .Then<Statement>( x => new OutputStatement( x.Item1 ) ) );
 
-            var textElement = AnyCharBefore( OutputStart.Or( LavaTagParsers.LavaTagStart().AsFluidTagResultParser() ).Or( LavaTagParsers.LavaShortcodeStart().AsFluidTagResultParser() ) )
+            // Block Comment Element: /- ... -/
+            var blockCommentElement = LavaTagParsers.LavaBlockCommentStart
+                .SkipAnd( AnyCharBefore( LavaTagParsers.LavaBlockCommentEnd ).And( LavaTagParsers.LavaBlockCommentEnd )
+                    .Then<Statement>( x => new CommentStatement( x.Item1 ) ) );
+
+            // Inline Comment Element: /- ... <eol>
+            var inlineCommentElement = LavaTagParsers.LavaInlineCommentStart
+                .SkipAnd( AnyCharBefore( LavaTagParsers.LavaInlineCommentEnd ) )
+                .Then<Statement>( x => new CommentStatement( x ) );
+
+            var commentElement = blockCommentElement.Or( inlineCommentElement );
+
+            // Text Element: any literal text not contained in one of the preceding elements.
+            var startTags = OutputStart
+                .Or( LavaTagParsers.LavaTagStart().AsFluidTagResultParser() )
+                .Or( LavaTagParsers.LavaShortcodeStart().AsFluidTagResultParser() )
+                .Or( LavaFluidTagParsers.LavaBlockCommentStart )
+                .Or( LavaFluidTagParsers.LavaInlineCommentStart );
+
+            var textElement = AnyCharBefore( startTags )
                 .Then<Statement>( ( ctx, x ) =>
                 {
                     // Keep track of each text span such that whitespace trimming can be applied
@@ -212,19 +249,13 @@ namespace Rock.Lava.Fluid
                     return result;
                 } );
 
-            // Define parsers for Lava block/inline comments.
-            var blockCommentElement = Terms.Text( "/-" ).SkipAnd( AnyCharBefore( Terms.Text( "-/" ) ) );
-            var lineCommentElement = Terms.Text( "/-" ).SkipAnd( AnyCharBefore( Terms.Char( '\r' ).SkipAnd( Terms.Char( '\n' ) ) ) );
-
-            var commentElement = blockCommentElement.Or( lineCommentElement );
-
             // Set the parser to be used for a block element.
-            // This parser returns an empty result when an unknown tag is found.
-            _anyTagsListParser = ZeroOrMany( outputElement.Or( anyTags ).Or( textElement ) );
+            // This parser returns an empty result when an unknown tag is found, so the tag is ignored.
+            _anyTagsListParser = ZeroOrMany( commentElement.Or( outputElement ).Or( anyTags ).Or( textElement ) );
 
             // Set the parser to be used for the entire template.
             // This parser raises an exception when an unknown tag is found.
-            _knownTagsListParser = ZeroOrMany( outputElement.Or( knownTags ).Or( textElement ) );
+            _knownTagsListParser = ZeroOrMany( commentElement.Or( outputElement ).Or( knownTags ).Or( textElement ) );
         }
 
         private void DefineLavaDocumentParsers()
@@ -438,7 +469,7 @@ namespace Rock.Lava.Fluid
             }
             else
             {
-                tokenEndParser = LavaTokenEnd;
+                tokenEndParser = LavaTokenEndParser;
                 errorMessage = $"Invalid '{{% {tagName} %}}' block";
             }
 
@@ -475,7 +506,7 @@ namespace Rock.Lava.Fluid
             }
             else
             {
-                tokenEndParser = LavaTokenEnd;
+                tokenEndParser = LavaTokenEndParser;
                 errorMessage = $"Invalid '{{% {tagName} %}}' tag";
             }
 
@@ -518,9 +549,13 @@ namespace Rock.Lava.Fluid
      */
     public enum LavaDocumentTokenTypeSpecifier
     {
+        // {{ output }}
         Output,
+        // {% tag %}, {% endtag %}
         Tag,
+        // literal_text
         Literal,
+        // {[ shortcode ]}
         Shortcode
     }
 
