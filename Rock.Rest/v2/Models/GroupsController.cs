@@ -34,6 +34,11 @@ namespace Rock.Rest.v2.Models
     [Rock.SystemGuid.RestControllerGuid( "999c734f-e206-4a25-8145-1213b4ffd8a9" )]
     public partial class GroupsController : ApiControllerBase
     {
+        /// <summary>
+        /// Gets a single item from the database.
+        /// </summary>
+        /// <param name="key">The key as either an Id, Guid or IdKey value.</param>
+        /// <returns>The requested item.</returns>
         [HttpGet]
         [Authenticate]
         [Route( "{key}" )]
@@ -43,6 +48,11 @@ namespace Rock.Rest.v2.Models
             return new RestApiHelper<Group, GroupService>( this ).Get( key );
         }
 
+        /// <summary>
+        /// Creates a new item in the database.
+        /// </summary>
+        /// <param name="value">The item to be created.</param>
+        /// <returns>An object that contains the new identifier values.</returns>
         [HttpPost]
         [Authenticate]
         [Route( "" )]
@@ -52,6 +62,13 @@ namespace Rock.Rest.v2.Models
             return new RestApiHelper<Group, GroupService>( this ).Create( value );
         }
 
+        /// <summary>
+        /// Performs a full update of the item. All property values must be
+        /// specified.
+        /// </summary>
+        /// <param name="key">The key as either an Id, Guid or IdKey value.</param>
+        /// <param name="value">The item that represents all the new values.</param>
+        /// <returns>An empty response.</returns>
         [HttpPut]
         [Authenticate]
         [Route( "{key}" )]
@@ -61,6 +78,13 @@ namespace Rock.Rest.v2.Models
             return new RestApiHelper<Group, GroupService>( this ).Update( key, value );
         }
 
+        /// <summary>
+        /// Performs a partial update of the item. Only specified property keys
+        /// will be updated.
+        /// </summary>
+        /// <param name="key">The key as either an Id, Guid or IdKey value.</param>
+        /// <param name="values">An object that identifies the properties and values to be updated.</param>
+        /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
         [Route( "{key}" )]
@@ -70,6 +94,11 @@ namespace Rock.Rest.v2.Models
             return new RestApiHelper<Group, GroupService>( this ).Patch( key, values );
         }
 
+        /// <summary>
+        /// Deletes a single item from the database.
+        /// </summary>
+        /// <param name="key">The key as either an Id, Guid or IdKey value.</param>
+        /// <returns>An empty response.</returns>
         [HttpDelete]
         [Authenticate]
         [Route( "{key}" )]
@@ -79,6 +108,11 @@ namespace Rock.Rest.v2.Models
             return new RestApiHelper<Group, GroupService>( this ).Delete( key );
         }
 
+        /// <summary>
+        /// Gets all the attribute values for the specified item.
+        /// </summary>
+        /// <param name="key">The key as either an Id, Guid or IdKey value.</param>
+        /// <returns>An array of objects that represent all the attribute values.</returns>
         [HttpGet]
         [Authenticate]
         [Route( "{key}/attributevalues" )]
@@ -88,6 +122,13 @@ namespace Rock.Rest.v2.Models
             return new RestApiHelper<Group, GroupService>( this ).GetAttributeValues( key );
         }
 
+        /// <summary>
+        /// Performs a partial update of attribute values for the item. Only
+        /// attributes specified will be updated.
+        /// </summary>
+        /// <param name="key">The key as either an Id, Guid or IdKey value.</param>
+        /// <param name="values">An object that identifies the attribute keys and raw values to be updated.</param>
+        /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
         [Route( "{key}/attributevalues" )]
