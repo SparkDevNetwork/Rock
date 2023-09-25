@@ -562,6 +562,16 @@ $('#{0}').tooltip();
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancelConfirmAttend_Click( object sender, EventArgs e )
         {
+            /*
+                9/25/2023 - JPH
+
+                We are no longer calling this handler when canceling a previously-accepted attendance.
+                Instead, we'll call the `btnDeclineAttend_Click` handler, so the attendance will be
+                declined rather than putting it back into the "pending" state, which leads to confusion.
+
+                Reason: Group Schedule Toolbox - 'Cancel' Behavior
+                (https://app.asana.com/0/1174768427585341/1205304349766829/f)
+             */
             var btnCancelConfirmAttend = sender as LinkButton;
             int? attendanceId = btnCancelConfirmAttend.CommandArgument.AsIntegerOrNull();
             if ( attendanceId.HasValue )
