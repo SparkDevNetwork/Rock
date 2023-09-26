@@ -1,0 +1,54 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DefinedValuePicker v-model="title" :definedTypeGuid="DefinedType.PersonTitle" label="Title" class="input-width-md" formGroupClasses="field-title" />
+    <TextBox v-model="firstName" label="First Name" rules="required" formGroupClasses="field-firstname" />
+    <TextBox v-model="lastName" label="Last Name" rules="required" formGroupClasses="field-firstname" />
+    <DefinedValuePicker v-model="suffix" :definedTypeGuid="DefinedType.PersonSuffix" label="Suffix" class="input-width-md" formGroupClasses="field-suffix" />
+    <EmailBox v-if="showEmail" v-model="email" label="Email" formGroupClasses="field-email" />
+    <PhoneNumberBox v-if="showMobilePhone" v-model="mobilePhone" label="Mobile Phone" formGroupClasses="field-mobilephone" />
+    <CheckBox v-if="showSmsOptIn" v-model="smsOptIn" validationLabel="Opt Into SMS" label="" text="Give your consent to receive SMS messages by simply checking the box." />
+
+    <DefinedValuePicker v-model="connectionStatus" :definedTypeGuid="DefinedType.PersonConnectionStatus" label="Connection Status" formGroupClasses="field-connectionstatus" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag>,
+            required: true
+        },
+
+        showEmail: Boolean,
+        showMobilePhone: Boolean,
+        showSmsOptIn: Boolean,
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag): void
+    }>();
+
+    const title = ref(null);
+    const firstName = ref("");
+    const lastName = ref("");
+    const suffix = ref(null);
+    const email = ref("");
+    const mobilePhone = ref("");
+    const smsOptIn = ref(false);
+
+    const connectionStatus = ref(null);
+
+    const roles = ref([]);
+
+    async function loadOptions() {
+
+    }
+</script>

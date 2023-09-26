@@ -1,0 +1,41 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <PersonBasicEditor v-model="value" :showEmail="showEmail" :showMobilePhone="showMobilePhone" :showSmsOptIn="showSmsOptIn" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="showEmail" label="Show Email" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showMobilePhone" label="Show Mobile Phone" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showSmsOptIn" label="Show SMS Opt In" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import PersonBasicEditor from "@Obsidian/Controls/personBasicEditor.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref([]);
+    const showEmail = ref(true);
+    const showMobilePhone = ref(true);
+    const showSmsOptIn = ref(true);
+
+    const importCode = getSfcControlImportPath("personBasicEditor");
+    const exampleCode = computed(() => {
+        const showEmailProp = showEmail.value ? " showEmail" : "";
+        const showMobilePhoneProp = showMobilePhone.value ? " showMobilePhone" : "";
+        const showSmsOptInProp = showSmsOptIn.value ? " showSmsOptIn" : "";
+        return `<PersonBasicEditor v-model="value"${showEmailProp}${showMobilePhoneProp}${showSmsOptInProp} />`;
+    });
+</script>

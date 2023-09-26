@@ -4960,6 +4960,29 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Person Basic Editor
+
+        /// <summary>
+        /// Get data for all the controls in the Person Basic Editor control
+        /// </summary>
+        /// <param name="options">The options that describe the options available for different fields</param>
+        /// <returns>Collections of <see cref="ListItemBag"/> objects.</returns>
+        [Authenticate]
+        [Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PersonBasicEditorGetOptions" )]
+        [Rock.SystemGuid.RestActionGuid( "2A76A570-C549-4152-A37F-4F233A66307C" )]
+        public IHttpActionResult PersonBasicEditorGetOptions( /*[FromBody] PersonBasicEditorGetOptionsOptionsBag options*/ )
+        {
+            var groupType = GroupTypeCache.GetFamilyGroupType();
+            var roles = groupType.Roles.OrderBy( r => r.Order ).Select(r => new ListItemBag { Value = r.Guid.ToString(), Text = r.Name }).ToList();
+
+            return Ok( new
+            {
+                Roles = roles
+            } );
+        }
+
         #region Person Picker
 
         /// <summary>

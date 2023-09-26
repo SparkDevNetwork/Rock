@@ -242,6 +242,7 @@ import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
 import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
 import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
 import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
+import PersonBasicEditorGallery from "./ControlGallery/personBasicEditorGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -8171,6 +8172,7 @@ const controlGalleryComponents: Record<string, Component> = [
     PdfViewerGallery,
     ChartGallery,
     EntityPickerGallery,
+    PersonBasicEditorGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
