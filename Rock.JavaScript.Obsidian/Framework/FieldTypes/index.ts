@@ -143,6 +143,9 @@ registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldTy
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
 
+import { EntityTypeFieldType } from "./entityTypeField.partial";
+registerFieldType(FieldTypeGuids.Entitytype, new EntityTypeFieldType());
+
 import { FinancialAccountFieldType  } from "./financialAccountField.partial";
 registerFieldType(FieldTypeGuids.FinancialAccount, new FinancialAccountFieldType());
 
