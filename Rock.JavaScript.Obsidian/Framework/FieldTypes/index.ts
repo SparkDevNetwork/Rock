@@ -68,6 +68,9 @@ registerFieldType(FieldTypeGuids.Category, new CategoryFieldType());
 import { CategorizedDefinedValueField } from "./categorizedDefinedValueField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefinedValueField());
 
+import { CheckListFieldType } from "./checkListField.partial";
+registerFieldType(FieldTypeGuids.CheckList, new CheckListFieldType());
+
 import { CodeEditorFieldType } from "./codeEditorField.partial";
 registerFieldType(FieldTypeGuids.CodeEditor, new CodeEditorFieldType());
 
