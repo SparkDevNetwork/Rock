@@ -2573,12 +2573,12 @@ namespace Rock.Blocks.Event
 
                 if ( session.GroupId.HasValue )
                 {
-                    RequestContext.PageParameters.Add( PageParameterKey.GroupId, session.GroupId.ToString() );
+                    RequestContext.PageParameters.AddOrReplace( PageParameterKey.GroupId, session.GroupId.ToString() );
                 }
 
                 if ( session.Slug.IsNotNullOrWhiteSpace() )
                 {
-                    RequestContext.PageParameters.Add( PageParameterKey.Slug, session.Slug );
+                    RequestContext.PageParameters.AddOrReplace( PageParameterKey.Slug, session.Slug );
                 }
 
                 // Get a new context with the args
