@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Core
                 d.LastInviteDate,
                 d.SignedDateTime,
                 d.SignatureDocumentTemplate,
-                FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-text-o fa-lg'></i>" : "",
+                FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "",
                 FileId = d.BinaryFileId ?? 0
             } ).ToList();
 
