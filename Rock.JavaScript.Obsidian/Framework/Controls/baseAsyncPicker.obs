@@ -11,8 +11,6 @@
                   :showBlankItem="showBlankItem"
                   :blankValue="blankValue"
                   :enhanceForLongLists="enhanceForLongLists"
-                  :lazyMode="lazyMode"
-                  displayStyle="auto"
                   @open="onOpen">
 
         <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
@@ -30,7 +28,7 @@
 
     </DropDownList>
 
-    <CheckBoxList v-if="isCheckBoxListStyle"
+    <CheckBoxList v-else-if="isCheckBoxListStyle"
                   v-model="(internalValue as string[])"
                   v-bind="standardProps"
                   :disabled="disabled"
@@ -47,7 +45,7 @@
 
     </CheckBoxList>
 
-    <RadioButtonList v-if="isRadioButtonListStyle"
+    <RadioButtonList v-else
                      v-model="(internalValue as string)"
                      v-bind="standardProps"
                      :disabled="disabled"
