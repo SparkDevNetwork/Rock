@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -214,6 +214,12 @@ namespace Rock.Workflow.Action
             if ( objectType.IsEnum )
             {
                 return string.IsNullOrWhiteSpace( theObject ) ? null : Enum.Parse( objectType, theObject, true );
+            }
+
+            // C# SetProperty can't take a string representation of a Guid (Fixes: #3183)
+            if ( objectType.Name == "Guid" )
+            {
+                return theObject.AsGuidOrNull();
             }
 
             Type underType = Nullable.GetUnderlyingType( objectType );
