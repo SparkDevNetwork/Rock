@@ -376,12 +376,14 @@
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Group\GroupMemberScheduleTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupSchedulePreference\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleSignup\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\" />
+    <Folder Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\" />
@@ -917,6 +919,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailUpdateNotesRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeDetail\financialPledgeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeDetail\financialPledgeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupMemberScheduleTemplateDetail\groupMemberScheduleTemplateBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupMemberScheduleTemplateDetail\groupMemberScheduleTemplateBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupMemberScheduleTemplateDetail\groupMemberScheduleTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupRegistration\groupRegistrationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupRegistration\groupRegistrationBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupSchedulePreference\assignmentScheduleAndLocationBag.d.ts" />
@@ -943,6 +948,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSchedulesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSendNowResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerUpdatePreferenceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\mobileLayoutBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\mobileLayoutDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\prayerRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\prayerRequestDetailAddPersonResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\prayerRequestDetailOptionsBag.d.ts" />
@@ -1046,7 +1053,6 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorGetAvailableFieldTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationResultBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationValueOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\gatewayControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthDayValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthYearValue.d.ts" />

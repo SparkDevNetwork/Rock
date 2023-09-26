@@ -75,6 +75,8 @@ export const ServiceJob = {
     DataMigrations150SystemPhoneNumbers: "6DFE731E-F28B-40B3-8383-84212A301214",
     /** The Job to run Post v15.1 Data Migrations to cleanup duplicate mobile interaction entries. */
     DataMigrations151DuplicateMobileInteractionsCleanup: "D3D60B90-48D1-4718-905E-39638B44C665",
+    /** The Job to run Post v15.2 Data Migrations for the AttributeValue.IX_ValueAsPersonId index. */
+    DataMigrations152IxValueAsPersonId: "5DC19FB3-AB0B-48F3-817D-9023C65C5F8A",
     /** The Job to run Post v15.2 to replace web forms blocks with Obsidian blocks. */
     DataMigrations152ReplaceWebFormsBlocksWithObsidianBlocks: "4232194C-90AE-4B44-93E7-1E5DE984A9E1",
     /** The post update data migration job to chop the Group Registration block */

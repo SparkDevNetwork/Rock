@@ -21,19 +21,27 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
+import { GroupMemberScheduleTemplateBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberScheduleTemplateDetail/groupMemberScheduleTemplateBag";
 
-/** Contains information required to update a field type's configuration. */
-export type FieldTypeEditorUpdateAttributeConfigurationValueOptionsBag = {
-    /** Gets or sets the attribute unique identifier. */
-    attributeGuid?: Guid | null;
+export type GroupMemberScheduleTemplateBox = {
+    /** Gets or sets the entity. */
+    entity?: GroupMemberScheduleTemplateBag | null;
 
-    /** Gets or sets the configuration value Key. */
-    configurationKey?: string | null;
+    /**
+     * Gets or sets the error message. A non-empty value indicates that
+     * an error is preventing the block from being displayed.
+     */
+    errorMessage?: string | null;
 
-    /** Gets or sets the configuration value currently set. */
-    configurationValue?: string | null;
+    /** Gets or sets a value indicating whether this instance is editable. */
+    isEditable: boolean;
 
-    /** Gets or sets the field type unique identifier. */
-    fieldTypeGuid?: Guid | null;
+    /** Gets or sets the navigation urls. */
+    navigationUrls?: Record<string, string> | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
+
+    /** Gets or sets the valid properties. */
+    validProperties?: string[] | null;
 };

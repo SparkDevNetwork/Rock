@@ -431,7 +431,6 @@ namespace Rock.Blocks.Types.Mobile.Core
 
                     return GetSearchResultItemViewModel( r, content );
                 } )
-                .OrderByDescending( r => r.ViewedCount )
                 .ToList();
                 
             return resultItems;

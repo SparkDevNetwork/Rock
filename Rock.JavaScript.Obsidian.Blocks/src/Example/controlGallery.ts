@@ -8174,7 +8174,7 @@ const controlGalleryComponents: Record<string, Component> = [
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
-        a.name = a.__name ?? a.name;
+        a.name = upperCaseFirstCharacter((a.__name ?? a.name).replace(/\.partial$/, ""));
         return a;
     })
     // Sort list by component name
