@@ -484,8 +484,10 @@ namespace Rock.Mobile
                         PageGuid = block.Page.Guid,
                         Zone = block.Zone,
                         BlockGuid = block.Guid,
+#pragma warning disable CS0618 // Type or member is obsolete
                         RequiredAbiVersion = mobileBlockEntity.RequiredMobileAbiVersion,
-                        BlockType = mobileBlockEntity.MobileBlockType,
+#pragma warning disable CS0618 // Type or member is obsolete
+						BlockType = mobileBlockEntity.MobileBlockType,
                         ConfigurationValues = mobileBlockEntity.GetBlockInitialization( Blocks.RockClientType.Mobile ),
                         Order = block.Order,
                         AttributeValues = GetMobileAttributeValues( block, attributes ),
