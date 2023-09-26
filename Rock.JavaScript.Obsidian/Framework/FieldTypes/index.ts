@@ -68,6 +68,9 @@ registerFieldType(FieldTypeGuids.Category, new CategoryFieldType());
 import { CategorizedDefinedValueField } from "./categorizedDefinedValueField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefinedValueField());
 
+import { CheckListFieldType } from "./checkListField.partial";
+registerFieldType(FieldTypeGuids.CheckList, new CheckListFieldType());
+
 import { CodeEditorFieldType } from "./codeEditorField.partial";
 registerFieldType(FieldTypeGuids.CodeEditor, new CodeEditorFieldType());
 
@@ -139,6 +142,9 @@ registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldTy
 
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
+
+import { EntityTypeFieldType } from "./entityTypeField.partial";
+registerFieldType(FieldTypeGuids.Entitytype, new EntityTypeFieldType());
 
 import { FinancialAccountFieldType  } from "./financialAccountField.partial";
 registerFieldType(FieldTypeGuids.FinancialAccount, new FinancialAccountFieldType());

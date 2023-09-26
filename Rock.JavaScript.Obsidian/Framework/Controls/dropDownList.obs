@@ -1,7 +1,6 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   v-bind="standardFieldProps"
+    <RockFormField v-bind="standardFieldProps"
                    :modelValue="internalValue"
                    :formGroupClasses="'rock-drop-down-list ' + formGroupClasses"
                    name="dropdownlist">

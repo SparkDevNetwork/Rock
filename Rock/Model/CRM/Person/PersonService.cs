@@ -4505,6 +4505,13 @@ WHERE GivingId IS NULL OR GivingId != (
         private static int UpdatePersonGivingLeaderId( int? personId, RockContext rockContext )
         {
             var sqlUpdateBuilder = new StringBuilder();
+
+            /* 
+                JME 9/25/2023
+                Updated this logic to not filter out deceased, but to sort by IsDeceased (living before deceased).
+                So that if both adults are deceased the Giving Leader goes back to being the adult male vs it
+                becoming different for both individuals. (Issue #2848).
+            */
             sqlUpdateBuilder.Append( @"
 UPDATE x
 SET x.GivingLeaderId = x.CalculatedGivingLeaderId
@@ -4521,9 +4528,10 @@ FROM (
 		INNER JOIN [GroupTypeRole] r ON r.[Id] = gm.[GroupRoleId]
 		INNER JOIN [Person] p2 ON p2.[Id] = gm.[PersonId]
 		WHERE gm.[GroupId] = p.GivingGroupId
-			AND p2.[IsDeceased] = 0
 			AND p2.[GivingGroupId] = p.GivingGroupId
-		ORDER BY r.[Order]
+		ORDER BY
+            p2.[IsDeceased]
+            , r.[Order]
 			,p2.[Gender]
 			,p2.[BirthYear]
 			,p2.[BirthMonth]
