@@ -29,13 +29,14 @@ namespace Rock.Search.Person
     /// <summary>
     /// Searches for people with matching names
     /// </summary>
-    [Description( "Person Name Search" )]
-    [Export( typeof( SearchComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Name" )]
-    [BooleanField( "Allow Search by Only First Name", "By default, when searching with only one name (without a space or comma), only people with a matching Last Names will be included.  Select this option to also include people with a matching First Name", false, "", 4, "FirstNameSearch" )]
-    [Rock.SystemGuid.EntityTypeGuid( "3B1D679A-290F-4A53-8E11-159BF0517A19" )]
+    [Description("Person Name Search")]
+    [Export(typeof(SearchComponent))]
+    [ExportMetadata("ComponentName", "Person Name")]
+    [BooleanField("Allow Search by Only First Name", "By default, when searching with only one name (without a space or comma), only people with a matching Last Names will be included.  Select this option to also include people with a matching First Name", false, "", 4, "FirstNameSearch")]
+    [Rock.SystemGuid.EntityTypeGuid( "3B1D679A-290F-4A53-8E11-159BF0517A19")]
     public class Name : SearchComponent
     {
+
         /// <summary>
         /// Gets the attribute value defaults.
         /// </summary>
@@ -76,7 +77,7 @@ namespace Rock.Search.Person
             bool allowFirstNameSearch = GetAttributeValue( "FirstNameSearch" ).AsBooleanOrNull() ?? false;
 
             return new PersonService( new RockContext() )
-                .GetByFullNameOrdered( searchTerm, true, false, allowFirstNameSearch, out _ );
+                .GetByFullNameOrdered( searchTerm, true, false, allowFirstNameSearch, out _);
         }
 
         /// <summary>
@@ -89,107 +90,38 @@ namespace Rock.Search.Person
             bool allowFirstNameSearch = GetAttributeValue( "FirstNameSearch" ).AsBooleanOrNull() ?? false;
 
             bool reversed = false;
-
-            // Get the full list of ordered people from this search term.
             var qry = new PersonService( new RockContext() ).GetByFullNameOrdered( searchterm, true, false, allowFirstNameSearch, out reversed );
 
             IQueryable<string> resultQry;
 
-            // If there isn't more than one campus configured, we don't
-            // need to show the label.
             var disableCampusLabel = CampusCache.All( false ).Count() == 1;
 
-            // Since we need to .Distinct() this, we convert it into
-            // an anonymous type and re-order (since Distinct() in SQL throws
-            // order out of the window).
-            var personNameSearchBags = qry.Select( p => new PersonNameSearchBag
-            {
-                NickName = p.NickName,
-                LastName = p.LastName,
-                CampusName = disableCampusLabel || p.PrimaryCampus == null ? "" : p.PrimaryCampus.Name,
-                CampusShortCode = disableCampusLabel || p.PrimaryCampus == null ? "" : p.PrimaryCampus.ShortCode
-            } ).Distinct();
-
-            personNameSearchBags = OrderByFullName( personNameSearchBags, reversed );
-
+            // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
             if ( reversed )
             {
                 if ( disableCampusLabel )
                 {
-                    resultQry = personNameSearchBags.Select( p => p.LastName + ", " + p.NickName );
+                    resultQry = qry.Select( p => p.LastName + ", " + p.NickName ).Distinct();
                 }
                 else
                 {
-                    // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
-                    resultQry = personNameSearchBags.Select( p =>
-                        ( p.CampusShortCode == null || p.CampusShortCode == "" ) || ( p.CampusName == null || p.CampusName == "" )
-                        ? p.LastName + ", " + p.NickName
-                        : p.LastName + ", " + p.NickName + "                                             <span class='search-accessory label label-default pull-right'>" + ( p.CampusShortCode != "" ? p.CampusShortCode : p.CampusName ) + "</span>" );
+                    resultQry = qry.Select( p => p.PrimaryCampus == null ? p.LastName + ", " + p.NickName : p.LastName + ", " + p.NickName + "                                             <span class='search-accessory label label-default pull-right'>" + (p.PrimaryCampus.ShortCode != "" ? p.PrimaryCampus.ShortCode : p.PrimaryCampus.Name) + "</span>" ).Distinct();
                 }
+                
             }
             else
             {
                 if ( disableCampusLabel )
                 {
-                    resultQry = personNameSearchBags.Select( p => p.NickName + " " + p.LastName );
+                    resultQry = qry.Select( p => p.NickName + " " + p.LastName ).Distinct();
                 }
                 else
                 {
-                    // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
-                    resultQry = personNameSearchBags.Select( p =>
-                        ( p.CampusShortCode == null || p.CampusShortCode == "" ) || ( p.CampusName == null || p.CampusName == "" )
-                        ? p.NickName + " " + p.LastName
-                        : p.NickName + " " + p.LastName + "                                               <span class='search-accessory label label-default pull-right'>" + ( p.CampusShortCode != "" ? p.CampusShortCode : p.CampusName ) + "</span>" );
-                }
+                    resultQry = qry.Select( p => p.PrimaryCampus == null ? p.NickName + " " + p.LastName : p.NickName + " " + p.LastName + "                                               <span class='search-accessory label label-default pull-right'>" + (p.PrimaryCampus.ShortCode != "" ? p.PrimaryCampus.ShortCode : p.PrimaryCampus.Name) + "</span>" ).Distinct();
+                }  
             }
 
             return resultQry;
-        }
-
-        /// <summary>
-        /// A class used to store information about a person when
-        /// being searched for.
-        /// </summary>
-        private class PersonNameSearchBag
-        {
-            /// <summary>
-            /// Gets or sets the nickname of the person.
-            /// </summary>
-            public string NickName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the last name of the person.
-            /// </summary>
-            public string LastName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the campus name of the person.
-            /// </summary>
-            public string CampusName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the campus short code of the person.
-            /// </summary>
-            public string CampusShortCode { get; set; }
-        }
-
-        /// <summary>
-        /// Orders a queryable of <see cref="Rock.Model.Person" />
-        /// by first name and nick name, based on the <paramref name="reversed"/> param.
-        /// </summary>
-        /// <param name="qry">The person query to order.</param>
-        /// <param name="reversed">Whether the list is sorted by nick name or last name first.</param>
-        /// <returns></returns>
-        private IOrderedQueryable<PersonNameSearchBag> OrderByFullName( IQueryable<PersonNameSearchBag> qry, bool reversed )
-        {
-            if ( reversed )
-            {
-                return qry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName );
-            }
-            else
-            {
-                return qry.OrderBy( p => p.NickName ).ThenBy( p => p.LastName );
-            }
         }
     }
 }
