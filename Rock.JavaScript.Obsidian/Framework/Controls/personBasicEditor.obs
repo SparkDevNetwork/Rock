@@ -9,6 +9,12 @@
     <CheckBox v-if="showSmsOptIn" v-model="smsOptIn" validationLabel="Opt Into SMS" label="" text="Give your consent to receive SMS messages by simply checking the box." />
 
     <DefinedValuePicker v-model="connectionStatus" :definedTypeGuid="DefinedType.PersonConnectionStatus" label="Connection Status" formGroupClasses="field-connectionstatus" />
+    <RadioButtonList v-model="role" label="Role" rules="required" :items="roles" horizontal formGroupClasses="field-role" />
+    <RadioButtonList v-model="gender" label="Gender" :items="genders" horizontal formGroupClasses="field-gender" />
+
+    <BirthdayPicker v-model="birthday" label="Birthdate" formGroupClasses="field-birthdate" />
+    <GradePicker v-model="grade" label="Grade" useAbbreviation />
+    <DefinedValuePicker v-model="maritalStatus" :definedTypeGuid="DefinedType.PersonMaritalStatus" label="Marital Status" formGroupClasses="field-maritalstatus" />
 </template>
 
 <script setup lang="ts">
@@ -20,6 +26,10 @@
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
+    import GradePicker from "@Obsidian/Controls/gradePicker.obs";
+    import { useHttp } from "@Obsidian/Utility/http";
 
     const props = defineProps({
         modelValue: {
@@ -45,10 +55,31 @@
     const smsOptIn = ref(false);
 
     const connectionStatus = ref(null);
+    const role = ref("");
+    const gender = ref("");
+
+    const birthday = ref(null);
+    const grade = ref(null);
 
     const roles = ref([]);
+    const genders = [{ text: "Male", value: "1" }, { text: "Female", value: "2" }];
+    const maritalStatus = ref(null);
+
+    const http = useHttp();
+
 
     async function loadOptions() {
+        const options = {};
+        const url = "/api/v2/Controls/PersonBasicEditorGetOptions";
+        const response = await http.post<any>(url, undefined, options);
 
+        if (response.isSuccess && response.data) {
+            roles.value = response.data.roles;
+        }
+        else {
+            console.error("Error fetching items from server", response.errorMessage);
+        }
     }
+
+    loadOptions();
 </script>

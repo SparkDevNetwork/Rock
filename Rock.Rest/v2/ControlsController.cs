@@ -4983,6 +4983,8 @@ namespace Rock.Rest.v2
             } );
         }
 
+        #endregion
+
         #region Person Picker
 
         /// <summary>
