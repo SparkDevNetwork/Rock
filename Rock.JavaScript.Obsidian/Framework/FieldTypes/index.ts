@@ -95,6 +95,9 @@ registerFieldType(FieldTypeGuids.ContentChannel, new ContentChannelFieldType());
 import { ContentChannelTypeFieldType } from "./contentChannelTypeField.partial";
 registerFieldType(FieldTypeGuids.ContentChannelType, new ContentChannelTypeFieldType());
 
+import { ContentChannelTypesFieldType } from "./contentChannelTypesField.partial";
+registerFieldType(FieldTypeGuids.ContentChannelTypes, new ContentChannelTypesFieldType());
+
 import { ContentChannelsFieldType } from "./contentChannelsField.partial";
 registerFieldType(FieldTypeGuids.ContentChannels, new ContentChannelsFieldType());
 
