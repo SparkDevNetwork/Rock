@@ -78,6 +78,15 @@ namespace Rock.Rest.Utility
         }
 
         /// <summary>
+        /// Creates a new formatter that can be used to format v2 API responses.
+        /// </summary>
+        /// <returns>A new instance of <see cref="JsonMediaTypeFormatter"/>.</returns>
+        internal static JsonMediaTypeFormatter CreateV2Formatter()
+        {
+            return CreateV2Formatter<ExcludeNavigationPropertiesContractResolver>();
+        }
+
+        /// <summary>
         /// Creates a new v2 formatter instance with the specified resolver.
         /// </summary>
         /// <typeparam name="TResolver">The type of the contract resolver.</typeparam>

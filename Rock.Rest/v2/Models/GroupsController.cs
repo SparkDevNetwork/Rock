@@ -15,15 +15,20 @@
 // </copyright>
 //
 
-using Rock.Model;
-using Rock.Rest.Filters;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Net;
 
-using System.Collections.Generic;
+using Rock.Data;
+using Rock.Model;
+using Rock.Rest.Filters;
 
 #if WEBFORMS
 using System.Web.Http;
+
 using IActionResult = System.Web.Http.IHttpActionResult;
+using RouteAttribute = System.Web.Http.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2.Models
@@ -166,5 +171,111 @@ namespace Rock.Rest.v2.Models
         {
             return new RestApiHelper<Group, GroupService>( this ).PatchAttributeValues( key, values );
         }
+
+        [HttpPost]
+        [Authenticate]
+        [Route( "search" )]
+        [SystemGuid.RestActionGuid( "2568b739-a6c9-4d91-9bed-a3485c51954b" )]
+        public IActionResult PostSearch( [FromBody] SearchQueryBag query )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                bool enforceEntitySecurity = false;
+                var service = new GroupService( rockContext );
+                var config = _parsingConfig;
+
+                IQueryable<Group> qry = service.Queryable();
+
+                // Simulate the system where clause.
+                if ( "".IsNotNullOrWhiteSpace() )
+                {
+                    qry = qry.Where( config, "Id != 0" );
+                }
+
+                //  Simulate security checks.
+                if ( enforceEntitySecurity )
+                {
+                    qry = qry.ToList().AsQueryable();
+                }
+
+                IQueryable resultQry = qry;
+
+                // Simulate system group clause.
+                if ( "".IsNotNullOrWhiteSpace() )
+                {
+                    resultQry = resultQry.GroupBy( config, "" );
+                }
+
+                // Simulate system select clause.
+                if ( "".IsNotNullOrWhiteSpace() )
+                {
+                    resultQry = resultQry.Select( config, "new { Id, Name, Guid }" );
+                }
+
+                if ( query.Where.IsNotNullOrWhiteSpace() )
+                {
+                    qry = qry.Where( config, query.Where );
+                }
+
+                if ( query.Group.IsNotNullOrWhiteSpace() )
+                {
+                    resultQry = resultQry.GroupBy( config, query.Group );
+                }
+
+                if ( query.Select.IsNotNullOrWhiteSpace() )
+                {
+                    resultQry = resultQry.Select( config, query.Select );
+                }
+
+                // Apply either the system or user order by clause.
+                if ( query.Order.IsNotNullOrWhiteSpace() )
+                {
+                    resultQry = resultQry.OrderBy( config, query.Order );
+                }
+
+                if ( query.Skip.HasValue )
+                {
+                    resultQry = resultQry.Skip( query.Skip.Value );
+                }
+
+                if ( query.Take.HasValue )
+                {
+                    resultQry = resultQry.Take( query.Take.Value );
+                }
+
+                if ( _searchFormatter == null )
+                {
+                    var formatter = Utility.ApiPickerJsonMediaTypeFormatter.CreateV2Formatter();
+                    if ( formatter.SerializerSettings.ContractResolver is Newtonsoft.Json.Serialization.DefaultContractResolver defaultContractResolver )
+                    {
+                        defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
+                    }
+
+                    _searchFormatter = formatter;
+                }
+
+                return Content( HttpStatusCode.OK, resultQry.ToDynamicList(), _searchFormatter );
+            }
+        }
+        private static System.Net.Http.Formatting.JsonMediaTypeFormatter _searchFormatter;
+        private readonly static ParsingConfig _parsingConfig = new ParsingConfig
+        {
+            DisableMemberAccessToIndexAccessorFallback = true
+        };
+    }
+
+    public class SearchQueryBag
+    {
+        public string Where { get; set; }
+
+        public string Select { get; set; }
+
+        public string Group { get; set; }
+
+        public string Order { get; set; }
+
+        public int? Take { get; set; }
+
+        public int? Skip { get; set; }
     }
 }
