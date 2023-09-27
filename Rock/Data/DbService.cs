@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -321,6 +322,9 @@ namespace Rock.Data
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
+        [RockObsolete( "1.16" )]
+        [Obsolete( @"Please use the static method ExecuteScalar( string query, CommandType commandType = CommandType.Text,
+                        Dictionary<string, object> parameters = null, int? commandTimeout = null ) instead" )]
         public static object ExecuteScaler( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null )
         {
             return ExecuteScalar( query, commandType, parameters, null );
@@ -349,9 +353,23 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public static object ExecuteScalar( string connectionString, string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null )
+        {
+            return ExecuteScalar( connectionString, query, commandType, parameters, null );
+        }
+
+        /// <summary>
+        /// Executes the query, and returns the first column of the first row in the
+        /// result set returned by the query. Additional columns or rows are ignored.
+        /// </summary>
+        /// <param name="connectionString">The database connection string.</param>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
         /// <param name="commandTimeout">The command timeout (seconds)</param>
         /// <returns></returns>
-        public static object ExecuteScalar( string connectionString, string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null, int? commandTimeout = null )
+        public static object ExecuteScalar( string connectionString, string query, CommandType commandType, Dictionary<string, object> parameters, int? commandTimeout )
         {
             if ( string.IsNullOrWhiteSpace( connectionString ) )
             {
@@ -372,9 +390,23 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public static object ExecuteScalar( SqlConnection connection, string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null )
+        {
+            return ExecuteScalar( connection, query, commandType, parameters, null );
+        }
+
+        /// <summary>
+        /// Executes the query, and returns the first column of the first row in the
+        /// result set returned by the query. Additional columns or rows are ignored.
+        /// </summary>
+        /// <param name="connection">The database connection.</param>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
         /// <param name="commandTimeout">The command timeout (seconds)</param>
         /// <returns></returns>
-        public static object ExecuteScalar( SqlConnection connection, string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null, int? commandTimeout = null )
+        public static object ExecuteScalar( SqlConnection connection, string query, CommandType commandType, Dictionary<string, object> parameters, int? commandTimeout )
         {
             if ( connection == null )
             {
