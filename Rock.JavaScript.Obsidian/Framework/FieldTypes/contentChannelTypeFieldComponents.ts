@@ -21,7 +21,7 @@ import { ConfigurationValueKey } from "./contentChannelTypeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({
-    name: "ContentChannelFieldField.Edit",
+    name: "ContentChannelTypeField.Edit",
 
     components: {
         DropDownList
@@ -63,7 +63,7 @@ export const EditComponent = defineComponent({
 });
 
 export const ConfigurationComponent = defineComponent({
-    name: "ContentChannelField.Configuration",
+    name: "ContentChannelTypeField.Configuration",
 
     template: ``
 });
