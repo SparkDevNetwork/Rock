@@ -446,7 +446,7 @@ export default defineComponent({
 
         /** Copy the values that are to have current values used */
         copyValuesFromFamilyMember(): void {
-            if (!this.familyMember || this.registrationEntryState.navBack) {
+            if (!this.familyMember || this.registrationEntryState.navBack || this.registrationEntryState.viewModel.isExistingRegistration) {
                 // Nothing to copy
                 return;
             }
