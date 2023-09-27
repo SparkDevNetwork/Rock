@@ -39,7 +39,7 @@ import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
-import Page from "@Obsidian/Utility/page";
+import { smoothScrollToTop } from "@Obsidian/Utility/page";
 
 const store = useStore();
 
@@ -314,7 +314,7 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantFormIndex--;
 
             // Wait for the previous form to be rendered and then scroll to the top
-            setTimeout(() => Page.smoothScrollToTop(), 10);
+            setTimeout(() => smoothScrollToTop(), 10);
         },
         async onNext(): Promise<void> {
             this.clearFormErrors();
@@ -356,7 +356,7 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantFormIndex++;
 
             // Wait for the next form to be rendered and then scroll to the top
-            setTimeout(() => Page.smoothScrollToTop(), 10);
+            setTimeout(() => smoothScrollToTop(), 10);
         },
         updateFeeItemsRemaining(): void {
             // calculate fee items remaining
