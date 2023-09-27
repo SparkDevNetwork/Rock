@@ -89,6 +89,9 @@ registerFieldType(FieldTypeGuids.ConnectionTypes, new ConnectionTypesField());
 import { ConnectionStateFieldType } from "./connectionStateField.partial";
 registerFieldType(FieldTypeGuids.ConnectionState, new ConnectionStateFieldType());
 
+import { ContentChannelFieldType } from "./contentChannelField.partial";
+registerFieldType(FieldTypeGuids.ContentChannel, new ContentChannelFieldType());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 

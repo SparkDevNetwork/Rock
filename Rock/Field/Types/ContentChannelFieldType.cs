@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,10 +35,16 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Content Channels
     /// Stored as ContentChannel.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONTENT_CHANNEL )]
     public class ContentChannelFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
+        #region Configuration
+
+        private const string CLIENT_VALUES = "clientValues";
+
+        #endregion
+
         #region Formatting
 
         /// <inheritdoc />
@@ -62,6 +69,51 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( !configurationValues.ContainsKey( CLIENT_VALUES ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var items = new List<ListItemBag>();
+                    var contentChannels = new ContentChannelService( new RockContext() )
+                        .Queryable()
+                        .Where( a => a.ContentChannelType.ShowInChannelList )
+                        .OrderBy( d => d.Name )
+                        .Select( a => new
+                        {
+                            a.Guid,
+                            a.Name,
+                        } ).ToList();
+
+                    if ( contentChannels.Any() )
+                    {
+                        foreach ( var contentChannel in contentChannels )
+                        {
+                            items.Add( new ListItemBag() { Text = contentChannel.Name, Value = contentChannel.Guid.ToString() } );
+                        }
+                    }
+
+                    configurationValues[CLIENT_VALUES] = items.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            configurationValues.Remove( CLIENT_VALUES );
+
+            return configurationValues;
+        }
 
         #endregion
 
