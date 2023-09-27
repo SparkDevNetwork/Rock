@@ -678,7 +678,8 @@ namespace Rock.Blocks.Types.Mobile.Core
                     NoteTypeName = note.NoteType.Name,
                     NoteTypeGuid = note.NoteType.Guid,
                     IsAlert = note.IsAlert ?? false,
-                    IsPrivate = note.IsPrivateNote
+                    IsPrivate = note.IsPrivateNote,
+                    Date = note.CreatedDateTime.HasValue ? ( DateTimeOffset? ) new DateTimeOffset( note.CreatedDateTime.Value ) : null
                 } );
             }
         }
