@@ -744,7 +744,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <returns></returns>
         private List<Snippet> GetSnippets()
         {
-            var snippetTypeGuidSms = "D6074803-9405-47E3-974C-E95C9AD05874".AsGuid();
+            var snippetTypeGuidSms = Rock.SystemGuid.SnippetType.SMS.AsGuid();
 
             var rockContext = new RockContext();
             var snippetService = new SnippetService( rockContext );
@@ -761,19 +761,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
             }
 
+            var snippets = new List<Snippet>();
             var usePersonal = tglUsePersonal.Checked;
             if ( usePersonal )
             {
                 snippetsQry = snippetsQry.Where( s => s.OwnerPersonAlias.PersonId == CurrentPersonId );
+                snippetsQry = snippetsQry.OrderBy( s => s.Order ).ThenBy( s => s.Name );
+                snippets = snippetsQry.ToList();
             }
             else
             {
                 snippetsQry = snippetsQry.Where( s => s.OwnerPersonAliasId == null );
+                snippetsQry = snippetsQry.OrderBy( s => s.Order ).ThenBy( s => s.Name );
+                snippets = snippetsQry.ToList();
+                // check authorization if we're not using personal snippets.
+                snippets = snippets.Where( s => s.IsAuthorized( Authorization.VIEW, CurrentPerson ) ).ToList();
             }
 
-            snippetsQry = snippetsQry.OrderBy( s => s.Order ).ThenBy( s => s.Name );
-
-            return snippetsQry.ToList();
+            return snippets;
         }
 
         /// <summary>
