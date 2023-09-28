@@ -78,8 +78,8 @@ namespace Rock.Lava.Fluid
         private static readonly Parser<LavaDocumentToken> LavaTextTokenParser = AnyCharBefore( OutputStart.Or( LavaTokenStartParser.AsFluidTagResultParser() ) )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Literal, x.ToString() ) );
 
-        private static Parser<LavaTagResult> ShortcodeTagStartParser = LavaTagParsers.LavaShortcodeStart();
-        private static Parser<LavaTagResult> ShortcodeTagEndParser = LavaTagParsers.LavaShortcodeEnd();
+        private static Parser<LavaTagResult> ShortcodeTagStartParser = LavaTagParsers.LavaShortcodeStart;
+        private static Parser<LavaTagResult> ShortcodeTagEndParser = LavaTagParsers.LavaShortcodeEnd;
 
         private static readonly Parser<LavaDocumentToken> LavaShortcodeTokenParser = ShortcodeTagStartParser.SkipAnd( AnyCharBefore( ShortcodeTagEndParser, canBeEmpty: true ) )
             .AndSkip( ShortcodeTagEndParser )
@@ -90,12 +90,12 @@ namespace Rock.Lava.Fluid
 
         #endregion
 
-        public static Parser<LavaTagResult> LavaTokenStartParser => OneOf( LavaTagParsers.LavaTagStart(),
-            LavaTagParsers.LavaShortcodeStart(),
+        public static Parser<LavaTagResult> LavaTokenStartParser => OneOf( LavaTagParsers.LavaTagStart,
+            LavaTagParsers.LavaShortcodeStart,
             LavaTagParsers.LavaBlockCommentStart,
             LavaTagParsers.LavaInlineCommentStart );
-        public static Parser<LavaTagResult> LavaTokenEndParser => OneOf( LavaTagParsers.LavaTagEnd(),
-            LavaTagParsers.LavaShortcodeEnd(),
+        public static Parser<LavaTagResult> LavaTokenEndParser => OneOf( LavaTagParsers.LavaTagEnd,
+            LavaTagParsers.LavaShortcodeEnd,
             LavaTagParsers.LavaBlockCommentEnd,
             LavaTagParsers.LavaInlineCommentEnd );
 
@@ -222,8 +222,8 @@ namespace Rock.Lava.Fluid
 
             // Text Element: any literal text not contained in one of the preceding elements.
             var startTags = OutputStart
-                .Or( LavaTagParsers.LavaTagStart().AsFluidTagResultParser() )
-                .Or( LavaTagParsers.LavaShortcodeStart().AsFluidTagResultParser() )
+                .Or( LavaTagParsers.LavaTagStart.AsFluidTagResultParser() )
+                .Or( LavaTagParsers.LavaShortcodeStart.AsFluidTagResultParser() )
                 .Or( LavaFluidTagParsers.LavaBlockCommentStart )
                 .Or( LavaFluidTagParsers.LavaInlineCommentStart );
 
@@ -307,7 +307,7 @@ namespace Rock.Lava.Fluid
         /// </summary>
         private void RegisterLavaCommentTag()
         {
-            var commentTag = LavaTagParsers.LavaTagEnd()
+            var commentTag = LavaTagParsers.LavaTagEnd
                 .SkipAnd( AnyCharBefore( CreateTag( "endcomment" ), canBeEmpty: true ) )
                 .AndSkip( CreateTag( "endcomment" ).ElseError( $"'{{% endcomment %}}' was expected" ) )
                 .Then<Statement>( x => new CommentStatement( x ) )
@@ -398,7 +398,7 @@ namespace Rock.Lava.Fluid
         private Parser<Statement> CreateKnownTagsParser( bool throwOnUnknownTag )
         {
             var parser = OneOf(
-                LavaTagParsers.LavaTagStart()
+                LavaTagParsers.LavaTagStart
                     .SkipAnd( Identifier.ElseError( ErrorMessages.IdentifierAfterTagStart )
                         .Switch( ( context, tagName ) =>
                         {
@@ -414,7 +414,7 @@ namespace Rock.Lava.Fluid
                             return null;
                         } )
                     ),
-                LavaTagParsers.LavaShortcodeStart()
+                LavaTagParsers.LavaShortcodeStart
                     .SkipAnd( Identifier.ElseError( ErrorMessages.IdentifierAfterTagStart )
                         .Switch( ( context, tagName ) =>
                         {
@@ -463,7 +463,7 @@ namespace Rock.Lava.Fluid
 
             if ( format == LavaTagFormatSpecifier.LavaShortcode )
             {
-                tokenEndParser = LavaTagParsers.LavaShortcodeEnd();
+                tokenEndParser = LavaTagParsers.LavaShortcodeEnd;
                 tagName = tagName.Substring( 0, tagName.Length - "_".Length );
                 errorMessage = $"Invalid '{{[ {tagName} ]}}' shortcode block";
             }
@@ -500,7 +500,7 @@ namespace Rock.Lava.Fluid
 
             if ( format == LavaTagFormatSpecifier.LavaShortcode )
             {
-                tokenEndParser = LavaTagParsers.LavaShortcodeEnd();
+                tokenEndParser = LavaTagParsers.LavaShortcodeEnd;
                 tagName = tagName.Substring( 0, tagName.Length - "_".Length );
                 errorMessage = $"Invalid '{{[ {tagName} ]}}' shortcode tag";
             }

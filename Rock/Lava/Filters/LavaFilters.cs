@@ -33,6 +33,7 @@ using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;
 using ImageResizer;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
@@ -2623,12 +2624,21 @@ namespace Rock.Lava
         /// See https://www.rockrms.com/page/565#fromjson
         /// </summary>
         /// <param name="input">The input.</param>
+        /// <param name="returnType"></param>
         /// <returns></returns>
-        public static object FromJSON( object input )
+        public static object FromJSON( object input, string returnType = "ExpandoObject" )
         {
-            var objectResult = ( input as string ).FromJsonDynamicOrNull();
-
-            return objectResult;
+            switch ( returnType )
+            {
+                case "Dictionary":
+                    {
+                        return JsonConvert.DeserializeObject<Dictionary<string, object>>( input as string );
+                    }
+                default:
+                    {
+                        return ( input as string ).FromJsonDynamicOrNull();
+                    }
+            }
         }
 
         /// <summary>
