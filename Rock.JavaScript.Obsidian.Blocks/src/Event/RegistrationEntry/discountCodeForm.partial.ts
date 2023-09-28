@@ -94,7 +94,7 @@ export default defineComponent({
         /** Disable the textbox and hide the apply button */
         isDiscountCodeAllowed(): boolean {
             const args = this.getRegistrationEntryBlockArgs();
-            if (args.discountCode.length > 0 && args.registrationGuid != null) {
+            if (args.discountCode && args.discountCode.length > 0 && args.registrationGuid != null) {
                 return false;
             }
 
