@@ -1017,8 +1017,8 @@ namespace Rock.Model
             if ( calEvent != null && calEvent.DtStart != null )
             {
                 // If compare is greater than zero, then the End Day is in the next day.
-                int checkInEndDateCompare = calEvent.DtEnd.Day - calEvent.DtStart.Day;
-                if ( checkInEndDateCompare > 0 )
+                var endDateTimeIsNextDay = calEvent.DtEnd.Date > calEvent.DtStart.Date;
+                if ( endDateTimeIsNextDay )
                 {
                     /*
                        edrotning 2023-09-28
