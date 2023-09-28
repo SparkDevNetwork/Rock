@@ -744,7 +744,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <returns></returns>
         private List<Snippet> GetSnippets()
         {
-            var snippetTypeGuidSms = "D6074803-9405-47E3-974C-E95C9AD05874".AsGuid();
+            var snippetTypeGuidSms = Rock.SystemGuid.SnippetType.SMS.AsGuid();
 
             var rockContext = new RockContext();
             var snippetService = new SnippetService( rockContext );
