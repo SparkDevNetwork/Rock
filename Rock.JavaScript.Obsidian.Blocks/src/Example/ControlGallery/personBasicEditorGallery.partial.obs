@@ -1,9 +1,45 @@
 <template>
     <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
-        <PersonBasicEditor v-model="value" :showEmail="showEmail" :showMobilePhone="showMobilePhone" :showSmsOptIn="showSmsOptIn" :showInOneColumn="showInOneColumn" personLabelPrefix="PREFIX" />
+        <PersonBasicEditor v-model="value"
+                           :showEmail="visible.includes('showEmail')" :showMobilePhone="visible.includes('showMobilePhone')" :showSmsOptIn="visible.includes('showSmsOptIn')"
+                           :hideTitle="visible.includes('hideTitle')" :hideSuffix="visible.includes('hideSuffix')" :hideGrade="visible.includes('hideGrade')"
+                           :hideBirthdate="visible.includes('hideBirthdate')" :hidePersonRole="visible.includes('hidePersonRole')" :hideConnectionStatus="visible.includes('hideConnectionStatus')"
+                           :hideMaritalStatus="visible.includes('hideMaritalStatus')" :hideGender="visible.includes('hideGender')" :hideRace="visible.includes('hideRace')"
+                           :hideEthnicity="visible.includes('hideEthnicity')" :showInOneColumn="showInOneColumn" personGuid="someguid" />
 
         <template #settings>
+            <div class="row">
+                <!-- <div class="col-md-3">
+                    <CheckBox v-model="showEmail" label="Show Email" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showMobilePhone" label="Show Mobile Phone" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showSmsOptIn" label="Show SMS Opt In" />
+                </div> -->
+                <div class="col-md-9">
+                    <CheckBoxList v-model="visible" :items="visibilityOptions" label="Visibility Options" :repeatColumns="3" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showInOneColumn" label="Show In One Column" />
+                </div>
+            </div>
+            <!-- <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="hideTitle" label="Hide Title" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="hideSuffix" label="Hide Suffix" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="hideGrade" label="Hide Grade" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showInOneColumn" label="Show In One Column" />
+                </div>
+            </div>
             <div class="row">
                 <div class="col-md-3">
                     <CheckBox v-model="showEmail" label="Show Email" />
@@ -18,6 +54,20 @@
                     <CheckBox v-model="showInOneColumn" label="Show In One Column" />
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="showEmail" label="Show Email" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showMobilePhone" label="Show Mobile Phone" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showSmsOptIn" label="Show SMS Opt In" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showInOneColumn" label="Show In One Column" />
+                </div>
+            </div> -->
         </template>
     </GalleryAndResult>
 </template>
@@ -27,21 +77,34 @@
     import GalleryAndResult from "./galleryAndResult.partial.obs";
     import PersonBasicEditor from "@Obsidian/Controls/personBasicEditor.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import { getSfcControlImportPath } from "./utils.partial";
 
     const value = ref([]);
-    const showEmail = ref(true);
-    const showMobilePhone = ref(true);
-    const showSmsOptIn = ref(true);
-    const showInOneColumn = ref(true);
+    const showInOneColumn = ref(false);
+    const visible = ref<string[]>([]);
+
+    const visibilityOptions = [
+        { value: "showEmail", text: "Show Email" },
+        { value: "showMobilePhone", text: "Show Mobile Phone" },
+        { value: "showSmsOptIn", text: "Show Sms Opt In" },
+        { value: "hideTitle", text: "Hide Title" },
+        { value: "hideSuffix", text: "Hide Suffix" },
+        { value: "hideGrade", text: "Hide Grade" },
+        { value: "hideBirthdate", text: "Hide Birthdate" },
+        { value: "hidePersonRole", text: "Hide PersonRole" },
+        { value: "hideConnectionStatus", text: "Hide Connection Status" },
+        { value: "hideMaritalStatus", text: "Hide Marital Status" },
+        { value: "hideGender", text: "Hide Gender" },
+        { value: "hideRace", text: "Hide Race" },
+        { value: "hideEthnicity", text: "Hide Ethnicity" },
+    ];
 
 
     const importCode = getSfcControlImportPath("personBasicEditor");
     const exampleCode = computed(() => {
-        const showEmailProp = showEmail.value ? " showEmail" : "";
-        const showMobilePhoneProp = showMobilePhone.value ? " showMobilePhone" : "";
-        const showSmsOptInProp = showSmsOptIn.value ? " showSmsOptIn" : "";
         const showInOneColumnProp = showInOneColumn.value ? " showInOneColumn" : "";
-        return `<PersonBasicEditor v-model="value"${showEmailProp}${showMobilePhoneProp}${showSmsOptInProp}${showInOneColumnProp} />`;
+        const visibilityProps = visible.value.length > 0 ? " " + visible.value.join(" ") : "";
+        return `<PersonBasicEditor v-model="value"${showInOneColumnProp}${visibilityProps} />`;
     });
 </script>

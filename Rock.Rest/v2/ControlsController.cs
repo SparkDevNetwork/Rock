@@ -4970,9 +4970,9 @@ namespace Rock.Rest.v2
         [Authenticate]
         [Secured]
         [HttpPost]
-        [System.Web.Http.Route( "PersonBasicEditorGetOptions" )]
+        [System.Web.Http.Route( "PersonBasicEditorGetPersonData" )]
         [Rock.SystemGuid.RestActionGuid( "2A76A570-C549-4152-A37F-4F233A66307C" )]
-        public IHttpActionResult PersonBasicEditorGetOptions( /*[FromBody] PersonBasicEditorGetOptionsOptionsBag options*/ )
+        public IHttpActionResult PersonBasicEditorGetPersonData( /*[FromBody] PersonBasicEditorGetPersonDataOptionsBag options*/ )
         {
             var groupType = GroupTypeCache.GetFamilyGroupType();
             var roles = groupType.Roles.OrderBy( r => r.Order ).Select(r => new ListItemBag { Value = r.Guid.ToString(), Text = r.Name }).ToList();

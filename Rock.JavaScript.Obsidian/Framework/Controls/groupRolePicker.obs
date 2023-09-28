@@ -6,14 +6,12 @@
                      :label="label"
                      :displayStyle="displayStyle"
                      :items="actualTypeItems"
-                     showBlankItem
                      :multiple="false" />
     <BaseAsyncPicker v-model="internalRoleValue"
                      v-bind="standardProps"
                      :label="roleLabel"
                      :displayStyle="displayStyle"
                      :items="actualRoleItems"
-                     showBlankItem
                      :multiple="false" />
 </template>
 
@@ -207,5 +205,5 @@
         loadRoleOptions();
     }
 
-        // #endregion
+    // #endregion
 </script>
