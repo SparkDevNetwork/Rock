@@ -1022,7 +1022,7 @@ namespace Rock.Model
                 {
                     /*
                        edrotning 2023-09-28
-                       Since we are just comparing the time and not the data here, the end time is going to be smaller than the start time, this 
+                       Since we are just comparing the time and not the date here, the end time is going to be smaller than the start time, this is because the start Time is on the previous day.
                        The given time falls outside of the start time to midnight and the midnight to end time windows
                        has to be greater than the end time, which is going to be an earlier time than the start time.
                     */
