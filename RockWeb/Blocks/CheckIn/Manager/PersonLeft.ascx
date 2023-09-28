@@ -134,7 +134,7 @@
                         <asp:Repeater ID="rptrSmsSnippets" runat="server">
                             <ItemTemplate>
                                 <div class="col-xs-4 pt-2">
-                                    <asp:LinkButton ID="btnSmsSnippet" runat="server" CssClass="btn btn-default col-xs-12 overflow-hidden" OnCommand="btnSmsSnippet_Command" CommandName="InputSnippet" CommandArgument='<%#Eval("Id") %>' Text='<%#Eval("Name") %>' />
+                                    <asp:LinkButton ID="btnSmsSnippet" runat="server" CssClass="btn btn-default btn-block overflow-hidden" OnCommand="btnSmsSnippet_Command" CommandName="InputSnippet" CommandArgument='<%#Eval("Id") %>' Text='<%#Eval("Name") %>' />
                                 </div>
                             </ItemTemplate>
                         </asp:Repeater>
