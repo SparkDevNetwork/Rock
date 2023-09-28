@@ -207,11 +207,11 @@ export type RegistrationEntryBlockArgs = {
     registrationGuid: Guid | null;
     registrationSessionGuid: Guid | null;
     registrants: RegistrantInfo[];
-    fieldValues: Record<Guid, unknown>;
-    registrar: RegistrarInfo;
+    fieldValues: Record<Guid, unknown> | null;
+    registrar: RegistrarInfo | null;
     savedAccountGuid: Guid | null;
-    gatewayToken: string;
-    discountCode: string;
+    gatewayToken: string | null;
+    discountCode: string | null;
     amountToPayNow: number;
 };
 
