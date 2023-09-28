@@ -77,11 +77,12 @@ export default defineComponent({
         const invokeBlockAction = useInvokeBlockAction();
         const notFoundMessage = viewModel?.registrationInstanceNotFoundMessage || "The selected registration could not be found or is no longer active.";
 
-        if (viewModel === null || viewModel.registrationInstanceNotFoundMessage) {
+        if (viewModel === null || viewModel?.registrationInstanceNotFoundMessage) {
             notFound.value = true;
 
             return {
                 viewModel,
+                steps,
                 notFound,
                 notFoundMessage
             };
@@ -615,7 +616,8 @@ export default defineComponent({
         <RegistrationEntryPayment v-else-if="currentStep === steps.payment" @next="onPaymentNext" @previous="onPaymentPrevious" />
         <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
         <NotificationBox v-else alertType="danger">Invalid State: '{{currentStep}}'</NotificationBox>
+
+        <SessionRenewal :isSessionExpired="isSessionExpired" @success="onSessionRenewalSuccess" />
     </template>
-    <SessionRenewal :isSessionExpired="isSessionExpired" @success="onSessionRenewalSuccess" />
 </div>`
 });

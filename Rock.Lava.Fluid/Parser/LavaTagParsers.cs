@@ -101,26 +101,17 @@ namespace Rock.Lava.Fluid
             return new LavaTagWithAttributesParser( tagName, format );
         }
 
-        public static Parser<LavaTagResult> LavaTagStart()
-        {
-            Trace.TraceInformation( "LavaTagStart" );
-            return new LavaTagStartParser( LavaTagFormatSpecifier.LiquidTag );
-        }
+        public static Parser<LavaTagResult> LavaTagStart => _lavaTagStart;
+        private static Parser<LavaTagResult> _lavaTagStart = new LavaTagStartParser( LavaTagFormatSpecifier.LiquidTag );
 
-        public static Parser<LavaTagResult> LavaTagEnd()
-        {
-            return new LavaTagEndParser( LavaTagFormatSpecifier.LiquidTag );
-        }
+        public static Parser<LavaTagResult> LavaTagEnd => _lavaTagEnd;
+        private static Parser<LavaTagResult> _lavaTagEnd = new LavaTagEndParser( LavaTagFormatSpecifier.LiquidTag );
 
-        public static Parser<LavaTagResult> LavaShortcodeStart()
-        {
-            return new LavaTagStartParser( LavaTagFormatSpecifier.LavaShortcode );
-        }
+        public static Parser<LavaTagResult> LavaShortcodeStart => _lavaShortcodeStart;
+        private static Parser<LavaTagResult> _lavaShortcodeStart = new LavaTagStartParser( LavaTagFormatSpecifier.LavaShortcode );
 
-        public static Parser<LavaTagResult> LavaShortcodeEnd()
-        {
-            return new LavaTagEndParser( LavaTagFormatSpecifier.LavaShortcode );
-        }
+        public static Parser<LavaTagResult> LavaShortcodeEnd => _lavaShortcodeEnd;
+        private static Parser<LavaTagResult> _lavaShortcodeEnd = new LavaTagEndParser( LavaTagFormatSpecifier.LavaShortcode );
 
         public static Parser<LavaTagResult> LavaBlockCommentStart => _lavaBlockCommentStart;
         private static Parser<LavaTagResult> _lavaBlockCommentStart = new LavaTagStartParser( LavaTagFormatSpecifier.BlockComment );
@@ -341,14 +332,14 @@ namespace Rock.Lava.Fluid
 
                 if ( _tagFormat == LavaTagFormatSpecifier.LavaShortcode )
                 {
-                    tagParser = LavaTagParsers.LavaShortcodeStart()
+                    tagParser = LavaShortcodeStart
                         .And( Terms.Text( _tagName ) )
-                        .And( AnyCharBefore( LavaTagParsers.LavaShortcodeEnd(), canBeEmpty: true ) )
-                        .And( LavaTagParsers.LavaShortcodeEnd() );
+                        .And( AnyCharBefore( LavaShortcodeEnd, canBeEmpty: true ) )
+                        .And( LavaShortcodeEnd );
                 }
                 else
                 {
-                    tagParser = LavaTagParsers.LavaTagStart()
+                    tagParser = LavaTagStart
                         .And( Terms.Text( _tagName ) ).
                         And( AnyCharBefore( LavaFluidParser.LavaTokenEndParser, canBeEmpty: true ) )
                         .And( LavaFluidParser.LavaTokenEndParser );
