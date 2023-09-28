@@ -95,7 +95,7 @@ export async function loadJavaScriptAsync(source: string, isScriptLoaded?: () =>
     let src = source;
 
     // Add the cache busting fingerprint if we have one.
-    if (fingerprint !== false && Obsidian.options.fingerprint) {
+    if (fingerprint !== false && typeof Obsidian !== "undefined" && Obsidian?.options?.fingerprint) {
         if (src.indexOf("?") === -1) {
             src += `?${Obsidian.options.fingerprint}`;
         }
