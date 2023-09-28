@@ -1,7 +1,7 @@
 <template>
     <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
-        <PersonBasicEditor v-model="value" :showEmail="showEmail" :showMobilePhone="showMobilePhone" :showSmsOptIn="showSmsOptIn" />
+        <PersonBasicEditor v-model="value" :showEmail="showEmail" :showMobilePhone="showMobilePhone" :showSmsOptIn="showSmsOptIn" :showInOneColumn="showInOneColumn" personLabelPrefix="PREFIX" />
 
         <template #settings>
             <div class="row">
@@ -13,6 +13,9 @@
                 </div>
                 <div class="col-md-3">
                     <CheckBox v-model="showSmsOptIn" label="Show SMS Opt In" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showInOneColumn" label="Show In One Column" />
                 </div>
             </div>
         </template>
@@ -30,12 +33,15 @@
     const showEmail = ref(true);
     const showMobilePhone = ref(true);
     const showSmsOptIn = ref(true);
+    const showInOneColumn = ref(true);
+
 
     const importCode = getSfcControlImportPath("personBasicEditor");
     const exampleCode = computed(() => {
         const showEmailProp = showEmail.value ? " showEmail" : "";
         const showMobilePhoneProp = showMobilePhone.value ? " showMobilePhone" : "";
         const showSmsOptInProp = showSmsOptIn.value ? " showSmsOptIn" : "";
-        return `<PersonBasicEditor v-model="value"${showEmailProp}${showMobilePhoneProp}${showSmsOptInProp} />`;
+        const showInOneColumnProp = showInOneColumn.value ? " showInOneColumn" : "";
+        return `<PersonBasicEditor v-model="value"${showEmailProp}${showMobilePhoneProp}${showSmsOptInProp}${showInOneColumnProp} />`;
     });
 </script>

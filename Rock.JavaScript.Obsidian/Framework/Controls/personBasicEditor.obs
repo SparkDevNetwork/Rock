@@ -1,24 +1,32 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <DefinedValuePicker v-model="title" :definedTypeGuid="DefinedType.PersonTitle" label="Title" class="input-width-md" formGroupClasses="field-title" />
-    <TextBox v-model="firstName" label="First Name" rules="required" formGroupClasses="field-firstname" />
-    <TextBox v-model="lastName" label="Last Name" rules="required" formGroupClasses="field-firstname" />
-    <DefinedValuePicker v-model="suffix" :definedTypeGuid="DefinedType.PersonSuffix" label="Suffix" class="input-width-md" formGroupClasses="field-suffix" />
-    <EmailBox v-if="showEmail" v-model="email" label="Email" formGroupClasses="field-email" />
-    <PhoneNumberBox v-if="showMobilePhone" v-model="mobilePhone" label="Mobile Phone" formGroupClasses="field-mobilephone" />
-    <CheckBox v-if="showSmsOptIn" v-model="smsOptIn" validationLabel="Opt Into SMS" label="" text="Give your consent to receive SMS messages by simply checking the box." />
-
-    <DefinedValuePicker v-model="connectionStatus" :definedTypeGuid="DefinedType.PersonConnectionStatus" label="Connection Status" formGroupClasses="field-connectionstatus" />
-    <RadioButtonList v-model="role" label="Role" rules="required" :items="roles" horizontal formGroupClasses="field-role" />
-    <RadioButtonList v-model="gender" label="Gender" :items="genders" horizontal formGroupClasses="field-gender" />
-
-    <BirthdayPicker v-model="birthday" label="Birthdate" formGroupClasses="field-birthdate" />
-    <GradePicker v-model="grade" label="Grade" useAbbreviation />
-    <DefinedValuePicker v-model="maritalStatus" :definedTypeGuid="DefinedType.PersonMaritalStatus" label="Marital Status" formGroupClasses="field-maritalstatus" />
+    <div :class="{ 'row': !showInOneColumn }">
+        <div :class="{ 'col-sm-4': !showInOneColumn }">
+            <DefinedValuePicker v-model="title" :definedTypeGuid="DefinedType.PersonTitle" :label="fullPrefix + 'Title'" class="input-width-md" formGroupClasses="field-title" showBlankItem />
+            <TextBox v-model="firstName" :label="fullPrefix + 'First Name'" rules="required" formGroupClasses="field-firstname" />
+            <TextBox v-model="lastName" :label="fullPrefix + 'Last Name'" rules="required" formGroupClasses="field-firstname" />
+            <DefinedValuePicker v-model="suffix" :definedTypeGuid="DefinedType.PersonSuffix" :label="fullPrefix + 'Suffix'" class="input-width-md" formGroupClasses="field-suffix" showBlankItem />
+            <EmailBox v-if="showEmail" v-model="email" :label="fullPrefix + 'Email'" formGroupClasses="field-email" />
+            <PhoneNumberBox v-if="showMobilePhone" v-model="mobilePhone" :label="fullPrefix + 'Mobile Phone'" formGroupClasses="field-mobilephone" />
+            <CheckBox v-if="showSmsOptIn" v-model="smsOptIn" validationLabel="Opt Into SMS" label="" text="Give your consent to receive SMS messages by simply checking the box." />
+        </div>
+        <div :class="{ 'col-sm-4': !showInOneColumn }">
+            <DefinedValuePicker v-model="connectionStatus" :definedTypeGuid="DefinedType.PersonConnectionStatus" :label="fullPrefix + 'Connection Status'" formGroupClasses="field-connectionstatus" showBlankItem rules="required" />
+            <RadioButtonList v-model="role" :label="fullPrefix + 'Role'" rules="required" :items="roles" horizontal formGroupClasses="field-role" />
+            <RadioButtonList v-model="gender" :label="fullPrefix + 'Gender'" :items="genders" horizontal formGroupClasses="field-gender" />
+        </div>
+        <div :class="{ 'col-sm-4': !showInOneColumn }">
+            <BirthdayPicker v-model="birthday" :label="fullPrefix + 'Birthdate'" formGroupClasses="field-birthdate" />
+            <GradePicker v-model="grade" :label="fullPrefix + 'Grade'" useAbbreviation showBlankItem />
+            <DefinedValuePicker v-model="maritalStatus" :definedTypeGuid="DefinedType.PersonMaritalStatus" :label="fullPrefix + 'Marital Status'" formGroupClasses="field-maritalstatus" showBlankItem />
+            <RacePicker v-model="race" formGroupClasses="field-race" :labelPrefix="personLabelPrefix" showBlankItem />
+            <EthnicityPicker v-model="ethnicity" formGroupClasses="field-ethnicity" :labelPrefix="personLabelPrefix" showBlankItem />
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
+    import { computed, PropType, ref } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
@@ -29,12 +37,24 @@
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import GradePicker from "@Obsidian/Controls/gradePicker.obs";
+    import RacePicker from "@Obsidian/Controls/racePicker.obs";
+    import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import { useHttp } from "@Obsidian/Utility/http";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<ListItemBag>,
             required: true
+        },
+
+        showInOneColumn: {
+            type: Boolean,
+            default: false
+        },
+
+        personLabelPrefix: {
+            type: String,
+            default: ""
         },
 
         showEmail: Boolean,
@@ -64,11 +84,22 @@
     const roles = ref([]);
     const genders = [{ text: "Male", value: "1" }, { text: "Female", value: "2" }];
     const maritalStatus = ref(null);
+    const race = ref(null);
+    const ethnicity = ref(null);
 
     const http = useHttp();
 
 
-    async function loadOptions() {
+    const fullPrefix = computed(() => {
+        if (props.personLabelPrefix) {
+            return props.personLabelPrefix + " ";
+        }
+
+        return "";
+    });
+
+
+    async function loadOptions(): Promise<void> {
         const options = {};
         const url = "/api/v2/Controls/PersonBasicEditorGetOptions";
         const response = await http.post<any>(url, undefined, options);
