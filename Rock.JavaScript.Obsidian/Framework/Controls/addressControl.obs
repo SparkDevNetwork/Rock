@@ -227,7 +227,15 @@
     });
 
     async function getConfiguration(): Promise<void> {
-        isLoading.value = true;
+        let loadingTimer: number | undefined;
+
+        if (countryOptions.value.length === 0) {
+            isLoading.value = true;
+        }
+        else {
+            loadingTimer = window.setTimeout(() => isLoading.value = true, 200);
+        }
+
         const options: Partial<AddressControlGetConfigurationOptionsBag> = {
             useCountryAbbreviation: props.useCountryAbbreviation,
             countryCode: props.modelValue.country
@@ -288,6 +296,8 @@
         else {
             console.error(result.errorMessage ?? "Unknown error while loading data.");
         }
+
+        clearTimeout(loadingTimer);
         isLoading.value = false;
     }
 
