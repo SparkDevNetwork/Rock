@@ -19,6 +19,7 @@ import { defineComponent, inject } from "vue";
 import Registrant from "./registrant.partial";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { RegistrantInfo, RegistrationEntryState } from "./types.partial";
+import { smoothScrollToTop } from "@Obsidian/Utility/page";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Registrants",
@@ -49,6 +50,7 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantIndex--;
             this.registrationEntryState.currentRegistrantFormIndex = lastFormIndex;
             await this.persistSession();
+            smoothScrollToTop();
         },
 
         /** The event that handles when the user clicks to move to the next registrant */
@@ -68,6 +70,7 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantIndex++;
             this.registrationEntryState.currentRegistrantFormIndex = 0;
             await this.persistSession();
+            smoothScrollToTop();
         },
 
         /** Copy the common values from the first registrant to the others */
