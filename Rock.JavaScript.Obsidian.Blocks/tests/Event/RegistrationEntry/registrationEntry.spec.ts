@@ -4,6 +4,7 @@ import { mountBlock } from "../../blocks";
 
 describe("RegistrationEntry", () => {
     it("Displays default not found message when no configuration values sent", () => {
+        throw new Error("Intentionally broken");
         const instance = mountBlock(RegistrationEntry, null);
 
         expect(instance.find(".alert-warning > strong").text()).toBe("Sorry");
