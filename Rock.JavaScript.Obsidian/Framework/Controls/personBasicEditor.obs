@@ -2,25 +2,25 @@
 <template>
     <div :class="{ 'row': !showInOneColumn }">
         <div :class="{ 'col-sm-4': !showInOneColumn }">
-            <DefinedValuePicker v-if="!hideTitle" v-model="personTitle" :definedTypeGuid="DefinedType.PersonTitle" :label="fullPrefix + 'Title'" class="input-width-md" formGroupClasses="field-title" showBlankItem />
-            <TextBox v-model="firstName" :label="fullPrefix + 'First Name'" rules="required" formGroupClasses="field-firstname" />
-            <TextBox v-model="lastName" :label="fullPrefix + 'Last Name'" rules="required" formGroupClasses="field-firstname" />
-            <DefinedValuePicker v-if="!hideSuffix" v-model="personSuffix" :definedTypeGuid="DefinedType.PersonSuffix" :label="fullPrefix + 'Suffix'" class="input-width-md" formGroupClasses="field-suffix" showBlankItem />
-            <EmailBox v-if="showEmail" v-model="email" :label="fullPrefix + 'Email'" formGroupClasses="field-email" :rules="requireEmail ? 'required' : ''" />
-            <PhoneNumberBox v-if="showMobilePhone" v-model="mobilePhoneNumber" v-model:countryCode="mobilePhoneCountryCode" :label="fullPrefix + 'Mobile Phone'" formGroupClasses="field-mobilephone" :rules="requireMobilePhone ? 'required' : ''" />
-            <CheckBox v-if="showSmsOptIn" v-model="isMessagingEnabled" validationLabel="Opt Into SMS" label="" text="Give your consent to receive SMS messages by simply checking the box." />
+            <DefinedValuePicker v-if="!hideTitle" v-model="internalValue.personTitle" :definedTypeGuid="DefinedType.PersonTitle" :label="fullPrefix + 'Title'" class="input-width-md" formGroupClasses="field-title" showBlankItem />
+            <TextBox v-model="internalValue.firstName" :label="fullPrefix + 'First Name'" rules="required" formGroupClasses="field-firstname" />
+            <TextBox v-model="internalValue.lastName" :label="fullPrefix + 'Last Name'" rules="required" formGroupClasses="field-firstname" />
+            <DefinedValuePicker v-if="!hideSuffix" v-model="internalValue.personSuffix" :definedTypeGuid="DefinedType.PersonSuffix" :label="fullPrefix + 'Suffix'" class="input-width-md" formGroupClasses="field-suffix" showBlankItem />
+            <EmailBox v-if="showEmail" v-model="internalValue.email" :label="fullPrefix + 'Email'" formGroupClasses="field-email" :rules="requireEmail ? 'required' : ''" />
+            <PhoneNumberBox v-if="showMobilePhone" v-model="internalValue.mobilePhoneNumber" v-model:countryCode="internalValue.mobilePhoneCountryCode" :label="fullPrefix + 'Mobile Phone'" formGroupClasses="field-mobilephone" :rules="requireMobilePhone ? 'required' : ''" />
+            <CheckBox v-if="showSmsOptIn" v-model="internalValue.isMessagingEnabled" validationLabel="Opt Into SMS" label="" text="Give your consent to receive SMS messages by simply checking the box." />
         </div>
         <div :class="{ 'col-sm-4': !showInOneColumn }">
-            <DefinedValuePicker v-if="!hideConnectionStatus" v-model="personConnectionStatus" :definedTypeGuid="DefinedType.PersonConnectionStatus" :label="fullPrefix + 'Connection Status'" formGroupClasses="field-connectionstatus" showBlankItem rules="required" />
-            <GroupRolePicker v-if="!hidePersonRole" v-model="personGroupRole" :label="fullPrefix + 'Role'" rules="required" displayStyle="list" horizontal formGroupClasses="field-role" :groupTypeGuid="GroupType.GrouptypeFamily" />
-            <RadioButtonList v-if="!hideGender" v-model="personGender" :label="fullPrefix + 'Gender'" :items="genders" horizontal formGroupClasses="field-gender" :rules="requireGender ? 'required' : ''" />
+            <DefinedValuePicker v-if="!hideConnectionStatus" v-model="internalValue.personConnectionStatus" :definedTypeGuid="DefinedType.PersonConnectionStatus" :label="fullPrefix + 'Connection Status'" formGroupClasses="field-connectionstatus" showBlankItem rules="required" />
+            <GroupRolePicker v-if="!hidePersonRole" v-model="internalValue.personGroupRole" :label="fullPrefix + 'Role'" rules="required" displayStyle="list" horizontal formGroupClasses="field-role" :groupTypeGuid="GroupType.GrouptypeFamily" />
+            <RadioButtonList v-if="!hideGender" v-model="internalValue.personGender" :label="fullPrefix + 'Gender'" :items="genders" horizontal formGroupClasses="field-gender" :rules="requireGender ? 'required' : ''" />
         </div>
         <div :class="{ 'col-sm-4': !showInOneColumn }">
-            <BirthdayPicker v-if="!hideBirthdate" v-model="personBirthDate" :label="fullPrefix + 'Birthdate'" formGroupClasses="field-birthdate" :rules="requireBirthdate ? 'required' : ''" />
-            <GradePicker v-if="!hideGrade" v-model="personGradeOffset" :label="fullPrefix + 'Grade'" useAbbreviation showBlankItem />
-            <DefinedValuePicker v-if="!hideMaritalStatus" v-model="personMaritalStatus" :definedTypeGuid="DefinedType.PersonMaritalStatus" :label="fullPrefix + 'Marital Status'" formGroupClasses="field-maritalstatus" showBlankItem />
-            <RacePicker v-if="!hideRace" v-model="personRace" formGroupClasses="field-race" :labelPrefix="personLabelPrefix" showBlankItem :rules="requireRace ? 'required' : ''" />
-            <EthnicityPicker v-if="!hideEthnicity" v-model="personEthnicity" formGroupClasses="field-ethnicity" :labelPrefix="personLabelPrefix" showBlankItem :rules="requireEthnicity ? 'required' : ''" />
+            <BirthdayPicker v-if="!hideBirthdate" v-model="internalValue.personBirthDate" :label="fullPrefix + 'Birthdate'" formGroupClasses="field-birthdate" :rules="requireBirthdate ? 'required' : ''" />
+            <GradePicker v-if="!hideGrade" v-model="internalValue.personGradeOffset" :label="fullPrefix + 'Grade'" useAbbreviation showBlankItem />
+            <DefinedValuePicker v-if="!hideMaritalStatus" v-model="internalValue.personMaritalStatus" :definedTypeGuid="DefinedType.PersonMaritalStatus" :label="fullPrefix + 'Marital Status'" formGroupClasses="field-maritalstatus" showBlankItem />
+            <RacePicker v-if="!hideRace" v-model="internalValue.personRace" formGroupClasses="field-race" :labelPrefix="personLabelPrefix" showBlankItem :rules="requireRace ? 'required' : ''" />
+            <EthnicityPicker v-if="!hideEthnicity" v-model="internalValue.personEthnicity" formGroupClasses="field-ethnicity" :labelPrefix="personLabelPrefix" showBlankItem :rules="requireEthnicity ? 'required' : ''" />
         </div>
     </div>
 </template>
@@ -30,6 +30,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { GroupType } from "@Obsidian/SystemGuids/groupType";
+    import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag.d";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
@@ -45,8 +46,11 @@
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
-
     const props = defineProps({
+        modelValue: {
+            type: Object as PropType<Required<PersonBasicEditorBag>>,
+            required: true
+        },
         // Person Properties
         /** V-Model */
         firstName: {
@@ -229,6 +233,7 @@
     });
 
     const emit = defineEmits<{
+        (e: "update:modelValue", value: Required<PersonBasicEditorBag>): void
         (e: "update:firstName", value: string): void
         (e: "update:lastName", value: string): void
         (e: "update:personTitle", value: ListItemBag): void
@@ -248,6 +253,7 @@
     }>();
 
     // V-Models
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
     const firstName = useVModelPassthrough(props, "firstName", emit);
     const lastName = useVModelPassthrough(props, "lastName", emit);
     const personTitle = useVModelPassthrough(props, "personTitle", emit);

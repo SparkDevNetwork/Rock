@@ -1049,6 +1049,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\addressControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\birthdayPickerBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\campusPickerItemBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\datePartsPickerValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\electronicSignatureValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorGetAvailableFieldTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationOptionsBag.d.ts" />
@@ -1186,6 +1187,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pagePickerGetPageRoutesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pagePickerGetSelectedPageHierarchyOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pageRouteValueBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personBasicEditorBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personLinkGetPopupHtmlOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personPickerSearchOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\phoneNumberBoxGetConfigurationOptionsBag.d.ts" />
