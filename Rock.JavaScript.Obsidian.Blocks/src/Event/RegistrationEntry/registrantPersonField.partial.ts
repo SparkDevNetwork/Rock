@@ -18,7 +18,6 @@
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, inject, PropType } from "vue";
 import AddressControl from "@Obsidian/Controls/addressControl.obs";
-import { getDefaultAddressControlModel } from "@Obsidian/Utility/address";
 import TextBox from "@Obsidian/Controls/textBox";
 import EmailBox from "@Obsidian/Controls/emailBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
@@ -208,7 +207,8 @@ export default defineComponent({
                     break;
 
                 case RegistrationPersonFieldType.Address:
-                    defaultValue = getDefaultAddressControlModel();
+                    // Address Control now handles the default value itself.
+                    defaultValue = {};
                     break;
             }
 

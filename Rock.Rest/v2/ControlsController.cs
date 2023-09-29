@@ -103,11 +103,10 @@ namespace Rock.Rest.v2
 
             var orgCountryCode = globalAttributesCache.OrganizationCountry;
             var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
-            var countryCode = options.CountryCode.IsNullOrWhiteSpace() ? "US" : options.CountryCode;
+            var countryCode = options.CountryCode.IsNullOrWhiteSpace() ? defaultCountryCode : options.CountryCode;
 
             var orgStateCode = globalAttributesCache.OrganizationState;
             var defaultStateCode = countryCode == orgCountryCode ? orgStateCode : string.Empty;
-
 
             // Generate List of Countries
             var countries = new List<ListItemBag>();
