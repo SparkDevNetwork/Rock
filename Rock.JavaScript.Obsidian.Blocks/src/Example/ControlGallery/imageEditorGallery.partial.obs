@@ -33,9 +33,9 @@
     import { computed, ref } from "vue";
     import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import NumberBox from "@Obsidian/Controls/numberBox";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { getSfcControlImportPath } from "./utils.partial";
 
