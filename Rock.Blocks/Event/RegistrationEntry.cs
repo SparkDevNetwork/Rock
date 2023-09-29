@@ -653,6 +653,66 @@ namespace Rock.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Gets the attribute field values for the registrant, does not get PersonFields which are handled elsewhere. This action is used to get the default attribute values.
+        /// </summary>
+        /// <param name="args">The registration entry arguments.</param>
+        /// <param name="registrantGuid">The registrant unique identifier of the registrant</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult GetDefaultAttributeFieldValues( RegistrationEntryBlockArgs args, RegistrationEntryBlockFormViewModel[] forms, Guid registrantGuid )
+        {
+            var registrantInfo = args.Registrants.FirstOrDefault( r => r.Guid == registrantGuid );
+            var fieldValues = new Dictionary<Guid, object>();
+
+            if ( forms == null || forms.Length == 0 )
+            {
+                return ActionOk( fieldValues );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                // A null person is okay here as default values can still be returned.
+                Person person = null;
+                if ( registrantInfo != null && registrantInfo.PersonGuid.HasValue )
+                {
+                    person = new PersonService( rockContext ).Get( registrantInfo.PersonGuid.Value );
+                }
+
+                // If we already have a saved registrant get it, otherwise a null registrant will get any default values.
+                var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantGuid );
+
+                // Populate the field values
+                foreach ( var form in forms )
+                {
+                    foreach ( var fieldViewModel in form.Fields )
+                    {
+                        // There are no default values for a PersonField, so skip those.
+                        if ( fieldViewModel.FieldSource == ( int ) RegistrationFieldSource.PersonField )
+                        {
+                            continue;
+                        }
+
+                        var field = new RegistrationTemplateFormFieldService( rockContext ).Get( fieldViewModel.Guid );
+
+                        // Get the field values
+                        if ( fieldViewModel.FieldSource == ( int ) RegistrationFieldSource.PersonAttribute )
+                        {
+                            var personAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, person, field );
+                            fieldValues.AddOrIgnore( fieldViewModel.Guid, personAttributeValue );
+                        }
+                        else if ( fieldViewModel.FieldSource == ( int ) RegistrationFieldSource.RegistrantAttribute )
+                        {
+                            var registrantAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
+                            fieldValues.AddOrIgnore( fieldViewModel.Guid, registrantAttributeValue );
+                        }
+                    }
+                }
+            }
+
+            return ActionOk( fieldValues );
+        }
+
         #endregion Block Actions
 
         #region Helpers
@@ -1337,15 +1397,8 @@ namespace Rock.Blocks.Event
         private Dictionary<Guid, object> GetCurrentValueFieldValues( RegistrationContext registrationContext, RockContext rockContext, Person person, RegistrationRegistrant registrant, IEnumerable<RegistrationTemplateForm> forms )
         {
             var fieldValues = new Dictionary<Guid, object>();
-
-            if ( person is null )
-            {
-                return fieldValues;
-            }
-
             var familySelection = registrationContext?.RegistrationSettings.AreCurrentFamilyMembersShown ?? true;
 
-                    
             foreach ( var form in forms )
             {
                 var fields = form.Fields.Where( f =>
@@ -1415,6 +1468,11 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private object GetPersonCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field )
         {
+            if ( person == null )
+            {
+                return null;
+            }
+
             switch ( field.PersonFieldType )
             {
                 case RegistrationPersonFieldType.FirstName:
@@ -2798,9 +2856,8 @@ namespace Rock.Blocks.Event
                 savedAccounts = savedAccountClientService.GetSavedFinancialAccountsForPersonAsAccountListItems( RequestContext.CurrentPerson.Id, accountOptions );
             }
 
-            // If we don't have a session that means we are starting new. Create
-            // an empty session.
-            if ( session == null && currentPerson != null )
+            // If we don't have a session that means we are starting new. Create an empty session.
+            if ( session == null )
             {
                 session = new RegistrationEntryBlockSession
                 {
@@ -2810,7 +2867,7 @@ namespace Rock.Blocks.Event
                 session.Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo>();
                 var isOnWaitList = context.SpotsRemaining.HasValue && context.SpotsRemaining.Value == 0;
 
-                if ( context.RegistrationSettings.AreCurrentFamilyMembersShown )
+                if ( context.RegistrationSettings.AreCurrentFamilyMembersShown && currentPerson != null )
                 {
                     // Fill in first registrant info as a member of the family.
                     session.Registrants.Add( new ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo

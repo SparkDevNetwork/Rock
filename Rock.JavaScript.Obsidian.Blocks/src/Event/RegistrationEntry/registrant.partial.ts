@@ -126,7 +126,22 @@ export default defineComponent({
     },
     computed: {
         showPrevious(): boolean {
-            return this.registrationEntryState.firstStep !== this.registrationEntryState.steps.perRegistrantForms;
+            // Allow to navigate to other registrants
+            if(this.registrationEntryState.currentRegistrantIndex > 0) {
+                return true;
+            }
+
+            // Allow to navigate to registration attributes
+            if(this.registrationEntryState.viewModel?.registrationAttributesStart?.length > 0) {
+                return true;
+            }
+
+            // Allow back to intro page if this is not an existing registration
+            if(!this.registrationEntryState.viewModel.isExistingRegistration) {
+                return true;
+            }
+
+            return false;
         },
         viewModel(): RegistrationEntryBlockViewModel {
             return this.registrationEntryState.viewModel;
@@ -464,6 +479,35 @@ export default defineComponent({
                 }
             }
         },
+
+        async getFieldValues(): Promise<void> {
+            const result = await this.invokeBlockAction<Record<Guid, unknown>>("GetDefaultAttributeFieldValues", {
+                args: this.getRegistrationEntryBlockArgs(),
+                forms: this.viewModel.registrantForms,
+                registrantGuid: this.currentRegistrant.guid
+            });
+
+            if (result.isSuccess && result.data) {
+                for (const form of this.viewModel.registrantForms) {
+                    for (const field of form.fields) {
+                        // Check if we gota value for the attribute
+                        if (field.guid in result.data) {
+                            const formFieldValue = result.data[field.guid];
+                            const currentFormFieldValue = this.currentRegistrant.fieldValues[field.guid];
+
+                            if(currentFormFieldValue === undefined || currentFormFieldValue === null || currentFormFieldValue === "") {
+                                if (typeof formFieldValue === "object" && typeof currentFormFieldValue === "object") {
+                                    this.currentRegistrant.fieldValues[field.guid] = { ...formFieldValue };
+                                }
+                                else {
+                                    this.currentRegistrant.fieldValues[field.guid] = formFieldValue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
     },
     watch: {
         "currentRegistrant.familyGuid"(): void {
@@ -488,6 +532,7 @@ export default defineComponent({
         }
     },
     created() {
+        this.getFieldValues();
         this.copyValuesFromFamilyMember();
     },
     template: `
