@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.Administration
         {
             StringBuilder sb = new StringBuilder();
 
-            var result = DbService.ExecuteScaler( "SELECT TOP 1 [MigrationId] FROM [__MigrationHistory] ORDER BY [MigrationId] DESC ", CommandType.Text, null );
+            var result = DbService.ExecuteScalar( "SELECT TOP 1 [MigrationId] FROM [__MigrationHistory] ORDER BY [MigrationId] DESC ", CommandType.Text, null );
             if ( result != null )
             {
                 sb.AppendFormat( "Last Core Migration: {0}{1}", ( string ) result, Environment.NewLine );
