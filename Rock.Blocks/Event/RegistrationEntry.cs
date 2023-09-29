@@ -1568,7 +1568,8 @@ namespace Rock.Blocks.Event
                         Street2 = location?.Street2 ?? string.Empty,
                         City = location?.City ?? string.Empty,
                         State = location?.State ?? string.Empty,
-                        PostalCode = location?.PostalCode ?? string.Empty
+                        PostalCode = location?.PostalCode ?? string.Empty,
+                        Country = location?.Country ?? string.Empty
                     };
 
                 case RegistrationPersonFieldType.MaritalStatus:
