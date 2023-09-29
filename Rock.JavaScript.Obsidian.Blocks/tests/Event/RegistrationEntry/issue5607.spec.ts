@@ -45,6 +45,9 @@ describe("Issue 5607", () => {
             throw new Error("Unknown API call detected.");
         });
 
+        // Silence console errors about scrollTo() not being implemented in jsdom.
+        global.scrollTo = jest.fn();
+
         const instance = mountBlock(RegistrationEntry,
             getConfigurationValues(),
             blockActions, {
@@ -413,7 +416,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
             "category": null,
             "disabled": null
         }
-    ]
+    ],
+    "showSmsOptIn": false
 };
 
 const addressControlConfiguration = {
