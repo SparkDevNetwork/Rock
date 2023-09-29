@@ -113,10 +113,10 @@
 </style>
 
 <script setup lang="ts">
-    import CopyButton from "@Obsidian/Controls/copyButton.obs";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
-    import Switch from "@Obsidian/Controls/switch.obs";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import CopyButton from "@Obsidian/Controls/copyButton";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader";
+    import Switch from "@Obsidian/Controls/switch";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
     import HighlightJs from "@Obsidian/Libs/highlightJs";
     import * as ObjectUtils from "@Obsidian/Utility/objectUtils";
     import { computed, getCurrentInstance, PropType, ref } from "vue";
