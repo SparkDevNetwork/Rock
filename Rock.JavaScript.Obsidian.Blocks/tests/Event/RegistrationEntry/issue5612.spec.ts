@@ -1,7 +1,9 @@
+import { HttpResult } from "@Obsidian/Types/Utility/http";
 import RegistrationEntry from "../../../src/Event/registrationEntry";
 import { RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel } from "../../../src/Event/RegistrationEntry/types.partial";
-import { mountBlock } from "../../blocks";
+import { mockBlockActions, mountBlock } from "../../blocks";
 import { waitFor } from "../../utils";
+import { Guid } from "@Obsidian/Types";
 
 function getConfigurationValues(): RegistrationEntryBlockViewModel {
     // This is weird, but we have to do this because the block actually
@@ -9,9 +11,25 @@ function getConfigurationValues(): RegistrationEntryBlockViewModel {
     return JSON.parse(JSON.stringify(configurationValues));
 }
 
+function getDefaultAttributeFieldValues(): HttpResult<Record<Guid, unknown>> {
+    return {
+        isSuccess: true,
+        isError: false,
+        statusCode: 200,
+        errorMessage: null,
+        data: {
+            "3db902c3-4c74-4059-9563-d97bf4017fd7": ""
+        }
+    };
+}
+
 describe("Issue 5612", () => {
     test("Moving to first registrant scrolls to top", async () => {
-        const instance = mountBlock(RegistrationEntry, getConfigurationValues());
+        const blockActions = mockBlockActions({
+            GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
+        });
+
+        const instance = mountBlock(RegistrationEntry, getConfigurationValues(), blockActions);
 
         const scrollToSpy = jest.fn();
         global.scrollTo = scrollToSpy;
@@ -25,7 +43,11 @@ describe("Issue 5612", () => {
     });
 
     test("Moving to second registrant scrolls to top", async () => {
-        const instance = mountBlock(RegistrationEntry, getConfigurationValues());
+        const blockActions = mockBlockActions({
+            GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
+        });
+
+        const instance = mountBlock(RegistrationEntry, getConfigurationValues(), blockActions);
 
         const scrollToSpy = jest.fn();
         global.scrollTo = scrollToSpy;
@@ -77,7 +99,11 @@ describe("Issue 5612", () => {
         const configuration = getConfigurationValues();
         configuration.registrantForms.push(JSON.parse(JSON.stringify(secondFormConfiguration)));
 
-        const instance = mountBlock(RegistrationEntry, configuration);
+        const blockActions = mockBlockActions({
+            GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
+        });
+
+        const instance = mountBlock(RegistrationEntry, configuration, blockActions);
 
         const scrollToSpy = jest.fn();
         global.scrollTo = scrollToSpy;
