@@ -116,7 +116,6 @@ export type RegistrationEntryBlockViewModel = {
     races: ListItemBag[];
     ethnicities: ListItemBag[];
     showSmsOptIn: boolean;
-    smsOptInText: string;
 
     isInlineSignatureRequired: boolean;
     isSignatureDrawn: boolean;

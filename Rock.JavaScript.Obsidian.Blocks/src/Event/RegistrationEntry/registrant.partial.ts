@@ -530,7 +530,7 @@ export default defineComponent({
         this.copyValuesFromFamilyMember();
     },
     template: `
-<div>
+<div class="registrationentry-registrant-details" >
     <RockForm @submit="onNext" :formResetKey="formResetKey">
         <template v-if="isDataForm">
             <template v-if="currentFormIndex === 0">
