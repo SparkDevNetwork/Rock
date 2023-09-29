@@ -416,7 +416,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
             "category": null,
             "disabled": null
         }
-    ]
+    ],
+    "showSmsOptIn": false
 };
 
 const addressControlConfiguration = {
