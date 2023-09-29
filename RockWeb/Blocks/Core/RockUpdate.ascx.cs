@@ -154,15 +154,6 @@ namespace RockWeb.Blocks.Core
                     nbSqlServerVersionIssue.Visible = true;
                 }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-                var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel;
-                var isConfiguredForLegacyLava = lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy;
-#pragma warning restore CS0618 // Type or member is obsolete
-                if ( isConfiguredForLegacyLava )
-                {
-                    nbLegacyLavaIssue.Visible = true;
-                }
-
                 _releases = GetOrderedReleaseList( rockUpdateService, _installedVersion );
 
                 if ( _releases.Exists( r => new Version( r.SemanticVersion ) >= new Version( "1.17.0" ) ) && RockInstanceConfig.LavaEngineName != "Fluid" )
@@ -184,12 +175,6 @@ namespace RockWeb.Blocks.Core
                         if ( !hasMinimumCompatibilityLevelOrHigher )
                         {
                             nbSqlServerVersionIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
-                        }
-
-                        // if LegacyLavaIssue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
-                        if ( isConfiguredForLegacyLava )
-                        {
-                            nbLegacyLavaIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                         }
                     }
 

@@ -2876,7 +2876,6 @@
     <Compile Include="Lava\Blocks\SqlBlock.cs" />
     <Compile Include="Lava\Blocks\WorkflowActivateBlock.cs" />
     <Compile Include="Lava\LavaHelper.cs" />
-    <Compile Include="Lava\LavaSupportLevel.cs" />
     <Compile Include="Lava\Shortcodes\BootstrapAlertShortcode.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
