@@ -44,7 +44,7 @@ export type PersonBasicEditorBag = {
 
     personEthnicity?: ListItemBag | null;
 
-    personGender?: string | null;
+    personGender: number;
 
     personGradeOffset?: ListItemBag | null;
 
@@ -57,4 +57,6 @@ export type PersonBasicEditorBag = {
     personSuffix?: ListItemBag | null;
 
     personTitle?: ListItemBag | null;
+
+    validProperties?: string[] | null;
 };

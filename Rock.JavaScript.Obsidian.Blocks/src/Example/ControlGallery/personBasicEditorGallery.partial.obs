@@ -79,10 +79,13 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import { getSfcControlImportPath } from "./utils.partial";
+    import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag.d";
+    import { useHttp } from "@Obsidian/Utility/http";
 
-    const value = ref([]);
+    const value = ref<Partial<PersonBasicEditorBag>>({});
     const showInOneColumn = ref(false);
     const visible = ref<string[]>([]);
+    const http = useHttp();
 
     const visibilityOptions = [
         { value: "showEmail", text: "Show Email" },
@@ -107,4 +110,12 @@
         const visibilityProps = visible.value.length > 0 ? " " + visible.value.join(" ") : "";
         return `<PersonBasicEditor v-model="value"${showInOneColumnProp}${visibilityProps} />`;
     });
+
+    (async function () {
+        const response = await http.post<PersonBasicEditorBag>("/api/v2/Controls/PersonBasicEditorGetPersonData", null, null);
+
+        if (response.isSuccess && response.data) {
+            value.value = response.data;
+        }
+    })();
 </script>

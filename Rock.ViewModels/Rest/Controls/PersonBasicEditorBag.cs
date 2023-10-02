@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using Rock.ViewModels.Utility;
 using Rock.ViewModels.Controls;
+using Rock.Model;
 
 namespace Rock.ViewModels.Rest.Controls
 {
@@ -34,7 +35,7 @@ namespace Rock.ViewModels.Rest.Controls
         public ListItemBag PersonGradeOffset { get; set; }
         public ListItemBag PersonGroupRole { get; set; }
         public ListItemBag PersonConnectionStatus { get; set; }
-        public string PersonGender { get; set; }
+        public Gender PersonGender { get; set; }
         public ListItemBag PersonRace { get; set; }
         public ListItemBag PersonEthnicity { get; set; }
         public DatePartsPickerValueBag PersonBirthDate { get; set; }

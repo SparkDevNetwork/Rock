@@ -1860,7 +1860,9 @@
     <Compile Include="Utility\Enums\UserLoginValidationState.cs" />
     <Compile Include="Utility\ExtensionMethods\CommunicationRecipientResponseExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\PersonBasicEditorExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\NameValueCollectionExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\JsonExtensions.cs" />

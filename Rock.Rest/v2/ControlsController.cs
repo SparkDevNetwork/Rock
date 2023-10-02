@@ -4972,15 +4972,16 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "PersonBasicEditorGetPersonData" )]
         [Rock.SystemGuid.RestActionGuid( "2A76A570-C549-4152-A37F-4F233A66307C" )]
-        public IHttpActionResult PersonBasicEditorGetPersonData( /*[FromBody] PersonBasicEditorGetPersonDataOptionsBag options*/ )
+        public IHttpActionResult PersonBasicEditorGetPersonData( /* [FromBody] PersonBasicEditorGetPersonDataOptionsBag options */ )
         {
-            var groupType = GroupTypeCache.GetFamilyGroupType();
-            var roles = groupType.Roles.OrderBy( r => r.Order ).Select(r => new ListItemBag { Value = r.Guid.ToString(), Text = r.Name }).ToList();
-
-            return Ok( new
+            using ( var rockContext = new RockContext() )
             {
-                Roles = roles
-            } );
+                var service = new PersonService( rockContext );
+                var person = service.Get( 1 );
+                var bag = person.GetPersonBasicEditorBag();
+
+                return Ok( bag );
+            }
         }
 
         #endregion
