@@ -530,12 +530,12 @@ namespace Rock.Lava.Blocks
                             }
 
                             // Add the result to the current context.
-                            context.SetMergeField( parms["iterator"], returnValues, LavaContextRelativeScopeSpecifier.Current );
+                            context.SetMergeField( parms["iterator"], returnValues, LavaContextRelativeScopeSpecifier.Default );
 
                             if ( returnCount == 1 )
                             {
                                 // If there is only one item, set a singleton variable in addition to the result list.
-                                context.SetMergeField( EntityName, firstItem, LavaContextRelativeScopeSpecifier.Current );
+                                context.SetMergeField( EntityName, firstItem, LavaContextRelativeScopeSpecifier.Default );
                             }
                         }
                     }

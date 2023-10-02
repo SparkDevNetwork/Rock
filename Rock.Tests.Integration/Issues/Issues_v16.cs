@@ -169,5 +169,39 @@ Did you see those comments ^^^
 
             Assert.That.AreEqualIgnoreWhitespace( expectedOutput, actualOutput );
         }
+
+        [TestMethod]
+        public void Issue5102_VariableScopingInWorkflowActivateTag()
+        {
+            /* The WorkflowActivate tag does not allow persistent changes to variables declared outside the block in Fluid.
+             * For details, see https://github.com/SparkDevNetwork/Rock/issues/5102.
+             * 
+             * Resolution: This issue has been closed by a fix for the Fluid framework.
+             * For details, see https://github.com/sebastienros/fluid/issues/553.
+             */
+
+            // Activate Workflow: IT Support
+            var input = @"
+{% assign list = '1,2,3' | Split: ',' %}
+{% assign counter = 0 %}
+
+{% for i in list %}
+    <Pass {{ forloop.index }}>
+    {% workflowactivate workflowtype:'51FE9641-FB8F-41BF-B09E-235900C3E53E' %}
+        {% assign counter = counter | Plus:1 %}
+        Inner Scope: counter={{ counter }},
+    {% endworkflowactivate %}
+    Outer Scope: counter={{ counter }}
+{% endfor %}
+";
+
+            var expectedOutput = @"
+<Pass1>InnerScope:counter=1,OuterScope:counter=1<Pass2>InnerScope:counter=2,OuterScope:counter=2<Pass3>InnerScope:counter=3,OuterScope:counter=3 
+";
+
+            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate" };
+
+            LavaTestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
     }
 }
