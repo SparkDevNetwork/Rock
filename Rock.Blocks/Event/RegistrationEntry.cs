@@ -1089,7 +1089,8 @@ namespace Rock.Blocks.Event
             foreach ( var attribute in registrationAttributes )
             {
                 var value = args.FieldValues.GetValueOrNull( attribute.Guid );
-                context.Registration.SetAttributeValue( attribute.Key, value.ToStringSafe() );
+                var newValue = PublicAttributeHelper.GetPrivateValue( attribute, value.ToStringSafe() );
+                context.Registration.SetAttributeValue( attribute.Key, newValue );
             }
 
             // Save the registration ( so we can get an id )
