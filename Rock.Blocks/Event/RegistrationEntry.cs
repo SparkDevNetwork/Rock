@@ -3876,7 +3876,9 @@ namespace Rock.Blocks.Event
             // Send/Resend a confirmation
             var processSendRegistrationConfirmationMsg = new ProcessSendRegistrationConfirmation.Message()
             {
-                RegistrationId = registration.Id
+                RegistrationId = registration.Id,
+                AppRoot = RequestContext.RootUrlPath.EnsureTrailingForwardslash(),
+                ThemeRoot = RequestContext.RootUrlPath + RequestContext.ResolveRockUrl( "~~/" )
             };
 
             processSendRegistrationConfirmationMsg.Send();
@@ -3886,7 +3888,9 @@ namespace Rock.Blocks.Event
                 // Send notice of a new registration
                 new ProcesSendRegistrationNotification.Message
                 {
-                    RegistrationId = registration.Id
+                    RegistrationId = registration.Id,
+                    AppRoot = RequestContext.RootUrlPath.EnsureTrailingForwardslash(),
+                    ThemeRoot = RequestContext.RootUrlPath + RequestContext.ResolveRockUrl( "~~/" )
                 }.Send();
 
                 var registrationService = new RegistrationService( new RockContext() );
