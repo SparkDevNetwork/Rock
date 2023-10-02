@@ -92,6 +92,9 @@ registerFieldType(FieldTypeGuids.ConnectionState, new ConnectionStateFieldType()
 import { ContentChannelFieldType } from "./contentChannelField.partial";
 registerFieldType(FieldTypeGuids.ContentChannel, new ContentChannelFieldType());
 
+import { ContentChannelItemFieldType } from "./contentChannelItemField.partial";
+registerFieldType(FieldTypeGuids.ContentChannelItem, new ContentChannelItemFieldType());
+
 import { ContentChannelTypeFieldType } from "./contentChannelTypeField.partial";
 registerFieldType(FieldTypeGuids.ContentChannelType, new ContentChannelTypeFieldType());
 

@@ -213,8 +213,6 @@
 
     /** Reload CC items if the channel or excluded CC items list change */
     watch([contentChannelGuidValue, () => props.excludeContentChannelItems], () => {
-        internalItemValue.value = null;
-
         loadedContentChannelItemItems.value = null;
         loadContentChannelItemOptions();
     });
