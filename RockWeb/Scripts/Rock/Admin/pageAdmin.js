@@ -146,10 +146,10 @@ Sys.Application.add_load( function ()
                 $( ".block-configuration" ).on( "mouseenter", function ( e )
                 {
                     var barWidth = $( '.block-configuration-bar', this ).outerWidth() + 30 + 'px';
-                    $( this ).stop( true, true ).animate( { width: barWidth }, 200 ).css( { 'z-index': '1049' } );
+                    $( this ).stop( true, true ).animate( { width: barWidth }, 200 );
                 } ).on( "mouseleave", function ()
                 {
-                    $( this ).stop( true, true ).delay( 500 ).animate( { width: '26px' }, 500 ).css( { 'z-index': '1000' } );
+                    $( this ).stop( true, true ).delay( 500 ).animate( { width: '26px' }, 500 );
                 } );
 
                 // Bind the block instance delete anchor (ensure it is only bound once)
