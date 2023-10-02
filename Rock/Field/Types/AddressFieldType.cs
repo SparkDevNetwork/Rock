@@ -60,7 +60,7 @@ namespace Rock.Field.Types
                 using ( var rockContext = new RockContext() )
                 {
                     var service = new LocationService( rockContext );
-                    var location = service.GetNoTracking( new Guid( value ) );
+                    var location = service.GetNoTracking( value.AsGuid() );
                     if ( location != null )
                     {
                         formattedValue = location.ToString();
