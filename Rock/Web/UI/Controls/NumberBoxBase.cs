@@ -208,7 +208,7 @@ namespace Rock.Web.UI.Controls
             }
 
             this.Attributes.Add( "inputmode", inputmode );
-            this.FormGroupCssClass = "js-number-box";
+            this.FormGroupCssClass = this.FormGroupCssClass ?? "js-number-box";
             base.CreateChildControls();
 
             _customValidator = new CustomValidator();
