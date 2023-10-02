@@ -1494,7 +1494,7 @@ namespace RockWeb.Blocks.WorkFlow
             personBasicEditor.RequireMobilePhone = formPersonEntrySettings.MobilePhone == WorkflowActionFormPersonEntryOption.Required;
             personBasicEditor.ShowMobilePhone = formPersonEntrySettings.MobilePhone != WorkflowActionFormPersonEntryOption.Hidden;
 
-            personBasicEditor.ShowSmsOptIn = formPersonEntrySettings.SmsOptIn != WorkflowActionFormShowHideOption.Hide;
+            personBasicEditor.ShowSmsOptIn = formPersonEntrySettings.SmsOptIn != WorkflowActionFormShowHideOption.Hide && personBasicEditor.ShowMobilePhone;
 
             personBasicEditor.RequireBirthdate = formPersonEntrySettings.Birthdate == WorkflowActionFormPersonEntryOption.Required;
             personBasicEditor.ShowBirthdate = formPersonEntrySettings.Birthdate != WorkflowActionFormPersonEntryOption.Hidden;
