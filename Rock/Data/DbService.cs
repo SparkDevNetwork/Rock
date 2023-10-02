@@ -323,8 +323,7 @@ namespace Rock.Data
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
         [RockObsolete( "1.16" )]
-        [Obsolete( @"Please use the static method ExecuteScalar( string query, CommandType commandType = CommandType.Text,
-                        Dictionary<string, object> parameters = null, int? commandTimeout = null ) instead" )]
+        [Obsolete( @"Please use the static method ExecuteScalar( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null, int? commandTimeout = null ) instead" )]
         public static object ExecuteScaler( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null )
         {
             return ExecuteScalar( query, commandType, parameters, null );
