@@ -37,7 +37,7 @@ export const EditComponent = defineComponent({
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-        // The internal value used by the text editor.
+        // The internal value used by the dropdownlist.
         const internalValue = ref<string[]>([]);
 
         // The options to choose from.
@@ -58,14 +58,14 @@ export const EditComponent = defineComponent({
             return numberOfColumns;
         });
 
-        // Watch for changes from the parent component and update the text editor.
+        // Watch for changes from the parent component and update the dropdownlist value.
         watch(() => props.modelValue, () => {
             updateRefValue(internalValue, props.modelValue ? props.modelValue.split(",") : []);
         }, {
             immediate: true
         });
 
-        // Watch for changes from the text editor and update the parent component.
+        // Watch for changes from the client UI and update the parent component.
         watch(internalValue, () => {
             emit("update:modelValue", internalValue.value.join(","));
         });
@@ -151,16 +151,6 @@ export const ConfigurationComponent = defineComponent({
             numberOfColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
         }, {
             immediate: true
-        });
-
-        // Watch for changes in properties that require new configuration
-        // properties to be retrieved from the server.
-        // THIS IS JUST A PLACEHOLDER FOR COPYING TO NEW FIELDS THAT MIGHT NEED IT.
-        // THIS FIELD DOES NOT NEED THIS
-        watch([], () => {
-            if (maybeUpdateModelValue()) {
-                emit("updateConfiguration");
-            }
         });
 
         // Watch for changes in properties that only require a local UI update.

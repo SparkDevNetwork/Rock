@@ -41,7 +41,7 @@ namespace Rock.Field.Types
     {
         #region Configuration
 
-        private const string CLIENT_VALUES = "clientValues";
+        private const string CLIENT_VALUES = "values";
 
         #endregion
 
@@ -53,13 +53,10 @@ namespace Rock.Field.Types
             Guid? guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                var contentChannel = ContentChannelCache.Get( guid.Value );
+                if ( contentChannel != null )
                 {
-                    var contentChannelName = new ContentChannelService( rockContext ).GetSelect( guid.Value, a => a.Name );
-                    if ( contentChannelName != null )
-                    {
-                        return contentChannelName;
-                    }
+                    return contentChannel.Name;
                 }
             }
 
@@ -75,32 +72,12 @@ namespace Rock.Field.Types
         {
             var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            if ( !configurationValues.ContainsKey( CLIENT_VALUES ) )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var items = new List<ListItemBag>();
-                    var contentChannels = new ContentChannelService( new RockContext() )
-                        .Queryable()
-                        .Where( a => a.ContentChannelType.ShowInChannelList )
-                        .OrderBy( d => d.Name )
-                        .Select( a => new
-                        {
-                            a.Guid,
-                            a.Name,
-                        } ).ToList();
+            var contentChannels = ContentChannelCache.All()
+                .Where( a => a.ContentChannelType.ShowInChannelList )
+                .OrderBy( d => d.Name )
+                .ToListItemBagList();
 
-                    if ( contentChannels.Any() )
-                    {
-                        foreach ( var contentChannel in contentChannels )
-                        {
-                            items.Add( new ListItemBag() { Text = contentChannel.Name, Value = contentChannel.Guid.ToString() } );
-                        }
-                    }
-
-                    configurationValues[CLIENT_VALUES] = items.ToCamelCaseJson( false, true );
-                }
-            }
+            configurationValues[CLIENT_VALUES] = contentChannels.ToCamelCaseJson( false, true );
 
             return configurationValues;
         }

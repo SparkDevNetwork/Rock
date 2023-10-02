@@ -30,7 +30,7 @@ export const EditComponent = defineComponent({
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-        // The internal value used by the text editor.
+        // The internal value used by the dropdownlist control.
         const internalValue = ref<string>("");
 
         // The available options to choose from.
@@ -39,14 +39,14 @@ export const EditComponent = defineComponent({
             return options;
         });
 
-        // Watch for changes from the parent component and update the text editor.
+        // Watch for changes from the parent component and update the client UI.
         watch(() => props.modelValue, () => {
             internalValue.value = props.modelValue;
         }, {
             immediate: true
         });
 
-        // Watch for changes from the text editor and update the parent component.
+        // Watch for changes from the client UI and update the parent component.
         watch(internalValue, () => {
             emit("update:modelValue", internalValue.value);
         });

@@ -22,7 +22,7 @@ import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const enum ConfigurationValueKey {
-    ClientValues = "clientValues"
+    ClientValues = "values"
 }
 
 // The edit component can be quite large, so load it only as needed.

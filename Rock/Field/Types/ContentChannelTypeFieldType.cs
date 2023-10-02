@@ -41,7 +41,7 @@ namespace Rock.Field.Types
     {
         #region Configuration
 
-        private const string CLIENT_VALUES = "clientValues";
+        private const string CLIENT_VALUES = "values";
 
         #endregion
 
@@ -74,18 +74,11 @@ namespace Rock.Field.Types
         {
             var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            if ( !configurationValues.ContainsKey( CLIENT_VALUES ) )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var contentChannelTypes = ContentChannelTypeCache.All()
-                        .OrderBy( cc => cc.Name )
-                        .Select( cc => new ListItemBag() { Text = cc.Name, Value = cc.Guid.ToString() })
-                        .ToList();
+            var contentChannelTypes = ContentChannelTypeCache.All()
+                .OrderBy( cc => cc.Name )
+                .ToListItemBagList();
 
-                    configurationValues[CLIENT_VALUES] = contentChannelTypes.ToCamelCaseJson( false, true );
-                }
-            }
+            configurationValues[CLIENT_VALUES] = contentChannelTypes.ToCamelCaseJson( false, true );
 
             return configurationValues;
         }
