@@ -4984,6 +4984,29 @@ namespace Rock.Rest.v2
             }
         }
 
+        /// <summary>
+        /// Get data for all the controls in the Person Basic Editor control
+        /// </summary>
+        /// <param name="options">The options that describe the options available for different fields</param>
+        /// <returns>Collections of <see cref="ListItemBag"/> objects.</returns>
+        [Authenticate]
+        [Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PersonBasicEditorSavePersonData" )]
+        [Rock.SystemGuid.RestActionGuid( "B64731C5-009E-4A19-91B7-26642DF0C017" )]
+        public IHttpActionResult PersonBasicEditorSavePersonData( [FromBody] PersonBasicEditorBag bag )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new PersonService( rockContext );
+                var person = service.Get( 1 );
+
+                bag.UpdatePersonFromBag( person );
+
+                return Ok( person.GetPersonBasicEditorBag() );
+            }
+        }
+
         #endregion
 
         #region Person Picker

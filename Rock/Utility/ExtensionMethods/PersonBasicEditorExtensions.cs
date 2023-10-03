@@ -23,6 +23,7 @@ using Rock.Model;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -35,39 +36,165 @@ namespace Rock
         /// TODO!!
         /// </summary>
         /// <param name="options">The options to be updated.</param>
-        /// <param name="mediaElementId">The media element identifier.</param>
-        /// <param name="mediaElementGuid">The media element unique identifier.</param>
-        /// <param name="autoResumeInDays">The number of days back to look for an existing watch map to auto-resume from. Pass -1 to mean forever or 0 to disable.</param>
-        /// <param name="combinePlayStatisticsInDays">The number of days back to look for an existing interaction to be updated. Pass -1 to mean forever or 0 to disable.</param>
-        /// <param name="currentPerson">The person to use when searching for existing interactions.</param>
-        /// <param name="personAliasId">If <paramref name="currentPerson"/> is <c>null</c> then this value will be used to optionally find an existing interaction.</param>
         internal static void UpdatePersonFromBag( this PersonBasicEditorBag bag, Person person )
         {
-            //bag.IfValidProperty( nameof( bag.PersonGender ), () => person.Gender = bag.PersonGender );
+            using ( var rockContext = new RockContext() )
+            {
 
-            //person.gender = bag.gender
+                bag.IfValidProperty( nameof( bag.FirstName ), () => person.FirstName = bag.FirstName );
 
-            //if ( person.AgeClassification == AgeClassification.Child )
-            //{
-            //    var childRoleId = GroupTypeCache.GetFamilyGroupType().Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
-            //    this.PersonGroupRoleId = childRoleId;
-            //}
-            //else
-            //{
-            //    var adultRoleId = GroupTypeCache.GetFamilyGroupType().Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
-            //    this.PersonGroupRoleId = adultRoleId;
-            //}
+                bag.IfValidProperty( nameof( bag.LastName ), () => person.LastName = bag.LastName );
+
+                bag.IfValidProperty( nameof( bag.Email ), () => person.Email = bag.Email );
+
+                bag.IfValidProperty( nameof( bag.MobilePhoneNumber ), () =>
+                {
+                    var existingMobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+
+                    var numberTypeMobile = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                    var isUnlisted = existingMobilePhone?.IsUnlisted ?? false;
+                    var messagingEnabled = existingMobilePhone?.IsMessagingEnabled ?? true;
+                    if ( bag.IsValidProperty( nameof( bag.IsMessagingEnabled ) ) )
+                    {
+                        messagingEnabled = bag.IsMessagingEnabled;
+                    }                    
+
+                    person.UpdatePhoneNumber( numberTypeMobile.Id, bag.MobilePhoneCountryCode, bag.MobilePhoneNumber, messagingEnabled, isUnlisted, rockContext );
+                } );
+
+                bag.IfValidProperty( nameof( bag.PersonBirthDate ), () => person.SetBirthDate( new DateTime( bag.PersonBirthDate.Year, bag.PersonBirthDate.Month, bag.PersonBirthDate.Day ) ) );
+
+                bag.IfValidProperty( nameof( bag.PersonConnectionStatus ), () =>
+                {
+                    if ( bag.PersonConnectionStatus != null )
+                    {
+                        var dv = DefinedValueCache.Get( bag.PersonConnectionStatus.Value.AsGuid() );
+
+                        person.ConnectionStatusValueId = dv?.Id;
+                    }
+                    else
+                    {
+                        person.ConnectionStatusValueId = null;
+                    }
+                } );
+
+                bag.IfValidProperty( nameof( bag.PersonEthnicity ), () =>
+                {
+                    if ( bag.PersonEthnicity != null )
+                    {
+                        var dv = DefinedValueCache.Get( bag.PersonEthnicity.Value.AsGuid() );
+
+                        person.EthnicityValueId = dv?.Id;
+                    }
+                    else
+                    {
+                        person.EthnicityValueId = null;
+                    }
+                } );
+
+                bag.IfValidProperty( nameof( bag.PersonGender ), () => person.Gender = bag.PersonGender );
+
+                bag.IfValidProperty( nameof( bag.PersonGradeOffset ), () => {
+                    try
+                    {
+                        int offset = Int32.Parse( bag.PersonGradeOffset.Value );
+
+                        if (offset >= 0)
+                        {
+                            person.GradeOffset = offset;
+                        }
+                    }
+                    catch { }
+                } );
+
+                bag.IfValidProperty( nameof( bag.PersonMaritalStatus ), () =>
+                {
+                    if ( bag.PersonMaritalStatus != null )
+                    {
+                        var dv = DefinedValueCache.Get( bag.PersonMaritalStatus.Value.AsGuid() );
+
+                        person.MaritalStatusValueId = dv?.Id;
+                    }
+                    else
+                    {
+                        person.MaritalStatusValueId = null;
+                    }
+                } );
+
+                bag.IfValidProperty( nameof( bag.PersonGroupRole ), () =>
+                {
+                    var ageClass = AgeClassification.Unknown;
+
+                    if (bag.PersonGroupRole != null && bag.PersonGroupRole.Value.AsGuid().Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
+                    {
+                        ageClass = AgeClassification.Adult;
+                    }
+                    else if (bag.PersonGroupRole != null && bag.PersonGroupRole.Value.AsGuid().Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
+                    {
+                        ageClass = AgeClassification.Child;
+                    }
+
+                    person.AgeClassification = ageClass;
+                } );
+
+                bag.IfValidProperty( nameof( bag.PersonRace ), () =>
+                {
+                    if ( bag.PersonRace != null )
+                    {
+                        var dv = DefinedValueCache.Get( bag.PersonRace.Value.AsGuid() );
+
+                        person.RaceValueId = dv?.Id;
+                    }
+                    else
+                    {
+                        person.RaceValueId = null;
+                    }
+                } );
+
+                bag.IfValidProperty( nameof( bag.PersonSuffix ), () =>
+                {
+                    if ( bag.PersonSuffix != null )
+                    {
+                        var dv = DefinedValueCache.Get( bag.PersonSuffix.Value.AsGuid() );
+
+                        person.SuffixValueId = dv?.Id;
+                    }
+                    else
+                    {
+                        person.SuffixValueId = null;
+                    }
+                } );
+
+                bag.IfValidProperty( nameof( bag.PersonTitle ), () =>
+                {
+                    if ( bag.PersonTitle != null )
+                    {
+                        var dv = DefinedValueCache.Get( bag.PersonTitle.Value.AsGuid() );
+
+                        person.TitleValueId = dv?.Id;
+                    }
+                    else
+                    {
+                        person.TitleValueId = null;
+                    }
+                } );
+            }
         }
 
+        /// TODO
         internal static PersonBasicEditorBag GetPersonBasicEditorBag( this Person person)
         {
-            var familyRole = new ListItemBag
-            {
-                Text = "Adult",
-                Value = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT
-            };
+            ListItemBag familyRole = null;
 
-            if (person.AgeClassification == AgeClassification.Child)
+            if ( person.AgeClassification == AgeClassification.Adult )
+            {
+                familyRole = new ListItemBag
+                {
+                    Text = "Adult",
+                    Value = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT
+                };
+            }
+            else if (person.AgeClassification == AgeClassification.Child)
             {
                 familyRole = new ListItemBag
                 {
@@ -78,49 +205,28 @@ namespace Rock
 
             var existingMobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
 
-            return new PersonBasicEditorBag {
+            return new PersonBasicEditorBag
+            {
                 FirstName = person.FirstName,
                 LastName = person.LastName,
-                PersonTitle = person.TitleValue != null ? new ListItemBag {
-                    Text = person.TitleValue.Value,
-                    Value = person.TitleValue.Guid.ToString()
-                } : null,
-                PersonSuffix = person.SuffixValue != null ? new ListItemBag
-                {
-                    Text = person.SuffixValue.Value,
-                    Value = person.SuffixValue.Guid.ToString()
-                } : null,
-                PersonMaritalStatus = person.MaritalStatusValue != null ? new ListItemBag
-                {
-                    Text = person.MaritalStatusValue.Value,
-                    Value = person.MaritalStatusValue.Guid.ToString()
-                } : null,
+                PersonTitle = DefinedValueCache.Get( person.TitleValueId.HasValue ? person.TitleValueId.Value : 0 ).ToListItemBag(),
+                PersonSuffix = DefinedValueCache.Get( person.SuffixValueId.HasValue ? person.SuffixValueId.Value : 0 ).ToListItemBag(),
+                PersonMaritalStatus = DefinedValueCache.Get( person.MaritalStatusValueId.HasValue ? person.MaritalStatusValueId.Value : 0 ).ToListItemBag(),
                 PersonGradeOffset = person.GradeOffset != null ? new ListItemBag
                 {
                     Text = person.GradeFormatted,
                     Value = person.GradeOffset.ToString()
                 } : null,
                 PersonGroupRole = familyRole,
-                PersonConnectionStatus = person.ConnectionStatusValue != null ? new ListItemBag
-                {
-                    Text = person.ConnectionStatusValue.Value,
-                    Value = person.ConnectionStatusValue.Guid.ToString()
-                } : null,
+                PersonConnectionStatus = DefinedValueCache.Get( person.ConnectionStatusValueId.HasValue ? person.ConnectionStatusValueId.Value : 0 ).ToListItemBag(),
                 PersonGender = person.Gender,
-                PersonRace = person.RaceValue != null ? new ListItemBag
+                PersonRace = DefinedValueCache.Get( person.RaceValueId.HasValue ? person.RaceValueId.Value : 0 ).ToListItemBag(),
+                PersonEthnicity = DefinedValueCache.Get( person.EthnicityValueId.HasValue ? person.EthnicityValueId.Value : 0 ).ToListItemBag(),
+                PersonBirthDate = person.BirthDate.HasValue ? new DatePartsPickerValueBag
                 {
-                    Text = person.RaceValue.Value,
-                    Value = person.RaceValue.Guid.ToString()
-                } : null,
-                PersonEthnicity = person.EthnicityValue != null ? new ListItemBag
-                {
-                    Text = person.EthnicityValue.Value,
-                    Value = person.EthnicityValue.Guid.ToString()
-                } : null,
-                PersonBirthDate = person.BirthDate.HasValue ? new DatePartsPickerValueBag {
                     Day = person.BirthDate.Value.Day,
                     Month = person.BirthDate.Value.Month,
-                    Year = person.BirthDate.Value.Year != DateTime.MinValue.Year ? person.BirthDate.Value.Year : 0
+                    Year = person.BirthDate.Value.Year
                 } : null,
                 Email = person.Email,
                 MobilePhoneNumber = existingMobilePhone != null ? existingMobilePhone.NumberFormatted : null,

@@ -53,7 +53,7 @@
          * and to save the bag data to a Person call `bag.UpdatePersonFromBag(person)` on the bag on the server.
          */
         modelValue: {
-            type: Object as PropType<PersonBasicEditorBag>,
+            type: Object as PropType<Partial<PersonBasicEditorBag>>,
             required: true
         },
 
@@ -160,8 +160,9 @@
         (e: "update:modelValue", value: Required<PersonBasicEditorBag>): void
     }>();
 
-    // V-Models
     const internalValue = useVModelPassthrough(props, "modelValue", emit, { deep: true });
+
+    const genders = [{ text: "Male", value: "1" }, { text: "Female", value: "2" }];
 
     /**
      * Separate each Bag property into a separate writeable computed so they can be
@@ -289,7 +290,7 @@
     });
     const isMessagingEnabled = computed({
         get() {
-            return internalValue.value.isMessagingEnabled;
+            return internalValue.value.isMessagingEnabled ?? false;
         },
         set(val) {
             internalValue.value.isMessagingEnabled = val;
@@ -298,10 +299,26 @@
 
     // TODO: Based on what's shown/hidden?
     const validProperties = computed(() => {
-        return [];
-    });
+        const validKeys = new Set<keyof PersonBasicEditorBag>(["firstName", "lastName"]);
 
-    const genders = [{ text: "Male", value: "1" }, { text: "Female", value: "2" }];
+        /* eslint-disable no-prototype-builtins */
+        props.showEmail && internalValue.value.hasOwnProperty("email") && validKeys.add("email");
+        props.showMobilePhone && internalValue.value.hasOwnProperty("mobilePhoneNumber") && validKeys.add("mobilePhoneNumber").add("mobilePhoneCountryCode");
+        props.showSmsOptIn && internalValue.value.hasOwnProperty("isMessagingEnabled") && validKeys.add("isMessagingEnabled");
+
+        !props.hideBirthdate && internalValue.value.hasOwnProperty("personBirthDate") && validKeys.add("personBirthDate");
+        !props.hideConnectionStatus && internalValue.value.hasOwnProperty("personConnectionStatus") && validKeys.add("personConnectionStatus");
+        !props.hideEthnicity && internalValue.value.hasOwnProperty("personEthnicity") && validKeys.add("personEthnicity");
+        !props.hideGender && internalValue.value.hasOwnProperty("personGender") && validKeys.add("personGender");
+        !props.hideGrade && internalValue.value.hasOwnProperty("personGradeOffset") && validKeys.add("personGradeOffset");
+        !props.hideMaritalStatus && internalValue.value.hasOwnProperty("personMaritalStatus") && validKeys.add("personMaritalStatus");
+        !props.hidePersonRole && internalValue.value.hasOwnProperty("personGroupRole") && validKeys.add("personGroupRole");
+        !props.hideRace && internalValue.value.hasOwnProperty("personRace") && validKeys.add("personRace");
+        !props.hideSuffix && internalValue.value.hasOwnProperty("personSuffix") && validKeys.add("personSuffix");
+        !props.hideTitle && internalValue.value.hasOwnProperty("personTitle") && validKeys.add("personTitle");
+
+        return validKeys;
+    });
 
     const fullPrefix = computed(() => {
         if (props.personLabelPrefix) {
@@ -309,5 +326,11 @@
         }
 
         return "";
+    });
+
+    watchEffect(() => {
+        if (internalValue.value && validProperties.value) {
+            internalValue.value.validProperties = [...validProperties.value];
+        }
     });
 </script>

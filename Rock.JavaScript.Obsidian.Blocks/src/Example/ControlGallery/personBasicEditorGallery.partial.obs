@@ -8,6 +8,8 @@
                            :hideMaritalStatus="visible.includes('hideMaritalStatus')" :hideGender="visible.includes('hideGender')" :hideRace="visible.includes('hideRace')"
                            :hideEthnicity="visible.includes('hideEthnicity')" :showInOneColumn="showInOneColumn" personGuid="someguid" />
 
+        <button type="button" @click="savePerson">Save</button>
+
         <template #settings>
             <div class="row">
                 <!-- <div class="col-md-3">
@@ -118,4 +120,12 @@
             value.value = response.data;
         }
     })();
+
+    async function savePerson(): Promise<void> {
+        const response = await http.post<PersonBasicEditorBag>("/api/v2/Controls/PersonBasicEditorSavePersonData", null, value.value);
+
+        if (response.isSuccess && response.data) {
+            value.value = response.data;
+        }
+    }
 </script>
