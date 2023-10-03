@@ -963,6 +963,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ForgotUserName\forgotUserNameSendInstructionsResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\confirmAccountInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\confirmAccountViewBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\Login\credentialLoginMfaBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\Login\passwordlessLoginMfaBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\restKeyBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\restKeyDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\appleTvAppBag.d.ts" />

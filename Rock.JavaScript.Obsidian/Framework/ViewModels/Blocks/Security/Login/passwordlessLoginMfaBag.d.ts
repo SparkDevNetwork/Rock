@@ -21,17 +21,14 @@
 // </copyright>
 //
 
-/** A bag that contains the passwordless login verify request information. */
-export type PasswordlessLoginVerifyRequestBag = {
-    /** The passwordless authentication code. */
-    code?: string | null;
+/** A bag that contains the passwordless login MFA information. */
+export type PasswordlessLoginMfaBag = {
+    /** Gets or sets a value indicating whether email and mobile phone are missing. */
+    isEmailAndMobilePhoneMissing: boolean;
 
-    /** The matching person value. */
-    matchingPersonValue?: string | null;
+    /** Gets a value indicating whether there is an error. */
+    isError: boolean;
 
     /** Gets or sets the MFA ticket. */
-    mfaTicket?: string | null;
-
-    /** The passwordless authentication state. */
-    state?: string | null;
+    ticket?: string | null;
 };

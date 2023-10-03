@@ -98,12 +98,21 @@
                     </div>
                 </div>
                 <div class="row mt-3">
-                    <div class="col-md-6 col-sm-12 col-xs-12">
+                    <div class="col-md-6 col-12">
                         <Rock:RockCheckBoxList
                             runat="server"
                             ID="cblDisableTokensForAccountProtectionProfiles"
                             Label="Disable Usage of Personal Tokens for the Following Protection Profiles"
                             Help="Any protection profiles selected here will not be allowed to use impersonation tokens or tokens to authenticate a person."
+                            RepeatDirection="Horizontal"
+                            CssClass="js-ignored-protection-profile" />
+                    </div>
+                    <div class="col-md-6 col-12">
+                        <Rock:RockCheckBoxList
+                            runat="server"
+                            ID="cblRequireTwoFactorAuthenticationForAccountProtectionProfiles"
+                            Label="Require Two-Factor Authentication for the Following Protection Profiles"
+                            Help="2FA - Selected protection profiles will require two-factor authentication when logging in."
                             RepeatDirection="Horizontal"
                             CssClass="js-ignored-protection-profile" />
                     </div>
