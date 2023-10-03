@@ -167,10 +167,12 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
+                var preferences = GetBlockPersonPreferences();
+
                 LoadDropDowns();
-                hfBatchId.Value = this.GetBlockUserPreference( "BatchId" );
+                hfBatchId.Value = preferences.GetValue( "BatchId" );
                 ddlBatch.SetValue( hfBatchId.Value );
-                hfDataViewId.Value = this.GetBlockUserPreference( "DataViewId" );
+                hfDataViewId.Value = preferences.GetValue( "DataViewId" );
                 dvpDataView.SetValue( hfDataViewId.Value.AsIntegerOrNull() );
                 BindHtmlGrid( hfBatchId.Value.AsIntegerOrNull(), hfDataViewId.Value.AsIntegerOrNull() );
                 LoadEntityDropDowns();
@@ -419,8 +421,12 @@ namespace RockWeb.Blocks.Finance
         {
             hfBatchId.Value = ddlBatch.SelectedValue;
             hfDataViewId.Value = dvpDataView.SelectedValue;
-            this.SetBlockUserPreference( "DataViewId", hfDataViewId.Value );
-            this.SetBlockUserPreference( "BatchId", hfBatchId.Value );
+
+            var preferences = GetBlockPersonPreferences();
+            preferences.SetValue( "DataViewId", hfDataViewId.Value );
+            preferences.SetValue( "BatchId", hfBatchId.Value );
+            preferences.Save();
+
             BindHtmlGrid( hfBatchId.Value.AsIntegerOrNull(), hfDataViewId.Value.AsIntegerOrNull() );
             LoadEntityDropDowns();
         }

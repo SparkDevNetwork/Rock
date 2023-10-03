@@ -67,114 +67,6 @@ namespace Rock.Tests.Integration.Core.Lava
 
         #endregion
 
-        #region Cache
-
-        [TestMethod]
-        public void CacheBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
-        {
-            var input = @"
-{% cache key:'decker-page-list' duration:'3600' %}
-This is the cached page list!
-{% endcache %}
-";
-
-            var expectedOutput = "The Lava command 'cache' is not configured for this template.";
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
-        }
-
-        [TestMethod]
-        public void CacheBlock_ForEntityCommandResult_IsCached()
-        {
-            var input = @"
-{% cache key:'decker-page-list' duration:'3600' %}
-    {% person where:'LastName == ""Decker"" && NickName == ""Ted""' %}
-        {% for person in personItems %}
-            {{ person.FullName }} <br/>
-        {% endfor %}
-    {% endperson %}
-{% endcache %}
-";
-
-            var expectedOutput = @"
-TedDecker<br/>
-";
-
-            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache,RockEntity" };
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
-        }
-
-        /// <summary>
-        /// Verifies the variable scoping behavior of the Cache block.
-        /// Within the scope of a Cache block, an Assign statement should not affect the value of a same-named variable in the outer scope.
-        /// This behavior differs from the standard scoping behavior for Liquid blocks.
-        /// </summary>
-        [TestMethod]
-        public void CacheBlock_InnerScopeAssign_DoesNotModifyOuterVariable()
-        {
-            var input = @"
-{% assign color = 'blue' %}
-Color 1: {{ color }}
-
-{% cache key:'fav-color' duration:'1200' %}
-    Color 2: {{ color }}
-    {% assign color = 'red' %}
-    Color 3: {{color }}
-{% endcache %}
-
-Color 4: {{ color }}
-";
-
-            var expectedOutput = @"
-Color 1: blue
-Color 2: blue
-Color 3: red
-Color 4: blue
-";
-
-            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache" };
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
-        }
-
-        /// <summary>
-        /// Verifies the variable scoping behavior of the Cache block.
-        /// Within the scope of a Cache block, an Assign statement should not affect the value of a same-named variable in the outer scope.
-        /// This behavior differs from the standard scoping behavior for Liquid blocks.
-        /// </summary>
-        [TestMethod]
-        public void CacheBlock_InsideNewScope_HasAccessToOuterVariable()
-        {
-            var input = @"
-{% if 1 == 1 %}
-    {% assign color = 'blue' %}
-    Color 1: {{ color }}
-
-    {% cache key:'fav-color' duration:'0' %}
-        Color 2: {{ color }}
-        {% assign color = 'red' %}
-        Color 3: {{color }}
-    {% endcache %}
-
-    Color 4: {{ color }}
-{% endif %}
-";
-
-            var expectedOutput = @"
-Color 1: blue
-Color 2: blue
-Color 3: red
-Color 4: blue
-";
-
-            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache" };
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
-        }
-
-        #endregion
-
         #region Entity
 
         [TestMethod]
@@ -246,118 +138,6 @@ Color 4: blue
                 Assert.IsTrue( output.Contains( "Cindy Decker" ), "Expected person not found." );
             } );
         }
-
-        #region Cache
-
-        [TestMethod]
-        public void CacheBlock_WithTwoPassOptionEnabled_EmitsCorrectOutput()
-        {
-            var input = @"
-{%- cache key:'marketing-butter-bar' duration:'1800' twopass:'true' tags:'butter-bars' -%}
-{%- assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:sszzz' | AsDateTime -%}
-{%- contentchannelitem where:'StartDateTime < `{{now}}`' limit:'50' iterator:'Items' -%}
-    {%- for item in Items -%}
-        <div id=`mbb-{{item.Id}}` data-topbar-name=`dismiss{{item.Id}}Topbar` data-topbar-value=`dismissed` class=`topbar` style=`background-color:{{ item | Attribute:'BackgroundColor' }};color:{{ item | Attribute:'ForegroundColor' }};`>
-        <a href=`{{ item | Attribute:'Link' | StripHtml }}`>
-            <span class=`topbar-text`>
-                {{ item | Attribute:'Text' }}
-            </span>
-        </a>
-        <button type=`button` class=`close` data-dismiss=`alert` aria-label=`Close`><span aria-hidden=`true`>&times;</span></button>
-        </div>
-    {%- endfor -%}
-{%- endcontentchannelitem -%}
-{%- endcache -%}
-";
-
-            input = input.Replace( "`", "\"" );
-
-            var options = new LavaTestRenderOptions
-            {
-                EnabledCommands = "Cache,RockEntity",
-                OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains
-            };
-
-            var expectedOutput = @"
-<divid=`mbb-1`data-topbar-name=`dismiss1Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
-<divid=`mbb-2`data-topbar-name=`dismiss2Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
-<divid=`mbb-3`data-topbar-name=`dismiss3Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
-";
-
-            expectedOutput = expectedOutput.Replace( "`", @"""" );
-
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
-            } );
-        }
-
-        [TestMethod]
-        public void CacheBlock_MultipleRenderingPasses_ProducesSameOutput()
-        {
-            var input = @"
-{%- cache key:'duplicate-test' duration:'10' -%}
-This is the cache content.
-{%- endcache -%}
-";
-
-            input = input.Replace( "`", "\"" );
-
-            var options = new LavaTestRenderOptions { EnabledCommands = "Cache" };
-
-            var expectedOutput = @"This is the cache content.";
-
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                // Render the template twice to ensure the result is the same.
-                // The result is rendered and cached on the first pass and the same result should be rendered from the cache on the second pass.
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
-            } );
-        }
-
-        /// <summary>
-        /// Verify that multiple cached Sql blocks on the same page maintain their individual contexts and output.
-        /// </summary>
-        [TestMethod]
-        public void CacheBlock_MultipleInstancesOfCachedSqlBlocks_RendersCorrectOutput()
-        {
-            var input = @"
-{% cache key:'test1' duration:'10' %}
-{% sql %}
-    SELECT 1 AS [Count]
-{% endsql %}
-{% assign item = results | First %}
-Cache #{{ item.Count }}
-{% endcache %}
-
-{%- cache key:'test2' duration:'10' -%}
-{% sql %}
-    SELECT 2 AS [Count]
-{% endsql %}
-{% assign item = results | First %}
-Cache #{{ item.Count }}
-{% endcache %}
-
-{%- cache key:'test3' duration:'10' -%}
-{% sql %}
-    SELECT 3 AS [Count]
-{% endsql %}
-{% assign item = results | First %}
-Cache #{{ item.Count }}
-{% endcache %}
-";
-
-            input = input.Replace( "`", "\"" );
-
-            var options = new LavaTestRenderOptions { EnabledCommands = "Cache,Sql" };
-
-            var expectedOutput = @"Cache #1 Cache #2 Cache #3";
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
-        }
-
-        #endregion
 
         #endregion
 
@@ -619,6 +399,25 @@ findme-interactiontest3
     })();
 </script>
 ";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        #endregion
+
+        #region JsonProperty
+
+        [TestMethod]
+        public void JsonPropertyBlock_WithNumberType_EmitsJsonNumberProperty()
+        {
+            var input = @"
+{% jsonproperty name:'mynumber' type:'number' %}
+123
+{% endjsonproperty %}
+";
+
+            var expectedOutput = @"`mynumber`:`123`"
+                .Replace("`", @"""" );
 
             TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
@@ -911,6 +710,27 @@ Brian;Daniel;Nancy;William;
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
+        [TestMethod]
+        public void WorkflowActivateBlock_WithDelimiterInWorkflowName_EvaluatesWorkflowNameCorrectly()
+        {
+            var mergeFields = new LavaDataDictionary
+            {
+                { "WorkflowName", "Ted's Workflow" }
+            };
+
+            // Activate Workflow: IT Support
+            var input = @"
+{% workflowactivate workflowtype:'51FE9641-FB8F-41BF-B09E-235900C3E53E' workflowname:'{{WorkflowName}}' %}
+  Activated new workflow with the name '{{ Workflow.Name }}'.
+{% endworkflowactivate %}
+";
+
+            var expectedOutput = @"Activated new workflow with the name 'Ted's Workflow'.";
+
+            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
         #endregion
 
 

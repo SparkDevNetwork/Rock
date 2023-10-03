@@ -77,29 +77,30 @@ namespace Rock.Web.UI.Controls
 
             var args = GetDataFactoryArgs();
 
-            string chartDataJson;
+            if ( dataSource is List<ChartJsCategorySeriesDataset> categoryDatasets )
+            {
+                // If the datasource is a list that contains single dataset, extract it.
+                if ( categoryDatasets.Count == 1 )
+                {
+                    dataSource = categoryDatasets[0];
+                }
+            }
+
+            string chartDataJson = null;
             if ( dataSource is IEnumerable<IChartData> chartDataItems )
             {
                 chartDataJson = chartFactory.GetChartDataJson( chartDataItems, defaultSeriesName, args );
             }
-            //else if ( dataSource is List<ChartJsTimeSeriesDataset> timeDatasets )
-            //{
-            //    chartDataJson = chartFactory.GetChartDataJson( timeDatasets, args );
-            //}
             else if ( dataSource is ChartJsCategorySeriesDataset categoryDataset )
             {
                 // For a single data set, each datapoint represents a pie slice.
                 chartDataJson = chartFactory.GetChartDataJson( categoryDataset, args );
             }
-            //else if ( dataSource is List<ChartJsCategorySeriesDataset> categoryDatasets )
-            //{
-
-            //    chartDataJson = chartFactory.GetChartDataJson( categoryDatasets, args );
-            //}
             else
             {
                 throw new Exception( "Pie Chart unavailable. The data source is invalid." );
             }
+
             return chartDataJson;
         }
 

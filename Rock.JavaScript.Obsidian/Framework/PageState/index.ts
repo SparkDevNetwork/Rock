@@ -18,9 +18,6 @@ import { State } from "./state";
 import { shallowReadonly, reactive } from "vue";
 import { PageConfig } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import { IEntity } from "@Obsidian/ViewModels/entity";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
-import { GroupBag } from "@Obsidian/ViewModels/Entities/groupBag";
 
 // This needs to move elsewhere probably.
 export type PageDebugTiming = {
@@ -34,6 +31,7 @@ export type PageDebugTiming = {
 const state: State = reactive({
     areSecondaryBlocksShown: true,
     currentPerson: null,
+    isAnonymousVisitor: false,
     pageParameters: {},
     contextEntities: {},
     pageId: 0,
@@ -56,8 +54,8 @@ export class Store {
 
     initialize(pageConfig: PageConfig): void {
         state.currentPerson = pageConfig.currentPerson || null;
+        state.isAnonymousVisitor = pageConfig.isAnonymousVisitor;
         state.pageParameters = pageConfig.pageParameters || {};
-        state.contextEntities = pageConfig.contextEntities || {};
         state.pageId = pageConfig.pageId || 0;
         state.pageGuid = pageConfig.pageGuid || "";
         state.executionStartTime = pageConfig.executionStartTime;
@@ -88,18 +86,6 @@ export class Store {
 
     get isAuthenticated(): boolean {
         return !!state.currentPerson;
-    }
-
-    getContextEntity(type: string): IEntity | null {
-        return state.contextEntities[type] || null;
-    }
-
-    get personContext(): PersonBag | null {
-        return <PersonBag | null>this.getContextEntity("person");
-    }
-
-    get groupContext(): GroupBag | null {
-        return <GroupBag | null>this.getContextEntity("group");
     }
 
     getPageParameter(key: string): unknown {

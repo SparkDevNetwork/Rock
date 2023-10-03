@@ -1,0 +1,80 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-sm-4 col-md-2">
+                <LocationItemPicker label="Location"
+                                    v-model="location"
+                                    :multiple="false" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, watch } from "vue";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
+    import { StreakTypeExclusionBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeExclusionDetail/streakTypeExclusionBag";
+    import { StreakTypeExclusionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeExclusionDetail/streakTypeExclusionDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<StreakTypeExclusionBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<StreakTypeExclusionDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: StreakTypeExclusionBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const location = propertyRef(props.modelValue.location ?? {}, "LocationId");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [location];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(location, props.modelValue.location ?? {});
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: StreakTypeExclusionBag = {
+            ...props.modelValue,
+            location: location.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

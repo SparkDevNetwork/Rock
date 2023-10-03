@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import Panel from "@Obsidian/Controls/panel";
+import Panel from "@Obsidian/Controls/panel.obs";
 
 /** Provides a generic Rock Block structure */
 export default defineComponent({

@@ -1,0 +1,131 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" name="step-program-step-type-picker">
+        <InteractionChannelPicker
+                                  v-if="!defaultInteractionChannelGuid"
+                                  v-model="internalChannelValue"
+                                  label="Interaction Channel"
+                                  :multiple="false"
+                                  :disabled="disabled"
+                                  showBlankItem
+                                  formGroupClasses="mt-0"
+                                  :displayStyle="PickerDisplayStyle.Condensed" />
+        <InteractionComponentPicker
+                                    v-if="internalChannelGuid"
+                                    v-model="internalValue"
+                                    label="Interaction Component"
+                                    :interactionChannelGuid="internalChannelGuid"
+                                    :multiple="false"
+                                    :disabled="disabled"
+                                    showBlankItem
+                                    :displayStyle="PickerDisplayStyle.Condensed" />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import InteractionChannelPicker from "./interactionChannelPicker.obs";
+    import InteractionComponentPicker from "./interactionComponentPicker.obs";
+    import RockFormField from "./rockFormField.obs";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { Guid } from "@Obsidian/Types";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/interactionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { deepEqual } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            required: true
+        },
+
+        /** Provided Interaction Channel: hides Interaction Channel picker if provided */
+        defaultInteractionChannelGuid: {
+            type: Object as PropType<Guid | null>,
+            default: null
+        },
+
+        disabled: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = ref<ListItemBag | null>(props.modelValue);
+    const internalChannelValue = ref<ListItemBag | null>(null);
+
+    const securityGrantToken = useSecurityGrantToken();
+    const http = useHttp();
+
+    const internalChannelGuid = computed(() => {
+        return (props.defaultInteractionChannelGuid || internalChannelValue.value?.value) ?? "";
+    });
+    let skipWatcher = false;
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        if (!deepEqual(internalValue.value, props.modelValue, false)) {
+            internalValue.value = props.modelValue;
+            getChannelFromComponent();
+        }
+    });
+
+    watch(internalValue, (val) => {
+        if (!deepEqual(val, props.modelValue, false)) {
+            emit("update:modelValue", val);
+        }
+    });
+
+    watch(() => props.defaultInteractionChannelGuid, (newVal) => {
+        if (newVal) {
+            internalChannelValue.value = null;
+        }
+    });
+
+    watch(internalChannelValue, () => {
+        if (!skipWatcher) {
+            internalValue.value = null;
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    async function getChannelFromComponent(): Promise<void> {
+        const options: InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag = {
+            interactionComponentGuid: props.modelValue?.value,
+            securityGrantToken: securityGrantToken.value
+        };
+
+        const result = await http.post<ListItemBag>("/api/v2/Controls/InteractionChannelInteractionComponentPickerGetChannelFromComponent", null, options);
+
+        if (result.isSuccess && result.data) {
+            // Set the template, but don't let the change reset the instance
+            skipWatcher = true;
+            internalChannelValue.value = result.data;
+            await nextTick();
+            skipWatcher = false;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
+
+    // #endregion
+
+    if (props.modelValue && !internalChannelGuid.value) {
+        getChannelFromComponent();
+    }
+</script>

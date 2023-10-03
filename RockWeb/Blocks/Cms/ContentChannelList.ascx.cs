@@ -196,14 +196,14 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( UserPreferenceKey.Type, ddlType.SelectedValue );
+            gfFilter.SetFilterPreference( UserPreferenceKey.Type, ddlType.SelectedValue );
             string categoryFilterValue = cpCategories.SelectedValuesAsInt()
                 .Where( v => v != 0 )
                 .Select( c => c.ToString() )
                 .ToList()
                 .AsDelimited( "," );
 
-            gfFilter.SaveUserPreference( UserPreferenceKey.Categories, categoryFilterValue );
+            gfFilter.SetFilterPreference( UserPreferenceKey.Categories, categoryFilterValue );
             BindGrid();
         }
 
@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.Cms
 
         private void BindFilter()
         {
-            int? typeId = gfFilter.GetUserPreference( "Type" ).AsIntegerOrNull();
+            int? typeId = gfFilter.GetFilterPreference( "Type" ).AsIntegerOrNull();
             ddlType.Items.Clear();
             ddlType.Items.Add( new ListItem( string.Empty, string.Empty ) );
             foreach ( var contentType in new ContentChannelTypeService( new RockContext() ).Queryable().OrderBy( c => c.Name ) )
@@ -316,14 +316,14 @@ namespace RockWeb.Blocks.Cms
                 .Include( a => a.Items )
                 .Where( a => a.ContentChannelType.ShowInChannelList == true );
 
-            int? typeId = gfFilter.GetUserPreference( UserPreferenceKey.Type ).AsIntegerOrNull();
+            int? typeId = gfFilter.GetFilterPreference( UserPreferenceKey.Type ).AsIntegerOrNull();
             if ( typeId.HasValue )
             {
                 qry = qry.Where( c => c.ContentChannelTypeId == typeId.Value );
             }
 
             var selectedCategoryIds = new List<int>();
-            gfFilter.GetUserPreference( UserPreferenceKey.Categories ).SplitDelimitedValues().ToList().ForEach( s => selectedCategoryIds.Add( int.Parse( s ) ) );
+            gfFilter.GetFilterPreference( UserPreferenceKey.Categories ).SplitDelimitedValues().ToList().ForEach( s => selectedCategoryIds.Add( int.Parse( s ) ) );
             if ( selectedCategoryIds.Any() )
             {
                 qry = qry.Where( a => a.Categories.Any( c => selectedCategoryIds.Contains( c.Id ) ) );

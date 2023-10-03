@@ -1,0 +1,138 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <NotificationBox v-if="isSystem" alertType="info">
+            <strong>Note</strong> Because this page route is used by Rock, editing is restricted.
+        </NotificationBox>
+
+        <div class="row">
+            <div class="col-md-2">
+                <PagePicker v-model="page"
+                            label="Page"
+                            rules="required"
+                            :multiple="false"
+                            showSelectCurrentPage
+                            :disabled="isSystem"
+                            @update:modelValue="onUpdateSelectedPage" />
+                <RockLabel>Site</RockLabel>
+                <p>{{ site }}</p>
+            </div>
+            <div class="col-md-6 col-md-offset-4">
+                <TextBox v-model="route"
+                         label="Route"
+                         :disabled="isSystem"
+                         rules="required" />
+                <CheckBox v-model="isGlobal"
+                          label="Is Global"
+                          help="Check this if the page should be used by every site even if 'Enable Exclusive Routes' is turned on." />
+            </div>
+        </div>
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { PageRouteBag } from "@Obsidian/ViewModels/Blocks/Cms/PageRouteDetail/pageRouteBag";
+    import { PageRouteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageRouteDetail/pageRouteDetailOptionsBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<PageRouteBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<PageRouteDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: PageRouteBag): void;
+        (e: "propertyChanged", value: string): void;
+    }>();
+
+    // #region Values
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const route = propertyRef(props.modelValue.route ?? "", "Route");
+    const isGlobal = propertyRef(props.modelValue.isGlobal ?? false, "IsGlobal");
+    const site = ref(props.modelValue.site ?? "");
+    const page = ref<PageRouteValueBag>({
+        page: props.modelValue.page ?? {}
+    });
+    const isSystem = ref(props.modelValue.isSystem ?? false);
+
+    const invokeBlockAction = useInvokeBlockAction();
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [route, isGlobal];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onUpdateSelectedPage(value: PageRouteValueBag | PageRouteValueBag[] | null): Promise<void> {
+        if (!value || Array.isArray(value) || !value.page) {
+            site.value = "";
+            return;
+        }
+
+        const response = await invokeBlockAction<{ siteName: string }>("GetSiteName", {
+            guid: value.page.value
+        });
+
+        if (response.isSuccess && response.data) {
+            site.value = response.data.siteName;
+        }
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(route, props.modelValue.route ?? "");
+        updateRefValue(isGlobal, props.modelValue.isGlobal);
+        updateRefValue(page, {
+            page: props.modelValue.page ?? {}
+        });
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, route, isGlobal, page, ...propRefs], () => {
+        const newValue: PageRouteBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            route: route.value,
+            isGlobal: isGlobal.value,
+            page: page.value?.page
+
+        };
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

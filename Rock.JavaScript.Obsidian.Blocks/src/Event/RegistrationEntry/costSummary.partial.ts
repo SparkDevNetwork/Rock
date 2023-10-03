@@ -16,10 +16,10 @@
 //
 
 import { defineComponent, inject } from "vue";
-import Loading from "@Obsidian/Controls/loading";
+import Loading from "@Obsidian/Controls/loading.obs";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import CurrencyBox from "@Obsidian/Controls/currencyBox";
-import HelpBlock from "@Obsidian/Controls/helpBlock";
+import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
 import { ValidationRule } from "@Obsidian/ValidationRules";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 import { RegistrationEntryBlockArgs, RegistrationEntryState } from "./types.partial";

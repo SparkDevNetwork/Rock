@@ -104,7 +104,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( !Page.IsPostBack )
             {
                 // first page load, so set the selected group types from user preferences
-                var userGroupTypes = this.GetBlockUserPreference( AttributeKey.GroupTypes ).SplitDelimitedValues().AsIntegerList();
+                var preferences = GetBlockPersonPreferences();
+                var userGroupTypes = preferences.GetValue( AttributeKey.GroupTypes ).SplitDelimitedValues().AsIntegerList();
                 gtGroupTypesFilter.SetValues( userGroupTypes );
 
                 int? personId = this.Person != null ? this.Person.Id : ( int? ) null;
@@ -183,7 +184,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnApplyOptions_Click( object sender, EventArgs e )
         {
-            this.SetBlockUserPreference( AttributeKey.GroupTypes, gtGroupTypesFilter.SelectedGroupTypeIds.AsDelimited( "," ) );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( AttributeKey.GroupTypes, gtGroupTypesFilter.SelectedGroupTypeIds.AsDelimited( "," ) );
+            preferences.Save();
+
             ShowDetail( hfPersonId.Value.AsInteger() );
         }
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -19,13 +18,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Xml;
 
 using Rock;
 using Rock.CodeGeneration.Utility;
 using Rock.CodeGeneration.XmlDoc;
 using Rock.Utility;
-using Rock.ViewModels.Utility;
 
 namespace Rock.CodeGeneration.Pages
 {
@@ -114,17 +111,6 @@ namespace Rock.CodeGeneration.Pages
         }
         private string _serviceFolder;
 
-        public string ViewModelsFolder
-        {
-            get => _viewModelsFolder;
-            set
-            {
-                _viewModelsFolder = value;
-                OnPropertyChanged();
-            }
-        }
-        private string _viewModelsFolder;
-
         public string RestFolder
         {
             get => _restFolder;
@@ -168,17 +154,6 @@ namespace Rock.CodeGeneration.Pages
             }
         }
         private bool _isServiceChecked = true;
-
-        public bool IsViewModelsChecked
-        {
-            get => _isViewModelsChecked;
-            set
-            {
-                _isViewModelsChecked = value;
-                OnPropertyChanged();
-            }
-        }
-        private bool _isViewModelsChecked = true;
 
         public bool IsRestChecked
         {
@@ -330,8 +305,6 @@ namespace Rock.CodeGeneration.Pages
             }
 
             ServiceFolder = Path.Combine( RootFolder().FullName, projectName );
-            ViewModelsFolder = Path.Combine( RootFolder().FullName, projectName + ".ViewModels" );
-            //tbViewModelTsFolder.Text = Path.Combine( RootFolder().FullName, "Rock.JavaScript.Obsidian", "Framework", "ViewModels" );
             RestFolder = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
             ClientFolder = Path.Combine( RootFolder().FullName, projectName + ".Client" );
             DatabaseFolder = Path.Combine( RootFolder().FullName, "Database" );
@@ -377,8 +350,6 @@ namespace Rock.CodeGeneration.Pages
 
             Task.Run( () =>
             {
-                var viewModelTypes = GetViewModelTypes();
-
                 entityPropertyShouldBeVirtualWarnings = new List<string>();
 
                 Dispatcher.Invoke( () =>
@@ -446,11 +417,6 @@ namespace Rock.CodeGeneration.Pages
                                 if ( IsRestChecked )
                                 {
                                     WriteRESTFile( RestFolder, type );
-                                }
-
-                                if ( IsViewModelsChecked )
-                                {
-                                    WriteViewModelFile( ViewModelsFolder, type );
                                 }
                             }
 
@@ -1001,11 +967,7 @@ GO
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
-            var isObsolete = type.GetCustomAttribute<ObsoleteAttribute>() != null;
-            var isModel = type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> );
-            var hasViewModel = !isObsolete && isModel && !( type.GetCustomAttribute<CodeGenExcludeAttribute>()?.ExcludedFeatures ?? CodeGenFeature.None ).HasFlag( CodeGenFeature.ViewModelFile );
             var properties = GetEntityProperties( type, false, true, true );
-            var viewModelProperties = GetViewModelProperties( type );
 
             var sb = new StringBuilder();
             sb.AppendLine( "//------------------------------------------------------------------------------" );
@@ -1034,11 +996,7 @@ GO
             sb.AppendLine( "using System;" );
             sb.AppendLine( "using System.Linq;" );
             sb.AppendLine( "" );
-            sb.AppendLine( @"using Rock.Attribute;
-using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
+            sb.AppendLine( @"using Rock.Data;
 " );
 
             sb.AppendFormat( "namespace {0}" + Environment.NewLine, type.Namespace );
@@ -1061,51 +1019,6 @@ using Rock.Web.Cache;
             sb.Append( GetCanDeleteCode( rootFolder, type ) );
 
             sb.AppendLine( "    }" );
-
-            if ( hasViewModel )
-            {
-
-                sb.AppendLine( $@"
-    /// <summary>
-    /// {type.Name} View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( {type.Name} ) )]
-    public partial class {type.Name}ViewModelHelper : ViewModelHelper<{type.Name}, {type.Name}Bag>
-    {{
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name=""model"">The entity.</param>
-        /// <param name=""currentPerson"">The current person.</param>
-        /// <param name=""loadAttributes"">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override {type.Name}Bag CreateViewModel( {type.Name} model, Person currentPerson = null, bool loadAttributes = true )
-        {{
-            if ( model == null )
-            {{
-                return default;
-            }}
-
-            var viewModel = new {type.Name}Bag
-            {{
-                IdKey = model.IdKey," );
-
-                foreach ( var property in viewModelProperties )
-                {
-                    var cast = property.IsEnum ? $"( int{( property.IsNullable ? "?" : string.Empty )} ) " : string.Empty;
-                    sb.AppendLine( $"                {property.Name} = {cast}model.{property.Name}," );
-                }
-
-                sb.AppendLine( $@"            }};
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }}
-    }}
-" );
-
-            }
 
             sb.AppendFormat( @"
     /// <summary>
@@ -1195,205 +1108,13 @@ using Rock.Web.Cache;
                 }
             }
 
-            sb.AppendLine( $@"
-        }}" );
-
-            if ( hasViewModel )
-            {
-                sb.AppendLine( $@"
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name=""model"">The entity.</param>
-        /// <param name=""currentPerson"" >The currentPerson.</param>
-        /// <param name=""loadAttributes"" >Load attributes?</param>
-        public static {type.Name}Bag ToViewModel( this {type.Name} model, Person currentPerson = null, bool loadAttributes = false )
-        {{
-            var helper = new {type.Name}ViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }}" );
-            }
-
             sb.AppendLine( @"
+        }
     }
-" );
-            sb.AppendLine( "}" );
+}" );
 
             var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Service.CodeGenerated.cs" ) );
             WriteFile( file, sb );
-        }
-
-        /// <summary>
-        /// Writes the ViewModel file for a given type
-        /// </summary>
-        /// <param name="rootFolder"></param>
-        /// <param name="type"></param>
-        private void WriteViewModelFile( string rootFolder, Type type )
-        {
-            var isModel = type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> );
-
-            if ( !isModel || ( type.GetCustomAttribute<CodeGenExcludeAttribute>()?.ExcludedFeatures ?? CodeGenFeature.None ).HasFlag( CodeGenFeature.ViewModelFile ) )
-            {
-                return;
-            }
-
-            var sb = new StringBuilder();
-            sb.AppendLine( AutoGeneratedLicense );
-            var properties = GetViewModelProperties( type );
-
-            sb.AppendLine( $@"
-using System;
-using System.Linq;
-
-using Rock.ViewModels.Utility;
-
-namespace Rock.ViewModels.Entities
-{{
-    /// <summary>
-    /// {type.Name} View Model
-    /// </summary>
-    public partial class {type.Name}Bag : EntityBagBase
-    {{" );
-
-            foreach ( var property in properties )
-            {
-                if ( property.SummaryComment.IsNotNullOrWhiteSpace() )
-                {
-                    sb.AppendLine( "        /// <summary>" );
-                    foreach ( var line in property.SummaryComment.Split( new string[] { "\r\n" }, StringSplitOptions.None ) )
-                    {
-                        sb.AppendLine( $"        /// {line}" );
-                    }
-                    sb.AppendLine( "        /// </summary>" );
-
-                    if ( property.ValueComment.IsNotNullOrWhiteSpace() )
-                    {
-                        sb.AppendLine( "        /// <value>" );
-                        foreach ( var line in property.ValueComment.Split( new string[] { "\r\n" }, StringSplitOptions.None ) )
-                        {
-                            sb.AppendLine( $"        /// {line}" );
-                        }
-                        sb.AppendLine( "        /// </value>" );
-                    }
-                }
-                else
-                {
-                    sb.AppendLine( $@"        /// <summary>
-        /// Gets or sets the {property.Name}.
-        /// </summary>
-        /// <value>
-        /// The {property.Name}.
-        /// </value>" );
-                }
-
-                sb.AppendLine( $@"        public {property.TypeName} {property.Name} {{ get; set; }}
-" );
-            }
-
-            sb.AppendLine( @"    }
-}" );
-
-            var file = new FileInfo( Path.Combine( rootFolder, "Entities", type.Name + "Bag.cs" ) );
-            WriteFile( file, sb );
-        }
-
-        /// <summary>
-        /// Gets the type of the view model.
-        /// </summary>
-        /// <returns></returns>
-        private static List<Type> GetViewModelTypes()
-        {
-            var viewModelType = typeof( IViewModel );
-            var rockViewModelAssembly = viewModelType.Assembly;
-            var fileInfo = new FileInfo( new Uri( rockViewModelAssembly.CodeBase ).AbsolutePath );
-            var assemblyFileName = fileInfo.FullName;
-            var assembly = Assembly.LoadFrom( assemblyFileName );
-            var types = new List<Type>();
-
-            foreach ( var type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
-            {
-                if ( !type.IsAbstract && viewModelType.IsAssignableFrom( type ) )
-                {
-                    types.Add( type );
-                }
-            }
-
-            return types;
-        }
-
-        /// <summary>
-        /// Gets the view model properties.
-        /// </summary>
-        /// <param name="viewModelType">Type of the view model.</param>
-        /// <param name="modelType">Type of the model.</param>
-        /// <returns></returns>
-        private List<ViewModelProperty> GetViewModelProperties( Type viewModelType, Type modelType = null )
-        {
-            var viewModelTypeProperties = GetEntityProperties( viewModelType, false, true, false );
-            var modelProperties = modelType != null ?
-                GetEntityProperties( modelType, false, true, true ) :
-                new Dictionary<string, PropertyInfo>();
-
-            var properties = viewModelTypeProperties
-                .Where( p => !( p.Value.GetCustomAttribute<CodeGenExcludeAttribute>()?.ExcludedFeatures ?? CodeGenFeature.None ).HasFlag( CodeGenFeature.ViewModelFile ) )
-                .Where( p => p.Value.Name != "Id" && p.Value.Name != "Guid" && p.Value.Name != "Attributes" && p.Value.Name != "AttributeValues" ) // Handled automatically.
-                .Select( p =>
-                {
-                    var obsolete = p.Value.GetCustomAttribute<ObsoleteAttribute>();
-                    var underlyingType = Nullable.GetUnderlyingType( p.Value.PropertyType );
-                    var isNullable = underlyingType != null;
-                    var isEnum = isNullable ? underlyingType.IsEnum : p.Value.PropertyType.IsEnum;
-
-                    var originalType = viewModelTypeProperties.GetValueOrNull( p.Key );
-                    var propertyType = p.Value.PropertyType;
-                    var isRequired = originalType?.GetCustomAttribute<RequiredAttribute>() != null;
-                    var typeAttribute = p.Value.GetCustomAttribute<TypeScriptTypeAttribute>();
-                    var tsType = typeAttribute?.TsType;
-                    HashSet<string> imports = null;
-
-                    if ( tsType.IsNullOrWhiteSpace() )
-                    {
-                        var modelProperty = modelProperties.GetValueOrNull( p.Key );
-
-                        if ( modelProperty != null )
-                        {
-                            typeAttribute = modelProperty.GetCustomAttribute<TypeScriptTypeAttribute>();
-                            tsType = typeAttribute?.TsType;
-                        }
-                    }
-
-                    if ( tsType.IsNullOrWhiteSpace() )
-                    {
-                        (tsType, imports) = GetTypescriptType( propertyType, isRequired );
-                    }
-                    else if ( !typeAttribute.ImportStatement.IsNullOrWhiteSpace() )
-                    {
-                        imports = new HashSet<string> { typeAttribute.ImportStatement };
-                    }
-
-                    var comments = _xmlDoc.GetMemberComments( p.Value );
-
-                    return new ViewModelProperty
-                    {
-                        Name = p.Key,
-                        IsObsolete = obsolete != null,
-                        IsEnum = isEnum,
-                        IsNullable = isNullable,
-                        SummaryComment = comments.Summary?.PlainText,
-                        TypeName =
-                            ( isNullable && isEnum ) ? "int?" :
-                            isEnum ? "int" :
-                            PropertyTypeName( p.Value.PropertyType ),
-                        TypeScriptImports = imports,
-                        TypeScriptType = tsType,
-                        ValueComment = comments.Value?.PlainText
-                    };
-                } )
-                .Where( p => !p.IsObsolete )
-                .ToList();
-
-            return properties;
         }
 
         /// <summary>
@@ -1732,7 +1453,7 @@ namespace Rock.ViewModels.Entities
             var restControllerType = Type.GetType( $"{fullClassName}, {typeof( Rock.Rest.ApiControllerBase ).Assembly.FullName}" );
             var restControllerGuid = restControllerType?.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>()?.Guid;
 
-            if ( type.GetCustomAttribute<Rock.Data.ExcludeDefaultRestControllerAttribute>() != null )
+            if ( ( type.GetCustomAttribute<CodeGenExcludeAttribute>()?.ExcludedFeatures ?? CodeGenFeature.None ).HasFlag( CodeGenFeature.DefaultRestController ) )
             {
                 return;
             }
@@ -2525,15 +2246,6 @@ namespace Rock.ViewModels.Entities
             }
         }
 
-        private void ViewModelsFolderTextBox_MouseDoubleClick( object sender, MouseButtonEventArgs e )
-        {
-            _fbdOutput.SelectedPath = ViewModelsFolder;
-            if ( _fbdOutput.ShowDialog() == System.Windows.Forms.DialogResult.OK )
-            {
-                ViewModelsFolder = _fbdOutput.SelectedPath;
-            }
-        }
-
         private void RestFolderTextBox_MouseDoubleClick( object sender, MouseButtonEventArgs e )
         {
             _fbdOutput.SelectedPath = RestFolder;
@@ -2876,79 +2588,5 @@ namespace Rock.ViewModels.Entities
 
             return result.ToArray();
         }
-    }
-
-    /// <summary>
-    /// View Model Property
-    /// </summary>
-    public sealed class ViewModelProperty
-    {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is obsolete.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is obsolete; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsObsolete { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is enum.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is enum; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsEnum { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is nullable.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is nullable; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsNullable { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the type.
-        /// </summary>
-        /// <value>
-        /// The name of the type.
-        /// </value>
-        public string TypeName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the summary comment.
-        /// </summary>
-        /// <value>The summary comment.</value>
-        public string SummaryComment { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value comment.
-        /// </summary>
-        /// <value>The value comment.</value>
-        public string ValueComment { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the type script.
-        /// </summary>
-        /// <value>
-        /// The type of the type script.
-        /// </value>
-        public string TypeScriptType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type script import.
-        /// </summary>
-        /// <value>
-        /// The type script import.
-        /// </value>
-        public HashSet<string> TypeScriptImports { get; set; }
     }
 }

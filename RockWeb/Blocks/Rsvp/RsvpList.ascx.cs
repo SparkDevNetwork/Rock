@@ -133,10 +133,10 @@ namespace RockWeb.Blocks.RSVP
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( UserPreferenceKey.DateRange ), "Date Range", drpDates.DelimitedValues );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( UserPreferenceKey.Location ), "Location", ddlSchedule.SelectedValue );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( UserPreferenceKey.Schedule ), "Schedule", ddlLocation.SelectedValue );
+            rFilter.DeleteFilterPreferences();
+            rFilter.SetFilterPreference( MakeKeyUniqueToGroup( UserPreferenceKey.DateRange ), "Date Range", drpDates.DelimitedValues );
+            rFilter.SetFilterPreference( MakeKeyUniqueToGroup( UserPreferenceKey.Location ), "Location", ddlSchedule.SelectedValue );
+            rFilter.SetFilterPreference( MakeKeyUniqueToGroup( UserPreferenceKey.Schedule ), "Schedule", ddlLocation.SelectedValue );
 
             BindRSVPItemsGrid();
         }
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.RSVP
         /// </summary>
         private void SetFilter()
         {
-            drpDates.DelimitedValues = rFilter.GetUserPreference( MakeKeyUniqueToGroup( UserPreferenceKey.DateRange ) );
+            drpDates.DelimitedValues = rFilter.GetFilterPreference( MakeKeyUniqueToGroup( UserPreferenceKey.DateRange ) );
 
             var locations = GetLocations();
             if ( locations.Any() )
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.RSVP
                 ddlLocation.DataSource = locations;
                 ddlLocation.DataBind();
 
-                string locationValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( UserPreferenceKey.Location ) );
+                string locationValue = rFilter.GetFilterPreference( MakeKeyUniqueToGroup( UserPreferenceKey.Location ) );
                 if ( !string.IsNullOrWhiteSpace( locationValue ) )
                 {
                     int? locationId = locationValue.AsIntegerOrNull();
@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.RSVP
                 ddlSchedule.DataSource = schedules;
                 ddlSchedule.DataBind();
 
-                string scheduleValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( UserPreferenceKey.Schedule ) );
+                string scheduleValue = rFilter.GetFilterPreference( MakeKeyUniqueToGroup( UserPreferenceKey.Schedule ) );
                 if ( !string.IsNullOrWhiteSpace( scheduleValue ) )
                 {
                     int? scheduleId = scheduleValue.AsIntegerOrNull();
@@ -326,7 +326,7 @@ namespace RockWeb.Blocks.RSVP
                         ddlSchedule.Visible = true;
                         ddlSchedule.DataSource = schedules;
                         ddlSchedule.DataBind();
-                        ddlSchedule.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( UserPreferenceKey.Schedule ) ) );
+                        ddlSchedule.SetValue( rFilter.GetFilterPreference( MakeKeyUniqueToGroup( UserPreferenceKey.Schedule ) ) );
                     }
                     else
                     {

@@ -1,0 +1,183 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="guid"
+          personKeyField="guid"
+          itemTerm="Person"
+          tooltipField="email"
+          stickyHeader
+          liveUpdates
+          :entityTypeGuid="EntityType.Person"
+          :expectedRowCount="config.expectedRowCount ?? undefined"
+          :customActions="customActions"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+        <SelectColumn />
+
+        <Column name="name"
+                title="Name"
+                sortValue="{{ row.lastName }} {{ row.nickName }}"
+                :filter="textValueFilter"
+                filterValue="{{ row.nickName }} {{ row.lastName }}"
+                quickFilterValue="{{ row.nickName }} {{  row.lastName }}">
+            <template #format="{ row }">
+                <div class="d-flex flex-fill align-items-center">
+                    <div class="mr-2 flex-shrink-0"
+                         :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${row.photoUrl}')`, 'background-size': 'cover' }">
+                    </div>
+                    <div class="flex-grow-1">
+                        {{ row.nickName }} {{ row.lastName }}
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="d-flex flex-fill align-items-center">
+                    <div class="mr-2 flex-shrink-0 skeleton skeleton-xs"
+                         style="width: 24px; height: 24px; border-radius: 12px;" />
+                    <div class="skeleton skeleton-text skeleton-sm skeleton-rounded flex-grow-1" />
+                </div>
+            </template>
+
+            <template #export="{ row }">
+                {{ row.nickName }} {{ row.lastName }}
+            </template>
+        </Column>
+
+        <DateColumn name="birthDate"
+                    title="Birth Date"
+                    field="birthDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <NumberColumn name="age"
+                      title="Age"
+                      field="age"
+                      :filter="numberValueFilter"
+                      visiblePriority="lg" />
+
+        <BooleanColumn name="isEmailActive"
+                       title="Email Active"
+                       field="isEmailActive"
+                       visiblePriority="sm" />
+
+        <TextColumn name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="sm" />
+
+
+        <LabelColumn name="connectionStatus"
+                     title="Connection Status"
+                     field="connectionStatus"
+                     :filter="pickExistingValueFilter"
+                     visiblePriority="md" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <EditColumn @click="onEditClick" />
+
+        <SecurityColumn />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import Grid, { AttributeColumns, BooleanColumn, Column, DateColumn, dateValueFilter, DeleteColumn, EditColumn, LabelColumn, NumberColumn, numberValueFilter, pickExistingValueFilter, SecurityColumn, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { GridAction } from "@Obsidian/Types/Controls/grid";
+    import { reactive, ref } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<Record<string, string>>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const customActions: GridAction[] = [
+        {
+            title: "Custom Action",
+            tooltip: "This is an example of a custom block action.",
+            iconCssClass: "fa fa-key"
+        }
+    ];
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the person.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        window.location.href = `/Person/${key}`;
+    }
+
+    /**
+     * Called when a row's edit button has been clicked by the person.
+     *
+     * @param key The key of the row that should be edited.
+     */
+    function onEditClick(key: string): void {
+        window.location.href = `/Person/${key}`;
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the person. This
+     * happens only if they have confirmed the delete action.
+     *
+     * @param key The key of the row that should be deleted.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        await alert("Deleting is not supported for this sample grid, it will only be simulated.");
+
+        if (gridData) {
+            const index = (gridData.rows ?? []).findIndex(r => r["guid"] === key);
+
+            if (index !== -1) {
+                gridData.rows?.splice(index, 1);
+            }
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the person.
+     */
+    function onAddItem(): void {
+        window.location.href = "/NewFamily";
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

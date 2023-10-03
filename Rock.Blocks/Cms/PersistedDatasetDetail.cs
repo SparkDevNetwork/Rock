@@ -35,12 +35,13 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the details of a particular persisted dataset.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Persisted Dataset Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular persisted dataset." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -48,7 +49,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "b189040b-2914-437f-900d-a54705b22d2e" )]
     [Rock.SystemGuid.BlockTypeGuid( "6035ac10-07a5-4edd-a1e9-10862fc41494" )]
-    public class PersistedDatasetDetail : RockObsidianDetailBlockType
+    public class PersistedDatasetDetail : RockDetailBlockType
     {
         #region Keys
 

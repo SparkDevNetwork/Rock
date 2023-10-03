@@ -1,0 +1,62 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   v-model="internalValue"
+                   formGroupClasses="rock-text-box"
+                   name="textbox"
+                   :rules="computedRules">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="input-group">
+                    <span class="input-group-addon">
+                        <i class="fa fa-envelope"></i>
+                    </span>
+                    <input v-model="internalValue" :id="uniqueId" class="form-control" v-bind="field" :type="computedType" />
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
+    import RockFormField from "./rockFormField.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+        allowLava: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        allowMultiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        rules: rulesPropType
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const computedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        if (rules.indexOf("email") === -1 && !props.allowLava && !props.allowMultiple) {
+            rules.push("email");
+        }
+
+        return rules;
+    });
+
+    const computedType = computed((): string => {
+        return props.allowLava || props.allowMultiple ? "text" : "email";
+    });
+</script>

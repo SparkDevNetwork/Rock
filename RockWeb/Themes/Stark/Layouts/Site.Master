@@ -103,15 +103,19 @@
 
         // Fixes an issue with the wait spinner caused by browser Back/Forward caching.
         function HandleBackForwardCache() {
-
-            // Forcibly hide the wait spinner if the page is being reloaded from cache.
-            // Browsers that implement back/forward caching may otherwise continue to display the wait spinner when the page is restored.
+            // Forcibly hide the wait spinner, and clear the pending request if the page is being reloaded from bfcache. (Currently WebKit only)
+            // Browsers that implement bfcache will otherwise trigger updateprogress because the pending request is still in the PageRequestManager state.
             // This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
             // (https://bugs.webkit.org/show_bug.cgi?id=156356)
-            $(window).bind('pageshow', function (e) {
-                if ( e.originalEvent.persisted )
-                {
-                    $('#updateProgress').hide();
+            window.addEventListener('pageshow', function (e) {
+                if ( e.persisted ) {
+                    document.querySelector('#updateProgress').style.display = 'none';
+                    // Check if the page is in postback, and if so, reset the PageRequestManager state.
+                    if (Sys.WebForms.PageRequestManager.getInstance().get_isInAsyncPostBack()) {
+                        // Reset the PageRequestManager state. & Manually clear the request object
+                        Sys.WebForms.PageRequestManager.getInstance()._processingRequest = false;
+                        Sys.WebForms.PageRequestManager.getInstance()._request = null;
+                    }
                 }
             });
         }

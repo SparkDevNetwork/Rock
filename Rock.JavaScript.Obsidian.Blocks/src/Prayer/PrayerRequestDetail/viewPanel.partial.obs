@@ -1,0 +1,145 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="pull-right">
+                    <span ref="flagCountRef" v-if="props.modelValue?.flagCount" class="label label-warning" tabindex="-1" data-toggle="tooltip"
+                        data-placement="auto" data-container="body" data-html="true"
+                        data-original-title="To clear the flags you'll have to re-approve this request.">
+                            <i class="fa fa-flag"></i> flagged {{ props.modelValue?.flagCount }} times
+                    </span>
+                    <span v-if="props.modelValue?.isUrgent" class="label label-danger"><i class="fa fa-exclamation-circle"></i> Urgent</span>
+                    <span ref="prayerCountRef" v-if="props.modelValue?.prayerCount" class="badge" title="" data-toggle="tooltip"
+                        :data-original-title="props.modelValue?.prayerCount + 'prayers offered by the team for this request.'">
+                            {{ props.modelValue?.prayerCount}} prayers
+                    </span>
+                </div>
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" :showEmptyValues="false" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, onMounted } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { PrayerRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestBag";
+    import { PrayerRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<PrayerRequestBag | null>,
+            required: false
+        },
+
+            options: {
+            type: Object as PropType<PrayerRequestDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if(props.modelValue?.group) {
+            valueBuilder.addTextValue("Group", props.modelValue.group.text ?? "");
+        }
+
+        if(props.modelValue?.requestedByPersonAlias) {
+            valueBuilder.addTextValue("Requested By", props.modelValue?.requestedByPersonAlias?.text ?? "");
+        }
+
+        valueBuilder.addTextValue("Name", `${props.modelValue?.fullName ?? ""}`);
+
+        const email = props.modelValue?.email ?? "";
+        if(email) {
+            valueBuilder.addHtmlValue("Email", `<a hRockLabel ref="mailto:${email}">${email}</a>`);
+        }
+
+        if(props.modelValue?.campus?.text) {
+            valueBuilder.addTextValue("Campus", props.modelValue?.campus.text);
+        }
+
+        valueBuilder.addHtmlValue("Request", props.modelValue?.text ?? "");
+
+        if(props.modelValue?.answer) {
+            valueBuilder.addHtmlValue("Answer", props.modelValue?.answer);
+        }
+
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // enable the tooltips for the badges
+    const flagCountRef = ref<Element | null>(null);
+    const prayerCountRef = ref<Element | null>(null);
+    onMounted(() => {
+        if(flagCountRef?.value) {
+            tooltip(flagCountRef.value);
+        }
+        if(prayerCountRef?.value) {
+            tooltip(prayerCountRef.value);
+        }
+    });
+
+    // #endregion
+</script>

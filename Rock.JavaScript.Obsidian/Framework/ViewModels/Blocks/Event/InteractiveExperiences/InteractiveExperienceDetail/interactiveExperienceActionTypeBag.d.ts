@@ -37,6 +37,9 @@ export type InteractiveExperienceActionTypeBag = {
     /** Gets or sets the default attribute values. */
     defaultAttributeValues?: Record<string, string> | null;
 
+    /** Gets or sets disabled for this item. */
+    disabled?: boolean | null;
+
     /**
      * Gets or sets the icon CSS class that will visually represent this
      * action type.
@@ -49,7 +52,11 @@ export type InteractiveExperienceActionTypeBag = {
     /** Gets or sets a value indicating whether this type allows multiple submissions. */
     isMultipleSubmissionSupported: boolean;
 
-    /** Gets or sets a value indicating whether this type supports question text. */
+    /**
+     * Gets or sets a value indicating whether this type supports question
+     * text. When false certain UI elements related to dealing with
+     * getting responses will be hidden when editing actions of this type.
+     */
     isQuestionSupported: boolean;
 
     /** Gets or sets the text. */

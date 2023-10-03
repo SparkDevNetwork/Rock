@@ -155,7 +155,7 @@ namespace Rock.Achievement.Component
             var includeChildAccounts = GetAttributeValue( achievementTypeCache, AttributeKey.IncludeChildFinancialAccounts ).AsBoolean();
             if ( includeChildAccounts )
             {
-                financialAccountIds.AddRange( FinancialAccountCache.Get( accountId.Value ).ChildAccounts.Select( x => x.Id ) );
+                financialAccountIds.AddRange( FinancialAccountCache.Get( accountId.Value ).GetDescendentFinancialAccountIds() );
             }
 
             return details.Any( t => financialAccountIds.Contains( t.AccountId ) );

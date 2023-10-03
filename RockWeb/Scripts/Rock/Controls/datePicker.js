@@ -24,6 +24,7 @@
                     format: dateFormat,
                     assumeNearbyYear: 10,
                     autoclose: true,
+                    container: options.container || "body",
                     todayBtn: "linked",
                     forceParse: options.forceParse,
                     startDate: options.startDate,

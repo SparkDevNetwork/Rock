@@ -22,9 +22,9 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
-using Rock.Data;
 using Rock.Model;
 using Rock.Storage.AssetStorage;
+using Rock.Web.Cache.Entities;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -297,9 +297,15 @@ upnlFiles.ClientID // {2}
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDownload_Click( object sender, EventArgs e )
         {
-            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
-            var component = assetStorageProvider.GetAssetStorageComponent();
-            var rootFolder = component.GetRootFolder( assetStorageProvider );
+            var ( provider, component ) = GetAssetStorageProvider();
+            if ( provider == null || component  == null )
+            {
+                return;
+            }
+
+            var providerEntity = provider.ToEntity();
+
+            var rootFolder = component.GetRootFolder( providerEntity );
 
             foreach ( RepeaterItem file in rptFiles.Items )
             {
@@ -313,7 +319,7 @@ upnlFiles.ClientID // {2}
                         throw new Exception( "Invalid File Path" );
                     }
 
-                    Asset asset = component.GetObject( assetStorageProvider, new Asset { Key = key, Type = AssetType.File }, false );
+                    Asset asset = component.GetObject( providerEntity, new Asset { Key = key, Type = AssetType.File }, false );
 
                     byte[] bytes = asset.AssetStream.ReadBytesToEnd();
 
@@ -337,8 +343,11 @@ upnlFiles.ClientID // {2}
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDelete_Click( object sender, EventArgs e )
         {
-            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
-            var component = assetStorageProvider.GetAssetStorageComponent();
+            var ( provider, component ) = GetAssetStorageProvider();
+            if ( provider == null || component  == null )
+            {
+                return;
+            }
 
             foreach ( RepeaterItem file in rptFiles.Items )
             {
@@ -347,7 +356,7 @@ upnlFiles.ClientID // {2}
                 {
                     var keyControl = file.FindControl( "lbKey" ) as Label;
                     string key = keyControl.Text;
-                    component.DeleteAsset( assetStorageProvider, new Asset { Key = key, Type = AssetType.File } );
+                    component.DeleteAsset( provider.ToEntity(), new Asset { Key = key, Type = AssetType.File } );
                 }
             }
 
@@ -377,8 +386,12 @@ upnlFiles.ClientID // {2}
                 return;
             }
 
-            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
-            var component = assetStorageProvider.GetAssetStorageComponent();
+            var ( provider, component ) = GetAssetStorageProvider();
+            if ( provider == null || component  == null )
+            {
+                return;
+            }
+
             var asset = new Asset { Type = AssetType.Folder };
 
             // Selecting the root does not put a value for the selected folder, so we have to make sure
@@ -393,7 +406,7 @@ upnlFiles.ClientID // {2}
                 asset.Name = tbCreateFolder.Text;
             }
 
-            component.CreateFolder( assetStorageProvider, asset );
+            component.CreateFolder( provider.ToEntity(), asset );
             upnlFolders.Update();
         }
 
@@ -404,9 +417,13 @@ upnlFiles.ClientID // {2}
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDeleteFolder_Click( object sender, EventArgs e )
         {
-            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
-            var component = assetStorageProvider.GetAssetStorageComponent();
-            component.DeleteAsset( assetStorageProvider, new Asset { Key = hfSelectFolder.Value, Type = AssetType.Folder } );
+            var ( provider, component ) = GetAssetStorageProvider();
+            if ( provider == null || component  == null )
+            {
+                return;
+            }
+
+            component.DeleteAsset( provider.ToEntity(), new Asset { Key = hfSelectFolder.Value, Type = AssetType.Folder } );
 
             hfSelectFolder.Value = string.Empty;
             upnlFolders.Update();
@@ -426,8 +443,11 @@ upnlFiles.ClientID // {2}
                 return;
             }
 
-            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
-            var component = assetStorageProvider.GetAssetStorageComponent();
+            var ( provider, component ) = GetAssetStorageProvider();
+            if ( provider == null || component  == null )
+            {
+                return;
+            }
 
             foreach ( RepeaterItem repeaterItem in rptFiles.Items )
             {
@@ -438,7 +458,7 @@ upnlFiles.ClientID // {2}
                     string key = keyControl.Text;
                     try
                     {
-                        component.RenameAsset( assetStorageProvider, new Asset { Key = key, Type = AssetType.File }, tbRenameFile.Text );
+                        component.RenameAsset( provider.ToEntity(), new Asset { Key = key, Type = AssetType.File }, tbRenameFile.Text );
                     }
                     catch ( Rock.Web.FileUploadException ex )
                     {
@@ -515,40 +535,27 @@ upnlFiles.ClientID // {2}
         /// </summary>
         private void ListFiles()
         {
-            AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
-            if ( assetStorageProvider == null )
+            var ( provider, component ) = GetAssetStorageProvider();
+            if ( provider == null || component  == null )
             {
                 return;
             }
 
-            var component = assetStorageProvider.GetAssetStorageComponent();
-            if ( component == null )
-            {
-                return;
-            }
-
-            var files = component.ListFilesInFolder( assetStorageProvider, new Asset { Key = hfSelectFolder.Value, Type = AssetType.Folder } );
+            var files = component.ListFilesInFolder( provider.ToEntity(), new Asset { Key = hfSelectFolder.Value, Type = AssetType.Folder } );
             rptFiles.DataSource = files;
             rptFiles.DataBind();
         }
 
         /// <summary>
-        /// Gets the asset storage provider using the ID stored in the hidden field, otherwise returns a new AssetStorageProvider.
+        /// Gets the asset storage provider [cache] and associated asset storage component using the ID stored in the hidden field.
         /// </summary>
-        /// <returns></returns>
-        private AssetStorageProvider GetAssetStorageProvider()
+        /// <returns>The asset storage provider and component.</returns>
+        private ( AssetStorageProviderCache provider, AssetStorageComponent component ) GetAssetStorageProvider()
         {
-            AssetStorageProvider assetStorageProvider = new AssetStorageProvider();
-            string assetStorageId = hfAssetStorageId.Value;
+            var provider = AssetStorageProviderCache.Get( hfAssetStorageId.ValueAsInt() );
+            var component = provider?.AssetStorageComponent;
 
-            if ( assetStorageId.IsNotNullOrWhiteSpace() )
-            {
-                var assetStorageService = new AssetStorageProviderService( new RockContext() );
-                assetStorageProvider = assetStorageService.Get( assetStorageId.AsInteger() );
-                assetStorageProvider.LoadAttributes();
-            }
-
-            return assetStorageProvider;
+            return (provider, component);
         }
 
         /// <summary>

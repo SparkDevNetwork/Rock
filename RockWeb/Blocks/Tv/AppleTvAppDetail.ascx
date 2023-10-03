@@ -4,10 +4,10 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlBlock" runat="server" CssClass="panel panel-block">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-tv"></i> 
+                    <i class="fa fa-tv"></i>
                     <asp:Literal ID="lBlockTitle" runat="server" Text="New Application" />
                 </h1>
 
@@ -27,12 +27,12 @@
                             <asp:Literal ID="lViewContent" runat="server" />
                         </div>
                     </div>
-                    
+
 
                     <asp:Button ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                 </asp:Panel>
 
-                <asp:Panel ID="pnlEdit" runat="server" >
+                <asp:Panel ID="pnlEdit" runat="server">
 
                     <div class="row">
                         <div class="col-md-6">
@@ -44,7 +44,7 @@
                     </div>
 
                     <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="3" />
-                                      
+
                     <Rock:CodeEditor ID="ceApplicationJavaScript" runat="server" EditorHeight="600" Label="Application JavaScript" />
 
                     <Rock:CodeEditor ID="ceApplicationStyles" runat="server" EditorHeight="400" Label="Application Styles" />
@@ -56,6 +56,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="txtApiKey" runat="server" Label="API Key" Required="True" Help="The API key that will be used to secure your TV application." />
+                            <Rock:RockCheckBox ID="cbEnablePageViewGeoTracking" runat="server" Label="Enable Page View Geo Tracking" Help="Enabling this feature will allow the PopulateInteractionSessionData job to begin performing geolocation lookup on the IP addresses in the Interaction Session data. This also requires setting up a IP Address Location Service found under System Settings." />                                                                                                
                         </div>
                     </div>
 
@@ -66,9 +67,9 @@
                     <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </asp:Panel>
-                
+
             </div>
-        
+
         </asp:Panel>
 
     </ContentTemplate>

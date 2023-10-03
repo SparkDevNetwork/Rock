@@ -635,17 +635,22 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Deletes or Archives (Soft-Deletes) GroupMember record depending on GroupType.EnableGroupHistory and if the GroupMember has history snapshots
-        /// with an option to null the GroupMemberId from Registrant tables
+        /// <para>Deletes or Archives (Soft-Deletes) GroupMember record depending on GroupType.EnableGroupHistory and if the GroupMember has history snapshots
+        /// with an option to null the GroupMemberId from Registrant tables.</para>
+        /// <para> Note, if the option to remove the GroupMember from registrant tables is not
+        /// exercised and the GroupMember is a registrant the the deletion will result in an exception.</para>
         /// </summary>
         /// <param name="groupMember">The group member.</param>
         /// <param name="removeFromRegistrants">if set to <c>true</c> [remove from registrants].</param>
         public void Delete( GroupMember groupMember, bool removeFromRegistrants )
         {
-            RegistrationRegistrantService registrantService = new RegistrationRegistrantService( this.Context as RockContext );
-            foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ) )
+            if ( removeFromRegistrants )
             {
-                registrant.GroupMemberId = null;
+                RegistrationRegistrantService registrantService = new RegistrationRegistrantService( this.Context as RockContext );
+                foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ) )
+                {
+                    registrant.GroupMemberId = null;
+                }
             }
 
             this.Delete( groupMember );
@@ -894,11 +899,12 @@ namespace Rock.Model
             if ( registrationInstanceGroupPlacementBlock != null && currentPerson != null )
             {
                 var registrationTemplatePlacement = new RegistrationTemplatePlacementService( rockContext ).Get( options.RegistrationTemplatePlacementId );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( currentPerson, registrationInstanceGroupPlacementBlock );
 
                 const string groupMemberAttributeFilter_GroupTypeId = "GroupMemberAttributeFilter_GroupTypeId_{0}";
-                string userPreferenceKey = PersonService.GetBlockUserPreferenceKeyPrefix( options.BlockId ) + string.Format( groupMemberAttributeFilter_GroupTypeId, registrationTemplatePlacement.GroupTypeId );
+                string userPreferenceKey = string.Format( groupMemberAttributeFilter_GroupTypeId, registrationTemplatePlacement.GroupTypeId );
 
-                var attributeFilters = PersonService.GetUserPreference( currentPerson, userPreferenceKey ).FromJsonOrNull<Dictionary<int, string>>() ?? new Dictionary<int, string>();
+                var attributeFilters = preferences.GetValue( userPreferenceKey ).FromJsonOrNull<Dictionary<int, string>>() ?? new Dictionary<int, string>();
                 var parameterExpression = groupMemberService.ParameterExpression;
                 Expression groupMemberWhereExpression = null;
                 foreach ( var attributeFilter in attributeFilters )

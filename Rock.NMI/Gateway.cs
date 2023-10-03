@@ -2309,7 +2309,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         /// <inheritdoc/>
         public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
         {
-            return "/Obsidian/Controls/nmiGatewayControl.js";
+            return "/Obsidian/Controls/Internal/nmiGatewayControl.obs.js";
         }
 
         /// <inheritdoc/>

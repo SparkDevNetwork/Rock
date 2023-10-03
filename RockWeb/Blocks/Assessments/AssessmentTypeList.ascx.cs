@@ -447,7 +447,7 @@ namespace RockWeb.Blocks.Assessments
 
                 if ( !string.IsNullOrWhiteSpace( keyPrefix ) )
                 {
-                    ListFilterControl.UserPreferenceKeyPrefix = OnGetUserPreferenceKeyPrefix();
+                    ListFilterControl.PreferenceKeyPrefix = OnGetUserPreferenceKeyPrefix();
                 }
 
                 BindFilter();
@@ -594,7 +594,7 @@ namespace RockWeb.Blocks.Assessments
         /// </summary>
         private void ClearGridFilter()
         {
-            ListFilterControl.DeleteUserPreferences();
+            ListFilterControl.DeleteFilterPreferences();
 
             BindFilter();
         }
@@ -640,7 +640,7 @@ namespace RockWeb.Blocks.Assessments
             // Overwrite the map with the settings stored in the user preferences.
             foreach ( var key in settings.Keys.ToList() )
             {
-                settings[key] = ListFilterControl.GetUserPreference( key );
+                settings[key] = ListFilterControl.GetFilterPreference( key );
             }
 
             // Apply the map to update the filter controls.
@@ -661,7 +661,7 @@ namespace RockWeb.Blocks.Assessments
 
             foreach ( var kvp in settings )
             {
-                ListFilterControl.SaveUserPreference( kvp.Key, kvp.Value );
+                ListFilterControl.SetFilterPreference( kvp.Key, kvp.Value );
             }
         }
 
@@ -1052,7 +1052,7 @@ namespace RockWeb.Blocks.Assessments
             }
 
             // Filter by: Requires Request
-            var requiresRequest = rFilter.GetUserPreference( FilterSettingName.RequiresRequest ).AsBooleanOrNull();
+            var requiresRequest = rFilter.GetFilterPreference( FilterSettingName.RequiresRequest ).AsBooleanOrNull();
 
             if ( requiresRequest.HasValue )
             {
@@ -1060,7 +1060,7 @@ namespace RockWeb.Blocks.Assessments
             }
 
             // Filter by: Is Active
-            var isActive = rFilter.GetUserPreference( FilterSettingName.IsActive ).AsBooleanOrNull();
+            var isActive = rFilter.GetFilterPreference( FilterSettingName.IsActive ).AsBooleanOrNull();
 
             if ( isActive.HasValue )
             {

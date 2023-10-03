@@ -564,7 +564,7 @@ namespace Rock.Web.UI
 
                                     if ( setValues )
                                     {
-                                        ddlCampus.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_HomeCampus ) );
+                                        ddlCampus.SetValue( gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_HomeCampus ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( ddlCampus );
@@ -585,7 +585,7 @@ namespace Rock.Web.UI
 
                                     if ( setValues )
                                     {
-                                        tbEmailFilter.Text = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_Email );
+                                        tbEmailFilter.Text = gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_Email );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbEmailFilter );
@@ -609,7 +609,7 @@ namespace Rock.Web.UI
 
                                     if ( setValues )
                                     {
-                                        drpBirthdateFilter.DelimitedValues = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_BirthdateRange );
+                                        drpBirthdateFilter.DelimitedValues = gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_BirthdateRange );
                                     }
 
                                     filterFieldsContainer.Controls.Add( drpBirthdateFilter );
@@ -633,7 +633,7 @@ namespace Rock.Web.UI
 
                                     if ( setValues )
                                     {
-                                        tbMiddleNameFilter.Text = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_MiddleName );
+                                        tbMiddleNameFilter.Text = gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_MiddleName );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbMiddleNameFilter );
@@ -657,7 +657,7 @@ namespace Rock.Web.UI
 
                                     if ( setValues )
                                     {
-                                        drpAnniversaryDateFilter.DelimitedValues = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_AnniversaryDateRange );
+                                        drpAnniversaryDateFilter.DelimitedValues = gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_AnniversaryDateRange );
                                     }
 
                                     filterFieldsContainer.Controls.Add( drpAnniversaryDateFilter );
@@ -686,7 +686,7 @@ namespace Rock.Web.UI
                                     // by not calling SetValue otherwise it will select 12th grade.
                                     if ( setValues )
                                     {
-                                        var groupPlacementsGradeUserPreference = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_Grade ).AsIntegerOrNull();
+                                        var groupPlacementsGradeUserPreference = gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_Grade ).AsIntegerOrNull();
                                         if ( groupPlacementsGradeUserPreference != null )
                                         {
                                             gpGradeFilter.SetValue( groupPlacementsGradeUserPreference );
@@ -715,7 +715,7 @@ namespace Rock.Web.UI
 
                                     if ( setValues )
                                     {
-                                        ddlGenderFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_Gender ) );
+                                        ddlGenderFilter.SetValue( gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_Gender ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( ddlGenderFilter );
@@ -740,7 +740,7 @@ namespace Rock.Web.UI
 
                                     if ( setValues )
                                     {
-                                        dvpMaritalStatusFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_MaritalStatus ) );
+                                        dvpMaritalStatusFilter.SetValue( gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_MaritalStatus ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( dvpMaritalStatusFilter );
@@ -765,7 +765,7 @@ namespace Rock.Web.UI
 
                                     if ( setValues )
                                     {
-                                        dvpConnectionStatusFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_ConnectionStatus ) );
+                                        dvpConnectionStatusFilter.SetValue( gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_ConnectionStatus ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( dvpConnectionStatusFilter );
@@ -792,7 +792,7 @@ namespace Rock.Web.UI
 
                                     if ( setValues )
                                     {
-                                        tbMobilePhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_CellPhone );
+                                        tbMobilePhoneFilter.Text = gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_CellPhone );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbMobilePhoneFilter );
@@ -816,7 +816,7 @@ namespace Rock.Web.UI
 
                                     if ( setValues )
                                     {
-                                        tbHomePhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_HomePhone );
+                                        tbHomePhoneFilter.Text = gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_HomePhone );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbHomePhoneFilter );
@@ -840,7 +840,7 @@ namespace Rock.Web.UI
 
                                     if ( setValues )
                                     {
-                                        tbWorkPhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_WorkPhone );
+                                        tbWorkPhoneFilter.Text = gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_WorkPhone );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbWorkPhoneFilter );
@@ -875,12 +875,12 @@ namespace Rock.Web.UI
                                     var dvpRaceFilter = new RacePicker
                                     {
                                         ID = FILTER_RACE_ID,
-                                        Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )
+                                        Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL )
                                     };
 
                                     if ( setValues )
                                     {
-                                        dvpRaceFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_Race ) );
+                                        dvpRaceFilter.SetValue( gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_Race ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( dvpRaceFilter );
@@ -903,12 +903,12 @@ namespace Rock.Web.UI
                                     var dvpEthnicityFilter = new EthnicityPicker
                                     {
                                         ID = FILTER_ETHNICITY_ID,
-                                        Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )
+                                        Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL )
                                     };
 
                                     if ( setValues )
                                     {
-                                        dvpEthnicityFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_Ethnicity ) );
+                                        dvpEthnicityFilter.SetValue( gridFilter.GetFilterPreference( UserPreferenceKeyBase.GridFilter_Ethnicity ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( dvpEthnicityFilter );
@@ -953,7 +953,7 @@ namespace Rock.Web.UI
 
                             if ( setValues )
                             {
-                                string savedValue = gridFilter.GetUserPreference( attribute.Key );
+                                string savedValue = gridFilter.GetFilterPreference( attribute.Key );
                                 if ( !string.IsNullOrWhiteSpace( savedValue ) )
                                 {
                                     try

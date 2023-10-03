@@ -70,13 +70,14 @@
                           label="Allow Multiple Submissions" />
             </div>
 
-            <div class="col-md-4">
+            <div v-if="isAnonymousResponsesVisible" class="col-md-4">
                 <CheckBox v-model="anonymousResponses"
                           label="Anonymous Responses" />
             </div>
         </div>
 
-        <DropDownList v-model="responseVisual"
+        <DropDownList v-if="isResponseVisualVisible"
+                      v-model="responseVisual"
                       label="Response Visual"
                       :items="responseVisualItems" />
 
@@ -105,7 +106,7 @@
     min-width: 35px;
     padding: 8px 0;
     color: #fff;
-    background-color: var(--brand-info);
+    background-color: var(--color-info);
 }
 
 .action-item-body {
@@ -134,7 +135,7 @@
     height: 36px;
     padding: 0;
     color: #fff;
-    background-color: var(--brand-info);
+    background-color: var(--color-info);
     border-radius: 50%;
 }
 
@@ -167,12 +168,12 @@
 
 <script setup lang="ts">
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import Modal from "@Obsidian/Controls/modal";
-    import Panel from "@Obsidian/Controls/panel";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -279,11 +280,21 @@
     });
 
     const isRequiresModerationVisible = computed((): boolean => {
-        return selectedActionType.value?.isModerationSupported === true;
+        return selectedActionType.value?.isModerationSupported === true
+            && selectedActionType.value?.isQuestionSupported === true;
     });
 
     const isMultipleSubmissionsVisible = computed((): boolean => {
-        return selectedActionType.value?.isMultipleSubmissionSupported === true;
+        return selectedActionType.value?.isMultipleSubmissionSupported === true
+            && selectedActionType.value?.isQuestionSupported === true;
+    });
+
+    const isAnonymousResponsesVisible = computed((): boolean => {
+        return selectedActionType.value?.isQuestionSupported === true;
+    });
+
+    const isResponseVisualVisible = computed((): boolean => {
+        return selectedActionType.value?.isQuestionSupported === true;
     });
 
     // #endregion

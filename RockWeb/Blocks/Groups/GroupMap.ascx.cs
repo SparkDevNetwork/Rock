@@ -529,14 +529,15 @@ namespace RockWeb.Blocks.Groups
                         && a.ShowInGroupList
                         && a.LocationSelectionMode != GroupLocationPickerMode.None).OrderBy( a => a.Name ).ToList();
 
-                var selectedGroupTypeIds = this.GetBlockUserPreference( "GroupTypeIds" );
+                var preferences = GetBlockPersonPreferences();
+                var selectedGroupTypeIds = preferences.GetValue( "GroupTypeIds" );
                 if ( !string.IsNullOrWhiteSpace( selectedGroupTypeIds ) )
                 {
                     var selectedGroupTypeIdList = selectedGroupTypeIds.Split( ',' ).AsIntegerList();
                     gtpGroupType.SelectedGroupTypeIds = selectedGroupTypeIdList;
                 }
 
-                var showChildGroups = this.GetBlockUserPreference( "ShowChildGroups" ).AsBooleanOrNull() ?? GetAttributeValue( SHOW_CHILD_GROUPS_AS_DEFAULT_KEY ).AsBoolean();
+                var showChildGroups = preferences.GetValue( "ShowChildGroups" ).AsBooleanOrNull() ?? GetAttributeValue( SHOW_CHILD_GROUPS_AS_DEFAULT_KEY ).AsBoolean();
                 cbShowAllGroups.Checked = showChildGroups;
 
                 var statuses = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
@@ -668,8 +669,11 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnApplyOptions_Click( object sender, EventArgs e )
         {
-            this.SetBlockUserPreference( "GroupTypeIds", gtpGroupType.SelectedGroupTypeIds.AsDelimited( "," ) );
-            this.SetBlockUserPreference( "ShowChildGroups", cbShowAllGroups.Checked.ToTrueFalse() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "GroupTypeIds", gtpGroupType.SelectedGroupTypeIds.AsDelimited( "," ) );
+            preferences.SetValue( "ShowChildGroups", cbShowAllGroups.Checked.ToTrueFalse() );
+            preferences.Save();
 
             Map();
         }

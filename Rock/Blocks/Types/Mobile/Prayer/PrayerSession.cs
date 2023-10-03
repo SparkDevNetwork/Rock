@@ -32,12 +32,13 @@ namespace Rock.Blocks.Types.Mobile.Events
     /// <summary>
     /// Allows the user to read through and pray for prayer requests.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Prayer Session" )]
     [Category( "Mobile > Prayer" )]
     [Description( "Allows the user to read through and pray for prayer requests." )]
     [IconCssClass( "fa fa-pray" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -119,7 +120,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_PRAYER_SESSION_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "420DEA5F-9ABC-4E59-A9BD-DCA972657B84" )]
-    public class PrayerSession : RockMobileBlockType
+    public class PrayerSession : RockBlockType
     {
         #region Block Attributes
 
@@ -305,21 +306,8 @@ namespace Rock.Blocks.Types.Mobile.Events
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Prayer.PrayerSession";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

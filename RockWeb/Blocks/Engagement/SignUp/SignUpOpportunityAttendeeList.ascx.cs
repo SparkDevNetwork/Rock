@@ -345,12 +345,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfAttendees_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfAttendees.SaveUserPreference( GridFilterKey.FirstName, "First Name", tbFirstName.Text );
-            gfAttendees.SaveUserPreference( GridFilterKey.LastName, "Last Name", tbLastName.Text );
-            gfAttendees.SaveUserPreference( GridFilterKey.Role, "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
-            gfAttendees.SaveUserPreference( GridFilterKey.Status, "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
-            gfAttendees.SaveUserPreference( GridFilterKey.Campus, "Campus", cpCampusFilter.SelectedCampusId.ToString() );
-            gfAttendees.SaveUserPreference( GridFilterKey.Gender, "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
+            gfAttendees.SetFilterPreference( GridFilterKey.FirstName, "First Name", tbFirstName.Text );
+            gfAttendees.SetFilterPreference( GridFilterKey.LastName, "Last Name", tbLastName.Text );
+            gfAttendees.SetFilterPreference( GridFilterKey.Role, "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
+            gfAttendees.SetFilterPreference( GridFilterKey.Status, "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
+            gfAttendees.SetFilterPreference( GridFilterKey.Campus, "Campus", cpCampusFilter.SelectedCampusId.ToString() );
+            gfAttendees.SetFilterPreference( GridFilterKey.Gender, "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
 
             BindAttendeesGrid();
         }
@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfAttendees_ClearFilterClick( object sender, EventArgs e )
         {
-            gfAttendees.DeleteUserPreferences();
+            gfAttendees.DeleteFilterPreferences();
 
             using ( var rockContext = new RockContext() )
             {
@@ -736,7 +736,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             AddGridRowButtons();
 
-            gfAttendees.UserPreferenceKeyPrefix = $"{_groupId}-{_locationId}-{_scheduleId}-";
+            gfAttendees.PreferenceKeyPrefix = $"{_groupId}-{_locationId}-{_scheduleId}-";
             SetGridFilters( group );
         }
 
@@ -1313,8 +1313,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="group">The group.</param>
         private void SetGridFilters( Group group )
         {
-            tbFirstName.Text = gfAttendees.GetUserPreference( GridFilterKey.FirstName );
-            tbLastName.Text = gfAttendees.GetUserPreference( GridFilterKey.LastName );
+            tbFirstName.Text = gfAttendees.GetFilterPreference( GridFilterKey.FirstName );
+            tbLastName.Text = gfAttendees.GetFilterPreference( GridFilterKey.LastName );
 
             if ( group != null )
             {
@@ -1322,7 +1322,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 cblRole.DataBind();
             }
 
-            var roleValue = gfAttendees.GetUserPreference( GridFilterKey.Role );
+            var roleValue = gfAttendees.GetFilterPreference( GridFilterKey.Role );
             if ( !string.IsNullOrWhiteSpace( roleValue ) )
             {
                 cblRole.SetValues( roleValue.Split( ';' ).ToList() );
@@ -1330,16 +1330,16 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             cblGroupMemberStatus.BindToEnum<GroupMemberStatus>();
 
-            var statusValue = gfAttendees.GetUserPreference( GridFilterKey.Status );
+            var statusValue = gfAttendees.GetFilterPreference( GridFilterKey.Status );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
             {
                 cblGroupMemberStatus.SetValues( statusValue.Split( ';' ).ToList() );
             }
 
             cpCampusFilter.Campuses = CampusCache.All();
-            cpCampusFilter.SelectedCampusId = gfAttendees.GetUserPreference( "Campus" ).AsIntegerOrNull();
+            cpCampusFilter.SelectedCampusId = gfAttendees.GetFilterPreference( "Campus" ).AsIntegerOrNull();
 
-            string genderValue = gfAttendees.GetUserPreference( GridFilterKey.Gender );
+            string genderValue = gfAttendees.GetFilterPreference( GridFilterKey.Gender );
             if ( !string.IsNullOrWhiteSpace( genderValue ) )
             {
                 cblGenderFilter.SetValues( genderValue.Split( ';' ).ToList() );

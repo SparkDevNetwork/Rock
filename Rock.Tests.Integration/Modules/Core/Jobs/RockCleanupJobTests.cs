@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
@@ -25,10 +26,10 @@ using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Jobs
 {
-    [Ignore("Fix required. Tests related to the Account Protection Profile are not returning expected results. [MP]")]
     [TestClass]
     public class RockCleanupJobTests
     {
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleWithLoginsToAccountProtectionProfileMedium()
         {
@@ -44,6 +45,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
         }
 
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleInSecurityGroupsWithElevatedSecurityLevelToCorrectAccountProtectionProfile()
         {
@@ -65,6 +67,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
         }
 
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleWithFinancialPersonBankAccountToAccountProtectionProfileHigh()
         {
@@ -106,6 +109,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
         }
 
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleWithFinancialPersonSavedAccountToAccountProtectionProfileHigh()
         {
@@ -159,6 +163,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
         }
 
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleWithFinancialScheduledTransactionToAccountProtectionProfileHigh()
         {
@@ -200,6 +205,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
         }
 
+        [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
         public void RockCleanup_Execute_ShouldUpdatePeopleWithFinancialTransactionToAccountProtectionProfileHigh()
         {
@@ -375,6 +381,158 @@ namespace Rock.Tests.Integration.Core.Jobs
             // Event 2.1 should be set to null because the Event is inactive.
             var event21 = eventOccurrenceService.Get( testEventOccurrence21Guid );
             Assert.IsNull( event21.NextStartDateTime );
+        }
+
+        #endregion
+
+        #region Cleanup Task: ClearCache
+
+        private void CreateCacheFilesTestData( string avatarCachePath, string imageCachePath )
+        {
+            // Create some test files in the cache.
+            var baseDate = RockDateTime.Now;
+
+            CreateTestFile( avatarCachePath + $"/avatar_current_1.txt", lastModifiedTime: baseDate );
+            CreateTestFile( avatarCachePath + $"/avatar_current_2.txt", lastModifiedTime: baseDate.AddDays( -6 ) );
+            CreateTestFile( avatarCachePath + $"/avatar_old.txt", lastModifiedTime: baseDate.AddDays( -7 ) );
+            CreateTestFile( avatarCachePath + $"/avatar_future.txt", lastModifiedTime: baseDate.AddDays( 1 ) );
+            CreateTestFile( avatarCachePath + $"/subdir1/avatar_old.txt", lastModifiedTime: baseDate.AddDays( -7 ) );
+            CreateTestFile( avatarCachePath + $"/subdir2/avatar_old.txt", lastModifiedTime: baseDate.AddDays( -7 ) );
+
+            CreateTestFile( imageCachePath + $"/image_current_1.txt", createdTime: baseDate );
+            CreateTestFile( imageCachePath + $"/image_current_2.txt", createdTime: baseDate.AddDays( -6 ) );
+            CreateTestFile( imageCachePath + $"/image_old.txt", createdTime: baseDate.AddDays( -7 ) );
+            CreateTestFile( imageCachePath + $"/image_future.txt", createdTime: baseDate.AddDays( 1 ) );
+            CreateTestFile( imageCachePath + $"/subdir1/image_old.txt", createdTime: baseDate.AddDays( -7 ) );
+            CreateTestFile( imageCachePath + $"/subdir2/image_old.txt", createdTime: baseDate.AddDays( -7 ) );
+        }
+
+        [TestMethod]
+        public void RockCleanup_ClearCache_RemovesExpiredFilesOnly()
+        {
+            // Create some test files in the cache.
+            var avatarCachePath = Path.GetTempPath() + "App_Data/Image/Cache";
+            var imageCachePath = Path.GetTempPath() + "App_Data/Avatar/Cache";
+
+            CreateCacheFilesTestData( avatarCachePath, imageCachePath );
+
+            var job = new Rock.Jobs.RockCleanup();
+            var args = new Rock.Jobs.RockCleanup.RockCleanupActionArgs
+            {
+                AvatarCachePath = avatarCachePath,
+                ImageCachePath = imageCachePath,
+                CacheDurationDays = 7,
+                HostName = "test-host"
+            };
+
+            _ = job.CleanCachedFileDirectories( args );
+
+            AssertExpectedCacheFiles( avatarCachePath );
+            AssertExpectedCacheFiles( imageCachePath );
+        }
+
+        [TestMethod]
+        public void RockCleanup_ClearCache_EnforcesFileRemoveLimit()
+        {
+            // Create some test files in the cache.
+            var avatarCachePath = Path.GetTempPath() + "App_Data/Image/Cache";
+            var imageCachePath = Path.GetTempPath() + "App_Data/Avatar/Cache";
+
+            CreateCacheFilesTestData( avatarCachePath, imageCachePath );
+
+            var job = new Rock.Jobs.RockCleanup();
+            var args = new Rock.Jobs.RockCleanup.RockCleanupActionArgs
+            {
+                AvatarCachePath = avatarCachePath,
+                ImageCachePath = imageCachePath,
+                CacheDurationDays = 7,
+                HostName = "test-host",
+                CacheMaximumFilesToRemove = 1
+            };
+
+            var avatarFileCount = Directory.GetFiles( avatarCachePath, searchPattern: "*", searchOption: SearchOption.AllDirectories ).Count();
+            var imageFileCount = Directory.GetFiles( imageCachePath, searchPattern: "*", searchOption: SearchOption.AllDirectories ).Count();
+
+            _ = job.CleanCachedFileDirectories( args );
+
+            var newAvatarFileCount = Directory.GetFiles( avatarCachePath, searchPattern: "*", searchOption: SearchOption.AllDirectories ).Count();
+            var newImageFileCount = Directory.GetFiles( imageCachePath, searchPattern: "*", searchOption: SearchOption.AllDirectories ).Count();
+
+            Assert.AreEqual( avatarFileCount - 1, newAvatarFileCount, "Invalid avatar cache file count." );
+            Assert.AreEqual( imageFileCount - 1, newImageFileCount, "Invalid image cache file count." );
+        }
+
+        [TestMethod]
+        public void RockCleanup_ClearCache_TargetDirectoryMustIncludeAppData()
+        {
+            // Create some test files in the cache.
+            var avatarCachePath = Path.GetTempPath() + "/RockAvatarCacheTest";
+            var imageCachePath = Path.GetTempPath() + "/RockImageCacheTest";
+
+            CreateCacheFilesTestData( avatarCachePath, imageCachePath );
+
+            var job = new Rock.Jobs.RockCleanup();
+            var args = new Rock.Jobs.RockCleanup.RockCleanupActionArgs
+            {
+                AvatarCachePath = avatarCachePath,
+                ImageCachePath = imageCachePath,
+                CacheDurationDays = 7,
+                HostName = "test-host"
+            };
+
+            try
+            {
+                _ = job.CleanCachedFileDirectories( args );
+            }
+            catch ( Exception ex )
+            {
+                // Verify the exception message.
+                // This exception is processed internally when the Job is executed via the Rock application.
+                Assert.That.MatchesWildcard( $@"%Path ""%/RockAvatarCacheTest"" does not match the required pattern ""*\App_Data\*\Cache\*""%",
+                    ex.Message,
+                    ignoreCase: true,
+                    ignoreWhiteSpace: true,
+                    wildcard: "%" );
+            }
+        }
+
+        private void AssertExpectedCacheFiles( string cacheDirectory )
+        {
+            var remainingFiles = Directory.EnumerateFiles( cacheDirectory, searchPattern: "*", searchOption: SearchOption.AllDirectories ).ToList();
+
+            var oldFiles = remainingFiles.Where( f => f.Contains( "_old" ) ).ToList();
+            Assert.IsTrue( oldFiles.Count == 0, "Unexpected files found. Old files not removed from cache." );
+
+            var currentFiles = remainingFiles.Where( f => f.Contains( "_current" ) ).ToList();
+            Assert.IsTrue( currentFiles.Count == 2, "Expected files not found. Current files removed from cache." );
+
+            var futureFiles = remainingFiles.Where( f => f.Contains( "_future" ) ).ToList();
+            Assert.IsTrue( futureFiles.Count == 1, "Expected files not found. Future files removed from cache." );
+        }
+
+        private FileInfo CreateTestFile( string filePath, DateTime? createdTime = null, DateTime? lastModifiedTime = null )
+        {
+            var directory = Path.GetDirectoryName( filePath );
+            Directory.CreateDirectory( directory );
+
+            var fileInfo = new FileInfo( filePath );
+
+            using ( var sw = fileInfo.CreateText() )
+            {
+                sw.WriteLine( Guid.NewGuid().ToString() );
+            }
+
+            if ( createdTime != null )
+            {
+                fileInfo.CreationTime = createdTime.Value;
+            }
+
+            if ( lastModifiedTime != null )
+            {
+                fileInfo.LastWriteTime = lastModifiedTime.Value;
+            }
+
+            return fileInfo;
         }
 
         #endregion

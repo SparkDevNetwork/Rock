@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -333,6 +334,15 @@ namespace Rock.Model
         /// <inheritdoc cref="ChannelTypeMediumValueId"/>
         [DataMember]
         public virtual DefinedValue ChannelTypeMediumValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction sessions for this channel.
+        /// </summary>
+        /// <value>
+        /// The interaction sessions.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<InteractionSession> InteractionSessions { get; set; }
 
         #endregion
     }

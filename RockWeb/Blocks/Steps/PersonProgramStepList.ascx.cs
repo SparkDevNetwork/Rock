@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.Steps
             /// <summary>
             /// The is card view user preference key
             /// </summary>
-            public const string IsCardView = "PersonProgramStepList.IsCardView";
+            public const string IsCardView = "is-card-view";
         }
 
         #endregion Keys
@@ -191,6 +191,8 @@ namespace RockWeb.Blocks.Steps
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            RockPage.AddCSSLink( "~/Styles/Blocks/Steps/PersonProgramStepList.css" );
 
             ClearError();
             BlockUpdated += PersonProgramStepList_BlockUpdated;
@@ -221,7 +223,8 @@ namespace RockWeb.Blocks.Steps
             {
                 SetProgramDetailsOnBlock();
 
-                var isCardViewPref = GetUserPreference( PreferenceKey.IsCardView ).AsBooleanOrNull();
+                var preferences = GetBlockPersonPreferences();
+                var isCardViewPref = preferences.GetValue( PreferenceKey.IsCardView ).AsBooleanOrNull();
 
                 if ( isCardViewPref.HasValue )
                 {
@@ -310,7 +313,11 @@ namespace RockWeb.Blocks.Steps
         {
             hfIsCardView.Value = false.ToString();
             RenderViewMode();
-            SetUserPreference( PreferenceKey.IsCardView, hfIsCardView.Value, true );
+
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( PreferenceKey.IsCardView, hfIsCardView.Value );
+            preferences.Save();
         }
 
         /// <summary>
@@ -322,7 +329,11 @@ namespace RockWeb.Blocks.Steps
         {
             hfIsCardView.Value = true.ToString();
             RenderViewMode();
-            SetUserPreference( PreferenceKey.IsCardView, hfIsCardView.Value, true );
+
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( PreferenceKey.IsCardView, hfIsCardView.Value );
+            preferences.Save();
         }
 
         /// <summary>
@@ -413,14 +424,14 @@ namespace RockWeb.Blocks.Steps
             {
                 var attribute = step.Attributes[attributeCache.Key];
                 var rawValue = step.GetAttributeValue( attributeCache.Key );
-                
+
                 var showCondensed = !( attribute.FieldType.Field is BooleanFieldType );
 
                 var formattedValue = attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, step.Id, rawValue, attribute.QualifierValues, showCondensed );
 
                 itemSummary.AppendLine( string.Format( formatString, attribute.Name, formattedValue ) );
             }
-        
+
             lStepStatus.Text = itemSummary.ToString();
         }
 
@@ -636,8 +647,8 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfGridFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfGridFilter.SaveUserPreference( FilterKey.StepTypeName, tbStepTypeName.Text );
-            gfGridFilter.SaveUserPreference( FilterKey.StepStatusName, tbStepStatus.Text );
+            gfGridFilter.SetFilterPreference( FilterKey.StepTypeName, tbStepTypeName.Text );
+            gfGridFilter.SetFilterPreference( FilterKey.StepStatusName, tbStepStatus.Text );
             RenderGridView();
         }
 
@@ -648,7 +659,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfGridFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            gfGridFilter.DeleteUserPreferences();
+            gfGridFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -657,10 +668,10 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void BindFilter()
         {
-            var stepTypeNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepTypeName );
+            var stepTypeNameFilter = gfGridFilter.GetFilterPreference( FilterKey.StepTypeName );
             tbStepTypeName.Text = !string.IsNullOrWhiteSpace( stepTypeNameFilter ) ? stepTypeNameFilter : string.Empty;
 
-            var stepStatusNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepStatusName );
+            var stepStatusNameFilter = gfGridFilter.GetFilterPreference( FilterKey.StepStatusName );
             tbStepStatus.Text = !string.IsNullOrWhiteSpace( stepStatusNameFilter ) ? stepStatusNameFilter : string.Empty;
         }
 
@@ -1200,8 +1211,8 @@ namespace RockWeb.Blocks.Steps
             var stepTypes = GetStepTypes();
 
             // Get filter values
-            var stepTypeNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepTypeName );
-            var stepStatusNameFilter = gfGridFilter.GetUserPreference( FilterKey.StepStatusName );
+            var stepTypeNameFilter = gfGridFilter.GetFilterPreference( FilterKey.StepTypeName );
+            var stepStatusNameFilter = gfGridFilter.GetFilterPreference( FilterKey.StepStatusName );
 
             // Apply step type filters
             if ( !string.IsNullOrEmpty( stepTypeNameFilter ) )

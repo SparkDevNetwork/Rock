@@ -173,8 +173,8 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( UserPreferenceKey.OwnershipTypeFilter, ddlTypeFilter.SelectedValue );
-            rFilter.SaveUserPreference( UserPreferenceKey.ActiveFilter, ddlActiveFilter.SelectedValue );
+            rFilter.SetFilterPreference( UserPreferenceKey.OwnershipTypeFilter, ddlTypeFilter.SelectedValue );
+            rFilter.SetFilterPreference( UserPreferenceKey.ActiveFilter, ddlActiveFilter.SelectedValue );
 
             BindGrid();
         }
@@ -286,8 +286,8 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void BindFilter()
         {
-            ddlActiveFilter.SetValue( rFilter.GetUserPreference( UserPreferenceKey.ActiveFilter ) );
-            ddlTypeFilter.SetValue( rFilter.GetUserPreference( UserPreferenceKey.OwnershipTypeFilter ) );
+            ddlActiveFilter.SetValue( rFilter.GetFilterPreference( UserPreferenceKey.ActiveFilter ) );
+            ddlTypeFilter.SetValue( rFilter.GetFilterPreference( UserPreferenceKey.OwnershipTypeFilter ) );
             ToggleTypeFilterVisibility();
         }
 
@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private IQueryable<SnippetListViewModel> ApplyFiltersAndSorting( IQueryable<SnippetListViewModel> query )
         {
-            var ownershipType = rFilter.GetUserPreference( UserPreferenceKey.OwnershipTypeFilter );
+            var ownershipType = rFilter.GetFilterPreference( UserPreferenceKey.OwnershipTypeFilter );
             switch ( ownershipType )
             {
                 case IsPersonalFilterValueSpecifier.Shared:
@@ -345,7 +345,7 @@ namespace RockWeb.Blocks.Communication
                     break;
             }
 
-            var activeStatus = rFilter.GetUserPreference( UserPreferenceKey.ActiveFilter );
+            var activeStatus = rFilter.GetFilterPreference( UserPreferenceKey.ActiveFilter );
             switch ( activeStatus )
             {
                 case IsActiveFilterValueSpecifier.Active:

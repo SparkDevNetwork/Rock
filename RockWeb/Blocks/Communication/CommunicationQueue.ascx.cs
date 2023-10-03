@@ -181,11 +181,13 @@ namespace RockWeb.Blocks.Communication
         private void SetFilter()
         {
             cblType.BindToEnum<CommunicationType>();
-            string typeValues = GetBlockUserPreference( "CommunicationType" );
+
+            var preferences = GetBlockPersonPreferences();
+            var typeValues = preferences.GetValue( "CommunicationType" );
 
             cblType.SetValues( typeValues.SplitDelimitedValues().AsIntegerList() );
-            cbPendingApproval.Checked = GetBlockUserPreference( "PendingApproval" ).AsBooleanOrNull() ?? false;
-            cbFutureComm.Checked = GetBlockUserPreference( "FutureCommunication" ).AsBooleanOrNull() ?? false;
+            cbPendingApproval.Checked = preferences.GetValue( "PendingApproval" ).AsBooleanOrNull() ?? false;
+            cbFutureComm.Checked = preferences.GetValue( "FutureCommunication" ).AsBooleanOrNull() ?? false;
         }
 
         /// <summary>
@@ -237,10 +239,12 @@ namespace RockWeb.Blocks.Communication
             gCommunicationQueue.SetLinqDataSource( queryable );
             gCommunicationQueue.DataBind();
 
-            SetBlockUserPreference( "FutureCommunication", cbFutureComm.Checked ? "True" : string.Empty );
-            SetBlockUserPreference( "PendingApproval", cbPendingApproval.Checked ? "True" : string.Empty );
-            SetBlockUserPreference( "CommunicationType", cblType.SelectedValues.AsDelimited( "," ) );
+            var preferences = GetBlockPersonPreferences();
 
+            preferences.SetValue( "FutureCommunication", cbFutureComm.Checked ? "True" : string.Empty );
+            preferences.SetValue( "PendingApproval", cbPendingApproval.Checked ? "True" : string.Empty );
+            preferences.SetValue( "CommunicationType", cblType.SelectedValues.AsDelimited( "," ) );
+            preferences.Save();
         }
 
         private int GetJobAttributeValue( string key, int defaultValue, RockContext rockContext )

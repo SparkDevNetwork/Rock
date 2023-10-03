@@ -104,9 +104,23 @@ namespace RockWeb.Blocks.Cms
                 {
                     var qry = new InteractionService( rockContext )
                         .Queryable().AsNoTracking()
+                        // eagerly load the required entities to avoid multiple calls to the database
+                        .Include( i => i.InteractionSession.DeviceType )
+                        .Include( i => i.PersonAlias.Person )
                         .Where( i =>
                             i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == dv.Id &&
-                            i.InteractionComponent.EntityId == shortLinkId );
+                            i.InteractionComponent.EntityId == shortLinkId )
+                        // filter out only the required data from the entity
+                        .Select( i => new
+                        {
+                            i.Id,
+                            i.InteractionDateTime,
+                            i.PersonAlias.Person,
+                            i.InteractionSession.DeviceType.Application,
+                            i.InteractionSession.DeviceType.OperatingSystem,
+                            i.InteractionSession.DeviceType.ClientType,
+                            i.Source
+                        } );
 
                     SortProperty sortProperty = gShortLinkClicks.SortProperty;
                     if ( sortProperty != null )

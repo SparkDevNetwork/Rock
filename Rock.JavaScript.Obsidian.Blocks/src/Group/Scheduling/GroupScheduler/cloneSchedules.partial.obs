@@ -3,7 +3,7 @@
     <Modal v-model="isVisible"
            title="Clone Schedules"
            saveText="Clone"
-           :saveButtonDisabled="isCloningDisabled"
+           :isSaveButtonDisabled="isCloningDisabled"
            @save="onSave">
 
         <NotificationBox :alertType="AlertType.Info">
@@ -63,8 +63,8 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import Modal from "@Obsidian/Controls/modal";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -166,12 +166,11 @@
 
         cloneSettings.value = result.data;
 
-        // TODO (JPH): Uncomment the following once person preferences are implemented.
-        // selectedSourceDate.value = cloneSettings.value?.selectedSourceDate ?? "";
-        // selectedDestinationDate.value = cloneSettings.value?.selectedDestinationDate ?? "";
-        // selectedGroups.value = cloneSettings.value?.selectedGroups ?? [];
-        // selectedLocations.value = cloneSettings.value?.selectedLocations ?? [];
-        // selectedSchedules.value = cloneSettings.value?.selectedSchedules ?? [];
+        selectedSourceDate.value = cloneSettings.value?.selectedSourceDate ?? "";
+        selectedDestinationDate.value = cloneSettings.value?.selectedDestinationDate ?? "";
+        selectedGroups.value = cloneSettings.value?.selectedGroups ?? [];
+        selectedLocations.value = cloneSettings.value?.selectedLocations ?? [];
+        selectedSchedules.value = cloneSettings.value?.selectedSchedules ?? [];
     }
 
     // #endregion

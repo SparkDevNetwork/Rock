@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using Rock.Enums.Blocks.Security.AccountEntry;
 
 namespace Rock.ViewModels.Blocks.Security.AccountEntry
 {
@@ -24,11 +23,6 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
     /// </summary>
     public class AccountEntryInitializationBox
     {
-        /// <summary>
-        /// The account entry step.
-        /// </summary>
-        public AccountEntryStep? Step { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether phone numbers shown.
         /// </summary>
@@ -141,5 +135,13 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         /// Indicates whether username availability checking is disabled.
         /// </summary>
         public bool IsUsernameAvailabilityCheckDisabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the account entry step box.
+        /// </summary>
+        /// <value>
+        /// The  account entry step box.
+        /// </value>
+        public AccountEntryRegisterResponseBox AccountEntryRegisterStepBox { get; set; }
     }
 }

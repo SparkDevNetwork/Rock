@@ -27,7 +27,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import RegisterIndividual from "./registerIndividual.partial.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
 
     const props = defineProps({

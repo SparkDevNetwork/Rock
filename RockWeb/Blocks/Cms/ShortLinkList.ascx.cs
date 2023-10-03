@@ -150,8 +150,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfShortLink_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfShortLink.SaveUserPreference( FilterAttributeKeys.Site, ddlSite.SelectedValue );
-            gfShortLink.SaveUserPreference( FilterAttributeKeys.Token, txtToken.Text );
+            gfShortLink.SetFilterPreference( FilterAttributeKeys.Site, ddlSite.SelectedValue );
+            gfShortLink.SetFilterPreference( FilterAttributeKeys.Token, txtToken.Text );
 
             BindGrid();
         }
@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfShortLink_ClearFilterClick( object sender, EventArgs e )
         {
-            gfShortLink.DeleteUserPreferences();
+            gfShortLink.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -240,7 +240,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindFilter()
         {
-            txtToken.Text = gfShortLink.GetUserPreference( FilterAttributeKeys.Token );
+            txtToken.Text = gfShortLink.GetFilterPreference( FilterAttributeKeys.Token );
 
             ddlSite.Items.Clear();
 
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Cms
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }
             ddlSite.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-            ddlSite.SetValue( gfShortLink.GetUserPreference( FilterAttributeKeys.Site ) );
+            ddlSite.SetValue( gfShortLink.GetFilterPreference( FilterAttributeKeys.Site ) );
         }
 
         /// <summary>
@@ -263,13 +263,13 @@ namespace RockWeb.Blocks.Cms
 
                 var shortLinkQry = pageShortLinkService.Queryable();
 
-                string token = gfShortLink.GetUserPreference( FilterAttributeKeys.Token );
+                string token = gfShortLink.GetFilterPreference( FilterAttributeKeys.Token );
                 if ( !string.IsNullOrEmpty( token ) )
                 {
                     shortLinkQry = shortLinkQry.Where( s => s.Token.Contains( token ) );
                 }
 
-                int? siteId = gfShortLink.GetUserPreference( FilterAttributeKeys.Site ).AsIntegerOrNull();
+                int? siteId = gfShortLink.GetFilterPreference( FilterAttributeKeys.Site ).AsIntegerOrNull();
                 if ( siteId.HasValue )
                 {
                     shortLinkQry = shortLinkQry.Where( s => s.SiteId == siteId.Value );

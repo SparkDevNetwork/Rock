@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
             BindFilter( clearFilter: true );
             BindGrid();
         }
@@ -241,16 +241,16 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Start Date", "Start Date", drpDate.LowerValue.HasValue ? drpDate.LowerValue.Value.ToString( "o" ) : string.Empty );
-            rFilter.SaveUserPreference( "End Date", "End Date", drpDate.UpperValue.HasValue ? drpDate.UpperValue.Value.ToString( "o" ) : string.Empty );
-            rFilter.SaveUserPreference( "First Name", "First Name", tbFirstName.Text );
-            rFilter.SaveUserPreference( "Last Name", "Last Name", tbLastName.Text );
-            rFilter.SaveUserPreference( "Government ID", "Government ID", tbGovernmentId.Text );
-            rFilter.SaveUserPreference( "Case Worker", "Case Worker", ddlCaseWorker.SelectedItem.Value );
-            rFilter.SaveUserPreference( "Result", "Result", dvpResult.SelectedItem.Value );
-            rFilter.SaveUserPreference( "Status", "Status", dvpStatus.SelectedItem.Value );
-            rFilter.SaveUserPreference( "Benevolence Types", "Benevolence Types", cblBenevolenceType.SelectedValues.AsDelimited( "|" ) );
-            rFilter.SaveUserPreference( "Campus", "Campus", cpCampus.SelectedCampusId.ToString() );
+            rFilter.SetFilterPreference( "Start Date", "Start Date", drpDate.LowerValue.HasValue ? drpDate.LowerValue.Value.ToString( "o" ) : string.Empty );
+            rFilter.SetFilterPreference( "End Date", "End Date", drpDate.UpperValue.HasValue ? drpDate.UpperValue.Value.ToString( "o" ) : string.Empty );
+            rFilter.SetFilterPreference( "First Name", "First Name", tbFirstName.Text );
+            rFilter.SetFilterPreference( "Last Name", "Last Name", tbLastName.Text );
+            rFilter.SetFilterPreference( "Government ID", "Government ID", tbGovernmentId.Text );
+            rFilter.SetFilterPreference( "Case Worker", "Case Worker", ddlCaseWorker.SelectedItem.Value );
+            rFilter.SetFilterPreference( "Result", "Result", dvpResult.SelectedItem.Value );
+            rFilter.SetFilterPreference( "Status", "Status", dvpStatus.SelectedItem.Value );
+            rFilter.SetFilterPreference( "Benevolence Types", "Benevolence Types", cblBenevolenceType.SelectedValues.AsDelimited( "|" ) );
+            rFilter.SetFilterPreference( "Campus", "Campus", cpCampus.SelectedCampusId.ToString() );
 
             if ( AvailableAttributes != null )
             {
@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Finance
                         try
                         {
                             var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            rFilter.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                            rFilter.SetFilterPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                         }
                         catch
                         {
@@ -543,19 +543,19 @@ namespace RockWeb.Blocks.Finance
         /// <param name="clearFilter">if set to <c>true</c> [clear filter].</param>
         private void BindFilter( bool clearFilter = false )
         {
-            drpDate.LowerValue = rFilter.GetUserPreference( "Start Date" ).AsDateTime();
-            drpDate.UpperValue = rFilter.GetUserPreference( "End Date" ).AsDateTime();
+            drpDate.LowerValue = rFilter.GetFilterPreference( "Start Date" ).AsDateTime();
+            drpDate.UpperValue = rFilter.GetFilterPreference( "End Date" ).AsDateTime();
 
             cpCampus.Campuses = CampusCache.All();
-            cpCampus.SelectedCampusId = rFilter.GetUserPreference( "Campus" ).AsInteger();
+            cpCampus.SelectedCampusId = rFilter.GetFilterPreference( "Campus" ).AsInteger();
 
             // hide the First/Last name filter if this is being used as a Person block
             tbFirstName.Visible = TargetPerson == null;
             tbLastName.Visible = TargetPerson == null;
 
-            tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
-            tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
-            tbGovernmentId.Text = rFilter.GetUserPreference( "Government ID" );
+            tbFirstName.Text = rFilter.GetFilterPreference( "First Name" );
+            tbLastName.Text = rFilter.GetFilterPreference( "Last Name" );
+            tbGovernmentId.Text = rFilter.GetFilterPreference( "Government ID" );
 
             Guid groupGuid = GetAttributeValue( "CaseWorkerRole" ).AsGuid();
             var listData = new GroupMemberService( new RockContext() ).Queryable( "Person, Group" )
@@ -567,13 +567,13 @@ namespace RockWeb.Blocks.Finance
             ddlCaseWorker.DataValueField = "PrimaryAliasId";
             ddlCaseWorker.DataBind();
             ddlCaseWorker.Items.Insert( 0, new ListItem() );
-            ddlCaseWorker.SetValue( rFilter.GetUserPreference( "Case Worker" ) );
+            ddlCaseWorker.SetValue( rFilter.GetFilterPreference( "Case Worker" ) );
 
             dvpResult.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ).Id;
-            dvpResult.SetValue( rFilter.GetUserPreference( "Result" ) );
+            dvpResult.SetValue( rFilter.GetFilterPreference( "Result" ) );
 
             dvpStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ).Id;
-            dvpStatus.SetValue( rFilter.GetUserPreference( "Status" ) );
+            dvpStatus.SetValue( rFilter.GetFilterPreference( "Status" ) );
 
             cblBenevolenceType.Items.Clear();
 
@@ -583,7 +583,7 @@ namespace RockWeb.Blocks.Finance
             cblBenevolenceType.DataValueField = "Id";
             cblBenevolenceType.DataBind();
 
-            cblBenevolenceType.SetValues( rFilter.GetUserPreference( "Benevolence Types" ).SplitDelimitedValues() );
+            cblBenevolenceType.SetValues( rFilter.GetFilterPreference( "Benevolence Types" ).SplitDelimitedValues() );
         }
 
         /// <summary>
@@ -614,7 +614,7 @@ namespace RockWeb.Blocks.Finance
                             phAttributeFilters.Controls.Add( wrapper );
                         }
 
-                        string savedValue = rFilter.GetUserPreference( attribute.Key );
+                        string savedValue = rFilter.GetFilterPreference( attribute.Key );
                         if ( !string.IsNullOrWhiteSpace( savedValue ) )
                         {
                             try

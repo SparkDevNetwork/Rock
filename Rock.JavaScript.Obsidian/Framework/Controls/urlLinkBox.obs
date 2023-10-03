@@ -1,0 +1,61 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="value"
+                   formGroupClasses="url-link-box"
+                   name="urlbox"
+                   :rules="computedRules">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="input-group">
+                    <span class="input-group-addon">
+                        <i class="fa fa-link"></i>
+                    </span>
+                    <input v-model="value" :id="uniqueId" class="form-control" v-bind="field" type="url" />
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PropType, computed } from "vue";
+    import RockFormField from "./rockFormField.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+        rules: rulesPropType,
+        requiresTrailingSlash: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    const value = useVModelPassthrough(props, "modelValue", emit);
+
+    const computedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        if (rules.indexOf("url") === -1) {
+            rules.push("url");
+        }
+
+        if (props.requiresTrailingSlash) {
+            rules.push({
+                name: "endswith",
+                params: ["/"]
+            });
+        }
+
+        return rules;
+    });
+</script>

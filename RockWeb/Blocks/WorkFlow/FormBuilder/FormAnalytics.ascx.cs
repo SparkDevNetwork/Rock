@@ -461,8 +461,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         private void LoadSettings()
         {
-            string keyPrefix = string.Format( "form-analytics-{0}-", this.BlockId );
-            string slidingDateRangeSettings = GetUserPreference( keyPrefix + UserPreferenceKeys.SlidingDateRange );
+            var preferences = GetBlockPersonPreferences();
+            var slidingDateRangeSettings = preferences.GetValue( UserPreferenceKeys.SlidingDateRange );
             if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
             {
                 // default to current year
@@ -480,8 +480,10 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         public void SaveSettings()
         {
-            string keyPrefix = string.Format( "form-analytics-{0}-", this.BlockId );
-            SetUserPreference( keyPrefix + UserPreferenceKeys.SlidingDateRange, drpSlidingDateRange.DelimitedValues, false );
+            var preferences = GetBlockPersonPreferences();
+            preferences.SetValue( UserPreferenceKeys.SlidingDateRange, drpSlidingDateRange.DelimitedValues );
+
+            preferences.Save();
         }
 
         #endregion Methods

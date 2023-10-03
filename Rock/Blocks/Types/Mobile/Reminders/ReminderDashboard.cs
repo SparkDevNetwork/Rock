@@ -25,6 +25,7 @@ using Rock.Blocks.Types.Mobile.Connection;
 using Rock.Common.Mobile.Blocks.Reminders.ReminderDashboard;
 using Rock.Common.Mobile.Blocks.Reminders;
 using Rock.Common.Mobile.Blocks.Reminders.ReminderList;
+using System;
 
 namespace Rock.Blocks.Types.Mobile.Reminders
 {
@@ -36,6 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
     [Category( "Reminders" )]
     [Description( "Allows management of the current person's reminders." )]
     [IconCssClass( "fa fa-bell" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -79,7 +81,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_REMINDERS_REMINDER_DASHBOARD )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_REMINDERS_REMINDER_DASHBOARD )]
-    public class ReminderDashboard : RockMobileBlockType
+    public class ReminderDashboard : RockBlockType
     {
         #region Keys
 
@@ -118,11 +120,8 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
         #region IRockMobileBlockType Implementation
 
-        /// <inheritdoc />
-        public override int RequiredMobileAbiVersion => 5;
-
-        /// <inheritdoc />
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Reminders.ReminderDashboard";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 5 );
 
         /// <inheritdoc />
         public override object GetMobileConfigurationValues()
@@ -176,7 +175,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             // Convert into bags.
             var reminderTypeBags = reminderTypesAndRemindersGrouping.Select( group => new ReminderTypeInfoBag
             {
-                TotalReminderCount = group.Count(), // The count of total reminders in the group.
+                TotalReminderCount = group.Where( r => !r.IsComplete ).Count(), // The count of total reminders in the group.
                 Guid = group.Key.Guid,
                 HighlightColor = group.Key.HighlightColor,
                 Name = group.Key.Name,
@@ -296,7 +295,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             {
                 reminders = reminders.Where( r => r.IsComplete );
             }
-            else if( filter == "all" )
+            else if ( filter == "all" )
             {
                 reminders = reminders.Where( r => !r.IsComplete );
             }

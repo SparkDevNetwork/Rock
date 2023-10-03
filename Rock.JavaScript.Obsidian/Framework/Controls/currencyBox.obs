@@ -1,0 +1,42 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NumberBox v-model="internalValue"
+               :placeholder="placeholder"
+               :minimum-value="minimumValue"
+               :maximum-value="maximumValue"
+               :decimal-count="2"
+               rules="decimal">
+        <template v-slot:inputGroupPrepend>
+            <span class="input-group-addon">$</span>
+        </template>
+    </NumberBox>
+</template>
+
+<script setup lang="ts">
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PropType } from "vue";
+    import NumberBox from "./numberBox.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        /** The minimum allowed value to be entered. */
+        minimumValue: {
+            type: Number as PropType<number | null>
+        },
+
+        maximumValue: {
+            type: Number as PropType<number | null>
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: number | null): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const placeholder = "0.00";
+</script>

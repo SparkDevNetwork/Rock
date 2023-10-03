@@ -221,6 +221,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
+                var preferences = GetBlockPersonPreferences();
                 var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
                 if ( campusId.HasValue )
                 {
@@ -230,14 +231,14 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else
                     {
-                        DeleteBlockUserPreference( UserPreferenceKey.ScheduleId );
+                        preferences.SetValue( UserPreferenceKey.ScheduleId, string.Empty );
                     }
                 }
                 else
                 {
-                    _selectedCampusId = GetBlockUserPreference( UserPreferenceKey.CampusId ).AsIntegerOrNull();
+                    _selectedCampusId = preferences.GetValue( UserPreferenceKey.CampusId ).AsIntegerOrNull();
                 }
-                _selectedServiceId = GetBlockUserPreference( UserPreferenceKey.ScheduleId ).AsIntegerOrNull();
+                _selectedServiceId = preferences.GetValue( UserPreferenceKey.ScheduleId ).AsIntegerOrNull();
 
                 if ( CheckSelection() )
                 {
@@ -769,9 +770,9 @@ namespace RockWeb.Blocks.Reporting
 
             if ( campusId.HasValue && scheduleId.HasValue && weekend.HasValue )
             {
-
-                SetBlockUserPreference( UserPreferenceKey.CampusId, campusId.HasValue ? campusId.Value.ToString() : "" );
-                SetBlockUserPreference( UserPreferenceKey.ScheduleId, scheduleId.HasValue ? scheduleId.Value.ToString() : "" );
+                var preferences = GetBlockPersonPreferences();
+                preferences.SetValue( UserPreferenceKey.CampusId, campusId.HasValue ? campusId.Value.ToString() : "" );
+                preferences.SetValue( UserPreferenceKey.ScheduleId, scheduleId.HasValue ? scheduleId.Value.ToString() : "" );
 
                 var metricCategories = MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( AttributeKey.MetricCategories ) );
                 var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();

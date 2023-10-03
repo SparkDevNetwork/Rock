@@ -29,6 +29,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tests.Shared;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -54,14 +55,11 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void BulkUpdateProcessor_UpdateCampus_UpdatesSelectedRecords()
         {
-            var campusMainGuid = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
-            var campusStepGuid = "089844AF-6310-4C20-9434-A845F982B0C5";
-
             var dataContext = new RockContext();
             var personService = new PersonService( dataContext );
 
-            var campusMainId = CampusCache.GetId( campusMainGuid.AsGuid() );
-            var campusStepId = CampusCache.GetId( campusStepGuid.AsGuid() );
+            var campusMainId = CampusCache.GetId( TestGuids.Crm.CampusMain.AsGuid() );
+            var campusStepId = CampusCache.GetId( TestGuids.Crm.CampusSouth.AsGuid() );
 
             var qryCampus = personService.Queryable()
                 .Where( x => x.PrimaryCampusId == campusMainId )
@@ -301,18 +299,38 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void BulkUpdateProcessor_UpdateTitle_UpdatesSelectedRecords()
         {
-            var personTitleMrGuid = "A91ECCFC-5861-4EC1-AAB0-A45093A94485";
-            var personTitleMrsGuid = "1EAD48D9-8045-4904-8999-4695DE8E410D";
-
             var dataContext = new RockContext();
             var personService = new PersonService( dataContext );
 
-            var titleMrId = DefinedValueCache.Get( personTitleMrGuid ).Id;
-            var titleMrsId = DefinedValueCache.Get( personTitleMrsGuid ).Id;
+            // The sample data does not include Title assignments, so assign some.
+            var titleType = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_TITLE );
+            var titleMrId = titleType.DefinedValues
+                .Where( v => v.Value == "Mr." )
+                .Select( v => v.Id )
+                .FirstOrDefault();
+            var titleMrsId = titleType.DefinedValues
+                .Where( v => v.Value == "Mrs." )
+                .Select( v => v.Id )
+                .FirstOrDefault();
+
+            var personGuidList = new List<Guid>
+            {
+                TestGuids.TestPeople.BenJones.AsGuid(),
+                TestGuids.TestPeople.BillMarble.AsGuid(),
+                TestGuids.TestPeople.SamHanks.AsGuid(),
+                TestGuids.TestPeople.TedDecker.AsGuid()
+            };
+
+            var candidateList = personService.Queryable()
+                .Where( p => personGuidList.Contains( p.Guid ) )
+                .ToList();
+
+            candidateList.ForEach( x => { x.TitleValueId = titleMrId; } );
+
+            dataContext.SaveChanges();
 
             var qryTitle = personService.Queryable()
-                .Where( x => x.TitleValueId == titleMrId )
-                .Take( 100 );
+                .Where( x => x.TitleValueId == titleMrId );
 
             BulkUpdateProcessor_UpdateAndRevertPersonProperty(
                 qryTitle,
@@ -707,7 +725,7 @@ namespace Rock.Tests.Integration.Crm
 
         #region Groups
 
-        private static string TestGuidGroupGreeters = "39FA00EE-25DD-47A3-942B-BFCF1975D661";
+        private static string TestGuidGroup = "FBB97E7D-C880-4067-8AFF-8D160EE9169D";
 
         [TestMethod]
         public void BulkUpdateProcessor_AddModifyRemoveGroupMembership_Succeeds()
@@ -718,19 +736,39 @@ namespace Rock.Tests.Integration.Crm
             // * NoTracking() so the results are refreshed for each execution.
             // * OrderBy so that the result sets are predictable.
             var dataContext = new RockContext();
-
             var groupService = new GroupService( dataContext );
-            var groupUshers = groupService.Get( TestGuidGroupGreeters.AsGuid() );
+            var groupTypeService = new GroupTypeService( dataContext );
+
+            var groupTest = groupService.Get( TestGuidGroup.AsGuid() );
+            if ( groupTest != null )
+            {
+                groupService.Delete( groupTest );
+                dataContext.SaveChanges();
+            }
+
+            groupTest = new Group();
+            groupTest.Guid = TestGuidGroup.AsGuid();
+            groupTest.Name = $"Test Group {TestGuidGroup}";
+
+            var groupTypeGeneral = groupTypeService.Get( SystemGuid.GroupType.GROUPTYPE_GENERAL.AsGuid() );
+            groupTest.GroupType = groupTypeGeneral;
+
+            groupService.Add( groupTest );
+
+            dataContext.SaveChanges();
 
             var groupMemberService = new GroupMemberService( dataContext );
 
             // Get the list of current group members.
             var currentMembersQuery = groupMemberService.Queryable()
                 .AsNoTracking()
-                .Where( x => x.GroupId == groupUshers.Id )
+                .Where( x => x.GroupId == groupTest.Id )
                 .Select( x => x.PersonId );
 
-            var roleMember = groupUshers.GroupType.Roles.First( x => x.Name == "Member" );
+            var roleMemberId = groupTest.GroupType.Roles
+                .Where( x => x.Name == "Member" )
+                .Select( r => r.Id )
+                .FirstOrDefault();
 
             var personService = new PersonService( dataContext );
 
@@ -750,12 +788,12 @@ namespace Rock.Tests.Integration.Crm
             // Update 
             var processor = GetDefaultProcessor();
 
-            processor.UpdateGroupId = groupUshers.Id;
+            processor.UpdateGroupId = groupTest.Id;
             processor.PersonIdList = candidatePersonIdList;
 
             // Set property value to updated value and verify.
             processor.UpdateGroupAction = PersonBulkUpdateProcessor.GroupChangeActionSpecifier.Add;
-            processor.UpdateGroupRoleId = roleMember.Id;
+            processor.UpdateGroupRoleId = roleMemberId;
             processor.UpdateGroupStatus = GroupMemberStatus.Active;
 
             processor.Process();
@@ -775,7 +813,7 @@ namespace Rock.Tests.Integration.Crm
             // Verify that all the candidate members have been updated.
             var notUpdatedCandidateMembersQuery = groupMemberService.Queryable()
                     .AsNoTracking()
-                    .Where( x => x.GroupId == groupUshers.Id && x.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Where( x => x.GroupId == groupTest.Id && x.GroupMemberStatus == GroupMemberStatus.Active )
                     .Where( x => candidatePersonIdList.Contains( x.PersonId ) );
 
             Assert.IsFalse( notUpdatedCandidateMembersQuery.Any(), "One or more target records were not updated." );
@@ -806,18 +844,18 @@ namespace Rock.Tests.Integration.Crm
             var dataContext = new RockContext();
 
             var groupService = new GroupService( dataContext );
-            var groupUshers = groupService.Get( TestGuidGroupGreeters.AsGuid() );
+            var groupTest = groupService.Get( TestGuidGroup.AsGuid() );
 
             var groupMemberService = new GroupMemberService( dataContext );
 
             // Get the list of current group members.
             var currentMembersQuery = groupMemberService.Queryable()
                 .AsNoTracking()
-                .Where( x => x.GroupId == groupUshers.Id )
+                .Where( x => x.GroupId == groupTest.Id )
                 .OrderBy( x => x.Id )
                 .Select( x => x.PersonId );
 
-            var roleMember = groupUshers.GroupType.Roles.First( x => x.Name == "Member" );
+            var roleMember = groupTest.GroupType.Roles.First( x => x.Name == "Member" );
 
             var personService = new PersonService( dataContext );
 
@@ -840,7 +878,7 @@ namespace Rock.Tests.Integration.Crm
 
             processor.TaskCount = 4;
 
-            processor.UpdateGroupId = groupUshers.Id;
+            processor.UpdateGroupId = groupTest.Id;
             processor.PersonIdList = candidatePersonIdList;
 
             processor.UpdateGroupAction = PersonBulkUpdateProcessor.GroupChangeActionSpecifier.Add;

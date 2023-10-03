@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -32,7 +33,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Group
     /// Stored as Group.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP )]
     public class GroupFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
@@ -62,6 +63,47 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var groupValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( groupValue != null )
+            {
+                return groupValue.Value;
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( Guid.TryParse( privateValue, out Guid guid ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var group = new GroupService( rockContext ).GetNoTracking( guid );
+                    if ( group != null )
+                    {
+                        return new ListItemBag()
+                        {
+                            Value = group.Guid.ToString(),
+                            Text = group.Name,
+                        }.ToCamelCaseJson( false, true );
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
 
         #endregion
 

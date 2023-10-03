@@ -1,0 +1,32 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <dl v-if="hasValues">
+        <template v-for="value in values">
+            <dt>{{ value.title }}</dt>
+            <dd v-if="value.htmlValue" v-html="value.htmlValue"></dd>
+            <dd v-else>{{ value.textValue }}</dd>
+        </template>
+    </dl>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<ValueDetailListItem[]>,
+            required: false
+        }
+    });
+
+    const values = ref(props.modelValue ?? []);
+
+    const hasValues = computed((): boolean => {
+        return values.value.length > 0;
+    });
+
+    watch(() => props.modelValue, () => {
+        values.value = props.modelValue ?? [];
+    });
+</script>

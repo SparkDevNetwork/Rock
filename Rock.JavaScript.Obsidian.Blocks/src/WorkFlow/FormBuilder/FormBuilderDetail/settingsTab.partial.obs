@@ -1,0 +1,81 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="form-builder-scroll">
+	    <div class="panel-body">
+	        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged">
+	            <GeneralSettings v-model="generalSettings" :templateOverrides="templateOverrides" />
+
+	            <CompletionSettings v-if="!isCompletionForced" v-model="completionSettings" />
+	            <NotificationBox v-else alertType="info">
+	                <h4 class="alert-heading">Completion Settings</h4>
+	                <p>
+	                    The completion action is defined on the template and cannot be changed.
+	                </p>
+	            </NotificationBox>
+	        </RockForm>
+	    </div>
+	</div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, PropType, watch } from "vue";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import CompletionSettings from "../Shared/completionSettings.partial.obs";
+    import GeneralSettings from "./generalSettings.partial.obs";
+    import { FormCompletionAction, FormGeneral } from "../Shared/types.partial";
+    import { FormTemplateListItem } from "./types.partial";
+    import { FormError } from "@Obsidian/Utility/form";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FormGeneral>,
+            required: true
+        },
+
+        completion: {
+            type: Object as PropType<FormCompletionAction>,
+            required: true
+        },
+
+        templateOverrides: {
+            type: Object as PropType<FormTemplateListItem | null>,
+            required: false
+        },
+
+        submit: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FormGeneral): void;
+        (e: "update:completion", value: FormCompletionAction): void;
+        (e: "validationChanged", value: FormError[]): void;
+    }>();
+
+    const generalSettings = useVModelPassthrough(props, "modelValue", emit);
+    const completionSettings = useVModelPassthrough(props, "completion", emit);
+    const formSubmit = ref(false);
+
+	const isCompletionForced = computed((): boolean => props.templateOverrides?.isCompletionActionConfigured ?? false);
+
+    /**
+     * Event handler for when the validation state of the form has changed.
+     *
+     * @param errors Any errors that were detected on the form.
+     */
+    const onValidationChanged = (errors: FormError[]): void => {
+        emit("validationChanged", errors);
+    };
+
+    // Any time the parent component tells us it has attempted to submit
+    // then we trigger the submit on our form so it updates the validation.
+    watch(() => props.submit, () => {
+        if (props.submit) {
+            formSubmit.value = true;
+        }
+    });
+</script>

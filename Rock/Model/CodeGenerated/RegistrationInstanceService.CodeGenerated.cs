@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -66,68 +62,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// RegistrationInstance View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( RegistrationInstance ) )]
-    public partial class RegistrationInstanceViewModelHelper : ViewModelHelper<RegistrationInstance, RegistrationInstanceBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override RegistrationInstanceBag CreateViewModel( RegistrationInstance model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new RegistrationInstanceBag
-            {
-                IdKey = model.IdKey,
-                AccountId = model.AccountId,
-                AdditionalConfirmationDetails = model.AdditionalConfirmationDetails,
-                AdditionalReminderDetails = model.AdditionalReminderDetails,
-                ContactEmail = model.ContactEmail,
-                ContactPersonAliasId = model.ContactPersonAliasId,
-                ContactPhone = model.ContactPhone,
-                Cost = model.Cost,
-                DefaultPayment = model.DefaultPayment,
-                Details = model.Details,
-                EndDateTime = model.EndDateTime,
-                ExternalGatewayFundId = model.ExternalGatewayFundId,
-                ExternalGatewayMerchantId = model.ExternalGatewayMerchantId,
-                IsActive = model.IsActive,
-                MaxAttendees = model.MaxAttendees,
-                MinimumInitialPayment = model.MinimumInitialPayment,
-                Name = model.Name,
-                RegistrationInstructions = model.RegistrationInstructions,
-                RegistrationMeteringThreshold = model.RegistrationMeteringThreshold,
-                RegistrationTemplateId = model.RegistrationTemplateId,
-                RegistrationWorkflowTypeId = model.RegistrationWorkflowTypeId,
-                ReminderSent = model.ReminderSent,
-                SendReminderDateTime = model.SendReminderDateTime,
-                StartDateTime = model.StartDateTime,
-                TimeoutIsEnabled = model.TimeoutIsEnabled,
-                TimeoutLengthMinutes = model.TimeoutLengthMinutes,
-                TimeoutThreshold = model.TimeoutThreshold,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -221,20 +155,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static RegistrationInstanceBag ToViewModel( this RegistrationInstance model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new RegistrationInstanceViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

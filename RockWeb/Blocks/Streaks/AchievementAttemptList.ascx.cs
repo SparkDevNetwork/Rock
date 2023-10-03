@@ -263,10 +263,10 @@ namespace RockWeb.Blocks.Streaks
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( FilterKey.AchieverName, "Achiever Name", tbAchieverName.Text );
-            rFilter.SaveUserPreference( FilterKey.AttemptStartDateRange, "Start Date", drpStartDate.DelimitedValues );
-            rFilter.SaveUserPreference( FilterKey.Status, "Status", ddlStatus.SelectedValue );
-            rFilter.SaveUserPreference( FilterKey.AchievementType, "Achievement Type", statPicker.SelectedValue );
+            rFilter.SetFilterPreference( FilterKey.AchieverName, "Achiever Name", tbAchieverName.Text );
+            rFilter.SetFilterPreference( FilterKey.AttemptStartDateRange, "Start Date", drpStartDate.DelimitedValues );
+            rFilter.SetFilterPreference( FilterKey.Status, "Status", ddlStatus.SelectedValue );
+            rFilter.SetFilterPreference( FilterKey.AchievementType, "Achievement Type", statPicker.SelectedValue );
 
             BindGrid();
         }
@@ -303,7 +303,7 @@ namespace RockWeb.Blocks.Streaks
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -506,7 +506,7 @@ namespace RockWeb.Blocks.Streaks
 
                 if ( achievementType != null )
                 {
-                    rFilter.UserPreferenceKeyPrefix = string.Format( "{0}-", achievementType.Guid );
+                    rFilter.PreferenceKeyPrefix = string.Format( "{0}-", achievementType.Guid );
                 }
 
                 BindFilter();
@@ -557,7 +557,7 @@ namespace RockWeb.Blocks.Streaks
         {
             if ( GetAchievementTypeCache() == null )
             {
-                statPicker.SelectedValue = rFilter.GetUserPreference( FilterKey.AchievementType );
+                statPicker.SelectedValue = rFilter.GetFilterPreference( FilterKey.AchievementType );
             }
             else
             {
@@ -565,9 +565,9 @@ namespace RockWeb.Blocks.Streaks
                 statPicker.Visible = false;
             }
 
-            tbAchieverName.Text = rFilter.GetUserPreference( FilterKey.AchieverName );
-            drpStartDate.DelimitedValues = rFilter.GetUserPreference( FilterKey.AttemptStartDateRange );
-            ddlStatus.SelectedValue = rFilter.GetUserPreference( FilterKey.Status );
+            tbAchieverName.Text = rFilter.GetFilterPreference( FilterKey.AchieverName );
+            drpStartDate.DelimitedValues = rFilter.GetFilterPreference( FilterKey.AttemptStartDateRange );
+            ddlStatus.SelectedValue = rFilter.GetFilterPreference( FilterKey.Status );
         }
 
         /// <summary>

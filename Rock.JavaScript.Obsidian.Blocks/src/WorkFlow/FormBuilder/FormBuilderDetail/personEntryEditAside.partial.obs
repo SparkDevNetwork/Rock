@@ -1,0 +1,104 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="form-sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-back" @click="onBackClick">
+                <i class="fa fa-chevron-left"></i>
+            </div>
+
+            <span class="title">
+                <i class="fa fa-fw fa-user icon"></i>
+                Person Entry
+            </span>
+        </div>
+
+        <div ref="scrollableElement" class="sidebar-body">
+            <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="sidebar-panels">
+                <div class="panel-body">
+                    <PersonEntrySettings v-model="internalValue"
+                                         isVertical
+                                         :recordStatusOptions="options.recordStatusOptions ?? []"
+                                         :connectionStatusOptions="options.connectionStatusOptions ?? []"
+                                         :campusTypeOptions="options.campusTypeOptions ?? []"
+                                         :campusStatusOptions="options.campusStatusOptions ?? []"
+                                         :addressTypeOptions="options.addressTypeOptions ?? []" />
+                </div>
+            </RockForm>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { FormError } from "@Obsidian/Utility/form";
+    import PersonEntrySettings from "../Shared/personEntrySettings.partial.obs";
+    import { FormPersonEntry } from "../Shared/types.partial";
+    import { useFormSources } from "./utils.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FormPersonEntry>,
+            default: {}
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FormPersonEntry): void;
+        (e: "close"): void;
+        (e: "validationChanged", value: FormError[]): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const validationErrors = ref<FormError[]>([]);
+    const scrollableElement = ref<HTMLElement | null>(null);
+
+    /** True if the form should start to submit. */
+    const formSubmit = ref(false);
+
+    /**
+     * Checks if this aside is safe to close or if there are errors that
+     * must be corrected first.
+     */
+    function isSafeToClose(): boolean {
+        formSubmit.value = true;
+
+        const result = validationErrors.value.length === 0;
+
+        // If there was an error, perform a smooth scroll to the top so
+        // they can see the validation results.
+        if (!result && scrollableElement.value) {
+            scrollableElement.value.scroll({
+                behavior: "smooth",
+                top: 0
+            });
+        }
+
+        return result;
+    }
+
+    /**
+     * Event handler for when the back button is clicked.
+     */
+    function onBackClick(): void {
+        emit("close");
+    }
+
+    /**
+     * Event handler for when the validation state of the form has changed.
+     *
+     * @param errors Any errors that were detected on the form.
+     */
+    function onValidationChanged(errors: FormError[]): void {
+        validationErrors.value = errors;
+        emit("validationChanged", errors);
+    }
+
+    const options = useFormSources();
+
+    defineExpose({
+        isSafeToClose
+    });
+</script>

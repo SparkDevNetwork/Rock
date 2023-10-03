@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.BulkExport;
 using Rock.Data;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -4061,6 +4062,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="blockId">The block identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use PersonPreferenceCache to access preferences instead." )]
         public static string GetBlockUserPreferenceKeyPrefix( int blockId )
         {
             return $"block-{blockId}-";
@@ -4072,65 +4075,22 @@ namespace Rock.Model
         /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
         /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting.</param>
         /// <param name="value">The value.</param>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use PersonPreferenceCache to access preferences instead." )]
         public static void SaveUserPreference( Person person, string key, string value )
         {
-            int? personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
+            var anonymousVisitorGuid = new Guid( SystemGuid.Person.ANONYMOUS_VISITOR );
+            PersonPreferenceCollection preferences;
 
-            using ( var rockContext = new RockContext() )
+            if ( person == null || !person.PrimaryAliasId.HasValue || person.Guid == anonymousVisitorGuid )
             {
-                var attributeService = new Model.AttributeService( rockContext );
-                var attribute = attributeService.Get( personEntityTypeId, string.Empty, string.Empty, key );
-
-                if ( attribute == null )
-                {
-                    var fieldTypeService = new Model.FieldTypeService( rockContext );
-                    var fieldType = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
-
-                    attribute = new Model.Attribute();
-                    attribute.IsSystem = false;
-                    attribute.EntityTypeId = personEntityTypeId;
-                    attribute.EntityTypeQualifierColumn = string.Empty;
-                    attribute.EntityTypeQualifierValue = string.Empty;
-                    attribute.Key = key;
-                    attribute.Name = key;
-                    attribute.IconCssClass = string.Empty;
-                    attribute.DefaultValue = string.Empty;
-                    attribute.IsMultiValue = false;
-                    attribute.IsRequired = false;
-                    attribute.Description = string.Empty;
-                    attribute.FieldTypeId = fieldType.Id;
-                    attribute.Order = 0;
-
-                    attributeService.Add( attribute );
-                    rockContext.SaveChanges();
-                }
-
-                var attributeValueService = new Model.AttributeValueService( rockContext );
-                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
-
-                if ( string.IsNullOrWhiteSpace( value ) )
-                {
-                    // Delete existing value if no existing value
-                    if ( attributeValue != null )
-                    {
-                        attributeValueService.Delete( attributeValue );
-                    }
-                }
-                else
-                {
-                    if ( attributeValue == null )
-                    {
-                        attributeValue = new Model.AttributeValue();
-                        attributeValue.AttributeId = attribute.Id;
-                        attributeValue.EntityId = person.Id;
-                        attributeValueService.Add( attributeValue );
-                    }
-
-                    attributeValue.Value = value;
-                }
-
-                rockContext.SaveChanges();
+                return;
             }
+
+            preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+            preferences.SetValue( key, value );
+            preferences.Save();
         }
 
         /// <summary>
@@ -4138,122 +4098,26 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="preferences">The preferences.</param>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use PersonPreferenceCache to access preferences instead." )]
         public static void SaveUserPreferences( Person person, Dictionary<string, string> preferences )
         {
-            if ( preferences != null )
+            var anonymousVisitorGuid = new Guid( SystemGuid.Person.ANONYMOUS_VISITOR );
+            PersonPreferenceCollection preferenceCollection;
+
+            if ( person == null || preferences == null || !person.PrimaryAliasId.HasValue || person.Guid == anonymousVisitorGuid )
             {
-                int? personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
-
-                using ( var rockContext = new RockContext() )
-                {
-                    var attributeService = new Model.AttributeService( rockContext );
-                    var attributes = attributeService
-                        .GetByEntityTypeQualifier( personEntityTypeId, string.Empty, string.Empty, true )
-                        .Where( a => preferences.Keys.Contains( a.Key ) )
-                        .ToList();
-
-                    bool wasUpdated = false;
-                    foreach ( var attributeKeyValue in preferences )
-                    {
-                        var attribute = attributes.FirstOrDefault( a => a.Key == attributeKeyValue.Key );
-
-                        if ( attribute == null )
-                        {
-                            var fieldTypeService = new Model.FieldTypeService( rockContext );
-                            var fieldType = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
-
-                            attribute = new Model.Attribute();
-                            attribute.IsSystem = false;
-                            attribute.EntityTypeId = personEntityTypeId;
-                            attribute.EntityTypeQualifierColumn = string.Empty;
-                            attribute.EntityTypeQualifierValue = string.Empty;
-                            attribute.Key = attributeKeyValue.Key;
-                            attribute.Name = attributeKeyValue.Key;
-                            attribute.IconCssClass = string.Empty;
-                            attribute.DefaultValue = string.Empty;
-                            attribute.IsMultiValue = false;
-                            attribute.IsRequired = false;
-                            attribute.Description = string.Empty;
-                            attribute.FieldTypeId = fieldType.Id;
-                            attribute.Order = 0;
-
-                            attributeService.Add( attribute );
-
-                            wasUpdated = true;
-                        }
-                    }
-
-                    if ( wasUpdated )
-                    {
-                        // Save any new attributes
-                        rockContext.SaveChanges();
-
-                        // Requery attributes ( so they all have ids )
-                        attributes = attributeService
-                            .GetByEntityTypeQualifier( personEntityTypeId, string.Empty, string.Empty, true )
-                            .Where( a => preferences.Keys.Contains( a.Key ) )
-                            .ToList();
-                    }
-
-                    var attributeIds = attributes.Select( a => a.Id ).ToList();
-
-                    var attributeValueService = new Model.AttributeValueService( rockContext );
-                    var attributeValues = attributeValueService.Queryable( "Attribute" )
-                        .Where( v =>
-                            attributeIds.Contains( v.AttributeId ) &&
-                            v.EntityId.HasValue &&
-                            v.EntityId.Value == person.Id )
-                        .ToList();
-
-                    wasUpdated = false;
-                    foreach ( var attributeKeyValue in preferences )
-                    {
-                        if ( string.IsNullOrWhiteSpace( attributeKeyValue.Value ) )
-                        {
-                            foreach ( var attributeValue in attributeValues
-                                .Where( v =>
-                                    v.Attribute != null &&
-                                    v.Attribute.Key == attributeKeyValue.Key )
-                                .ToList() )
-                            {
-                                attributeValueService.Delete( attributeValue );
-                                attributeValues.Remove( attributeValue );
-                                wasUpdated = true;
-                            }
-                        }
-                        else
-                        {
-                            var attributeValue = attributeValues
-                                .Where( v =>
-                                    v.Attribute != null &&
-                                    v.Attribute.Key == attributeKeyValue.Key )
-                                .FirstOrDefault();
-
-                            if ( attributeValue == null )
-                            {
-                                var attribute = attributes
-                                    .Where( a => a.Key == attributeKeyValue.Key )
-                                    .FirstOrDefault();
-                                if ( attribute != null )
-                                {
-                                    attributeValue = new Model.AttributeValue();
-                                    attributeValue.AttributeId = attribute.Id;
-                                    attributeValue.EntityId = person.Id;
-                                    attributeValueService.Add( attributeValue );
-                                }
-                            }
-
-                            wasUpdated = wasUpdated || ( attributeValue.Value != attributeKeyValue.Value );
-                            attributeValue.Value = attributeKeyValue.Value;
-                        }
-                    }
-
-                    if ( wasUpdated )
-                    {
-                        rockContext.SaveChanges();
-                    }
-                }
+                return;
             }
+
+            preferenceCollection = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+            foreach ( var kvp in preferences )
+            {
+                preferenceCollection.SetValue( kvp.Key, kvp.Value );
+            }
+
+            preferenceCollection.Save();
         }
 
         /// <summary>
@@ -4262,27 +4126,21 @@ namespace Rock.Model
         /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve the preference value for.</param>
         /// <param name="key">A <see cref="System.String"/> representing the key name of the preference setting.</param>
         /// <returns>A list of <see cref="System.String"/> containing the values associated with the user's preference setting.</returns>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use PersonPreferenceCache to access preferences instead." )]
         public static string GetUserPreference( Person person, string key )
         {
-            int? personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
+            var anonymousVisitorGuid = new Guid( SystemGuid.Person.ANONYMOUS_VISITOR );
+            PersonPreferenceCollection preferences;
 
-            using ( var rockContext = new Rock.Data.RockContext() )
+            if ( person == null || !person.PrimaryAliasId.HasValue || person.Guid == anonymousVisitorGuid )
             {
-                var attributeService = new Model.AttributeService( rockContext );
-                var attribute = attributeService.Get( personEntityTypeId, string.Empty, string.Empty, key );
-
-                if ( attribute != null )
-                {
-                    var attributeValueService = new Model.AttributeValueService( rockContext );
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
-                    if ( attributeValue != null )
-                    {
-                        return attributeValue.Value;
-                    }
-                }
+                return string.Empty;
             }
 
-            return null;
+            preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+            return preferences.GetValue( key );
         }
 
         /// <summary>
@@ -4290,28 +4148,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
         /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting.</param>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use PersonPreferenceCache to access preferences instead." )]
         public static void DeleteUserPreference( Person person, string key )
         {
-            int? personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
+            var anonymousVisitorGuid = new Guid( SystemGuid.Person.ANONYMOUS_VISITOR );
+            PersonPreferenceCollection preferences;
 
-            using ( var rockContext = new RockContext() )
+            if ( person == null || !person.PrimaryAliasId.HasValue || person.Guid == anonymousVisitorGuid )
             {
-                var attributeService = new Model.AttributeService( rockContext );
-                var attribute = attributeService.Get( personEntityTypeId, string.Empty, string.Empty, key );
-
-                if ( attribute != null )
-                {
-                    var attributeValueService = new Model.AttributeValueService( rockContext );
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
-                    if ( attributeValue != null )
-                    {
-                        attributeValueService.Delete( attributeValue );
-                    }
-
-                    attributeService.Delete( attribute );
-                    rockContext.SaveChanges();
-                }
+                return;
             }
+
+            preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+            preferences.SetValue( key, string.Empty );
         }
 
         /// <summary>
@@ -4319,32 +4170,32 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve the user preference settings for.</param>
         /// <returns>A dictionary containing all of the <see cref="Rock.Model.Person">Person's</see> user preference settings.</returns>
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Use PersonPreferenceCache to access preferences instead." )]
         public static Dictionary<string, string> GetUserPreferences( Person person )
         {
-            int? personEntityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY ).Id;
+            var anonymousVisitorGuid = new Guid( SystemGuid.Person.ANONYMOUS_VISITOR );
+            var prefs = new Dictionary<string, string>();
+            PersonPreferenceCollection preferences;
 
-            var values = new Dictionary<string, string>();
-
-            using ( var rockContext = new Rock.Data.RockContext() )
+            if ( person == null || !person.PrimaryAliasId.HasValue || person.Guid == anonymousVisitorGuid )
             {
-                foreach ( var attributeValue in new Model.AttributeValueService( rockContext ).Queryable()
-                    .Where( v => v.Attribute.EntityTypeId.HasValue && v.EntityId.HasValue &&
-                        v.Attribute.EntityTypeId == personEntityTypeId &&
-                        ( v.Attribute.EntityTypeQualifierColumn == null || v.Attribute.EntityTypeQualifierColumn == string.Empty ) &&
-                        ( v.Attribute.EntityTypeQualifierValue == null || v.Attribute.EntityTypeQualifierValue == string.Empty ) &&
-                        v.EntityId.Value == person.Id )
-                    .Select( a => new { a.AttributeId, a.Value } ) )
-                {
-                    var attributeKey = AttributeCache.Get( attributeValue.AttributeId )?.Key;
-                    if ( attributeKey.IsNotNullOrWhiteSpace() )
-                    {
-                        values.AddOrReplace( attributeKey, attributeValue.Value );
-                    }
-                }
+                return prefs;
             }
 
-            return values;
+            preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+            foreach ( var key in preferences.GetKeys() )
+            {
+                prefs.AddOrIgnore( key, preferences.GetValue( key ) );
+            }
+
+            return prefs;
         }
+
+        #endregion
+
+        #region Update Calculated Person Details
 
         /// <summary>
         /// Ensures the person age classification is correct for the specified person
@@ -4904,6 +4755,58 @@ FROM (
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileExtremeQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Extreme } );
 
             return rowsUpdated;
+        }
+
+        /// <summary>
+        /// Sets the PrimaryAliasId for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="primaryAliasId">The PrimaryAlias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdatePrimaryAlias( int personId, int primaryAliasId, RockContext rockContext )
+        {
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE Person
+SET PrimaryAliasId = @primaryAliasId
+WHERE Id = @personId",
+        new System.Data.SqlClient.SqlParameter( "@personId", personId ), new System.Data.SqlClient.SqlParameter( "@primaryAliasId", primaryAliasId ) );
+        }
+
+        /// <summary>
+        /// Updates the person's group member role (whether Adult/Child) for the specified person.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="age">The age.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdateFamilyMemberRoleByAge( int personId, int age, RockContext rockContext )
+        {
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+
+            int? roleId;
+            int result = 0;
+
+            if ( age >= 18 )
+            {
+                roleId = familyGroupType.Roles?.Find( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )?.Id;
+            }
+            else
+            {
+                roleId = familyGroupType.Roles?.Find( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() )?.Id;
+            }
+
+            if ( roleId.HasValue )
+            {
+                result = rockContext.Database.ExecuteSqlCommand( $@"
+UPDATE GroupMember
+SET GroupRoleId = {roleId}
+WHERE PersonId = ${personId}
+AND GroupTypeId = ${familyGroupType.Id}
+" );
+            }
+
+            return result;
         }
 
         #endregion

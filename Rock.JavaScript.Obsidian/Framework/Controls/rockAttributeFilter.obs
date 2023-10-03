@@ -1,0 +1,54 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <component :is="filterComponent"
+               v-model="internalValue"
+               :configurationValues="configurationValues"
+               :required="required"
+               :filterMode="filterMode" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ComparisonValue>,
+            default: { value: "" }
+        },
+        attribute: {
+            type: Object as PropType<PublicAttributeBag>,
+            required: true
+        },
+        required: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        filterMode: {
+            type: Number as PropType<FilterMode>,
+            default: FilterMode.Simple
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ComparisonValue): void;
+    }>();
+
+    /** The internal value used by the filter component. */
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    /** The field type instance being edited. */
+    const field = computed(() => {
+        return getFieldType(props.attribute.fieldTypeGuid ?? "");
+    });
+
+    /** The filter component to use to display and edit the value. */
+    const filterComponent = computed(() => field.value?.getFilterComponent());
+
+    /** The configuration values for the editor component. */
+    const configurationValues = computed(() => props.attribute.configurationValues ?? {});
+</script>

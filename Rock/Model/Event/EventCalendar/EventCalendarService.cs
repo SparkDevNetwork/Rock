@@ -51,6 +51,9 @@ namespace Rock.Model
             var timeZoneId = TZConvert.WindowsToIana( RockDateTime.OrgTimeZoneInfo.Id );
             icalendar.AddTimeZone( VTimeZone.FromDateTimeZone( timeZoneId ) );
 
+            var startDate = new CalDateTime( args.StartDate, timeZoneId );
+            var endDate = new CalDateTime( args.EndDate, timeZoneId );
+
             // Create each of the events for the calendar(s)
             foreach ( EventItem eventItem in eventItems )
             {
@@ -64,6 +67,13 @@ namespace Rock.Model
                     var ical = CalendarCollection.Load( occurrence.Schedule.iCalendarContent.ToStreamReader() );
                     foreach ( var icalEvent in ical[0].Events )
                     {
+                        // If the event is not within the requested date range, discard it.
+                        // This may occur if the template event has date values that are not aligned with the recurrence schedule.
+                        if ( icalEvent.Start.LessThan( startDate ) || icalEvent.Start.GreaterThan( endDate ) )
+                        {
+                            continue;
+                        }
+
                         // We get all of the schedule info from Schedule.iCalendarContent
                         var ievent = icalEvent.Copy<CalendarEvent>();
                         ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
@@ -74,6 +84,11 @@ namespace Rock.Model
                         // For an all-day event, omit the End date.
                         // see https://stackoverflow.com/questions/1716237/single-day-all-day-appointments-in-ics-files
                         ievent.Start = new CalDateTime( icalEvent.Start.Value, timeZoneId );
+
+                        if ( ievent.Start.LessThan( startDate ) || ievent.Start.GreaterThan( endDate ) )
+                        {
+                            continue;
+                        }
 
                         if ( !ievent.Start.HasTime
                             && ( ievent.End != null && !ievent.End.HasTime )
@@ -297,6 +312,13 @@ namespace Rock.Model
         private List<EventItem> GetEventItems( GetCalendarEventFeedArgs calendarProps )
         {
             var rockContext = new RockContext();
+
+            var eventCalendarService = new EventCalendarService( rockContext );
+            var eventCalendar = eventCalendarService.Get( calendarProps.CalendarId );
+            if ( eventCalendar == null )
+            {
+                throw new Exception( $"Invalid Calendar reference. [CalendarId={ calendarProps.CalendarId }]" );
+            }
 
             var eventCalendarItemService = new EventCalendarItemService( rockContext );
             var eventItemQuery = eventCalendarItemService

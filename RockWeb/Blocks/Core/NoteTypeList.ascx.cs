@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfNoteTypes_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfNoteTypes.SaveUserPreference( AttributeKey.EntityType, entityTypeFilter.SelectedValue );
+            gfNoteTypes.SetFilterPreference( AttributeKey.EntityType, entityTypeFilter.SelectedValue );
             BindGrid();
         }
 
@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Core
                 .ToList();
 
             entityTypeFilter.EntityTypes = noteTypeEntityTypes;
-            entityTypeFilter.SetValue( gfNoteTypes.GetUserPreference( AttributeKey.EntityType ) );
+            entityTypeFilter.SetValue( gfNoteTypes.GetFilterPreference( AttributeKey.EntityType ) );
         }
 
         /// <summary>

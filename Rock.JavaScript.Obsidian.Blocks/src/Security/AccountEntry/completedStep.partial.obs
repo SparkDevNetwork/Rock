@@ -9,7 +9,7 @@
 <script setup lang="ts">
     import { onMounted, PropType } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { AccountEntryCompletedStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryCompletedStepBag";
 

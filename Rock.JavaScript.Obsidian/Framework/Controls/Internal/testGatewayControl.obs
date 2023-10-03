@@ -1,0 +1,60 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div style="max-width: 600px; margin-left: auto; margin-right: auto;">
+        <TextBox label="Credit Card" v-model="cardNumber" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { onSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
+    import { GatewayEmitStrings } from "@Obsidian/Enums/Controls/gatewayEmitStrings";
+    import { FormError } from "@Obsidian/Utility/form";
+
+    type Settings = {
+    };
+
+    const _props = defineProps({
+        settings: {
+            type: Object as PropType<Settings>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: typeof GatewayEmitStrings.Success, value: string): void;
+        (e: typeof GatewayEmitStrings.Validation, value: FormError[]): void;
+        (e: typeof GatewayEmitStrings.Error, value: string): void;
+    }>();
+
+    const cardNumber = ref("");
+
+    const submit = async (): Promise<void> => {
+        // Simulate an AJAX call delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Throw an error for a '0000'
+        if (cardNumber.value === "0000") {
+            emit(GatewayEmitStrings.Error, "This is a serious problem with the gateway.");
+            return;
+        }
+
+        // Validate the card number is greater than 10 digits
+        if (cardNumber.value.length <= 10) {
+            emit(GatewayEmitStrings.Validation, [
+                {
+                    name: "Card Number",
+                    text: "Card number is invalid."
+                }
+            ]);
+            return;
+        }
+
+        const token = newGuid().replace(/-/g, "");
+        emit(GatewayEmitStrings.Success, token);
+    };
+
+    onSubmitPayment(submit);
+</script>

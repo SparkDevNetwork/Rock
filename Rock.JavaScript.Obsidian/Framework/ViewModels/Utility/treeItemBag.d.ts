@@ -23,6 +23,9 @@
 
 /** Describes a single item that can be displayed in a tree view. */
 export type TreeItemBag = {
+    /** Gets or sets the child count. Optional. */
+    childCount?: number | null;
+
     /**
      * Gets or sets the children. A value of null indicates that the
      * children should be lazy loaded by the caller.

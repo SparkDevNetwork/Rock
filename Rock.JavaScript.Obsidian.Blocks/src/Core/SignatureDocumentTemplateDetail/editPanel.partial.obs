@@ -1,0 +1,250 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="documentTerm"
+                         label="Document Term"
+                         help="How the document should be referred to (e.g Waiver, Contract, Statement, etc.)" />
+
+                <RadioButtonList v-model="signatureType"
+                                 label="Signature Input Type"
+                                 help="The input type for the signature. Drawn will display an area where the individual can use the mouse or a finger to draw a representation of their signature.
+                                 Typed will allow them to type their name as their digital signature. Both are legally acceptable in the US and Canada.
+                                 The drawn value is considered Personally identifiable information (PII) and is more sensitive to keep. It is encrypted in the database."
+                                 horizontal
+                                 :items="signatureInputTypes" />
+            </div>
+
+            <div class="col-md-6">
+                <BinaryFileTypePicker v-model="binaryFileType"
+                                      label="File Type"
+                                      help="Determines which file type is used when storing the signed document."
+                                      showBlankItem
+                                      rules="required" />
+
+                <DropDownList v-model="completionSystemCommunicationValue"
+                              label="Completion Email Template"
+                              help="The email template to use when sending the signed document upon completion."
+                              :items="communicationTemplates" />
+            </div>
+        </div>
+
+        <div class="row">
+
+        </div>
+
+        <RockButton btnType="link"
+                    @click="onTemplateTipsClick">
+            Template Tips
+        </RockButton>
+
+        <TransitionVerticalCollapse>
+            <div class="well" v-if="showTips">
+                <h2>Template Tips</h2>
+                <p>Below are some tips to assist you in your template creation. The merge fields that you use to customize your templates will vary depending on where they are being used.</p>
+
+                <RockLabel>Merge Fields for Workflow Electronic Signatures</RockLabel>
+                <p>Below are some common merge fields for templates used for the electronic signature workflow action. Note that the attribute keys will need to map to what you have configured in your workflow template.</p>
+                <div class='row'>
+                    <div class='col-md-6'>
+                        {{ "\{\{ Workflow | Attribute:'SignedByPerson' \}\}" }}<br>
+                        {{ "\{\{ Workflow | Attribute:'AppliesToPerson' \}\}" }}<br>
+                        {{ "\{\{ Workflow | Attribute:'AssignedToPerson' \}\}" }}<br>
+                    </div>
+                    <div class='col-md-6'>
+
+                    </div>
+                </div>
+
+                <br />
+
+                <RockLabel>Merge Fields for Event Registration</RockLabel>
+                <p>Below are some common merge fields for templates used for event registration. Again, the attribute value keys will be different in your registration.</p>
+                <div class='row'>
+                    <div class='col-md-6'>
+                        <p><b>Registrant Fields</b></p>
+                        {{ "\{\{ Registrant.FirstName \}\}" }}<br />
+                        {{ "\{\{ Registrant.LastName \}\}" }}
+                    </div>
+                    <div class='col-md-6'>
+                        <p><b>Registration Fields</b></p>
+                        {{ "\{\{ Registration | Attribute:'VehicleDescription' \}\}" }}
+                    </div>
+                </div>
+            </div>
+        </TransitionVerticalCollapse>
+
+        <div class="well">
+            <div class="mb-3">
+                <Toggle v-model="isPreviewMode"
+                        trueText="Preview"
+                        falseText="Edit" />
+            </div>
+
+            <h4 v-if="isPreviewMode">PDF Viewer</h4>
+
+            <CodeEditor v-else v-model="lavaTemplate" theme="rock" mode="text" :editorHeight="200" />
+
+        </div>
+
+        <div class="well" v-if="showLegacyExternalProviders">
+            <RockLabel>Legacy Signature Provider Settings</RockLabel>
+            <span> Support for these providers will be fully removed in the next full release.</span>
+            <div class="row">
+                <div class="col-md-6">
+                    <ComponentPicker v-model="providerEntityType"
+                                     containerType="containerType"
+                                     label="External Digital Signature Provider"
+                                     help="This will be obsolete in a future version of Rock. Leave this blank to use the Rock's built-in Electronic Signature." />
+                </div>
+                <div class="col-md-6">
+                    <DropDownList v-model="providerTemplateKey"
+                                  label="External Provider Template"
+                                  help="A template that has been created with your digital signature provider" />
+                </div>
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { SignatureDocumentTemplateBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/signatureDocumentTemplateBag";
+    import { SignatureDocumentTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/signatureDocumentTemplateDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<SignatureDocumentTemplateBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<SignatureDocumentTemplateDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: SignatureDocumentTemplateBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const documentTerm = propertyRef(props.modelValue.documentTerm ?? "", "DocumentTerm");
+    const signatureInputTypes = ref(props.modelValue.signatureInputTypes ?? []);
+    const signatureType = propertyRef(props.modelValue.signatureType ?? "", "SignatureType");
+    const binaryFileType = propertyRef(props.modelValue.binaryFileType ?? null, "BinaryFileTypeId");
+    const completionSystemCommunicationValue = propertyRef(props.modelValue.completionSystemCommunication?.value ?? "", "CompletionSystemCommunicationId");
+    const providerEntityType = propertyRef(props.modelValue.providerEntityType ?? null, "ProviderEntityTypeId");
+    const providerTemplateKey = propertyRef(props.modelValue.providerTemplateKey ?? "", "ProviderTemplateKey");
+    const lavaTemplate = propertyRef(props.modelValue.lavaTemplate ?? "", "LavaTemplate");
+    const communicationTemplates = ref(props.options.communicationTemplates ?? []);
+    const showLegacyExternalProviders = ref(props.options.showLegacyExternalProviders);
+    const showTips = ref(false);
+    const isPreviewMode = ref(false);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, documentTerm, signatureType, binaryFileType, completionSystemCommunicationValue, lavaTemplate, providerTemplateKey, providerEntityType];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onTemplateTipsClick(): void {
+        showTips.value = !showTips.value;
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(documentTerm, props.modelValue.documentTerm ?? "");
+        updateRefValue(signatureType, props.modelValue.signatureType ?? "");
+        updateRefValue(binaryFileType, props.modelValue.binaryFileType ?? {});
+        updateRefValue(completionSystemCommunicationValue, props.modelValue.completionSystemCommunication?.value ?? "");
+        updateRefValue(lavaTemplate, props.modelValue.lavaTemplate ?? "");
+        updateRefValue(providerTemplateKey, props.modelValue.providerTemplateKey ?? "");
+        updateRefValue(providerEntityType, props.modelValue.providerEntityType ?? {});
+        updateRefValue(showLegacyExternalProviders, props.options.showLegacyExternalProviders);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: SignatureDocumentTemplateBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            signatureType: signatureType.value,
+            binaryFileType: binaryFileType.value,
+            completionSystemCommunication: { value: completionSystemCommunicationValue.value },
+            lavaTemplate: lavaTemplate.value,
+            providerTemplateKey: providerTemplateKey.value,
+            providerEntityType: providerEntityType.value,
+            documentTerm: documentTerm.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action.CheckIn
 
             if ( entity is CheckInState )
             {
-                return (CheckInState)entity;
+                return ( CheckInState ) entity;
             }
 
             errorMessages.Add( "Could not get CheckInState object" );

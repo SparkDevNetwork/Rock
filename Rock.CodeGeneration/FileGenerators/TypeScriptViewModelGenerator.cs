@@ -329,6 +329,46 @@ namespace Rock.CodeGeneration.FileGenerators
         }
 
         /// <summary>
+        /// Generates the detail block type definition file for any declared types.
+        /// </summary>
+        /// <param name="navigationUrlKeys">The navigation URL keys to include.</param>
+        /// <returns>A string that contains the file contents.</returns>
+        public string GenerateListBlockTypeDefinitionFile( Dictionary<string, string> navigationUrlKeys )
+        {
+            var imports = new List<TypeScriptImport>();
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine( $"export const enum NavigationUrlKey {{" );
+
+            var sortedItems = navigationUrlKeys.OrderBy( k => k.Key ).ToList();
+
+            // Loop through each navigation key and emit the declaration.
+            for ( int i = 0; i < sortedItems.Count; i++ )
+            {
+                var item = sortedItems[i];
+
+                if ( i > 0 )
+                {
+                    sb.AppendLine();
+                }
+
+                sb.Append( $"    {item.Key} = \"{item.Value}\"" );
+
+                if ( i + 1 < sortedItems.Count )
+                {
+                    sb.Append( "," );
+                }
+
+                sb.AppendLine();
+            }
+
+            sb.AppendLine( "}" );
+
+            return GenerateTypeScriptFile( imports, sb.ToString(), false );
+        }
+
+        /// <summary>
         /// Appends the comment block for the member to the StringBuilder.
         /// </summary>
         /// <param name="sb">The StringBuilder to append the comment to.</param>

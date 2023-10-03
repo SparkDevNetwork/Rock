@@ -1,0 +1,223 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+
+                <LocationPicker v-model="parentLocation"
+                                label="Parent Location" />
+
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+
+                <DefinedValuePicker v-model="locationTypeValue"
+                                    label="Location Type"
+                                    :showBlankItem="true"
+                                    :definedTypeGuid="DefinedType.LocationType" />
+
+                <DropDownList label="Printer"
+                              v-model="printerDevice"
+                              :items="printerDeviceOptions"
+                              help="The printer that this location should use for printing."
+                              :showBlankItem="true"
+                              :enhanceForLongLists="false"
+                              :grouped="false"
+                              :multiple="false" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+
+                <AddressControl label="" v-model="addressFields" />
+
+                <NotificationBox v-if="standardizationResults" alertType="info" v-html="standardizationResults" />
+
+                <RockButton
+                            btnSize="sm"
+                            btnType="action"
+                            @click="onStandardizeClick"
+                            autoDisable>
+                    Verify Address
+                </RockButton>
+
+                <CheckBox v-model="isGeoPointLocked"
+                          label="Location Locked"
+                          help="Locks the location to prevent verification services (standardization/geocoding) from updating the address or point." />
+
+                <div class="row">
+                    <div class="col-sm-7">
+                        <TextBox label="Point" v-model="geoPointWellKnownText" readonly />
+                        <TextBox label="Geo-Fence" v-model="geoFenceWellKnownText" readonly />
+                    </div>
+                    <div class="col-sm-5">
+                        <NumberBox label="Threshold" v-model="softRoomThreshold" help="The maximum number of people that room allows before a check-in will require a manager override." />
+                        <NumberBox label="Threshold (Absolute)" v-model="firmRoomThreshold" help="The absolute maximum number of people that room allows. Check-in will not allow check-in after this number of people have checked in." />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LocationBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationBag";
+    import { LocationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationDetailOptionsBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { AddressStandardizationResultBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/addressStandardizationResultBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<LocationBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LocationDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: LocationBag): void;
+        (e: "propertyChanged", value: string): void;
+    }>();
+
+    // #region Values
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const parentLocation = propertyRef(props.modelValue.parentLocation ?? undefined, "ParentLocationId");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const locationTypeValue = propertyRef(props.modelValue.locationTypeValue ?? null, "LocationTypeValueId");
+    const printerDevice = propertyRef(props.modelValue.printerDevice?.value ?? "", "PrinterDeviceId");
+    const isGeoPointLocked = propertyRef(props.modelValue.isGeoPointLocked ?? false, "IsGeoPointLocked");
+    const softRoomThreshold = propertyRef(props.modelValue.softRoomThreshold ?? null, "SoftRoomThreshold");
+    const firmRoomThreshold = propertyRef(props.modelValue.firmRoomThreshold ?? null, "FirmRoomThreshold");
+    const addressFields = ref(props.modelValue.addressFields ?? {});
+    const geoPointWellKnownText = propertyRef(props.modelValue.geoPoint_WellKnownText ?? "", "GeoPoint");
+    const geoFenceWellKnownText = propertyRef(props.modelValue.geoFence_WellKnownText ?? "", "GeoFence");
+    const standardizeAttemptedResult = ref("");
+    const geocodeAttemptedResult = ref("");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [isActive,
+        name,
+        parentLocation,
+        locationTypeValue,
+        printerDevice,
+        isGeoPointLocked,
+        softRoomThreshold,
+        firmRoomThreshold,
+        geoPointWellKnownText,
+        geoFenceWellKnownText
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+    const printerDeviceOptions = computed((): ListItemBag[] => {
+        return props.options.printerDeviceOptions ?? [];
+    });
+
+    const standardizationResults = computed((): string => {
+        if (standardizeAttemptedResult.value || geocodeAttemptedResult.value) {
+            return "Standardization Result: " + standardizeAttemptedResult.value
+                + "<br>"
+                + "Geocoding Result:" + geocodeAttemptedResult.value;
+        }
+        else {
+            return "";
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the individual clicks the Standardize/VerifyLocation button.
+     */
+    async function onStandardizeClick(): Promise<void> {
+        const result = await invokeBlockAction<AddressStandardizationResultBag>("StandardizeLocation", { addressFields: addressFields.value });
+
+        if (result.isSuccess && result.data) {
+            updateRefValue(addressFields, result.data.addressFields ?? {});
+            standardizeAttemptedResult.value = result.data.standardizeAttemptedResult ?? "";
+            geocodeAttemptedResult.value = result.data.geocodeAttemptedResult ?? "";
+        }
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(addressFields, props.modelValue.addressFields ?? {});
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(parentLocation, props.modelValue.parentLocation ?? undefined);
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(locationTypeValue, props.modelValue.locationTypeValue ?? null);
+        updateRefValue(printerDevice, props.modelValue.printerDevice?.value ?? "");
+
+        updateRefValue(isGeoPointLocked, props.modelValue.isGeoPointLocked ?? false);
+        updateRefValue(softRoomThreshold, props.modelValue.softRoomThreshold ?? null);
+        updateRefValue(firmRoomThreshold, props.modelValue.firmRoomThreshold ?? null);
+
+        // TODO, temporary code until we have a GeoPicker
+        updateRefValue(geoPointWellKnownText, props.modelValue.geoPoint_WellKnownText ?? "");
+        updateRefValue(geoFenceWellKnownText, props.modelValue.geoFence_WellKnownText ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, addressFields, ...propRefs], () => {
+        const newValue: LocationBag = {
+            ...props.modelValue,
+            addressFields: addressFields.value,
+            attributeValues: attributeValues.value,
+            isActive: isActive.value,
+            name: name.value,
+            locationTypeValue: locationTypeValue.value,
+            parentLocation: parentLocation.value,
+            printerDevice: { value: printerDevice.value },
+            isGeoPointLocked: isGeoPointLocked.value,
+            softRoomThreshold: softRoomThreshold.value,
+            firmRoomThreshold: firmRoomThreshold.value,
+            geoPoint_WellKnownText: geoPointWellKnownText.value,
+            geoFence_WellKnownText: geoFenceWellKnownText.value,
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -1,0 +1,65 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ConfigurableZone :modelValue="isActive" :iconCssClass="iconCssClass" @configure="onConfigure">
+        <div class="zone-body">
+            <div v-if="hasContent" style="min-height: 24px;" v-html="safeContent"></div>
+            <div v-else class="text-center text-muted">{{ placeholder }}</div>
+        </div>
+    </ConfigurableZone>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ConfigurableZone from "./configurableZone.partial.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        placeholder: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        isActive: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        iconCssClass: {
+            type: String as PropType<string>,
+            default: "fa fa-pencil"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "configure"): void;
+    }>();
+
+    /** True if we have custom content to render. */
+    const hasContent = computed((): boolean => !!props.modelValue);
+
+    /**
+     * A string that represents the render-safe content. This makes sure
+     * that any broken or non-ended elements get ended.
+     */
+    const safeContent = computed((): string => {
+        if (!props.modelValue) {
+            return "";
+        }
+
+        const div = document.createElement("div");
+        div.innerHTML = props.modelValue;
+
+        return div.innerHTML;
+    });
+
+    /**
+     * Event handler for when the configure button is clicked.
+     */
+    function onConfigure(): void {
+        emit("configure");
+    }
+</script>

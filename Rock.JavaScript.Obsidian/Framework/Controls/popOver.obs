@@ -1,17 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <slot name="activator" ref="activatorEl" />
-    <div :class="['popover fade', placement]" role="tooltip" ref="popOverEl" :id="popOverId" :style="popOverStyle">
+    <div :class="['popover fade', placement]" role="tooltip" ref="popOverEl" :id="popOverId" :style="computedPopOverStyle">
         <div class="arrow"></div>
         <h3 class="popover-title" style="display: none;"></h3>
         <div class="popover-content">
-            <slot name="popOverContent" />
+            <slot />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-    import { nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
@@ -28,22 +28,37 @@
         },
 
         /**
-         * A v-model, that - when you set it to true - will trigger an update to re-align the popOver.
-         * This is useful if the content in the popOver is dynamic.
+         * The events that will trigger the popover to show and hide.
          */
-        triggerUpdate: {
-            type: Boolean,
-            default: false
+        trigger: {
+            type: String as PropType<"hover" | "manual">,
+            default: "hover"
+        },
+
+        /**
+         * If specified, this gives the vertical position to anchor the arrow at.
+         */
+        anchorY: {
+            type: Number as PropType<number>,
+            required: false
+        },
+
+        /**
+         * If specified, this gives the horizontal position to anchor the arrow at.
+         */
+        anchorX: {
+            type: Number as PropType<number>,
+            required: false
         }
     });
 
     const emit = defineEmits<{
         (e: "update:isVisible", v: boolean): void
-        (e: "update:triggerUpdate", v: boolean): void
     }>();
 
     const activatorEl = ref<HTMLElement | null>(null);
     const popOverEl = ref<HTMLElement | null>(null);
+    let resizeObserver: ResizeObserver | undefined;
 
     const isPopOverVisible = ref(false);
     const isHovering = ref(false);
@@ -52,7 +67,20 @@
 
     const popOverId = "popover-" + newGuid();
 
+    const computedPopOverStyle = computed((): Record<string, string> => {
+        const styles: Record<string, string> = {
+            ...popOverStyle.value,
+            ...getPositionStyles()
+        };
+
+        return styles;
+    });
+
     watch(isHovering, (isHover) => {
+        if (props.trigger !== "hover") {
+            return;
+        }
+
         if (isHover) {
             // Show PopOver after a small delay
             setTimeout(() => {
@@ -71,18 +99,29 @@
         }
     });
 
-    watch(() => props.triggerUpdate, () => {
-        if (props.triggerUpdate) {
-            popOverStyle.value = { ...popOverStyle.value, ...getPositionStyles() };
-            emit("update:triggerUpdate", false);
-        }
-    });
-
     watch(isPopOverVisible, isVisible => {
         if (isVisible) {
             showPopOver();
+
+            if (window.ResizeObserver) {
+                resizeObserver = new ResizeObserver(() => {
+                    // Force the computed to detect a change.
+                    popOverStyle.value = { ...popOverStyle.value };
+                });
+
+                if (popOverEl.value) {
+                    resizeObserver.observe(popOverEl.value);
+                }
+
+                if (activatorEl.value) {
+                    resizeObserver.observe(activatorEl.value);
+                }
+            }
         }
         else {
+            resizeObserver?.disconnect();
+            resizeObserver = undefined;
+
             hidePopOver();
         }
         emit("update:isVisible", isVisible);
@@ -129,7 +168,11 @@
 
     async function hidePopOver(): Promise<void> {
         // Make it fade out
-        popOverStyle.value.opacity = "0";
+        popOverStyle.value = {
+            ...popOverStyle.value,
+            opacity: "0"
+        };
+
         // Wait until the styles are rendered
         await nextTick();
 
@@ -147,7 +190,13 @@
         const boxP = getElementBox(popOverEl.value);
 
         if (props.placement == "top") {
-            console.log("TOP", { boxA, boxP });
+            if (props.anchorX !== undefined && props.anchorY !== undefined) {
+                return {
+                    left: `${props.anchorX - (boxP.width / 2)}px`,
+                    top: `${props.anchorY - boxP.height}px`
+                };
+            }
+
             return {
                 left: boxA.left + (boxA.width / 2) - (boxP.width / 2) + "px",
                 top: boxA.top - boxP.height + "px"
@@ -155,6 +204,13 @@
         }
 
         if (props.placement == "bottom") {
+            if (props.anchorX !== undefined && props.anchorY !== undefined) {
+                return {
+                    left: `${props.anchorX - (boxP.width / 2)}px`,
+                    top: `${props.anchorY}px`
+                };
+            }
+
             return {
                 left: boxA.left + boxA.width / 2 - boxP.width / 2 + "px",
                 top: boxA.top + boxA.height + "px"
@@ -162,6 +218,13 @@
         }
 
         if (props.placement == "left") {
+            if (props.anchorX !== undefined && props.anchorY !== undefined) {
+                return {
+                    left: `${props.anchorX - boxP.width}px`,
+                    top: `${props.anchorY - (boxP.height / 2)}px`
+                };
+            }
+
             return {
                 left: boxA.left - boxP.width + "px",
                 top: boxA.top + (boxA.height / 2) - (boxP.height / 2) + "px"
@@ -169,6 +232,13 @@
         }
 
         // Else "right"
+        if (props.anchorX !== undefined && props.anchorY !== undefined) {
+            return {
+                left: `${props.anchorX}px`,
+                top: `${props.anchorY - (boxP.height / 2)}px`
+            };
+        }
+
         return {
             left: boxA.left + boxA.width + "px",
             top: boxA.top + (boxA.height / 2) - (boxP.height / 2) + "px"

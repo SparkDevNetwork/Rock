@@ -474,5 +474,24 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
+
+        #region ISecured
+
+        /// <summary>
+        /// Gets the parent authority for the location. Location security is automatically inherited from the parent location,
+        /// unless explicitly overridden.  If there is no parent location, it is inherited from the EntityType
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.IsNamedLocation ? ( this.ParentLocation ?? NamedLocationCache.Get( this.ParentLocationId ?? 0 ) ?? base.ParentAuthority ) : base.ParentAuthority;
+            }
+        }
+
+        #endregion
     }
 }

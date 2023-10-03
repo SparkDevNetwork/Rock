@@ -166,11 +166,11 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Campus" ), "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "DateRange" ), "Date Range", drpDate.DelimitedValues );
-            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ), "Audience", dvpAudience.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "Status" ), "Status", ddlStatus.SelectedValue );
-            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( "ApprovalStatus" ), "Approval Status", ddlApprovalStatus.SelectedValue );
+            rFilter.SetFilterPreference( MakeKeyUniqueToEventCalendar( "Campus" ), "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SetFilterPreference( MakeKeyUniqueToEventCalendar( "DateRange" ), "Date Range", drpDate.DelimitedValues );
+            rFilter.SetFilterPreference( MakeKeyUniqueToEventCalendar( "Audience" ), "Audience", dvpAudience.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SetFilterPreference( MakeKeyUniqueToEventCalendar( "Status" ), "Status", ddlStatus.SelectedValue );
+            rFilter.SetFilterPreference( MakeKeyUniqueToEventCalendar( "ApprovalStatus" ), "Approval Status", ddlApprovalStatus.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Event
                         try
                         {
                             var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                            rFilter.SetFilterPreference( MakeKeyUniqueToEventCalendar( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                         }
                         catch { }
                     }
@@ -340,26 +340,26 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void SetFilter()
         {
-            drpDate.DelimitedValues = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "DateRange" ) );
+            drpDate.DelimitedValues = rFilter.GetFilterPreference( MakeKeyUniqueToEventCalendar( "DateRange" ) );
 
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
-            string campusValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Campus" ) );
+            string campusValue = rFilter.GetFilterPreference( MakeKeyUniqueToEventCalendar( "Campus" ) );
             if ( !string.IsNullOrWhiteSpace( campusValue ) )
             {
                 cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
             }
 
             dvpAudience.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() ).Id;
-            string audienceValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Audience" ) );
+            string audienceValue = rFilter.GetFilterPreference( MakeKeyUniqueToEventCalendar( "Audience" ) );
             if ( !string.IsNullOrWhiteSpace( audienceValue ) )
             {
                 dvpAudience.SetValues( audienceValue.Split( ';' ).ToList() );
             }
 
-            ddlStatus.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "Status" ) ) );
+            ddlStatus.SetValue( rFilter.GetFilterPreference( MakeKeyUniqueToEventCalendar( "Status" ) ) );
 
-            ddlApprovalStatus.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( "ApprovalStatus" ) ) );
+            ddlApprovalStatus.SetValue( rFilter.GetFilterPreference( MakeKeyUniqueToEventCalendar( "ApprovalStatus" ) ) );
 
             BindAttributes();
             AddDynamicControls();
@@ -440,7 +440,7 @@ namespace RockWeb.Blocks.Event
                             phAttributeFilters.Controls.Add( wrapper );
                         }
 
-                        string savedValue = rFilter.GetUserPreference( MakeKeyUniqueToEventCalendar( attribute.Key ) );
+                        string savedValue = rFilter.GetFilterPreference( MakeKeyUniqueToEventCalendar( attribute.Key ) );
                         if ( !string.IsNullOrWhiteSpace( savedValue ) )
                         {
                             try

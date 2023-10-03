@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,49 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// AchievementAttempt View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( AchievementAttempt ) )]
-    public partial class AchievementAttemptViewModelHelper : ViewModelHelper<AchievementAttempt, AchievementAttemptBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override AchievementAttemptBag CreateViewModel( AchievementAttempt model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new AchievementAttemptBag
-            {
-                IdKey = model.IdKey,
-                AchievementAttemptEndDateTime = model.AchievementAttemptEndDateTime,
-                AchievementAttemptStartDateTime = model.AchievementAttemptStartDateTime,
-                AchievementTypeId = model.AchievementTypeId,
-                AchieverEntityId = model.AchieverEntityId,
-                IsClosed = model.IsClosed,
-                IsSuccessful = model.IsSuccessful,
-                Progress = model.Progress,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -175,20 +128,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static AchievementAttemptBag ToViewModel( this AchievementAttempt model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new AchievementAttemptViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

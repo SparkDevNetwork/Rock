@@ -293,9 +293,12 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         [DataMember]
+        [NotMapped]
         public virtual string FriendlyScheduleText
         {
             get { return ToFriendlyScheduleText(); }
+            // Empty setter so XML serialization can happen without exceptions whiles maintaining readonly status.
+            private set { }
         }
 
         /// <summary>

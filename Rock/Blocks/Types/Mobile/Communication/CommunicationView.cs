@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -30,12 +31,13 @@ namespace Rock.Blocks.Types.Mobile.Communication
     /// <summary>
     /// Displays a communication to the user.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Communication View" )]
     [Category( "Mobile > Communication" )]
     [Description( "Displays a communication to the user." )]
     [IconCssClass( "fa fa-envelope-open-text" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -57,7 +59,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_COMMUNICATION_COMMUNICATIONVIEW_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "863E5638-B310-407E-A54E-2C069979881D")]
-    public class CommunicationView : RockMobileBlockType
+    public class CommunicationView : RockBlockType
     {
         #region Block Attributes
 
@@ -97,21 +99,11 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Content";
+        /// <inheritdoc/>
+        public override Guid? MobileBlockTypeGuid => new Guid( "7258A210-E936-4260-B573-9FA1193AD9E2" ); // Content block.
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -121,7 +113,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            var additionalSettings = GetAdditionalSettings();
+            var additionalSettings = BlockCache?.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
 
             return new Rock.Common.Mobile.Blocks.Content.Configuration
             {

@@ -273,6 +273,7 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddCSSLink( "~/Styles/Blocks/Finance/TransactionMatching.css" );
             RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
             RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
@@ -390,9 +391,9 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             var blockAccountGuidList = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
-            string keyPrefix = GetUserPreferenceKeyPrefix();
-            var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
-            var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
+            var preferences = GetBlockPersonPreferences();
+            var personalAccountGuidList = preferences.GetValue( "account-list" ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
+            var optionalAccountGuidList = preferences.GetValue( "optional-account-list" ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
             IEnumerable<FinancialAccountCache> financialAccountList;
 
@@ -426,7 +427,7 @@ namespace RockWeb.Blocks.Finance
                 var selectedAccountList = financialAccountList.Where( a => personalAccountGuidList.Contains( a.Guid ) );
 
                 // If include child accounts is selected, then also select all child accounts of the selected accounts.
-                if ( ( this.GetUserPreference( keyPrefix + "include-child-accounts" ) ?? string.Empty ).AsBoolean() )
+                if ( preferences.GetValue( "include-child-accounts" ).AsBoolean() )
                 {
                     var selectedParentIds = selectedAccountList.Select( a => a.Id ).ToList();
 
@@ -442,7 +443,7 @@ namespace RockWeb.Blocks.Finance
 
             // Show only the accounts that match the batch campus if the corresponding setting is true
             int? batchId = PageParameter( PageParameterKey.BatchId ).AsIntegerOrNull();
-            if ( ( this.GetUserPreference( keyPrefix + "filter-accounts-batch-campus" ) ?? string.Empty ).AsBoolean() && batchId.HasValue )
+            if ( preferences.GetValue( "filter-accounts-batch-campus" ).AsBoolean() && batchId.HasValue )
             {
                 // Put a highlight label on this panel that shows the Campus of the Batch being worked on:
                 var batchCampusId = new FinancialBatchService( rockContext ).GetSelect( batchId.Value, a => a.CampusId );
@@ -456,7 +457,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            int? campusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
+            int? campusId = preferences.GetValue( "account-campus" ).AsIntegerOrNull();
             if ( campusId.HasValue )
             {
                 financialAccountList = financialAccountList.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
@@ -871,7 +872,7 @@ namespace RockWeb.Blocks.Finance
                     if ( existingAmounts )
                     {
                         string keyPrefix = GetUserPreferenceKeyPrefix();
-                        bool onlyShowSelectedAccounts = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
+                        bool onlyShowSelectedAccounts = GetBlockPersonPreferences().GetValue( "only-show-selected-accounts" ).AsBoolean();
                         UpdateVisibleAccountBoxes( onlyShowSelectedAccounts );
                     }
                     else
@@ -1100,27 +1101,29 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAccountsPersonalFilter_SaveClick( object sender, EventArgs e )
         {
-            string keyPrefix = GetUserPreferenceKeyPrefix();
+            var preferences = GetBlockPersonPreferences();
 
             var selectedAccountIdList = apDisplayedPersonalAccounts.SelectedValuesAsInt().ToList();
             var selectedAccountGuidList = FinancialAccountCache.GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
-            this.SetUserPreference( keyPrefix + "account-list", selectedAccountGuidList.AsDelimited( "," ) );
+            preferences.SetValue( "account-list", selectedAccountGuidList.AsDelimited( "," ) );
 
             var optionalAccountIdList = apOptionalPersonalAccounts.SelectedValuesAsInt().ToList();
             var optionalAccountGuidList = FinancialAccountCache.GetByIds( optionalAccountIdList ).Select( a => a.Guid ).ToList();
-            this.SetUserPreference( keyPrefix + "optional-account-list", optionalAccountGuidList.AsDelimited( "," ) );
+            preferences.SetValue( "optional-account-list", optionalAccountGuidList.AsDelimited( "," ) );
 
-            this.SetUserPreference( keyPrefix + "only-show-selected-accounts", cbOnlyShowSelectedAccounts.Checked.ToString() );
+            preferences.SetValue( "only-show-selected-accounts", cbOnlyShowSelectedAccounts.Checked.ToString() );
 
             int? campusId = cpAccounts.SelectedCampusId;
-            this.SetUserPreference( keyPrefix + "account-campus", campusId.HasValue ? campusId.Value.ToString() : "" );
+            preferences.SetValue( "account-campus", campusId.HasValue ? campusId.Value.ToString() : "" );
 
             bool includeChildAccounts = cbIncludeChildAccounts.Checked;
-            this.SetUserPreference( keyPrefix + "include-child-accounts", cbIncludeChildAccounts.Checked.ToString() );
+            preferences.SetValue( "include-child-accounts", cbIncludeChildAccounts.Checked.ToString() );
 
             bool filterAccountsByBatchCampus = cbFilterAccountsByBatchsCampus.Checked;
-            this.SetUserPreference( keyPrefix + "filter-accounts-batch-campus", cbFilterAccountsByBatchsCampus.Checked.ToString() );
+            preferences.SetValue( "filter-accounts-batch-campus", cbFilterAccountsByBatchsCampus.Checked.ToString() );
             hlCampus.Visible = false;
+
+            preferences.Save();
 
             mdAccountsPersonalFilter.Hide();
 
@@ -1160,28 +1163,28 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFilter_Click( object sender, EventArgs e )
         {
-            string keyPrefix = GetUserPreferenceKeyPrefix();
+            var preferences = GetBlockPersonPreferences();
 
-            var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
+            var personalAccountGuidList = preferences.GetValue( "account-list" ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
             var personalAccountList = FinancialAccountCache
                 .GetByGuids( personalAccountGuidList )
                 .Where( a => a.IsActive )
                 .ToList();
             apDisplayedPersonalAccounts.SetValuesFromCache( personalAccountList );
 
-            var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
+            var optionalAccountGuidList = preferences.GetValue( "optional-account-list" ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
             var optionalAccountList = FinancialAccountCache
                 .GetByGuids( optionalAccountGuidList )
                 .Where( a => a.IsActive )
                 .ToList();
             apOptionalPersonalAccounts.SetValuesFromCache( optionalAccountList );
 
-            cbOnlyShowSelectedAccounts.Checked = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
-            cbIncludeChildAccounts.Checked = this.GetUserPreference( keyPrefix + "include-child-accounts" ).AsBoolean();
-            cbFilterAccountsByBatchsCampus.Checked = this.GetUserPreference( keyPrefix + "filter-accounts-batch-campus" ).AsBoolean();
+            cbOnlyShowSelectedAccounts.Checked = preferences.GetValue( "only-show-selected-accounts" ).AsBoolean();
+            cbIncludeChildAccounts.Checked = preferences.GetValue( "include-child-accounts" ).AsBoolean();
+            cbFilterAccountsByBatchsCampus.Checked = preferences.GetValue( "filter-accounts-batch-campus" ).AsBoolean();
 
             cpAccounts.Campuses = CampusCache.All();
-            cpAccounts.SelectedCampusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
+            cpAccounts.SelectedCampusId = preferences.GetValue( "account-campus" ).AsIntegerOrNull();
 
             mdAccountsPersonalFilter.Show();
 
@@ -2147,8 +2150,8 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            var keyPrefix = GetUserPreferenceKeyPrefix();
-            var campusIdSetting = GetUserPreference( keyPrefix + "account-campus" ).AsIntegerOrNull();
+            var preferences = GetBlockPersonPreferences();
+            var campusIdSetting = preferences.GetValue( "account-campus" ).AsIntegerOrNull();
 
             if ( campusIdSetting.HasValue )
             {

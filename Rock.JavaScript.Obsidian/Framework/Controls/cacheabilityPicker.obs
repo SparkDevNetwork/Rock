@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
     import { PropType, computed } from "vue";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import TimeIntervalPicker from "./timeIntervalPicker.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";

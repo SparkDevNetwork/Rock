@@ -15,22 +15,12 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using System.Data;
-using System.Dynamic;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
-
 using DotLiquid;
-using Block = DotLiquid.Block;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-
-using RestSharp;
-using RestSharp.Authenticators;
+using Rock.Lava.Blocks;
+using Rock.Lava.DotLiquid;
 using Rock.Utility;
+using Block = DotLiquid.Block;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -39,8 +29,6 @@ namespace Rock.Lava.RockLiquid.Blocks
     /// </summary>
     public class JsonProperty : Block, IRockStartup
     {
-        private static readonly Regex Syntax = new Regex( @"(\w+)" );
-
         string _markup = string.Empty;
 
         /// <summary>
@@ -80,7 +68,8 @@ namespace Rock.Lava.RockLiquid.Blocks
         /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
-            var parms = ParseMarkup( _markup, context );
+            var settings = JsonPropertyBlock.GetAttributesFromMarkup( _markup, new RockLiquidRenderContext( context ) );
+            var parms = settings.Attributes;
 
             // If no name given then skip this
             if ( parms["name"].IsNullOrWhiteSpace() )
@@ -117,57 +106,5 @@ namespace Rock.Lava.RockLiquid.Blocks
                 result.Write( parameterMarkup );
             }
         }
-
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, Context context )
-        {
-            // first run lava across the inputted markup
-            var internalMergeFields = new Dictionary<string, object>();
-
-            // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
-            {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // get merge fields loaded by the block or container
-            foreach( var environment in context.Environments )
-            {
-                foreach ( var item in environment )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            var parms = new Dictionary<string, string>();
-            parms.Add( "name", string.Empty );
-            parms.Add( "format", "string" );
-
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                }
-            }
-            return parms;
-        }
-        
     }
 }

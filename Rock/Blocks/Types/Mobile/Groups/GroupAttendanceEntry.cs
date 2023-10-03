@@ -30,12 +30,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
     /// <summary>
     /// Displays a page to allow the user to mark attendance for a group.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Group Attendance Entry" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows the user to mark attendance for a group." )]
     [IconCssClass( "fa fa-user-check" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -106,7 +107,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_ATTENDANCE_ENTRY_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "08AE409C-9E4C-42D1-A93C-A554A3EEA0C3")]
-    public class GroupAttendanceEntry : RockMobileBlockType
+    public class GroupAttendanceEntry : RockBlockType
     {
         #region Block Attributes
 
@@ -233,21 +234,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Groups.GroupAttendanceEntry";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

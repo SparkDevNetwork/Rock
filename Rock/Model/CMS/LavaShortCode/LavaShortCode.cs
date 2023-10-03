@@ -27,7 +27,8 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Used to map a site and token to a specific url.
+    /// A Lava Shortcode represents a small snippet of Lava code for use within the
+    /// content of a web page, email, or other Lava-enabled areas. 
     /// </summary>
     [RockDomain( "CMS" )]
     [Table( "LavaShortcode" )]

@@ -86,7 +86,11 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            SetBlockUserPreference( "Group Type", ddlGroupType.SelectedValueAsId().ToString() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "Group Type", ddlGroupType.SelectedValueAsId().ToString() );
+            preferences.Save();
+
             BindGrid();
         }
 
@@ -97,7 +101,11 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void pkrParentLocation_SelectItem( object sender, EventArgs e )
         {
-            SetBlockUserPreference( "Parent Location", pkrParentLocation.SelectedValueAsId().ToString() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "Parent Location", pkrParentLocation.SelectedValueAsId().ToString() );
+            preferences.Save();
+
             BindGrid();
         }
 
@@ -108,7 +116,11 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void pCategory_SelectItem( object sender, EventArgs e )
         {
-            SetBlockUserPreference( "Category", pCategory.SelectedValueAsId().ToString() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "Category", pCategory.SelectedValueAsId().ToString() );
+            preferences.Save();
+
             BindGrid();
         }
 
@@ -256,12 +268,13 @@ namespace RockWeb.Blocks.CheckIn
             ddlGroupType.Items.Add( Rock.Constants.All.ListItem );
 
             var rockContext = new RockContext();
+            var preferences = GetBlockPersonPreferences();
 
             foreach( var groupType in GetTopGroupTypes( rockContext ) )
             {
                 ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
             }
-            ddlGroupType.SetValue( GetBlockUserPreference( "Group Type" ) );
+            ddlGroupType.SetValue( preferences.GetValue( "Group Type" ) );
 
             // hide the GroupType filter if this page has a groupTypeId parameter
             if ( _groupTypeId.HasValue )
@@ -269,7 +282,7 @@ namespace RockWeb.Blocks.CheckIn
                 pnlGroupType.Visible = false;
             }
 
-            int? categoryId = GetBlockUserPreference( "Category" ).AsIntegerOrNull();
+            int? categoryId = preferences.GetValue( "Category" ).AsIntegerOrNull();
             if ( !categoryId.HasValue )
             {
                 var categoryCache = CategoryCache.Get( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() );
@@ -286,7 +299,7 @@ namespace RockWeb.Blocks.CheckIn
                 pCategory.SetValue( null );
             }
 
-            pkrParentLocation.SetValue( GetBlockUserPreference( "Parent Location" ).AsIntegerOrNull() );
+            pkrParentLocation.SetValue( preferences.GetValue( "Parent Location" ).AsIntegerOrNull() );
         }
 
         /// <summary>

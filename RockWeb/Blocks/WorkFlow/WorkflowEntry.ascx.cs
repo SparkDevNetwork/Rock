@@ -731,30 +731,6 @@ namespace RockWeb.Blocks.WorkFlow
                                 ActionTypeId = _actionType.Id;
                                 return true;
                             }
-
-                            if ( action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Delay && action.IsCriteriaValid )
-                            {
-                                if ( action.CompletedDateTime == null )
-                                {
-                                    var errorMessages = new List<string>();
-                                    _workflowService.Process( _workflow, out errorMessages );
-                                    if ( errorMessages.Any() )
-                                    {
-                                        ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):", "<ul><li>" + errorMessages.AsDelimited( "</li><li>", null, true ) + "</li></ul>" );
-                                    }
-
-                                    if ( action.CompletedDateTime == null )
-                                    {
-                                        ShowMessage( NotificationBoxType.Info, string.Empty, "Workflow is delayed", true );
-                                        _action = action;
-                                        _actionType = _action.ActionTypeCache;
-                                        ActionTypeId = _actionType.Id;
-
-                                        return true;
-                                    }
-
-                                }
-                            }
                         }
                     }
                 }
@@ -789,7 +765,6 @@ namespace RockWeb.Blocks.WorkFlow
             ShowNotes( false );
             pnlWorkflowUserForm.Visible = false;
             pnlWorkflowActionElectronicSignature.Visible = false;
-            
             return false;
         }
 
@@ -1491,6 +1466,8 @@ namespace RockWeb.Blocks.WorkFlow
 
             personBasicEditor.RequireMobilePhone = formPersonEntrySettings.MobilePhone == WorkflowActionFormPersonEntryOption.Required;
             personBasicEditor.ShowMobilePhone = formPersonEntrySettings.MobilePhone != WorkflowActionFormPersonEntryOption.Hidden;
+
+            personBasicEditor.ShowSmsOptIn = formPersonEntrySettings.SmsOptIn != WorkflowActionFormShowHideOption.Hide;
 
             personBasicEditor.RequireBirthdate = formPersonEntrySettings.Birthdate == WorkflowActionFormPersonEntryOption.Required;
             personBasicEditor.ShowBirthdate = formPersonEntrySettings.Birthdate != WorkflowActionFormPersonEntryOption.Hidden;
@@ -2257,8 +2234,7 @@ namespace RockWeb.Blocks.WorkFlow
                 // final form completed
                 LogWorkflowEntryInteraction( _workflow, completionActionTypeId, WorkflowInteractionOperationType.FormCompleted );
 
-                //Don't use the default response if there is summary text or if the action is a delay, which has its own message.
-                if ( lSummary.Text.IsNullOrWhiteSpace() || ( _action != null && !(_action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Delay ) ) )
+                if ( lSummary.Text.IsNullOrWhiteSpace() )
                 {
                     var hideForm = _action == null || _action.Guid != previousActionGuid;
                     ShowMessage( NotificationBoxType.Success, string.Empty, responseText, hideForm );
@@ -2271,24 +2247,20 @@ namespace RockWeb.Blocks.WorkFlow
 
                 // Confirmation email can come FormBuilderSettings or FormBuilderTemplate
                 FormConfirmationEmailSettings confirmationEmailSettings;
-                FormCompletionActionSettings completionActionSettings;
-                if ( _workflowType?.FormBuilderTemplate != null )
+                if ( _workflowType?.FormBuilderTemplate?.ConfirmationEmailSettings?.Enabled == true )
                 {
                     // Use FormBuilderTemplate
                     confirmationEmailSettings = _workflowType?.FormBuilderTemplate.ConfirmationEmailSettings;
-                    completionActionSettings = _workflowType?.FormBuilderTemplate.CompletionActionSettings;
                 }
                 else if ( _workflowType?.FormBuilderSettings?.ConfirmationEmail != null )
                 {
-                    // User FormBuilderSettings
+                    // Use FormBuilderSettings
                     confirmationEmailSettings = _workflowType.FormBuilderSettings.ConfirmationEmail;
-                    completionActionSettings = _workflowType.FormBuilderSettings.CompletionAction;
                 }
                 else
                 {
                     // Not a FormBuilder
                     confirmationEmailSettings = null;
-                    completionActionSettings = null;
                 }
 
                 if ( confirmationEmailSettings != null )
@@ -2297,6 +2269,24 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         SendFormBuilderConfirmationEmail( confirmationEmailSettings );
                     }
+                }
+
+                // Completion Action can come FormBuilderSettings or FormBuilderTemplate
+                FormCompletionActionSettings completionActionSettings;
+                if ( _workflowType?.FormBuilderTemplate?.CompletionActionSettings != null )
+                {
+                    // Use FormBuilderTemplate
+                    completionActionSettings = _workflowType?.FormBuilderTemplate.CompletionActionSettings;
+                }
+                else if ( _workflowType?.FormBuilderSettings?.CompletionAction != null )
+                {
+                    // Use FormBuilderSettings
+                    completionActionSettings = _workflowType.FormBuilderSettings.CompletionAction;
+                }
+                else
+                {
+                    // Not a FormBuilder
+                    completionActionSettings = null;
                 }
 
                 // Notification Email is only defined on FormBuilder. FormBuilderTemplate doesn't have NotificationEmailSettings

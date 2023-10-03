@@ -1,4 +1,20 @@
-﻿using Rock.Attribute;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Reminders;
 using Rock.Common.Mobile.Blocks.Reminders.ReminderList;
 using Rock.Data;
@@ -21,6 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
     [Category( "Reminders" )]
     [Description( "Allows management of the current person's reminders." )]
     [IconCssClass( "fa fa-list-alt" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     [LinkedPage(
         "Reminder Edit Page",
@@ -53,15 +70,12 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_REMINDERS_REMINDER_LIST )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_REMINDERS_REMINDER_LIST )]
-    public class ReminderList : RockMobileBlockType
+    public class ReminderList : RockBlockType
     {
         #region IRockMobileBlockType Implementation
 
-        /// <inheritdoc />
-        public override int RequiredMobileAbiVersion => 5;
-
-        /// <inheritdoc />
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Reminders.ReminderList";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 5 );
 
         /// <inheritdoc />
         public override object GetMobileConfigurationValues()

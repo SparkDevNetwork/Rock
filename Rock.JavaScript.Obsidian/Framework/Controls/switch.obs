@@ -1,0 +1,38 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="internalValue"
+                   formGroupClasses="rock-switch"
+                   name="switch">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <InlineSwitch v-model="internalValue" :label="text" :uniqueId="uniqueId" v-bind="field" />
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import InlineSwitch from "./inlineSwitch.obs";
+    import RockFormField from "./rockFormField.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        text: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+</script>

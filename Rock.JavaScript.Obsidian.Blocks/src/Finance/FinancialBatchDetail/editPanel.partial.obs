@@ -1,0 +1,160 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required"
+                         :disabled="isStatusClosed" />
+                <DropDownList v-model="status"
+                    label="Status"
+                    :items="batchStatusOptions"
+                    :disabled="options.isStatusChangeDisabled"
+                    blankValue="1"
+                    rules="required" />
+                <DateTimePicker v-model="batchStartDateTime"
+                    label="Batch Start"
+                    rules="required"
+                    :disabled="isStatusClosed" />
+                <DateTimePicker v-model="batchEndDateTime"
+                    label="Batch End"
+                    :disabled="isStatusClosed" />
+            </div>
+            <div class="col-md-6">
+                <CurrencyBox v-model="controlAmount"
+                    label="Control Amount"
+                    :disabled="isStatusClosed" />
+                <NumberBox v-model="controlItemCount"
+                        label="Control Item Count"
+                        :disabled="isStatusClosed" />
+                <CampusPicker label="Campus" v-model="campus"
+                        showBlankItem
+                        :disabled="isStatusClosed"
+                        includeInactive />
+                <TextBox v-model="accountingSystemCode"
+                        label="Accounting Code"
+                        help="Optional id or code from an external accounting system."
+                        :disabled="isStatusClosed" />
+                <TextBox v-model="note"
+                        label="Notes"
+                        textMode="multiline"
+                        :disabled="isStatusClosed" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { FinancialBatchBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchBag";
+    import { FinancialBatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FinancialBatchBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<FinancialBatchDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FinancialBatchBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const status = propertyRef(props.modelValue.status?.toString() ?? "1", "Status");
+    const batchStartDateTime = propertyRef(props.modelValue.batchStartDateTime ?? "", "BatchStartDateTime");
+    const batchEndDateTime = propertyRef(props.modelValue.batchEndDateTime ?? "", "BatchEndDateTime");
+    const campus = propertyRef(props.modelValue.campus ?? {}, "CampusId");
+    const controlAmount = propertyRef(props.modelValue.controlAmount ?? "", "ControlAmount");
+    const controlItemCount = propertyRef(props.modelValue.controlItemCount ?? null, "ControlItemCount");
+    const accountingSystemCode = propertyRef(props.modelValue.accountingSystemCode ?? "", "AccountingCode");
+    const note = propertyRef(props.modelValue.note ?? "", "Note");
+
+    const batchStatusOptions: ListItemBag[] = [
+                { text: "Pending", value: "0" },
+                { text: "Open", value: "1" },
+                { text: "Closed", value: "2" }
+            ];
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, status, batchStartDateTime, batchEndDateTime, controlAmount, note, controlItemCount, accountingSystemCode, campus];
+
+    // #endregion
+
+    // #region Computed Values
+    const isStatusClosed = computed((): boolean => props.modelValue.status == 2);
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(status, props.modelValue.status?.toString() ?? "1");
+        updateRefValue(campus, props.modelValue.campus ?? {});
+        updateRefValue(batchEndDateTime, props.modelValue.batchEndDateTime ?? "");
+        updateRefValue(batchStartDateTime, props.modelValue.batchStartDateTime ?? "");
+        updateRefValue(controlAmount, props.modelValue.controlAmount ?? "");
+        updateRefValue(controlItemCount, props.modelValue.controlItemCount ?? null);
+        updateRefValue(accountingSystemCode, props.modelValue.accountingSystemCode ?? "");
+        updateRefValue(note, props.modelValue.note ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: FinancialBatchBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            name: name.value,
+            status: toNumber(status.value),
+            batchStartDateTime: batchStartDateTime.value,
+            batchEndDateTime: batchEndDateTime.value,
+            campus: campus.value,
+            controlAmount: controlAmount.value,
+            accountingSystemCode: accountingSystemCode.value,
+            controlItemCount: toNumberOrNull(controlItemCount.value),
+            note: note.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

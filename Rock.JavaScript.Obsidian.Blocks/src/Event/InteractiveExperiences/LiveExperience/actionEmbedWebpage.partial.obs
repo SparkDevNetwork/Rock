@@ -1,0 +1,49 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="experience-action experience-action-type-3aefe3aa-41a1-4812-86e2-38255b965001" :class="additionalActionClasses">
+        <iframe v-if="embedUrl" :src="embedUrl" />
+    </div>
+</template>
+
+<!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
+<style>
+.experience-action-type-3aefe3aa-41a1-4812-86e2-38255b965001 > iframe {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+</style>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import { actionProps } from "./util.partial";
+
+    const props = defineProps(actionProps);
+
+    // #region Values
+
+    // #endregion
+
+    // #region Computed Values
+
+    const additionalActionClasses = computed((): string => {
+        return `experience-action-${props.renderConfiguration.actionId}`;
+    });
+
+    const embedUrl = computed((): string => {
+        return props.renderConfiguration.configurationValues?.url ?? "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

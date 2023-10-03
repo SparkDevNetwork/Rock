@@ -26,6 +26,8 @@
             newValue += keyValue + '^' + valueValue;
         });
         $span.children('input').first().val(newValue);
+
+        raiseKeyValueList();
     }
 
     Sys.Application.add_load(function () {

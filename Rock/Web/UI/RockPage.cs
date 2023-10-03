@@ -42,6 +42,7 @@ using Rock.Transactions;
 using Rock.Utility;
 using Rock.Utility.Settings;
 using Rock.ViewModels;
+using Rock.ViewModels.Crm;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -283,6 +284,15 @@ namespace Rock.Web.UI
         /// </summary>
         /// <value>The personalization segment ids.</value>
         public int[] PersonalizationRequestFilterIds { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the request context. This contains all the details
+        /// about the network request.
+        /// </summary>
+        /// <value>
+        /// The request context.
+        /// </value>
+        public RockRequestContext RequestContext { get; private set; }
 
         /// <summary>
         /// Publicly gets and privately sets the currently logged in user.
@@ -724,6 +734,45 @@ namespace Rock.Web.UI
         /// <param name="e"></param>
         protected override void OnInit( EventArgs e )
         {
+            // Add configuration specific to Rock Page to the observability activity
+            if (Activity.Current != null)
+            {
+                Activity.Current.DisplayName = $"PAGE: {Context.Request.HttpMethod} {PageReference.Route}";
+
+                // If the route has parameters show the route slug, otherwise use the request path
+                if ( PageReference.Parameters.Count > 0 )
+                {
+                    Activity.Current.DisplayName = $"PAGE: {Context.Request.HttpMethod} {PageReference.Route}";
+                }
+                else
+                {
+                    Activity.Current.DisplayName = $"PAGE: {Context.Request.HttpMethod} {Context.Request.Path}";
+                }
+
+                // Highlight postbacks
+                if ( this.IsPostBack )
+                {
+                    Activity.Current.DisplayName = Activity.Current.DisplayName + " [Postback]";
+                }
+
+                // Add attributes
+                Activity.Current.AddTag( "rock-otel-type", "rock-page" );
+                Activity.Current.AddTag( "rock.current-person", this.CurrentPerson?.FullName );
+                Activity.Current.AddTag( "rock.current-user", this.CurrentUser?.UserName );
+                Activity.Current.AddTag( "rock.current-visitor", this.CurrentVisitor?.AliasPersonGuid );
+                Activity.Current.AddTag( "rock.page-id", this.PageId );
+                Activity.Current.AddTag( "rock.page-ispostback", this.IsPostBack );
+            }
+
+            var stopwatchInitEvents = Stopwatch.StartNew();
+
+            RequestContext = new RockRequestContext( Request );
+
+            if ( _pageCache != null )
+            {
+                RequestContext.PrepareRequestForPage( _pageCache );
+            }
+
             _showDebugTimings = this.PageParameter( "ShowDebugTimings" ).AsBoolean();
 
             if ( _showDebugTimings )
@@ -732,8 +781,6 @@ namespace Rock.Web.UI
                 _previousTiming = _tsDuration.TotalMilliseconds;
                 _pageNeedsObsidian = true;
             }
-
-            var stopwatchInitEvents = Stopwatch.StartNew();
 
             bool canAdministratePage = false;
             bool canEditPage = false;
@@ -1235,8 +1282,7 @@ Rock.settings.initialize({{
 
                                         if ( blockEntity is IRockBlockType rockBlockEntity )
                                         {
-                                            rockBlockEntity.RequestContext = new RockRequestContext( Request );
-                                            rockBlockEntity.RequestContext.PrepareRequestForPage( _pageCache );
+                                            rockBlockEntity.RequestContext = RequestContext;
 
                                             var wrapper = new RockBlockTypeWrapper
                                             {
@@ -1346,6 +1392,36 @@ Rock.settings.initialize({{
 
                         if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                         {
+                            var currentPersonJson = "null";
+                            var isAnonymousVisitor = false;
+
+                            if ( CurrentPerson != null && CurrentPerson.Guid != new Guid( SystemGuid.Person.GIVER_ANONYMOUS ) )
+                            {
+                                currentPersonJson = new CurrentPersonBag
+                                {
+                                    IdKey = CurrentPerson.IdKey,
+                                    FirstName = CurrentPerson.FirstName,
+                                    NickName = CurrentPerson.NickName,
+                                    LastName = CurrentPerson.LastName,
+                                    FullName = CurrentPerson.FullName,
+                                    Email = CurrentPerson.Email
+                                }.ToCamelCaseJson( false, false );
+                            }
+                            else if ( CurrentPerson != null )
+                            {
+                                isAnonymousVisitor = true;
+                            }
+
+                            // Prevent XSS attacks in page parameters.
+                            var sanitizedPageParameters = new Dictionary<string, string>();
+                            foreach ( var pageParam in PageParameters() )
+                            {
+                                var sanitizedKey = pageParam.Key.Replace( "</", "<\\/" );
+                                var sanitizedValue = pageParam.Value.ToStringSafe().Replace( "</", "<\\/" );
+
+                                sanitizedPageParameters.AddOrReplace( sanitizedKey, sanitizedValue );
+                            }
+
                             var script = $@"
 Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
@@ -1353,9 +1429,9 @@ Obsidian.onReady(() => {{
             executionStartTime: new Date().getTime(),
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
-            pageParameters: {PageParameters().ToJson()},
-            currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToViewModel( CurrentPerson ).ToCamelCaseJson( false, false ) )},
-            contextEntities: {GetContextViewModels().ToCamelCaseJson( false, false )},
+            pageParameters: {sanitizedPageParameters.ToJson()},
+            currentPerson: {currentPersonJson},
+            isAnonymousVisitor: {(isAnonymousVisitor ? "true" : "false")},
             loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
         }});
     }});
@@ -1747,11 +1823,22 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     continue;
                 }
 
-                // Look for Id first.
-                int? contextId = PageParameter( type.Name + "Id" ).AsIntegerOrNull();
-                if ( contextId.HasValue )
+                // Look for Id first, this can be either integer, guid or IdKey.
+                var contextId = PageParameter( type.Name + "Id" );
+                if ( contextId.IsNotNullOrWhiteSpace() )
                 {
-                    keyEntityDictionary.AddOrReplace( modelContextName, new Data.KeyEntity( contextId.Value ) );
+                    if ( !Site.DisablePredictableIds && int.TryParse( contextId, out var id ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( modelContextName, new KeyEntity( id ) );
+                    }
+                    else if ( Guid.TryParse( contextId, out var guid ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( modelContextName, new KeyEntity( guid ) );
+                    }
+                    else if ( IdHasher.Instance.TryGetId( contextId, out id ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( modelContextName, new KeyEntity( id ) );
+                    }
                 }
 
                 // If Guid is present, it will override Id.
@@ -1768,16 +1855,21 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
             // code block immediately preceeding this one).
             foreach ( var pageContext in _pageCache.PageContexts )
             {
-                int? contextId = PageParameter( pageContext.Value ).AsIntegerOrNull();
-                if ( contextId.HasValue )
+                var contextId = PageParameter( pageContext.Value );
+                if ( contextId.IsNotNullOrWhiteSpace() )
                 {
-                    keyEntityDictionary.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextId.Value ) );
-                }
-
-                Guid? contextGuid = PageParameter( pageContext.Value ).AsGuidOrNull();
-                if ( contextGuid.HasValue )
-                {
-                    keyEntityDictionary.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextGuid.Value ) );
+                    if ( !Site.DisablePredictableIds && int.TryParse( contextId, out var id ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( pageContext.Key, new KeyEntity( id ) );
+                    }
+                    else if ( Guid.TryParse( contextId, out var guid ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( pageContext.Key, new KeyEntity( guid ) );
+                    }
+                    else if ( IdHasher.Instance.TryGetId( contextId, out id ) )
+                    {
+                        keyEntityDictionary.AddOrReplace( pageContext.Key, new KeyEntity( id ) );
+                    }
                 }
             }
 
@@ -1828,8 +1920,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                 }
                 else
                 {
-                    var visitorPersonAliasIdKey = visitorKeyCookie.Value;
-                    currentVisitorCookiePersonAlias = new PersonAliasService( rockContext ).Get( visitorPersonAliasIdKey );
+                    currentVisitorCookiePersonAlias = new PersonAliasService( rockContext ).Get( visitorKeyPersonAliasIdKey );
                     if ( currentVisitorCookiePersonAlias == null )
                     {
                         // There is a ROCK_VISITOR_KEY key with an IdKey, but that PersonAlias record
@@ -1852,29 +1943,17 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                 RockPage.AddOrUpdateCookie( rockSessionStartDatetimeCookie );
             }
 
-            PersonAlias calculatedCurrentVisitor;
+            PersonAlias calculatedCurrentVisitor = null;
 
             if ( visitorKeyCookie == null )
             {
                 if ( currentPersonAlias == null )
                 {
-                    // ROCK_VISITOR_KEY does not exist and nobody is logged in, create a new PersonAlias and new Visitor Cookie tied to the GhostPersonId.
-                    var visitorPersonAlias = new PersonAliasService( rockContext ).CreateAnonymousVisitorAlias();
-                    rockContext.SaveChanges();
+                    // ROCK_VISITOR_KEY does not exist and there is no current login, so set the ROCK_FIRSTTIME_VISITOR cookie.
+                    // This cookie does not specify an expiry, so it is automatically expired when the browser session ends.
+                    var firstTimeCookie = new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_FIRSTTIME_VISITOR, true.ToString() );
 
-                    var visitorPersonAliasIdKey = visitorPersonAlias.IdKey;
-                    visitorKeyCookie = new System.Web.HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY, visitorPersonAliasIdKey )
-                    {
-                        Expires = persistedCookieExpiration
-                    };
-
-                    RockPage.AddOrUpdateCookie( visitorKeyCookie );
-                    RockPage.AddOrUpdateCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_CREATED_DATETIME, currentUTCDateTime.ToISO8601DateString(), persistedCookieExpiration );
-
-                    // Visitor Cookie is new, and nobody is logged in. So set this a person's first visit.
-                    RockPage.AddOrUpdateCookie( new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_FIRSTTIME_VISITOR, true.ToString() ) );
-
-                    calculatedCurrentVisitor = visitorPersonAlias;
+                    RockPage.AddOrUpdateCookie( firstTimeCookie );
                 }
                 else
                 {
@@ -1939,7 +2018,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         }
                         else
                         {
-                            // Our visitor person alias is for some other person that has previously logged into rock with this browser
+                            // Our visitor person alias is for some other person that has previously logged into Rock with this browser
                             // So update the cookie to the current person's PersonAlias
                             visitorKeyCookie.Value = currentPersonAlias.IdKey;
                             visitorKeyCookie.Expires = persistedCookieExpiration;
@@ -1956,13 +2035,16 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
 
             RockPage.AddOrUpdateCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_LASTSEEN, currentUTCDateTime.ToISO8601DateString(), persistedCookieExpiration );
 
-            var message = new UpdatePersonAliasLastVisitDateTime.Message
+            if ( CurrentVisitor != null )
             {
-                PersonAliasId = CurrentVisitor.Id,
-                LastVisitDateTime = RockDateTime.Now,
-            };
+                var message = new UpdatePersonAliasLastVisitDateTime.Message
+                {
+                    PersonAliasId = CurrentVisitor.Id,
+                    LastVisitDateTime = RockDateTime.Now,
+                };
 
-            message.SendIfNeeded();
+                message.SendIfNeeded();
+            }
         }
 
         /// <summary>
@@ -2263,17 +2345,7 @@ Obsidian.onReady(() => {{
 
             _tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
 
-            // Create a page view transaction if enabled
-            // Earlier it was moved to OnLoadComplete from OnLoad so we could get the updated title (if Lava or the block changed it)
-            // Then it was moved from OnLoadComplete so we could get the Page Load Time
-            if ( !Page.IsPostBack && _pageCache != null )
-            {
-                if ( _pageCache.Layout.Site.EnablePageViews )
-                {
-                    var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache, new InteractionTransactionInfo { InteractionTimeToServe = _tsDuration.TotalSeconds, InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(), InteractionChannelCustom2 = Request.UrlReferrerSearchTerms() } );
-                    pageViewTransaction.Enqueue();
-                }
-            }
+            ProcessPageInteraction();
 
             if ( phLoadStats != null )
             {
@@ -2316,6 +2388,89 @@ Sys.Application.add_load(function () {
                     ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-view-state-size", script, true );
                 }
             }
+        }
+
+        /// <summary>
+        /// Process page view interactions if they are enabled for this website.
+        /// </summary>
+        private void ProcessPageInteraction()
+        {
+            // Do not process page interactions for a postback, or if not enabled for this site.
+            if ( Page.IsPostBack )
+            {
+                return;
+            }
+
+            if ( _pageCache == null
+                 || !( _pageCache?.Layout?.Site?.EnablePageViews ?? false ) )
+            {
+                return;
+            }
+
+            // If we have identified a logged-in user, record the page interaction immediately and return.
+            if ( CurrentPerson != null )
+            {
+                var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ),
+                    this.Site,
+                    _pageCache,
+                    new InteractionTransactionInfo { InteractionTimeToServe = _tsDuration.TotalSeconds, InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(), InteractionChannelCustom2 = Request.UrlReferrerSearchTerms() } );
+
+                pageViewTransaction.Enqueue();
+                return;
+            }
+
+            // Add a script to register an interaction for this page after it has been loaded by the browser.
+            // The intention of using a client callback here is to delay the creation of the Anonymous Visitor
+            // database records used to track interactions for visitors until we know that the page has been executed
+            // on a valid client with Javascript and cookies enabled.
+            if ( ClientScript.IsStartupScriptRegistered( "rock-js-register-interaction" ) )
+            {
+                return;
+            }
+
+            var rockSessionGuid = Session["RockSessionId"]?.ToString().AsGuidOrNull() ?? Guid.Empty;
+
+            var pageInteraction = new PageInteractionInfo
+            {
+                ActionName = "View",
+                BrowserSessionGuid = rockSessionGuid,
+                PageId = this.PageId,
+                PageRequestUrl = Request.UrlProxySafe().ToString(),
+                PageRequestDateTime = RockDateTime.Now,
+                PageRequestTimeToServe = _tsDuration.TotalSeconds,
+                UrlReferrerHostAddress = Request.UrlReferrerNormalize(),
+                UrlReferrerSearchTerms = Request.UrlReferrerSearchTerms(),
+                UserAgent = Request.UserAgent,
+                UserHostAddress = Request.UserHostAddress,
+                UserIdKey = CurrentPersonAlias?.IdKey
+            };
+
+            // This script adds a callback to record a View interaction for this page.
+            // If the user is logged in, they are identified by the supplied UserIdKey representing their current PersonAlias.
+            // If the user is a visitor, the ROCK_VISITOR_KEY cookie is read from the client browser to obtain the
+            // UserIdKey supplied to them. For a first visit, the cookie is set in this response.
+            string script = @"
+Sys.Application.add_load(function () {
+const getCookieValue = (name) => {
+    return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || '';
+};
+var interactionArgs = <jsonData>;
+if (!interactionArgs.<userIdProperty>) {
+    interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+}
+$.ajax({
+    url: '/api/Interactions/RegisterPageInteraction',
+    type: 'POST',
+    data: interactionArgs
+    });
+});
+";
+
+            script = script.Replace( "<rockVisitorCookieName>", Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
+            script = script.Replace( "<jsonData>", pageInteraction.ToJson() );
+            script = script.Replace( "<userIdProperty>", nameof(pageInteraction.UserIdKey) );
+
+            ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-register-interaction", script, true );
         }
 
         #endregion
@@ -2691,29 +2846,6 @@ Sys.Application.add_load(function () {
         public string GetLoginUrlWithReturnUrl()
         {
             return Site.GetLoginUrlWithReturnUrl();
-        }
-
-        /// <summary>
-        /// Gets the context view models.
-        /// </summary>
-        /// <returns></returns>
-        internal Dictionary<string, IViewModel> GetContextViewModels()
-        {
-            var contextEntities = GetContextEntities();
-            var viewModels = new Dictionary<string, IViewModel>();
-
-            foreach ( var kvp in contextEntities )
-            {
-                var entity = kvp.Value;
-                var viewModel = ViewModelHelper.GetDefaultViewModel( entity, CurrentPerson, false );
-
-                if ( viewModel != null )
-                {
-                    viewModels[kvp.Key] = viewModel;
-                }
-            }
-
-            return viewModels;
         }
 
         /// <summary>
@@ -3112,13 +3244,7 @@ Sys.Application.add_load(function () {
         /// <param name="expirationDate">The expiration date.</param>
         public static void AddOrUpdateCookie( string name, string value, DateTime? expirationDate )
         {
-            var cookie = new HttpCookie( name )
-            {
-                Expires = expirationDate ?? RockInstanceConfig.SystemDateTime.AddYears( 1 ),
-                Value = value
-            };
-
-            AddOrUpdateCookie( cookie );
+            WebRequestHelper.AddOrUpdateCookie( HttpContext.Current, name, value, expirationDate );
         }
 
         /// <summary>
@@ -3130,35 +3256,7 @@ Sys.Application.add_load(function () {
         /// <param name="cookie">The cookie.</param>
         public static void AddOrUpdateCookie( HttpCookie cookie )
         {
-            // If the samesite setting is not in the Path then add it
-            if ( cookie.Path.IsNullOrWhiteSpace() || !cookie.Path.Contains( "SameSite" ) )
-            {
-                SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
-
-                // If IsSecureConnection is false then check the scheme in case the web server is behind a load balancer.
-                // The server could use unencrypted traffic to the balancer, which would encrypt it before sending to the browser.
-                var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.UrlProxySafe().Scheme == "https" ? ";Secure" : string.Empty;
-
-                // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
-                string sameSiteCookieValue = $";SameSite={sameSiteCookieSetting}{secureSetting}";
-
-                cookie.Path += sameSiteCookieValue;
-            }
-
-            // Clone the cookie to prevent the SameSite property from making an appearence in our response.
-            var responseCookie = new HttpCookie( cookie.Name )
-            {
-                Domain = cookie.Domain,
-                Expires = cookie.Expires,
-                HttpOnly = cookie.HttpOnly,
-                Path = cookie.Path,
-                Secure = cookie.Secure,
-                Value = cookie.Value
-            };
-
-            HttpContext.Current.Request.Cookies.Remove( responseCookie.Name );
-            HttpContext.Current.Response.Cookies.Remove( responseCookie.Name );
-            HttpContext.Current.Response.Cookies.Add( responseCookie );
+            WebRequestHelper.AddOrUpdateCookie( HttpContext.Current, cookie );
         }
 
         /// <summary>
@@ -3168,26 +3266,7 @@ Sys.Application.add_load(function () {
         /// <returns></returns>
         public HttpCookie GetCookie( string name )
         {
-            /* MP 06-16-2022 
-
-            Make sure the Cookies AllKeys contains a cookie with that name first,
-            otherwise it will automatically create the cookie. This avoids
-            an issue where a Request cookie could get removed if using GetCookie
-            to see if the cookie exists.
-             
-             */
-
-            if ( Request.Cookies.AllKeys.Contains( name ) )
-            {
-                return Request.Cookies[name];
-            }
-
-            if ( Response.Cookies.AllKeys.Contains( name ) )
-            {
-                return Response.Cookies[name];
-            }
-
-            return null;
+            return WebRequestHelper.GetCookieFromContext( this.Context, name );
         }
 
         /// <summary>
@@ -3491,7 +3570,7 @@ Sys.Application.add_load(function () {
 
         #endregion
 
-        #region Static Helper Methods
+        #region Page Parameters
 
         /// <summary>
         /// Checks the page's RouteData values and then the query string for a
@@ -3612,6 +3691,10 @@ Sys.Application.add_load(function () {
 
             return parameters;
         }
+
+        #endregion
+
+        #region Static Helper Methods
 
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
@@ -4110,6 +4193,10 @@ Sys.Application.add_load(function () {
             return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current?.Request ) );
         }
 
+        #endregion
+
+        #region Obsidian Fingerprinting
+
         /// <summary>
         /// Initializes the obsidian file fingerprint. This sets the initial
         /// fingerprint value and then if we are in Debug mode it monitors for
@@ -4233,22 +4320,55 @@ Sys.Application.add_load(function () {
             }
         }
 
-        #region User Preferences
+        #endregion
+
+        #region Person Preferences
+
+        /// <summary>
+        /// Gets the global person preferences. These are unique to the person
+        /// but global across the entire system. Global preferences should be
+        /// used with extreme caution and care.
+        /// </summary>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetGlobalPersonPreferences()
+        {
+            return RequestContext.GetGlobalPersonPreferences();
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the specified entity.
+        /// </summary>
+        /// <param name="scopedEntity">The entity to use when scoping the preferences for a particular use.</param>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetScopedPersonPreferences( IEntity scopedEntity )
+        {
+            return RequestContext.GetScopedPersonPreferences( scopedEntity );
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the specified entity.
+        /// </summary>
+        /// <param name="scopedEntity">The entity to use when scoping the preferences for a particular use.</param>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetScopedPersonPreferences( IEntityCache scopedEntity )
+        {
+            return RequestContext.GetScopedPersonPreferences( scopedEntity );
+        }
+
+        #endregion
+
+        #region User Preferences (Obsolete)
 
         /// <summary>
         /// Returns a user preference for the current user and given key.
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
         /// <returns>A <see cref="System.String" /> representing the specified user preference value, if a match is not found an empty string will be returned.</returns>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public string GetUserPreference( string key )
         {
-            var values = SessionUserPreferences();
-            if ( values.ContainsKey( key ) )
-            {
-                return values[key];
-            }
-
-            return string.Empty;
+            return GetGlobalPersonPreferences().GetValue( key );
         }
 
         /// <summary>
@@ -4259,14 +4379,16 @@ Sys.Application.add_load(function () {
         /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> contains a key that represents the user preference key and a value that contains the user preference value associated
         /// with that key.
         /// </returns>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public Dictionary<string, string> GetUserPreferences( string keyPrefix )
         {
             var selectedValues = new Dictionary<string, string>();
+            var preferences = GetGlobalPersonPreferences();
 
-            var values = SessionUserPreferences();
-            foreach ( var key in values.Where( v => v.Key.StartsWith( keyPrefix ) ) )
+            foreach ( var key in preferences.GetKeys().Where( k => k.StartsWith( keyPrefix ) ) )
             {
-                selectedValues.Add( key.Key, key.Value );
+                selectedValues.AddOrIgnore( key, preferences.GetValue( key ) );
             }
 
             return selectedValues;
@@ -4279,21 +4401,17 @@ Sys.Application.add_load(function () {
         /// <param name="key">A <see cref="System.String" /> representing the name of the key.</param>
         /// <param name="value">A <see cref="System.String" /> representing the preference value.</param>
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void SetUserPreference( string key, string value, bool saveValue = true )
         {
-            var sessionValues = SessionUserPreferences();
-            if ( sessionValues.ContainsKey( key ) )
-            {
-                sessionValues[key] = value;
-            }
-            else
-            {
-                sessionValues.Add( key, value );
-            }
+            var preferences = GetGlobalPersonPreferences();
 
-            if ( saveValue && CurrentPerson != null )
+            preferences.SetValue( key, value );
+
+            if ( saveValue )
             {
-                PersonService.SaveUserPreference( CurrentPerson, key, value );
+                preferences.Save();
             }
         }
 
@@ -4301,36 +4419,22 @@ Sys.Application.add_load(function () {
         /// Saves the user preferences.
         /// </summary>
         /// <param name="keyPrefix">The key prefix.</param>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void SaveUserPreferences( string keyPrefix )
         {
-            if ( CurrentPerson != null )
-            {
-                var values = new Dictionary<string, string>();
-                SessionUserPreferences()
-                    .Where( p => p.Key.StartsWith( keyPrefix ) )
-                    .ToList()
-                    .ForEach( kv => values.Add( kv.Key, kv.Value ) );
-
-                PersonService.SaveUserPreferences( CurrentPerson, values );
-            }
+            GetGlobalPersonPreferences().Save();
         }
 
         /// <summary>
         /// Deletes a user preference value for the specified key
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the key.</param>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void DeleteUserPreference( string key )
         {
-            var sessionValues = SessionUserPreferences();
-            if ( sessionValues.ContainsKey( key ) )
-            {
-                sessionValues.Remove( key );
-            }
-
-            if ( CurrentPerson != null )
-            {
-                PersonService.DeleteUserPreference( CurrentPerson, key );
-            }
+            GetGlobalPersonPreferences().SetValue( key, string.Empty );
         }
 
         /// <summary>
@@ -4340,29 +4444,20 @@ Sys.Application.add_load(function () {
         /// </summary>
         /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, List}"/> containing the user preferences
         /// for the current user. If the current user is anonymous or unknown an empty dictionary will be returned.</returns>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public Dictionary<string, string> SessionUserPreferences()
         {
-            string sessionKey = string.Format( "{0}_{1}",
-                Person.USER_VALUE_ENTITY, CurrentPerson != null ? CurrentPerson.Id : 0 );
+            var preferences = GetGlobalPersonPreferences();
+            var userPreferences = new Dictionary<string, string>();
 
-            var userPreferences = Session[sessionKey] as Dictionary<string, string>;
-            if ( userPreferences == null )
+            foreach ( var key in preferences.GetKeys() )
             {
-                if ( CurrentPerson != null )
-                {
-                    userPreferences = PersonService.GetUserPreferences( CurrentPerson );
-                }
-                else
-                {
-                    userPreferences = new Dictionary<string, string>();
-                }
-                Session[sessionKey] = userPreferences;
+                userPreferences.AddOrIgnore( key, preferences.GetValue( key ) );
             }
 
             return userPreferences;
         }
-
-        #endregion
 
         #endregion
 

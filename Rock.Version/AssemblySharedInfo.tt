@@ -4,8 +4,8 @@
 <#@ output extension=".cs" #>
 <#
      int major = 1; 
-     int minor = 15; 
-     int build = 1; 
+     int minor = 16; 
+     int build = 0; 
      int revision = 0; 
   
      try

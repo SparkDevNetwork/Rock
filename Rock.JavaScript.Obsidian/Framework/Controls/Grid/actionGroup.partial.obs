@@ -1,0 +1,34 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="grid-actions">
+        <ActionButton v-for="action in gridActions"
+                      :action="action"
+                      :grid="grid" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
+    import ActionButton from "./actionButton.partial.obs";
+
+    const props = defineProps({
+        /** The array of grid actions that should be displayed in this group. */
+        gridActions: {
+            type: Array as PropType<GridAction[]>,
+            default: []
+        },
+
+        /**
+         * The grid state that these actions belongs to.
+         */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        }
+    });
+
+    const gridActions = computed((): GridAction[] => {
+        return [...props.gridActions].reverse();
+    });
+</script>

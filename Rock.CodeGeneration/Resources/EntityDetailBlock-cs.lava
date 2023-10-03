@@ -33,12 +33,12 @@ namespace Rock.Blocks.{{ DomainNamespace }}
     /// <summary>
     /// Displays the details of a particular {{ EntityName | SplitCase | Downcase }}.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
 
     [DisplayName( "{{ EntityName | SplitCase }} Detail" )]
     [Category( "{{ Domain }}" )]
     [Description( "Displays the details of a particular {{ EntityName | SplitCase | Downcase }}." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -46,7 +46,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
     [Rock.SystemGuid.EntityTypeGuid( "{{ '' | UniqueIdentifier }}" )]
     [Rock.SystemGuid.BlockTypeGuid( "{{ '' | UniqueIdentifier }}" )]
-    public class {{ EntityName }}Detail : RockObsidianDetailBlockType
+    public class {{ EntityName }}Detail : RockDetailBlockType
     {
         #region Keys
 
@@ -61,8 +61,6 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         }
 
         #endregion Keys
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         #region Methods
 

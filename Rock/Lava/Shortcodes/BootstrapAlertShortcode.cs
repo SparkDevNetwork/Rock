@@ -15,9 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Rock.Lava.Shortcodes
@@ -68,50 +66,16 @@ namespace Rock.Lava.Shortcodes
             {
                 base.OnRender( context, writer );
 
-                var parms = ParseMarkup( _markup, context );
+                var settings = LavaElementAttributes.NewFromMarkup( _markup, context );
 
-                string className = "alert alert-info";
-
-                if ( parms.Any( p => p.Key == "type" ) )
+                var className = "alert alert-info";
+                if ( settings.HasValue( "type" ) )
                 {
-                    className = $"alert alert-{ parms["type"] }";
+                    className = $"alert alert-{ settings.GetString( "type" ) }";
                 }
 
                 result.Write( $"<div class='{className}'>{(writer.ToString())}</div>" );
             }
-        }
-
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
-        {
-            // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
-
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            var parms = new Dictionary<string, string>();
-            parms.Add( "return", "results" );
-            parms.Add( "statement", "select" );
-
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                }
-            }
-            return parms;
         }
     }
 }

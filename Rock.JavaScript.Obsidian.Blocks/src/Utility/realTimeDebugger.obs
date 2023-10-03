@@ -80,7 +80,7 @@
 }
 
 .message-container {
-    margin: 0px 0px 12px 0px;
+    margin: 0 0 12px 0;
     display: flex;
 }
 
@@ -95,8 +95,8 @@
     background: inherit;
     border: none;
     color: inherit;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
 }
 
 .message-text :deep(pre .string) {
@@ -123,10 +123,10 @@
 <script setup lang="ts">
     import Block from "@Obsidian/Templates/block";
     import ConnectionStatus from "@Obsidian/Controls/connectionStatus.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import TextBox from "@Obsidian/Controls/textBox";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ref } from "vue";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";

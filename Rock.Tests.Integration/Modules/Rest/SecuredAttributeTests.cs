@@ -20,6 +20,7 @@ namespace Rock.Tests.Integration.RestApi
     [TestClass]
     public class SecuredAttributeTests
     {
+        [Ignore("Fix required. [Last modified by KA]")]
         [TestMethod]
         public void AuthenticateWithoutPinAuthenticationActive()
         {

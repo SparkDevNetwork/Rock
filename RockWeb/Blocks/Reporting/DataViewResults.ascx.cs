@@ -152,8 +152,12 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnToggleResults_Click( object sender, EventArgs e )
         {
-            var showResults = GetBlockUserPreference( UserPreferenceKey.ShowResults ).AsBoolean( true );
-            SetBlockUserPreference( UserPreferenceKey.ShowResults, ( !showResults ).ToString() );
+            var preferences = GetBlockPersonPreferences();
+            var showResults = preferences.GetValue( UserPreferenceKey.ShowResults ).AsBoolean( true );
+
+            preferences.SetValue( UserPreferenceKey.ShowResults, ( !showResults ).ToString() );
+            preferences.Save();
+
             BindGrid();
         }
 
@@ -221,7 +225,8 @@ namespace RockWeb.Blocks.Reporting
             gDataViewResults.DataSource = null;
 
             // Only respect the ShowResults option if fetchRowCount is null
-            var showResults = GetBlockUserPreference( UserPreferenceKey.ShowResults ).AsBooleanOrNull() ?? true;
+            var preferences = GetBlockPersonPreferences();
+            var showResults = preferences.GetValue( UserPreferenceKey.ShowResults ).AsBooleanOrNull() ?? true;
 
             if ( showResults )
             {

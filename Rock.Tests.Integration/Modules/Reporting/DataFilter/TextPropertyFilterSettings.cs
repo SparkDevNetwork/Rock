@@ -67,15 +67,22 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             ValidateSettings();
 
             var filter = new DataViewFilter();
-
             filter.ExpressionType = FilterExpressionType.Filter;
             filter.EntityTypeId = EntityTypeCache.GetId( typeof( Rock.Reporting.DataFilter.PropertyFilter ) );
-
-            var settings = new List<string> { $"Property_{PropertyName}", Comparison.ConvertToInt().ToString(), Value };
-
-            filter.Selection = settings.ToJson();
+            filter.Selection = GetSettingsString();
 
             return filter;
+        }
+
+        /// <summary>
+        /// Gets the settings for the filter as a JSON string.
+        /// </summary>
+        /// <returns></returns>
+        public string GetSettingsString()
+        {
+            var settings = new List<string> { $"Property_{PropertyName}", Comparison.ConvertToInt().ToString(), Value };
+            var json = settings.ToJson();
+            return json;
         }
     }
 }

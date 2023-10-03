@@ -63,7 +63,8 @@ namespace Rock.Lava.RockLiquid.Blocks
         /// <param name="tokens">The tokens.</param>
         public override void Initialize( string tagName, string markup, List<string> tokens )
         {
-            var parms = ParseMarkup( markup );
+            var settings = LavaElementAttributes.NewFromMarkup( markup );
+            var parms = settings.Attributes;
 
             if ( parms.Any( p => p.Key == "type" ) )
             {
@@ -166,31 +167,6 @@ namespace Rock.Lava.RockLiquid.Blocks
         private string CleanInput( string input )
         {
             return input.Replace( "\"", "" ).Replace( @"\", "" );
-        }
-
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup )
-        {
-            var parms = new Dictionary<string, string>();
-
-            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                }
-            }
-            return parms;
         }
     }
 

@@ -143,9 +143,6 @@ namespace Rock.Client
         public GroupLocation GroupLocation { get; set; }
 
         /// <summary />
-        public ICollection<GroupLocationHistoricalSchedule> GroupLocationHistoricalSchedules { get; set; }
-
-        /// <summary />
         public Location Location { get; set; }
 
         /// <summary>

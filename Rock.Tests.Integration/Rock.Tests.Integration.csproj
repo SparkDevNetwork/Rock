@@ -73,8 +73,8 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Primitives, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Primitives.2.2.0\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Primitives.3.1.0\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.5.5.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
@@ -134,9 +134,6 @@
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.5.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
     </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
     <Reference Include="System.IO.Compression, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <Private>False</Private>
     </Reference>
@@ -145,13 +142,16 @@
       <HintPath>..\packages\System.IO.Compression.ZipFile.4.3.0\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
@@ -168,6 +168,7 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="TimeZoneConverter, Version=6.0.1.0, Culture=neutral, PublicKeyToken=e20ab7d0d9479841, processorArchitecture=MSIL">
       <HintPath>..\packages\TimeZoneConverter.6.0.1\lib\net462\TimeZoneConverter.dll</HintPath>
     </Reference>
@@ -177,9 +178,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Issues\Issues_v15.cs" />
-    <Compile Include="Modules\Core\Model\AttendanceCodeTests.cs" />
+    <Compile Include="Modules\Core\MergeTemplateTests.cs" />
+    <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
+    <Compile Include="Modules\Core\Lava\Commands\CacheTests.cs" />
     <Compile Include="Modules\Core\Rock.Security\RockSigningCredentialsTests.cs" />
     <Compile Include="Modules\Crm\Following\FollowingTests.cs" />
+    <Compile Include="Modules\Crm\Groups\GroupRequirementsTests.cs" />
     <Compile Include="Modules\Crm\PersonBulkUpdateProcessorTests.cs" />
     <Compile Include="Modules\Engagement\Achievement\GivingToAccountAchievementTest.cs" />
     <Compile Include="Modules\Engagement\Achievement\StepProgramAchievementTests.cs" />
@@ -201,10 +205,13 @@
     <Compile Include="Modules\Crm\PersonAddressTests.cs" />
     <Compile Include="Modules\Engagement\Interactions\TestDataHelper.Interactions.cs" />
     <Compile Include="Modules\Reporting\DataFilter\DataViewTests.cs" />
+    <Compile Include="Modules\Reporting\DataFilter\NumericDataFilterFactoryBase.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
+    <Compile Include="TestData\Core\TestDataHelper.Organization.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Core.cs" />
     <Compile Include="TestData\Core\CoreModuleDataFactory.cs" />
     <Compile Include="TestData\Crm\HistoryDataFactory.cs" />
+    <Compile Include="TestData\Crm\TestDataHelper.Crm.SampleData.cs" />
     <Compile Include="TestData\Engagement\PrayerFeatureDataHelper.cs" />
     <Compile Include="TestData\Core\RandomizedDataHelper.cs" />
     <Compile Include="TestData\Engagement\StepsFeatureDataHelper.cs" />
@@ -288,6 +295,7 @@
     <Compile Include="TestData\Crm\TestDataHelper.Crm.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Web.cs" />
     <Compile Include="TestData\Core\SampleDataHelper.cs" />
+    <Compile Include="TestData\Reporting\TestDataHelper.Reporting.cs" />
     <Compile Include="TestFramework\DatabaseIntegrationTestClassBase.cs" />
     <Compile Include="Modules\Core\Model\AttendanceOccurrenceTests.cs" />
     <Compile Include="Modules\Core\Model\BenevolenceRequestTests.cs" />
@@ -299,8 +307,9 @@
     <Compile Include="Modules\Core\Model\MetricValueTests.cs" />
     <Compile Include="Modules\Core\Model\RegistrationTests.cs" />
     <Compile Include="Modules\Core\Model\StepTests.cs" />
-    <Compile Include="Modules\Core\Lava\LegacyLavaUpdaterTest.cs" />
     <Compile Include="Modules\Core\Model\DeviceTests.cs" />
+    <Compile Include="TestFramework\IntegrationTestDatabaseInitializer.cs" />
+    <Compile Include="TestFramework\DatabaseRequiredAttribute.cs" />
     <Compile Include="TestFramework\TestExtensionMethods.cs" />
     <Compile Include="ThirdPartyIntegrations\NcoaApi\TrueNcoaApiTests.cs" />
     <Compile Include="Modules\Core\Rock.Logging\RockLogConfigurationTest.cs" />
@@ -316,7 +325,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Modules\Core\Model\PersonTests.cs" />
     <Compile Include="Modules\Reporting\DataFilter\TextPropertyFilterSettings.cs" />
-    <Compile Include="Modules\Reporting\ReportingModuleTestHelper.cs" />
     <Compile Include="Modules\Reporting\DataFilter\DataFilterTestBase.cs" />
     <Compile Include="Modules\Reporting\DataFilter\Group\LocationDataViewDataFilterTests.cs" />
     <Compile Include="Modules\Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
@@ -324,12 +332,6 @@
     <Compile Include="Modules\Reporting\ReportBuilder\ReportBuilderTests.cs" />
     <Compile Include="TestFramework\IntegrationTestInitializer.cs" />
     <Compile Include="Modules\Core\StorageTests\FileSystemComponentTests.cs" />
-    <Compile Include="integrationtests.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>integrationtests.runsettings</DependentUpon>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
     <Compile Include="Modules\Crm\ConnectionStatusChangeReportTests.cs" />
     <Compile Include="TestData\TestDataHelper.cs" />
     <Compile Include="Modules\Core\UniversalSearch\IndexModels\GroupIndexTests.cs" />
@@ -342,14 +344,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="app.TestSettings.config.example" />
     <None Include="packages.config" />
-    <None Include="integrationtests.runsettings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>integrationtests.Designer.cs</LastGenOutput>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="app.ConnectionStrings.config.example" />
-    <None Include="app.ConnectionStrings.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
@@ -440,10 +437,8 @@
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y</PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RunSettingsFilePath>$(MSBuildProjectDirectory)\integrationtests.runsettings</RunSettingsFilePath>
+    <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y
+IF EXIST "$(ProjectDir)app.TestSettings.config" xcopy "$(ProjectDir)app.TestSettings.config" "$(TargetDir)" /y</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

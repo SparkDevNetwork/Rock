@@ -14,15 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 using DotLiquid;
-
+using Rock.Lava.DotLiquid;
 using Rock.Utility;
 
 namespace Rock.Lava.Shortcodes
@@ -33,7 +30,7 @@ namespace Rock.Lava.Shortcodes
     [LavaShortcodeMetadata(
         Name = "Scripturize ",
         TagName = "scripturize",
-        Description ="Scripturize reads through text finding scripture references and converts them into links to popular Bible websites.",
+        Description = "Scripturize reads through text finding scripture references and converts them into links to popular Bible websites.",
         Documentation = ScripturizeShortcode.DocumentationMetadata,
         Parameters = "defaulttranslation,landingsite,cssclass",
         Categories = "C3270142-E72E-4FBF-BE94-9A2505DE7D54" )]
@@ -72,75 +69,36 @@ namespace Rock.Lava.Shortcodes
         /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
-
             using ( TextWriter writer = new StringWriter() )
             {
                 base.Render( context, writer );
 
-                var parms = ParseMarkup( _markup, context );
+                var settings = LavaElementAttributes.NewFromMarkup( _markup, new RockLiquidRenderContext( context ) );
 
-                LandingSite? landingSite = (LandingSite)Enum.Parse( typeof( LandingSite ), parms["landingsite"], true );
-
+                var landingSite = settings.GetEnumOrNull<LandingSite>( "landingsite" );
                 if ( landingSite == null )
                 {
-                    result.Write( "<!-- the landing site provided to the scripturize shortcode was not correct -->" + writer.ToString() );
-                    return;
+                    if ( settings.HasValue( "landingsite" ) )
+                    {
+                        // If the specified value cannot be mapped, return an error message.
+                        result.Write( "<!-- the landing site provided to the scripturize shortcode was not correct -->" + writer.ToString() );
+                        return;
+                    }
+                    else
+                    {
+                        // If not specified, set the default.
+                        landingSite = LandingSite.YouVersion;
+                    }
                 }
 
-                result.Write( Rock.Utility.Scripturize.Parse( writer.ToString(), parms["defaulttranslation"], landingSite.Value, parms["cssclass"], parms["openintab"].AsBoolean() ) );
+                var output = Rock.Utility.Scripturize.Parse( Rock.Utility.Scripturize.Parse( writer.ToString(),
+                    settings.GetString( "defaulttranslation", "NLT" ),
+                    landingSite.Value,
+                    settings.GetString( "cssclass" ),
+                    settings.GetBoolean( "openintab" ) ) );
+
+                result.Write( output );
             }
-        }
-
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, Context context )
-        {
-            // first run lava across the inputted markup
-            var internalMergeFields = new Dictionary<string, object>();
-
-            // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
-            {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
-            {
-                foreach ( var item in context.Environments[0] )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            var parms = new Dictionary<string, string>();
-            parms.Add( "defaulttranslation", "NLT" );
-            parms.Add( "cssclass", "" );
-            parms.Add( "landingsite", "YouVersion" );
-            parms.Add( "openintab", "false" );
-
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                }
-            }
-            return parms;
         }
     }
 }

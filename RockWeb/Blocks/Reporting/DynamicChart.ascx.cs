@@ -315,7 +315,7 @@ Example:
             var categoryFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "Category", "MetricTitle" } );
             var yValueFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "Value", "YValue", "YValueTotal" } );
             var xValueFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "XValue", "XValueTotal" } );
-            var dateTimeFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "DateTimeValue", "DateTime", "XValue" } );
+            var dateTimeFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "DateTimeValue", "DateTime" } );
 
             if ( _chartType == "pie" )
             {
@@ -324,7 +324,22 @@ Example:
                 // It can only be used to plot category data, not a time series.
                 if ( categoryFieldName == null )
                 {
-                    SetBlockConfigurationError( "[Dynamic Chart]: Pie Chart dataset must contain a category field: [Category] or [MetricTitle]" );
+                    if ( !string.IsNullOrWhiteSpace( seriesFieldName ) )
+                    {
+                        // Assume that each series is intended to be plotted as a pie category.
+                        categoryFieldName = seriesFieldName;
+                        seriesFieldName = null;
+                    }
+                    else if ( !string.IsNullOrWhiteSpace( xValueFieldName ) )
+                    {
+                        // Assume that the XValue is intended to be plotted as a pie category.
+                        categoryFieldName = xValueFieldName;
+                        xValueFieldName = null;
+                    }
+                    else
+                    {
+                        SetBlockConfigurationError( "[Dynamic Chart]: Pie Chart dataset must contain a category field: [Category] or [MetricTitle]" );
+                    }
                 }
                 if ( yValueFieldName == null )
                 {
@@ -338,7 +353,22 @@ Example:
                 // It can only be used to plot category data, not a time series.
                 if ( categoryFieldName == null )
                 {
-                    SetBlockConfigurationError( "[Dynamic Chart]: Bar Chart dataset must contain a category field: [Category] or [MetricTitle]" );
+                    if ( !string.IsNullOrWhiteSpace( xValueFieldName ) )
+                    {
+                        // Assume that the X-axis values represent the bar categories.
+                        categoryFieldName = xValueFieldName;
+                        xValueFieldName = null;
+                    }
+                    else if ( !string.IsNullOrWhiteSpace( seriesFieldName ) )
+                    {
+                        // Assume that each series is intended to be plotted as a bar category.
+                        categoryFieldName = seriesFieldName;
+                        seriesFieldName = null;
+                    }
+                    else
+                    {
+                        SetBlockConfigurationError( "[Dynamic Chart]: Bar Chart dataset must contain a category field: [Category] or [MetricTitle]" );
+                    }
                 }
                 if ( yValueFieldName == null )
                 {
@@ -347,8 +377,8 @@ Example:
             }
             else
             {
-                // The Line Chart can represent a time series or an x vs Y graph.
-                // The data set requires the following columns:
+                // The Line Chart can represent a time series or an X vs Y graph.
+                // The data set may contain the following columns:
                 // SeriesName (string,optional), XValue (numeric) or DateTime (datetime), YValue (numeric).
                 // If DateTime exists, the chart will be plotted as a time series.
                 // If XValue exists, the chart will be plotted as an X vs Y graph.
@@ -395,6 +425,11 @@ Example:
             }
             else
             {
+                // If a category field name is not specified, use the XValue.
+                if ( string.IsNullOrWhiteSpace( categoryFieldName ) )
+                {
+                    categoryFieldName = xValueFieldName;
+                }
                 var categoryData = GetChartDataForCategorySeries( dataTable, seriesFieldName, categoryFieldName, yValueFieldName );
                 chartControl.SetChartDataItems( categoryData );
             }
@@ -552,7 +587,7 @@ Example:
             {
                 if ( hasSeries )
                 {
-                    var seriesName = Convert.ToString( row[seriesFieldName] ).Trim();
+                    var seriesName = row[seriesFieldName].ToStringOrDefault("").Trim();
                     if ( datasetsMap.ContainsKey( seriesName ) )
                     {
                         seriesDataset = datasetsMap[seriesName];
@@ -567,8 +602,9 @@ Example:
                 }
 
                 var dataPoint = new ChartJsCategorySeriesDataPoint();
-                dataPoint.Category = Convert.ToString( row[categoryFieldName] );
-                dataPoint.Value = Convert.ToDecimal( row[valueFieldName] );
+
+                dataPoint.Category = row[categoryFieldName].ToStringOrDefault("").Trim();
+                dataPoint.Value = row[valueFieldName].ToStringOrDefault("0").AsDecimal();
 
                 seriesDataset.DataPoints.Add( dataPoint );
             }
@@ -617,7 +653,7 @@ Example:
             {
                 if ( hasSeries )
                 {
-                    var seriesName = Convert.ToString( row[seriesFieldName] ).Trim();
+                    var seriesName = row[seriesFieldName].ToStringOrDefault("").Trim();
                     if ( datasetsMap.ContainsKey( seriesName ) )
                     {
                         seriesDataset = datasetsMap[seriesName];
@@ -634,13 +670,19 @@ Example:
                 var dataPoint = new ChartJsTimeSeriesDataPoint();
                 if ( datetimeFieldName == "DateTime" )
                 {
-                    dataPoint.DateTimeStamp = ( row["DateTime"] as DateTime? ).Value.ToJavascriptMilliseconds();
+                    var dateTimeValue = row["DateTime"].ToStringOrDefault( "" ).AsDateTime();
+                    if ( dateTimeValue != null )
+                    {
+                        dataPoint.DateTimeStamp = dateTimeValue.Value.ToJavascriptMilliseconds();
+                    }
                 }
                 else if ( datetimeFieldName == "XValue" )
                 {
-                    dataPoint.DateTimeStamp = ( row["XValue"] as int? ).Value;
+                    // Try to convert the field to a datestamp.
+                    dataPoint.DateTimeStamp = row["XValue"].ToStringOrDefault( "0" ).AsInteger();
                 }
-                dataPoint.Value = Convert.ToDecimal( row[valueFieldName] );
+
+                dataPoint.Value = row[valueFieldName].ToStringOrDefault("0").AsDecimal();
 
                 seriesDataset.DataPoints.Add( dataPoint );
             }

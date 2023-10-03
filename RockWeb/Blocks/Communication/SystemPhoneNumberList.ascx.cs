@@ -157,8 +157,8 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( UserPreferenceKey.ActiveFilter, ddlActiveFilter.SelectedValue );
-            rFilter.SaveUserPreference( UserPreferenceKey.SmsEnabledFilter, ddlSmsEnabledFilter.SelectedValue );
+            rFilter.SetFilterPreference( UserPreferenceKey.ActiveFilter, ddlActiveFilter.SelectedValue );
+            rFilter.SetFilterPreference( UserPreferenceKey.SmsEnabledFilter, ddlSmsEnabledFilter.SelectedValue );
 
             BindGrid();
         }
@@ -290,8 +290,8 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void BindFilter()
         {
-            ddlActiveFilter.SetValue( rFilter.GetUserPreference( UserPreferenceKey.ActiveFilter ) );
-            ddlSmsEnabledFilter.SetValue( rFilter.GetUserPreference( UserPreferenceKey.SmsEnabledFilter ) );
+            ddlActiveFilter.SetValue( rFilter.GetFilterPreference( UserPreferenceKey.ActiveFilter ) );
+            ddlSmsEnabledFilter.SetValue( rFilter.GetFilterPreference( UserPreferenceKey.SmsEnabledFilter ) );
         }
 
         /// <summary>
@@ -317,7 +317,7 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private IQueryable<SystemPhoneNumber> ApplyFiltersAndSorting( IQueryable<SystemPhoneNumber> query )
         {
-            var activeStatus = rFilter.GetUserPreference( UserPreferenceKey.ActiveFilter );
+            var activeStatus = rFilter.GetFilterPreference( UserPreferenceKey.ActiveFilter );
             switch ( activeStatus )
             {
                 case IsActiveFilterValueSpecifier.Active:
@@ -328,7 +328,7 @@ namespace RockWeb.Blocks.Communication
                     break;
             }
 
-            var smsEnabledStatus = rFilter.GetUserPreference( UserPreferenceKey.SmsEnabledFilter );
+            var smsEnabledStatus = rFilter.GetFilterPreference( UserPreferenceKey.SmsEnabledFilter );
             switch ( smsEnabledStatus )
             {
                 case IsSmsEnabledFilterValueSpecifier.Yes:

@@ -1,0 +1,136 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="library-viewer-item-list">
+        <div v-for="item of items"
+             :class="['library-viewer-list-item', item === selectedItem ? 'active' : '']"
+             @click="onClicked(item)">
+            <div class="library-viewer-list-item-header">
+                <h4 class="m-0">{{ item.title }}</h4>
+                <ItemStampList :item="item" />
+            </div>
+            <div v-if="item.summary" class="library-viewer-list-item-summary">
+                {{ item.summary }}
+            </div>
+            <div class="library-viewer-list-item-publish-info">
+                <span class="library-viewer-list-item-published-date" v-if="item.publishedDateTime">Published on {{ toDateString(item.publishedDateTime) }}</span>
+                <span class="library-viewer-list-item-published-by" v-if="item.sourcePublisherName">{{ item.sourcePublisherName }}</span>
+            </div>
+            <div class="library-viewer-list-item-footer">
+                <ItemBadgeList :items="getBadges(item)" />
+                <ItemDownloadsLabel :downloads="item.downloads" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.library-viewer-item-list {
+    width: 479px;
+    max-width: 40%;
+    flex-shrink: 0;
+    border-right: 1px solid var(--panel-border);
+    overflow: auto;
+}
+
+.library-viewer-list-item {
+    cursor: pointer;
+    border-bottom: 1px solid var(--panel-border);
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    padding: 16px 24px;
+    gap: 16px;
+}
+
+.library-viewer-list-item:hover {
+    background: #fcfcfc;
+}
+
+.library-viewer-list-item:active,
+.library-viewer-list-item.active {
+    background: #f5f5f5;
+}
+
+.library-viewer-list-item-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.library-viewer-list-item-header .stamps {
+    align-self: flex-start;
+}
+
+.library-viewer-list-item-summary {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    /* clamp to 4 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    /* truncate text with ellipsis */
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+.library-viewer-list-item-publish-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.library-viewer-list-item-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import ItemBadgeList from "./itemBadgeList.partial.obs";
+    import ItemDownloadsLabel from "./itemDownloadsLabel.partial.obs";
+    import ItemStampList from "./itemStampList.partial.obs";
+    import { getItemCategories, toDateString } from "./utils.partial";
+    import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";
+
+    const props = defineProps({
+        items: {
+            type: Object as PropType<LibraryViewerItemBag[]>,
+            required: true
+        },
+        selectedItem: {
+            type: Object as PropType<LibraryViewerItemBag | null | undefined>
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select", value: LibraryViewerItemBag): void
+    }>();
+
+    // #region Functions
+
+    /**
+     * Gets the badges for an item.
+     */
+    function getBadges(item: LibraryViewerItemBag): string[] {
+        return getItemCategories(item, props.items.filter(item => !!item.topic).map(item => item.topic!));
+    }
+
+    // #endregion
+
+    //#region Event Handlers
+
+    function onClicked(item: LibraryViewerItemBag): void {
+        emit("select", item);
+    }
+
+    //#endregion
+</script>

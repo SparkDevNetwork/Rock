@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -90,6 +91,9 @@ namespace Rock.Web.UI
                     return _request;
                 }
             }
+
+            /// <inheritdoc/>
+            public override IDictionary Items => new Dictionary<string, object>();
 
             /// <summary>
             /// Mock Http Request

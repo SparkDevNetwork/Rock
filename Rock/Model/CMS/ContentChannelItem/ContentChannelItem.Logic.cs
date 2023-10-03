@@ -68,5 +68,35 @@ namespace Rock.Model
                 return true;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is downloaded from content library.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is downloaded from content library; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public bool IsDownloadedFromContentLibrary
+        {
+            get
+            {
+                return !( this.IsContentLibraryOwner ?? false ) && this.ContentLibrarySourceIdentifier.HasValue;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is uploaded to content library.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is uploaded to content library; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public bool IsUploadedToContentLibrary
+        {
+            get
+            {
+                return ( this.IsContentLibraryOwner ?? false ) && this.ContentLibrarySourceIdentifier.HasValue;
+            }
+        }
     }
 }

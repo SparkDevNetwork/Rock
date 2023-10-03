@@ -95,18 +95,21 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            var parms = ParseMarkup( _markup, context );
+            var settings = LavaElementAttributes.NewFromMarkup( _markup, context );
 
-            var twoPassEnabled = parms["twopass"].AsBoolean();
+            var twoPassEnabled = settings.GetBoolean( "twopass", false );
 
-            var cacheKey = "lavacache-" + parms["key"];
+            // Make sure the cache key is unique to this Lava engine, to ensure that there are no collisions
+            // if we are rendering with multiple engines in the same instance.
+            var engine = context.GetService<ILavaEngine>();
+            var cacheKey = $"lavacache-{engine.EngineName}-" + settings.GetString( "key", string.Empty );
             if ( cacheKey == string.Empty )
             {
                 result.Write( "* No cache key provided. *" );
                 return;
             }
 
-            var cacheDuration = parms["duration"].AsInteger();
+            var cacheDuration = settings.GetInteger( "duration", 3600 );
 
             if ( cacheDuration > 0 )
             {
@@ -146,13 +149,17 @@ namespace Rock.Lava.Blocks
                 if ( cacheDuration > 0 )
                 {
                     // Don't cache if it's too large
-                    var maxCacheSize = parms["maxcachesize"].AsInteger();
+                    var maxCacheSize = settings.GetInteger( "maxcachesize", 200000 );
 
                     if ( lavaResults.Length < maxCacheSize )
                     {
                         var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
                         var cachedHash = CalculateContentHash( _blockMarkup.ToString() );
-                        RockCache.AddOrUpdate( cacheKey, string.Empty, new CacheLavaTag { Hash = cachedHash, Content = lavaResults }, expiration, parms["tags"] );
+                        RockCache.AddOrUpdate( cacheKey,
+                            string.Empty,
+                            new CacheLavaTag { Hash = cachedHash, Content = lavaResults },
+                            expiration,
+                            settings.GetString( "tags", string.Empty ) );
                     }
                 }
 
@@ -222,42 +229,6 @@ namespace Rock.Lava.Blocks
             var result = engine.RenderTemplate( lavaTemplate, LavaRenderParameters.WithContext( newContext ) );
 
             return result.Text;
-        }
-
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
-        {
-            // first run lava across the inputted markup
-            var parms = new Dictionary<string, string>();
-            parms.Add( "key", string.Empty );
-            parms.Add( "tags", string.Empty );
-            parms.Add( "twopass", "false" );
-            parms.Add( "duration", "3600" );
-            parms.Add( "maxcachesize", "200000" );
-
-            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    var value = itemParts[1];
-
-                    value = MergeLava( value, context );
-
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), value.Substring( 1, value.Length - 2 ).Trim() );
-                }
-            }
-            return parms;
         }
 
         #region ILavaSecured

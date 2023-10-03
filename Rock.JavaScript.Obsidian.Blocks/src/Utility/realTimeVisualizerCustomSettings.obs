@@ -1,0 +1,284 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen"
+           title="Real Time Visualizer Settings"
+           :saveText="saveButtonText"
+           @save="onSave">
+
+        <NotificationBox v-if="errorMessage"
+                         v-text="errorMessage"
+                         alertType="warning" />
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <div v-else>
+
+            <KeyValueList v-model="topicConfiguration"
+                          label="Topic Configuration"
+                          :valueOptions="topicConfigurationItems"
+                          displayValueFirst
+                          fullWidth />
+
+            <DropDownList v-model="themeGuid"
+                          label="Theme"
+                          rules="required"
+                          :items="themeItems"
+                          showBlankItem />
+
+            <div v-if="themeGuid === customThemeGuid">
+                <CodeEditor v-model="pageTemplate"
+                            label="Page Template"
+                            mode="lava"
+                            rules="required" />
+
+                <CodeEditor v-model="style"
+                            label="Style"
+                            mode="text" />
+
+                <CodeEditor v-model="script"
+                            label="Script"
+                            mode="javascript" />
+            </div>
+
+            <div v-else-if="themeGuid">
+                <div v-if="themeHelpContent" class="mb-3">
+                    <div class="d-flex clickable"
+                         style="background-color: #f5f5f5; padding: 4px 16px;"
+                         @click.stop="isThemeHelpVisible = !isThemeHelpVisible">
+                        <div class="flex-grow-1">
+                            Theme Documentation
+                        </div>
+
+                        <i v-if="isThemeHelpVisible" class="align-self-center fa fa-chevron-up"></i>
+                        <i v-else class="align-self-center fa fa-chevron-down"></i>
+                    </div>
+
+                    <TransitionVerticalCollapse>
+                        <div v-if="isThemeHelpVisible" style="border-top: 1px solid #c3c3c3; overflow-y: auto; max-height: 300px;">
+                            <div style="background-color: #f5f5f5; padding: 16px;"
+                                 v-html="themeHelpContent"></div>
+                        </div>
+                    </TransitionVerticalCollapse>
+                </div>
+
+                <KeyValueList v-model="themeSettings"
+                              label="Theme Settings"
+                              :valueOptions="themeSettingsItems"
+                              displayValueFirst
+                              fullWidth />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { CustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/customSettingsBag";
+    import { CustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/customSettingsOptionsBag";
+    import { TopicAndChannelBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/topicAndChannelBag";
+    import { ThemeListItemBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/themeListItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+
+
+    const emit = defineEmits<{
+        (e: "close"): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(null);
+    const reloadBlock = useReloadBlock();
+
+    // #region Values
+
+    const errorMessage = ref("");
+    const isLoading = ref(true);
+    const isModalOpen = ref(true);
+
+    const topicConfiguration = ref<KeyValueItem[]>([]);
+    const topicConfigurationItems = ref<ListItemBag[]>([]);
+    const customThemeGuid = newGuid();
+    const themeGuid = ref("");
+    const systemThemes = ref<ThemeListItemBag[]>([]);
+    const pageTemplate = ref("");
+    const style = ref("");
+    const script = ref("");
+    const themeSettings = ref<KeyValueItem[]>([]);
+    const themeSettingsItems = ref<ListItemBag[]>([]);
+    const isThemeHelpVisible = ref(false);
+    const themeHelpContent = ref("");
+    let originalSelectedThemeGuid: string = "";
+    let originalSelectedThemeSettings: KeyValueItem[] = [];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const saveButtonText = computed((): string => {
+        return errorMessage.value || !isLoading.value ? "Save" : "";
+    });
+
+    const themeItems = computed((): ListItemBag[] => {
+        const items: ListItemBag[] = [
+            {
+                value: customThemeGuid,
+                text: "Custom"
+            },
+            ...systemThemes.value
+        ];
+
+        return items;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Begins loading the current settings in the background so that the UI
+     * can be displayed.
+     */
+    const startLoading = async (): Promise<void> => {
+        const result = await invokeBlockAction<CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag>>("GetCustomSettings");
+
+        if (result.isSuccess && result.data && result.data.settings && result.data.options) {
+            // Set the values for the UI.
+            themeGuid.value = result.data.settings.themeGuid ?? "";
+            pageTemplate.value = result.data.settings.pageTemplate ?? "";
+            style.value = result.data.settings.style ?? "";
+            script.value = result.data.settings.script ?? "";
+
+            // Set any additional information required by the UI to paint the
+            // custom settings interface.
+            securityGrant.updateToken(result.data.securityGrantToken);
+
+            // Configure the original theme settings. These will be used
+            // when switching back to the original theme.
+            originalSelectedThemeGuid = result.data.settings.themeGuid ?? "";
+            originalSelectedThemeSettings = [];
+            if (result.data.settings.themeSettings) {
+                for (const key in result.data.settings.themeSettings) {
+                    originalSelectedThemeSettings.push({
+                        value: key,
+                        key: result.data.settings.themeSettings[key]
+                    });
+                }
+            }
+
+            systemThemes.value = result.data.options.themes ?? [];
+            updateSelectedTheme();
+
+            // Configure the topics and channels to be monitored.
+            topicConfiguration.value = result.data.settings.topicConfiguration?.map(tc => ({
+                value: tc.topic,
+                key: tc.channel
+            })) ?? [];
+
+            topicConfigurationItems.value = result.data.options.topics?.map(t => ({
+                value: t,
+                text: t
+            })) ?? [];
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+        }
+
+        isLoading.value = false;
+    };
+
+    function updateSelectedTheme(): void {
+        const theme = systemThemes.value.find(t => areEqual(t.value, themeGuid.value));
+
+        if (!themeGuid.value || !theme || areEqual(themeGuid.value, customThemeGuid)) {
+            themeSettings.value = [];
+            themeSettingsItems.value = [];
+            themeHelpContent.value = "";
+
+            return;
+        }
+
+        isThemeHelpVisible.value = false;
+        themeHelpContent.value = theme.helpContent ?? "";
+        themeSettingsItems.value = theme.settings?.map(s => ({
+            value: s,
+            text: s
+        })) ?? [];
+
+        if (areEqual(themeGuid.value, originalSelectedThemeGuid)) {
+            themeSettings.value = originalSelectedThemeSettings;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the person clicks the Save button and all
+     * components have validated their values.
+     */
+    const onSave = async (): Promise<void> => {
+        const box: CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag> = {};
+
+        const settings: Record<string, string> = {};
+
+        for (const setting of themeSettings.value) {
+            if (setting.value) {
+                settings[setting.value] = setting.key ?? "";
+            }
+        }
+
+        const tcs: TopicAndChannelBag[] = topicConfiguration.value.map(tc => ({
+            topic: tc.value,
+            channel: tc.key
+        }));
+
+        setCustomSettingsBoxValue(box, "themeGuid", themeGuid.value);
+        setCustomSettingsBoxValue(box, "pageTemplate", pageTemplate.value);
+        setCustomSettingsBoxValue(box, "style", style.value);
+        setCustomSettingsBoxValue(box, "script", script.value);
+        setCustomSettingsBoxValue(box, "themeSettings", settings);
+        setCustomSettingsBoxValue(box, "topicConfiguration", tcs);
+
+        const data = {
+            box
+        };
+
+        const result = await invokeBlockAction("SaveCustomSettings", data);
+
+        if (result.isSuccess) {
+            isModalOpen.value = false;
+            reloadBlock();
+        }
+        else {
+            alert(result.errorMessage || "Unable to save block settings.");
+        }
+    };
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    watch(themeGuid, () => {
+        updateSelectedTheme();
+    });
+
+    startLoading();
+</script>

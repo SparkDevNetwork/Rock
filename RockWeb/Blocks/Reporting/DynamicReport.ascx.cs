@@ -216,16 +216,6 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Gets the key prefix to use for User Preferences for ReportData filters
-        /// </summary>
-        /// <returns></returns>
-        private string GetReportDataKeyPrefix()
-        {
-            string keyPrefix = string.Format( "reportdata-filter-{0}-", this.BlockId );
-            return keyPrefix;
-        }
-
-        /// <summary>
         /// Creates the filter control.
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -242,6 +232,7 @@ namespace RockWeb.Blocks.Reporting
         {
             try
             {
+                var preferences = GetBlockPersonPreferences();
                 var filteredEntityTypeName = EntityTypeCache.Get( reportEntityType ).Name;
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
@@ -299,12 +290,12 @@ namespace RockWeb.Blocks.Reporting
                         {
                             if ( filterIsConfigurable )
                             {
-                                selectionUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Selection", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) );
+                                selectionUserPreference = preferences.GetValue( $"{filterControl.DataViewFilterGuid:N}_Selection" );
                             }
 
                             if ( filterControl.ShowCheckbox )
                             {
-                                checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull() ?? true;
+                                checkedUserPreference = preferences.GetValue( $"{filterControl.DataViewFilterGuid:N}_Checked" ).AsBooleanOrNull() ?? true;
                             }
                         }
 
@@ -384,7 +375,7 @@ namespace RockWeb.Blocks.Reporting
                             defaultFilterLabel = component.GetTitle( reportEntityTypeModel );
                         }
 
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                         mergeFields.Add( "Filter", filter );
                         mergeFields.Add( "Label", defaultFilterLabel );
 
@@ -447,11 +438,15 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFilter_Click( object sender, EventArgs e )
         {
+            // Don't use WithPrefix() here so that we get better performance
+            // when saving.
+            var preferences = GetBlockPersonPreferences();
+
             var dataViewFilterService = new DataViewFilterService( new RockContext() );
             foreach ( var filterControl in phFilters.ControlsOfTypeRecursive<FilterField>() )
             {
-                string selectionKey = string.Format( "{0}_{1}_Selection", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) );
-                string checkedKey = string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) );
+                string selectionKey = $"{filterControl.DataViewFilterGuid:N}_Selection";
+                string checkedKey = $"{filterControl.DataViewFilterGuid:N}_Checked";
                 if ( filterControl.Visible )
                 {
                     if ( !filterControl.HideFilterCriteria )
@@ -461,25 +456,27 @@ namespace RockWeb.Blocks.Reporting
                         var selection = filterControl.GetSelection();
                         if ( origFilter != null && origFilter.Selection != selection )
                         {
-                            this.SetUserPreference( selectionKey, selection );
+                            preferences.SetValue( selectionKey, selection );
                         }
                         else
                         {
-                            this.DeleteUserPreference( selectionKey );
+                            preferences.SetValue( selectionKey, string.Empty );
                         }
                     }
 
                     if ( filterControl.ShowCheckbox )
                     {
-                        this.SetUserPreference( checkedKey, filterControl.CheckBoxChecked.ToString() );
+                        preferences.SetValue( checkedKey, filterControl.CheckBoxChecked.ToString() );
                     }
                 }
                 else
                 {
-                    this.DeleteUserPreference( selectionKey );
-                    this.DeleteUserPreference( checkedKey );
+                    preferences.SetValue( selectionKey, string.Empty );
+                    preferences.SetValue( checkedKey, string.Empty );
                 }
             }
+
+            preferences.Save();
 
             BindReportGrid();
         }
@@ -491,11 +488,14 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFilterSetDefault_Click( object sender, EventArgs e )
         {
-            var keyPrefix = GetReportDataKeyPrefix();
-            foreach ( var item in this.GetUserPreferences( keyPrefix ) )
+            var preferences = GetBlockPersonPreferences();
+
+            foreach ( var key in preferences.GetKeys() )
             {
-                this.DeleteUserPreference( item.Key );
+                preferences.SetValue( key, string.Empty );
             }
+
+            preferences.Save();
 
             ShowFilters( true );
         }

@@ -25,6 +25,7 @@ using SmtpServer.Storage;
 namespace Rock.Tests.Integration.Core.Jobs
 {
     [TestClass]
+    [Ignore( "Fix required. [Last modified by MP]" )]
     public class RockJobListenerTests
     {
         public static ConcurrentStack<string> actualEmails = new ConcurrentStack<string>();

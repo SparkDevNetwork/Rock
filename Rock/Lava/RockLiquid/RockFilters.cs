@@ -58,8 +58,12 @@ using Rock.Cms.StructuredContent;
 namespace Rock.Lava
 {
     /// <summary>
-    ///
-    /// </summary>    
+    /// Defines filter methods available for use with the RockLiquid implementation of the Lava library.
+    /// </summary>
+    /// <remarks>
+    /// This class is marked for internal use because it should only be used in the context of resolving a Lava template.
+    /// </remarks>
+    [RockInternal( "1.15", true )]
     public static class RockFilters
     {
         static Random _randomNumberGenerator = new Random();
@@ -2466,7 +2470,10 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                PersonService.SaveUserPreference( person, settingKey, settingValue );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                preferences.SetValue( settingKey, settingValue );
+                preferences.Save();
             }
         }
 
@@ -2492,7 +2499,9 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                return PersonService.GetUserPreference( person, settingKey );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                return preferences.GetValue( settingKey );
             }
 
             return string.Empty;
@@ -2519,7 +2528,10 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                PersonService.DeleteUserPreference( person, settingKey );
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+
+                preferences.SetValue( settingKey, string.Empty );
+                preferences.Save();
             }
         }
 
@@ -3597,6 +3609,19 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns the list of campuses closest to the target person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">A Person entity object or identifier.</param>
+        /// <param name="maximumCount">The maximum number of campuses to return.</param>
+        /// <returns>A single Campus, or a list of Campuses in ascending order of distance from the target Person.</returns>
+        public static object NearestCampus( Context context, object input, object maximumCount = null )
+        {
+            // Call the newer Lava Filter implementation, and inject a null Lava context.
+            return LavaFilters.NearestCampus( null, input, maximumCount );
+        }
+
+        /// <summary>
         /// Returns the Campus (or Campuses) that the Person belongs to
         /// </summary>
         /// <param name="context">The context.</param>
@@ -3820,27 +3845,14 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
-        /// <param name="groupId">The role Id.</param>
+        /// <param name="roleId">The role Id.</param>
         /// <returns>
         ///   <c>true</c> if [is in security role] [the specified context]; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsInSecurityRole( Context context, object input, int groupId )
+        public static bool IsInSecurityRole( Context context, object input, object roleId )
         {
-            var person = GetPerson( input );
-            var role = RoleCache.Get( groupId );
-
-            if ( person == null || role == null )
-            {
-                return false;
-            }
-
-            if ( !role.IsSecurityTypeGroup )
-            {
-                ExceptionLogService.LogException( $"RockFilter.IsInSecurityRole group with Id: {groupId} is not a SecurityRole" );
-                return false;
-            }
-
-            return role.IsPersonInRole( person.Guid );
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.IsInSecurityRole( lavaContext, input, roleId );
         }
 
         #endregion Person Filters
@@ -5159,7 +5171,7 @@ namespace Rock.Lava
             {
                 return null;
             }
-            return (int?)input.ToString().AsDecimalOrNull();
+            return ( int? ) input.ToString().AsDecimalOrNull();
         }
 
         /// <summary>
@@ -6269,6 +6281,49 @@ namespace Rock.Lava
             var entityType = cache.GetType().GetGenericArgumentsOfBaseType( entityCacheType )[1];
 
             return Rock.Reflection.GetIEntityForEntityType( entityType, cache.Id );
+        }
+
+        /// <summary>
+        /// Gets the IdKey hash from IEntity or an integer Id value.
+        /// </summary>
+        /// <param name="input">The input object.</param>
+        /// <returns>An <see cref="IEntity"/> object or the original <paramref name="input"/>.</returns>
+        public static string ToIdHash( object input )
+        {
+            int? entityId = null;
+
+            if ( input is int )
+            {
+                entityId = Convert.ToInt32( input );
+            }
+
+            if ( input is IEntity )
+            {
+                IEntity entity = input as IEntity;
+                entityId = entity.Id;
+            }
+
+            if ( !entityId.HasValue )
+            {
+                return null;
+            }
+
+            return IdHasher.Instance.GetHash( entityId.Value );
+        }
+
+        /// <summary>
+        /// Gets the integer value from from a key-hash string.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static int? FromIdHash( string input )
+        {
+            if ( string.IsNullOrWhiteSpace( input ) )
+            {
+                return null;
+            }
+
+            return IdHasher.Instance.GetId( input );
         }
 
         /// <summary>

@@ -223,7 +223,7 @@ function ReviewFlag(elem) {
 
         #region Fields
 
-        private const string CAMPUS_SETTING = "PrayerCardView_SelectedCampus";
+        private const string CAMPUS_SETTING = "selected-campus";
 
         #endregion
 
@@ -283,7 +283,11 @@ function ReviewFlag(elem) {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            SetUserPreference( CAMPUS_SETTING, cpCampus.SelectedCampusId.ToString() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( CAMPUS_SETTING, cpCampus.SelectedCampusId.ToString() );
+            preferences.Save();
+
             LoadContent();
             upPrayer.Update();
         }
@@ -420,7 +424,9 @@ function ReviewFlag(elem) {
             cpCampus.Visible = isCampusVisible;
             if ( isCampusVisible )
             {
-                cpCampus.SelectedCampusId = GetUserPreference( CAMPUS_SETTING ).AsIntegerOrNull();
+                var preferences = GetBlockPersonPreferences();
+
+                cpCampus.SelectedCampusId = preferences.GetValue( CAMPUS_SETTING ).AsIntegerOrNull();
             }
         }
 

@@ -31,7 +31,7 @@ namespace RockWeb
     /// <summary>
     /// Handles retrieving file (image) data from storage
     /// </summary>
-    public class GetAvatar : IHttpHandler
+    public class GetAvatar : IHttpAsyncHandler
     {
         // Implemented this as an IHttpAsyncHandler instead of IHttpHandler to improve performance
         // https://stackoverflow.com/questions/48528773/ihttphandler-versus-httptaskasynchandler-performance
@@ -371,6 +371,30 @@ namespace RockWeb
                 if ( settings.PersonId.HasValue )
                 {
                     person = new PersonService( new RockContext() ).Get( settings.PersonId.Value );
+                }
+            }
+
+            // Person Alias Guid
+            if ( request.QueryString["PersonAliasGuid"] != null )
+            {
+                var personAliasGuid = request.QueryString["PersonAliasGuid"].AsGuidOrNull();
+
+                if ( personAliasGuid.HasValue )
+                {
+                    person = new PersonAliasService( new RockContext() ).GetPerson( personAliasGuid.Value );
+                    settings.PersonId = person?.Id;
+                }
+            }
+
+            // Person Alias Id
+            if ( request.QueryString["PersonAliasId"] != null )
+            {
+                var personAliasId = request.QueryString["PersonAliasId"].AsIntegerOrNull();
+
+                if ( personAliasId.HasValue )
+                {
+                    person = new PersonAliasService( new RockContext() ).GetPerson( personAliasId.Value );
+                    settings.PersonId = person?.Id;
                 }
             }
 

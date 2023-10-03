@@ -1,0 +1,673 @@
+<template>
+    <li class="note">
+        <TransitionVerticalCollapse>
+            <article v-show="!isEditingNote" :id="note.anchorId ?? undefined" class="note-view-item" :class="additionalNoteClasses" :style="noteItemStyles">
+                <hgroup v-if="props.note.isAlert" class="flag">
+                    Alert: {{ noteTypeName }}
+                </hgroup>
+
+                <header class="meta">
+                    <div class="meta-figure">
+                        <a v-if="showPersonPhoto" :href="personLinkUrl" class="avatar avatar-lg">
+                            <img :src="note.createdByPhotoUrl ?? ''" :alt="note.createdByName ?? ''" />
+                        </a>
+
+                        <div v-else class="avatar avatar-lg avatar-icon">
+                            <i :class="noteTypeIconClass"></i>
+                        </div>
+                    </div>
+
+                    <div class="meta-body">
+                        <span class="note-caption">
+                            <span v-if="noteOptions.showNoteTypeHeading" class="note-type-heading mr-1">{{ note.noteType.name }}</span>
+
+                            <span class="mr-1" v-if="note.isPrivate || !note.caption">
+                                <a v-if="personLinkUrl" :href="personLinkUrl">
+                                    {{ note.createdByName }}
+                                </a>
+                                <span v-else-if="!noteOptions.showNoteTypeHeading">
+                                    {{ note.noteType.name }}
+                                </span>
+                            </span>
+
+                            <template v-else>
+                                {{ note.caption }}
+                            </template>
+                        </span>
+
+                        <span class="note-details">
+                            <span v-if="!noteOptions.isLightMode" class="tag-flair">
+                                <i v-if="note.isWatching" class="fa fa-eye mr-1 note-watching-icon" title="You are watching this note."></i>
+
+                                <span class="tag-label" :class="{ 'has-color': !!colorPair }">{{ note.noteType.name }}</span>
+                                &nbsp;&middot;&nbsp;
+                            </span>
+
+                            <a :href="noteAnchorId"
+                               class="timestamp">
+                                <time :datetime="formatTimestampDate(note.createdDateTime)"
+                                      :title="formatLongDateTime(note.createdDateTime)">
+                                    {{ noteDateTimeText }}
+                                </time>
+
+                                <time v-if="noteEditedDateTimeText"
+                                      class="ml-1"
+                                      :datetime="formatTimestampDate(note.editedDateTime)"
+                                      :title="formatLongDateTime(note.editedDateTime)">
+                                    {{ noteEditedDateTimeText }}
+                                </time>
+                            </a>
+                        </span>
+                    </div>
+
+                    <span v-if="note.isPrivate" class="label label-warning mr-3">Private</span>
+
+                    <DropDownMenu v-if="dropDownActions.length" :items="dropDownActions" align="right" />
+                </header>
+
+                <div class="note-content">
+                    <div class="note-text" v-html="note.text"></div>
+
+                    <div v-if="note.attributeValues && Object.keys(note.attributeValues).length > 0"
+                         class="note-attributes">
+                        <div class="row">
+                            <div v-for="attr in Object.keys(note.attributeValues)" class="col-lg-4 col-md-6">
+                                <dl class="note-attribute">
+                                    <dt>{{ attr }}</dt>
+                                    <dd>{{ note.attributeValues[attr] }}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <footer v-if="note.childNotes.length" class="note-footer">
+                    <ul class="note-footer-meta-list list-horizontal">
+                        <li>
+                            <button type="button"
+                                    class="btn btn-link"
+                                    @click="onToggleChildNotes">
+                                {{ replyCountText }}
+                            </button>
+                        </li>
+                    </ul>
+                </footer>
+
+                <TransitionVerticalCollapse>
+                    <div v-if="isAddNoteVisible">
+                        <NoteEditor v-model="editNoteBag"
+                                    :noteTypes="noteOptions.selectableNoteTypes"
+                                    :showAlert="noteOptions.showAlert"
+                                    :showDate="noteOptions.showCreateDate"
+                                    :showPrivate="noteOptions.showPrivate"
+                                    :showSecurity="noteOptions.showSecurity"
+                                    autoSize
+                                    autoFocus
+                                    @cancel="onNoteEditCancel"
+                                    @save="onNoteSave" />
+                    </div>
+                </TransitionVerticalCollapse>
+            </article>
+        </TransitionVerticalCollapse>
+
+        <TransitionVerticalCollapse>
+            <div v-if="isEditingNote">
+                <NoteEditor v-model="editNoteBag"
+                            :noteTypes="noteOptions.selectableNoteTypes"
+                            :showAlert="noteOptions.showAlert"
+                            :showDate="noteOptions.showCreateDate"
+                            :showPrivate="noteOptions.showPrivate"
+                            :showSecurity="noteOptions.showSecurity"
+                            autoSize
+                            autoFocus
+                            @cancel="onNoteEditCancel"
+                            @save="onNoteSave" />
+            </div>
+        </TransitionVerticalCollapse>
+
+        <TransitionVerticalCollapse>
+            <div v-show="isChildNotesVisible" class="note-comments">
+                <NotesContainer :notes="note.childNotes"
+                                :depth="depth + 1" />
+            </div>
+        </TransitionVerticalCollapse>
+    </li>
+</template>
+
+<style scoped>
+.note-view-item {
+    scroll-margin-top: var(--top-header-height, 0);
+}
+
+.note-view-item.is-alert .avatar-icon {
+    color: var(--state-danger-text, #fcf2f1);
+}
+
+.tag-label {
+    background-color: var(--note-light-color, inherit);
+    color: var(--note-dark-color, inherit);
+}
+
+.tag-label.has-color {
+    padding: 4px 16px;
+    border-radius: 4px;
+}
+
+.meta > .label-warning {
+    align-self: flex-start;
+    margin-top: 4px;
+}
+
+.note-text :deep(.mention) {
+    color: #006dcc;
+}
+
+.note-text {
+    white-space: pre-wrap;
+}
+</style>
+
+<script setup lang="ts">
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import NotesContainer from "./notesContainer.partial.obs";
+    import NoteEditor from "./noteEditor.partial.obs";
+    import { ColorPair } from "@Obsidian/Core/Utilities/colorPair";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { computed, inject, onBeforeUnmount, onMounted, PropType, ref } from "vue";
+    import { ExpandedNoteBag, NoteOptions } from "./types.partial";
+    import { noteOptionsSymbol, toCssClass, useEmitter } from "./utils.partial";
+    import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { NoteBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteBag";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteEditBag";
+    import { EditNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/editNoteRequestBag";
+    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/saveNoteRequestBag";
+    import { WatchNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/watchNoteRequestBag";
+
+    const props = defineProps({
+        note: {
+            type: Object as PropType<ExpandedNoteBag>,
+            required: true
+        },
+
+        depth: {
+            type: Number as PropType<number>,
+            default: 1
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "delete", value: ExpandedNoteBag): void,
+        (e: "edited", value: ExpandedNoteBag): void,
+        (e: "beginEditNote"): void,
+        (e: "endEditNote"): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const noteOptions = inject<NoteOptions>(noteOptionsSymbol)!;
+
+    // #region Values
+
+    const isChildNotesVisible = ref(noteOptions.autoExpandReplies);
+    const isAddNoteVisible = ref(false);
+    const isEditingNote = ref(false);
+    const editNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false });
+    const isSavingNote = ref(false);
+
+    const emitter = useEmitter();
+    const subscriberKey = emitter.subscribe();
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the person photo should be shown in the UI. */
+    const showPersonPhoto = computed((): boolean => {
+        return noteOptions.isLightMode
+            || (noteOptions.showAvatar && !!props.note.createdByIdKey);
+    });
+
+    /**
+     * Contains the URL that will be used to link to the person detail page
+     * of the person that wrote the original note.
+     */
+    const personLinkUrl = computed((): string => {
+        return props.note.createdByIdKey ? `/Person/${props.note.createdByIdKey}` : "";
+    });
+
+    /**
+     * Contains the CSS class to use for the icon that represents this
+     * note's type.
+     */
+    const noteTypeIconClass = computed((): string => {
+        return props.note.noteType.iconCssClass || "fa fa-comment";
+    });
+
+    /**
+     * Gets the name of the note type.
+     */
+    const noteTypeName = computed((): string => {
+        return props.note.noteType.name ?? "";
+    });
+
+    /**
+     * Contains any additional CSS classes that should be applied to the
+     * note `article` container element.
+     */
+    const additionalNoteClasses = computed((): string => {
+        let classes = "";
+
+        if (props.note.isAlert) {
+            classes = "is-alert";
+        }
+        else if (props.note.isPrivate) {
+            classes = "is-personal";
+        }
+
+        classes += ` note-type-${toCssClass(props.note.noteType.name ?? "")}`;
+
+        return classes.trim();
+    });
+
+    /**
+     * Contains any additional CSS style values that should be applied to the
+     * note `article` element.
+     */
+    const noteItemStyles = computed((): Record<string, string> => {
+        const styles: Record<string, string> = {};
+
+        if (colorPair.value) {
+            styles["--note-dark-color"] = colorPair.value.foregroundColor.toHex();
+            styles["--note-light-color"] = colorPair.value.backgroundColor.toHex();
+        }
+
+        return styles;
+    });
+
+    /**
+     * Contains the color pair computed for this note based on the note type
+     * color value.
+     */
+    const colorPair = computed((): ColorPair | null => {
+        if (!props.note.noteType.color) {
+            return null;
+        }
+
+        const color = new RockColor(props.note.noteType.color);
+
+        return RockColor.calculateColorPair(color);
+    });
+
+    /**
+     * Contains the relative date and time that the note was originally created.
+     */
+    const noteDateTimeText = computed((): string => {
+        let text = "";
+
+        const createdDateTime = RockDateTime.parseISO(props.note.createdDateTime ?? "");
+
+        if (createdDateTime) {
+            text = createdDateTime.localDateTime.humanizeElapsed();
+        }
+
+        return text;
+    });
+
+    /**
+     * Contains the relative date and time that the note was last edited. The
+     * name of the person who edited is also included. This will be an empty
+     * string if it was not edited.
+     */
+    const noteEditedDateTimeText = computed((): string => {
+        let text = "";
+
+        const createdDateTime = RockDateTime.parseISO(props.note.createdDateTime ?? "");
+        const editedDateTime = RockDateTime.parseISO(props.note.editedDateTime ?? "");
+
+        if (editedDateTime && (!createdDateTime || editedDateTime.isLaterThan(createdDateTime))) {
+            let editedText = editedDateTime.localDateTime.humanizeElapsed();
+
+            if (props.note.editedByName && props.note.editedByName !== props.note.createdByName) {
+                editedText += ` by ${props.note.editedByName}`;
+            }
+
+            text += `(edited ${editedText})`;
+        }
+
+        return text;
+    });
+
+    /**
+     * Contains the text that describes how many replies this note has.
+     */
+    const replyCountText = computed((): string => {
+        return `${props.note.childNotes.length} ${pluralize("Reply", props.note.childNotes.length)}`;
+    });
+
+    /**
+     * Contains the anchor id used to uniquely identify this note on the page.
+     */
+    const noteAnchorId = computed((): string => {
+        return `#${props.note.anchorId}`;
+    });
+
+    /**
+     * Contains the available actions that can be performed by the person on
+     * the current note.
+     */
+    const dropDownActions = computed((): MenuAction[] => {
+        const actions: MenuAction[] = [];
+
+        if (props.note.noteType.allowsReplies && noteOptions.showAdd) {
+            if (props.note.noteType.maxReplyDepth === -1 || props.depth < props.note.noteType.maxReplyDepth) {
+                actions.push({
+                    title: "Reply",
+                    type: "default",
+                    iconCssClass: "fa fa-reply",
+                    handler: onReplyNote
+                });
+            }
+        }
+
+        if (props.note.isEditable) {
+            actions.push({
+                title: "Edit",
+                type: "default",
+                iconCssClass: "fa fa-pencil",
+                handler: onEditNote
+            });
+        }
+
+        if (props.note.noteType.allowsWatching) {
+            actions.push({
+                title: props.note.isWatching ? "Unwatch" : "Watch",
+                type: "default",
+                iconCssClass: props.note.isWatching ? "fa fa-eye-slash" : "fa fa-eye",
+                actionCssClass: props.note.isWatching ? "unwatch-note" : "watch-note",
+                handler: onWatchNote
+            });
+        }
+
+        if (props.note.isDeletable) {
+            actions.push({
+                title: "Delete",
+                type: "danger",
+                iconCssClass: "fa fa-trash",
+                actionCssClass: "remove-note",
+                handler: onDeleteNote
+            });
+        }
+
+        return actions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Formats the date time string in a standard format that can be used
+     * in the `time` elements.
+     *
+     * @param str The string to be formatted as a date and time.
+     *
+     * @returns A new string in the proper format or `undefined` if the
+     * original string could not be parsed.
+     */
+    function formatTimestampDate(str: string | undefined | null): string | undefined {
+        const datetime = RockDateTime.parseISO(str ?? "");
+
+        return datetime?.toASPString("yyyy-MM-ddTHH:mm:sszzz");
+    }
+
+    /**
+     * Formats the date time string in a standard human friendly way that
+     * shows the full date and time.
+     *
+     * @param str The string to be formatted as a date and time.
+     *
+     * @returns A new string in the proper format or `undefined` if the
+     * original string could not be parsed.
+     */
+    function formatLongDateTime(str: string | undefined | null): string | undefined {
+        const datetime = RockDateTime.parseISO(str ?? "");
+
+        return datetime?.toASPString("MMMM d, yyyy, h:mm tt");
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the person clicks the edit button to begin
+     * editing a note.
+     */
+    async function onEditNote(): Promise<void> {
+        const request: EditNoteRequestBag = {
+            idKey: props.note.idKey ?? ""
+        };
+
+        // Get the edit data from the server. Because attributes might be in
+        // play we need to get the edit version of the values.
+        const result = await invokeBlockAction<NoteEditBag>("EditNote", { request });
+
+        if (!result.isSuccess || !result.data) {
+            await alert(result.errorMessage ?? "Unable to edit note.");
+            return;
+        }
+
+        // Inform other components on this block that we are beginning an
+        // edit operation.
+        emitter.emit("beginEdit", subscriberKey);
+
+        editNoteBag.value = result.data;
+        isAddNoteVisible.value = false;
+        isEditingNote.value = true;
+    }
+
+    /**
+     * Event handler for when the person clicks the delete button on this note.
+     */
+    function onDeleteNote(): void {
+        // Inform the container that we should be deleted and let it handle
+        // the operation.
+        emit("delete", props.note);
+    }
+
+    /**
+     * Event handler for when the person clicks the watch or unwatch button
+     * on this note.
+     */
+    async function onWatchNote(): Promise<void> {
+        const request: WatchNoteRequestBag = {
+            idKey: props.note.idKey,
+            isWatching: !props.note.isWatching
+        };
+
+        const result = await invokeBlockAction("WatchNote", { request });
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to update note.");
+            return;
+        }
+
+        props.note.isWatching = !props.note.isWatching;
+    }
+
+    /**
+     * Event handler for when the person clicks the button to toggle if the
+     * child notes should be visible or not.
+     */
+    function onToggleChildNotes(): void {
+        isChildNotesVisible.value = !isChildNotesVisible.value;
+    }
+
+    /**
+     * Event handler for when the person clicks the reply button to begin
+     * adding a new reply to this note.
+     */
+    function onReplyNote(): void {
+        // Inform other components of this block that we are beginning an
+        // edit operation.
+        emitter.emit("beginEdit", subscriberKey);
+
+        // Initialize the UI to display a blank note.
+        editNoteBag.value = {
+            noteTypeIdKey: noteOptions.selectableNoteTypes[0].idKey,
+            text: "",
+            isAlert: false,
+            isPrivate: false,
+            attributeValues: {}
+        };
+
+        isAddNoteVisible.value = true;
+    }
+
+    /**
+     * Event handler for when the person clicks the cancel button while adding
+     * a reply to this note or editing the note itself.
+     */
+    function onNoteEditCancel(): void {
+        // Inform other components of this block that we are ending our edit
+        // operation.
+        emitter.emit("endEdit", subscriberKey);
+
+        isAddNoteVisible.value = false;
+        isEditingNote.value = false;
+    }
+
+    /**
+     * Event handler for when the person clicks the save button while adding
+     * a reply to this note or editing the note itself.
+     */
+    async function onNoteSave(): Promise<void> {
+        if (isSavingNote.value) {
+            return;
+        }
+
+        // Prevent multiple save operations.
+        isSavingNote.value = true;
+
+        try {
+            const request: SaveNoteRequestBag = {};
+
+            setPropertiesBoxValue(request, "idKey", editNoteBag.value.idKey);
+            setPropertiesBoxValue(request, "parentNoteIdKey", isEditingNote.value ? props.note.parentNoteIdKey : props.note.idKey);
+            setPropertiesBoxValue(request, "noteTypeIdKey", editNoteBag.value.noteTypeIdKey);
+            setPropertiesBoxValue(request, "text", editNoteBag.value.text);
+            setPropertiesBoxValue(request, "isAlert", editNoteBag.value.isAlert);
+            setPropertiesBoxValue(request, "isPrivate", editNoteBag.value.isPrivate);
+            setPropertiesBoxValue(request, "attributeValues", editNoteBag.value.attributeValues);
+
+            if (editNoteBag.value.createdDateTime) {
+                setPropertiesBoxValue(request, "createdDateTime", editNoteBag.value.createdDateTime);
+            }
+
+            const result = await invokeBlockAction<NoteBag>("SaveNote", { request });
+
+            // Make sure we can actually display the note. If we can't find the
+            // note type then display an error instead.
+            const type = noteOptions.noteTypes?.find(nt => nt.idKey === result.data?.noteTypeIdKey);
+
+            if (!result.isSuccess || !result.data || !type) {
+                await alert(result.errorMessage ?? "Unable to save the note.");
+                return;
+            }
+
+            const expandedNote: ExpandedNoteBag = {
+                ...result.data,
+                noteType: type,
+                childNotes: []
+            };
+
+            if (isEditingNote.value) {
+                // Inform the parent container that we were edited.
+                emit("edited", expandedNote);
+            }
+            else {
+                // Insert this new note as a child of the current note.
+                const notes = props.note.childNotes;
+
+                if (noteOptions.isDescending) {
+                    let index = 0;
+
+                    // If not an alert, put it at the top of the list after all
+                    // other alerts.
+                    if (!expandedNote.isAlert) {
+                        while (index < notes.length && notes[index].isAlert) {
+                            index++;
+                        }
+                    }
+
+                    notes.splice(index, 0, expandedNote);
+                }
+                else {
+                    let index = 0;
+
+                    // If an alert, put it at as the last alert item.
+                    if (expandedNote.isAlert) {
+                        while (index < notes.length && notes[index].isAlert) {
+                            index++;
+                        }
+                    }
+                    else {
+                        index = notes.length;
+                    }
+
+                    notes.splice(index, 0, expandedNote);
+                }
+            }
+
+            isAddNoteVisible.value = false;
+            isEditingNote.value = false;
+        }
+        finally {
+            isSavingNote.value = false;
+
+            // Inform other components in this block that we are done with
+            // our edit operation.
+            emitter.emit("endEdit", subscriberKey);
+        }
+    }
+
+    /**
+     * Event handler for when another component in this block has started an
+     * edit operation. Cancel any edit operation we might have going on.
+     */
+    function onBeginEditNote(): void {
+        isAddNoteVisible.value = false;
+        isEditingNote.value = false;
+        // Note: we don't need to send an endEdit event in this case.
+    }
+
+    // #endregion
+
+    onMounted(() => {
+        const url = new URL(window.location.href);
+
+        // Check if we need to scroll this note into view from the anchor
+        // specified in the URL.
+        if (noteAnchorId.value === url.hash && props.note.anchorId) {
+            const noteElement = document.getElementById(props.note.anchorId);
+
+            noteElement?.scrollIntoView({
+                block: "nearest",
+                inline: "nearest",
+                behavior: "smooth"
+            });
+        }
+    });
+
+    onBeforeUnmount(() => {
+        emitter.unsubscribe(subscriberKey);
+    });
+
+    emitter.on("beginEdit", subscriberKey, onBeginEditNote);
+</script>

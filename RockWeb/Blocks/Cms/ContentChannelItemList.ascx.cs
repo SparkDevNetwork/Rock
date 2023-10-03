@@ -15,19 +15,23 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using System.ComponentModel;
+using Rock.Model.CMS.ContentChannelItem.Options;
 using Rock.Security;
 using Rock.Web.Cache;
-using System.Collections.Generic;
-using System.Web.UI.WebControls;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -45,7 +49,9 @@ namespace RockWeb.Blocks.Cms
     [LinkedPage(
         "Detail Page",
         Order = 0,
-        Key = AttributeKey.DetailPage )]
+        Key = AttributeKey.DetailPage,
+        Category = "Pages" )]
+
     [BooleanField(
         "Filter Items For Current User",
         Description = "Filters the items by those created by the current logged in user.",
@@ -116,6 +122,7 @@ namespace RockWeb.Blocks.Cms
         private static class PageParameterKey
         {
             public const string ContentChannelId = "contentChannelId";
+            public const string ContentChannelIdKey = "ContentChannelIdKey";
         }
 
         #endregion
@@ -330,9 +337,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( "Date Range", drpDateRange.DelimitedValues );
-            gfFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
-            gfFilter.SaveUserPreference( "Title", tbTitle.Text );
+            gfFilter.SetFilterPreference( "Date Range", drpDateRange.DelimitedValues );
+            gfFilter.SetFilterPreference( "Status", ddlStatus.SelectedValue );
+            gfFilter.SetFilterPreference( "Title", tbTitle.Text );
 
             BindGrid();
         }
@@ -440,6 +447,38 @@ namespace RockWeb.Blocks.Cms
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gItems_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.DataItem is ContentChannelGridItem contentChannelItem )
+            {
+                var contentChannel = ContentChannelCache.Get( contentChannelItem.ContentChannelId );
+
+                if ( contentChannel?.ContentLibraryConfiguration?.IsEnabled == true )
+                {
+                    if ( contentChannelItem.IsUploadedToContentLibrary )
+                    {
+                        var lbUpdateToContentLibrary = e.Row.FindControl( "lbUpdateToContentLibrary" ) as LinkButton;
+                        lbUpdateToContentLibrary.Visible = true;
+                    }
+                    else if ( contentChannelItem.IsDownloadedFromContentLibrary )
+                    {
+                        var lbDownloadFromContentLibrary = e.Row.FindControl( "lbDownloadFromContentLibrary" ) as LinkButton;
+                        lbDownloadFromContentLibrary.Visible = true;
+                    }
+                    else if ( !contentChannelItem.ContentLibrarySourceIdentifier.HasValue )
+                    {
+                        var lbUploadToContentLibrary = e.Row.FindControl( "lbUploadToContentLibrary" ) as LinkButton;
+                        lbUploadToContentLibrary.Visible = true;
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Internal Methods
@@ -498,15 +537,15 @@ namespace RockWeb.Blocks.Cms
 
         private void BindFilter()
         {
-            drpDateRange.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
+            drpDateRange.DelimitedValues = gfFilter.GetFilterPreference( "Date Range" );
             ddlStatus.BindToEnum<ContentChannelItemStatus>( true );
-            int? statusID = gfFilter.GetUserPreference( "Status" ).AsIntegerOrNull();
+            int? statusID = gfFilter.GetFilterPreference( "Status" ).AsIntegerOrNull();
             if ( statusID.HasValue )
             {
                 ddlStatus.SetValue( statusID.Value.ToString() );
             }
 
-            tbTitle.Text = gfFilter.GetUserPreference( "Title" );
+            tbTitle.Text = gfFilter.GetFilterPreference( "Title" );
         }
 
         /// <summary>
@@ -548,17 +587,23 @@ namespace RockWeb.Blocks.Cms
             gItems.ObjectList = new Dictionary<string, object>();
             items.ForEach( i => gItems.ObjectList.Add( i.Id.ToString(), i ) );
 
-            var gridList = items.Select( i => new
+            var gridList = items.Select( i => new ContentChannelGridItem
             {
-                i.Id,
-                i.Guid,
-                i.Title,
-                i.StartDateTime,
-                i.ExpireDateTime,
-                i.Priority,
+                Id = i.Id,
+                Guid = i.Guid,
+                ContentChannelId = i.ContentChannelId,
+                Title = i.Title,
+                StartDateTime = i.StartDateTime,
+                ExpireDateTime = i.ExpireDateTime,
+                Priority = i.Priority,
                 Status = DisplayStatus( i.Status ),
                 DateStatus = DisplayDateStatus( i.StartDateTime ),
-                Occurrences = i.EventItemOccurrences.Any()
+                Occurrences = i.EventItemOccurrences.Any(),
+                IsContentLibraryOwner = i.IsContentLibraryOwner ?? false,
+                ContentLibrarySourceIdentifier = i.ContentLibrarySourceIdentifier,
+                IsDownloadedFromContentLibrary = i.IsDownloadedFromContentLibrary,
+                IsUploadedToContentLibrary = i.IsUploadedToContentLibrary,
+                ContentLibraryLicenseTypeGuid = i.ContentLibraryLicenseTypeValueId.HasValue ? DefinedValueCache.Get( i.ContentLibraryLicenseTypeValueId.Value )?.Guid : null
             } ).ToList();
 
             // only show the Event Occurrences item if any of the displayed content channel items have any occurrences (and the block setting is enabled)
@@ -568,6 +613,11 @@ namespace RockWeb.Blocks.Cms
 
             gItems.DataSource = gridList;
             gItems.DataBind();
+
+            // Content Library column.
+            var isContentLibraryEnabled = _channelId.HasValue && ContentChannelCache.Get( _channelId.Value )?.ContentLibraryConfiguration?.IsEnabled == true;
+            rtfContentLibrary.Visible = isContentLibraryEnabled;
+            bDownloadFromLibrary.Visible = isContentLibraryEnabled;
         }
 
         protected string DisplayDateStatus( DateTime aDate )
@@ -591,7 +641,7 @@ namespace RockWeb.Blocks.Cms
                     .Where( c => c.ContentChannelId == _channelId.Value );
 
                 var drp = new DateRangePicker();
-                drp.DelimitedValues = gfFilter.GetUserPreference( "Date Range" );
+                drp.DelimitedValues = gfFilter.GetFilterPreference( "Date Range" );
                 if ( drp.LowerValue.HasValue )
                 {
                     isFiltered = true;
@@ -607,14 +657,14 @@ namespace RockWeb.Blocks.Cms
                     contentItems = contentItems.Where( i => i.StartDateTime <= upperDate );
                 }
 
-                var status = gfFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<ContentChannelItemStatus>();
+                var status = gfFilter.GetFilterPreference( "Status" ).ConvertToEnumOrNull<ContentChannelItemStatus>();
                 if ( status.HasValue )
                 {
                     isFiltered = true;
                     contentItems = contentItems.Where( i => i.Status == status );
                 }
 
-                string title = gfFilter.GetUserPreference( "Title" );
+                string title = gfFilter.GetFilterPreference( "Title" );
                 if ( !string.IsNullOrWhiteSpace( title ) )
                 {
                     isFiltered = true;
@@ -672,6 +722,157 @@ namespace RockWeb.Blocks.Cms
             }
 
             return string.Format( "<span class='label label-{0}'>{1}</span>", labelType, contentItemStatus.ConvertToString() );
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        private class ContentChannelGridItem
+        {
+            public int Id { get; internal set; }
+            public Guid Guid { get; internal set; }
+            public string Title { get; internal set; }
+            public DateTime StartDateTime { get; internal set; }
+            public DateTime? ExpireDateTime { get; internal set; }
+            public int Priority { get; internal set; }
+            public string Status { get; internal set; }
+            public string DateStatus { get; internal set; }
+            public bool Occurrences { get; internal set; }
+            public bool IsContentLibraryOwner { get; internal set; }
+            public Guid? ContentLibrarySourceIdentifier { get; internal set; }
+            public int ContentChannelId { get; internal set; }
+            public bool IsDownloadedFromContentLibrary { get; internal set; }
+            public bool IsUploadedToContentLibrary { get; internal set; }
+            public Guid? ContentLibraryLicenseTypeGuid { get; internal set; }
+        }
+
+        #endregion
+
+        protected void lbUpdateToContentLibrary_Command( object sender, CommandEventArgs e )
+        {
+            var item = e.CommandArgument.ToStringSafe().FromJsonOrNull<ContentLibraryItemData>();
+            hfItemId.Value = item.Id.ToString();
+            lUpdateName.Text = item.Name;
+            mdUpdateContentLibrary.Show();
+        }
+
+        protected void lbUploadToContentLibrary_Command( object sender, CommandEventArgs e )
+        {
+            var item = e.CommandArgument.ToStringSafe().FromJsonOrNull<ContentLibraryItemData>();
+            hfItemId.Value = item.Id.ToString();
+            lUploadName.Text = item.Name;
+            var licenseGuid = ContentChannelCache.Get( _channelId.Value )?.ContentLibraryConfiguration?.LicenseTypeValueGuid ?? Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_OPEN.AsGuid();
+            aLibraryLicense.HRef = $"https://rockrms.com/library/licenses?utm_source=rock-item-uploaded";
+            aLibraryLicense.InnerHtml = $"{ DefinedValueCache.Get( licenseGuid ).Value } License";
+            mdUploadContentLibrary.Show();
+        }
+
+        protected void mdUpdateContentLibrary_SaveClick( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                try
+                {
+                    var contentChannelItemId = hfItemId.Value.AsInteger();
+                    var contentChannelItemService = new ContentChannelItemService( rockContext );
+                    contentChannelItemService.UploadToContentLibrary(
+                        new ContentLibraryItemUploadOptions
+                        {
+                            ContentChannelItemId = contentChannelItemId,
+                            UploadedByPersonAliasId = CurrentPersonAliasId
+                        } );
+                }
+                catch ( AddToContentLibraryException ex )
+                {
+                    RockLogger.Log.Error( RockLogDomains.Cms, ex, ex.Message );
+                    mdGridWarning.Show( ex.Message.ConvertCrLfToHtmlBr(), ModalAlertType.Alert );
+                }
+            }
+
+            BindGrid();
+            mdUpdateContentLibrary.Hide();
+        }
+
+        protected void mdUploadContentLibrary_SaveClick( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                try
+                {
+                    var contentChannelItemId = hfItemId.Value.AsInteger();
+                    var contentChannelItemService = new ContentChannelItemService( rockContext );
+                    contentChannelItemService.UploadToContentLibrary(
+                        new ContentLibraryItemUploadOptions
+                        {
+                            ContentChannelItemId = contentChannelItemId,
+                            UploadedByPersonAliasId = CurrentPersonAliasId
+                        } );
+                }
+                catch ( AddToContentLibraryException ex )
+                {
+                    RockLogger.Log.Error( RockLogDomains.Cms, ex, ex.Message );
+                    mdGridWarning.Show( ex.Message.ConvertCrLfToHtmlBr(), ModalAlertType.Alert );
+                }
+            }
+
+            BindGrid();
+            mdUploadContentLibrary.Hide();
+        }
+
+        protected void bDownloadFromLibrary_Click( object sender, EventArgs e )
+        {
+            var idKey = string.Empty;
+
+            if ( _channelId.HasValue )
+            {
+                var contentChannel = ContentChannelCache.Get( _channelId.Value );
+                idKey = contentChannel.IdKey;
+            }
+
+            NavigateToPage(
+                Rock.SystemGuid.Page.LIBRARY_VIEWER.AsGuid(),
+                Rock.SystemGuid.PageRoute.LIBRARY_VIEWER.AsGuid(),
+                new Dictionary<string, string>
+                {
+                    { PageParameterKey.ContentChannelIdKey, idKey }
+                } );
+        }
+
+        protected void lbDownloadFromContentLibrary_Command( object sender, CommandEventArgs e )
+        {
+            var item = e.CommandArgument.ToStringSafe().FromJsonOrNull<ContentLibraryItemData>();
+            hfItemId.Value = item.Id.ToString();
+            nbRedownloadWarning.Text = $"The action you are about to perform will overwrite the existing content of the item \"{ item.Name }\". Any changes will be lost. Are you sure you want to proceed with the update?";
+            mdRedownloadContentLibrary.Show();
+        }
+
+        protected void mdRedownloadContentLibrary_SaveClick( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelItemId = hfItemId.Value.AsInteger();
+                var contentChannelItemService = new ContentChannelItemService( rockContext );
+                
+                var contentLibraryItemGuid = contentChannelItemService.AsNoFilter().AsNoTracking().Where( i => i.Id ==  contentChannelItemId ).Select( i => i.ContentLibrarySourceIdentifier ).FirstOrDefault();
+                var result = contentChannelItemService.AddFromContentLibrary( new Rock.Model.CMS.ContentChannelItem.Options.ContentLibraryItemDownloadOptions
+                {
+                    ContentLibraryItemGuidToDownload = contentLibraryItemGuid.Value,
+                    DownloadIntoContentChannelGuid = ContentChannelCache.Get( _channelId.Value ).Guid,
+                    CurrentPersonPerformingDownload = this.CurrentPerson
+                } );
+            }
+
+            BindGrid();
+            mdRedownloadContentLibrary.Hide();
+        }
+
+        #region Helper Classes
+
+        public class ContentLibraryItemData
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
         }
 
         #endregion

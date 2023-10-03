@@ -169,12 +169,12 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfSettings.SaveUserPreference( "Username", tbUserNameFilter.Text );
-            gfSettings.SaveUserPreference( "Authentication Provider", compProviderFilter.SelectedValue );
-            gfSettings.SaveUserPreference( "Created", drpCreated.DelimitedValues );
-            gfSettings.SaveUserPreference( "Last Login", drpLastLogin.DelimitedValues );
-            gfSettings.SaveUserPreference( "Is Confirmed", ddlIsConfirmedFilter.SelectedValue );
-            gfSettings.SaveUserPreference( "Is Locked Out", ddlLockedOutFilter.SelectedValue );
+            gfSettings.SetFilterPreference( "Username", tbUserNameFilter.Text );
+            gfSettings.SetFilterPreference( "Authentication Provider", compProviderFilter.SelectedValue );
+            gfSettings.SetFilterPreference( "Created", drpCreated.DelimitedValues );
+            gfSettings.SetFilterPreference( "Last Login", drpLastLogin.DelimitedValues );
+            gfSettings.SetFilterPreference( "Is Confirmed", ddlIsConfirmedFilter.SelectedValue );
+            gfSettings.SetFilterPreference( "Is Locked Out", ddlLockedOutFilter.SelectedValue );
 
             BindGrid();
         }
@@ -387,12 +387,12 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         private void BindFilter()
         {
-            tbUserNameFilter.Text = gfSettings.GetUserPreference( "Username" );
-            compProviderFilter.SetValue( gfSettings.GetUserPreference( "Authentication Provider" ) );
-            drpCreated.DelimitedValues = gfSettings.GetUserPreference( "Created" );
-            drpLastLogin.DelimitedValues = gfSettings.GetUserPreference( "Last Login" );
-            ddlIsConfirmedFilter.SetValue( gfSettings.GetUserPreference( "Is Confirmed" ) );
-            ddlLockedOutFilter.SetValue( gfSettings.GetUserPreference( "Is Locked Out" ) );
+            tbUserNameFilter.Text = gfSettings.GetFilterPreference( "Username" );
+            compProviderFilter.SetValue( gfSettings.GetFilterPreference( "Authentication Provider" ) );
+            drpCreated.DelimitedValues = gfSettings.GetFilterPreference( "Created" );
+            drpLastLogin.DelimitedValues = gfSettings.GetFilterPreference( "Last Login" );
+            ddlIsConfirmedFilter.SetValue( gfSettings.GetFilterPreference( "Is Confirmed" ) );
+            ddlLockedOutFilter.SetValue( gfSettings.GetFilterPreference( "Is Locked Out" ) );
         }
 
         /// <summary>
@@ -410,14 +410,14 @@ namespace RockWeb.Blocks.Security
                 .Where( l => !_personId.HasValue || l.PersonId == _personId.Value );
 
             // username filter
-            string usernameFilter = gfSettings.GetUserPreference( "Username" );
+            string usernameFilter = gfSettings.GetFilterPreference( "Username" );
             if ( !string.IsNullOrWhiteSpace( usernameFilter ) )
             {
                 qry = qry.Where( l => l.UserName.StartsWith( usernameFilter ) );
             }
 
             // provider filter
-            Guid? authProviderGuid = gfSettings.GetUserPreference( "Authentication Provider" ).AsGuidOrNull();
+            Guid? authProviderGuid = gfSettings.GetFilterPreference( "Authentication Provider" ).AsGuidOrNull();
             if ( authProviderGuid.HasValue )
             {
                 qry = qry.Where( l => l.EntityType.Guid.Equals( authProviderGuid.Value ) );
@@ -425,7 +425,7 @@ namespace RockWeb.Blocks.Security
 
             // created filter
             var drp = new DateRangePicker();
-            drp.DelimitedValues = gfSettings.GetUserPreference( "Created" );
+            drp.DelimitedValues = gfSettings.GetFilterPreference( "Created" );
             if ( drp.LowerValue.HasValue )
             {
                 qry = qry.Where( l => l.CreatedDateTime.HasValue && l.CreatedDateTime.Value >= drp.LowerValue.Value );
@@ -439,7 +439,7 @@ namespace RockWeb.Blocks.Security
 
             // last login filter
             var drp2 = new DateRangePicker();
-            drp2.DelimitedValues = gfSettings.GetUserPreference( "Last Login" );
+            drp2.DelimitedValues = gfSettings.GetFilterPreference( "Last Login" );
             if ( drp2.LowerValue.HasValue )
             {
                 qry = qry.Where( l => l.LastLoginDateTime >= drp2.LowerValue.Value );
@@ -453,14 +453,14 @@ namespace RockWeb.Blocks.Security
 
             // Is Confirmed filter
             bool isConfirmed = false;
-            if ( bool.TryParse( gfSettings.GetUserPreference( "Is Confirmed" ), out isConfirmed ) )
+            if ( bool.TryParse( gfSettings.GetFilterPreference( "Is Confirmed" ), out isConfirmed ) )
             {
                 qry = qry.Where( l => l.IsConfirmed == isConfirmed || ( !isConfirmed && l.IsConfirmed == null ) );
             }
 
             // is locked out filter
             bool isLockedOut = false;
-            if ( bool.TryParse( gfSettings.GetUserPreference( "Is Locked Out" ), out isLockedOut ) )
+            if ( bool.TryParse( gfSettings.GetFilterPreference( "Is Locked Out" ), out isLockedOut ) )
             {
                 qry = qry.Where( l => l.IsLockedOut == isLockedOut || ( !isLockedOut && l.IsLockedOut == null ) );
             }

@@ -758,10 +758,8 @@ namespace Rock.Web.UI.Controls
             CustomValidator = new CustomValidator();
             CustomValidator.ID = this.ID + "_cfv";
             CustomValidator.ClientValidationFunction = "Rock.controls.addressControl.clientValidate";
-            CustomValidator.CssClass = "validation-error help-inline";
+            CustomValidator.CssClass = "validation-error";
             CustomValidator.Enabled = true;
-            CustomValidator.Display = ValidatorDisplay.Dynamic;
-
             CustomValidator.ServerValidate += _CustomValidator_ServerValidate;
             Controls.Add( CustomValidator );
         }
@@ -774,12 +772,12 @@ namespace Rock.Web.UI.Controls
                 return;
             }
 
+            // Get the edited Location, and include any default values to avoid incorrect validation messages for the fields
+            // to which they apply.
             var editedLocation = new Location();
-
-            this.GetValues( editedLocation );
+            GetValues( editedLocation, includeDefaultValues:true );
 
             string validationMessage;
-
             var isValid = LocationService.ValidateLocationAddressRequirements( editedLocation, out validationMessage );
 
             if ( !isValid )
@@ -1102,12 +1100,22 @@ namespace Rock.Web.UI.Controls
         /// <param name="location">The location.</param>
         public void GetValues( Rock.Model.Location location )
         {
+            GetValues( location, includeDefaultValues: false );
+        }
+
+        /// <summary>
+        /// Gets the values from the address control and updates the fields of the specified Location entity.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        /// <param name="includeDefaultValues">If true, </param>
+        public void GetValues( Rock.Model.Location location, bool includeDefaultValues )
+        {
             if ( location == null )
             {
                 return;
             }
 
-            if ( this.HasValue )
+            if ( this.HasValue || includeDefaultValues )
             {
                 // Get field values, nullifying any fields that are not available for the selected country.
                 var street1 = GetLocationFieldValue( this.Street1, _AddressLine1Requirement );

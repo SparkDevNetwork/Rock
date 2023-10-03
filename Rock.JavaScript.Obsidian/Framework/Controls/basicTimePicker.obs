@@ -1,0 +1,593 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="dropdown timepicker-input">
+        <div class="bootstrap-timepicker input-group input-width-md">
+            <input class="form-control" type="text" v-model="internalValue" :disabled="disabled" @focus="focusInput" @click="focusInput" @blur="onInputBlur" @keydown="onMainInputKeyDown" ref="inputEl" />
+            <span class="input-group-addon" :class="{ 'disabled': disabled }" @click="showPickerWidget = !showPickerWidget" ref="toggleBtnEl">
+                <i class="fa fa-clock-o"></i>
+            </span>
+        </div>
+        <i class="fa fa-times js-timepicker-clear" v-if="internalValue && !disabled && !hideClear" @click.prevent="clearPicker"></i>
+        <TransitionVerticalCollapse>
+            <div class="bootstrap-timepicker-widget dropdown-menu timepicker-orient-left timepicker-orient-top open" v-if="showPickerWidget" ref="widgetEl">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td><a href="#" @click.prevent="incrementHour" role="button"><span class="fa fa-chevron-up"></span></a></td>
+                            <td class="separator">&nbsp;</td>
+                            <td><a href="#" @click.prevent="incrementMinute" role="button"><span class="fa fa-chevron-up"></span></a></td>
+                            <td class="separator">&nbsp;</td>
+                            <td><a href="#" @click.prevent="toggleMeridiem" role="button"><span class="fa fa-chevron-up"></span></a></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" v-model="internalHour" class="bootstrap-timepicker-hour" maxlength="2" inputmode="numeric" pattern="(^\d$)|(^1[0-2]$)" @click="e => (e.target as HTMLInputElement)?.select()" @keydown="e => onWidgetInputKeyDown(e, 'hour')"></td>
+                            <td class="separator">:</td>
+                            <td><input type="text" v-model="internalTextMinute" class="bootstrap-timepicker-minute" maxlength="2" inputmode="numeric" pattern="" @click="e => (e.target as HTMLInputElement)?.select()" @keydown="e => onWidgetInputKeyDown(e, 'minute')" @focus="isMinuteFieldFocused = true" @blur="isMinuteFieldFocused = false"></td>
+                            <td class="separator">&nbsp;</td>
+                            <td><input type="text" v-model="internalMeridiem" class="bootstrap-timepicker-meridian" maxlength="2" @click="e => (e.target as HTMLInputElement)?.select()" @keydown="e => onWidgetInputKeyDown(e, 'meridiem')"></td>
+                        </tr>
+                        <tr>
+                            <td><a href="#" @click.prevent="decrementHour" role="button"><span class="fa fa-chevron-down"></span></a></td>
+                            <td class="separator"></td>
+                            <td><a href="#" @click.prevent="decrementMinute" role="button"><span class="fa fa-chevron-down"></span></a></td>
+                            <td class="separator">&nbsp;</td>
+                            <td><a href="#" @click.prevent="toggleMeridiem" role="button"><span class="fa fa-chevron-down"></span></a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </TransitionVerticalCollapse>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, onUnmounted, watch } from "vue";
+    import { PropType, ref } from "vue";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { padLeft } from "@Obsidian/Utility/stringUtils";
+    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<TimePickerValue>,
+            default: {}
+        },
+
+        hideClear: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", _value: TimePickerValue): void
+    }>();
+
+    const isMinuteFieldFocused = ref<boolean>(false);
+
+    const internalHour = computed<number | null>({
+        get() {
+            if (props.modelValue.hour != null && props.modelValue.hour > 12) {
+                return props.modelValue.hour % 12;
+            }
+            else if (props.modelValue.hour === 0) {
+                return 12;
+            }
+            else if (props.modelValue.hour == null && props.modelValue.minute != null) {
+                return 12;
+            }
+            return props.modelValue.hour ?? null;
+        },
+        set(val) {
+            let x = toNumberOrNull(val);
+            if (x) {
+                emitModelUpdates(x, internalMinute.value, internalMeridiem.value);
+            }
+        }
+    });
+    const internalMinute = computed<number | null>({
+        get() {
+            if (props.modelValue.minute != null) {
+                return Math.min(59, Math.max(0, props.modelValue.minute));
+            }
+            else if (props.modelValue.minute == null && props.modelValue.hour != null) {
+                return 0;
+            }
+
+            return null;
+        },
+        set(val) {
+            emitModelUpdates(internalHour.value, val, internalMeridiem.value);
+        }
+    });
+    const internalMeridiem = computed<"AM" | "PM">({
+        get() {
+            return (props.modelValue.hour == null || props.modelValue.hour < 12) ? "AM" : "PM";
+        },
+        set(val) {
+            const meridiem = (/p/i).test(val) ? "PM" : "AM";
+            emitModelUpdates(internalHour.value, internalMinute.value, meridiem);
+        }
+    });
+    const internalValue = computed<string>(() => {
+        if (internalHour.value == null) {
+            return "";
+        }
+
+        return `${internalHour.value}:${padMinute()} ${internalMeridiem.value}`;
+    });
+    const internalTextMinute = computed<string>({
+        get() {
+            return isMinuteFieldFocused.value ? (internalMinute.value?.toString() ?? "") : padMinute();
+        },
+        set(val) {
+            internalMinute.value = toNumberOrNull(val);
+        }
+    });
+
+    const showPickerWidget = ref(false);
+    const inputEl = ref<HTMLInputElement | null>(null);
+    const toggleBtnEl = ref<HTMLElement | null>(null);
+    const widgetEl = ref<HTMLElement | null>(null);
+    const highlightedUnit = ref<"hour" | "minute" | "meridiem" | null>(null);
+
+    // #region Watchers
+
+    /** Perform a highlight based on changes to the highlightedUnit ref */
+    watch(highlightedUnit, (unit) => {
+        if (!unit) {
+            return;
+        }
+
+        highlightUnit(unit);
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Emit the update:modelValue event with the given value */
+    function emitModelUpdates(hour: number | null, minute: number | null, meridiem: "AM" | "PM"): void {
+        if (hour == null) {
+            return emit("update:modelValue", {});
+        }
+
+        minute = Math.min(59, Math.max(0, minute ?? 0));
+        hour = Math.min(12, Math.max(1, hour ?? 12));
+
+        if (hour == 12 && meridiem == "AM") {
+            hour = 0;
+        }
+        else if (hour < 12 && meridiem == "PM") {
+            hour += 12;
+        }
+
+        emit("update:modelValue", { hour, minute });
+    }
+
+    /** Convert the minute to have a leading zero if < 10 */
+    function padMinute(): string {
+        return internalMinute.value == null ? "" : padLeft(internalMinute.value.toString(), 2, "0");
+    }
+
+    /** Highlight the given unit in the main input */
+    function highlightUnit(unit: "hour" | "minute" | "meridiem"): void {
+        // Without the setTimeout it doesn't appear to do anything
+        setTimeout(() => {
+            if (internalHour.value == null || !inputEl.value) {
+                return;
+            }
+
+            switch (unit) {
+                case "hour":
+                    internalHour.value < 10 ? inputEl.value.setSelectionRange(0, 1) : inputEl.value.setSelectionRange(0, 2);
+                    break;
+                case "minute":
+                    internalHour.value < 10 ? inputEl.value.setSelectionRange(2, 4) : inputEl.value.setSelectionRange(3, 5);
+                    break;
+                case "meridiem":
+                    internalHour.value < 10 ? inputEl.value.setSelectionRange(5, 7) : inputEl.value.setSelectionRange(6, 8);
+            }
+        }, 0);
+    }
+
+    /** Take a text value from the main input box, parse it and convert it to our values. Based on Bootstrap Timepicker code */
+    function parseTimeText(time: string): void {
+        let hour, minute, meridiem;
+
+        let timeMode = ((/a/i).test(time) ? 1 : 0) + ((/p/i).test(time) ? 2 : 0); // 0 = none, 1 = AM, 2 = PM, 3 = BOTH.
+        if (timeMode > 2 || time.trim() == "") { // If both are present, fail.
+            emit("update:modelValue", {});
+            return;
+        }
+
+        const timeArray = time.replace(/[^0-9:]/g, "").split(":");
+
+        hour = timeArray[0] ? timeArray[0].toString() : timeArray.toString();
+        minute = timeArray[1] ? timeArray[1].toString() : "";
+
+        // adaptive time parsing
+        if (hour.length > 2) {
+            minute = hour.slice(-2);
+            hour = hour.slice(0, -2);
+        }
+
+        if (minute.length > 2) {
+            minute = minute.slice(0, -2);
+        }
+
+        hour = parseInt(hour, 10);
+        minute = parseInt(minute, 10);
+
+        if (isNaN(hour)) {
+            hour = 0;
+        }
+        if (isNaN(minute)) {
+            minute = 0;
+        }
+
+        // Adjust the time based upon unit boundary.
+        // NOTE: Negatives will never occur due to time.replace() above.
+        if (minute > 59) {
+            minute = 59;
+        }
+
+        if (hour >= 24) {
+            hour = 23;
+        }
+
+        if (hour > 12) {
+            // Force PM.
+            timeMode = 2;
+            hour -= 12;
+        }
+        if (!timeMode) {
+            timeMode = 1;
+        }
+        if (hour === 0) {
+            hour = 12; // AM or PM, reset to 12.  0 AM = 12 AM.  0 PM = 12 PM, etc.
+        }
+        meridiem = timeMode === 1 ? "AM" : "PM";
+
+        emitModelUpdates(hour, minute, meridiem);
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Handle focusing the input (tabbed or clicked) and highlight the appropriate unit */
+    function focusInput(): void {
+        if (internalHour.value == null) {
+            highlightedUnit.value = null;
+            return;
+        }
+
+        // Get cursor position
+        const position = inputEl.value?.selectionStart ?? null;
+
+        // Highlight the part of the time that's nearest to our cursor
+        if (position == null) {
+            return;
+        }
+        if (position >= 0 && position <= 2) {
+            highlightedUnit.value = "hour";
+        }
+        else if (position >= 3 && position <= 5) {
+            highlightedUnit.value = "minute";
+        }
+        else if (position >= 6) {
+            highlightedUnit.value = "meridiem";
+        }
+    }
+
+    /** Switch the highlighted unit in the main input to the next unit */
+    function highlightNextUnit(): void {
+        if (highlightedUnit.value == "hour") {
+            highlightedUnit.value = "minute";
+        }
+        else if (highlightedUnit.value == "minute") {
+            highlightedUnit.value = "meridiem";
+        }
+        else {
+            highlightedUnit.value = "hour";
+        }
+    }
+
+    /** Switch the highlighted unit in the main input to the previous unit */
+    function highlightPrevUnit(): void {
+        if (highlightedUnit.value == "meridiem") {
+            highlightedUnit.value = "minute";
+        }
+        else if (highlightedUnit.value == "hour") {
+            highlightedUnit.value = "meridiem";
+        }
+        else {
+            highlightedUnit.value = "hour";
+        }
+    }
+
+    /** Increases the value of the unit that is highlighted in the main input */
+    function incrementHighlightedUnit(): void {
+        switch (highlightedUnit.value) {
+            case "hour":
+                incrementHour();
+                highlightUnit(highlightedUnit.value);
+                break;
+            case "minute":
+                incrementMinute();
+                highlightUnit(highlightedUnit.value);
+                break;
+            case "meridiem":
+                toggleMeridiem();
+                highlightUnit(highlightedUnit.value);
+        }
+    }
+
+    /** Decreases the value of the unit that is highlighted in the main input */
+    function decrementHighlightedUnit(): void {
+        switch (highlightedUnit.value) {
+            case "hour":
+                decrementHour();
+                highlightUnit(highlightedUnit.value);
+                break;
+            case "minute":
+                decrementMinute();
+                highlightUnit(highlightedUnit.value);
+                break;
+            case "meridiem":
+                toggleMeridiem();
+                highlightUnit(highlightedUnit.value);
+        }
+    }
+
+    /** Toggle between AM/PM */
+    function toggleMeridiem(): void {
+        if (!props.disabled) {
+            internalMeridiem.value = internalMeridiem.value === "AM" ? "PM" : "AM";
+        }
+    }
+
+    /** Increase hour by one */
+    async function incrementHour(): Promise<void> {
+        let currVal = internalHour.value ?? 0;
+
+        if (currVal === 11) {
+            toggleMeridiem();
+            // Wait for update to go through to make sure the next update isn't overridden
+            await nextTick();
+        }
+        else if (currVal == 12) {
+            currVal = 0;
+        }
+
+        internalHour.value = currVal + 1;
+    }
+
+    /** Increase minutes to the next 15-minute-based amount */
+    async function incrementMinute(): Promise<void> {
+        let currVal = internalMinute.value ?? 0;
+
+        if (internalHour.value == null) {
+            return emit("update:modelValue", { hour: 0, minute: 0 });
+        }
+
+        if (currVal >= 45) {
+            await incrementHour();
+            // Wait for update to go through to make sure the next update isn't overridden
+            await nextTick();
+            internalMinute.value = 0;
+            return;
+        }
+
+        internalMinute.value = currVal + 15 - (currVal % 15);
+    }
+
+    /** Decrease hour by one */
+    async function decrementHour(): Promise<void> {
+        let currVal = internalHour.value ?? 1;
+
+        if (currVal === 1) {
+            currVal = 13;
+        }
+        else if (currVal === 0) {
+            currVal = 12;
+        }
+
+        if (currVal === 12) {
+            toggleMeridiem();
+            // Wait for update to go through to make sure the next update isn't overridden
+            await nextTick();
+        }
+
+        internalHour.value = currVal - 1;
+    }
+
+    /** Decrease minutes down to the next lowest 15-minute-based amount */
+    async function decrementMinute(): Promise<void> {
+        let currVal = internalMinute.value ?? 1;
+
+        if (internalHour.value == null) {
+            internalHour.value = 0;
+            await nextTick();
+        }
+
+        if (currVal <= 0) {
+            await decrementHour();
+            // Wait for update to go through to make sure the next update isn't overridden
+            await nextTick();
+            currVal = 60;
+        }
+
+        internalMinute.value = currVal - (15 - (currVal % 15));
+    }
+
+    /** When you unfocus the main input, parse the text and fill in our internal values */
+    function onInputBlur(): void {
+        highlightedUnit.value = null;
+
+        const text = inputEl.value?.value ?? "";
+        parseTimeText(text);
+    }
+
+    /** When you click the X, clear the input */
+    function clearPicker(): void {
+        emit("update:modelValue", {});
+        showPickerWidget.value = false;
+    }
+
+    /** Handle the keypresses while in the the main input box */
+    function onMainInputKeyDown(e: KeyboardEvent): void {
+        switch (e.key) {
+            case "Escape":
+                onInputBlur();
+                break;
+            case "Tab":
+                if (highlightedUnit.value == null) {
+                    break;
+                }
+                else if (e.shiftKey) {
+                    if (highlightedUnit.value == "hour") {
+                        showPickerWidget.value = false;
+                        break;
+                    }
+                    highlightPrevUnit();
+                }
+                else if (highlightedUnit.value == "meridiem") {
+                    showPickerWidget.value = false;
+                    break;
+                }
+                else {
+                    highlightNextUnit();
+                }
+                e.preventDefault();
+                break;
+            case "ArrowUp":
+                incrementHighlightedUnit();
+                break;
+            case "ArrowDown":
+                decrementHighlightedUnit();
+                break;
+            case "ArrowLeft":
+                highlightPrevUnit();
+                break;
+            case "ArrowRight":
+                highlightNextUnit();
+                break;
+        }
+    }
+
+    /** Handle the keypresses while in the the 3 input boxes in the popup */
+    function onWidgetInputKeyDown(e: KeyboardEvent, segmentName: "hour" | "minute" | "meridiem"): void {
+        console.log(e.key);
+        switch (e.key) {
+            case "Escape":
+                showPickerWidget.value = false;
+                break;
+            case "Tab":
+                if ((e.shiftKey && segmentName == "hour") || (!e.shiftKey && segmentName == "meridiem")) {
+                    showPickerWidget.value = false;
+                }
+                return;
+            case "ArrowUp":
+                switch (segmentName) {
+                    case "hour":
+                        incrementHour();
+                        break;
+                    case "minute":
+                        incrementMinute();
+                        break;
+                    case "meridiem":
+                        toggleMeridiem();
+                        break;
+                }
+                break;
+            case "ArrowDown":
+                switch (segmentName) {
+                    case "hour":
+                        decrementHour();
+                        break;
+                    case "minute":
+                        decrementMinute();
+                        break;
+                    case "meridiem":
+                        toggleMeridiem();
+                        break;
+                }
+                break;
+            case "A": // Fall through
+            case "a":
+                if (segmentName == "meridiem") {
+                    internalMeridiem.value = "AM";
+                }
+                break;
+            case "P": // Fall through
+            case "p":
+                if (segmentName == "meridiem") {
+                    internalMeridiem.value = "PM";
+                }
+                break;
+            // We want to allow the following keypresses without doing anything special or getting to the prevetDefault further below
+            case "Delete":
+            case "Backspace":
+            case "ArrowLeft":
+            case "ArrowRight":
+            case "0":
+            case "1":
+            case "2":
+            case "3":
+            case "4":
+            case "5":
+            case "6":
+            case "7":
+            case "8":
+            case "9":
+                return;
+        }
+
+        // Disallow any other keypresses, other than non-paste keyboard shortcuts, so users can't enter invalid values
+        if ((!e.ctrlKey || (e.ctrlKey && e.key.toLowerCase() == "v")) && !e.altKey && !e.metaKey) {
+            e.preventDefault();
+        }
+    }
+
+    /** Listen for clicks outside the widget to close it */
+    function onClickOutsideWidget(e: MouseEvent | TouchEvent): void {
+
+        if (!widgetEl.value || !showPickerWidget.value) {
+            // Widget isn't showing. Skip
+            return;
+        }
+
+        if (
+            e.target === widgetEl.value || e.composedPath().includes(widgetEl.value) ||
+            e.target == toggleBtnEl.value || e.composedPath().includes(toggleBtnEl.value as HTMLElement) ||
+            e.target == inputEl.value || e.composedPath().includes(inputEl.value as HTMLElement)
+        ) {
+            // Clicked in the widget or the toggle button. Skip
+            return;
+        }
+
+        showPickerWidget.value = false;
+    }
+
+    /** Add listener for clicking outside the widget when component is instantiated */
+    onMounted(() => {
+        document.addEventListener("mousedown", onClickOutsideWidget);
+        document.addEventListener("touchend", onClickOutsideWidget);
+    });
+
+    /** Remove listener for clicking outside the widget when component is removed */
+    onUnmounted(() => {
+        document.removeEventListener("mousedown", onClickOutsideWidget);
+        document.removeEventListener("touchend", onClickOutsideWidget);
+    });
+
+    // #endregion
+</script>

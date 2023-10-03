@@ -1,0 +1,65 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="internalValue"
+                   v-bind="standardFieldProps"
+                   :formGroupClasses="computedFormGroupClasses"
+                   name="time-picker"
+                   :rules="computedRules">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="timepicker-input">
+                    <BasicTimePicker v-model="internalValue" :disabled="disabled" />
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { normalizeRules, ValidationRule } from "@Obsidian/ValidationRules";
+    import BasicTimePicker from "./basicTimePicker.obs";
+    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue.d";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import RockFormField from "./rockFormField.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<TimePickerValue>,
+            default: {}
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", _value: TimePickerValue): void
+    }>();
+
+    const internalValue = computed<TimePickerValue>({
+        get() {
+            return props.modelValue;
+        },
+        set(newValue) {
+            emit("update:modelValue", newValue);
+        }
+    });
+
+    const computedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        return rules;
+    });
+
+    const computedFormGroupClasses = computed(() => {
+        return props.formGroupClasses + " timepicker-input";
+    });
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+</script>

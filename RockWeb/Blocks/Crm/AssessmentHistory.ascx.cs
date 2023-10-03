@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Crm
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             var assessmentTypeId = atpAssessmentType.SelectedValueAsInt();
-            rFilter.SaveUserPreference( FilterKey.AssessmentTypeId, assessmentTypeId.HasValue ? assessmentTypeId.Value.ToString() : string.Empty );
+            rFilter.SetFilterPreference( FilterKey.AssessmentTypeId, assessmentTypeId.HasValue ? assessmentTypeId.Value.ToString() : string.Empty );
 
             BindGrid();
         }
@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindFilter()
         {
-            var assessmentTypeId = rFilter.GetUserPreference( FilterKey.AssessmentTypeId ).AsIntegerOrNull();
+            var assessmentTypeId = rFilter.GetFilterPreference( FilterKey.AssessmentTypeId ).AsIntegerOrNull();
             atpAssessmentType.SetValue( assessmentTypeId );
         }
 
@@ -239,7 +239,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             // Filter by assessment type if specified by the user
-            var assessmentTypeId = rFilter.GetUserPreference( FilterKey.AssessmentTypeId ).AsIntegerOrNull();
+            var assessmentTypeId = rFilter.GetFilterPreference( FilterKey.AssessmentTypeId ).AsIntegerOrNull();
 
             if ( assessmentTypeId.HasValue )
             {

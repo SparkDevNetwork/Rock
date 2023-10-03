@@ -17,7 +17,7 @@
     import { PropType } from "vue";
     import { useVModelPassthrough, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import InlineRangeSlider from "./inlineRangeSlider.obs";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
 
     const props = defineProps({
         modelValue: {

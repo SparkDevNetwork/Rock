@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -174,6 +175,14 @@ namespace Rock.Web.UI.Controls
         /// The header controls.
         /// </value>
         public Control[] HeaderControls { private get; set; }
+
+        /// <summary>
+        /// Sets the label controls.
+        /// </summary>
+        /// <value>
+        /// The label controls.
+        /// </value>
+        public Control[] LabelControls { private get; set; }
 
         #endregion
 
@@ -429,6 +438,11 @@ $('.js-stop-immediate-propagation').on('click', function (event) {
                     alreadyRenderedControls.AddRange( HeaderControls );
                 }
 
+                if ( this.LabelControls != null )
+                {
+                    alreadyRenderedControls.AddRange( this.LabelControls );
+                }
+
                 foreach ( Control child in this.Controls )
                 {
                     if ( !alreadyRenderedControls.Contains( child ) )
@@ -445,6 +459,20 @@ $('.js-stop-immediate-propagation').on('click', function (event) {
         /// <param name="writer">The writer.</param>
         protected virtual void RenderLabels( HtmlTextWriter writer)
         {
+            if ( this.LabelControls?.Any() != true )
+            {
+                return;
+            }
+
+            foreach ( var control in this.LabelControls )
+            {
+                if ( !this.Controls.Contains( control ) )
+                {
+                    this.Controls.Add( control );
+                }
+
+                control.RenderControl( writer );
+            }
         }
     }
 }

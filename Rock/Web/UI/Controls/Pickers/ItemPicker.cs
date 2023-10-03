@@ -245,8 +245,8 @@ namespace Rock.Web.UI.Controls
         private HiddenFieldWithClass _hfItemName;
         private HiddenFieldWithClass _hfItemRestUrlExtraParams;
 
-        private HtmlAnchor _btnSelect;
-        private HtmlAnchor _btnSelectNone;
+        private HtmlButton _btnSelect;
+        private HtmlButton _btnSelectNone;
         #endregion
 
         #region Properties
@@ -707,7 +707,7 @@ namespace Rock.Web.UI.Controls
         protected virtual void RegisterJavaScript()
         {
             string treeViewScript =
-$@"Rock.controls.itemPicker.initialize({{ 
+$@"Rock.controls.itemPicker.initialize({{
     controlId: '{this.ClientID}',
     restUrl: '{this.ResolveUrl( ItemRestUrl )}',
     allowMultiSelect: {this.AllowMultiSelect.ToString().ToLower()},
@@ -772,7 +772,9 @@ $@"Rock.controls.itemPicker.initialize({{
                 this.Controls.Add( ModePanel );
             }
 
-            _btnSelect = new HtmlAnchor();
+            _btnSelect = new HtmlButton();
+            _btnSelect.Attributes["role"] = "button";
+            _btnSelect.Attributes["type"] = "button";
             _btnSelect.Attributes["class"] = "btn btn-xs btn-primary picker-btn";
             _btnSelect.ID = this.ID + "_btnSelect";
             _btnSelect.InnerText = "Select";
@@ -784,8 +786,11 @@ $@"Rock.controls.itemPicker.initialize({{
             _btnSelect.ServerClick += btnSelect_Click;
             }
 
-            _btnSelectNone = new HtmlAnchor();
-            _btnSelectNone.Attributes["class"] = "picker-select-none";
+            _btnSelectNone = new HtmlButton();
+            _btnSelectNone.Attributes["role"] = "button";
+            _btnSelectNone.Attributes["type"] = "button";
+            _btnSelectNone.Attributes["aria-label"] = "Clear selection";
+            _btnSelectNone.Attributes["class"] = "btn picker-select-none";
             _btnSelectNone.ID = this.ID + "_btnSelectNone";
             _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
@@ -868,18 +873,28 @@ $@"Rock.controls.itemPicker.initialize({{
 
                 if ( !HidePickerLabel )
                 {
-                    string pickerLabelHtmlFormat = @"
-                    <a class='picker-label' href='#'>
-                        <i class='{2} fa-fw'></i>
-                        <span id='selectedItemLabel_{0}' class='selected-names'>{1}</span>
-                        <b class='fa fa-caret-down pull-right'></b>
-                    </a>";
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "picker-label" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.A );
 
-                    writer.Write( pickerLabelHtmlFormat, this.ClientID, selectedText, this.IconCssClass );
+                    string pickerLabelHtmlFormat = String.Empty;
+
+                    if (!string.IsNullOrEmpty(this.IconCssClass))
+                    {
+                        pickerLabelHtmlFormat += $@"<i class='{this.IconCssClass} fa-fw'></i>";
+                    }
+
+                    pickerLabelHtmlFormat += @"
+                        <span id='selectedItemLabel_{0}' class='selected-names'>{1}</span>";
+
+                    writer.Write( pickerLabelHtmlFormat, this.ClientID, selectedText );
 
                     writer.WriteLine();
 
                     _btnSelectNone.RenderControl( writer );
+                    writer.Write( $@"<b class='fa fa-caret-down'></b>" );
+
+                    writer.RenderEndTag();
                 }
 
                 if ( string.IsNullOrEmpty( PickerMenuCssClasses ) )
@@ -914,7 +929,7 @@ $@"Rock.controls.itemPicker.initialize({{
                                 </div>
                                 <div id='treeview-view-port_{0}' class='viewport'>
                                     <div class='overview'>
-                                        <div id='treeviewItems_{0}' class='treeview treeview-items'>               
+                                        <div id='treeviewItems_{0}' class='treeview treeview-items'>
                                         </div>
                                     </div>
                                 </div>

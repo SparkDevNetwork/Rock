@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -120,6 +120,8 @@ namespace Rock.Model
         /// The approval status.
         /// </value>
         [DataMember]
+        [Obsolete( "This property is no longer used and will be removed in the future." )]
+        [RockObsolete( "1.16" )]
         public NoteApprovalStatus ApprovalStatus { get; set; }
 
         /// <summary>
@@ -130,6 +132,8 @@ namespace Rock.Model
         /// performed on this add.
         /// </value>
         [DataMember]
+        [Obsolete( "This property is no longer used and will be removed in the future." )]
+        [RockObsolete( "1.16" )]
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary>
@@ -139,6 +143,8 @@ namespace Rock.Model
         /// The approved date.
         /// </value>
         [DataMember]
+        [Obsolete( "This property is no longer used and will be removed in the future." )]
+        [RockObsolete( "1.16" )]
         public DateTime? ApprovedDateTime { get; set; }
 
         /// <summary>
@@ -157,6 +163,8 @@ namespace Rock.Model
         ///   <c>true</c> if [approvals sent]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [Obsolete( "This property is no longer used and will be removed in the future." )]
+        [RockObsolete( "1.16" )]
         public bool ApprovalsSent { get; set; }
 
         /// <summary>

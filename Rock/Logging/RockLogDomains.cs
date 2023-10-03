@@ -103,5 +103,9 @@ namespace Rock.Logging
         /// The Apple TV events.
         /// </summary>
         public const string AppleTv = "APPLETV";
+        /// <summary>
+        /// Interaction events.
+        /// </summary>
+        public const string Interaction = "INTERACTION";
     }
 }

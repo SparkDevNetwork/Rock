@@ -149,6 +149,27 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the entity query based for Items that are in the EntitySet
+        /// Note that this does not include duplicates and isn't sorted by EntitySetItem.Order
+        /// For example: If the EntitySet.EntityType is Person, this will return a Person Query of the items in this set
+        /// </summary>
+        /// <param name="entitySetGuid">The entity set unique identifier.</param>
+        /// <returns></returns>
+        [RockInternal( "1.15.2" )]
+        public IQueryable<T> GetEntityQuery<T>( Guid entitySetGuid ) where T : Rock.Data.Entity<T>, new()
+        {
+            var rockContext = this.Context as RockContext;
+            var entitySetItemsService = new EntitySetItemService( rockContext );
+            var entityItemEntityIdQuery = entitySetItemsService.Queryable().Where( a => a.EntitySet.Guid == entitySetGuid ).Select( a => a.EntityId );
+
+            var entityQry = new Service<T>( rockContext ).Queryable();
+
+            entityQry = entityQry.Where( a => entityItemEntityIdQuery.Contains( a.Id ) );
+
+            return entityQry;
+        }
+
+        /// <summary>
         /// Gets the entity items with the Entity when the Type is known at design time
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -330,6 +351,119 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        internal class CreateEntitySetFromDataViewActionArgs
+        {
+            /// <summary>
+            /// A unique identifier for the Entity Set.
+            /// If specified, any existing item having the same identifier will be replaced.
+            /// </summary>
+            public Guid? EntitySetGuid;
+
+            public int DataViewId;
+            public TimeSpan? ExpirationPeriod;
+            public int? DatabaseTimeoutInSeconds;
+
+            public string EntitySetName;
+            public string EntitySetNote;
+
+            public bool IgnorePersistedValues;
+        }
+
+        /// <summary>
+        /// Creates an entity set containing the results of a specified Data View.
+        /// </summary>
+        /// <param name="args">The set of arguments to use for this action.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The Id of the new entity set, or null if the action failed.</returns>
+        internal static int? CreateEntitySetFromDataView( CreateEntitySetFromDataViewActionArgs args, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            rockContext.Database.CommandTimeout = args.DatabaseTimeoutInSeconds;
+
+            var dataViewService = new DataViewService( rockContext );
+            var dataView = dataViewService.Queryable().AsNoTracking().FirstOrDefault( dv => dv.Id == args.DataViewId );
+
+            var dataViewFilterOverrides = new DataViewFilterOverrides();
+            dataViewFilterOverrides.ShouldUpdateStatics = false;
+            if ( args.IgnorePersistedValues )
+            {
+                dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( args.DataViewId );
+            }
+
+            // Get the list of keys in the Data View result set.
+            var resultSetContext = new RockContext();
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            {
+                DbContext = resultSetContext,
+                DataViewFilterOverrides = dataViewFilterOverrides,
+                DatabaseTimeoutSeconds = args.DatabaseTimeoutInSeconds,
+            };
+
+            var dataViewQuery = dataView.GetQuery( dataViewGetQueryArgs );
+
+            // Materialize the key list. Note that this approach could be made more efficient
+            // by using direct SQL to insert the Data View results directly into the Entity Set values table,
+            // bypassing the Entity Framework completely.
+            var entityItemIds = dataViewQuery.Select( a => a.Id ).ToList();
+
+            // Create the entity set.
+            var entitySetService = new EntitySetService( rockContext );
+
+            EntitySet entitySet = null;
+            if ( !string.IsNullOrWhiteSpace( args.EntitySetName ) )
+            {
+                entitySet = entitySetService.Queryable()
+                    .FirstOrDefault( es => es.Name == args.EntitySetName );
+                if ( entitySet != null )
+                {
+                    // Remove the existing items from the Entity Set.
+                    var entitySetItemService = new EntitySetItemService( rockContext );
+                    var entitySetItemQuery = entitySetItemService.Queryable()
+                        .Where( esi => esi.EntitySetId == entitySet.Id );
+
+                    rockContext.BulkDelete( entitySetItemQuery );
+                }
+            }
+
+            if ( entitySet == null )
+            {
+                entitySet = new EntitySet();
+                entitySetService.Add( entitySet );
+            }
+            entitySet.EntityTypeId = dataView.EntityTypeId;
+            entitySet.Name = args.EntitySetName;
+            entitySet.Note = args.EntitySetNote;
+
+            var expirationPeriod = args.ExpirationPeriod ?? new TimeSpan( 0, 5, 0 );
+            entitySet.ExpireDateTime = RockDateTime.Now.Add( expirationPeriod );
+
+            // For each entity item id, add a new entity set item to the entity set.
+            var entitySetItems = new List<EntitySetItem>();
+            foreach ( var entityItemId in entityItemIds )
+            {
+                var item = new EntitySetItem
+                {
+                    EntityId = ( int ) entityItemId
+                };
+                entitySetItems.Add( item );
+            }
+
+            rockContext.SaveChanges();
+
+            // Add the items.
+            if ( entitySetItems.Any() )
+            {
+                entitySetItems.ForEach( a =>
+                {
+                    a.EntitySetId = entitySet.Id;
+                } );
+
+                rockContext.BulkInsert( entitySetItems );
+            }
+
+            return entitySet.Id;
         }
 
         /// <summary>

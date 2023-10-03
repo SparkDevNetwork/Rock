@@ -1,0 +1,147 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-3">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-5">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+
+            <div class="col-md-4 location-maps">
+                <span v-html="locationMapsHtml"></span>
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { LocationBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationBag";
+    import { LocationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<LocationBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<LocationDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.imageId) {
+            valueBuilder.addHtmlValue("", `<img src='/GetImage.ashx?id=${props.modelValue.imageId}&maxwidth=150&maxheight=150'>`);
+
+        }
+        else {
+            valueBuilder.addHtmlValue("", "<img src='/Assets/Images/no-picture.svg?' style='max-width:150px; max-height:150px;'>");
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.parentLocation?.text) {
+            valueBuilder.addTextValue("Parent Location", props.modelValue.parentLocation.text ?? "");
+        }
+
+        if (props.modelValue.locationTypeValue?.text) {
+            valueBuilder.addTextValue("Location Type", props.modelValue.locationTypeValue.text ?? "");
+        }
+
+        if (props.modelValue.printerDevice?.text) {
+            valueBuilder.addTextValue("Printer", props.modelValue.printerDevice.text ?? "");
+        }
+
+        if (props.modelValue.softRoomThreshold) {
+            valueBuilder.addTextValue("Threshold", props.modelValue.softRoomThreshold?.toString() ?? "");
+        }
+
+        if (props.modelValue.firmRoomThreshold) {
+            valueBuilder.addTextValue("Threshold (Absolute)", props.modelValue.firmRoomThreshold?.toString() ?? "");
+        }
+
+        if (props.modelValue.formattedHtmlAddress) {
+            valueBuilder.addHtmlValue("Address", props.modelValue.formattedHtmlAddress ?? "");
+        }
+
+        return valueBuilder.build();
+    });
+
+    const locationMapsHtml = computed((): string => {
+        let mapsHtml = "";
+
+        if (!props.modelValue) {
+            return mapsHtml;
+        }
+
+        if (props.modelValue.geoPointImageHtml) {
+            mapsHtml += props.modelValue.geoPointImageHtml;
+        }
+
+        if (props.modelValue.geoFenceImageHtml) {
+            mapsHtml += props.modelValue.geoFenceImageHtml;
+        }
+
+        return mapsHtml;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

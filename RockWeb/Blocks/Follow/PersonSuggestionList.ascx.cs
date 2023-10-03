@@ -222,12 +222,12 @@ namespace RockWeb.Blocks.Follow
         {
             if ( cbIncludeIgnored.Checked )
             {
-                gfFilter.SaveUserPreference( FilterSetting.IncludeIgnored, cbIncludeIgnored.Checked.ToString() );
+                gfFilter.SetFilterPreference( FilterSetting.IncludeIgnored, cbIncludeIgnored.Checked.ToString() );
             }
             else
             {
                 // Set to string.Empty instead of "false" to prevent the filter from showing up as enabled.
-                gfFilter.SaveUserPreference( FilterSetting.IncludeIgnored, string.Empty );
+                gfFilter.SetFilterPreference( FilterSetting.IncludeIgnored, string.Empty );
             }
 
             BindGrid();
@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Follow
         /// </summary>
         private void BindFilter()
         {
-            cbIncludeIgnored.Checked = gfFilter.GetUserPreference( FilterSetting.IncludeIgnored ).AsBoolean();
+            cbIncludeIgnored.Checked = gfFilter.GetFilterPreference( FilterSetting.IncludeIgnored ).AsBoolean();
         }
 
 

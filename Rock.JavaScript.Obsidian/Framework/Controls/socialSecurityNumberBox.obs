@@ -1,0 +1,116 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="internalValue"
+                   formGroupClasses="social-security-number-box"
+                   name="social-security-number-box"
+                   :rules="computedRules">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="form-control-group">
+                    <input ref="area" class="form-control ssn-part ssn-area" type="password" pattern="[0-9]*" maxlength="3" v-model="internalArea" v-on:keypress="keyPress" v-on:keyup="keyUp" />
+                    <span class="separator">-</span>
+                    <input ref="group" class="form-control ssn-part ssn-group" type="password" pattern="[0-9]*" maxlength="2" v-model="internalGroup" v-on:keypress="keyPress" v-on:keyup="keyUp" />
+                    <span class="separator">-</span>
+                    <input ref="serial" class="form-control ssn-part ssn-serial" type="text" pattern="[0-9]*" maxlength="4" v-model="internalSerial" v-on:keypress="keyPress" v-on:keyup="keyUp" />
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
+    import RockFormField from "./rockFormField.obs";
+
+    const props = defineProps({
+        rules: rulesPropType,
+        modelValue: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    const internalArea = ref("");
+    const internalGroup = ref("");
+    const internalSerial = ref("");
+    const internalValue = ref("");
+    const area = ref<HTMLInputElement>();
+    const group = ref<HTMLInputElement>();
+    const serial = ref<HTMLInputElement>();
+
+    const computedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        rules.push("ssn");
+
+        return rules;
+    });
+
+    function getValue(): string {
+        const value = `${internalArea.value}${internalGroup.value}${internalSerial.value}`;
+
+        return value;
+    }
+
+    function keyPress(e: KeyboardEvent): boolean {
+        if (/^[0-9]$/.test(e.key) === false) {
+            e.preventDefault();
+            return false;
+        }
+
+        return true;
+    }
+
+    function keyUp(e: KeyboardEvent): boolean {
+        // Only move to next field if a number was pressed.
+        if (/^[0-9]$/.test(e.key) === false) {
+            return true;
+        }
+
+        if (area.value === e.target && area.value.selectionStart === 3) {
+            nextTick(() => {
+                group.value?.focus();
+                group.value?.setSelectionRange(0, 2);
+            });
+        }
+        else if (group.value === e.target && group.value.selectionStart === 2) {
+            nextTick(() => {
+                serial.value?.focus();
+                serial.value?.setSelectionRange(0, 4);
+            });
+        }
+
+        return true;
+    }
+
+    watch(() => props.modelValue, () => {
+        const strippedValue = props.modelValue.replace(/[^0-9]/g, "");
+
+        if (strippedValue.length !== 9) {
+            internalArea.value = "";
+            internalGroup.value = "";
+            internalSerial.value = "";
+        }
+        else {
+            internalArea.value = strippedValue.substring(0, 3);
+            internalGroup.value = strippedValue.substring(3, 5);
+            internalSerial.value = strippedValue.substring(5, 9);
+        }
+
+        internalValue.value = getValue();
+    }, { immediate: true });
+
+    watch([internalArea, internalGroup, internalSerial], () => {
+        internalValue.value = getValue();
+
+        if (internalValue.value.length === 0 || internalValue.value.length === 9) {
+            emit("update:modelValue", internalValue.value);
+        }
+    });
+</script>

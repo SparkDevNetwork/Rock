@@ -154,8 +154,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( UserPreferenceKey.NickName, tbNickName.Text );
-            gfFilter.SaveUserPreference( UserPreferenceKey.LastName, tbLastName.Text );
+            gfFilter.SetFilterPreference( UserPreferenceKey.NickName, tbNickName.Text );
+            gfFilter.SetFilterPreference( UserPreferenceKey.LastName, tbLastName.Text );
             BindGrid();
         }
 
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            gfFilter.DeleteUserPreferences();
+            gfFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -179,8 +179,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindFilter()
         {
-            tbNickName.Text = gfFilter.GetUserPreference( UserPreferenceKey.NickName );
-            tbLastName.Text = gfFilter.GetUserPreference( UserPreferenceKey.LastName );
+            tbNickName.Text = gfFilter.GetFilterPreference( UserPreferenceKey.NickName );
+            tbLastName.Text = gfFilter.GetFilterPreference( UserPreferenceKey.LastName );
         }
 
         /// <summary>

@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -60,52 +56,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// FinancialBatch View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( FinancialBatch ) )]
-    public partial class FinancialBatchViewModelHelper : ViewModelHelper<FinancialBatch, FinancialBatchBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override FinancialBatchBag CreateViewModel( FinancialBatch model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new FinancialBatchBag
-            {
-                IdKey = model.IdKey,
-                AccountingSystemCode = model.AccountingSystemCode,
-                BatchEndDateTime = model.BatchEndDateTime,
-                BatchStartDateTime = model.BatchStartDateTime,
-                CampusId = model.CampusId,
-                ControlAmount = model.ControlAmount,
-                ControlItemCount = model.ControlItemCount,
-                IsAutomated = model.IsAutomated,
-                Name = model.Name,
-                Note = model.Note,
-                Status = ( int ) model.Status,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -174,6 +124,9 @@ namespace Rock.Model
             target.IsAutomated = source.IsAutomated;
             target.Name = source.Name;
             target.Note = source.Note;
+            target.RemoteSettlementAmount = source.RemoteSettlementAmount;
+            target.RemoteSettlementBatchKey = source.RemoteSettlementBatchKey;
+            target.RemoteSettlementBatchUrl = source.RemoteSettlementBatchUrl;
             target.Status = source.Status;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
@@ -183,20 +136,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static FinancialBatchBag ToViewModel( this FinancialBatch model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new FinancialBatchViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

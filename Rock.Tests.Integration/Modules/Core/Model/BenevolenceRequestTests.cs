@@ -96,11 +96,9 @@ namespace Rock.Tests.Integration.Finance
 
         private BenevolenceRequest BuildBenevolenceRequest( RockContext rockContext, DateTime requestDate )
         {
-
             var requestStatuses = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) );
             var requestStatusValue = requestStatuses.DefinedValues.First().Id;
-            var personAlias = new PersonAliasService( rockContext ).Queryable().First();
-            var connectionStatus = new ConnectionStatusService( rockContext ).Queryable().First();
+            var benevolenceType = new BenevolenceTypeService( rockContext ).Queryable().First();
 
             var benevolenceRequest = new BenevolenceRequest();
 
@@ -110,6 +108,7 @@ namespace Rock.Tests.Integration.Finance
             benevolenceRequest.ForeignKey = benevolenceRequestForeignKey;
             benevolenceRequest.RequestDateTime = requestDate;
             benevolenceRequest.RequestStatusValueId = requestStatusValue;
+            benevolenceRequest.BenevolenceTypeId = benevolenceType.Id;
 
             return benevolenceRequest;
         }

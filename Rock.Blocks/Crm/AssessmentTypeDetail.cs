@@ -27,18 +27,19 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.AssessmentTypeDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Crm
 {
     /// <summary>
     /// Displays the details of a particular assessment type.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
-
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
     [DisplayName( "Assessment Type Detail" )]
-    [Category( "CRM" )]
+    [Category( "Assessments" )]
     [Description( "Displays the details of a particular assessment type." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Crm
 
     [Rock.SystemGuid.EntityTypeGuid( "83d4c6ca-a605-44d3-8bea-99b3e881baa0" )]
     [Rock.SystemGuid.BlockTypeGuid( "3b8b5ae5-4139-44a6-8eaa-99d48e51134e" )]
-    public class AssessmentTypeDetail : RockObsidianDetailBlockType
+    public class AssessmentTypeDetail : RockDetailBlockType
     {
         #region Keys
 
@@ -75,7 +76,7 @@ namespace Rock.Blocks.Crm
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<AssessmentType>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<AssessmentType>();
                 return box;
             }
         }
@@ -181,9 +182,9 @@ namespace Rock.Blocks.Crm
                 AssessmentPath = entity.AssessmentPath,
                 AssessmentResultsPath = entity.AssessmentResultsPath,
                 Description = entity.Description,
-                IsActive = entity.IsActive,
+                IsActive = entity.Id == 0 || entity.IsActive,
                 IsSystem = entity.IsSystem,
-                MinimumDaysToRetake = entity.MinimumDaysToRetake,
+                MinimumDaysToRetake = entity.MinimumDaysToRetake == 0 ? ( int? ) null : entity.MinimumDaysToRetake,
                 RequiresRequest = entity.RequiresRequest,
                 Title = entity.Title,
                 ValidDuration = entity.ValidDuration
@@ -263,7 +264,7 @@ namespace Rock.Blocks.Crm
                 () => entity.IsActive = box.Entity.IsActive );
 
             box.IfValidProperty( nameof( box.Entity.MinimumDaysToRetake ),
-                () => entity.MinimumDaysToRetake = box.Entity.MinimumDaysToRetake );
+                () => entity.MinimumDaysToRetake = box.Entity.MinimumDaysToRetake.GetValueOrDefault() );
 
             box.IfValidProperty( nameof( box.Entity.RequiresRequest ),
                 () => entity.RequiresRequest = box.Entity.RequiresRequest );

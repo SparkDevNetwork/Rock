@@ -146,6 +146,7 @@ namespace RockWeb.Blocks.Communication
                 Content = "telephone=no"
             };
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Communication/SmsConversations.css" );
             RockPage.AddMetaTag( this.Page, preventPhoneMetaTag );
 
             this.BlockUpdated += Block_BlockUpdated;
@@ -247,9 +248,9 @@ namespace RockWeb.Blocks.Communication
 
                 ddlMessageFilter.BindToEnum<CommunicationMessageFilter>();
 
-                string keyPrefix = string.Format( "sms-conversations-{0}-", this.BlockId );
+                var preferences = GetBlockPersonPreferences();
 
-                string smsNumberUserPref = this.GetUserPreference( keyPrefix + "smsNumber" ) ?? string.Empty;
+                string smsNumberUserPref = preferences.GetValue( "smsNumber" );
 
                 if ( smsNumberUserPref.IsNotNullOrWhiteSpace() )
                 {
@@ -264,7 +265,7 @@ namespace RockWeb.Blocks.Communication
                 hlSmsNumber.Text = smsDetails.Select( v => v.Description ).FirstOrDefault();
                 hfSmsNumber.SetValue( smsNumbers.Count() > 1 ? ddlSmsNumbers.SelectedValue.AsInteger() : smsDetails.Select( v => v.Id ).FirstOrDefault() );
 
-                ddlMessageFilter.SelectedValue = this.GetUserPreference( keyPrefix + "messageFilter" ) ?? CommunicationMessageFilter.ShowUnreadReplies.ToString();
+                ddlMessageFilter.SelectedValue = preferences.GetValue( "messageFilter" ).IfEmpty( CommunicationMessageFilter.ShowUnreadReplies.ToString() );
             }
             else
             {
@@ -465,19 +466,21 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void SaveSettings()
         {
-            string keyPrefix = string.Format( "sms-conversations-{0}-", this.BlockId );
+            var preferences = GetBlockPersonPreferences();
 
             if ( ddlSmsNumbers.Visible )
             {
-                this.SetUserPreference( keyPrefix + "smsNumber", ddlSmsNumbers.SelectedValue.ToString() );
+                preferences.SetValue( "smsNumber", ddlSmsNumbers.SelectedValue.ToString() );
                 hfSmsNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
             }
             else
             {
-                this.SetUserPreference( keyPrefix + "smsNumber", hfSmsNumber.Value.ToString() );
+                preferences.SetValue( "smsNumber", hfSmsNumber.Value.ToString() );
             }
 
-            this.SetUserPreference( keyPrefix + "messageFilter", ddlMessageFilter.SelectedValue );
+            preferences.SetValue( "messageFilter", ddlMessageFilter.SelectedValue );
+
+            preferences.Save();
         }
 
         /// <summary>
@@ -702,19 +705,22 @@ namespace RockWeb.Blocks.Communication
         protected void ppRecipient_SelectPerson( object sender, EventArgs e )
         {
             nbNoSms.Visible = false;
-            var senderClearButton = ( HtmlAnchor ) sender;
+            var senderClearButton = ( HtmlButton ) sender;
             if (senderClearButton != null && senderClearButton.ID == "btnSelectNone" )
             {
                 // The PersonPicker clear button was clicked so no need to check for SMS numbers
                 return;
             }
 
-            int toPersonAliasId = ppRecipient.PersonAliasId.Value;
-            var personAliasService = new PersonAliasService( new RockContext() );
-            var toPerson = personAliasService.GetPerson( toPersonAliasId );
-            if ( !toPerson.PhoneNumbers.Where( p => p.IsMessagingEnabled ).Any() )
+            if ( ppRecipient.PersonAliasId.HasValue )
             {
-                nbNoSms.Visible = true;
+                int toPersonAliasId = ppRecipient.PersonAliasId.Value;
+                var personAliasService = new PersonAliasService( new RockContext() );
+                var toPerson = personAliasService.GetPerson( toPersonAliasId );
+                if ( !toPerson.PhoneNumbers.Where( p => p.IsMessagingEnabled ).Any() )
+                {
+                    nbNoSms.Visible = true;
+                }
             }
         }
 

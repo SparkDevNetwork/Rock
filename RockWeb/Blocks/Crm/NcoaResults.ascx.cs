@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfNcoaFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            gfNcoaFilter.DeleteUserPreferences();
+            gfNcoaFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -122,15 +122,15 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfNcoaFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfNcoaFilter.SaveUserPreference( "Processed", ddlProcessed.SelectedValue.IsNullOrWhiteSpace() ? Processed.All.ConvertToInt().ToString() : ddlProcessed.SelectedValue );
-            gfNcoaFilter.SaveUserPreference( "Move Date", sdpMoveDate.DelimitedValues );
-            gfNcoaFilter.SaveUserPreference( "NCOA Processed Date", sdpProcessedDate.DelimitedValues );
-            gfNcoaFilter.SaveUserPreference( "Move Type", ddlMoveType.SelectedValue );
-            gfNcoaFilter.SaveUserPreference( "Address Status", ddlAddressStatus.SelectedValue );
-            gfNcoaFilter.SaveUserPreference( "Address Invalid Reason", ddlInvalidReason.SelectedValue );
-            gfNcoaFilter.SaveUserPreference( "Last Name", tbLastName.Text );
-            gfNcoaFilter.SaveUserPreference( "Move Distance", nbMoveDistance.Text );
-            gfNcoaFilter.SaveUserPreference( "Campus", cpCampus.SelectedValue );
+            gfNcoaFilter.SetFilterPreference( "Processed", ddlProcessed.SelectedValue.IsNullOrWhiteSpace() ? Processed.All.ConvertToInt().ToString() : ddlProcessed.SelectedValue );
+            gfNcoaFilter.SetFilterPreference( "Move Date", sdpMoveDate.DelimitedValues );
+            gfNcoaFilter.SetFilterPreference( "NCOA Processed Date", sdpProcessedDate.DelimitedValues );
+            gfNcoaFilter.SetFilterPreference( "Move Type", ddlMoveType.SelectedValue );
+            gfNcoaFilter.SetFilterPreference( "Address Status", ddlAddressStatus.SelectedValue );
+            gfNcoaFilter.SetFilterPreference( "Address Invalid Reason", ddlInvalidReason.SelectedValue );
+            gfNcoaFilter.SetFilterPreference( "Last Name", tbLastName.Text );
+            gfNcoaFilter.SetFilterPreference( "Move Distance", nbMoveDistance.Text );
+            gfNcoaFilter.SetFilterPreference( "Campus", cpCampus.SelectedValue );
 
             NavigateToCurrentPage();
         }
@@ -359,7 +359,7 @@ namespace RockWeb.Blocks.Crm
         private void BindFilter()
         {
             ddlProcessed.BindToEnum<Processed>( true, new Processed[] { Processed.All } );
-            int? processedId = gfNcoaFilter.GetUserPreference( "Processed" ).AsIntegerOrNull();
+            int? processedId = gfNcoaFilter.GetFilterPreference( "Processed" ).AsIntegerOrNull();
             if ( processedId.HasValue )
             {
                 if ( processedId.Value != Processed.All.ConvertToInt() )
@@ -370,41 +370,41 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 ddlProcessed.SetValue( Processed.ManualUpdateRequiredOrNotProcessed.ConvertToInt().ToString() );
-                gfNcoaFilter.SaveUserPreference( "Processed", ddlProcessed.SelectedValue );
+                gfNcoaFilter.SetFilterPreference( "Processed", ddlProcessed.SelectedValue );
             }
 
-            sdpMoveDate.DelimitedValues = gfNcoaFilter.GetUserPreference( "Move Date" );
+            sdpMoveDate.DelimitedValues = gfNcoaFilter.GetFilterPreference( "Move Date" );
 
-            sdpProcessedDate.DelimitedValues = gfNcoaFilter.GetUserPreference( "NCOA Processed Date" );
+            sdpProcessedDate.DelimitedValues = gfNcoaFilter.GetFilterPreference( "NCOA Processed Date" );
 
             ddlMoveType.BindToEnum<MoveType>( true );
-            int? moveTypeId = gfNcoaFilter.GetUserPreference( "Move Type" ).AsIntegerOrNull();
+            int? moveTypeId = gfNcoaFilter.GetFilterPreference( "Move Type" ).AsIntegerOrNull();
             if ( moveTypeId.HasValue )
             {
                 ddlMoveType.SetValue( moveTypeId.Value.ToString() );
             }
 
             ddlAddressStatus.BindToEnum<AddressStatus>( true );
-            int? addressStatusId = gfNcoaFilter.GetUserPreference( "Address Status" ).AsIntegerOrNull();
+            int? addressStatusId = gfNcoaFilter.GetFilterPreference( "Address Status" ).AsIntegerOrNull();
             if ( addressStatusId.HasValue )
             {
                 ddlAddressStatus.SetValue( addressStatusId.Value.ToString() );
             }
 
             ddlInvalidReason.BindToEnum<AddressInvalidReason>( true );
-            int? addressInvalidReasonId = gfNcoaFilter.GetUserPreference( "Address Invalid Reason" ).AsIntegerOrNull();
+            int? addressInvalidReasonId = gfNcoaFilter.GetFilterPreference( "Address Invalid Reason" ).AsIntegerOrNull();
             if ( addressInvalidReasonId.HasValue )
             {
                 ddlInvalidReason.SetValue( addressInvalidReasonId.Value.ToString() );
             }
 
-            string lastNameFilter = gfNcoaFilter.GetUserPreference( "Last Name" );
+            string lastNameFilter = gfNcoaFilter.GetFilterPreference( "Last Name" );
             tbLastName.Text = !string.IsNullOrWhiteSpace( lastNameFilter ) ? lastNameFilter : string.Empty;
 
-            string moveDistanceFilter = gfNcoaFilter.GetUserPreference( "Move Distance" );
+            string moveDistanceFilter = gfNcoaFilter.GetFilterPreference( "Move Distance" );
             nbMoveDistance.Text = moveDistanceFilter.ToString();
 
-            cpCampus.SetValue( gfNcoaFilter.GetUserPreference( "Campus" ) );
+            cpCampus.SetValue( gfNcoaFilter.GetFilterPreference( "Campus" ) );
 
         }
 
@@ -427,7 +427,7 @@ namespace RockWeb.Blocks.Crm
 
             var query = new NcoaHistoryService( rockContext ).Queryable();
 
-            var processed = gfNcoaFilter.GetUserPreference( "Processed" ).ConvertToEnumOrNull<Processed>();
+            var processed = gfNcoaFilter.GetFilterPreference( "Processed" ).ConvertToEnumOrNull<Processed>();
             if ( processed.HasValue )
             {
                 if ( processed.Value != Processed.All && processed.Value != Processed.ManualUpdateRequiredOrNotProcessed )
@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.Crm
 
             }
 
-            var moveDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( gfNcoaFilter.GetUserPreference( "Move Date" ) );
+            var moveDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( gfNcoaFilter.GetFilterPreference( "Move Date" ) );
             if ( moveDateRange.Start.HasValue )
             {
                 query = query.Where( e => e.MoveDate.HasValue && e.MoveDate.Value >= moveDateRange.Start.Value );
@@ -451,7 +451,7 @@ namespace RockWeb.Blocks.Crm
                 query = query.Where( e => e.MoveDate.HasValue && e.MoveDate.Value < moveDateRange.End.Value );
             }
 
-            var ncoaDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( gfNcoaFilter.GetUserPreference( "NCOA Processed Date" ) );
+            var ncoaDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( gfNcoaFilter.GetFilterPreference( "NCOA Processed Date" ) );
             if ( ncoaDateRange.Start.HasValue )
             {
                 query = query.Where( e => e.NcoaRunDateTime >= ncoaDateRange.Start.Value );
@@ -461,31 +461,31 @@ namespace RockWeb.Blocks.Crm
                 query = query.Where( e => e.NcoaRunDateTime < ncoaDateRange.End.Value );
             }
 
-            var moveType = gfNcoaFilter.GetUserPreference( "Move Type" ).ConvertToEnumOrNull<MoveType>();
+            var moveType = gfNcoaFilter.GetFilterPreference( "Move Type" ).ConvertToEnumOrNull<MoveType>();
             if ( moveType.HasValue )
             {
                 query = query.Where( i => i.MoveType == moveType );
             }
 
-            var addressStatus = gfNcoaFilter.GetUserPreference( "Address Status" ).ConvertToEnumOrNull<AddressStatus>();
+            var addressStatus = gfNcoaFilter.GetFilterPreference( "Address Status" ).ConvertToEnumOrNull<AddressStatus>();
             if ( addressStatus.HasValue )
             {
                 query = query.Where( i => i.AddressStatus == addressStatus );
             }
 
-            var addressInvalidReason = gfNcoaFilter.GetUserPreference( "Address Invalid Reason" ).ConvertToEnumOrNull<AddressInvalidReason>();
+            var addressInvalidReason = gfNcoaFilter.GetFilterPreference( "Address Invalid Reason" ).ConvertToEnumOrNull<AddressInvalidReason>();
             if ( addressInvalidReason.HasValue )
             {
                 query = query.Where( i => i.AddressInvalidReason == addressInvalidReason );
             }
 
-            decimal? moveDistance = gfNcoaFilter.GetUserPreference( "Move Distance" ).AsDecimalOrNull();
+            decimal? moveDistance = gfNcoaFilter.GetFilterPreference( "Move Distance" ).AsDecimalOrNull();
             if ( moveDistance.HasValue )
             {
                 query = query.Where( i => i.MoveDistance <= moveDistance.Value );
             }
 
-            string lastName = gfNcoaFilter.GetUserPreference( "Last Name" );
+            string lastName = gfNcoaFilter.GetFilterPreference( "Last Name" );
             if ( !string.IsNullOrWhiteSpace( lastName ) )
             {
                 var personAliasQuery = new PersonAliasService( rockContext )
@@ -497,7 +497,7 @@ namespace RockWeb.Blocks.Crm
                 query = query.Where( i => personAliasQuery.Contains( i.PersonAliasId ) );
             }
 
-            var campusId = gfNcoaFilter.GetUserPreference( "Campus" ).AsIntegerOrNull();
+            var campusId = gfNcoaFilter.GetFilterPreference( "Campus" ).AsIntegerOrNull();
             if ( campusId.HasValue )
             {
                 var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );

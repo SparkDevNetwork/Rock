@@ -1,0 +1,93 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SearchFilter :isEnabled="isEnabled"
+                  :isInconsistent="isInconsistent"
+                  :title="title"
+                  :subtitle="subtitle"
+                  :description="description"
+                  :values="values"
+                  @edit="onEdit" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
+    import { AttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/attributeFilterBag";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import SearchFilter from "./searchFilter.partial.obs";
+
+    const props = defineProps({
+        /** The attribute filter to be displayed. */
+        modelValue: {
+            type: Object as PropType<AttributeFilterBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "edit", value: AttributeFilterBag): void;
+    }>();
+
+    // #region Computed Values
+
+    const isEnabled = computed((): boolean => {
+        return props.modelValue.isEnabled;
+    });
+
+    const isInconsistent = computed((): boolean => {
+        return props.modelValue.isInconsistent;
+    });
+
+    const title = computed((): string => {
+        return props.modelValue.attributeName ?? "";
+    });
+
+    const subtitle = computed((): string => {
+        return `(${props.modelValue.fieldTypeName})`;
+    });
+
+    const description = computed((): string => {
+        return `Sources Using: ${props.modelValue.sourceNames?.join(", ")}`;
+    });
+
+    const values = computed((): ListItemBag[] => {
+        const values: ListItemBag[] = [
+            {
+                text: "Filter Label",
+                value: props.modelValue.filterLabel
+            }
+        ];
+
+        // Special handling for booleans. They only have a filter control
+        // and its value is always Boolean.
+        if (areEqual(props.modelValue.fieldTypeGuid, FieldType.Boolean)) {
+            values.push({ text: "Filter Control", value: "Boolean" });
+        }
+        else {
+            values.push({
+                text: "Filter Control",
+                value: props.modelValue.filterControl === ContentCollectionFilterControl.Dropdown ? "Dropdown" : "Pills"
+            });
+
+            values.push({
+                text: "Filter Mode",
+                value: props.modelValue.isMultipleSelection ? "Multi-Select" : "Single-Select"
+            });
+        }
+
+        return values;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Event handler for the edit event of the SearchFilter control. */
+    function onEdit(): void {
+        emit("edit", props.modelValue);
+    }
+
+    // #endregion
+</script>

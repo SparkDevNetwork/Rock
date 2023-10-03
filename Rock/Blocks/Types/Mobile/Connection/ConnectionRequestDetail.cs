@@ -19,13 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-
-using OpenXmlPowerTools;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
+using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -41,12 +41,13 @@ namespace Rock.Blocks.Types.Mobile.Connection
     /// <summary>
     /// Displays the details of the given connection request for editing state, status, etc.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Connection Request Detail" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
     [IconCssClass( "fa fa-id-card" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -90,7 +91,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL )]
-    public class ConnectionRequestDetail : RockMobileBlockType
+    public class ConnectionRequestDetail : RockBlockType
     {
         #region Block Attributes
 
@@ -155,10 +156,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         #region IRockMobileBlockType Implementation
 
         /// <inheritdoc/>
-        public override int RequiredMobileAbiVersion => 3;
-
-        /// <inheritdoc/>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Connection.ConnectionRequestDetail";
+        public override Version RequiredMobileVersion => new Version( 1, 3 );
 
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()
@@ -344,6 +342,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             // Get all the workflows that can be manually triggered by the person.
             var connectionWorkflows = GetConnectionOpportunityManualWorkflowTypes( request.ConnectionOpportunity, RequestContext.CurrentPerson )
+                .Where( w => w.ManualTriggerFilterConnectionStatusId == null || w.ManualTriggerFilterConnectionStatusId == request.ConnectionStatusId )
                 .Select( w => new WorkflowTypeItemViewModel
                 {
                     Guid = w.Guid,
@@ -355,22 +354,23 @@ namespace Rock.Blocks.Types.Mobile.Connection
             var isEditable = request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             var activitiesViewModel = activities.ToList()
-            .Select( a => new ActivityViewModel
-            {
-                ActivityTypeGuid = a.ConnectionActivityType.Guid,
-                ConnectorGuid = a.ConnectorPersonAlias.Person.Guid,
-                CreatedDateTime = ( DateTimeOffset ) a.CreatedDateTime,
-                IsModifiable = IsActivityModifiable(a),
-                Note = a.Note,
-                Guid = a.Guid,
-                ActivityType = a.ConnectionActivityType.ToString(),
-                Connector = new ConnectorItemViewModel
+                .Select( a => new ActivityViewModel
                 {
-                    FirstName = a.ConnectorPersonAlias.Person.FirstName,
-                    LastName = a.ConnectorPersonAlias.Person.LastName,
-                    PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( a.ConnectorPersonAlias.Person.PhotoUrl )
-                }
-            } ).ToList();
+                    ActivityTypeGuid = a.ConnectionActivityType.Guid,
+                    ConnectorGuid = a.ConnectorPersonAlias.Person.Guid,
+                    CreatedDateTime = ( DateTimeOffset ) a.CreatedDateTime,
+                    IsModifiable = IsActivityModifiable(a),
+                    Note = a.Note.StripHtml(),
+                    Guid = a.Guid,
+                    ActivityType = a.ConnectionActivityType.ToString(),
+                    Connector = new ConnectorItemViewModel
+                    {
+                        FirstName = a.ConnectorPersonAlias.Person.FirstName,
+                        LastName = a.ConnectorPersonAlias.Person.LastName,
+                        PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( a.ConnectorPersonAlias.Person.PhotoUrl )
+                    }
+                } )
+                .ToList();
 
             var viewModel = new RequestViewModel
             {
@@ -611,6 +611,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
         {
             return connectionType.ConnectionStatuses
                 .OrderBy( s => s.Order )
+                .OrderByDescending( s => s.IsDefault )
+                .ThenBy( s => s.Name )
                 .Select( s => new ListItemBag
                 {
                     Value = s.Guid.ToString(),
@@ -1604,6 +1606,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
                 var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
+                var noteService = new NoteService( rockContext );
                 int? connectorAliasId = null;
 
                 // Load the connection request. Include the connection opportunity
@@ -1667,6 +1670,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 requestActivity.ConnectionOpportunityId = request.ConnectionOpportunityId;
                 requestActivity.ConnectionActivityTypeId = activityTypeId;
                 requestActivity.ConnectorPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                var mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( activity.Note, requestActivity.Note );
                 requestActivity.Note = activity.Note;
                 requestActivity.ConnectorPersonAliasId = connectorAliasId;
 
@@ -1674,6 +1678,19 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 connectionRequestActivityService.Add( requestActivity );
 
                 rockContext.SaveChanges();
+
+                // If we have any new mentioned person ids, start a background
+                // task to create the notifications.
+                if ( mentionedPersonIds.Any() )
+                {
+                    Task.Run( () =>
+                    {
+                        foreach ( var personId in mentionedPersonIds )
+                        {
+                            ConnectionRequestMention.CreateNotificationMessage( request, personId, RequestContext.CurrentPerson.Id, PageCache.Id, RequestContext.GetPageParameters() );
+                        }
+                    } );
+                }
 
                 return ActionOk( GetRequestViewModel( request, rockContext ) );
             }
@@ -1695,6 +1712,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
                 var connectionRequestService = new ConnectionRequestService( rockContext );
+                var noteService = new NoteService( rockContext );
 
                 var activityToUpdate = activityService.Get( activityGuid );
 
@@ -1727,6 +1745,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return ActionBadRequest( "Unable to find that connection activity type." );
                 }
 
+                if( !activity.ConnectorGuid.HasValue )
+                {
+                    return ActionBadRequest( "Invalid connector was specified." );
+
+                }
                 var connectorAliasId = personAliasService.GetPrimaryAliasId( activity.ConnectorGuid.Value );
 
                 if ( !connectorAliasId.HasValue )
@@ -1736,10 +1759,25 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 activityToUpdate.ConnectionActivityTypeId = connectionActivityType.Id;
                 activityToUpdate.ConnectorPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                var mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( activity.Note, activityToUpdate.Note );
                 activityToUpdate.Note = activity.Note;
                 activityToUpdate.ConnectorPersonAliasId = connectorAliasId;
 
                 rockContext.SaveChanges();
+
+                // If we have any new mentioned person ids, start a background
+                // task to create the notifications.
+                if ( mentionedPersonIds.Any() )
+                {
+                    Task.Run( () =>
+                    {
+                        foreach ( var personId in mentionedPersonIds )
+                        {
+                            ConnectionRequestMention.CreateNotificationMessage( request, personId, RequestContext.CurrentPerson.Id, PageCache.Id, RequestContext.GetPageParameters() );
+                        }
+                    } );
+                }
+
                 return ActionOk( GetRequestViewModel( request, rockContext ) );
             }
         }

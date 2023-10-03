@@ -80,7 +80,7 @@ namespace Rock.Model
             historySummaryByDateList = historySummaryByDateList.OrderByDescending( a => a.SummaryDateTime ).ToList();
             var historySummaryByDateByVerbList = historyService.GetHistorySummaryByDateTimeAndVerb( historySummaryByDateList );
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Rock.Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "PrimaryEntity", primaryEntity );
             mergeFields.Add( "PrimaryEntityTypeName", primaryEntityType.FriendlyName );
             if ( secondaryEntityType != null )

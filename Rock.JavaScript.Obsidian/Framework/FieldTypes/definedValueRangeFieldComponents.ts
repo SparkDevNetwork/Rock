@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent, inject, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
-import RockFormField from "@Obsidian/Controls/rockFormField";
+import RockFormField from "@Obsidian/Controls/rockFormField.obs";
 import { ClientValue, ConfigurationValueKey, ValueItem } from "./definedValueRangeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";

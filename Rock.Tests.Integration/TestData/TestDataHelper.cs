@@ -227,7 +227,6 @@ namespace Rock.Tests.Integration
         #region Campus
 
         public static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
-        public static string SecondaryCampusGuidString = "089844AF-6310-4C20-9434-A845F982B0C5";
         public static string SecondaryCampusName = "Stepping Stone";
 
         public static Campus GetOrAddCampusSteppingStone( RockContext rockContext )
@@ -235,7 +234,7 @@ namespace Rock.Tests.Integration
             // Add a new campus
             var campusService = new CampusService( rockContext );
 
-            var campus2 = campusService.Get( SecondaryCampusGuidString.AsGuid() );
+            var campus2 = campusService.Get( TestGuids.Crm.CampusSteppingStone.AsGuid() );
 
             if ( campus2 == null )
             {
@@ -245,7 +244,7 @@ namespace Rock.Tests.Integration
             }
 
             campus2.Name = SecondaryCampusName;
-            campus2.Guid = SecondaryCampusGuidString.AsGuid();
+            campus2.Guid = TestGuids.Crm.CampusSteppingStone.AsGuid();
             campus2.IsActive = true;
             campus2.CampusStatusValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.CAMPUS_STATUS_OPEN.AsGuid() );
             campus2.CampusTypeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.CAMPUS_TYPE_PHYSICAL.AsGuid() );
@@ -472,5 +471,25 @@ namespace Rock.Tests.Integration
         {
             return rockContext ?? new RockContext();
         }
+
+        #region Asserts
+
+        /// <summary>
+        /// Asserts that the specified Rock Entity object has a value.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entity"></param>
+        /// <param name="identifier"></param>
+        public static void AssertRockEntityIsNotNull<T>( T entity, string identifier )
+    where T : IEntity
+        {
+            if ( entity == null )
+            {
+                var entityType = typeof( T );
+                throw new Exception( $"{entityType.GetFriendlyTypeName()} not found. [Identifier={identifier}]" );
+            }
+        }
+
+        #endregion
     }
 }

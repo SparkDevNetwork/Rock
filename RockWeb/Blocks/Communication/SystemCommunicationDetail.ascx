@@ -36,10 +36,10 @@
                 <Rock:PanelWidget ID="pnlEmailTemplate" Title="Email" TitleIconCssClass="fa fa-envelope" CssClass="js-email-template" runat="server" Expanded="true">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbFromName" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="FromName" Label="From Name" Help="<small><span class='tip tip-lava'></span></small>" />                            
+                            <Rock:DataTextBox ID="tbFromName" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="FromName" Label="From Name" Help="<small><span class='tip tip-lava'></span></small>" />
                             <Rock:EmailBox ID="tbTo" runat="server" Label="To" AllowMultiple="true" Help="<small><span class='tip tip-lava'></span></small>" AllowLava="true" />
                         </div>
-                        <div class="col-md-6">                            
+                        <div class="col-md-6">
                             <Rock:EmailBox ID="tbFrom" runat="server" Label="From Address" AllowMultiple="false" Help="<small><span class='tip tip-lava'></span></small>" AllowLava="true" />
                             <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
                             <div class="pull-right">
@@ -68,23 +68,23 @@
                     </div>
 
                     <label class="control-label">Message Template</label>
-                    
+
                     <div class="well">
                         <Rock:Toggle ID="tglPreviewAdvanced" runat="server" CssClass="pull-right" OnText="Preview" OffText="Advanced" Checked="true" ButtonSizeCssClass="btn-xs" OnCssClass="btn-info" OffCssClass="btn-info" OnCheckedChanged="tglPreviewAdvanced_CheckedChanged" />
-                    
+
                         <asp:Panel ID="pnlAdvanced" runat="server" CssClass="margin-t-md">
                             <div class="row">
                                 <div class="col-md-8">
                                     <div class="js-help-container">
-                                        <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>        
-                                        <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>                                
+                                        <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>
+                                        <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>
                                     </div>
                                     <Rock:CodeEditor ID="ceEmailTemplate" EditorHeight="500" Label="Message Body" EditorMode="Html" EditorTheme="Rock" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="Body" Required="true" />
                                 </div>
                                 <div class="col-md-4">
                                     <Rock:RockCheckBox ID="cbCssInliningEnabled" runat="server" Text="CSS Inlining Enabled" Help="Enable CSS Inlining to move styles to inline attributes. This can help maximize compatibility with email clients. This requires support for inlining by the configured email transport." />
                                     <Rock:KeyValueList ID="kvlMergeFields" runat="server" Label="Lava Fields" KeyPrompt="Key" Help="Add any fields and their default values that can be used as lava merge fields within the template html. Any fields with a 'Color' suffix will use a Color Picker as the value editor." ValuePrompt="Default Value" />
-                                
+
                                     <asp:LinkButton ID="lbUpdateLavaFields" runat="server" Text="Update Lava Fields" CssClass="btn btn-xs btn-action" OnClick="lbUpdateLavaFields_Click" CausesValidation="false" />
                                     <Rock:HelpBlock ID="hbUpdateLavaFields" runat="server" Text="This will update the Message Template and above lava fields to match. If a field has a different value set in Preview mode, the lava field controls will be updated to use the value from the preview's value." />
                                 </div>
@@ -97,12 +97,12 @@
                                         <div class="row">
                                             <div class="col-md-9">
                                                 <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview device-browser center-block">
-                                                    <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe js-emailpreview-iframe email-wrapper" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" scrolling="yes"></iframe>
+                                                    <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe inset-0 w-100 js-emailpreview-iframe email-wrapper" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" scrolling="yes"></iframe>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <Rock:RockControlWrapper ID="rcwPreviewMode" runat="server" Label="Preview Mode">
-                                                
+
                                                     <div class="btn-group" role="group">
                                                         <button type="button" class="btn btn-xs btn-info active js-preview-desktop">
                                                             <i class="fa fa-desktop"></i>

@@ -34,12 +34,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
     /// <summary>
     /// Allows the user to log in on a mobile application.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Log In" )]
     [Category( "Mobile > Cms" )]
     [Description( "Allows the user to log in on a mobile application." )]
     [IconCssClass( "fa fa-user-lock" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -107,7 +108,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_LOGIN_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "6006FE32-DC01-4B1C-A9B8-EE172451F4C5" )]
 
-    public class Login : RockMobileBlockType
+    public class Login : RockBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileLogin block.
@@ -162,21 +163,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Login";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -310,7 +298,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             UserLogin user = null;
             Person person = null;
 
-            // Query for an existing user from the Auth0 user name.
+            // Query for an existing user from the external authentication user name.
             var userLoginService = new UserLoginService( rockContext );
             user = userLoginService.GetByUserName( username );
 

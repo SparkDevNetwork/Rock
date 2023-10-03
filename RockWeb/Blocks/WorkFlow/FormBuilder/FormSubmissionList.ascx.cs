@@ -18,6 +18,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -163,7 +164,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             gWorkflows.GridRebind += gWorkflows_GridRebind;
             gWorkflows.RowDataBound += gWorkflows_RowDataBound;
 
-            gWorkflows.Actions.ShowAdd = UserCanEdit;
+            gWorkflows.Actions.ShowAdd = WorkflowTypeCache.Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() ).Category.IsAuthorized( Authorization.EDIT, CurrentPerson );
             gWorkflows.Actions.AddClick += gWorkflows_Add;
 
             gWorkflows.Actions.ShowCommunicate = false;
@@ -243,8 +244,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
         private void gfWorkflows_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfWorkflows.SaveUserPreference( UserPreferenceKeys.PersonAliasId, ppPerson.PersonAliasId.ToString() );
-            gfWorkflows.SaveUserPreference( UserPreferenceKeys.CampusId, cpCampus.SelectedCampusId.ToString() );
+            gfWorkflows.SetFilterPreference( UserPreferenceKeys.PersonAliasId, ppPerson.PersonAliasId.ToString() );
+            gfWorkflows.SetFilterPreference( UserPreferenceKeys.CampusId, cpCampus.SelectedCampusId.ToString() );
 
             BindGrid();
         }
@@ -468,14 +469,14 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         private void BindFilters()
         {
             var context = new RockContext();
-            var personAliasId = gfWorkflows.GetUserPreference( UserPreferenceKeys.PersonAliasId ).AsIntegerOrNull();
+            var personAliasId = gfWorkflows.GetFilterPreference( UserPreferenceKeys.PersonAliasId ).AsIntegerOrNull();
             if ( personAliasId.HasValue )
             {
                 var person = new PersonAliasService( context ).Get( personAliasId.Value );
                 ppPerson.SetValue( person?.Person );
             }
 
-            var campusId = gfWorkflows.GetUserPreference( UserPreferenceKeys.CampusId ).AsIntegerOrNull();
+            var campusId = gfWorkflows.GetFilterPreference( UserPreferenceKeys.CampusId ).AsIntegerOrNull();
             if ( campusId.HasValue )
             {
                 var campus = new CampusService( context ).Get( campusId.Value );
@@ -485,13 +486,13 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
         private IQueryable<Workflow> ApplyFiltersAndSorting( IQueryable<Workflow> query )
         {
-            var personAliasId = gfWorkflows.GetUserPreference( UserPreferenceKeys.PersonAliasId ).AsIntegerOrNull();
+            var personAliasId = gfWorkflows.GetFilterPreference( UserPreferenceKeys.PersonAliasId ).AsIntegerOrNull();
             if ( personAliasId.HasValue )
             {
                 query = query.Where( w => w.InitiatorPersonAliasId == personAliasId );
             }
 
-            var campusId = gfWorkflows.GetUserPreference( UserPreferenceKeys.CampusId ).AsIntegerOrNull();
+            var campusId = gfWorkflows.GetFilterPreference( UserPreferenceKeys.CampusId ).AsIntegerOrNull();
             if ( campusId.HasValue )
             {
                 query = query.Where( w => w.CampusId == campusId );

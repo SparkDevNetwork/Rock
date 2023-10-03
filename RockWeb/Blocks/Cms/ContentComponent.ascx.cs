@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Cms
             {
                 var contentChannelItems = GetContentChannelItems( ITEM_CACHE_KEY, itemCacheDuration );
 
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                 mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
                 mergeFields.Add( "Items", contentChannelItems );

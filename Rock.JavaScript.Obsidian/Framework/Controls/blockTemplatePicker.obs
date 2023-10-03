@@ -1,0 +1,126 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" name="block-template-picker" v-bind="formFieldProps">
+        <template #default="{ uniqueId }">
+            <div v-if="view == 'SELECT'" class="js-template-option-panel">
+                <div class="row js-template-row">
+                    <div v-for="item in loadedItems" class="col-md-2 col-sm-4 template-picker-item">
+                        <div class="radio">
+                            <label><input type="radio" :name="uniqueId" class="js-template-picker" :value="item.guid" @change="radioSelect(item)" :checked="item.guid == internalkey"><span class="label-text"><b>{{ item.name }}</b></span></label>
+                        </div>
+                        <img :src="item.iconUrl ?? ''" style="width:100%">
+                    </div>
+                </div>
+                <div class="actions clearfix">
+                    <button type="button" class="btn btn-xs btn-link" @click.prevent="view = 'CUSTOM'">Customize</button>
+                </div>
+            </div>
+            <div v-else id="ctl00_main_ctl35_ctl01_ctl06_mdAttribute_edtAttribute_defaultValue_148_efea8d0ec39c41e9932b490870b7000d_defaultValue_148_efea8d0ec39c41e9932b490870b7000dpnlCustom" class="js-template-custom-panel">
+                <label class="radio-inline"><input type="radio" :name="uniqueId" checked><span class="label-text"><b>Custom</b></span></label>
+                <div class="actions clearfix">
+                    <button type="button" class="btn btn-xs btn-link pull-right" @click.prevent="view = 'SELECT'" v-if="templateBlockValueGuid">Use Standard Templates</button>
+                </div>
+                <CodeEditor v-model="internalValue" mode="lava" />
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import RockFormField from "./rockFormField.obs";
+    import CodeEditor from "./codeEditor.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { BlockTemplatePickerGetBlockTemplatesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/blockTemplatePickerGetBlockTemplatesOptionsBag";
+    import { BlockTemplatePickerGetBlockTemplatesResultsBag } from "@Obsidian/ViewModels/Rest/Controls/blockTemplatePickerGetBlockTemplatesResultsBag";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        /** V-Model of the template string */
+        modelValue: {
+            type: String,
+            required: true
+        },
+
+        /** V-Model of the Guid of the selected template. If custom template, this is an empty GUID */
+        templateKey: {
+            type: String as PropType<Guid | null>,
+            default: null
+        },
+
+        /** GUID of the template block that the  */
+        templateBlockValueGuid: {
+            type: String as PropType<Guid | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string | null): void
+        (e: "update:templateKey", value: Guid): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalkey = useVModelPassthrough(props, "templateKey", emit);
+    const formFieldProps = useStandardRockFormFieldProps(props);
+    const loadedItems = ref<BlockTemplatePickerGetBlockTemplatesResultsBag[]>([]);
+
+    const http = useHttp();
+    const view = ref<"CUSTOM" | "SELECT">(props.templateBlockValueGuid ? "SELECT" : "CUSTOM");
+
+    /**
+     * Loads the items from the server.
+     */
+    async function loadOptions(): Promise<void> {
+        const options: BlockTemplatePickerGetBlockTemplatesOptionsBag = {
+            templateBlockValueGuid: props.templateBlockValueGuid
+        };
+        const result = await http.post<BlockTemplatePickerGetBlockTemplatesResultsBag[]>("/api/v2/Controls/BlockTemplatePickerGetBlockTemplates", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            loadedItems.value = result.data;
+
+            if (result.data.length > 0) {
+                let item = result.data[0];
+                if (view.value == "SELECT") {
+                    internalValue.value = item.template ?? "";
+                    internalkey.value = item.guid ?? null;
+                }
+            }
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedItems.value = [];
+        }
+    }
+
+    function radioSelect(item): void {
+        internalValue.value = item.template;
+        internalkey.value = item.guid;
+    }
+
+    watch(() => props.templateBlockValueGuid, () => {
+        if (props.templateBlockValueGuid) {
+            loadOptions();
+        }
+        else {
+            loadedItems.value = [];
+            view.value = "CUSTOM";
+        }
+    }, { immediate: true });
+
+    watch(view, () => {
+        if (view.value == "CUSTOM") {
+            internalkey.value = null;
+        }
+        else {
+            let item = loadedItems.value[0];
+            internalValue.value = item.template ?? "";
+            internalkey.value = item.guid ?? null;
+        }
+    });
+</script>

@@ -1,0 +1,553 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="taglist">
+        <v-style>
+            .taglist .ant-select-auto-complete.ant-select {
+            width: 125px;
+            }
+
+            .taglist .ant-select-auto-complete.ant-select > .ant-select-selector {
+            border: 0px;
+            padding: 0px;
+            height: 22px;
+            font-size: 12px;
+            background: transparent;
+            }
+
+            .taglist .ant-select-auto-complete.ant-select-focused.ant-select > .ant-select-selector,
+            .taglist .ant-select-auto-complete.ant-select > .ant-select-selector:hover {
+            border: 0px;
+            box-shadow: initial;
+            background: rgba(0,0,0,0.05);
+            }
+
+            .taglist .ant-select-auto-complete.ant-select > .ant-select-selector .ant-select-selection-search {
+            left: 6px;
+            right: 6px;
+            }
+
+            .taglist .ant-select-auto-complete.ant-select > .ant-select-selector .ant-select-selection-placeholder {
+            position: absolute;
+            margin-left: 6px;
+            line-height: 22px;
+            }
+
+            .taglist .ant-select-auto-complete.ant-select .ant-select-selection-search-input {
+            height: 22px;
+            }
+
+            .taglist .add-new-tags {
+            float: left;
+            height: 22px;
+            font-size: 0.7em;
+            line-height: 22px;
+            }
+
+            .taglist .tag-wrap .tag.disabled:hover {
+            padding-right: 12px;
+            transition-delay: 0s;
+            }
+        </v-style>
+
+        <div class="tag-wrap">
+            <div class="tagsinput">
+                <Tag v-for="tag in currentTags"
+                     :key="tag.idKey ?? tag.name ?? ''"
+                     :modelValue="tag"
+                     :disabled="disabled"
+                     @removeTag="onRemoveTag" />
+
+                <template v-if="!disabled">
+                    <AutoComplete v-if="isNewTagVisible"
+                                  ref="tagsInputRef"
+                                  v-model:value="searchValue"
+                                  :options="searchOptions"
+                                  placeholder="tag name"
+                                  @select="selectHandler"
+                                  @search="onSearch"
+                                  @inputKeyDown="onInputKeyDown" />
+
+                    <span v-else class="text-muted add-new-tags clickable" @click="onAddNewTagsClick">
+                        <i class="fa fa-plus"></i>
+                    </span>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { useSuspense } from "@Obsidian/Utility/suspense";
+    import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
+    import { EntityTagListAddEntityTagOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListAddEntityTagOptionsBag";
+    import { EntityTagListCreatePersonalTagOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListCreatePersonalTagOptionsBag";
+    import { EntityTagListGetEntityTagsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListGetEntityTagsOptionsBag";
+    import { EntityTagListGetAvailableTagsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListGetAvailableTagsOptionsBag";
+    import { EntityTagListRemoveEntityTagOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListRemoveEntityTagOptionsBag";
+    import { EntityTagListSaveTagValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListSaveTagValuesOptionsBag";
+    import { EntityTagListTagBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListTagBag";
+    import { AutoComplete } from "ant-design-vue";
+    import { nextTick, PropType, ref, watch } from "vue";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import Tag from "./Internal/tag.obs";
+    import type { SelectHandler } from "ant-design-vue/lib/vc-select/Select.d";
+    import type { SelectOption } from "@Obsidian/Types/Controls/autocomplete.d";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        /** The unique identifier of the entity type described by entityKey. */
+        entityTypeGuid: {
+            type: String as PropType<Guid>,
+            required: false
+        },
+
+        /** The identifier key for the entity whose tags should be displayed. */
+        entityKey: {
+            type: String,
+            required: false
+        },
+
+        /** The optional category unique identifier to limit tags to. */
+        categoryGuid: {
+            type: String as PropType<Guid>,
+            required: false
+        },
+
+        /** Entity Qualifier Column */
+        entityQualifierColumn: {
+            type: String,
+            default: ""
+        },
+
+        /** Entity Qualifier Value */
+        entityQualifierValue: {
+            type: String,
+            default: ""
+        },
+
+        /** Determines if this control should delay page rendering until the initial tag data is loaded. */
+        lazyMode: {
+            type: String as PropType<ControlLazyMode>,
+            default: ControlLazyMode.Lazy
+        },
+
+        /** If true then the tag list will be read only. */
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether or not to include inactive tags in the list */
+        showInactiveTags: {
+            type: Boolean,
+            default: false
+        },
+
+        /** If true, no changes are saved to the server unless the `saveTagValues` method is called */
+        delaySave: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Prevents the creation of new personal tags if true */
+        disallowNewTags: {
+            type: Boolean,
+            default: false
+        }
+    });
+    // #region Values
+
+    const securityToken = useSecurityGrantToken();
+    const http = useHttp();
+    const currentTags = ref<EntityTagListTagBag[]>([]);
+    const searchValue = ref("");
+    const searchOptions = ref<SelectOption[]>([]);
+    const isNewTagVisible = ref(false);
+    const tagsInputRef = ref<HTMLElement | null>(null);
+    let lastLoadCallTime: number = 0;
+    let lastSearchCallTime: number = 0;
+    let isAddNewTagCancelled: boolean = false;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Finds an existing tag with the given name and returns it.
+     *
+     * @param name The name of the tag to find on the server.
+     *
+     * @returns An object that contains the tag information or null if no matching tag was found.
+     */
+    async function getTagByName(name: string): Promise<EntityTagListTagBag | null> {
+        const data: EntityTagListGetAvailableTagsOptionsBag = {
+            entityTypeGuid: props.entityTypeGuid,
+            entityKey: props.entityKey,
+            entityQualifierColumn: props.entityQualifierColumn,
+            entityQualifierValue: props.entityQualifierValue,
+            categoryGuid: props.categoryGuid,
+            name: name,
+            showInactiveTags: props.showInactiveTags,
+            securityGrantToken: securityToken.value
+        };
+
+        const result = await http.post<EntityTagListTagBag[]>("/api/v2/Controls/EntityTagListGetAvailableTags", undefined, data);
+
+        if (result.isSuccess && result.data) {
+            // Filter the matching tags to find one that matches the tag name
+            // exactly rather than a prefix match.
+            const tags = result.data.filter(t => t.name?.toLowerCase() === name.toLowerCase());
+
+            if (tags.length >= 1) {
+                return tags[0];
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * Creates a new personal tag on the server with the given tag name.
+     *
+     * @param name The name of the tag to be created.
+     *
+     * @returns An object that contains the tag information that was created or null if one couldn't be created.
+     */
+    async function createPersonalTag(name: string): Promise<EntityTagListTagBag | null> {
+        const data: EntityTagListCreatePersonalTagOptionsBag = {
+            entityTypeGuid: props.entityTypeGuid,
+            categoryGuid: props.categoryGuid,
+            entityQualifierColumn: props.entityQualifierColumn,
+            entityQualifierValue: props.entityQualifierValue,
+            name: name,
+            securityGrantToken: securityToken.value
+        };
+
+        const result = await http.post<EntityTagListTagBag>("/api/v2/Controls/EntityTagListCreatePersonalTag", undefined, data);
+
+        // An OK and CONFLICT both will return a valid tag.
+        if ((result.isSuccess || result.statusCode === 409) && result.data) {
+            return result.data;
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * Add an existing tag to the entity.
+     *
+     * @param tagKey The key identifier of the tag to be added.
+     */
+    async function addTag(tagKey: string): Promise<void> {
+        const data: EntityTagListAddEntityTagOptionsBag = {
+            entityTypeGuid: props.entityTypeGuid,
+            entityKey: props.entityKey,
+            tagKey: tagKey,
+            securityGrantToken: securityToken.value
+        };
+
+        const result = await http.post<EntityTagListTagBag>("/api/v2/Controls/EntityTagListAddEntityTag", undefined, data);
+
+        if (result.isSuccess && result.data) {
+            const newTags = [...currentTags.value];
+            newTags.push(result.data);
+            newTags.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+
+            currentTags.value = newTags;
+            searchValue.value = "";
+        }
+        else {
+            alert(result.errorMessage ?? "Unable to add tag.");
+        }
+    }
+
+    /**
+     * Remove an existing tag from the entity.
+     *
+     * @param tagKey The identifier key of the tag to be removed.
+     */
+    async function removeTag(tagKey: string): Promise<void> {
+        if (props.delaySave) {
+            const newTags = currentTags.value.filter(t => t.idKey !== tagKey);
+            currentTags.value = newTags;
+            return;
+        }
+
+        const data: EntityTagListRemoveEntityTagOptionsBag = {
+            entityTypeGuid: props.entityTypeGuid,
+            entityKey: props.entityKey,
+            tagKey: tagKey,
+            securityGrantToken: securityToken.value
+        };
+
+        const result = await http.post<EntityTagListTagBag>("/api/v2/Controls/EntityTagListRemoveEntityTag", undefined, data);
+
+        if (result.isSuccess) {
+            const newTags = currentTags.value.filter(t => t.idKey !== tagKey);
+
+            currentTags.value = newTags;
+        }
+        else {
+            alert(result.errorMessage ?? "Unable to remove tag.");
+        }
+    }
+
+    /**
+     * Add a tag by name to the entity. If the tag doesn't exist the user
+     * will be prompted to create a new personal tag.
+     *
+     * @param tagName The name of the tag to be added.
+     */
+    async function addNamedTag(tagName: string): Promise<void> {
+        let tag = await getTagByName(tagName);
+
+        if (props.delaySave) {
+            if (tag === null && !await confirm(`A tag called "${tagName}" does not exist. Do you want to create a new personal tag?`)) {
+                return;
+            }
+
+            const newTag = tag ?? createClientTag(tagName);
+            return addTagOnClient(newTag);
+        }
+
+        if (tag === null && !props.disallowNewTags) {
+            if (!await confirm(`A tag called "${tagName}" does not exist. Do you want to create a new personal tag?`)) {
+                return;
+            }
+
+            tag = await createPersonalTag(tagName);
+
+            if (tag === null) {
+                await alert("Unable to create personal tag.");
+                return;
+            }
+        }
+        if (tag != null) {
+            await addTag(tag.idKey ?? "");
+        }
+    }
+
+    /**
+     * Start loading existing tags for the entity described in our properties.
+     */
+    async function loadExistingTags(): Promise<void> {
+        if (props.entityTypeGuid && props.entityKey) {
+            const currentRequestTime = Date.now();
+            lastLoadCallTime = currentRequestTime;
+            let tags: EntityTagListTagBag[] = [];
+
+            const data: EntityTagListGetEntityTagsOptionsBag = {
+                entityTypeGuid: props.entityTypeGuid,
+                entityKey: props.entityKey,
+                categoryGuid: props.categoryGuid,
+                entityQualifierColumn: props.entityQualifierColumn,
+                entityQualifierValue: props.entityQualifierValue,
+                showInactiveTags: props.showInactiveTags,
+                securityGrantToken: securityToken.value
+            };
+
+            const result = await http.post<EntityTagListTagBag[]>("/api/v2/Controls/EntityTagListGetEntityTags", undefined, data);
+
+            if (result.isSuccess && result.data) {
+                tags = result.data;
+            }
+
+            // If we haven't been cancelled, then set the value.
+            if (currentRequestTime == lastLoadCallTime) {
+                currentTags.value = tags;
+            }
+        }
+    }
+
+    /**
+     * Add a tag retrieved from the server to the list here on the client.
+     */
+    function addTagOnClient(newTag: EntityTagListTagBag): void {
+        const newTags = [...currentTags.value, newTag];
+        newTags.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+
+        currentTags.value = newTags;
+        searchValue.value = "";
+    }
+
+    /**
+     * If we're unable to have the server create a tag for us, we still need it here
+     * on the client, so we create a minimal one.
+     */
+    function createClientTag(tagName: string, tagId: string | null = null): EntityTagListTagBag {
+        const newTag: EntityTagListTagBag = {
+            name: tagName,
+            entityTypeGuid: props.entityTypeGuid,
+            isPersonal: true,
+            idKey: tagId || newGuid()
+        };
+
+        return newTag;
+    }
+
+    /**
+     * Save the client-side list of tags to the server. For use if the delaySave prop was set to true
+     */
+    async function saveTagValues(): Promise<void> {
+        const data: EntityTagListSaveTagValuesOptionsBag = {
+            tags: currentTags.value,
+            entityTypeGuid: props.entityTypeGuid,
+            entityKey: props.entityKey,
+            categoryGuid: props.categoryGuid,
+            entityQualifierColumn: props.entityQualifierColumn,
+            entityQualifierValue: props.entityQualifierValue,
+            showInactiveTags: props.showInactiveTags,
+            securityGrantToken: securityToken.value
+        };
+
+        const result = await http.post<EntityTagListTagBag[]>("/api/v2/Controls/EntityTagListSaveTagValues", undefined, data);
+
+        if (result.isSuccess && result.data) {
+            currentTags.value = result.data;
+            searchValue.value = "";
+        }
+        else {
+            throw new Error("Unable to save tag values");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the user selects an existing tag from the popup list.
+     *
+     * @param value The value of the tag that was selected.
+     */
+    function onSelect(value: string, item: SelectOption): void {
+        if (!item) {
+            return;
+        }
+
+        isAddNewTagCancelled = true;
+
+        if (props.delaySave) {
+            addTagOnClient(createClientTag(item.label, item.value));
+            return;
+        }
+
+        // Replace the typed in value with the friendly label otherwise the
+        // text box is filled in with the value key.
+        searchValue.value = item.label;
+        addTag(item.value ?? "");
+    }
+
+    const selectHandler = onSelect as SelectHandler<any>;
+
+    /**
+     * Called when an autocomplete search operation should start.
+     *
+     * @param value The value that has been typed so far that should be searched for.
+     */
+    async function onSearch(value: string): Promise<void> {
+        if (!value) {
+            searchOptions.value = [];
+            return;
+        }
+
+        // Start a new cancellation request.
+        const currentRequestTime = Date.now();
+        lastSearchCallTime = currentRequestTime;
+
+        const data: EntityTagListGetAvailableTagsOptionsBag = {
+            entityTypeGuid: props.entityTypeGuid,
+            entityKey: props.entityKey,
+            entityQualifierColumn: props.entityQualifierColumn,
+            entityQualifierValue: props.entityQualifierValue,
+            name: value,
+            showInactiveTags: props.showInactiveTags,
+            securityGrantToken: securityToken.value
+        };
+
+        const result = await http.post<EntityTagListTagBag[]>("/api/v2/Controls/EntityTagListGetAvailableTags", undefined, data);
+
+        if (result.isSuccess && result.data && currentRequestTime == lastSearchCallTime) {
+            searchOptions.value = result.data.map(t => {
+                return {
+                    value: t.idKey ?? "",
+                    label: t.name ?? ""
+                };
+            });
+        }
+    }
+
+    /**
+     * Called when a key has been pressed while the tag search field has focus.
+     *
+     * @param ev The object that describes the event being handled.
+     */
+    function onInputKeyDown(ev: KeyboardEvent): void {
+        if (ev.keyCode === 13 && searchValue.value && !props.disallowNewTags) {
+            const tagName = searchValue.value;
+            isAddNewTagCancelled = false;
+
+            // As horrible as this is, there doesn't seem to be a way to determine
+            // the difference between hitting enter with something in the popup
+            // selected vs adding a new word. So the delay gives a chance for
+            // the select event to fire if there is something in the popup.
+            setTimeout(() => {
+                if (!isAddNewTagCancelled) {
+                    if (props.delaySave) {
+                        addTagOnClient(createClientTag(tagName));
+                        return;
+                    }
+                    addNamedTag(tagName);
+                }
+            }, 1);
+        }
+    }
+
+    /**
+     * Called when the remove button for an existing tag has been clicked.
+     *
+     * @param tagKey The identifier key of the tag to be removed.
+     */
+    async function onRemoveTag(tagKey: string): Promise<void> {
+        await removeTag(tagKey);
+    }
+
+    /**
+     * Event handler for when the "+" button is clicked to begin the process
+     * of adding new tags to the entity.
+     */
+    function onAddNewTagsClick(): void {
+        isNewTagVisible.value = true;
+
+        // After the UI updates, put the keyboard focus on the input box.
+        nextTick(() => {
+            tagsInputRef.value?.focus();
+        });
+    }
+
+    // #endregion
+
+    // Expose this function so it can be called from the outside when props.delaySa
+    defineExpose({ saveTagValues });
+
+    // Watch for changes in our configuration that would require us to reload all the tags.
+    watch(() => [props.entityTypeGuid, props.entityKey, props.categoryGuid, props.entityQualifierColumn, props.entityQualifierValue, props.showInactiveTags], () => {
+        loadExistingTags();
+    });
+
+    // Begin loading the tags in either eager or lazy mode.
+    if (props.lazyMode === ControlLazyMode.Eager) {
+        useSuspense()?.addOperation(loadExistingTags());
+    }
+    else {
+        loadExistingTags();
+    }
+</script>

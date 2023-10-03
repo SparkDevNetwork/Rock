@@ -75,7 +75,6 @@ namespace RockWeb.Blocks.Connection
 
         #region Fields
 
-        private const string CAMPUS_SETTING = "MyConnectionOpportunities_SelectedCampus";
         DateTime _midnightToday = RockDateTime.Today.AddDays( 1 );
 
         #endregion

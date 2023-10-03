@@ -1,0 +1,205 @@
+﻿<Page x:Class="Rock.CodeGeneration.Pages.ObsidianListBlockPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+      xmlns:utility="clr-namespace:Rock.CodeGeneration.Utility"
+      xmlns:controls="clr-namespace:Rock.CodeGeneration.Controls"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="Obsidian List Block">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <utility:InverseBooleanConverter x:Key="InverseBool" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0"
+                    Grid.Column="0">
+            <StackPanel Orientation="Horizontal">
+                <Label>Entity:</Label>
+                <Label Name="SelectedEntityName" />
+                <Button Width="20"
+                    Height="20"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Content="{fa:Icon PencilAlt, Foreground=Black}"
+                    Click="SelectEntity_Click">
+                </Button>
+            </StackPanel>
+
+            <Rectangle Height="1" Fill="#ccc" />
+        </StackPanel>
+
+        <Grid Grid.Row="1"
+              Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Row="0"
+                  Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Border Padding="4,0,4,8">
+                    <StackPanel>
+                        <Label Content="Columns"
+                               HorizontalContentAlignment="Center"
+                               FontWeight="Bold" />
+
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox Name="ShowAdvancedPropertiesCheckBox"
+                                      Content="Show Advanced Properties"
+                                      Unchecked="ShowAdvancedPropertiesCheckBox_CheckChanged"
+                                      Checked="ShowAdvancedPropertiesCheckBox_CheckChanged" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="4,8,0,0">
+                            <Button Content="Add Column"
+                                    Margin="0,0,8,0"
+                                    Click="AddColumn_Click" />
+                            <Button Content="Remove All"
+                                    Margin="0,0,8,0"
+                                    Click="RemoveAll_Click" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <ListBox Name="ColumnsListBox"
+                         Grid.Row="1"
+                         Grid.Column="0"
+                         SelectionMode="Single"
+                         HorizontalContentAlignment="Stretch"
+                         d:ItemsSource="{d:SampleData}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="24" />
+                                </Grid.ColumnDefinitions>
+
+                                <ComboBox Grid.Row="0"
+                                          Grid.Column="0"
+                                          SelectedItem="{Binding Name}"
+                                          ItemsSource="{Binding ValidNames}" />
+
+                                <Button Grid.Row="0"
+                                        Grid.Column="1"
+                                        Click="RemoveColumn_Click"
+                                        BorderBrush="Transparent"
+                                        Background="Transparent">
+                                    <fa:IconBlock Icon="Times"
+                                                  Foreground="Red"
+                                                  ToolTip="Remove column."/>
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+
+            <Grid Grid.Row="0"
+                  Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Border Padding="4,0,4,8">
+                    <StackPanel>
+                        <Label Content="Generation Options"
+                               HorizontalContentAlignment="Center"
+                               FontWeight="Bold" />
+                    </StackPanel>
+                </Border>
+
+                <Border Padding="10,0,10,0"
+                        Grid.Row="1"
+                        Grid.Column="0">
+                    <StackPanel>
+                        <controls:Alert x:Name="RockOutOfDateAlert"
+                                        Margin="0, 0, 0, 8"
+                                        Text="The Rock.dll is older than the source code files, you might need to recompile it and the code generation tool." />
+
+                        <CheckBox Name="UseAttributeValuesCheckBox"
+                                  IsChecked="True"
+                                  Content="Use Attribute Values" />
+
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0, 8, 0, 0">
+                            <RadioButton Name="SecurityFromEntityRadioButton"
+                                         GroupName="SecurityFrom"
+                                         IsChecked="True"
+                                         ToolTip="This only applies to delete operations."
+                                         Content="Security from Entity" />
+
+                            <RadioButton Name="SecurityFromCmsRadioButton"
+                                         Margin="8, 0, 0, 0"
+                                         GroupName="SecurityFrom"
+                                         ToolTip="This only applies to delete operations."
+                                         Content="Security from CMS" />
+                        </StackPanel>
+
+                        <CheckBox Name="ShowReorder"
+                                  IsChecked="True"
+                                  Content="Show Reorder"
+                                  Margin="0, 8, 0, 0" />
+
+                        <CheckBox Name="ShowSecurity"
+                                  IsChecked="True"
+                                  Content="Show Security"
+                                  Margin="0, 8, 0, 0" />
+
+                        <CheckBox Name="ShowDelete"
+                                  IsChecked="True"
+                                  Content="Show Delete"
+                                  Margin="0, 8, 0, 0" />
+
+                        <DockPanel Margin="0, 8, 0, 0">
+                            <Label Content="ToolTip Source"
+                                   FontWeight="SemiBold" />
+
+                            <ComboBox Name="ToolTipSource"
+                                      VerticalAlignment="Center" />
+                        </DockPanel>
+
+                        <DockPanel Margin="0, 8, 0, 0">
+                            <Label Content="Skeleton Count"
+                                   FontWeight="SemiBold"
+                                   ToolTip="The number of skeleton rows to display while waiting for data."/>
+
+                            <TextBox Name="SkeletonCount"
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Left"
+                                     Width="50"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Border Grid.Row="2"
+                Grid.Column="0"
+                Padding="8"
+                Background="#eee">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Preview"
+                        Click="Preview_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

@@ -24,8 +24,10 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,10 +37,12 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of connection types
     /// Stored as ConnectionType.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_TYPE )]
     public class ConnectionTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
+        private const string VALUES_PUBLIC_KEY = "values";
+
         #region Formatting
 
         /// <inheritdoc />
@@ -58,6 +62,30 @@ namespace Rock.Field.Types
             }
 
             return string.Empty;
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            using ( var rockContext = new RockContext() )
+            {
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = new ConnectionTypeService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .OrderBy( o => o.Name )
+                    .Select( o => new ListItemBag
+                    {
+                       Value =  o.Guid.ToString(),
+                       Text = o.Name
+                    } )
+                    .ToCamelCaseJson( false, true );
+            }
+            return publicConfigurationValues;
         }
 
         #endregion

@@ -213,18 +213,18 @@ namespace RockWeb.Blocks.Checkin
         /// <exception cref="System.NotImplementedException"></exception>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
-            rFilter.SaveUserPreference( "Person", ppPerson.SelectedValue.ToString() );
-            rFilter.SaveUserPreference( "Group", ddlAttendanceGroup.SelectedValue );
-            rFilter.SaveUserPreference( "Schedule", spSchedule.SelectedValue );
-            rFilter.SaveUserPreference( "Attended", ddlDidAttend.SelectedValue );
+            rFilter.SetFilterPreference( "Date Range", drpDates.DelimitedValues );
+            rFilter.SetFilterPreference( "Person", ppPerson.SelectedValue.ToString() );
+            rFilter.SetFilterPreference( "Group", ddlAttendanceGroup.SelectedValue );
+            rFilter.SetFilterPreference( "Schedule", spSchedule.SelectedValue );
+            rFilter.SetFilterPreference( "Attended", ddlDidAttend.SelectedValue );
 
             BindGrid();
         }
 
         protected void RFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Checkin
         /// </summary>
         private void BindFilter()
         {
-            drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
+            drpDates.DelimitedValues = rFilter.GetFilterPreference( "Date Range" );
 
             using ( var rockContext = new RockContext() )
             {
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Checkin
                             ddlAttendanceGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
                         }
 
-                        ddlAttendanceGroup.SetValue( rFilter.GetUserPreference( "Group" ).AsIntegerOrNull() );
+                        ddlAttendanceGroup.SetValue( rFilter.GetFilterPreference( "Group" ).AsIntegerOrNull() );
                     }
                     else
                     {
@@ -280,7 +280,7 @@ namespace RockWeb.Blocks.Checkin
                 else
                 {
                     ppPerson.Visible = true;
-                    int? personId = rFilter.GetUserPreference( "Person" ).AsIntegerOrNull();
+                    int? personId = rFilter.GetFilterPreference( "Person" ).AsIntegerOrNull();
                     if ( personId.HasValue )
                     {
                         var person = new PersonService( rockContext ).Get( personId.Value );
@@ -291,14 +291,14 @@ namespace RockWeb.Blocks.Checkin
                 }
             }
 
-            spSchedule.SetValue( rFilter.GetUserPreference( "Schedule" ).AsIntegerOrNull() );
+            spSchedule.SetValue( rFilter.GetFilterPreference( "Schedule" ).AsIntegerOrNull() );
 
-            string filterValue = rFilter.GetUserPreference( "Attended" );
+            string filterValue = rFilter.GetFilterPreference( "Attended" );
             var filterAttendance = GetAttributeValue( "FilterAttendanceByDefault" ).AsBoolean();
             if ( string.IsNullOrEmpty( filterValue ) && filterAttendance )
             {
                 filterValue = "1";
-                rFilter.SaveUserPreference( "Attended", filterValue );
+                rFilter.SetFilterPreference( "Attended", filterValue );
             }
 
             ddlDidAttend.SetValue( filterValue );

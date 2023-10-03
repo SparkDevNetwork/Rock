@@ -86,10 +86,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfSettings.SaveUserPreference( "Entity Type", etpEntityTypeFilter.SelectedValue );
-            gfSettings.SaveUserPreference( "Entity Id", tbEntityIdFilter.Text );
+            gfSettings.SetFilterPreference( "Entity Type", etpEntityTypeFilter.SelectedValue );
+            gfSettings.SetFilterPreference( "Entity Id", tbEntityIdFilter.Text );
             int? personId = ppWhoFilter.PersonId;
-            gfSettings.SaveUserPreference( "Who", personId.HasValue ?  personId.ToString() : string.Empty );
+            gfSettings.SetFilterPreference( "Who", personId.HasValue ?  personId.ToString() : string.Empty );
 
             BindGrid();
         }
@@ -170,10 +170,10 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilter()
         {
-            etpEntityTypeFilter.SelectedValue = gfSettings.GetUserPreference( "Entity Type" );
-            tbEntityIdFilter.Text = gfSettings.GetUserPreference( "Entity Id" );
+            etpEntityTypeFilter.SelectedValue = gfSettings.GetFilterPreference( "Entity Type" );
+            tbEntityIdFilter.Text = gfSettings.GetFilterPreference( "Entity Id" );
             int personId = int.MinValue;
-            if ( int.TryParse(  gfSettings.GetUserPreference( "Who" ), out personId ) )
+            if ( int.TryParse(  gfSettings.GetFilterPreference( "Who" ), out personId ) )
             {
                 var person = new PersonService( new RockContext() ).Get( personId );
                 if ( person != null )
@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    gfSettings.SaveUserPreference( "Who", string.Empty );
+                    gfSettings.SetFilterPreference( "Who", string.Empty );
                 }
             }
         }
@@ -195,19 +195,19 @@ namespace RockWeb.Blocks.Core
             var qry = new AuditService( new RockContext() ).Queryable( "PersonAlias.Person" );
 
             int entityTypeId = int.MinValue;
-            if (int.TryParse( gfSettings.GetUserPreference( "Entity Type" ), out entityTypeId))
+            if (int.TryParse( gfSettings.GetFilterPreference( "Entity Type" ), out entityTypeId))
             {
                 qry = qry.Where( a => a.EntityTypeId == entityTypeId );
             }
 
             int entityId = int.MinValue;
-            if (int.TryParse( gfSettings.GetUserPreference( "Entity Id" ), out entityId))
+            if (int.TryParse( gfSettings.GetFilterPreference( "Entity Id" ), out entityId))
             {
                 qry = qry.Where( a => a.EntityId == entityId );
             }
 
             int personId = int.MinValue;
-            if ( int.TryParse( gfSettings.GetUserPreference( "Who" ), out personId ) )
+            if ( int.TryParse( gfSettings.GetFilterPreference( "Who" ), out personId ) )
             {
                 qry = qry.Where( a => a.PersonAlias != null && a.PersonAlias.PersonId == personId );
             }

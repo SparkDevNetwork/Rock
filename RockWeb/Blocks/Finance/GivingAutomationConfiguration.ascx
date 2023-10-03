@@ -293,7 +293,7 @@
                     </div>
 
                     <div class="panel-body">
-                        <Rock:WorkflowTypePicker ID="wtpLaunchWorkflow" runat="server" Label="Launch Workflow of Type" ValidationGroup="vgAlertDetails" Help="If matched, a workflow of the provided type will be launched setting the authorized person as the initiator and setting the attribute with the key of 'FinancialTransactionId' is it exists" />
+                        <Rock:WorkflowTypePicker ID="wtpLaunchWorkflow" runat="server" Label="Launch Workflow of Type" ValidationGroup="vgAlertDetails" Help="If matched, a workflow of the provided type will be launched setting the authorized person as the initiator and setting the attribute with the key of 'FinancialTransactionId' if it exists" />
                         <Rock:RockDropDownList ID="ddlConnectionType" runat="server" Label="Connection Type" AutoPostBack="true" ValidationGroup="vgAlertDetails" OnSelectedIndexChanged="ddlConnectionType_SelectedIndexChanged" CssClass="input-width-xxl" />
                         <Rock:RockDropDownList ID="ddlConnectionOpportunity" runat="server" Label="Connection Opportunity" ValidationGroup="vgAlertDetails" CssClass="input-width-xxl" Help="If matched, will create a new connection request with the authorized person as the requestor and setting the attribute with the key 'FinancialTransactionId' if it exists." />
                         <Rock:RockDropDownList ID="ddlDonorSystemCommunication" runat="server" Label="Send Donor Communication From Template" Help="If matched, a new communication will be sent to the person authorizing the gift using the provided communication template." ValidationGroup="vgAlertDetails" />

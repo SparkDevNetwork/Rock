@@ -13,7 +13,7 @@
     import { RacePickerGetRacesResultsBag } from "@Obsidian/ViewModels/Rest/Controls/racePickerGetRacesResultsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, ref } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
 
     const props = defineProps({
         /** The currently selected campus value(s). */

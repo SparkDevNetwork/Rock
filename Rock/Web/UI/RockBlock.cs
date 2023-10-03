@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -206,51 +207,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets a list of any context entities that the block requires.
         /// </summary>
-        public virtual List<EntityTypeCache> ContextTypesRequired
-        {
-            get
-            {
-                if ( _contextTypesRequired == null )
-                {
-                    _contextTypesRequired = new List<EntityTypeCache>();
-
-                    int properties = 0;
-                    foreach ( var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
-                    {
-                        var contextAttribute = ( ContextAwareAttribute ) attribute;
-
-                        if ( !contextAttribute.Contexts.Any() )
-                        {
-                            // If the entity type was not specified in the attribute, look for a property that defines it
-                            string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : string.Empty );
-                            properties++;
-
-                            Guid guid = Guid.Empty;
-                            if ( Guid.TryParse( GetAttributeValue( propertyKeyName ), out guid ) )
-                            {
-                                _contextTypesRequired.Add( EntityTypeCache.Get( guid ) );
-                            }
-                        }
-                        else
-                        {
-                            foreach ( var context in contextAttribute.Contexts )
-                            {
-                                var entityType = context.EntityType;
-
-                                if ( entityType != null && !_contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
-                                {
-                                    _contextTypesRequired.Add( entityType );
-                                }
-                            }
-                        }
-                    }
-                }
-
-                return _contextTypesRequired;
-            }
-        }
-
-        private List<EntityTypeCache> _contextTypesRequired;
+        public virtual List<EntityTypeCache> ContextTypesRequired => this.BlockCache?.ContextTypesRequired ?? new List<EntityTypeCache>();
 
         /// <summary>
         /// Gets a dictionary of the current context entities.  The key is the type of context, and the value is the entity object
@@ -1172,7 +1129,60 @@ namespace Rock.Web.UI
             }
         }
 
-        #region User Preferences
+        #region Person Preferences
+
+        /// <summary>
+        /// Gets the global person preferences. These are unique to the person
+        /// but global across the entire system. Global preferences should be
+        /// used with extreme caution and care.
+        /// </summary>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetGlobalPersonPreferences()
+        {
+            return RockPage.GetGlobalPersonPreferences();
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the specified entity.
+        /// </summary>
+        /// <param name="scopedEntity">The entity to use when scoping the preferences for a particular use.</param>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetScopedPersonPreferences( IEntity scopedEntity )
+        {
+            return RockPage.GetScopedPersonPreferences( scopedEntity );
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the specified entity.
+        /// </summary>
+        /// <param name="scopedEntity">The entity to use when scoping the preferences for a particular use.</param>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetScopedPersonPreferences( IEntityCache scopedEntity )
+        {
+            return RockPage.GetScopedPersonPreferences( scopedEntity );
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the current block.
+        /// </summary>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetBlockPersonPreferences()
+        {
+            return RockPage.GetScopedPersonPreferences( BlockCache );
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the current block type.
+        /// </summary>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetBlockTypePersonPreferences()
+        {
+            return RockPage.GetScopedPersonPreferences( BlockCache.BlockType );
+        }
+
+        #endregion
+
+        #region User Preferences (Obsolete)
 
         /// <summary>
         /// Returns the application user preference value for the current user for a given key
@@ -1181,6 +1191,8 @@ namespace Rock.Web.UI
         /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
         /// <returns>A <see cref="System.String" /> representing the user preference value. If a match for the key is not found,
         /// an empty string will be returned.</returns>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public string GetUserPreference( string key )
         {
             return RockPage.GetUserPreference( key );
@@ -1195,6 +1207,8 @@ namespace Rock.Web.UI
         /// user that begins with the key prefix.  Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> includes
         /// a key <see cref="System.String"/> that represents the user preference key and a value <see cref="System.String"/> that
         /// represents the user preference value. If no preferences are found, an empty dictionary will be returned.</returns>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public Dictionary<string, string> GetUserPreferences( string keyPrefix )
         {
             return RockPage.GetUserPreferences( keyPrefix );
@@ -1208,6 +1222,8 @@ namespace Rock.Web.UI
         /// user preference.</param>
         /// <param name="value">A <see cref="System.String" /> that represents the value of the user preference.</param>
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void SetUserPreference( string key, string value, bool saveValue = true )
         {
             RockPage.SetUserPreference( key, value, saveValue );
@@ -1217,6 +1233,8 @@ namespace Rock.Web.UI
         /// Saves the user preferences.
         /// </summary>
         /// <param name="keyPrefix">The key prefix.</param>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void SaveUserPreferences( string keyPrefix )
         {
             RockPage.SaveUserPreferences( keyPrefix );
@@ -1226,6 +1244,8 @@ namespace Rock.Web.UI
         /// Deletes a user preference value for the specified key
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the key.</param>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void DeleteUserPreference( string key )
         {
             RockPage.DeleteUserPreference( key );
@@ -1236,42 +1256,35 @@ namespace Rock.Web.UI
         #region User Preferences for a specific block
 
         /// <summary>
-        /// Gets the prefix for a user preference key that includes the block id so that it specific to the this block
-        /// </summary>
-        /// <value>
-        /// The block user preference prefix.
-        /// </value>
-        private string BlockUserPreferencePrefix
-        {
-            get
-            {
-                return PersonService.GetBlockUserPreferenceKeyPrefix( this.BlockId );
-            }
-        }
-
-        /// <summary>
         /// Returns the user preference value for the current user and block for a given key
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
         /// <returns>A <see cref="System.String" /> representing the user preference value. If a match for the key is not found,
         /// an empty string will be returned.</returns>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public string GetBlockUserPreference( string key )
         {
-            return RockPage.GetUserPreference( BlockUserPreferencePrefix + key );
+            return GetBlockPersonPreferences().GetValue( key );
         }
 
         /// <summary>
         /// Returns the preference values for the current user and the current block
         /// </summary>
         /// <returns></returns>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public Dictionary<string, string> GetBlockUserPreferences()
         {
-            var userPreferences = RockPage.GetUserPreferences( BlockUserPreferencePrefix );
-            int blockUserPreferencePrefixLength = BlockUserPreferencePrefix.Length;
+            var preferences = GetBlockPersonPreferences();
+            var prefs = new Dictionary<string, string>();
 
-            // remove the block id prefix since we only want the key that the block knows about
-            var blockUserPreferences = userPreferences.ToDictionary( k => k.Key.Substring( blockUserPreferencePrefixLength ), v => v.Value );
-            return blockUserPreferences;
+            foreach ( var key in preferences.GetKeys() )
+            {
+                prefs.AddOrIgnore( key, preferences.GetValue( key ) );
+            }
+
+            return prefs;
         }
 
         /// <summary>
@@ -1281,26 +1294,41 @@ namespace Rock.Web.UI
         /// user preference.</param>
         /// <param name="value">A <see cref="System.String" /> that represents the value of the user preference.</param>
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void SetBlockUserPreference( string key, string value, bool saveValue = true )
         {
-            RockPage.SetUserPreference( BlockUserPreferencePrefix + key, value, saveValue );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( key, value );
+
+            // Ignore the saveValue option, it's legacy.
+            preferences.Save();
         }
 
         /// <summary>
         /// Saves this block's user preferences to the database
         /// </summary>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void SaveBlockUserPreferences()
         {
-            SaveUserPreferences( BlockUserPreferencePrefix );
+            // This now does nothing as we save on each key when set in legacy mode.
         }
 
         /// <summary>
         /// Deletes a user preference value for the current user and block with the specified key
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the key.</param>
+        [Obsolete( "Use the new PersonPreference methods instead." )]
+        [RockObsolete( "1.16" )]
         public void DeleteBlockUserPreference( string key )
         {
-            RockPage.DeleteUserPreference( BlockUserPreferencePrefix + key );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( key, string.Empty );
+
+            preferences.Save();
         }
 
         #endregion

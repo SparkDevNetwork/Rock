@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         protected void gfWorkflowTrigger_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfWorkflowTrigger.SaveUserPreference( "Include Inactive", cbIncludeInactive.Checked ? "Yes" : String.Empty );
+            gfWorkflowTrigger.SetFilterPreference( "Include Inactive", cbIncludeInactive.Checked ? "Yes" : String.Empty );
             BindGrid();
         }
 
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             if ( !Page.IsPostBack )
             {
-                cbIncludeInactive.Checked = gfWorkflowTrigger.GetUserPreference( "Include Inactive" ) == "Yes";
+                cbIncludeInactive.Checked = gfWorkflowTrigger.GetFilterPreference( "Include Inactive" ) == "Yes";
             }
         }
 
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             var triggers = new WorkflowTriggerService( new RockContext() ).Queryable();
 
-            string includeInactive = gfWorkflowTrigger.GetUserPreference( "Include Inactive" );
+            string includeInactive = gfWorkflowTrigger.GetFilterPreference( "Include Inactive" );
 
             if ( String.IsNullOrEmpty( includeInactive ) || !includeInactive.Contains( "Yes" ) )
             {

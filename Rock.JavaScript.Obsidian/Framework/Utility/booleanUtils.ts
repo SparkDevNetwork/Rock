@@ -65,12 +65,19 @@ export function asYesNoOrNull(val: unknown): "Yes" | "No" | null {
 }
 
 /** Transform the value into the strings "True", "False", or null */
-export function asTrueFalseOrNull(val: unknown): | "True" | "False" | null {
+export function asTrueFalseOrNull(val: unknown): "True" | "False" | null {
     const boolOrNull = asBooleanOrNull(val);
 
     if (boolOrNull === null) {
         return null;
     }
+
+    return boolOrNull ? "True" : "False";
+}
+
+/** Transform the value into the strings "True" if truthy or "False" if falsey */
+export function asTrueOrFalseString(val: unknown): "True" | "False" {
+    const boolOrNull = asBooleanOrNull(val);
 
     return boolOrNull ? "True" : "False";
 }

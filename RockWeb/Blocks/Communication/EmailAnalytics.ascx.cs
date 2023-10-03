@@ -141,7 +141,9 @@ namespace RockWeb.Blocks.Communication
 
             if ( !Page.IsPostBack )
             {
-                hfSelectedMonthsDateRange.Value = this.GetBlockUserPreference( UserPreferenceKey.SelectedMonthsDateRange );
+                var preferences = GetBlockPersonPreferences();
+
+                hfSelectedMonthsDateRange.Value = preferences.GetValue( UserPreferenceKey.SelectedMonthsDateRange );
                 ShowCharts();
             }
         }
@@ -237,7 +239,10 @@ namespace RockWeb.Blocks.Communication
                 hfSelectedMonthsDateRange.Value = string.Empty;
             }
 
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedMonthsDateRange, hfSelectedMonthsDateRange.Value );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( UserPreferenceKey.SelectedMonthsDateRange, hfSelectedMonthsDateRange.Value );
+            preferences.Save();
 
             ShowCharts();
         }

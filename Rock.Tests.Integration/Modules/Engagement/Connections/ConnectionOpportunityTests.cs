@@ -31,6 +31,7 @@ namespace Rock.Tests.Integration.Engagement.Connections
 
             var connectionRequest = new ConnectionRequest();
             connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+            connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
             connectionRequest.PersonAliasId = connectionOpportunity.ModifiedByPersonAliasId.Value;
             connectionRequest.ConnectionStatusId = defaultStatusId;
             ConnectionWorkflow testConnectionWorkflow = null;

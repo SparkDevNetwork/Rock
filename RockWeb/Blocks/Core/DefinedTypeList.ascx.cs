@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Core
         protected void tFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             int? categoryId = cpCategory.SelectedValueAsInt();
-            tFilter.SaveUserPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : string.Empty );
+            tFilter.SetFilterPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : string.Empty );
 
             gDefinedType_Bind();
         }
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilter()
         {
-            int? categoryId = tFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+            int? categoryId = tFilter.GetFilterPreference( "Category" ).AsIntegerOrNull();
             cpCategory.SetValue( categoryId );
         }
 
@@ -266,7 +266,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                int? categoryId = tFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+                int? categoryId = tFilter.GetFilterPreference( "Category" ).AsIntegerOrNull();
                 if ( categoryId.HasValue )
                 {
                     queryable = queryable.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == categoryId.Value );

@@ -1,0 +1,118 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="filterClass">
+        <div v-if="headerMarkup" class="filter-header" v-html="headerMarkup"></div>
+
+        <CheckBoxList v-if="isPills && isMultiSelect"
+                      :label="label"
+                      v-model="multipleValue"
+                      :items="items"
+                      horizontal />
+
+        <RadioButtonList v-if="isPills && !isMultiSelect"
+                         :label="label"
+                         v-model="singleValue"
+                         :items="items"
+                         horizontal />
+
+        <DropDownList v-if="isDropDownList && isMultiSelect"
+                      :label="label"
+                      v-model="multipleValue"
+                      :items="items"
+                      multiple />
+
+        <DropDownList v-if="isDropDownList && !isMultiSelect"
+                      :label="label"
+                      v-model="singleValue"
+                      :items="items" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { SearchFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/searchFilterBag";
+    import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<string>,
+            required: true
+        },
+
+        filter: {
+            type: Object as PropType<SearchFilterBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    const singleValue = ref(props.modelValue);
+    const multipleValue = ref(props.modelValue.split(","));
+
+    const filterClass = computed((): string => {
+        const filterSlugName = props.filter.label?.replace(/[^a-zA-Z0-9 ]/g, "").replace(/ /g, "-").toLowerCase() ?? "";
+
+        return `filter filter-${filterSlugName}`;
+    });
+
+    const headerMarkup = computed((): string => {
+        return props.filter.headerMarkup ?? "";
+    });
+
+    const items = computed((): ListItemBag[] => {
+        // If this is goind to render as radio items then we need an All option.
+        if (isPills.value && !isMultiSelect.value) {
+            const radioItems = [...(props.filter.items ?? [])];
+
+            radioItems.splice(0, 0, {
+                value: "",
+                text: "All"
+            });
+
+            return radioItems;
+        }
+
+        return props.filter.items ?? [];
+    });
+
+    const isMultiSelect = computed((): boolean => {
+        return props.filter.isMultipleSelection;
+    });
+
+    const isDropDownList = computed((): boolean => {
+        return props.filter.control === ContentCollectionFilterControl.Dropdown;
+    });
+
+    const isPills = computed((): boolean => {
+        return props.filter.control === ContentCollectionFilterControl.Pills;
+    });
+
+    const label = computed((): string => {
+        return props.filter.label ?? "";
+    });
+
+    watch(() => props.modelValue, () => {
+        singleValue.value = props.modelValue;
+        multipleValue.value = props.modelValue.split(",");
+    });
+
+    watch(singleValue, () => {
+        if (props.modelValue !== singleValue.value) {
+            emit("update:modelValue", singleValue.value);
+        }
+    });
+
+    watch(multipleValue, () => {
+        if (props.modelValue !== multipleValue.value.join(",")) {
+            emit("update:modelValue", multipleValue.value.join(","));
+        }
+    });
+</script>

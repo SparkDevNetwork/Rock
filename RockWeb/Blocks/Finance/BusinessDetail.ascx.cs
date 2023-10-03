@@ -536,6 +536,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         #region Internal Methods
 
+        /// <summary>
+        /// Creates an "Actions" menu with workflow and/or custom actions, as specified in the block settings.
+        /// </summary>
+        /// <param name="businessId">The business (person) identifier.</param>
         protected void CreateActionMenu( int businessId )
         {
             StringBuilder sbActions = new StringBuilder();

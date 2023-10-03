@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gFilter.SaveUserPreference( "Site", ddlSite.SelectedValue );
+            gFilter.SetFilterPreference( "Site", ddlSite.SelectedValue );
 
             BindGrid();
         }
@@ -253,7 +253,7 @@ namespace RockWeb.Blocks.Cms
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }
             ddlSite.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-            ddlSite.SetValue( gFilter.GetUserPreference( "Site" ) );
+            ddlSite.SetValue( gFilter.GetFilterPreference( "Site" ) );
         }
 
         /// <summary>
@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Cms
 
             var queryable = pageRouteService.Queryable().AsNoTracking();
 
-            int? siteId = gFilter.GetUserPreference( "Site" ).AsIntegerOrNull();
+            int? siteId = gFilter.GetFilterPreference( "Site" ).AsIntegerOrNull();
             if ( siteId.HasValue )
             {
                 queryable = queryable.Where( d => d.Page.Layout.SiteId == siteId.Value );

@@ -10,9 +10,9 @@
 
 <script setup lang="ts">
     import { PropType, computed } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
-    import NumberBox from "@Obsidian/Controls/numberBox";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";

@@ -77,7 +77,7 @@ namespace Rock.Web.Cache
         #region Public Methods
 
         /// <summary>
-        /// Set's the cached objects properties from the model/entities properties.
+        /// Sets the cached object's properties from the model/entity's properties.
         /// </summary>
         /// <param name="entity">The entity.</param>
         public virtual void SetFromEntity( IEntity entity )
@@ -378,7 +378,7 @@ namespace Rock.Web.Cache
                 var items = itemsQry.ToList();
 
                 // Pre-load all the attributes.
-                if ( typeof( IHasAttributes ).IsAssignableFrom( typeof( TT ) ) )
+                if ( typeof( IHasAttributes ).IsAssignableFrom( typeof( TT ) ) && typeof( T ) != typeof( AttributeCache ) )
                 {
                     items.Cast<IHasAttributes>().LoadAttributes( rockContext );
                 }

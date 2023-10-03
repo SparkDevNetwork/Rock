@@ -255,13 +255,16 @@ namespace RockWeb.Blocks.GroupScheduling
                 communicationUrl = string.Format( communicationUrl, communication.Id );
             }
 
-            UserPreferenceConfiguration userPreferenceConfiguration = this.GetBlockUserPreference( UserPreferenceKey.UserPreferenceConfigurationJSON ).FromJsonOrNull<UserPreferenceConfiguration>() ?? new UserPreferenceConfiguration();
+            var preferences = GetBlockPersonPreferences();
+
+            UserPreferenceConfiguration userPreferenceConfiguration = preferences.GetValue( UserPreferenceKey.UserPreferenceConfigurationJSON ).FromJsonOrNull<UserPreferenceConfiguration>() ?? new UserPreferenceConfiguration();
             userPreferenceConfiguration.GroupIds = gpGroups.SelectedValuesAsInt().ToArray();
             userPreferenceConfiguration.IncludeChildGroups = cbIncludeChildGroups.Checked;
             userPreferenceConfiguration.InviteStatuses = cblInviteStatus.SelectedValues.ToArray();
             userPreferenceConfiguration.ScheduleIds = lbSchedules.SelectedValuesAsInt.ToArray();
             userPreferenceConfiguration.LocationIds = cblLocations.SelectedValuesAsInt.ToArray();
-            this.SetBlockUserPreference( UserPreferenceKey.UserPreferenceConfigurationJSON, userPreferenceConfiguration.ToJson() );
+            preferences.SetValue( UserPreferenceKey.UserPreferenceConfigurationJSON, userPreferenceConfiguration.ToJson() );
+            preferences.Save();
 
             Page.Response.Redirect( communicationUrl, false );
             Context.ApplicationInstance.CompleteRequest();
@@ -324,7 +327,8 @@ namespace RockWeb.Blocks.GroupScheduling
         /// </summary>
         private void ShowDetails()
         {
-            UserPreferenceConfiguration userPreferenceConfiguration = this.GetBlockUserPreference( UserPreferenceKey.UserPreferenceConfigurationJSON ).FromJsonOrNull<UserPreferenceConfiguration>();
+            var preferences = GetBlockPersonPreferences();
+            UserPreferenceConfiguration userPreferenceConfiguration = preferences.GetValue( UserPreferenceKey.UserPreferenceConfigurationJSON ).FromJsonOrNull<UserPreferenceConfiguration>();
             userPreferenceConfiguration = userPreferenceConfiguration ?? new UserPreferenceConfiguration
             {
                 InviteStatuses = cblInviteStatus.SelectedValues.ToArray()

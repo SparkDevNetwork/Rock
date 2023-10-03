@@ -48,6 +48,9 @@ namespace Rock.Tests.Integration.Crm
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
+            // Restore the test database image.
+            TestDatabaseHelper.ResetDatabase();
+
             CreatePersonWithPrimaryAndPreviousEmails();
             CreatePersonWithNoEmails();
             CreatePersonWithPrimaryEmailButDifferentName();

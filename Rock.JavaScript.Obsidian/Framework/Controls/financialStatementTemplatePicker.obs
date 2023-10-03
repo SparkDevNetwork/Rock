@@ -1,0 +1,69 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <BaseAsyncPicker v-model="internalValue"
+                     v-bind="standardProps"
+                     :items="actualItems" />
+</template>
+
+<script setup lang="ts">
+    import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, PropType, ref } from "vue";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void;
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const standardProps = useStandardAsyncPickerProps(props);
+    const http = useHttp();
+    const loadedItems = ref<ListItemBag[] | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const actualItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedItems.value || loadOptions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the items from the server.
+     */
+    const loadOptions = async (): Promise<ListItemBag[]> => {
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/FinancialStatementTemplatePickerGetFinancialStatementTemplates", undefined, {});
+
+        if (result.isSuccess && result.data) {
+            loadedItems.value = result.data;
+            return result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedItems.value = [];
+            return [];
+        }
+    };
+
+    // #endregion
+</script>

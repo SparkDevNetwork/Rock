@@ -34,8 +34,8 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import RockFormField from "./rockFormField";
-    import DropDownList from "./dropDownList";
+    import RockFormField from "./rockFormField.obs";
+    import DropDownList from "./dropDownList.obs";
     import DatePicker from "./datePicker.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";

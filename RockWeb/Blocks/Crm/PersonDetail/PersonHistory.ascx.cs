@@ -116,11 +116,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
             int? categoryId = cpCategory.SelectedValueAsInt();
-            gfSettings.SaveUserPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : "" );
-            gfSettings.SaveUserPreference( "Summary Contains", tbSummary.Text );
+            gfSettings.SetFilterPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : "" );
+            gfSettings.SetFilterPreference( "Summary Contains", tbSummary.Text );
             int? personId = ppWhoFilter.PersonId;
-            gfSettings.SaveUserPreference( "Who", personId.HasValue ? personId.ToString() : string.Empty );
-            gfSettings.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+            gfSettings.SetFilterPreference( "Who", personId.HasValue ? personId.ToString() : string.Empty );
+            gfSettings.SetFilterPreference( "Date Range", drpDates.DelimitedValues );
 
             BindGrid();
         }
@@ -201,12 +201,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void BindFilter()
         {
-            int? categoryId = gfSettings.GetUserPreference( "Category" ).AsIntegerOrNull();
+            int? categoryId = gfSettings.GetFilterPreference( "Category" ).AsIntegerOrNull();
             cpCategory.SetValue( categoryId );
 
-            tbSummary.Text = gfSettings.GetUserPreference( "Summary Contains" );
+            tbSummary.Text = gfSettings.GetFilterPreference( "Summary Contains" );
             int personId = int.MinValue;
-            if ( int.TryParse( gfSettings.GetUserPreference( "Who" ), out personId ) )
+            if ( int.TryParse( gfSettings.GetFilterPreference( "Who" ), out personId ) )
             {
                 var person = new PersonService( new RockContext() ).Get( personId );
                 if ( person != null )
@@ -215,10 +215,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else
                 {
-                    gfSettings.SaveUserPreference( "Who", string.Empty );
+                    gfSettings.SetFilterPreference( "Who", string.Empty );
                 }
             }
-            drpDates.DelimitedValues = gfSettings.GetUserPreference( "Date Range" );
+            drpDates.DelimitedValues = gfSettings.GetFilterPreference( "Date Range" );
 
         }
 
@@ -237,20 +237,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             ( h.EntityTypeId == personEntityTypeId && h.EntityId == Person.Id ) ||
                             ( h.EntityTypeId == groupEntityTypeId && familyIds.Contains( h.EntityId ) ) );
 
-                    int? categoryId = gfSettings.GetUserPreference( "Category" ).AsIntegerOrNull();
+                    int? categoryId = gfSettings.GetFilterPreference( "Category" ).AsIntegerOrNull();
                     if ( categoryId.HasValue )
                     {
                         qry = qry.Where( a => a.CategoryId == categoryId.Value );
                     }
 
                     int personId = int.MinValue;
-                    if ( int.TryParse( gfSettings.GetUserPreference( "Who" ), out personId ) )
+                    if ( int.TryParse( gfSettings.GetFilterPreference( "Who" ), out personId ) )
                     {
                         qry = qry.Where( h => h.CreatedByPersonAlias.PersonId == personId );
                     }
 
                     var drp = new DateRangePicker();
-                    drp.DelimitedValues = gfSettings.GetUserPreference( "Date Range" );
+                    drp.DelimitedValues = gfSettings.GetFilterPreference( "Date Range" );
                     if ( drp.LowerValue.HasValue )
                     {
                         qry = qry.Where( h => h.CreatedDateTime >= drp.LowerValue.Value );
@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                     }
 
-                    string summary = gfSettings.GetUserPreference( "Summary Contains" );
+                    string summary = gfSettings.GetFilterPreference( "Summary Contains" );
                     if ( !string.IsNullOrWhiteSpace( summary ) )
                     {
                         histories = histories.Where( h => historyCombinedSummary.Any( a => a.Value.Contains( summary ) && a.Key == h.Id ) ).ToList();

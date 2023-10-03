@@ -19,11 +19,13 @@ using System.Collections.Generic;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
+using OpenXmlPowerTools;
 #endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -32,7 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a List of Schedule Guids
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SCHEDULES )]
     public class SchedulesFieldType : FieldType, IEntityReferenceFieldType, ISplitMultiValueFieldType
     {
@@ -73,6 +75,60 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var scheduleValues = publicValue.FromJsonOrNull<List<ListItemBag>>();
+
+            if ( scheduleValues.Any() )
+            {
+                return string.Join( ",", scheduleValues.Select( s => s.Value ) );
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                var scheduleValues = new List<ListItemBag>();
+
+                foreach ( string guidValue in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    Guid? guid = guidValue.AsGuidOrNull();
+                    if ( guid.HasValue )
+                    {
+                        var schedule = NamedScheduleCache.Get( guid.Value );
+                        if ( schedule != null )
+                        {
+                            var scheduleValue = new ListItemBag()
+                            {
+                                Text = schedule.Name,
+                                Value = schedule.Guid.ToString(),
+                            };
+
+                            scheduleValues.Add( scheduleValue );
+                        }
+                    }
+                }
+
+                if ( scheduleValues.Any() )
+                {
+                    return scheduleValues.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return string.Empty;
+        }
 
         #endregion
 

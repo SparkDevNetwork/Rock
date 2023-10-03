@@ -611,7 +611,22 @@ namespace Rock.Web.Cache
         /// <value>
         /// The lava support level.
         /// </value>
-        public Lava.LavaSupportLevel LavaSupportLevel => GetValue( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Lava.LavaSupportLevel>() ?? Lava.LavaSupportLevel.NoLegacy;
+        [RockObsolete( "1.16" )]
+        [Obsolete( "Legacy Lava is no longer supported." )]
+        public Lava.LavaSupportLevel LavaSupportLevel
+        {
+            get
+            {
+                /* [13-Sep-2023] DJL
+                 * 
+                 * As of v1.16, Legacy Lava is no longer supported and the corresponding global attribute value is removed during the database migration process.
+                 * A database that is compatible with this version of Rock is assumed to no longer require Legacy Lava support.
+                 * 
+                 * Reason: Legacy Lava No Longer Supported.
+                 */
+                return Lava.LavaSupportLevel.NoLegacy;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether Envelope Number feature is enabled

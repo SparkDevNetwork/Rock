@@ -1,0 +1,253 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <div v-if="!isSystem">
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="name"
+                             label="Name"
+                             rules="required" />
+
+                    <TextBox v-model="tagName"
+                             help="This will be the name of the shortcode when used in Lava."
+                             label="Tag Name"
+                             rules="required" />
+                </div>
+
+                <div class="col-md-6">
+                    <CheckBox v-model="isActive"
+                              label="Active" />
+
+                    <RadioButtonList v-model="tagType"
+                                     :items="tagTypes"
+                                     :repeatColumns="0"
+                                     label="Tag Type"
+                                     rules="required"
+                                     help="Block tags require an end tag while inline do not."
+                                     horizontal />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-2">
+                    <CategoryPicker v-model="categories"
+                                    label="Categories"
+                                    multiple
+                                    :entityTypeGuid="EntityType.LavaShortcode" />
+                </div>
+            </div>
+
+            <TextBox v-model="description"
+                     label="Description"
+                     textMode="multiline" />
+
+            <CodeEditor v-model="documentation"
+                        label="Documentation"
+                        help="Technical description of the internals of the shortcode."
+                        theme="rock"
+                        mode="text"
+                        :editorHeight="250" />
+
+            <CodeEditor v-model="markup"
+                        label="Short Code Markup"
+                        theme="rock"
+                        mode="text"
+                        :editorHeight="350"
+                        rules="required" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <KeyValueList label="Parameters"
+                                  help="List the parameters for your shortcode. If you provide a value here it will become the default value if none is provided."
+                                  keyPlaceholder="Key"
+                                  valuePlaceholder="Value"
+                                  v-model="parameters" />
+                </div>
+
+                <div class="col-md-6">
+                    <LavaCommandPicker v-model="enabledCommands" label="Enabled Lava Commands" :multiple="true" />
+                </div>
+            </div>
+        </div>
+
+        <div v-else>
+
+            <p v-text="description" />
+
+            <NotificationBox alertType="info">
+                <strong>Note</strong> This is a system lava shortcode so editing is limited.
+            </NotificationBox>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <ValueDetailList :modelValue="propertyValues" />
+                </div>
+
+                <div class="col-md-2">
+                    <CategoryPicker v-model="categories"
+                                    label="Categories"
+                                    multiple
+                                    :entityTypeGuid="EntityType.LavaShortcode" />
+                </div>
+            </div>
+
+            <CodeEditor v-model="markup"
+                        label="Short Code Markup"
+                        theme="rock"
+                        mode="text"
+                        :editorHeight="850"
+                        rules="required" />
+
+            <strong>Parameters</strong>
+            <pre>
+                <p v-for="parameter in parameters"><strong>{{ parameter.key }} : </strong>{{ parameter.value }}</p>
+            </pre>
+
+            <strong>Enabled Commands</strong>
+            <p v-text="enabledCommandsText" />
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import  { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LavaShortcodeBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeDetail/lavaShortcodeBag";
+    import { LavaShortcodeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeDetail/lavaShortcodeDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<LavaShortcodeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LavaShortcodeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: LavaShortcodeBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const tagName = propertyRef(props.modelValue.tagName ?? "", "TagName");
+    const tagType = propertyRef(props.modelValue.tagType ?? "", "TagType");
+    const tagTypes = ref(props.options.tagTypes ?? []);
+    const categories = propertyRef(props.modelValue.categories ?? [], "Categories");
+    const documentation = propertyRef(props.modelValue.documentation ?? "", "Documentation");
+    const markup = propertyRef(props.modelValue.markup ?? "", "Markup");
+    const enabledCommands = propertyRef<ListItemBag[]>(props.modelValue.enabledCommands ?? [], "EnabledCommands");
+    const parameters = propertyRef((props.modelValue.parameters ?? []).map((s): KeyValueItem => ({ key: s.text, value: s.value })), "Parameters");
+    const enabledCommandsText = ref(enabledCommands.value.map((c): string => c.value ?? "").join(", ") ?? "");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, tagName, tagType, documentation, markup, enabledCommands, parameters, categories];
+
+    // #endregion
+
+    // #region Computed Values
+    const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
+
+    const propertyValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.isSystem) {
+            valueBuilder.addTextValue("System", props.modelValue.isSystem ? "Yes" : "No");
+        }
+
+        if (props.modelValue.tagName) {
+            valueBuilder.addTextValue("Tag Name", props.modelValue.tagName);
+        }
+
+        if (props.modelValue.tagType) {
+            valueBuilder.addTextValue("Tag Type", props.modelValue.tagType);
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(tagName, props.modelValue.tagName ?? "");
+        updateRefValue(tagType, props.modelValue.tagType ?? "");
+        updateRefValue(documentation, props.modelValue.documentation ?? "");
+        updateRefValue(markup, props.modelValue.markup ?? "");
+        updateRefValue(enabledCommands, props.modelValue.enabledCommands ?? []);
+        updateRefValue(parameters, (props.modelValue.parameters ?? []).map((s): KeyValueItem => ({ key: s.text, value: s.value })));
+        updateRefValue(categories, props.modelValue.categories ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: LavaShortcodeBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            tagName: tagName.value,
+            tagType: tagType.value,
+            documentation: documentation.value,
+            markup: markup.value,
+            enabledCommands: enabledCommands.value,
+            parameters: parameters.value.map((s): ListItemBag => ({ value: s.value ?? "", text: s.key ?? "" })),
+            categories: categories.value
+        };
+
+        emit("update:modelValue", newValue);
+    }, { deep: true });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

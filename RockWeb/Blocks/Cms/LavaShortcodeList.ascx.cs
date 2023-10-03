@@ -29,6 +29,7 @@ using Rock.Lava;
 using Rock.Lava.Shortcodes;
 using Rock.Model;
 using Rock.Security;
+using Rock.ViewModels.Core;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -218,7 +219,11 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void swShowInactive_CheckedChanged( object sender, EventArgs e )
         {
-            SetBlockUserPreference( UserPreferenceKey.ShowInactive, swShowInactive.Checked.ToTrueFalse() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( UserPreferenceKey.ShowInactive, swShowInactive.Checked.ToTrueFalse() );
+            preferences.Save();
+
             LoadLavaShortcodes();
         }
 
@@ -233,7 +238,11 @@ namespace RockWeb.Blocks.Cms
 
             if ( selectedItem != null )
             {
-                SetBlockUserPreference( UserPreferenceKey.CategoryId, selectedItem.Value );
+                var preferences = GetBlockPersonPreferences();
+
+                preferences.SetValue( UserPreferenceKey.CategoryId, selectedItem.Value );
+                preferences.Save();
+
                 LoadLavaShortcodes();
             }
         }
@@ -441,9 +450,10 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void LoadUserPreferences()
         {
-            var categoryId = GetBlockUserPreference( UserPreferenceKey.CategoryId ).AsInteger();
+            var preferences = GetBlockPersonPreferences();
+            var categoryId = preferences.GetValue( UserPreferenceKey.CategoryId ).AsInteger();
             var currentCategoryVal = ddlCategoryFilter.SelectedValue.AsInteger();
-            var showInactive = GetBlockUserPreference( UserPreferenceKey.ShowInactive ).AsBoolean();
+            var showInactive = preferences.GetValue( UserPreferenceKey.ShowInactive ).AsBoolean();
 
             var loadData = false;
             if ( categoryId > 0 && currentCategoryVal != categoryId )

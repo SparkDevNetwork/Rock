@@ -62,6 +62,10 @@ namespace Rock.Web.UI.Controls
             {
                 ItemRestUrlExtraParams += $"&itemFilterPropertyName=EntityTypeId&itemFilterPropertyValue={this.EntityTypeId}";
             }
+            if ( this.DisplayPersistedOnly )
+            {
+                ItemRestUrlExtraParams += $"&displayPersistedOnly=true";
+            }
         }
 
         /// <summary>
@@ -105,12 +109,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [display persisted only].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display persisted only]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayPersistedOnly
+        {
+            get
+            {
+                return ViewState["DisplayPersistedOnly"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["DisplayPersistedOnly"] = value;
+                SetExtraRestParams();
+            }
+        }
+
+        /// <summary>
         /// Gets the item rest URL.
         /// </summary>
         /// <value>
         /// The item rest URL.
         /// </value>
-        public override string ItemRestUrl => "~/api/Categories/GetChildren/";
+        public override string ItemRestUrl => "~/api/Categories/GetDataView/";
 
         /// <summary>
         /// Sets the value.

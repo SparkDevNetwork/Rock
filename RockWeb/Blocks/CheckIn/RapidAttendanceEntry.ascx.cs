@@ -487,6 +487,8 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Checkin/RapidAttendanceEntry.css", true );
+
             base.BlockUpdated += RapidAttendanceEntry_BlockUpdated;
             lbAddFamily.Visible = GetAttributeValue( AttributeKey.AddFamilyPage ).IsNotNullOrWhiteSpace();
             dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
@@ -1494,7 +1496,7 @@ namespace RockWeb.Blocks.CheckIn
                       we'll require an SMS number in these situations. The goal is to only enforce if they are able to do something about it.
                       1) The block is configured to show both 'Communication Preference' and 'Phone Numbers'.
                       2) Communication Preference is set to SMS
-                      
+
                      Edge cases
                        - Both #1 and #2 are true, but no Phone Types are selected in block settings. In this case, still enforce.
                          Think of this as a block configuration issue (they shouldn't have configured it that way)

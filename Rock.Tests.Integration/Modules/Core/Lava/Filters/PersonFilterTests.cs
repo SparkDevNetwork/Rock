@@ -22,8 +22,10 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tests.Integration.Organization;
 using Rock.Tests.Shared;
 using Rock.Utility.Enums;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
@@ -117,6 +119,131 @@ namespace Rock.Tests.Integration.Core.Lava
             TestHelper.AssertTemplateOutput( outputExpected,
                 template );
         }
+
+        #region Filter: NearestCampus
+
+        [TestMethod]
+        public void PersonNearestCampus_WithDefaultOptions_ReturnsSingleCampus()
+        {
+            var campusManager = CampusDataManager.Instance;
+            campusManager.AddCampusTestDataSet();
+
+            //var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+            var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
+
+            var template = @"
+{% person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' %}
+{% assign campus = person | NearestCampus %}
+Ted's Nearest Campus: {{ campus.Name }}
+{% endperson %}";
+            var outputExpected = "Ted's Nearest Campus: Main Campus";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        /// <summary>
+        /// Documentation Example: Nearest Campus.
+        /// </summary>
+        [TestMethod]
+        public void PersonNearestCampus_ReturningMultipleResults_ReturnsClosestCampusFirst()
+        {
+            var campusManager = CampusDataManager.Instance;
+            campusManager.AddCampusTestDataSet();
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
+
+            var template = @"
+{% person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' %}
+{% assign campus = person | NearestCampus %}
+The nearest campus to {{ person.NickName }} is: {{ campus.Name }}.
+<hr>
+{% assign campusList = person | NearestCampus:2 %}
+The two nearest campuses to {{ person.NickName }} are: {{ campusList | Select:'Name' | Join:',' }}.
+{% endperson %}
+";
+            var outputExpected = @"
+The nearest campus to Ted is: Main Campus.
+<hr>
+The two nearest campuses to Ted are: Main Campus, North Campus.
+";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        [TestMethod]
+        public void PersonNearestCampus_ReturningMultipleResults_ExcludesCampusWithUnknownGeoCode()
+        {
+            var campusManager = CampusDataManager.Instance;
+            campusManager.AddCampusTestDataSet();
+
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+            var options = new LavaTestRenderOptions { MergeFields = values, EnabledCommands = "RockEntity" };
+
+            // Request all campuses, and verify that the Online campus is excluded from the result
+            // because it has no GeoCode information.
+            var template = @"
+{% person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' %}
+{% assign campusList = person | NearestCampus:99 %}
+Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
+{% endperson %}";
+
+            var outputExpected = "Ted's Nearest Campuses: Main Campus, North Campus, South Campus";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        [TestMethod]
+        public void PersonNearestCampus_ForPersonWithNoMappedLocation_ReturnsEmptyResultSet()
+        {
+            var campusManager = CampusDataManager.Instance;
+            campusManager.AddCampusTestDataSet();
+
+            // Add a new Person with no Location.
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            var testPersonGuidString = "0875D029-FE06-409F-A7D0-CEDBE18D454F";
+
+            var person = personService.Get( testPersonGuidString );
+            if ( person != null )
+            {
+                TestDataHelper.DeletePersonByGuid( new List<Guid> { testPersonGuidString.AsGuid() } );
+            }
+
+            person = new Person()
+            {
+                Guid = testPersonGuidString.AsGuid(),
+                RecordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ),
+                FirstName = "John",
+                LastName = "Smith"
+            };
+
+            PersonService.SaveNewPerson( person, rockContext );
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
+
+            var template = @"
+{% person where:'[Guid] == ""<testPersonGuid>""' %}
+{% assign campus = person | NearestCampus %}
+{{ person.NickName }}'s Nearest Campus: {% if campus == null %}Unknown{% endif %}
+{% endperson %}";
+
+            template = template.Replace( "<testPersonGuid>", testPersonGuidString );
+
+            var outputExpected = "John's Nearest Campus: Unknown";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        #endregion
 
         [TestMethod]
         public void PersonChildren_ForParent_ReturnsAllChildren()
@@ -447,7 +574,7 @@ Your token is: <token>
         #region IsInSecurityRole
 
         [TestMethod]
-        public void IsInSecurityRole_WithRightGroupId_ReturnsTrue()
+        public void IsInSecurityRole_WithGroupTypeSecurityRole_ReturnsTrue()
         {
             Guid financeAdministrationGroupGuid = Guid.Parse( "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559" );
             var group = new GroupService( new RockContext() ).Queryable().FirstOrDefault( m => m.Guid == financeAdministrationGroupGuid );
@@ -456,8 +583,9 @@ Your token is: <token>
             values.AddOrReplace( "GroupId", group.Id );
             var options = new LavaTestRenderOptions { MergeFields = values };
 
-            const string template = @"{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
-    User is in Role = {{ isInRole }}
+            const string template = @"
+{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+User is in Role = {{ isInRole }}
 ";
             const string outputExpected = "User is in Role = true";
 
@@ -466,44 +594,86 @@ Your token is: <token>
                 options );
         }
 
-        [TestMethod]
-        public void IsInSecurityRole_WithWrongGroupId_ReturnsFalse()
-        {
-            Guid financeAdministrationGroupGuid = Guid.Parse( "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559" );
-            var group = new GroupService( new RockContext() ).Queryable().FirstOrDefault( m => m.Guid == financeAdministrationGroupGuid );
+        private static string _TestSecurityGroupGuid = "A92BC2E7-912F-4538-B5FA-EECFC1D7C68A";
 
-            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+        [TestMethod]
+        public void IsInSecurityRole_WithGroupDesignatedAsSecurityRole_ReturnsTrue()
+        {
+            // Create a new Group with [Security Role] = true.
+            var rockContext = new RockContext();
+            var addGroupArgs = new TestDataHelper.Crm.AddGroupArgs
+            {
+                ReplaceIfExists = true,
+                GroupGuid = _TestSecurityGroupGuid,
+                GroupName = "Test Security Group",
+                ForeignKey = "Test Data",
+                GroupTypeIdentifier = SystemGuid.GroupType.GROUPTYPE_GENERAL,
+            };
+
+            TestDataHelper.Crm.AddGroup( addGroupArgs );
+
+            var groupService = new GroupService( rockContext );
+            var group = groupService.Queryable().GetByIdentifierOrThrow( _TestSecurityGroupGuid );
+
+            group.IsSecurityRole = true;
+            rockContext.SaveChanges();
+
+            // Add Alisha Marble to the Group.
+            var addGroupMemberArgs = new TestDataHelper.Crm.AddGroupMemberArgs
+            {
+                GroupIdentifier = _TestSecurityGroupGuid,
+                PersonIdentifiers = TestGuids.TestPeople.AlishaMarble,
+                GroupRoleIdentifier = "Member"
+            };
+            TestDataHelper.Crm.AddGroupMembers( rockContext, addGroupMemberArgs );
+            rockContext.SaveChanges();
+
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.AlishaMarble.AsGuid() );
             values.AddOrReplace( "GroupId", group.Id );
             var options = new LavaTestRenderOptions { MergeFields = values };
 
-            const string template = @"{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
-    User is in Role = {{ isInRole }}
+            const string template = @"
+{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+User is in Role = {{ isInRole }}
 ";
-            const string outputExpected = "User is in Role = false";
+            const string outputExpected = "User is in Role = true";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            TestHelper.AssertTemplateOutput( outputExpected, template, options );
         }
 
         [TestMethod]
         public void IsInSecurityRole_WithNonSecurityGroupId_ReturnsFalse()
         {
-            Guid relationShipsGroupGuid= Guid.Parse( "0F16BD3F-4775-4CD1-8F2F-DF576AEAD290" );
+            Guid relationShipsGroupGuid = Guid.Parse( "0F16BD3F-4775-4CD1-8F2F-DF576AEAD290" );
             var group = new GroupService( new RockContext() ).Queryable().FirstOrDefault( m => m.Guid == relationShipsGroupGuid );
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
             values.AddOrReplace( "GroupId", group.Id );
             var options = new LavaTestRenderOptions { MergeFields = values };
 
-            const string template = @"{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
-    User is in Role = {{ isInRole }}
+            const string template = @"
+{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+User is in Role = {{ isInRole }}
 ";
             const string outputExpected = "User is in Role = false";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            TestHelper.AssertTemplateOutput( outputExpected, template, options );
+        }
+
+        [TestMethod]
+        public void IsInSecurityRole_WithInvalidGroup_ReturnsFalse()
+        {
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+            values.AddOrReplace( "GroupId", "-1" );
+            var options = new LavaTestRenderOptions { MergeFields = values };
+
+            const string template = @"
+{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+User is in Role = {{ isInRole }}
+";
+            const string outputExpected = "User is in Role = false";
+
+            TestHelper.AssertTemplateOutput( outputExpected, template, options );
         }
 
         #endregion

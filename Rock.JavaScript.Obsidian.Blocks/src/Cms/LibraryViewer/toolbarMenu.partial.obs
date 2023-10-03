@@ -1,0 +1,60 @@
+<template>
+    <div class="btn-group dropdown" ref="dropDownElement">
+        <button aria-expanded="false"
+                aria-haspopup="true"
+                :class="['btn btn-xs btn-tool dropdown-toggle', menuButtonCssClass ?? '']"
+                data-toggle="dropdown"
+                type="button">
+            <i v-if="iconCssClass" :class="iconCssClass"></i>
+            {{ internalTitle }}
+        </button>
+        <slot></slot>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+
+    const props = defineProps({
+        /** The icon CSS class. */
+        iconCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        menuButtonCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /** The text for the menu when collapsed. */
+        title: {
+            type: String as PropType<string | undefined>,
+            required: false
+        },
+
+        /** Overrides the `title`. */
+        getTitle: {
+            type: Object as PropType<(() => string) | undefined>,
+            required: false
+        }
+    });
+
+    //#region Values
+
+    const dropDownElement = ref<HTMLElement>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    const internalTitle = computed<string>(() => {
+        if (props.getTitle) {
+            return props.getTitle();
+        }
+
+        return props.title ?? "";
+    });
+
+    //#endregion
+</script>

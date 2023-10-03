@@ -1,0 +1,323 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField disableLabel :modelValue="internalValue" v-bind="standardFieldProps" :rules="mutatedRules" name="campus-account-amount-picker">
+        <Loading :isLoading="isLoading">
+            <template v-if="accountAmountEntryMode == 'singleAccount'">
+                <CurrencyBox :currencyCodeDefinedValueGuid="currencyCodeDefinedValueGuid" v-model="amount" :class="amountEntrySingleCssClass" />
+                <CampusPicker label="Campus" v-model="internalCampus" v-if="!hideCampusPicker" :includeInactive="includeInactiveCampuses" :campusTypeFilter="campusTypeFilter" :campusStatusFilter="campusStatusFilter" />
+                <BaseAsyncPicker v-model="selectedAccount"
+                                 v-bind="standardFieldProps"
+                                 :label="undefined"
+                                 :displayStyle="PickerDisplayStyle.Condensed"
+                                 :items="accountPickerAccounts" />
+            </template>
+            <template v-else>
+                <CurrencyBox v-for="accountAmount in amounts" :key="accountAmount?.account?.value!" :label="accountAmount?.account?.text" v-model="accountAmount.amount" :currencyCodeDefinedValueGuid="currencyCodeDefinedValueGuid" />
+                <CampusPicker label="Campus" v-model="internalCampus" v-if="!hideCampusPicker" :includeInactive="includeInactiveCampuses" :campusTypeFilter="campusTypeFilter" :campusStatusFilter="campusStatusFilter" />
+            </template>
+        </Loading>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch, watchEffect } from "vue";
+    import RockFormField from "./rockFormField.obs";
+    import CurrencyBox from "./currencyBox.obs";
+    import CampusPicker from "./campusPicker.obs";
+    import Loading from "./loading.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { useVModelPassthrough, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { useSuspense } from "@Obsidian/Utility/suspense";
+    import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
+    import { CampusAccountAmountPickerGetAccountsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/campusAccountAmountPickerGetAccountsOptionsBag";
+    import { CampusAccountAmountPickerGetAccountsResultItemBag } from "@Obsidian/ViewModels/Rest/Controls/campusAccountAmountPickerGetAccountsResultItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+
+    type AccountAmount = {
+        amount: number | null,
+        account: ListItemBag | null,
+        readOnly: boolean
+    };
+
+    const props = defineProps({
+        /** The currently selected account(s) and amount value(s). */
+        modelValue: {
+            type: Array as PropType<AccountAmount[]>,
+            required: false
+        },
+
+        /** V-Model of the Guid of the selected campus */
+        campusGuid: {
+            type: String as PropType<Guid | null>,
+            default: null
+        },
+
+        /** Specifies the currency used */
+        currencyCodeDefinedValueGuid: {
+            type: String as PropType<Guid>,
+            default: null
+        },
+
+        /**
+         * Single account will show a dropdown of accounts to choose from and one textbox to enter the amount of money.
+         * Multiple accounts will show a textbox for each possible account so you can add money for multiple accounts.
+         */
+        accountAmountEntryMode: {
+            type: String as PropType<"singleAccount" | "multipleAccounts">,
+            default: "singleAccount"
+        },
+
+        /**
+         * By default, the *actual* selected account will be determined as follows:
+         *
+         * 1. If the selected account is associated with the selected campus, that account will be used
+         * 2. If the selected account is not associated with a campus, use the first matching active child account that is associated with the selected campus.
+         * 3. If the selected account is not associated with a campus, and there are no active child accounts for the selected campus, use the parent account (the one the user sees).
+         *
+         * If this props is set to true, the parent account that appears in the picker will always be used.
+         */
+        disableAccountCampusMappingLogic: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The Lava Template to use as the amount input label for each account. Default is "Account.PublicName". */
+        accountHeaderTemplate: {
+            type: String,
+            default: null
+        },
+
+        /**
+         * Gets or sets the accountGuids of the selectable accounts (Required).
+         * This will be the accounts that will be displayed, but only if the Account is active, public, and within the start and end date of the Account
+         * Note: This has special logic. See comments on <seealso cref="SelectedAccountGuids"/>
+         */
+        selectableAccountGuids: {
+            type: Array as PropType<Guid[]>,
+            required: true
+        },
+
+        /**
+         * If enabled the Accounts will be ordered by the index of `props.selectableAccountGuids`,
+         * that is they will be rendered in the order in which the Account Guids were added to the `props.selectableAccountGuids`
+         */
+        orderBySelectableAccountsIndex: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether to show the campus picker if one is provided */
+        hideCampusIfKnown: {
+            type: Boolean,
+            default: false
+        },
+
+        /** If true then inactive campuses will be included in the list of options. */
+        includeInactiveCampuses: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Campus type defined value guids that limit which campuses are included in the list of options. */
+        campusTypeFilter: {
+            type: [String, Array] as PropType<Guid | Guid[]>,
+            default: null
+        },
+
+        /** Campus status defined value guids that limit which campuses are included in the list of options. */
+        campusStatusFilter: {
+            type: [String, Array] as PropType<Guid | Guid[]>,
+            default: null
+        },
+
+        /** HTML class attribute applied to the single amount textbox */
+        amountEntrySingleCssClass: {
+            type: String,
+            default: ""
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AccountAmount[] | null): void
+        (e: "update:campusGuid", value: Guid | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalCampusGuid = useVModelPassthrough(props, "campusGuid", emit);
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+    const hideCampusPicker = ref(false);
+
+    // Account Fetching Variables
+    const http = useHttp();
+    const loadedAccounts = ref<CampusAccountAmountPickerGetAccountsResultItemBag[] | null>(null);
+    const loadedAccountListItems = ref<ListItemBag[] | null>(null);
+    const securityToken = useSecurityGrantToken();
+    const isLoading = ref(false);
+
+    // Single Account Mode Variables
+    const amount = ref<number | null>();
+    const selectedAccount = ref<ListItemBag | null>(null);
+
+    // Multiple Account Mode Variables
+    const amounts = ref<AccountAmount[]>([]);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const accountPickerAccounts = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedAccountListItems.value ?? loadAccountOptions;
+    });
+
+    /** The ListItemBag version of the internalCampusGuid */
+    const internalCampus = computed<ListItemBag>({
+        get() {
+            return { value: internalCampusGuid.value };
+        },
+        set(newValue) {
+            internalCampusGuid.value = newValue.value ?? null;
+        }
+    });
+
+    const properSelectedAccount = computed(() => {
+        // No selected account, so we can't map it to the correct one
+        if (!selectedAccount.value || props.accountAmountEntryMode == "multipleAccounts") {
+            return null;
+        }
+
+        return getMappedAccountForCampus(selectedAccount.value, internalCampusGuid.value);
+    });
+
+    const mutatedRules = computed(() => {
+        if (containsRequiredRule(props.rules)) {
+            const rules = normalizeRules(props.rules);
+            const index = rules.indexOf("required");
+            rules[index] = function accountAmountRequired(): string | true {
+                const hasAmount = !!internalValue.value?.some(aa => !!aa.amount);
+                console.log("validating", hasAmount);
+                return hasAmount || "Please enter an amount.";
+            };
+            return rules;
+        }
+
+        return props.rules;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    watch([loadedAccountListItems, () => props.accountAmountEntryMode], () => {
+        if (loadedAccountListItems.value && loadedAccountListItems.value.length) {
+            if (props.accountAmountEntryMode == "multipleAccounts") {
+                amounts.value = loadedAccountListItems.value.map(account => {
+                    return {
+                        amount: null,
+                        account,
+                        readOnly: false
+                    };
+                });
+            }
+            else {
+                selectedAccount.value = loadedAccountListItems.value[0];
+            }
+        }
+    });
+
+    watch(() => props.hideCampusIfKnown, () => {
+        // We don't want this to be `computed` because we only want to change if hideCampusIfKnow changes because the
+        // campusGuid will get changed, so campusGuid needs to be passed in from the start.
+        hideCampusPicker.value = !!(props.campusGuid && props.hideCampusIfKnown);
+    }, { immediate: true });
+
+    watchEffect(() => {
+        if (props.accountAmountEntryMode == "singleAccount") {
+            internalValue.value = [{
+                account: properSelectedAccount.value,
+                amount: amount.value || null,
+                readOnly: false
+            }];
+        }
+        else {
+            internalValue.value = amounts.value.map(aa => {
+                return {
+                    amount: aa.amount,
+                    account: getMappedAccountForCampus(aa.account ?? {}, internalCampusGuid.value),
+                    readOnly: aa.readOnly
+                };
+            });
+        }
+    });
+
+    watch(() => [props.orderBySelectableAccountsIndex, props.selectableAccountGuids, props.accountHeaderTemplate], () => loadAccountOptions());
+
+    // #endregion
+
+    // #region Functions
+
+    /** Loads the items from the server. */
+    async function loadAccountOptions(): Promise<ListItemBag[]> {
+        const options: Partial<CampusAccountAmountPickerGetAccountsOptionsBag> = {
+            selectableAccountGuids: props.selectableAccountGuids,
+            orderBySelectableAccountsIndex: props.orderBySelectableAccountsIndex,
+            accountHeaderTemplate: props.accountHeaderTemplate,
+            securityGrantToken: securityToken.value
+        };
+        isLoading.value = true;
+        const result = await http.post<CampusAccountAmountPickerGetAccountsResultItemBag[]>("/api/v2/Controls/CampusAccountAmountPickerGetAccounts", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            loadedAccounts.value = result.data;
+            loadedAccountListItems.value = result.data.map(item => ({ text: item.name, value: item.value }));
+
+            isLoading.value = false;
+            return loadedAccountListItems.value;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedAccounts.value = [];
+            isLoading.value = false;
+            return [];
+        }
+    }
+
+    /** Take an account ListItemBag and a campusID and get the correct account for that campus */
+    function getMappedAccountForCampus(account: ListItemBag, campus: Guid | null): ListItemBag {
+        // If we're not using campus mapping logic or if we don't have a campus selected, just use the selected account
+        if (props.disableAccountCampusMappingLogic || !campus) {
+            return account;
+        }
+
+        // Otherwise get the account specifically for the selected campus
+        return loadedAccounts.value
+            ?.find(acct => areEqual(account.value, acct?.value)) // find selected
+            ?.campusAccounts // campus-mapped accounts
+            ?.[campus] // GUID for account for the selected campus
+            || account; // Backup in case we can't find a campus-specific account
+    }
+
+    // #endregion
+
+    // Initialize account data
+    const suspense = useSuspense();
+
+    if (suspense) {
+        suspense.addOperation(loadAccountOptions());
+    }
+    else {
+        loadAccountOptions();
+    }
+</script>

@@ -1,0 +1,210 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+                <BinaryFileTypePicker v-model="fileType"
+                                      label="File Type"
+                                      :showBlankItem="true"
+                                      rules="required" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <EntityTypePicker v-model="entityType"
+                                  label="Entity Type"
+                                  rules="required"
+                                  :multiple="false"
+                                  :includeGlobalOption="false"
+                                  enhanceForLongLists />
+
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="isImage"
+                          label="Is Image" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox v-model="isUserSelectable"
+                          label="Manually Selectable"
+                          help="Checking this box will allow this Document Type as an option when manually adding/editing documents for the entity." />
+            </div>
+            <div class="col-md-6">
+                <TextBox v-model="iconCssClass"
+                         label="Icon CSS Class" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <NumberBox v-model="maxDocsPerEntity"
+                           label="Max Documents Per Entity"
+                           numberType="Integer"
+                           help="This would limit the number of the documents of that type per entity. A blank value means no limit." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12 text-right">
+                <RockButton v-if="!showAdvanced"
+                            btnType="link"
+                            @click="onShowAdvanced(true)">
+                    Show Advanced Settings
+                </RockButton>
+                <RockButton v-if="showAdvanced"
+                            btnType="link"
+                            @click="onShowAdvanced(false)">
+                    Hide Advanced Settings
+                </RockButton>
+            </div>
+        </div>
+
+        <TransitionVerticalCollapse>
+            <div class="well" v-if="showAdvanced">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="entityQualifierColumn"
+                                    label="Entity Qualifier Column"
+                                    help="If you would like the document type to only apply to specific entities of the specified type you can provide a column to filter on for that entity. For example if you would like the documents to be specific to a group of a certain type the �Column� would be �GroupTypeId�. You�ll also need to provide a Entity Qualifer Value." />
+                    </div>
+                    <div class="col-md-6">
+                        <TextBox v-model="entityQualifierValue"
+                                    label="Entity Qualifier Value"
+                                    help="Once you provide a Entity Qualifer Column, you�ll need to provide the value in that column to filter on. In the example of groups of a certain type, the value would be the Group Type Id to filter on (e.g. 12)." />
+                    </div>
+                </div>
+                <CodeEditor v-model="defaultDocumentNameTemplate"
+                            label="Default Document Name Template"
+                            help="This template is used to dynamically build the document's name. The available merge fields are NickName, LastName, DocumentPurposeKey, and DocumentTypeName. <span class='tip tip-lava'></span>"
+                            theme="rock"
+                            mode="lava"
+                            :editorHeight="200" />
+            </div>
+        </TransitionVerticalCollapse>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { DocumentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeBag";
+    import { DocumentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<DocumentTypeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<DocumentTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: DocumentTypeBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
+    const isUserSelectable = propertyRef(props.modelValue.userSelectable ?? "", "UserSelectable");
+    const maxDocsPerEntity = propertyRef(props.modelValue.maxDocumentsPerEntity ?? null, "MaxDocsPerEntity");
+    const fileType = propertyRef(props.modelValue.binaryFileType ?? null, "FileType");
+    const isImage = propertyRef(props.modelValue.isImage ?? false, "IsImage");
+    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
+
+    // Advanced Settings
+    const showAdvanced = ref(false);
+    const entityQualifierColumn = propertyRef(props.modelValue.entityTypeQualifierColumn ?? "", "EntityTypeQualifierColumn");
+    const entityQualifierValue = propertyRef(props.modelValue.entityTypeQualifierValue ?? "", "EntityTypeQualifierValue");
+    const defaultDocumentNameTemplate = propertyRef(props.modelValue.defaultDocumentNameTemplate ?? "", "DefaultDocumentNameTemplate");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, entityType, isUserSelectable, maxDocsPerEntity, fileType,
+        isImage, iconCssClass, entityQualifierColumn, entityQualifierValue, defaultDocumentNameTemplate];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onShowAdvanced (show: boolean): void {
+        showAdvanced.value = show;
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(fileType, props.modelValue.binaryFileType ?? null);
+        updateRefValue(entityType, props.modelValue.entityType ?? {});
+        updateRefValue(isImage, props.modelValue.isImage);
+        updateRefValue(isUserSelectable, props.modelValue.userSelectable);
+        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
+        updateRefValue(maxDocsPerEntity, props.modelValue.maxDocumentsPerEntity ?? null);
+
+        updateRefValue(entityQualifierColumn, props.modelValue.entityTypeQualifierColumn ?? "");
+        updateRefValue(entityQualifierValue, props.modelValue.entityTypeQualifierValue ?? "");
+        updateRefValue(defaultDocumentNameTemplate, props.modelValue.defaultDocumentNameTemplate ?? "");
+
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: DocumentTypeBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            name: name.value,
+            binaryFileType: fileType.value,
+            entityType: entityType.value,
+            isImage: isImage.value,
+            userSelectable: isUserSelectable.value,
+            iconCssClass: iconCssClass.value,
+            maxDocumentsPerEntity: maxDocsPerEntity.value,
+            entityTypeQualifierColumn: entityQualifierColumn.value,
+            entityTypeQualifierValue: entityQualifierValue.value,
+            defaultDocumentNameTemplate: defaultDocumentNameTemplate.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

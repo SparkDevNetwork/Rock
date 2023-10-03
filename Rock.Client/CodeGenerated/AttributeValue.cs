@@ -149,9 +149,6 @@ namespace Rock.Client
         public DateTime? ValueAsDateTime { get; set; }
 
         /// <summary />
-        public Person ValueAsPerson { get; set; }
-
-        /// <summary />
         public int? ValueAsPersonId { get; set; }
 
         /// <summary />

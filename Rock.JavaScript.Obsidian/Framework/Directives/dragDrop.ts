@@ -17,6 +17,7 @@
 
 import { Directive, Ref } from "vue";
 import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+import { isPromise } from "@Obsidian/Utility/promiseUtils";
 import { newGuid } from "@Obsidian/Utility/guid";
 
 const dragulaScriptPromise = loadJavaScriptAsync("/Scripts/dragula.min.js", () => window.dragula !== undefined);
@@ -64,12 +65,12 @@ export interface IDragSourceOptions {
     acceptDrop?: (operation: DragOperation) => boolean;
 
     /**
-     * Called when a drag operation has successfully started. 
+     * Called when a drag operation has successfully started.
      */
     dragBegin?: (operation: DragOperation) => void;
 
     /**
-     * Called when a drag operation has ended for any reason. 
+     * Called when a drag operation has ended for any reason.
      */
     dragEnd?: (operation: DragOperation) => void;
 
@@ -179,7 +180,7 @@ class DragDropService {
 
     /**
      * Creates a new instance of the DragDropService class.
-     * 
+     *
      * @param identifier The unique identifier of this service.
      */
     constructor(identifier: string) {
@@ -239,7 +240,7 @@ class DragDropService {
 
     /**
      * Adds a new target container to the service.
-     * 
+     *
      * @param container The container that will accept drops.
      * @param options Additional options that provide operational context to the target.
      */
@@ -258,7 +259,7 @@ class DragDropService {
 
     /**
      * Remove a source container that will no longer begin drag operations.
-     * 
+     *
      * @param container The container that will be removed.
      */
     public removeSourceContainer(container: Element): void {
@@ -273,7 +274,7 @@ class DragDropService {
 
     /**
      * Remove a target container that will no longer accept drop operations.
-     * 
+     *
      * @param container The container that will be removed.
      */
     public removeTargetContainer(container: Element): void {
@@ -301,7 +302,7 @@ class DragDropService {
      * Determines if an element should be copied or moved. This is called
      * after dragula has decided the element can be dragged but before the drag
      * event is triggered.
-     * 
+     *
      * @param el The element that is about to be dragged.
      * @param container The container that contains the element.
      *
@@ -332,7 +333,7 @@ class DragDropService {
 
     /**
      * Determines if an element is allowed to be dragged.
-     * 
+     *
      * @param el The element that would be moved or copied out of the container.
      * @param container The source container for the operation.
      * @param handle The element the user is currently interacting with.
@@ -380,7 +381,7 @@ class DragDropService {
 
     /**
      * Checks if the target container will accept the element as a drop.
-     * 
+     *
      * @param el The element being dragged.
      * @param target The target container being considered for the drop operation.
      * @param source The source container the element came from.
@@ -422,7 +423,7 @@ class DragDropService {
 
     /**
      * Notification that a drag operation has begun.
-     * 
+     *
      * @param el The element that is now being dragged by the user.
      * @param source The source container the element came from.
      */
@@ -453,7 +454,7 @@ class DragDropService {
     /**
      * Notification that a drag operation has completed and the element dropped
      * into a new container.
-     * 
+     *
      * @param el The element that was dropped.
      * @param target The target container the element was dropped into.
      * @param source The source container the element came from.
@@ -485,7 +486,7 @@ class DragDropService {
     /**
      * Notification that the drag operation was cancelled, usually this means
      * the element was dropped outside a valid target container.
-     * 
+     *
      * @param el The element that is no longer being dragged.
      * @param lastContainer The last valid container the element is being returned to.
      * @param source The source container the element came from.
@@ -508,7 +509,7 @@ class DragDropService {
     /**
      * Notification that the drag operation is now hovering over a target
      * container. This is only called if true is returned from drakeAccepts.
-     * 
+     *
      * @param el The element that is being dragged.
      * @param target The target container being hovered over.
      * @param source The source container the element came from.
@@ -534,7 +535,7 @@ class DragDropService {
     /**
      * Notification that the drag operation has moved out of the specified
      * target container.
-     * 
+     *
      * @param el The element being dragged.
      * @param target The target container the operation just moved out of.
      * @param source The source container the element came from.
@@ -560,7 +561,7 @@ class DragDropService {
     /**
      * Notification that the drag operation has ended. This is called no matter
      * what reason caused the end.
-     * 
+     *
      * @param el The element that was being dragged.
      */
     private drakeEventEnd(el: Element): void {
@@ -581,7 +582,7 @@ class DragDropService {
     /**
      * Notification that the drag operation has created (or moved) a shadow
      * element.
-     * 
+     *
      * @param el The shadow element that is has been added to the container (this is NOT the original element).
      * @param target The target container being hovered over.
      * @param source The source container the element came from.
@@ -614,7 +615,7 @@ const knownServices: Record<string, DragDropService> = {};
 
 /**
  * Gets an existing DragDropService for the given identifier.
- * 
+ *
  * @param identifier The identifier of the service to be retrieved.
  *
  * @returns The DragDropService or undefined if it was not found.
@@ -625,7 +626,7 @@ function getExistingDragDropService(identifier: string): DragDropService | undef
 
 /**
  * Gets a DragDropService for the given identifier, creating it if necessary.
- * 
+ *
  * @param identifier The identifier of the service to be retrieved.
  *
  * @returns The DragDropService for the identifier.
@@ -644,7 +645,7 @@ function getDragDropService(identifier: string): DragDropService {
 
 /**
  * Destroys a DragDropService and removes it from the known list of services.
- * 
+ *
  * @param service The service to be destroyed.
  */
 function destroyService(service: DragDropService): void {
@@ -655,7 +656,7 @@ function destroyService(service: DragDropService): void {
 /**
  * Get the target options from the value, which could either be an options
  * object or a simple string identifier.
- * 
+ *
  * @param value The value that should be translated into an options object.
  *
  * @returns An options object that conforms to IDragTargetOptions.
@@ -809,12 +810,28 @@ export const DragReorder: Directive<HTMLElement, IDragSourceOptions> = {
  *
  * @returns The IDragSourceOptions object to use for the DragReorder directive.
  */
-export function useDragReorder<T>(values: Ref<T[] | undefined | null>, reorder?: ((value: T, beforeValue: T | null) => void)): IDragSourceOptions {
+export function useDragReorder<T>(values: Ref<T[] | undefined | null>, reorder?: ((value: T, beforeValue: T | null) => void | Promise<void> | boolean | Promise<boolean>)): IDragSourceOptions {
+    let dragState: "none" | "dragging" | "waiting" = "none";
+
     return {
         id: newGuid(),
         copyElement: false,
         handleSelector: ".reorder-handle",
-        dragDrop(operation) {
+        startDrag(operation, handle) {
+            if (dragState !== "none") {
+                return false;
+            }
+
+            return Array.from(operation.sourceContainer.querySelectorAll(".reorder-handle"))
+                .some(n => n.contains(handle));
+        },
+        dragEnd() {
+            // This catches any canceled states.
+            if (dragState === "dragging") {
+                dragState = "none";
+            }
+        },
+        async dragDrop(operation) {
             if (operation.targetIndex === undefined || operation.sourceIndex === operation.targetIndex) {
                 return;
             }
@@ -836,9 +853,36 @@ export function useDragReorder<T>(values: Ref<T[] | undefined | null>, reorder?:
             values.value.splice(operation.sourceIndex, 1);
             values.value.splice(operation.targetIndex, 0, value);
 
-            if (reorder) {
-                reorder(value, beforeValue);
+            if (!reorder) {
+                return;
             }
+
+            dragState = "waiting";
+            let callbackResult: void | Promise<void> | boolean | Promise<boolean>;
+
+            try {
+                callbackResult = reorder(value, beforeValue);
+
+                if (isPromise(callbackResult)) {
+                    callbackResult = await callbackResult;
+                }
+            }
+            catch (error) {
+                callbackResult = false;
+                console.log(error);
+            }
+
+            // If the callback failed, then put everything back in order.
+            if (callbackResult === false) {
+                values.value.splice(operation.targetIndex, 1);
+                values.value.splice(operation.sourceIndex, 0, value);
+
+                // We also need to put the elements back in place.
+                operation.element.remove();
+                operation.sourceContainer.insertBefore(operation.element, operation.sourceSibling ?? null);
+            }
+
+            dragState = "none";
         }
     };
 }

@@ -139,6 +139,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit(e);
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Cms/MediaElementDetail.css", true );
             RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.min.js" );
             RockPage.AddScriptLink( "~/Scripts/moment.min.js" );
             RockPage.AddScriptLink( "~/Scripts/Rock/Controls/MediaElementDetail/mediaElementPlayAnalytics.js" );

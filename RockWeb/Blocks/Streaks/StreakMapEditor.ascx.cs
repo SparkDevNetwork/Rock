@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Streaks
             /// <summary>
             /// The date range user preference key
             /// </summary>
-            public const string DateRange = "StreakMapEditorDateRange";
+            public const string DateRange = "date-range";
         }
 
         /// <summary>
@@ -179,7 +179,10 @@ namespace RockWeb.Blocks.Streaks
 
             if ( sdrpDateRange.SlidingDateRangeMode != SlidingDateRangePicker.SlidingDateRangeType.All )
             {
-                SetUserPreference( UserPreferenceKey.DateRange, sdrpDateRange.DelimitedValues );
+                var preferences = GetBlockPersonPreferences();
+
+                preferences.SetValue( UserPreferenceKey.DateRange, sdrpDateRange.DelimitedValues );
+                preferences.Save();
             }
         }
 
@@ -313,7 +316,8 @@ namespace RockWeb.Blocks.Streaks
         private void InitializeDatePicker()
         {
             // Try to set to the user's saved preference
-            var userPreference = GetUserPreference( UserPreferenceKey.DateRange );
+            var preferences = GetBlockPersonPreferences();
+            var userPreference = preferences.GetValue( UserPreferenceKey.DateRange );
 
             if ( !userPreference.IsNullOrWhiteSpace() && !userPreference.StartsWith( SlidingDateRangePicker.SlidingDateRangeType.All.ToString() ) )
             {

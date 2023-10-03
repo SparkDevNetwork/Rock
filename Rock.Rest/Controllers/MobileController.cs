@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net.Http;
 using System.ServiceModel.Channels;
@@ -24,7 +23,6 @@ using System.Web.Http;
 
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
-using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -392,6 +390,14 @@ namespace Rock.Rest.Controllers
                 {
                     foreach ( var mobileSession in sessions )
                     {
+                        // Skip any invalid Guids since the session record is
+                        // created with a direct SQL insert which bypasses the
+                        // normal validation logic.
+                        if ( mobileSession.Guid == Guid.Empty )
+                        {
+                            continue;
+                        }
+
                         var interactionGuids = mobileSession.Interactions.Select( i => i.Guid ).ToList();
                         var existingInteractionGuids = interactionService.Queryable()
                             .Where( i => interactionGuids.Contains( i.Guid ) )

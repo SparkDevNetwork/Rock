@@ -119,7 +119,7 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_MEDIUM_PUSH_NOTIFICATION = "3638C6DF-4FF3-4A52-B4B8-AFB754991597";
 
         /// <summary>
-        /// The guid for the email communication medium
+        /// The guid for the SMS communication medium
         /// </summary>
         public const string COMMUNICATION_MEDIUM_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
 
@@ -192,6 +192,16 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.ContentCollectionSource entity
         /// </summary>
         public const string CONTENT_COLLECTION_SOURCE = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContentTopic entity
+        /// </summary>
+        public const string CONTENT_TOPIC = "CD4BE244-147E-4A90-9137-B35FC35B5A52";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContentTopicDomain entity
+        /// </summary>
+        public const string CONTENT_TOPIC_DOMAIN = "8C26A4D9-9C0B-4433-AF31-6C7094BEFB51";
 
         /// <summary>
         /// The guid for the Rock.Model.DataView entity.
@@ -569,6 +579,21 @@ namespace Rock.SystemGuid
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderEdit"/>.
         /// </summary>
         public const string MOBILE_REMINDERS_REMINDER_EDIT = "A07DA3CE-4598-4177-AD47-B0D1EBFB1E7A";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Crm.PersonProfile"/>.
+        /// </summary>
+        public const string MOBILE_CRM_PERSON_PROFILE = "A1EEA3BD-7B40-47A9-82D4-7187290C917C";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Core.AttributeValues"/>.
+        /// </summary>
+        public const string MOBILE_CORE_ATTRIBUTE_VALUES = "6751AC1E-C467-4416-9F02-0B9A0D1FAC2D";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Crm.GroupMembers"/>.
+        /// </summary>
+        public const string MOBILE_CRM_GROUP_MEMBERS = "592242ED-7536-49EA-94DE-7B4EBA7E87A6";
 
         /// <summary>
         /// The obsidian event registration entry
@@ -1814,5 +1839,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.NotificationMessageType"/> 
         /// </summary>
         public const string NOTIFICATION_MESSAGE_TYPE = "36FB1038-8836-429F-BAD4-04D32892D6D0";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.Observability"/> 
+        /// </summary>
+        public const string HTTP_MODULE_OBSERVABILITY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
     }
 }

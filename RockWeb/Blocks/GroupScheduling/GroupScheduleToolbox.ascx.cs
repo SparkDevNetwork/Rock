@@ -1852,7 +1852,7 @@ $('#{0}').tooltip();
 
                 foreach ( var personGroupLocation in personGroupLocationList )
                 {
-                    foreach ( var schedule in personGroupLocation.Schedules )
+                    foreach ( var schedule in personGroupLocation.Schedules.Where( a => ( a.IsPublic ?? true ) && a.IsActive ) )
                     {
                         // Find if this has max volunteers here.
                         int maximumCapacitySetting = 0;

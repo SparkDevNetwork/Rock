@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({

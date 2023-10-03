@@ -267,14 +267,14 @@ namespace RockWeb.Blocks.WorkFlow
 
         protected void gfWorkflows_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Activated" ), "Activated", drpActivated.DelimitedValues );
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Completed" ), "Completed", drpCompleted.DelimitedValues );
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Name" ), "Name", tbName.Text );
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Status" ), "Status", tbStatus.Text );
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "State" ), "State", GetState() );
+            gfWorkflows.SetFilterPreference( MakeKeyUniqueToType( "Activated" ), "Activated", drpActivated.DelimitedValues );
+            gfWorkflows.SetFilterPreference( MakeKeyUniqueToType( "Completed" ), "Completed", drpCompleted.DelimitedValues );
+            gfWorkflows.SetFilterPreference( MakeKeyUniqueToType( "Name" ), "Name", tbName.Text );
+            gfWorkflows.SetFilterPreference( MakeKeyUniqueToType( "Status" ), "Status", tbStatus.Text );
+            gfWorkflows.SetFilterPreference( MakeKeyUniqueToType( "State" ), "State", GetState() );
 
             int? personId = ppInitiator.SelectedValue;
-            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( "Initiator" ), "Initiator", personId.HasValue ? personId.Value.ToString() : "" );
+            gfWorkflows.SetFilterPreference( MakeKeyUniqueToType( "Initiator" ), "Initiator", personId.HasValue ? personId.Value.ToString() : "" );
 
             if ( AvailableAttributes != null )
             {
@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.WorkFlow
                         try
                         {
                             var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                            gfWorkflows.SetFilterPreference( MakeKeyUniqueToType( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                         }
                         catch { }
                     }
@@ -466,12 +466,12 @@ namespace RockWeb.Blocks.WorkFlow
             BindAttributes();
             AddDynamicControls();
 
-            drpActivated.DelimitedValues = gfWorkflows.GetUserPreference( MakeKeyUniqueToType( "Activated" ) );
-            drpCompleted.DelimitedValues = gfWorkflows.GetUserPreference( MakeKeyUniqueToType( "Completed" ) );
-            tbName.Text = gfWorkflows.GetUserPreference( MakeKeyUniqueToType( "Name" ) );
-            tbStatus.Text = gfWorkflows.GetUserPreference( MakeKeyUniqueToType( "Status" ) );
+            drpActivated.DelimitedValues = gfWorkflows.GetFilterPreference( MakeKeyUniqueToType( "Activated" ) );
+            drpCompleted.DelimitedValues = gfWorkflows.GetFilterPreference( MakeKeyUniqueToType( "Completed" ) );
+            tbName.Text = gfWorkflows.GetFilterPreference( MakeKeyUniqueToType( "Name" ) );
+            tbStatus.Text = gfWorkflows.GetFilterPreference( MakeKeyUniqueToType( "Status" ) );
 
-            int? personId = gfWorkflows.GetUserPreference( MakeKeyUniqueToType( "Initiator" ) ).AsIntegerOrNull();
+            int? personId = gfWorkflows.GetFilterPreference( MakeKeyUniqueToType( "Initiator" ) ).AsIntegerOrNull();
             if ( personId.HasValue )
             {
                 ppInitiator.SetValue( new PersonService( new RockContext() ).Get( personId.Value ) );
@@ -481,7 +481,7 @@ namespace RockWeb.Blocks.WorkFlow
                 ppInitiator.SetValue( null );
             }
 
-            string state = gfWorkflows.GetUserPreference( MakeKeyUniqueToType( "State" ) );
+            string state = gfWorkflows.GetFilterPreference( MakeKeyUniqueToType( "State" ) );
             foreach ( ListItem li in cblState.Items )
             {
                 li.Selected = string.IsNullOrWhiteSpace( state ) || state.Contains( li.Value );
@@ -549,7 +549,7 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
 
-                    string savedValue = gfWorkflows.GetUserPreference( MakeKeyUniqueToType( attribute.Key ) );
+                    string savedValue = gfWorkflows.GetFilterPreference( MakeKeyUniqueToType( attribute.Key ) );
                     if ( !string.IsNullOrWhiteSpace( savedValue ) )
                     {
                         try

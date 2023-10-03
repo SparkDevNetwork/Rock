@@ -220,17 +220,19 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void SaveSettingsToUserPreferences()
         {
-            string keyPrefix = string.Format("pledge-analytics-{0}-", this.BlockId);
+            var preferences = GetBlockPersonPreferences();
 
-            this.SetUserPreference(keyPrefix + "apAccount", apAccount.SelectedValue);
+            preferences.SetValue( "apAccount", apAccount.SelectedValue );
 
-            this.SetUserPreference(keyPrefix + "drpDateRange", drpSlidingDateRange.DelimitedValues );
+            preferences.SetValue( "drpDateRange", drpSlidingDateRange.DelimitedValues );
 
-            this.SetUserPreference(keyPrefix + "nrePledgeAmount", nrePledgeAmount.DelimitedValues);
-            this.SetUserPreference(keyPrefix + "nrePercentComplete", nrePercentComplete.DelimitedValues);
-            this.SetUserPreference(keyPrefix + "nreAmountGiven", nreAmountGiven.DelimitedValues);
+            preferences.SetValue( "nrePledgeAmount", nrePledgeAmount.DelimitedValues );
+            preferences.SetValue( "nrePercentComplete", nrePercentComplete.DelimitedValues );
+            preferences.SetValue( "nreAmountGiven", nreAmountGiven.DelimitedValues );
 
-            this.SetUserPreference(keyPrefix + "Include", rblInclude.SelectedValue);
+            preferences.SetValue( "Include", rblInclude.SelectedValue );
+
+            preferences.Save();
         }
 
         /// <summary>
@@ -238,16 +240,15 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadSettingsFromUserPreferences()
         {
-            string keyPrefix = string.Format("pledge-analytics-{0}-", this.BlockId);
+            var preferences = GetBlockPersonPreferences();
 
-
-            string accountSetting = this.GetUserPreference(keyPrefix + "apAccount");
-            if ( !string.IsNullOrWhiteSpace(accountSetting) )
+            string accountSetting = preferences.GetValue( "apAccount" );
+            if ( !string.IsNullOrWhiteSpace( accountSetting ) )
             {
-                apAccount.SetValue(Int32.Parse(accountSetting));
+                apAccount.SetValue( Int32.Parse( accountSetting ) );
             }
 
-            string slidingDateRangeSettings = this.GetUserPreference( keyPrefix + "drpDateRange" );
+            string slidingDateRangeSettings = preferences.GetValue( "drpDateRange" );
             if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
             {
                 // default to current year
@@ -269,14 +270,14 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            nrePledgeAmount.DelimitedValues = this.GetUserPreference(keyPrefix + "nrePledgeAmount");
-            nrePercentComplete.DelimitedValues = this.GetUserPreference(keyPrefix + "nrePercentComplete");
-            nreAmountGiven.DelimitedValues = this.GetUserPreference(keyPrefix + "nreAmountGiven");
+            nrePledgeAmount.DelimitedValues = preferences.GetValue( "nrePledgeAmount" );
+            nrePercentComplete.DelimitedValues = preferences.GetValue( "nrePercentComplete" );
+            nreAmountGiven.DelimitedValues = preferences.GetValue( "nreAmountGiven" );
 
-            string includeSetting = this.GetUserPreference(keyPrefix + "Include");
-            if ( !string.IsNullOrWhiteSpace(includeSetting) )
+            string includeSetting = preferences.GetValue( "Include" );
+            if ( !string.IsNullOrWhiteSpace( includeSetting ) )
             {
-                rblInclude.SetValue(Int32.Parse(includeSetting));
+                rblInclude.SetValue( Int32.Parse( includeSetting ) );
             }
         }
 

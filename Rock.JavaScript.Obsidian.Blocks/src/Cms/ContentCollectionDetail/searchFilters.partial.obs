@@ -1,0 +1,435 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Search Filters">
+        <SectionHeader title="Search Filters"
+                       description="The configuration below allows you to set various ways your collection can be filtered." />
+
+        <SearchFilter :isEnabled="fullTextSearchEnabled"
+                      title="Full Text Search"
+                      description="Uses the content field of the content channel item or description of an Event Item."
+                      @edit="onEditFullTextSearch" />
+
+        <SearchFilter :isEnabled="yearSearchEnabled"
+                      title="Year"
+                      description="Uses the content channel item's start date to determine the year of the content."
+                      :values="yearSearchValues"
+                      @edit="onEditYearFilter" />
+
+        <SectionHeader title="Attribute Filters"
+                       description="The settings below allow you to provide filters for attributes that you have configured to add to your content collection."
+                       class="margin-t-lg" />
+
+        <AttributeSearchFilter v-for="attribute in attributeFilters"
+                               :modelValue="attribute"
+                               @edit="onEditAttributeFilter" />
+
+        <SectionHeader title="Custom Field Filters"
+                       description="The settings below allow you to provide filters for custom fields that you have configured on your content collection."
+                       class="margin-t-lg" />
+
+        <CustomFieldSearchFilter v-for="customField in customFieldFilters"
+                                 :modelValue="customField"
+                                 @edit="onEditCustomFieldFilter" />
+    </Panel>
+
+    <Modal v-model="isEditModalOpen"
+           title="Edit Search Filter"
+           class="search-filter-modal"
+           saveText="Save"
+           @save="onModalSave">
+        <h1>{{ editFilterName }}</h1>
+
+        <div class="row">
+            <div class="col-md-6">
+                <InlineSwitch v-model="editFilterEnabled"
+                              label="Enable Filter" />
+
+                <TextBox v-if="!isEditFullTextSearch"
+                         v-model="editFilterLabel"
+                         label="Filter Label"
+                         rules="required" />
+            </div>
+        </div>
+
+        <div v-if="!isEditFullTextSearch" class="row">
+            <div class="col-md-6">
+                <RadioButtonList v-model="editFilterControl"
+                                 label="Filter Control"
+                                 horizontal
+                                 :items="editFilterControlItems" />
+            </div>
+
+            <div class="col-md-6">
+                <RadioButtonList v-if="editShowFilterType"
+                                 v-model="editFilterType"
+                                 label="Filter Type"
+                                 horizontal
+                                 :items="editFilterTypeItems" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ContentCollectionBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
+    import { AttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/attributeFilterBag";
+    import SearchFilter from "./searchFilter.partial.obs";
+    import AttributeSearchFilter from "./attributeSearchFilter.partial.obs";
+    import CustomFieldSearchFilter from "./customFieldSearchFilter.partial.obs";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { FilterSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/filterSettingsBag";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { ContentCollectionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionDetailOptionsBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { CustomFieldFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/customFieldFilterBag";
+
+    const props = defineProps({
+        /** The content collection that contains the search filters to display and edit. */
+        modelValue: {
+            type: Object as PropType<ContentCollectionBag | null>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ContentCollectionBag): void;
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const editFilterKey = ref("");
+    const editFilterName = ref("");
+    const editFilterControl = ref("");
+    const editFilterControlItems = ref<ListItemBag[]>([]);
+    const editFilterEnabled = ref(false);
+    const editFilterLabel = ref("");
+    const editFilterType = ref("");
+    const editShowFilterType = ref(false);
+    const isEditModalOpen = ref(false);
+    const isEditFullTextSearch = ref(false);
+    const isEditAttributeFilter = ref(false);
+
+    /**
+     * The items available for selection in the filter type radio button list.
+     */
+    const editFilterTypeItems: ListItemBag[] = [
+        {
+            "value": "0",
+            "text": "Single-Select"
+        },
+        {
+            "value": "1",
+            "text": "Multi-Select"
+        }
+    ];
+
+    /**
+     * The items availalbe for selection in the filter control radio button list
+     * when the field type is not a boolean.
+     */
+    const editFilterControlStandardItems: ListItemBag[] = [
+        {
+            "value": ContentCollectionFilterControl.Pills.toString(),
+            "text": "Pills"
+        },
+        {
+            "value": ContentCollectionFilterControl.Dropdown.toString(),
+            "text": "Dropdown"
+        }
+    ];
+
+    /**
+     * The items availalbe for selection in the filter control radio button list
+     * when the field type is a boolean.
+     */
+    const editFilterControlBooleanItems: ListItemBag[] = [
+        {
+            "value": ContentCollectionFilterControl.Boolean.toString(),
+            "text": "Boolean"
+        }
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const fullTextSearchEnabled = computed((): boolean => {
+        return props.modelValue?.filterSettings?.fullTextSearchEnabled ?? false;
+    });
+
+    const yearSearchEnabled = computed((): boolean => {
+        return props.modelValue?.filterSettings?.yearSearchEnabled ?? false;
+    });
+
+    const yearSearchLabel = computed((): string => {
+        return props.modelValue?.filterSettings?.yearSearchLabel || "Year";
+    });
+
+    const yearSearchFilterControl = computed((): ContentCollectionFilterControl => {
+        return props.modelValue?.filterSettings?.yearSearchFilterControl ?? ContentCollectionFilterControl.Pills;
+    });
+
+    const yearSearchFilterIsMultipleSelection = computed((): boolean => {
+        return props.modelValue?.filterSettings?.yearSearchFilterIsMultipleSelection ?? false;
+    });
+
+    const yearSearchValues = computed((): ListItemBag[] => {
+        return [
+            {
+                text: "Filter Label",
+                value: yearSearchLabel.value
+            },
+            {
+                text: "Filter Control",
+                value: yearSearchFilterControl.value === ContentCollectionFilterControl.Dropdown ? "Dropdown" : "Pills"
+            },
+            {
+                text: "Filter Mode",
+                value: yearSearchFilterIsMultipleSelection.value ? "Multi-Select" : "Single-Select"
+            }
+        ];
+    });
+
+    const attributeFilters = computed((): AttributeFilterBag[] => {
+        return props.modelValue?.filterSettings?.attributeFilters ?? [];
+    });
+
+    const customFieldFilters = computed((): CustomFieldFilterBag[] => {
+        return props.modelValue?.filterSettings?.customFieldFilters ?? [];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the person clicks the edit button on one of
+     * the attribute search filters.
+     *
+     * @param filter The attribute filter that should be edited.
+     */
+    function onEditAttributeFilter(filter: AttributeFilterBag): void {
+        if (!filter.attributeKey) {
+            return;
+        }
+
+        // Initialize the standard values that should be edited.
+        editFilterKey.value = filter.attributeKey;
+        editFilterName.value = filter.attributeName ?? "";
+        editFilterEnabled.value = filter.isEnabled;
+        editFilterLabel.value = filter.filterLabel ?? filter.attributeName ?? "";
+
+        // Special logic for Boolean field types since they are hard coded
+        // to a Boolean control and don't show a filter type.
+        if (areEqual(filter.fieldTypeGuid, FieldType.Boolean)) {
+            editFilterControl.value = ContentCollectionFilterControl.Boolean.toString();
+            editFilterControlItems.value = editFilterControlBooleanItems;
+            editFilterType.value = "0";
+            editShowFilterType.value = false;
+        }
+        else {
+            editFilterControl.value = filter.filterControl.toString();
+            editFilterControlItems.value = editFilterControlStandardItems;
+            editFilterType.value = filter.isMultipleSelection ? "1" : "0";
+            editShowFilterType.value = true;
+        }
+
+        isEditFullTextSearch.value = false;
+        isEditAttributeFilter.value = true;
+        isEditModalOpen.value = true;
+    }
+
+    /**
+     * Event handler for when the person clicks the edit button on one of
+     * the custom field search filters.
+     *
+     * @param filter The custom field filter that should be edited.
+     */
+    function onEditCustomFieldFilter(filter: CustomFieldFilterBag): void {
+        if (!filter.key) {
+            return;
+        }
+
+        // Initialize the standard values that should be edited.
+        editFilterKey.value = filter.key;
+        editFilterName.value = filter.title ?? "";
+        editFilterEnabled.value = filter.isEnabled;
+        editFilterLabel.value = filter.filterLabel ?? filter.title ?? "";
+
+        editFilterControl.value = filter.filterControl.toString();
+        editFilterControlItems.value = editFilterControlStandardItems;
+        editFilterType.value = filter.isMultipleSelection ? "1" : "0";
+        editShowFilterType.value = true;
+
+        isEditFullTextSearch.value = false;
+        isEditAttributeFilter.value = false;
+        isEditModalOpen.value = true;
+    }
+
+    /**
+     * Event handler for when the person clicks the edit button on the
+     * full text search filter.
+     */
+    function onEditFullTextSearch(): void {
+        editFilterKey.value = "";
+        editFilterName.value = "Full Text Search";
+        editFilterEnabled.value = fullTextSearchEnabled.value;
+        editShowFilterType.value = false;
+
+        isEditFullTextSearch.value = true;
+        isEditModalOpen.value = true;
+    }
+
+    /**
+     * Event handler for when the person clicks the edit button on the
+     * year search filter.
+     */
+    function onEditYearFilter(): void {
+        editFilterKey.value = "";
+        editFilterName.value = "Year";
+        editFilterEnabled.value = yearSearchEnabled.value;
+        editFilterLabel.value = yearSearchLabel.value;
+        editFilterControl.value = yearSearchFilterControl.value.toString();
+        editFilterControlItems.value = editFilterControlStandardItems;
+        editFilterType.value = yearSearchFilterIsMultipleSelection.value ? "1" : "0";
+        editShowFilterType.value = true;
+
+        isEditFullTextSearch.value = false;
+        isEditModalOpen.value = true;
+    }
+
+    /**
+     * Event handler for when the person clicks the save button on the
+     * modal while editing a search filter.
+     */
+    async function onModalSave(): Promise<void> {
+        if (!props.modelValue?.filterSettings) {
+            return;
+        }
+
+        // Create a new bag so we don't modify the live data.
+        const bag: FilterSettingsBag = {
+            ...props.modelValue.filterSettings
+        };
+
+        let validProperties: string[];
+
+        if (isEditFullTextSearch.value) {
+            // Update just the full text search filter settings.
+            bag.fullTextSearchEnabled = editFilterEnabled.value;
+            validProperties = ["fullTextSearchEnabled"];
+        }
+        else if (!editFilterKey.value) {
+            // Update just the year search filter settings.
+            bag.yearSearchEnabled = editFilterEnabled.value;
+            bag.yearSearchFilterControl = toNumberOrNull(editFilterControl.value) as ContentCollectionFilterControl ?? ContentCollectionFilterControl.Pills;
+            bag.yearSearchFilterIsMultipleSelection = editFilterType.value === "1";
+            bag.yearSearchLabel = editFilterLabel.value;
+            validProperties = ["yearSearchEnabled", "yearSearchFilterControl", "yearSearchFilterIsMultipleSelection", "yearSearchLabel"];
+        }
+        else if (isEditAttributeFilter.value) {
+            // Update the attribute search filter settings.
+
+            // Create a new array so we don't modify the live data.
+            bag.attributeFilters = [...(bag.attributeFilters ?? [])];
+
+            // Find the specific attribute filter that is currently
+            // being edited in the modal.
+            const filterIndex = bag.attributeFilters.findIndex(f => f.attributeKey === editFilterKey.value);
+
+            if (filterIndex === -1) {
+                return;
+            }
+
+            // Make a copy of the filter so we don't modify the live data.
+            const filter = {
+                ...bag.attributeFilters[filterIndex]
+            };
+
+            filter.isEnabled = editFilterEnabled.value;
+            filter.filterLabel = editFilterLabel.value;
+
+            // More special logic around the Boolean field type.
+            if (areEqual(filter.fieldTypeGuid, FieldType.Boolean)) {
+                filter.filterControl = ContentCollectionFilterControl.Boolean;
+                filter.isMultipleSelection = false;
+            }
+            else {
+                filter.filterControl = toNumberOrNull(editFilterControl.value) as ContentCollectionFilterControl ?? ContentCollectionFilterControl.Pills;
+                filter.isMultipleSelection = editFilterType.value === "1";
+            }
+
+            bag.attributeFilters.splice(filterIndex, 1, filter);
+
+            validProperties = ["attributeFilters"];
+        }
+        else {
+            // Update the custom field search filter settings.
+
+            // Create a new array so we don't modify the live data.
+            bag.customFieldFilters = [...(bag.customFieldFilters ?? [])];
+
+            // Find the specific field filter that is currently
+            // being edited in the modal.
+            const filterIndex = bag.customFieldFilters.findIndex(f => f.key === editFilterKey.value);
+
+            if (filterIndex === -1) {
+                return;
+            }
+
+            // Make a copy of the filter so we don't modify the live data.
+            const filter = {
+                ...bag.customFieldFilters[filterIndex]
+            };
+
+            filter.isEnabled = editFilterEnabled.value;
+            filter.filterLabel = editFilterLabel.value;
+            filter.filterControl = toNumberOrNull(editFilterControl.value) as ContentCollectionFilterControl ?? ContentCollectionFilterControl.Pills;
+            filter.isMultipleSelection = editFilterType.value === "1";
+
+            bag.customFieldFilters.splice(filterIndex, 1, filter);
+
+            validProperties = ["customFieldFilters"];
+        }
+
+        const box: DetailBlockBox<FilterSettingsBag, undefined> = {
+            entity: bag,
+            validProperties,
+            isEditable: true
+        };
+        const data = {
+            key: props.modelValue.idKey,
+            box
+        };
+
+        const result = await invokeBlockAction<DetailBlockBox<ContentCollectionBag, ContentCollectionDetailOptionsBag>>("SaveFilterSettings", data);
+
+        if (!result.isSuccess || !result.data?.entity) {
+            alert(result.errorMessage || "Unable to save filter settings.");
+            return;
+        }
+
+        emit("update:modelValue", result.data.entity);
+        isEditModalOpen.value = false;
+    }
+
+    // #endregion
+</script>

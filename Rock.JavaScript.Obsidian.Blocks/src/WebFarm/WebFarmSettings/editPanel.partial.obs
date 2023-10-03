@@ -1,0 +1,149 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <NotificationBox v-if="isInMemoryTransport" alertType="warning">The Web Farm will not function correctly with the In-Memory bus transport. Please configure a different bus transport before using the Web Farm.</NotificationBox>
+
+        <NotificationBox alertType="info">In order to respect any new setting changes made here, please restart this node after saving.</NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+
+                <CheckBox v-model="isActive"
+                          label="Active" />
+
+                <TextBox v-model="webFarmKey"
+                         label="Key"
+                         help="This feature is intended for enterprise size churches that would benefit from a distributed environment. Most Rock churches should not use the Web Farm because of the low level of benefit and a high complexity cost. A special key is required to activate this feature."/>
+
+                <NumberBox v-model="minimumPollingDifference"
+                           label="Min Interval Difference"
+                           help="When starting, nodes may choose a random polling interval between the min and max. This value is the minimum difference between nodes' selected intervals. For example, if one node is polling every 300 seconds, and this value is 10, then another node may poll at 290 or 310, but not any closer. If this value is left blank, then a default will be used.">
+                    <template v-slot:inputGroupAppend>
+                        <span class="input-group-addon">seconds</span>
+                    </template>
+                </NumberBox>
+            </div>
+
+            <div class="col-md-6">
+                <NumberBox v-model="lowerPollingLimit"
+                           label="Polling Minimum"
+                           help="The number of seconds that is the minimum wait time before a node attempts to execute leadership. If this value is left blank, then a default will be used.">
+                    <template v-slot:inputGroupAppend>
+                        <span class="input-group-addon">seconds</span>
+                    </template>
+                </NumberBox>
+
+                <NumberBox v-model="upperPollingLimit"
+                           label="Polling Maximum"
+                           help="The number of seconds that is the maximum wait time before a node attempts to execute leadership. If this value is left blank, then a default will be used.">
+                    <template v-slot:inputGroupAppend>
+                        <span class="input-group-addon">seconds</span>
+                    </template>
+                </NumberBox>
+
+                <NumberBox v-model="maxPollingWaitSeconds"
+                           label="Polling Wait"
+                           help="If a node is the leader and conducting a poll to assess responsiveness of other nodes, this number of seconds is the maximum time waited before assuming unresponsive nodes will not respond. If this value is left blank, then a default will be used.">
+                    <template v-slot:inputGroupAppend>
+                        <span class="input-group-addon">seconds</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { WebFarmSettingsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsBag";
+    import { WebFarmSettingsDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<WebFarmSettingsBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<WebFarmSettingsDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: WebFarmSettingsBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const isActive = ref(props.modelValue.isActive ?? false);
+    const webFarmKey = ref(props.modelValue.webFarmKey ?? "");
+    const lowerPollingLimit = ref(props.modelValue.lowerPollingLimit);
+    const upperPollingLimit = ref(props.modelValue.upperPollingLimit);
+    const maxPollingWaitSeconds = ref(props.modelValue.maxPollingWaitSeconds);
+    const minimumPollingDifference = ref(props.modelValue.minimumPollingDifference);
+    const isInMemoryTransport = ref(props.modelValue.isInMemoryTransport);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(isActive, props.modelValue.isActive);
+        updateRefValue(webFarmKey, props.modelValue.webFarmKey ?? "");
+        updateRefValue(lowerPollingLimit, props.modelValue.lowerPollingLimit);
+        updateRefValue(upperPollingLimit, props.modelValue.upperPollingLimit);
+        updateRefValue(maxPollingWaitSeconds, props.modelValue.maxPollingWaitSeconds);
+        updateRefValue(minimumPollingDifference, props.modelValue.minimumPollingDifference);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, isActive, webFarmKey, lowerPollingLimit, upperPollingLimit, maxPollingWaitSeconds, minimumPollingDifference, ...propRefs], () => {
+        const newValue: WebFarmSettingsBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            isActive: isActive.value,
+            webFarmKey: webFarmKey.value,
+            lowerPollingLimit: lowerPollingLimit.value,
+            upperPollingLimit: upperPollingLimit.value,
+            maxPollingWaitSeconds: maxPollingWaitSeconds.value,
+            minimumPollingDifference: minimumPollingDifference.value
+        };
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

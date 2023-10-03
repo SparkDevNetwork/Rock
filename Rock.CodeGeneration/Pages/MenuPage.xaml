@@ -81,6 +81,16 @@
                     <TextBlock Text="Obsidian Detail Block" />
                 </StackPanel>
             </Button>
-        </Grid>
+
+            <Button Name="ObsidianListBlock"
+                Grid.Row="1"
+                Grid.Column="2"
+                Click="ObsidianListBlock_Click">
+                    <StackPanel>
+                        <fa:IconBlock Icon="List" />
+                        <TextBlock Text="Obsidian List Block" />
+                    </StackPanel>
+                </Button>
+            </Grid>
     </StackPanel>
 </Page>

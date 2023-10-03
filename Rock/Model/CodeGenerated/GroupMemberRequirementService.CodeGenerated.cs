@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,57 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// GroupMemberRequirement View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( GroupMemberRequirement ) )]
-    public partial class GroupMemberRequirementViewModelHelper : ViewModelHelper<GroupMemberRequirement, GroupMemberRequirementBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override GroupMemberRequirementBag CreateViewModel( GroupMemberRequirement model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new GroupMemberRequirementBag
-            {
-                IdKey = model.IdKey,
-                DoesNotMeetWorkflowId = model.DoesNotMeetWorkflowId,
-                DueDate = model.DueDate,
-                GroupMemberId = model.GroupMemberId,
-                GroupRequirementId = model.GroupRequirementId,
-                LastRequirementCheckDateTime = model.LastRequirementCheckDateTime,
-                ManuallyCompletedByPersonAliasId = model.ManuallyCompletedByPersonAliasId,
-                ManuallyCompletedDateTime = model.ManuallyCompletedDateTime,
-                OverriddenByPersonAliasId = model.OverriddenByPersonAliasId,
-                OverriddenDateTime = model.OverriddenDateTime,
-                RequirementFailDateTime = model.RequirementFailDateTime,
-                RequirementMetDateTime = model.RequirementMetDateTime,
-                RequirementWarningDateTime = model.RequirementWarningDateTime,
-                WarningWorkflowId = model.WarningWorkflowId,
-                WasManuallyCompleted = model.WasManuallyCompleted,
-                WasOverridden = model.WasOverridden,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -191,20 +136,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static GroupMemberRequirementBag ToViewModel( this GroupMemberRequirement model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new GroupMemberRequirementViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

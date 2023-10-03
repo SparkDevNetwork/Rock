@@ -1,0 +1,314 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="entityTypeGuid"
+                 entityTypeName="Financial Batch"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="true"
+                 :footerSecondaryActions="footerActions"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="financialBatchViewBag" :options="options" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="financialBatchEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./FinancialBatchDetail/editPanel.partial.obs";
+    import ViewPanel from "./FinancialBatchDetail/viewPanel.partial.obs";
+    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { NavigationUrlKey } from "./FinancialBatchDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { FinancialBatchBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchBag";
+    import { FinancialBatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchDetailOptionsBag";
+
+    const config = useConfigurationValues<DetailBlockBox<FinancialBatchBag, FinancialBatchDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const statusLabels = {
+        0: { title: "Pending", type: "danger"},
+        1: { title: "Open", type: "warning"},
+        2: { title: "Closed", type: "default"}
+    };
+
+    const financialBatchViewBag = ref(config.entity);
+    const financialBatchEditBag = ref<FinancialBatchBag>({} as FinancialBatchBag);
+
+    const entityTypeGuid = EntityType.FinancialBatch;
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    // The properties that are being edited in the UI. This is used to
+    // inform the server which incoming values have valid data in them.
+    const validProperties = [
+        "attributeValues",
+        "accountingSystemCode",
+        "batchEndDateTime",
+        "batchStartDateTime",
+        "campus",
+        "controlAmount",
+        "controlItemCount",
+        "name",
+        "note",
+        "status",
+        "transactions"
+    ];
+
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(financialBatchEditBag, validProperties, invokeBlockAction), undefined, true);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return financialBatchViewBag.value?.name ?? "";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return financialBatchViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+
+        const labels: PanelAction[] = [{
+                title: `Batch #${financialBatchViewBag.value?.id}`,
+                type: "info",
+            },
+            // if in case the value of the status is not initialized in the component, the value is defaulted to the default status which is OPEN
+            {
+                title: `${statusLabels[financialBatchViewBag.value?.status ?? 1].title}`,
+                type: `${statusLabels[financialBatchViewBag.value?.status ?? 1].type}`,
+            }];
+
+            if(financialBatchViewBag.value?.campus) {
+                labels.push({
+                    title: `${financialBatchViewBag.value?.campus.text ?? ""}`,
+                    type: "campus",
+                });
+            }
+
+            if(financialBatchViewBag.value?.isAutomated) {
+                labels.push({
+                    title: "Automated",
+                    type: "warning",
+                });
+            }
+
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        const isReopenDisabled = financialBatchViewBag.value?.status == 2 && !config.options?.isReopenAuthorized;
+        return config.isEditable === true && !(isReopenDisabled);
+    });
+
+    const options = computed((): FinancialBatchDetailOptionsBag => {
+        return config.options ?? {
+            isReopenAuthorized: false,
+            isStatusChangeDisabled: true,
+            transactionAmount: 0,
+            transactionItemCount: 0
+        };
+    });
+
+    const footerActions = computed((): PanelAction[] => {
+        if(panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
+        return [
+                {
+                    iconCssClass: "fa fa-money",
+                    title: "Match Transactions",
+                    type: "default",
+                    handler: () => {
+                        window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.MatchTransactions] ?? "");
+                    }
+                },
+                {
+                    iconCssClass: "fa fa-file-text-o",
+                    title: "Audit Log",
+                    type: "default",
+                    handler: () => {
+                        window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.AuditLogs] ?? "");
+                    }
+                }
+            ];
+    });
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!financialBatchEditBag.value?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: financialBatchViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete financial batch.";
+
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<DetailBlockBox<FinancialBatchBag, FinancialBatchDetailOptionsBag>>("Edit", {
+            key: financialBatchViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.entity) {
+            financialBatchEditBag.value = result.data.entity;
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for when a value has changed that has an associated
+     * C# property name. This is used to detect changes to values that
+     * might cause qualified attributes to either show up or not show up.
+     *
+     * @param propertyName The name of the C# property that was changed.
+     */
+    function onPropertyChanged(propertyName: string): void {
+        // If we don't have any qualified attribute properties or this property
+        // is not one of them then do nothing.
+        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+            return;
+        }
+
+        refreshAttributesDebounce();
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const data: DetailBlockBox<FinancialBatchBag, FinancialBatchDetailOptionsBag> = {
+            entity: financialBatchEditBag.value,
+            isEditable: true,
+            validProperties: validProperties
+        };
+
+        const result = await invokeBlockAction<FinancialBatchBag | string>("Save", {
+            box: data
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                financialBatchViewBag.value = result.data;
+
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save financial batch.";
+
+        return false;
+    }
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified financial batch could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        financialBatchEditBag.value = config.entity;
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

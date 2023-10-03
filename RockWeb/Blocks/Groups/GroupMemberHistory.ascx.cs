@@ -128,13 +128,13 @@ namespace RockWeb.Blocks.Groups
         {
             int groupId = hfGroupId.Value.AsInteger();
 
-            gfGroupMembers.UserPreferenceKeyPrefix = string.Format( "{0}-", groupId );
-            gfGroupMembers.SaveUserPreference( "First Name", tbFirstName.Text );
-            gfGroupMembers.SaveUserPreference( "Last Name", tbLastName.Text );
-            gfGroupMembers.SaveUserPreference( "Last Role", cblRole.SelectedValues.AsIntegerList().ToJson() );
-            gfGroupMembers.SaveUserPreference( "Status", "Last Status", cblGroupMemberStatus.SelectedValues.AsIntegerList().ToJson() );
-            gfGroupMembers.SaveUserPreference( "Date Added", sdrDateAdded.DelimitedValues );
-            gfGroupMembers.SaveUserPreference( "Date Removed", sdrDateRemoved.DelimitedValues );
+            gfGroupMembers.PreferenceKeyPrefix = string.Format( "{0}-", groupId );
+            gfGroupMembers.SetFilterPreference( "First Name", tbFirstName.Text );
+            gfGroupMembers.SetFilterPreference( "Last Name", tbLastName.Text );
+            gfGroupMembers.SetFilterPreference( "Last Role", cblRole.SelectedValues.AsIntegerList().ToJson() );
+            gfGroupMembers.SetFilterPreference( "Status", "Last Status", cblGroupMemberStatus.SelectedValues.AsIntegerList().ToJson() );
+            gfGroupMembers.SetFilterPreference( "Date Added", sdrDateAdded.DelimitedValues );
+            gfGroupMembers.SetFilterPreference( "Date Removed", sdrDateRemoved.DelimitedValues );
 
             BindMembersGrid();
         }
@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfGroupMembers_ClearFilterClick( object sender, EventArgs e )
         {
-            gfGroupMembers.DeleteUserPreferences();
+            gfGroupMembers.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -256,13 +256,13 @@ namespace RockWeb.Blocks.Groups
             int groupId = hfGroupId.Value.AsInteger();
             var group = new GroupService( rockContext ).Get( groupId );
             var groupTypeCache = GroupTypeCache.Get( group.GroupTypeId );
-            gfGroupMembers.UserPreferenceKeyPrefix = string.Format( "{0}-", groupId );
+            gfGroupMembers.PreferenceKeyPrefix = string.Format( "{0}-", groupId );
 
-            tbFirstName.Text = gfGroupMembers.GetUserPreference( "First Name" );
-            tbLastName.Text = gfGroupMembers.GetUserPreference( "Last Name" );
+            tbFirstName.Text = gfGroupMembers.GetFilterPreference( "First Name" );
+            tbLastName.Text = gfGroupMembers.GetFilterPreference( "Last Name" );
 
-            sdrDateAdded.DelimitedValues = gfGroupMembers.GetUserPreference( "Date Added" );
-            sdrDateRemoved.DelimitedValues = gfGroupMembers.GetUserPreference( "Date Removed" );
+            sdrDateAdded.DelimitedValues = gfGroupMembers.GetFilterPreference( "Date Added" );
+            sdrDateRemoved.DelimitedValues = gfGroupMembers.GetFilterPreference( "Date Removed" );
             cblRole.Items.Clear();
 
             if ( groupTypeCache != null )
@@ -273,11 +273,11 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            List<int> selectedGroupRoleIds = gfGroupMembers.GetUserPreference( "Group Role" ).FromJsonOrNull<List<int>>() ?? new List<int>();
+            List<int> selectedGroupRoleIds = gfGroupMembers.GetFilterPreference( "Group Role" ).FromJsonOrNull<List<int>>() ?? new List<int>();
             cblRole.SetValues( selectedGroupRoleIds );
 
             cblGroupMemberStatus.BindToEnum<GroupMemberStatus>();
-            List<GroupMemberStatus> selectedGroupMemberStatuses = gfGroupMembers.GetUserPreference( "Group Member Status" ).FromJsonOrNull<List<GroupMemberStatus>>() ?? new List<GroupMemberStatus>();
+            List<GroupMemberStatus> selectedGroupMemberStatuses = gfGroupMembers.GetFilterPreference( "Group Member Status" ).FromJsonOrNull<List<GroupMemberStatus>>() ?? new List<GroupMemberStatus>();
             cblGroupMemberStatus.SetValues( selectedGroupMemberStatuses.Select( a => a.ConvertToInt() ) );
         }
 
