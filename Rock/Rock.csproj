@@ -860,6 +860,8 @@
     <Compile Include="Cms\StructuredContent\BlockTypes\ParagraphData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\QuoteRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\QuoteData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\RawData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\RawRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\TableRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\TableData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\WarningRenderer.cs" />
