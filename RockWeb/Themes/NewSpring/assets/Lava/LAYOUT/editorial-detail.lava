@@ -267,8 +267,8 @@
         "@type": "Organization",
         "name": "{{ 'Global' | Attribute:'OrganizationName' }}",
         "logo": {
-        "@type": "ImageObject",
-        "url": "https://newspring.cc/GetImage.ashx?id=661329"
+            "@type": "ImageObject",
+            "url": "https://newspring.cc/GetImage.ashx?id=661329"
         }
     },
     "author": {
@@ -289,9 +289,9 @@
 
     "datePublished": "{{ Item.PublishDateTime }}",
     "dateModified": "{{ Item.ModifiedDateTime }}",
-        {% if Item.ExpireDateTime %}
-        "expires": "{{ Item.ExpireDateTime }}",
-        {% endif %}
+    {% if Item.ExpireDateTime %}
+    "expires": "{{ Item.ExpireDateTime }}",
+    {% endif %}
 
     {% if Item.ImageLandscape and Item.ImageLandscape != empty %}
         "image": "{{ Item.ImageLandscape }}",
