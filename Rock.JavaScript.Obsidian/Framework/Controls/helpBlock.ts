@@ -33,7 +33,9 @@ const HelpBlock = defineComponent({
     mounted() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const jquery = <any>window[<any>"$"];
-        jquery(this.$el).tooltip();
+
+        // jquery will not exist during unit tests.
+        jquery?.(this.$el).tooltip();
     },
     template: `
 <JavaScriptAnchor class="help" tabindex="-1" data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true" title="" :data-original-title="text">

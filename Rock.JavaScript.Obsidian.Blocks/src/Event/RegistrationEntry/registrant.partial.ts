@@ -183,9 +183,9 @@ export default defineComponent({
 
         /** The filtered fields to show on the current form augmented to remove pre/post HTML from non-visible fields */
         currentFormFieldsAugmented(): RegistrationEntryBlockFormFieldViewModel[] {
-            const fields = JSON.parse(JSON.stringify(this.currentFormFields));
+            const fields = JSON.parse(JSON.stringify(this.currentFormFields)) as RegistrationEntryBlockFormFieldViewModel[];
 
-            fields.forEach((value, index) => {
+            fields.forEach(value => {
                 if (value.fieldSource != this.fieldSources.personField) {
                     let isVisible = true;
                     switch (value.visibilityRuleType) {
@@ -460,6 +460,13 @@ export default defineComponent({
             // If the family member selection is made then set all form fields where use existing value is enabled
             for (const form of this.viewModel.registrantForms) {
                 for (const field of form.fields) {
+                    // Do not set common fields if they are of type
+                    // Registrant Attribute since there is no value to set.
+                    // Fixes issue #5610.
+                    if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                        continue;
+                    }
+
                     if (field.guid in this.familyMember.fieldValues) {
                         const familyMemberValue = this.familyMember.fieldValues[field.guid];
 
@@ -520,6 +527,14 @@ export default defineComponent({
                     // If the family member selection is cleared then clear all form fields
                     for (const form of this.viewModel.registrantForms) {
                         for (const field of form.fields) {
+                            // Do not touch common fields if they are of type
+                            // Registrant Attribute since we don't set them when
+                            // selecting a family member either.
+                            // Fixes issue #5610.
+                            if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                                continue;
+                            }
+
                             delete this.currentRegistrant.fieldValues[field.guid];
                         }
                     }
