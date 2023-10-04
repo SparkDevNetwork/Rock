@@ -885,7 +885,10 @@ namespace Rock.Blocks.Event
 
                 if ( context.RegistrationSettings.RegistrarOption == RegistrarOption.UseLoggedInPerson && currentPerson != null )
                 {
-                    registrar = currentPerson;
+                    // Registrar is sometimes used with save operations later on
+                    // so we need to load a new person that is in our RockContext.
+                    // Fixes #5624.
+                    registrar = new PersonService( rockContext ).Get( currentPerson.Id );
                     context.Registration.PersonAliasId = currentPerson.PrimaryAliasId;
                 }
                 else if ( context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant )
@@ -1265,7 +1268,10 @@ namespace Rock.Blocks.Event
 
             if ( currentPersonNamesMatch )
             {
-                registrar = currentPerson;
+                // Registrar is sometimes used with save operations later on
+                // so we need to load a new person that is in our RockContext.
+                // Fixes #5624.
+                registrar = new PersonService( rockContext ).Get( currentPerson.Id );
                 context.Registration.PersonAliasId = currentPerson.PrimaryAliasId;
             }
             else
