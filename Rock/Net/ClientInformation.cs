@@ -123,7 +123,7 @@ namespace Rock.Net
         /// <returns>The details from the user agent string.</returns>
         internal static ClientInfo GetClientInfoForUserAgent( string userAgent )
         {
-            if ( UserAgent.IsNullOrWhiteSpace() )
+            if ( userAgent.IsNullOrWhiteSpace() )
             {
                 return null;
             }
