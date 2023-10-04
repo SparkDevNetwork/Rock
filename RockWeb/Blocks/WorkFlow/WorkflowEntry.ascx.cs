@@ -680,9 +680,17 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     if ( canEdit || activity.ActivityTypeCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
-                        var action = activity.ActiveActions.Where( a => ( !actionId.HasValue || a.Id == actionId.Value ) ).FirstOrDefault();
+                        var actions = activity.ActiveActions.Where( a => !actionId.HasValue || a.Id == actionId.Value ).ToList();
 
-                        if ( action.ActionTypeCache.WorkflowForm != null && action.IsCriteriaValid )
+                        // Check each active action in the activity for valid criteria and get the first one. This is to prevent a conditional action that didn't meet criteria from preventing a form from showing.
+                        WorkflowAction action = actions.Where( a => a.IsCriteriaValid ).FirstOrDefault();
+                        
+                        if ( action == null )
+                        {
+                            continue;
+                        }
+
+                        if ( action.ActionTypeCache.WorkflowForm != null )
                         {
                             _activity = activity;
                             if ( _activity.Id != 0 || _activity.AttributeValues == null )
@@ -696,7 +704,7 @@ namespace RockWeb.Blocks.WorkFlow
                             return true;
                         }
 
-                        if ( action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.ElectronicSignature && action.IsCriteriaValid )
+                        if ( action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.ElectronicSignature )
                         {
                             _activity = activity;
                             if ( _activity.Id != 0 || _activity.AttributeValues == null )
