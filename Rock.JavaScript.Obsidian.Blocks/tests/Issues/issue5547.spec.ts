@@ -1,9 +1,8 @@
-import RegistrationEntry from "../../../src/Event/registrationEntry";
-import { RegistrationEntryBlockViewModel } from "../../../src/Event/RegistrationEntry/types.partial";
-import { mockBlockActions, mountBlock } from "../../blocks";
+import RegistrationEntry from "../../src/Event/registrationEntry";
+import { RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import { mockBlockActions, mountBlock } from "../blocks";
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { Guid } from "@Obsidian/Types";
-import { nextTick } from "vue";
 
 function getConfigurationValues(): RegistrationEntryBlockViewModel {
     // This is weird, but we have to do this because the block actually

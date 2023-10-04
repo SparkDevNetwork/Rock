@@ -1,6 +1,6 @@
-import RegistrationEntry from "../../../src/Event/registrationEntry";
-import { RegistrationEntryBlockViewModel } from "../../../src/Event/RegistrationEntry/types.partial";
-import { mountBlock } from "../../blocks";
+import RegistrationEntry from "../../src/Event/registrationEntry";
+import { RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import { mountBlock } from "../blocks";
 
 describe("RegistrationEntry", () => {
     it("Displays default not found message when no configuration values sent", () => {
