@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,19 +15,29 @@
 // </copyright>
 //
 
-import { RockCacheabilityType } from "@Obsidian/Enums/Controls/rockCacheabilityType";
-import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
+using Rock.Utility;
 
-/**
- * Represents a setting for how to cache a resource. Based on Rock.Utility.RockCacheability
- */
-export type RockCacheability = {
-    /** Cache header type */
-    rockCacheabilityType: RockCacheabilityType;
+namespace Rock.ViewModels.Utility
+{
+    /// <summary>
+    /// Represents the unit and value of time.
+    /// </summary>
+    public class TimeIntervalBag
+    {
+        /// <summary>
+        /// Gets or sets the value.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
+        public int? Value { get; set; }
 
-    /** Max amount of time to cache */
-    maxAge: TimeInterval;
-
-    /** Max amount of time to cache in a shared cache */
-    sharedMaxAge: TimeInterval;
-};
+        /// <summary>
+        /// Gets or sets the unit.
+        /// </summary>
+        /// <value>
+        /// The unit.
+        /// </value>
+        public TimeIntervalUnit Unit { get; set; }
+    }
+}

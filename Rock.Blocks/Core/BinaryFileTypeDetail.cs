@@ -15,35 +15,30 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Tv.Classes;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Tv.AppleTvAppDetail;
-using Rock.ViewModels.Blocks.Tv.AppleTvPageDetail;
+using Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 
-namespace Rock.Blocks.Tv
+namespace Rock.Blocks.Core
 {
     /// <summary>
-    /// Allows a person to edit an Apple TV application.
+    /// Displays the details of a particular binary file type.
     /// </summary>
-
-    [DisplayName( "Apple TV Page Detail" )]
-    [Category( "TV > TV Apps" )]
-    [Description( "Allows a person to edit an Apple TV page." )]
+    [DisplayName( "Binary File Type Detail" )]
+    [Category( "Core" )]
+    [Description( "Displays all details of a binary file type." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
@@ -51,16 +46,15 @@ namespace Rock.Blocks.Tv
 
     #endregion
 
-    [Rock.SystemGuid.EntityTypeGuid( "d8419b3c-eda1-46fc-9810-b1d81fb37cb3" )]
-    [Rock.SystemGuid.BlockTypeGuid( "adbf3377-a491-4016-9375-346496a25fb4" )]
-    public class AppleTvPageDetail : RockDetailBlockType
+    [Rock.SystemGuid.EntityTypeGuid( "b2c1f7f4-4810-4b34-9fb6-9e6d6debe4c9" )]
+    [Rock.SystemGuid.BlockTypeGuid( "dabf690b-be17-4821-a13e-44c7c8d587cd" )]
+    public class BinaryFileTypeDetail : RockDetailBlockType
     {
         #region Keys
 
         private static class PageParameterKey
         {
-            public const string SiteId = "SiteId";
-            public const string SitePageId = "SitePageId";
+            public const string BinaryFileTypeId = "BinaryFileTypeId";
         }
 
         private static class NavigationUrlKey
@@ -70,8 +64,6 @@ namespace Rock.Blocks.Tv
 
         #endregion Keys
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}";
-
         #region Methods
 
         /// <inheritdoc/>
@@ -79,13 +71,13 @@ namespace Rock.Blocks.Tv
         {
             using ( var rockContext = new RockContext() )
             {
-                var box = new DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag>();
+                var box = new DetailBlockBox<BinaryFileTypeBag, BinaryFileTypeDetailOptionsBag>();
 
                 SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Page>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<BinaryFileType>();
 
                 return box;
             }
@@ -98,22 +90,24 @@ namespace Rock.Blocks.Tv
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private AppleTvPageDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private BinaryFileTypeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
-            var options = new AppleTvPageDetailOptionsBag();
-
+            var options = new BinaryFileTypeDetailOptionsBag();
+            options.PreferredColorDepthOptions = typeof( ColorDepth ).ToEnumListItemBag();
+            options.PreferredFormatOptions = typeof( Format ).ToEnumListItemBag();
+            options.PreferredResolutionOptions = typeof( Resolution ).ToEnumListItemBag();
             return options;
         }
 
         /// <summary>
-        /// Validates the Page for any final information that might not be
+        /// Validates the BinaryFileType for any final information that might not be
         /// valid after storing all the data from the client.
         /// </summary>
-        /// <param name="page">The page to be validated.</param>
+        /// <param name="binaryFileType">The BinaryFileType to be validated.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
-        /// <returns><c>true</c> if the Page is valid, <c>false</c> otherwise.</returns>
-        private bool ValidatePage( Page page, RockContext rockContext, out string errorMessage )
+        /// <returns><c>true</c> if the BinaryFileType is valid, <c>false</c> otherwise.</returns>
+        private bool ValidateBinaryFileType( BinaryFileType binaryFileType, RockContext rockContext, out string errorMessage )
         {
             errorMessage = null;
 
@@ -126,18 +120,18 @@ namespace Rock.Blocks.Tv
         /// </summary>
         /// <param name="box">The box to be populated.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<BinaryFileTypeBag, BinaryFileTypeDetailOptionsBag> box, RockContext rockContext )
         {
             var entity = GetInitialEntity( rockContext );
 
             if ( entity == null )
             {
-                box.ErrorMessage = $"The {Page.FriendlyTypeName} was not found.";
+                box.ErrorMessage = $"The {BinaryFileType.FriendlyTypeName} was not found.";
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -151,7 +145,7 @@ namespace Rock.Blocks.Tv
                 }
                 else
                 {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( Page.FriendlyTypeName );
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( BinaryFileType.FriendlyTypeName );
                 }
             }
             else
@@ -159,12 +153,12 @@ namespace Rock.Blocks.Tv
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity );
+                    box.Entity = GetEntityBagForEdit( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Page.FriendlyTypeName );
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( BinaryFileType.FriendlyTypeName );
                 }
             }
         }
@@ -173,33 +167,248 @@ namespace Rock.Blocks.Tv
         /// Gets the entity bag that is common between both view and edit modes.
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
-        /// <returns>A <see cref="AppleTvPageBag"/> that represents the entity.</returns>
-        private AppleTvPageBag GetCommonEntityBag( Page entity )
+        /// <returns>A <see cref="BinaryFileTypeBag"/> that represents the entity.</returns>
+        private BinaryFileTypeBag GetCommonEntityBag( BinaryFileType entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var response = entity.AdditionalSettings.FromJsonOrNull<ApplePageResponse>() ?? new ApplePageResponse();
             var cacheability = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>();
 
-            return new AppleTvPageBag
+            return new BinaryFileTypeBag
             {
-                Description = entity.Description,
                 IdKey = entity.IdKey,
-                Name = entity.InternalName,
-                ShowInMenu = entity.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed,
-                PageTVML = response.Content,
+                CacheControlHeaderSettings = ToCacheabilityBag( cacheability ),
+                CacheToServerFileSystem = entity.CacheToServerFileSystem,
+                Description = entity.Description,
+                IconCssClass = entity.IconCssClass,
                 IsSystem = entity.IsSystem,
-                RockCacheability = ToCacheabilityBag( cacheability ),
+                MaxFileSizeBytes = entity.MaxFileSizeBytes,
+                MaxHeight = entity.MaxHeight,
+                MaxWidth = entity.MaxWidth,
+                Name = entity.Name,
+                PreferredColorDepth = entity.PreferredColorDepth,
+                PreferredFormat = entity.PreferredFormat,
+                PreferredRequired = entity.PreferredRequired,
+                PreferredResolution = entity.PreferredResolution,
+                RequiresViewSecurity = entity.RequiresViewSecurity,
+                StorageEntityType = entity.StorageEntityType.ToListItemBag()
             };
         }
 
         /// <summary>
-        /// Converts the <see cref="RockCacheability"/> entity to a <see cref="RockCacheabilityBag"/>
+        /// Gets the bag for viewing the specified entity.
         /// </summary>
-        /// <param name="cacheability">The <see cref="RockCacheability"/> entity</param>
+        /// <param name="entity">The entity to be represented for view purposes.</param>
+        /// <returns>A <see cref="BinaryFileTypeBag"/> that represents the entity.</returns>
+        private BinaryFileTypeBag GetEntityBagForView( BinaryFileType entity )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var bag = GetCommonEntityBag( entity );
+
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+
+            return bag;
+        }
+
+        /// <summary>
+        /// Gets the bag for editing the specified entity.
+        /// </summary>
+        /// <param name="entity">The entity to be represented for edit purposes.</param>
+        /// <returns>A <see cref="BinaryFileTypeBag"/> that represents the entity.</returns>
+        private BinaryFileTypeBag GetEntityBagForEdit( BinaryFileType entity, RockContext rockContext )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var bag = GetCommonEntityBag( entity );
+
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.BinaryFileTypeAttributes = GetAttributes( entity, rockContext ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
+
+            if ( entity.IsSystem )
+            {
+                bag.RestrictedEdit = true;
+                bag.EditModeMessage = EditModeMessage.System( BinaryFileType.FriendlyTypeName );
+            }
+
+            return bag;
+        }
+
+        /// <summary>
+        /// Updates the entity from the data in the save box.
+        /// </summary>
+        /// <param name="entity">The entity to be updated.</param>
+        /// <param name="box">The box containing the information to be updated.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
+        private bool UpdateEntityFromBox( BinaryFileType entity, DetailBlockBox<BinaryFileTypeBag, BinaryFileTypeDetailOptionsBag> box, RockContext rockContext )
+        {
+            if ( box.ValidProperties == null )
+            {
+                return false;
+            }
+
+            box.IfValidProperty( nameof( box.Entity.CacheControlHeaderSettings ),
+                () => entity.CacheControlHeaderSettings = ToCacheability( box.Entity.CacheControlHeaderSettings ).ToJson() );
+
+            box.IfValidProperty( nameof( box.Entity.CacheToServerFileSystem ),
+                () => entity.CacheToServerFileSystem = box.Entity.CacheToServerFileSystem );
+
+            box.IfValidProperty( nameof( box.Entity.Description ),
+                () => entity.Description = box.Entity.Description );
+
+            box.IfValidProperty( nameof( box.Entity.IconCssClass ),
+                () => entity.IconCssClass = box.Entity.IconCssClass );
+
+            box.IfValidProperty( nameof( box.Entity.MaxFileSizeBytes ),
+                () => entity.MaxFileSizeBytes = box.Entity.MaxFileSizeBytes );
+
+            box.IfValidProperty( nameof( box.Entity.MaxHeight ),
+                () => entity.MaxHeight = box.Entity.MaxHeight );
+
+            box.IfValidProperty( nameof( box.Entity.MaxWidth ),
+                () => entity.MaxWidth = box.Entity.MaxWidth );
+
+            box.IfValidProperty( nameof( box.Entity.Name ),
+                () => entity.Name = box.Entity.Name );
+
+            box.IfValidProperty( nameof( box.Entity.PreferredColorDepth ),
+                () => entity.PreferredColorDepth = box.Entity.PreferredColorDepth );
+
+            box.IfValidProperty( nameof( box.Entity.PreferredFormat ),
+                () => entity.PreferredFormat = box.Entity.PreferredFormat );
+
+            box.IfValidProperty( nameof( box.Entity.PreferredRequired ),
+                () => entity.PreferredRequired = box.Entity.PreferredRequired );
+
+            box.IfValidProperty( nameof( box.Entity.PreferredResolution ),
+                () => entity.PreferredResolution = box.Entity.PreferredResolution );
+
+            box.IfValidProperty( nameof( box.Entity.RequiresViewSecurity ),
+                () => entity.RequiresViewSecurity = box.Entity.RequiresViewSecurity );
+
+            box.IfValidProperty( nameof( box.Entity.StorageEntityType ),
+                () => entity.StorageEntityTypeId = box.Entity.StorageEntityType.GetEntityId<EntityType>( rockContext ) );
+
+            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+                () =>
+                {
+                    entity.LoadAttributes( rockContext );
+
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                } );
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the initial entity from page parameters or creates a new entity
+        /// if page parameters requested creation.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The <see cref="BinaryFileType"/> to be viewed or edited on the page.</returns>
+        private BinaryFileType GetInitialEntity( RockContext rockContext )
+        {
+            return GetInitialEntity<BinaryFileType, BinaryFileTypeService>( rockContext, PageParameterKey.BinaryFileTypeId );
+        }
+
+        /// <summary>
+        /// Gets the box navigation URLs required for the page to operate.
+        /// </summary>
+        /// <returns>A dictionary of key names and URL values.</returns>
+        private Dictionary<string, string> GetBoxNavigationUrls()
+        {
+            return new Dictionary<string, string>
+            {
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+            };
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entity = GetInitialEntity( rockContext );
+
+                if ( entity != null )
+                {
+                    entity.LoadAttributes( rockContext );
+                }
+
+                return GetSecurityGrantToken( entity );
+            }
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken( BinaryFileType entity )
+        {
+            var securityGrant = new Rock.Security.SecurityGrant();
+
+            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
+
+            return securityGrant.ToToken();
+        }
+
+        /// <summary>
+        /// Attempts to load an entity to be used for an edit action.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the entity to load.</param>
+        /// <param name="rockContext">The database context to load the entity from.</param>
+        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
+        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
+        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
+        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out BinaryFileType entity, out BlockActionResult error )
+        {
+            var entityService = new BinaryFileTypeService( rockContext );
+            error = null;
+
+            // Determine if we are editing an existing entity or creating a new one.
+            if ( idKey.IsNotNullOrWhiteSpace() )
+            {
+                // If editing an existing entity then load it and make sure it
+                // was found and can still be edited.
+                entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+            }
+            else
+            {
+                // Create a new entity.
+                entity = new BinaryFileType();
+                entityService.Add( entity );
+            }
+
+            if ( entity == null )
+            {
+                error = ActionBadRequest( $"{BinaryFileType.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to edit ${BinaryFileType.FriendlyTypeName}." );
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Converts the <see cref="RockCacheability"/> to a <see cref="RockCacheabilityBag"/>.
+        /// </summary>
+        /// <param name="cacheability">The cacheability.</param>
         /// <returns></returns>
         private RockCacheabilityBag ToCacheabilityBag( RockCacheability cacheability )
         {
@@ -256,7 +465,7 @@ namespace Rock.Blocks.Tv
         /// <summary>
         /// Converts the <see cref="RockCacheabilityBag"/> to a <see cref="RockCacheability"/>.
         /// </summary>
-        /// <param name="cacheControlHeaderSettings">The cacheability bag.</param>
+        /// <param name="cacheability">The cacheability.</param>
         /// <returns></returns>
         private static RockCacheability ToCacheability( RockCacheabilityBag cacheControlHeaderSettings )
         {
@@ -283,197 +492,43 @@ namespace Rock.Blocks.Tv
         }
 
         /// <summary>
-        /// Updates the additional settings fot the entity.
+        /// Save attributes associated with this BinaryFileType.
         /// </summary>
-        /// <param name="bag">The bag.</param>
-        /// <param name="entity">The entity.</param>
-        private static void SaveAdditionalSettings( AppleTvPageBag bag, Page entity )
+        /// <param name="entityTypeId"></param>
+        /// <param name="qualifierColumn"></param>
+        /// <param name="qualifierValue"></param>
+        /// <param name="viewStateAttributes"></param>
+        /// <param name="rockContext"></param>
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<PublicEditableAttributeBag> viewStateAttributes, RockContext rockContext )
         {
-            var pageResponse = entity.AdditionalSettings.FromJsonOrNull<ApplePageResponse>() ?? new ApplePageResponse();
-            pageResponse.Content = bag.PageTVML;
-            entity.AdditionalSettings = pageResponse.ToJson();
-        }
+            // Get the existing attributes for this entity type and qualifier value
+            var attributeService = new AttributeService( rockContext );
+            var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true ).ToList();
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="AppleTvPageBag"/> that represents the entity.</returns>
-        private AppleTvPageBag GetEntityBagForView( Page entity )
-        {
-            if ( entity == null )
+            // Delete any of those attributes that were removed in the UI
+            var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
+            foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
-                return null;
+                attributeService.Delete( attr );
+                rockContext.SaveChanges();
             }
 
-            var bag = GetCommonEntityBag( entity );
-            bag.PageGuid = entity.Guid.ToString();
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
-
-            return bag;
-        }
-
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>A <see cref="AppleTvPageBag"/> that represents the entity.</returns>
-        private AppleTvPageBag GetEntityBagForEdit( Page entity )
-        {
-            if ( entity == null )
+            // Update the Attributes that were assigned in the UI
+            foreach ( var attributeState in viewStateAttributes )
             {
-                return null;
-            }
-
-            var bag = GetCommonEntityBag( entity );
-
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
-
-            return bag;
-        }
-
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( Page entity, DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag> box, RockContext rockContext )
-        {
-            if ( box.ValidProperties == null )
-            {
-                return false;
-            }
-
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () =>
-                {
-                    entity.InternalName = box.Entity.Name;
-                    entity.BrowserTitle = box.Entity.Name;
-                    entity.PageTitle = box.Entity.Name;
-                } );
-
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
-
-            box.IfValidProperty( nameof( box.Entity.ShowInMenu ),
-                () => entity.DisplayInNavWhen = box.Entity.ShowInMenu ? DisplayInNavWhen.WhenAllowed : DisplayInNavWhen.Never );
-
-            box.IfValidProperty( nameof( box.Entity.RockCacheability ),
-                () => entity.CacheControlHeaderSettings = ToCacheability( box.Entity.RockCacheability ).ToJson() );
-
-            box.IfValidProperty( nameof( box.Entity.PageTVML ),
-                () => SaveAdditionalSettings( box.Entity, entity ) );
-
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
-                () =>
-                {
-                    entity.LoadAttributes( rockContext );
-
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
-                } );
-
-            return true;
-        }
-
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="Page"/> to be viewed or edited on the page.</returns>
-        private Page GetInitialEntity( RockContext rockContext )
-        {
-            return GetInitialEntity<Page, PageService>( rockContext, PageParameterKey.SitePageId );
-        }
-
-        /// <summary>
-        /// Gets the box navigation URLs required for the page to operate.
-        /// </summary>
-        /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
-        {
-            return new Dictionary<string, string>
-            {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId )
-                } )
-            };
-        }
-
-        /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
+                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
         }
 
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( Page entity )
+        private List<Rock.Model.Attribute> GetAttributes( BinaryFileType entity, RockContext rockContext )
         {
-            var securityGrant = new Rock.Security.SecurityGrant();
+            string qualifierValue = entity.Id.ToString();
+            var attributeService = new AttributeService( rockContext );
+            var qryBinaryFileAttributes = attributeService.GetByEntityTypeId( new BinaryFile().TypeId, true ).AsQueryable()
+                .Where( a => a.EntityTypeQualifierColumn.Equals( "BinaryFileTypeId", StringComparison.OrdinalIgnoreCase )
+                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out Page entity, out BlockActionResult error )
-        {
-            var entityService = new PageService( rockContext );
-            error = null;
-
-            // Determine if we are editing an existing entity or creating a new one.
-            if ( idKey.IsNotNullOrWhiteSpace() )
-            {
-                // If editing an existing entity then load it and make sure it
-                // was found and can still be edited.
-                entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
-            }
-            else
-            {
-                // Create a new entity.
-                entity = new Page();
-                entityService.Add( entity );
-            }
-
-            if ( entity == null )
-            {
-                error = ActionBadRequest( $"{Page.FriendlyTypeName} not found." );
-                return false;
-            }
-
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                error = ActionBadRequest( $"Not authorized to edit ${Page.FriendlyTypeName}." );
-                return false;
-            }
-
-            return true;
+            return qryBinaryFileAttributes.ToList();
         }
 
         #endregion
@@ -498,9 +553,9 @@ namespace Rock.Blocks.Tv
 
                 entity.LoadAttributes( rockContext );
 
-                var box = new DetailBlockBox<AppleTvPageBag, AppleTvAppDetailOptionsBag>
+                var box = new DetailBlockBox<BinaryFileTypeBag, BinaryFileTypeDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 return ActionOk( box );
@@ -513,19 +568,10 @@ namespace Rock.Blocks.Tv
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag> box )
+        public BlockActionResult Save( DetailBlockBox<BinaryFileTypeBag, BinaryFileTypeDetailOptionsBag> box )
         {
             using ( var rockContext = new RockContext() )
             {
-                var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();
-                var entityService = new PageService( rockContext );
-                var site = SiteCache.Get( applicationId );
-
-                if ( site == null )
-                {
-                    return ActionBadRequest( "Please provide the Apple Application this page belongs to." );
-                }
-
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
                     return actionError;
@@ -538,40 +584,20 @@ namespace Rock.Blocks.Tv
                 }
 
                 // Ensure everything is valid before saving.
-                if ( !ValidatePage( entity, rockContext, out var validationMessage ) )
+                if ( !ValidateBinaryFileType( entity, rockContext, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
                 }
 
-                var isNew = entity.Id == 0;
-
-                if ( isNew )
-                {
-                    entity.ParentPageId = site.DefaultPageId;
-                    entity.LayoutId = site.DefaultPage.LayoutId;
-
-                    // Set the order of the new page to be the last one
-                    var currentMaxOrder = entityService.GetByParentPageId( site.DefaultPageId )
-                        .OrderByDescending( p => p.Order )
-                        .Select( p => p.Order )
-                        .FirstOrDefault();
-                    entity.Order = currentMaxOrder + 1;
-                }
+                SaveAttributes( new BinaryFile().TypeId, "BinaryFileTypeId", entity.Id.ToString(), box.Entity.BinaryFileTypeAttributes, rockContext );
 
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
                     entity.SaveAttributeValues( rockContext );
-
-                    rockContext.SaveChanges();
                 } );
 
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId )
-                } ) );
+                return ActionOk( this.GetParentPageUrl() );
             }
         }
 
@@ -585,7 +611,7 @@ namespace Rock.Blocks.Tv
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new PageService( rockContext );
+                var entityService = new BinaryFileTypeService( rockContext );
 
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -611,7 +637,7 @@ namespace Rock.Blocks.Tv
         /// <param name="box">The box that contains all the information about the entity being edited.</param>
         /// <returns>A box that contains the entity and attribute information.</returns>
         [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag> box )
+        public BlockActionResult RefreshAttributes( DetailBlockBox<BinaryFileTypeBag, BinaryFileTypeDetailOptionsBag> box )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -629,9 +655,9 @@ namespace Rock.Blocks.Tv
                 // Reload attributes based on the new property values.
                 entity.LoadAttributes( rockContext );
 
-                var refreshedBox = new DetailBlockBox<AppleTvPageBag, AppleTvAppDetailOptionsBag>
+                var refreshedBox = new DetailBlockBox<BinaryFileTypeBag, BinaryFileTypeDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
@@ -656,17 +682,6 @@ namespace Rock.Blocks.Tv
 
                 return ActionOk( refreshedBox );
             }
-        }
-
-        /// <summary>
-        /// Helper class for Apple Page Additional Settings Configuration
-        /// </summary>
-        private sealed class ApplePageResponse
-        {
-            /// <summary>
-            /// Gets or sets the content.
-            /// </summary>
-            public string Content { get; set; }
         }
 
         #endregion

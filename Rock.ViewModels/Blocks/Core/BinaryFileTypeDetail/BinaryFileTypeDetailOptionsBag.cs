@@ -15,35 +15,33 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Tv.AppleTvPageDetail
+using Rock.ViewModels.Utility;
+using System.Collections.Generic;
+
+namespace Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class RockCacheabilityBag
+    public class BinaryFileTypeDetailOptionsBag
     {
         /// <summary>
-        /// Gets or sets the type of the rock cacheability type.
+        /// Gets or sets the preferred color depth options for the client dropdown.
         /// </summary>
         /// <value>
-        /// The type of the rock cacheability.
+        /// The preferred color depth options.
         /// </value>
-        public int RockCacheabilityType { get; set; }
-
+        public List<ListItemBag> PreferredColorDepthOptions { get; set; }
         /// <summary>
-        /// Gets or sets the maximum age.
+        /// Gets or sets the preferred resolution options for the client dropdown.
         /// </summary>
         /// <value>
-        /// The maximum age.
+        /// The preferred resolution options.
         /// </value>
-        public TimeIntervalBag MaxAge { get; set; }
-
+        public List<ListItemBag> PreferredResolutionOptions { get; set; }
         /// <summary>
-        /// Gets or sets the shared maximum age.
+        /// Gets or sets the preferred format options for the client dropdown.
         /// </summary>
         /// <value>
-        /// The shared maximum age.
+        /// The preferred format options.
         /// </value>
-        public TimeIntervalBag SharedMaxAge { get; set; }
+        public List<ListItemBag> PreferredFormatOptions { get; set; }
     }
 }

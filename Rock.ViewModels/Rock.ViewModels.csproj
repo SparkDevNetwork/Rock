@@ -55,6 +55,8 @@
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerValidationResultsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeBag.cs" />
+    <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
@@ -378,8 +380,8 @@
     <Compile Include="Communication\ConversationMessageBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
-    <Compile Include="Blocks\Tv\AppleTvPageDetail\RockCacheabilityBag.cs" />
-    <Compile Include="Blocks\Tv\AppleTvPageDetail\TimeIntervalBag.cs" />
+    <Compile Include="Controls\RockCacheabilityBag.cs" />
+    <Compile Include="Utility\TimeIntervalBag.cs" />
     <Compile Include="Core\Grid\CustomActionBag.cs" />
     <Compile Include="Core\Grid\CustomColumnDefinitionBag.cs" />
     <Compile Include="Core\Grid\GridCommunicationBag.cs" />

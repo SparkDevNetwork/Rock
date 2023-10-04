@@ -320,6 +320,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\Notes\" />
@@ -776,6 +777,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\systemPhoneNumberDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\binaryFileTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\binaryFileTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
@@ -1064,7 +1067,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\noteMentionItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\phoneNumberBoxWithSmsControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheability.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheabilityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\timeIntervalBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\attributeFieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customColumnDefinitionBag.d.ts" />

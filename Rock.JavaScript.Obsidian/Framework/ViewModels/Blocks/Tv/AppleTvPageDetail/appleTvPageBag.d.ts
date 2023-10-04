@@ -20,8 +20,7 @@
 // limitations under the License.
 // </copyright>
 //
-
-import { RockCacheabilityBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/rockCacheabilityBag";
+import { RockCacheabilityBag } from "@Obsidian/ViewModels/Controls/rockCacheabilityBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type AppleTvPageBag = {

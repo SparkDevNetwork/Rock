@@ -7,28 +7,27 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelTitle"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="panelName"
-                 :isAuditHidden="true"
+                 entityTypeName="Binary File Type"
+                 :isAuditHidden="false"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="false"
+                 :isDeleteVisible="!isSystem"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
-                 :headerActions="headerActions"
-                 :footerActions="footerActions"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
                  @save="onSave">
         <template #view>
-            <ViewPanel :modelValue="appleTvPageViewBag" :options="options" />
+            <ViewPanel :modelValue="binaryFileTypeViewBag" :options="options" />
         </template>
 
         <template #edit>
-            <EditPanel v-model="appleTvPageEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="binaryFileTypeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -40,16 +39,16 @@
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-    import EditPanel from "./AppleTvPageDetail/editPanel.partial.obs";
-    import ViewPanel from "./AppleTvPageDetail/viewPanel.partial.obs";
+    import EditPanel from "./BinaryFileTypeDetail/editPanel.partial.obs";
+    import ViewPanel from "./BinaryFileTypeDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
-    import { NavigationUrlKey } from "./AppleTvPageDetail/types.partial";
+    import { NavigationUrlKey } from "./BinaryFileTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-    import { AppleTvPageBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/appleTvPageBag";
-    import { AppleTvPageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/appleTvPageDetailOptionsBag";
+    import { BinaryFileTypeBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeBag";
+    import { BinaryFileTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeDetailOptionsBag";
 
-    const config = useConfigurationValues<DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag>>();
+    const config = useConfigurationValues<DetailBlockBox<BinaryFileTypeBag, BinaryFileTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
 
@@ -58,10 +57,10 @@
     const blockError = ref("");
     const errorMessage = ref("");
 
-    const appleTvPageViewBag = ref(config.entity);
-    const appleTvPageEditBag = ref<AppleTvPageBag>({} as AppleTvPageBag);
+    const binaryFileTypeViewBag = ref(config.entity);
+    const binaryFileTypeEditBag = ref<BinaryFileTypeBag>({} as BinaryFileTypeBag);
 
-    const entityTypeGuid = EntityType.Site;
+    const entityTypeGuid = EntityType.BinaryFileType;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
@@ -69,14 +68,23 @@
     // inform the server which incoming values have valid data in them.
     const validProperties = [
         "attributeValues",
-        "name",
+        "cacheControlHeaderSettings",
+        "cacheToServerFileSystem",
         "description",
-        "showInMenu",
-        "rockCacheability",
-        "pageTVML"
+        "iconCssClass",
+        "maxFileSizeBytes",
+        "maxHeight",
+        "maxWidth",
+        "name",
+        "preferredColorDepth",
+        "preferredFormat",
+        "preferredRequired",
+        "preferredResolution",
+        "requiresViewSecurity",
+        "storageEntityType"
     ];
 
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(appleTvPageEditBag, validProperties, invokeBlockAction), undefined, true);
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(binaryFileTypeEditBag, validProperties, invokeBlockAction), undefined, true);
 
     // #endregion
 
@@ -86,45 +94,28 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return appleTvPageViewBag.value?.name ?? "New Page";
+        return binaryFileTypeViewBag.value?.name ?? "";
+    });
+
+    /**
+     * The block panel title.
+     */
+    const panelTitle = computed((): string => {
+        switch (panelMode.value) {
+            case DetailPanelMode.Add:
+                return "Add Binary File Type";
+            case DetailPanelMode.Edit:
+                return "Edit Binary File Type";
+            default:
+                return binaryFileTypeViewBag.value?.name ?? "";
+        }
     });
 
     /**
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return appleTvPageViewBag.value?.idKey ?? "";
-    });
-
-    const headerActions = computed((): PanelAction[] | undefined => {
-        const actions: PanelAction[] = [];
-
-        if (!appleTvPageViewBag.value?.pageGuid) {
-            return undefined;
-        }
-
-        actions.push({
-            iconCssClass: "fa fa-clipboard",
-            title: "Copy Page Guid to Clipboard",
-            type: "info",
-            handler: onExportClick
-        });
-
-        return actions;
-    });
-
-    const footerActions = computed((): PanelAction[] | undefined => {
-        const actions: PanelAction[] = [];
-
-        if (panelMode.value !== DetailPanelMode.View) {
-            actions.push({
-                title: "Save Continue Editing",
-                type: "link",
-                handler: onSaveAndContinue
-            });
-        }
-
-        return actions;
+        return binaryFileTypeViewBag.value?.idKey ?? "";
     });
 
     /**
@@ -141,31 +132,20 @@
     });
 
     const isEditable = computed((): boolean => {
-        return config.isEditable === true && appleTvPageViewBag.value?.isSystem !== true;
+        return config.isEditable === true;
     });
 
-    const options = computed((): AppleTvPageDetailOptionsBag => {
+    const isSystem = computed((): boolean => {
+        return config.entity?.isSystem === true;
+    });
+
+    const options = computed((): BinaryFileTypeDetailOptionsBag => {
         return config.options ?? {};
     });
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
     // #region Event Handlers
-
-    const onExportClick = (event: Event): void => {
-        navigator.clipboard.writeText(appleTvPageViewBag.value?.pageGuid ?? "");
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const jquery = <any>window[<any>"$"];
-        const jEl = jquery(event.target).tooltip();
-        jEl.attr("data-original-title", "Copied")
-            .tooltip("show")
-            .attr("data-original-title", "Copy Page Guid to Clipboard");
-    };
 
     /**
      * Event handler for the Cancel button being clicked while in Edit mode.
@@ -191,14 +171,14 @@
         errorMessage.value = "";
 
         const result = await invokeBlockAction<string>("Delete", {
-            key: appleTvPageViewBag.value?.idKey
+            key: binaryFileTypeViewBag.value?.idKey
         });
 
         if (result.isSuccess && result.data) {
             return result.data;
         }
         else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete site.";
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete binary file type.";
 
             return false;
         }
@@ -211,12 +191,12 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag>>("Edit", {
-            key: appleTvPageViewBag.value?.idKey
+        const result = await invokeBlockAction<DetailBlockBox<BinaryFileTypeBag, BinaryFileTypeDetailOptionsBag>>("Edit", {
+            key: binaryFileTypeViewBag.value?.idKey
         });
 
         if (result.isSuccess && result.data && result.data.entity) {
-            appleTvPageEditBag.value = result.data.entity;
+            binaryFileTypeEditBag.value = result.data.entity;
 
             return true;
         }
@@ -251,13 +231,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag> = {
-            entity: appleTvPageEditBag.value,
+        const data: DetailBlockBox<BinaryFileTypeBag, BinaryFileTypeDetailOptionsBag> = {
+            entity: binaryFileTypeEditBag.value,
             isEditable: true,
             validProperties: validProperties
         };
 
-        const result = await invokeBlockAction<AppleTvPageBag | string>("Save", {
+        const result = await invokeBlockAction<BinaryFileTypeBag | string>("Save", {
             box: data
         });
 
@@ -266,35 +246,10 @@
                 return result.data;
             }
         }
-        else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save site.";
-        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save binary file type.";
 
         return false;
-    }
-
-    /**
-     * Event handler for the panel's Save and Continue event. Send the data to the server
-     * to be saved.
-     *
-     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
-     */
-    async function onSaveAndContinue(): Promise<void> {
-        errorMessage.value = "";
-
-        const data: DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag> = {
-            entity: appleTvPageEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<AppleTvPageBag | string>("Save", {
-            box: data
-        });
-
-        if (!result.isSuccess) {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save site.";
-        }
     }
 
     // #endregion
@@ -306,10 +261,10 @@
         blockError.value = config.errorMessage;
     }
     else if (!config.entity) {
-        blockError.value = "The specified site could not be viewed.";
+        blockError.value = "The specified binary file type could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        appleTvPageEditBag.value = config.entity;
+        binaryFileTypeEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
 </script>
