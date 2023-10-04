@@ -1,0 +1,412 @@
+{% comment %}
+    Title: AdultLifeGroupLeaderNews.lava
+    Description:
+        Lava content formatting and filtering for the Adult Life Group Leader News page.
+        Contains debug query strings that override variables to allow for developers to debug this file without adding and removing themselves from serving groups
+    Debug Query Strings:
+        Date - Date object (ex '12/31/2022')
+        Campus - Comma seperated campus Ids
+{% endcomment %}
+<style>
+    [style*="--aspect-ratio"] > :first-child {
+        width: 100%;
+    }
+        [style*="--aspect-ratio"] > img {
+        height: auto;
+    }
+    @supports (--custom:property) {
+        [style*="--aspect-ratio"] {
+            position: relative;
+        }
+        [style*="--aspect-ratio"]::before {
+            content: "";
+            display: block;
+            padding-bottom: calc(100% / (var(--aspect-ratio)));
+        }
+        [style*="--aspect-ratio"] > :first-child {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+        }
+    }
+
+    .contentItem{
+        padding-top:15px;
+        padding-bottom:15px;
+    }
+    .contentItem h1, .contentItem h2, .contentItem h3 {
+        margin-top:11px !important;
+    }
+
+    div.spacer:before{
+        position: relative;
+        display: inline-block;
+        content: '';
+        border-bottom: 2px solid #e2e2e2;
+        width: 50%;
+        left:25%;
+        bottom:0;
+
+    }
+
+    #tools {
+        text-align:center;
+    }
+    #tools a:hover{
+        text-decoration:none;
+
+    }
+    #tools a{
+
+        border: 1px solid #e2e2e2;
+        text-align:center;
+        width:250px;
+        overflow:hidden;
+        padding-top:15px;
+        margin:10px;
+        display: inline-block;
+    }
+    .toolIcon{
+        font-Size: 24pt;
+    }
+
+    .contentItem:not(.buttons) > div {
+        margin-bottom: 15px;
+    }
+
+    .half-width-button {
+        width: 100%;
+    }
+
+    @media screen and (min-width: 981px) {
+        .half-width-button {
+            width: 50%;
+            margin: auto;
+        }
+    }
+</style>
+
+{% sql personAliasGuid:'{{ CurrentPerson.PrimaryAlias.Guid }}' return:'groups' %}
+    SELECT g.Id AS [GroupId], g.Name AS [GroupName], gtr.Name AS [GroupRole], g.CampusId AS [CampusId], c.Name AS [Campus]
+        , dv.Id AS [CurriculumId], dv.Value AS [Curriculum]
+    FROM [GroupMember] gm
+    JOIN [PersonAlias] pa ON gm.PersonId = pa.PersonId AND pa.Guid = TRY_CAST(@personAliasGuid AS UNIQUEIDENTIFIER)
+    JOIN [Group] g ON gm.GroupId = g.Id AND g.IsActive = 1
+    JOIN [GroupType] gt ON gt.Id = g.GroupTypeId AND gt.GroupTypePurposeValueId = 5856 -- Life Groups
+    JOIN [GroupTypeRole] gtr on gtr.Id = gm.GroupRoleId AND gtr.IsLeader = 1
+    LEFT JOIN [Campus] c ON c.Id = g.CampusId
+    JOIN [AttributeValue] gc ON gc.EntityId = g.Id
+    JOIN [Attribute] gca ON gca.Id = gc.AttributeId AND gca.[Key] = 'GroupCurriculum'
+    JOIN [DefinedValue] dv ON dv.Guid = TRY_CAST(gc.Value AS UNIQUEIDENTIFIER)
+    WHERE gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
+{% endsql %}
+
+{% assign today = 'Global' | PageParameter:'Date' | AsDateTime %}
+{% if today == null %}
+    {% assign today = 'Now' | Date | AsDateTime %}
+{% endif %}
+
+{% assign personsCampus = 'Global' | PageParameter:'Campus' | UrlDecode %}
+{% if personsCampus != null and personsCampus != '' %}
+    {% assign campusIdStrings = personsCampus | Split:',' %}
+    {% for campusIdString in campusIdStrings %}
+        {% assign idAsInt = campusIdString | AsInteger %}
+        {% assign campusIds = campusIds | AddToArray:idAsInt %}
+    {% endfor %}
+{% else %}
+    {% for group in groups %}
+        {% assign campusIds = campusIds | AddToArray:group.CampusId %}
+    {% endfor %}
+{% endif %}
+
+{% assign curricula = 'Global' | PageParameter:'Curricula' | UrlDecode %}
+{% if curricula != null and curricula != '' %}
+    {% assign curriculaIdStrings = curricula | Split:',' %}
+    {% for curriculaIdString in curriculaIdStrings %}
+        {% assign idAsInt = curriculaIdString | AsInteger %}
+        {% assign curriculaIds = curriculaIds | AddToArray:idAsInt %}
+    {% endfor %}
+{% else %}
+    {% for group in groups %}
+        {% assign curriculaIds = curriculaIds | AddToArray:group.CurriculumId %}
+    {% endfor %}
+{% endif %}
+
+<!-- Campus News -->
+{% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+    SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime
+		, campus.Id AS [CampusId], campus.Name AS [CampusName]
+        , curriculum.Value as [Curriculum], curriculum.Id AS [CurriculumId]
+		, author.Id AS [AuthorId], author.NickName AS [AuthorNickName], author.LastName AS [AuthorLastName], author.PhotoGuid AS [AuthorPhotoGuid]
+    FROM [ContentChannelItem] cci
+    LEFT JOIN
+	(
+		SELECT av.EntityId, c.Id, c.Name, av.AttributeId, c.[Order]
+		FROM [AttributeValue] av
+		OUTER APPLY STRING_SPLIT(av.Value, ',') guid
+		LEFT JOIN [Campus] c ON c.Guid = TRY_CAST(guid.value AS UNIQUEIDENTIFIER)
+	) campus ON campus.EntityId = cci.Id AND campus.AttributeId = 124739
+    LEFT JOIN
+	(
+		SELECT av.EntityId, dv.Id, dv.Value, av.AttributeId
+		FROM [AttributeValue] av
+		OUTER APPLY STRING_SPLIT(av.Value, ',') guid
+		LEFT JOIN [DefinedValue] dv ON dv.Guid = TRY_CAST(guid.value AS UNIQUEIDENTIFIER)
+	) curriculum ON curriculum.EntityId = cci.Id AND curriculum.AttributeId = 124740
+    LEFT JOIN
+	(
+		SELECT av.EntityId, av.AttributeId, p.NickName, p.LastName, p.Id, bf.Guid AS [PhotoGuid]
+		FROM [AttributeValue] av
+		JOIN [PersonAlias] pa ON pa.Guid = TRY_CAST(av.Value AS UNIQUEIDENTIFIER)
+		JOIN [Person] p ON p.Id = pa.PersonId
+		JOIN [BinaryFile] bf ON bf.Id = p.PhotoId
+	) author ON author.EntityId = cci.Id AND author.AttributeId = 126206
+    WHERE cci.ContentChannelId = 118
+        AND (cci.StartDateTime <= @now)
+        AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
+    ORDER BY campus.[Order], cci.Priority, cci.StartDateTime
+{% endsql %}
+
+{% assign totalCount = 0 %}
+{% for item in Items %}
+    {% assign hasBeenDisplayed = displayedItems | Contains:item.Id %}
+    {% if hasBeenDisplayed != true %}
+        {% if item.CampusId != null and item.CampusId != '' %}
+            {% assign isInAudience = campusIds | Contains:item.CampusId %}
+        {% else %}
+            {% assign isInAudience = true %}
+        {% endif %}
+
+        {% if isInAudience == true and item.CurriculumId != null and item.CurriculumId != '' %}
+            {% assign isInAudience = curriculaIds | Contains:item.CurriculumId %}
+        {% endif %}
+
+        {% if isInAudience == true %}
+            {% assign totalCount = totalCount | Plus:1 %}
+            {% assign x = 0 %}
+            {% if item.Content and item.Content != '' %}{% assign x = x | Plus:1 %}{% endif %}
+            {% if item.AuthorPhotoGuid and item.AuthorPhotoGuid != '' %}{% assign x = x | Plus:1 %}{% endif %}
+            {% if x > 0 %}
+                {% if x == 1 %}
+                    {% assign cw = 'col-md-12' %}
+                {% else %}
+                    {% assign cw = 'col-md-6' %}
+                {% endif %}
+                <div class="contentItem row">
+                {% if item.Content and item.Content != '' %}
+                    <div class='{{ cw }}'>
+                        {{ item.Content }}
+                    </div>
+                {% endif %}
+                {% if item.AuthorPhotoGuid and item.AuthorPhotoGuid != '' %}
+                    <div class='{{ cw }}' style="text-align:center;">
+                        <img src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?Guid={{ item.AuthorPhotoGuid }}" style="max-width: 100%; max-height: 500px;">
+                    </div>
+                {% endif %}
+                </div>
+            {% endif %}
+            <div class="spacer"></div>
+            {% assign displayedItems = displayedItems | AddToArray:item.Id %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+<!-- Central Content -->
+{% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+    SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime
+		, curriculum.Value as [Curriculum], curriculum.Id AS [CurriculumId]
+    FROM [ContentChannelItem] cci
+    LEFT JOIN
+	(
+		SELECT av.EntityId, dv.Id, dv.Value, av.AttributeId
+		FROM [AttributeValue] av
+		OUTER APPLY STRING_SPLIT(av.Value, ',') guid
+		LEFT JOIN [DefinedValue] dv ON dv.Guid = TRY_CAST(guid.value AS UNIQUEIDENTIFIER)
+	) curriculum ON curriculum.EntityId = cci.Id AND curriculum.AttributeId = 126330
+    WHERE cci.ContentChannelId = 121
+        AND (cci.StartDateTime <= @now)
+        AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
+    ORDER BY cci.Priority, cci.StartDateTime
+{% endsql %}
+
+{% assign first = true %}
+{% for item in Items %}
+    {% assign hasBeenDisplayed = centralDisplayedItems | Contains:item.Id %}
+    {% if hasBeenDisplayed != true %}
+        {% if item.CurriculumId != null and item.CurriculumId != '' %}
+            {% assign isInAudience = curriculaIds | Contains:item.CurriculumId %}
+            {% else %}
+            {% assign isInAudience = true %}
+        {% endif %}
+
+        {% if isInAudience == true %}
+            <div class="row">
+                <div class="col-md-12">
+                    {% assign totalCount = totalCount | Plus:1 %}
+                    {% assign x = 0 %}
+                    {% if item.Content and item.Content != '' %}
+                        {% if first != true %}
+                            <div class="spacer"></div>
+                        {% endif %}
+                        {{ item.Content }}
+                        {% assign first = false %}
+                    {% endif %}
+                    {% assign centralDisplayedItems = centralDisplayedItems | AddToArray:item.Id %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    {% definedvalue id:'{{ item.CurriculumId }}' %}
+                        <p><a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/4667?CurriculumId={{ item.CurriculumId }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ definedvalue.Value }}</a></p>
+                    {% enddefinedvalue %}
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+{% comment %}
+<!-- Adult LG Curriculum -->
+{% contentchannel id:'37' %}
+    {% assign commentaryUrl = contentchannel | Attribute:'AdditionalCommentary','RawValue' %}
+{% endcontentchannel %}
+
+{% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+    SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.StartDateTime, cci.ExpireDateTime
+    , curriculum.Value as [Curriculum], curriculum.Id AS [CurriculumId]
+    , lessonGuide.Value as [LessonGuide]
+    , discussionGuide.Value as [DiscussionGuide]
+    , presentation.Value as [Presentation]
+    , video.Value as [Video]
+    , seriesTitle.Value as [SeriesTitle]
+    , videoLesson.Value as [VideoLesson]
+    , wordLessonGuide.Value as [WordLessonGuide]
+    FROM [ContentChannelItem] cci
+    LEFT JOIN
+    (
+        SELECT av.EntityId, dv.Id, dv.Value, av.AttributeId, dv.[Order] AS [Order]
+        FROM [AttributeValue] av
+        OUTER APPLY STRING_SPLIT(av.Value, ',') guid
+        LEFT JOIN [DefinedValue] dv ON dv.Guid = TRY_CAST(guid.value AS UNIQUEIDENTIFIER)
+    ) curriculum ON curriculum.EntityId = cci.Id AND curriculum.AttributeId = 106623
+    LEFT JOIN [AttributeValue] lessonGuide ON lessonGuide.EntityId = cci.Id AND lessonGuide.AttributeId = 57977
+    LEFT JOIN [AttributeValue] discussionGuide ON discussionGuide.EntityId = cci.Id AND discussionGuide.AttributeId = 62456
+    LEFT JOIN [AttributeValue] presentation ON presentation.EntityId = cci.Id AND presentation.AttributeId = 57978
+    LEFT JOIN [AttributeValue] video ON video.EntityId = cci.Id AND video.AttributeId = 60549
+    LEFT JOIN [AttributeValue] seriesTitle ON seriesTitle.EntityId = cci.Id AND seriesTitle.AttributeId = 65110
+    LEFT JOIN [AttributeValue] videoLesson ON videoLesson.EntityId = cci.Id AND videoLesson.AttributeId = 67253
+    LEFT JOIN [AttributeValue] wordLessonGuide ON wordLessonGuide.EntityId = cci.Id AND wordLessonGuide.AttributeId = 67504
+    WHERE cci.ContentChannelId = 37 AND cci.Status = 2
+        AND (cci.StartDateTime <= @now)
+        AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
+    ORDER BY curriculum.[Order], cci.Priority, cci.StartDateTime
+{% endsql %}
+
+{% assign odd = true %}
+{% for item in Items %}
+    {% assign isRelevant = curriculaIds | Contains:item.CurriculumId %}
+    {% if isRelevant == true %}
+        {% assign totalCount = totalCount | Plus:1 %}
+        {% if odd %}
+            {% assign odd = false %}
+            {% assign bg = '#ffffff' %}
+        {% else %}
+            {% assign odd = true %}
+            {% assign bg = '#f8f8f8' %}
+        {% endif %}
+        <div style="background-color:{{ bg }}; padding: 0px 20px; margin-bottom: 5em; ">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>{{ item.Title }}</h1>
+                    <hr>
+                </div>
+            </div>
+            <div class="row">
+            {% if item.Video != null and item.Video != '' %}
+                <div class="col-md-6" align="center">
+                    <div style="--aspect-ratio: 16/9;">
+                        <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video }}?playerColor=f04b28" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        <script src="//fast.wistia.net/assets/external/E-v1.js" async></script>
+                    </div>
+                    <br>
+                </div>
+                <div class="col-md-6">
+            {% else %}
+                <div class="col-md-12">
+            {% endif %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            {{ item.Content }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            {% if item.LessonGuide != null and item.LessonGuide != '' %}
+                                <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.LessonGuide }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Lesson Guide (Print Ready)</a></p>
+                            {% endif %}
+                            {% if item.DiscussionGuide != null and item.DiscussionGuide != '' %}
+                                <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.DiscussionGuide }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Discussion Guide</a></p>
+                            {% endif %}
+                            {% if item.Presentation != null and item.Presentation != '' %}
+                                <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Presentation }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Presentation</a><br></p>
+                            {% endif %}
+                            {% if item.VideoLesson != null and item.VideoLesson != '' %}
+                                <p><a href="/Wistia?embedCode={{ item.VideoLesson }}" target="_blank" class="btn btn-primary" style="width:100%; white-space:normal;">Video Lesson</a><br></p>
+                            {% endif %}
+                            {% if item.WordLessonGuide != null and item.WordLessonGuide != '' %}
+                                <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.WordLessonGuide }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Lesson Guide (Word Doc)</a></p>
+                            {% endif %}
+                            {% if commentaryUrl != '' %}
+                                <p><a href="{{ commentaryUrl }}" target="_blank" class="btn btn-primary" style="width:100%; white-space:normal;">Additional Commentary</a><br></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+
+{% endcomment %}
+
+{% if totalCount == 0 %}
+    <h2 style="text-align:center;">No Content is available at this time</h2>
+{% endif %}
+
+<!-- footer -->
+<div class="spacer"></div>
+<div id="channelFooter">
+    <div class="row">
+        <div class="col-xs-12">
+            <h2 style="text-align:center;">Leader Tools</h2>
+            <div id="tools">
+                <a href="/Content/LifeGroups/Bible Study Methods Guide.pdf" download class="btn btn-primary bible-study-methods">
+                    <div class="toolIcon"><i class="far fa-book"></i></div>
+                    Bible Study Methods Guide
+                </a>
+                <a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/4765?Campuses={{ CurrentPerson.PrimaryCampus.Guid }}" class="btn btn-primary StaffContacts">
+                    <div class="toolIcon"><i class="far fa-book-user"></i></div>
+                    Contacts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="//fast.wistia.net/assets/external/E-v1.js" async></script>
+<style>
+    .MobilePdfViewer {
+        display: none;
+    }
+    .DesktopPdfViewer {
+        display: block;
+    }
+    @media (max-width:767px) {
+        .MobilePdfViewer {
+            display: block;
+        }
+        .DesktopPdfViewer {
+            display: none;
+        }
+    }
+</style>

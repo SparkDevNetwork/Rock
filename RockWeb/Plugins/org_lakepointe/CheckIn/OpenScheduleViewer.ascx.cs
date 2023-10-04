@@ -451,6 +451,7 @@ namespace RockBlocks.Plugins.org_lakepointe.Checkin
                 .Queryable().AsNoTracking()
                 .Where( l => locationIds.Contains( l.LocationId ) && l.Group.IsActive )
                 .SelectMany( l => l.Schedules )
+                .Where( s => s.Name != null && s.Category != null ) // Check-in only uses named schedules. The new Sign-ups feature creates locations with unnamed schedules that we don't want to see here. SNS 20230922
                 .GroupBy( s => s.Id )
                 .Select( s => s.FirstOrDefault() )
                 .Where( s => s.IsActive );

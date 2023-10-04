@@ -36,8 +36,8 @@
     {% endcase %}
 {% endfor %}
 
-{% sql pag:'{{ CurrentPerson.PrimaryAlias.Guid }}' gti:'408,412,414,422,424,425,527' %}
-    EXEC _org_lakepointe_sp_CanViewNextGenLeaders @PersonAliasGuid = @pag, @GroupTypeIds = @gti
+{% sql pag:'{{ CurrentPerson.PrimaryAlias.Guid }}' gti:'460' %}
+    EXEC _org_lakepointe_sp_CanViewNextGenLeaders @PersonAliasGuid = @pag, @GroupTypeTag = @gti
 {% endsql %}
 
 {% if results[0].Leader == 1 %}
@@ -45,8 +45,8 @@
     <li> <a href="/LPKidsLeader">LP Kids Leaders</a></li>
 {% endif %}
 
-{% sql pag:'{{ CurrentPerson.PrimaryAlias.Guid }}' gti:'431,432' %}
-    EXEC _org_lakepointe_sp_CanViewNextGenLeaders @PersonAliasGuid = @pag, @GroupTypeIds = @gti
+{% sql pag:'{{ CurrentPerson.PrimaryAlias.Guid }}' gti:'461' %}
+    EXEC _org_lakepointe_sp_CanViewNextGenLeaders @PersonAliasGuid = @pag, @GroupTypeTag = @gti
 {% endsql %}
 
 {% if results[0].Leader == 1 %}

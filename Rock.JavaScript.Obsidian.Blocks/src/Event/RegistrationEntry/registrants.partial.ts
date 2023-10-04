@@ -20,6 +20,7 @@ import Registrant from "./registrant.partial";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { RegistrantInfo, RegistrationEntryState } from "./types.partial";
 // LPC CODE
+import Page from "@Obsidian/Utility/page";
 import { useStore } from "@Obsidian/PageState";
 
 const store = useStore();
@@ -69,6 +70,9 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantIndex--;
             this.registrationEntryState.currentRegistrantFormIndex = lastFormIndex;
             await this.persistSession();
+            // LPC CODE
+            Page.smoothScrollToTop();
+            // END LPC CODE
         },
 
         /** The event that handles when the user clicks to move to the next registrant */
@@ -88,6 +92,9 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantIndex++;
             this.registrationEntryState.currentRegistrantFormIndex = 0;
             await this.persistSession();
+            // LPC CODE
+            Page.smoothScrollToTop();
+            // END LPC CODE
         },
 
         /** Copy the common values from the first registrant to the others */

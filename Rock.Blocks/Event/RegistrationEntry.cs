@@ -35,6 +35,9 @@ using Rock.Model;
 using Rock.Pdf;
 using Rock.Security;
 using Rock.Tasks;
+// LPC CODE
+using Rock.Transactions;
+// END LPC CODE
 using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
@@ -253,7 +256,7 @@ namespace Rock.Blocks.Event
                         UsagesRemaining = (int?) null,
                         DiscountAmount = registration.DiscountAmount,
                         DiscountPercentage = registration.DiscountPercentage,
-                        DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants.Value
+                        DiscountMaxRegistrants = registration.Registrants?.Where( r => r.DiscountApplies == true ).Count()
                     } );
                 }
 
@@ -2363,6 +2366,50 @@ namespace Rock.Blocks.Event
             // Clear this registrant's family guid so it's not updated again
             registrantInfo.FamilyGuid = Guid.Empty;
             registrantInfo.PersonGuid = person.Guid;
+
+            // LPC CODE
+            // Create an interaction for the registrant
+            string utm_source = PageParameter( "utm_source" );
+            string utm_medium = PageParameter( "utm_medium" );
+            string utm_campaign = PageParameter( "utm_campaign" );
+            string utm_content = PageParameter( "utm_content" );
+            string utm_term = PageParameter( "utm_term" );
+
+            int? systemEventsMediumId = new DefinedValueService( rockContext ).GetId(
+                SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_SYSTEM_EVENTS.AsGuid() );
+
+            var entityTypeService = new EntityTypeService( rockContext );
+            int? registrationInstanceEntityTypeId = entityTypeService.GetId( SystemGuid.EntityType.REGISTRATION_INSTANCE.AsGuid() );
+            int? registrationEntityTypeId = entityTypeService.GetId( SystemGuid.EntityType.REGISTRATION.AsGuid() );
+            int? registrationRegistrantEntityTypeId = entityTypeService.GetId( SystemGuid.EntityType.REGISTRATION_REGISTRANT.AsGuid() );
+
+            var info = new InteractionTransactionInfo
+            {
+                ChannelTypeMediumValueId = systemEventsMediumId,
+                ChannelName = "Registrations",
+                ComponentEntityTypeId = registrationInstanceEntityTypeId,
+                InteractionEntityTypeId = registrationRegistrantEntityTypeId,
+
+                ComponentEntityId = context.Registration.RegistrationInstanceId,
+                ComponentName = context.Registration.RegistrationInstance.Name,
+
+                InteractionEntityId = registrant.Id,
+                InteractionOperation = "Registered",
+                InteractionSummary = $"Registered for: {context.Registration.RegistrationInstance.Name}",
+                InteractionData = null,
+                InteractionRelatedEntityTypeId = registrationEntityTypeId,
+                InteractionRelatedEntityId = context.Registration.Id,
+                PersonAliasId = registrant.PersonAliasId,
+                InteractionSource = string.IsNullOrEmpty( utm_source ) ? null : utm_source,
+                InteractionMedium = string.IsNullOrEmpty( utm_medium ) ? null : utm_medium,
+                InteractionCampaign = string.IsNullOrEmpty( utm_campaign ) ? null : utm_campaign,
+                InteractionContent = string.IsNullOrEmpty( utm_content ) ? null : utm_content,
+                InteractionTerm = string.IsNullOrEmpty( utm_term ) ? null : utm_term
+            };
+
+            var interactionTransaction = new InteractionTransaction( info );
+            interactionTransaction.Enqueue();
+            // END LPC CODE
         }
 
         /// <summary>

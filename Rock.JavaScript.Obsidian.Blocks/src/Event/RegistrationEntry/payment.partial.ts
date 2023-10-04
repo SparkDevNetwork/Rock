@@ -349,7 +349,7 @@ export default defineComponent({
             </div>
         </div>
 
-        <NotificationBox v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</NotificationBox>
+        <NotificationBox v-if="submitErrorMessage" alertType="danger" v-html="submitErrorMessage"></NotificationBox>
 
         <div class="actions text-right">
             <RockButton class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>

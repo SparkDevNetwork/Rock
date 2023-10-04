@@ -37,6 +37,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
 // LPC CODE
+import Page from "@Obsidian/Utility/page";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationPersonFieldType } from "./types.partial";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
@@ -397,6 +398,19 @@ export default defineComponent({
     methods: {
         // LPC CODE
         getLang,
+        disableScroll(): void {
+            // Get the current page scroll position
+            let yPos = window.scrollY;
+            let xPos = window.scrollX;
+
+            // if any scroll is attempted, set this to the previous value
+            window.onscroll = function () {
+                window.scrollTo(xPos, yPos);
+            };
+        },
+        enableScroll(): void {
+            window.onscroll = function () { };
+        },
         // END LPC CODE
         onPrevious(): void {
             this.clearFormErrors();
@@ -406,6 +420,11 @@ export default defineComponent({
             }
 
             this.registrationEntryState.currentRegistrantFormIndex--;
+
+            // LPC CODE
+            // Wait for the previous form to be rendered before scrolling to the top
+            setTimeout(() => Page.smoothScrollToTop(), 10);
+            // END LPC CODE
         },
         async onNext(): Promise<void> {
             this.clearFormErrors();
@@ -445,6 +464,11 @@ export default defineComponent({
             }
 
             this.registrationEntryState.currentRegistrantFormIndex++;
+
+            // LPC CODE
+            // Wait for the next form to be rendered before scrolling to the top
+            setTimeout(() => Page.smoothScrollToTop(), 10);
+            // END LPC CODE
         },
 
         /**
@@ -546,7 +570,16 @@ export default defineComponent({
                     this.copyValuesFromFamilyMember();
                 }
             }
+        },
+        // LPC CODE
+        prePostHtmlItems: {
+            handler(): void {
+                // Disable scroll during the rerender
+                this.disableScroll();
+                setTimeout(() => this.enableScroll());
+            }
         }
+        // END LPC CODE
     },
     created() {
         this.copyValuesFromFamilyMember();

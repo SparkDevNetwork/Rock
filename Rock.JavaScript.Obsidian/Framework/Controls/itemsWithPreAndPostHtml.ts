@@ -20,8 +20,6 @@ import { useStore } from "@Obsidian/PageState";
 
 const store = useStore();
 
-var yPos = 0;
-
 /** Gets the lang parameter from the query string.
  * Returns "en" or "es". Defaults to "en" if invalid. */
 function getLang(): string {
@@ -112,11 +110,7 @@ export default defineComponent({
             })
         }
     },
-    beforeUpdate() {
-        yPos = window.pageYOffset;
-    },
     updated() {
-        document.documentElement.scrollTop = yPos;
         if (getLang() == 'es') {
             this.$nextTick(() => {
                 this.translateAddress();

@@ -16,6 +16,19 @@
 {% capture campusGroupId %}{% if campusGroupId != null and campusGroupId != empty %}&CampusGroupId={{campusGroupId}}{% endif %}{% endcapture %}
 {% capture date %}{% if date != null and date != empty %}&Date={{date}}{% endif %}{% endcapture %}
 
+{% comment %} Preserve utm query parameters for marketing's campaign analytics {% endcomment %}
+{% assign source = 'Global' | PageParameter:'utm_source' %}
+{% assign medium = 'Global' | PageParameter:'utm_medium' %}
+{% assign campaign = 'Global' | PageParameter:'utm_campaign' %}
+{% assign content = 'Global' | PageParameter:'utm_content' %}
+{% assign term = 'Global' | PageParameter:'utm_term' %}
+{% capture source %}{% if source != null and source != empty %}&utm_source={{source}}{% endif %}{% endcapture %}
+{% capture medium %}{% if medium != null and medium != empty %}&utm_medium={{medium}}{% endif %}{% endcapture %}
+{% capture campaign %}{% if campaign != null and campaign != empty %}&utm_campaign={{campaign}}{% endif %}{% endcapture %}
+{% capture content %}{% if content != null and content != empty %}&utm_content={{content}}{% endif %}{% endcapture %}
+{% capture term %}{% if term != null and term != empty %}&utm_term={{term}}{% endif %}{% endcapture %}
+
+{% comment %} Preserve registration query parameters {% endcomment %}
 {% capture registrationSessionGuid %}{% if registrationSessionGuid != null and registrationSessionGuid != empty %}&RegistrationSessionGuid={{registrationSessionGuid}}{% endif %}{% endcapture %}
 {% capture campusId %}{% if campusId != null and campusId != empty %}&CampusId={{campusId}}{% endif %}{% endcapture %}
 {% capture slug %}{% if slug != null and slug != empty %}&Slug={{slug}}{% endif %}{% endcapture %}
@@ -35,6 +48,11 @@
 {{- eventId -}}
 {{- campusGroupId -}}
 {{- date -}}
+{{- source -}}
+{{- medium -}}
+{{- campaign -}}
+{{- content -}}
+{{- term -}}
 {% endcapture %}
 
 {% if registrationInstanceId != null and registrationInstanceId > 0 %}
