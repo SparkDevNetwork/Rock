@@ -185,9 +185,11 @@ Obsidian.onReady(() => {{
         {
             var browser = RequestContext.ClientInformation.Browser;
 
+            // If no user agent, assume the browser is supported since it is
+            // more likely to be supported than not supported.
             if ( browser == null )
             {
-                return false;
+                return true;
             }
 
             var family = browser.UA.Family;
