@@ -39,6 +39,7 @@ namespace Rock.Blocks.Crm
     [DisplayName( "Family Pre Registration" )]
     [Category( "CRM" )]
     [Description( "Provides a way to allow people to pre-register their families for weekend check-in." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
