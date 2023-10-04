@@ -26,8 +26,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch, watchEffect } from "vue";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, PropType, watchEffect } from "vue";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { GroupType } from "@Obsidian/SystemGuids/groupType";
     import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag.d";
@@ -42,7 +41,6 @@
     import GradePicker from "@Obsidian/Controls/gradePicker.obs";
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
-    import { useHttp } from "@Obsidian/Utility/http";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
@@ -237,7 +235,7 @@
             return internalValue.value.personGender?.toString() ?? undefined;
         },
         set(val) {
-            internalValue.value.personGender = parseInt(val, 10) ?? null;
+            internalValue.value.personGender = parseInt(val ?? "", 10) ?? null;
         }
     });
     const personRace = computed({
@@ -297,7 +295,10 @@
         }
     });
 
-    // TODO: Based on what's shown/hidden?
+    /**
+     * Mark each field that is visible as "valid" so the server knows whether or not to save
+     * those values to the database.
+     */
     const validProperties = computed(() => {
         const validKeys = new Set<keyof PersonBasicEditorBag>(["firstName", "lastName"]);
 

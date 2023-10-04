@@ -1,75 +1,29 @@
 <template>
     <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
-
-        <PersonBasicEditor v-model="value"
-                           :showEmail="visible.includes('showEmail')" :showMobilePhone="visible.includes('showMobilePhone')" :showSmsOptIn="visible.includes('showSmsOptIn')"
-                           :hideTitle="visible.includes('hideTitle')" :hideSuffix="visible.includes('hideSuffix')" :hideGrade="visible.includes('hideGrade')"
-                           :hideBirthdate="visible.includes('hideBirthdate')" :hidePersonRole="visible.includes('hidePersonRole')" :hideConnectionStatus="visible.includes('hideConnectionStatus')"
-                           :hideMaritalStatus="visible.includes('hideMaritalStatus')" :hideGender="visible.includes('hideGender')" :hideRace="visible.includes('hideRace')"
-                           :hideEthnicity="visible.includes('hideEthnicity')" :showInOneColumn="showInOneColumn" personGuid="someguid" />
-
-        <button type="button" @click="savePerson">Save</button>
+        <PersonBasicEditor v-model="value" v-bind="bindings" :showInOneColumn="showInOneColumn" personGuid="someguid" :personLabelPrefix="prefix" />
 
         <template #settings>
             <div class="row">
-                <!-- <div class="col-md-3">
-                    <CheckBox v-model="showEmail" label="Show Email" />
+                <div class="col-md-6">
+                    <CheckBoxList v-model="visible" :items="visibilityOptions" label="Visibility Options" :repeatColumns="2" />
                 </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="showMobilePhone" label="Show Mobile Phone" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="showSmsOptIn" label="Show SMS Opt In" />
-                </div> -->
-                <div class="col-md-9">
-                    <CheckBoxList v-model="visible" :items="visibilityOptions" label="Visibility Options" :repeatColumns="3" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="showInOneColumn" label="Show In One Column" />
+                <div class="col-md-6">
+                    <CheckBoxList v-model="requirements" :items="requirementOptions" label="Requirement Options" :repeatColumns="2" />
+                    <CheckBox v-model="showInOneColumn" label="Layout" text="Show In One Column" />
+                    <TextBox v-model="prefix" label="Field Label Prefix" />
                 </div>
             </div>
-            <!-- <div class="row">
-                <div class="col-md-3">
-                    <CheckBox v-model="hideTitle" label="Hide Title" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="hideSuffix" label="Hide Suffix" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="hideGrade" label="Hide Grade" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="showInOneColumn" label="Show In One Column" />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-3">
-                    <CheckBox v-model="showEmail" label="Show Email" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="showMobilePhone" label="Show Mobile Phone" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="showSmsOptIn" label="Show SMS Opt In" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="showInOneColumn" label="Show In One Column" />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-3">
-                    <CheckBox v-model="showEmail" label="Show Email" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="showMobilePhone" label="Show Mobile Phone" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="showSmsOptIn" label="Show SMS Opt In" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox v-model="showInOneColumn" label="Show In One Column" />
-                </div>
-            </div> -->
+            <p class="mt-3">
+                <strong><em>Note:</em></strong> The v-model used by this control is a <code>PersonBasicEditorBag</code>. The bag should be created and applied to the person on the server:
+            </p>
+            <ul>
+                <li>To get a <code>PersonBasicEditorBag</code>, call <code>person.GetPersonBasicEditorBag()</code> on a <code>Person</code> model. For a new user, just provide an empty object.</li>
+                <li>To apply the bag data to a <code>Person</code> (does not save to the database), call <code>bag.UpdatePersonFromBag(person)</code> on the <code>PersonBasicEditorBag</code>.</li>
+            </ul>
+            <p class="mt-3">
+                <strong><em>Note:</em></strong> The role is never actually applied via <code>bag.UpdatePersonFromBag(person)</code>. The value is pulled from AgeClassification, which is a derived value and cannot be set by this. Also, if we did have correctly applying to family roles, which family would it apply to?
+                However, you can manually read this value and apply it however you want, which is useful for new users.
+            </p>
         </template>
     </GalleryAndResult>
 </template>
@@ -78,16 +32,18 @@
     import { computed, ref } from "vue";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
     import PersonBasicEditor from "@Obsidian/Controls/personBasicEditor.obs";
+
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import { getSfcControlImportPath } from "./utils.partial";
     import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag.d";
-    import { useHttp } from "@Obsidian/Utility/http";
 
     const value = ref<Partial<PersonBasicEditorBag>>({});
     const showInOneColumn = ref(false);
+    const prefix = ref("");
     const visible = ref<string[]>([]);
-    const http = useHttp();
+    const requirements = ref<string[]>([]);
 
     const visibilityOptions = [
         { value: "showEmail", text: "Show Email" },
@@ -105,27 +61,31 @@
         { value: "hideEthnicity", text: "Hide Ethnicity" },
     ];
 
+    const requirementOptions = [
+        { value: "requireBirthdate", text: "Require Birth Date" },
+        { value: "requireEmail", text: "Require Email" },
+        { value: "requireMobilePhone", text: "Require Mobile Phone" },
+        { value: "requireGender", text: "Require Gender" },
+        { value: "requireRace", text: "Require Race" },
+        { value: "requireEthnicity", text: "Require Ethnicity" },
+    ];
+
+    const bindings = computed(() => {
+        const props: Record<string, boolean> = {};
+
+        visible.value.forEach(val => props[val] = true);
+        requirements.value.forEach(val => props[val] = true);
+
+        return props;
+    });
+
 
     const importCode = getSfcControlImportPath("personBasicEditor");
     const exampleCode = computed(() => {
         const showInOneColumnProp = showInOneColumn.value ? " showInOneColumn" : "";
         const visibilityProps = visible.value.length > 0 ? " " + visible.value.join(" ") : "";
-        return `<PersonBasicEditor v-model="value"${showInOneColumnProp}${visibilityProps} />`;
+        const requirementProps = requirements.value.length > 0 ? " " + requirements.value.join(" ") : "";
+        const prefixProp = prefix.value ? ` personLabelPrefix="${prefix.value}"` : "";
+        return `<PersonBasicEditor v-model="value"${showInOneColumnProp}${visibilityProps}${requirementProps}${prefixProp} />`;
     });
-
-    (async function () {
-        const response = await http.post<PersonBasicEditorBag>("/api/v2/Controls/PersonBasicEditorGetPersonData", null, null);
-
-        if (response.isSuccess && response.data) {
-            value.value = response.data;
-        }
-    })();
-
-    async function savePerson(): Promise<void> {
-        const response = await http.post<PersonBasicEditorBag>("/api/v2/Controls/PersonBasicEditorSavePersonData", null, value.value);
-
-        if (response.isSuccess && response.data) {
-            value.value = response.data;
-        }
-    }
 </script>

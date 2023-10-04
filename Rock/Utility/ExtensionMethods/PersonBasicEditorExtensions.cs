@@ -28,161 +28,164 @@ using Rock.Web.Cache;
 namespace Rock
 {
     /// <summary>
-    /// Extension methods related to <see cref="MediaPlayerOptions"/>.
+    /// Extension methods related to <see cref="PersonBasicEditorBag"/>. This allows you to create a <see cref="PersonBasicEditorBag"/> that
+    /// you can send in to a PersonBasicEditor Obsidian control that it can use to pre-fill the form and edit the data of the <see cref="Person"/>
+    /// the bag represents. Once you have the updated bag from the front end, you can update the <see cref="Person"/> with data from the
+    /// bag and then manually save those changes to the database.
     /// </summary>
     internal static class PersonBasicEditorExtensions
     {
         /// <summary>
-        /// TODO!!
+        /// Apply the valid properties of this bag to a given person. This does not save the changes to the database.
         /// </summary>
-        /// <param name="options">The options to be updated.</param>
-        internal static void UpdatePersonFromBag( this PersonBasicEditorBag bag, Person person )
+        /// <param name="bag">The <see cref="PersonBasicEditorBag"/> with data to apply to a person.</param>
+        /// <param name="person">The <see cref="Person"/> you want to update with the bag's data.</param>
+        internal static void UpdatePersonFromBag( this PersonBasicEditorBag bag, Person person, RockContext rockContext )
         {
-            using ( var rockContext = new RockContext() )
+            bag.IfValidProperty( nameof( bag.FirstName ), () => person.FirstName = bag.FirstName );
+
+            bag.IfValidProperty( nameof( bag.LastName ), () => person.LastName = bag.LastName );
+
+            bag.IfValidProperty( nameof( bag.Email ), () => person.Email = bag.Email );
+
+            bag.IfValidProperty( nameof( bag.MobilePhoneNumber ), () =>
             {
+                var existingMobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
 
-                bag.IfValidProperty( nameof( bag.FirstName ), () => person.FirstName = bag.FirstName );
-
-                bag.IfValidProperty( nameof( bag.LastName ), () => person.LastName = bag.LastName );
-
-                bag.IfValidProperty( nameof( bag.Email ), () => person.Email = bag.Email );
-
-                bag.IfValidProperty( nameof( bag.MobilePhoneNumber ), () =>
+                var numberTypeMobile = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                var isUnlisted = existingMobilePhone?.IsUnlisted ?? false;
+                var messagingEnabled = existingMobilePhone?.IsMessagingEnabled ?? true;
+                if ( bag.IsValidProperty( nameof( bag.IsMessagingEnabled ) ) )
                 {
-                    var existingMobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                    messagingEnabled = bag.IsMessagingEnabled;
+                }
 
-                    var numberTypeMobile = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-                    var isUnlisted = existingMobilePhone?.IsUnlisted ?? false;
-                    var messagingEnabled = existingMobilePhone?.IsMessagingEnabled ?? true;
-                    if ( bag.IsValidProperty( nameof( bag.IsMessagingEnabled ) ) )
-                    {
-                        messagingEnabled = bag.IsMessagingEnabled;
-                    }                    
+                person.UpdatePhoneNumber( numberTypeMobile.Id, bag.MobilePhoneCountryCode, bag.MobilePhoneNumber, messagingEnabled, isUnlisted, rockContext );
+            } );
 
-                    person.UpdatePhoneNumber( numberTypeMobile.Id, bag.MobilePhoneCountryCode, bag.MobilePhoneNumber, messagingEnabled, isUnlisted, rockContext );
-                } );
+            bag.IfValidProperty( nameof( bag.PersonBirthDate ), () => person.SetBirthDate( new DateTime( bag.PersonBirthDate.Year, bag.PersonBirthDate.Month, bag.PersonBirthDate.Day ) ) );
 
-                bag.IfValidProperty( nameof( bag.PersonBirthDate ), () => person.SetBirthDate( new DateTime( bag.PersonBirthDate.Year, bag.PersonBirthDate.Month, bag.PersonBirthDate.Day ) ) );
-
-                bag.IfValidProperty( nameof( bag.PersonConnectionStatus ), () =>
+            bag.IfValidProperty( nameof( bag.PersonConnectionStatus ), () =>
+            {
+                if ( bag.PersonConnectionStatus != null )
                 {
-                    if ( bag.PersonConnectionStatus != null )
-                    {
-                        var dv = DefinedValueCache.Get( bag.PersonConnectionStatus.Value.AsGuid() );
+                    var dv = DefinedValueCache.Get( bag.PersonConnectionStatus.Value.AsGuid() );
 
-                        person.ConnectionStatusValueId = dv?.Id;
-                    }
-                    else
-                    {
-                        person.ConnectionStatusValueId = null;
-                    }
-                } );
-
-                bag.IfValidProperty( nameof( bag.PersonEthnicity ), () =>
+                    person.ConnectionStatusValueId = dv?.Id;
+                }
+                else
                 {
-                    if ( bag.PersonEthnicity != null )
-                    {
-                        var dv = DefinedValueCache.Get( bag.PersonEthnicity.Value.AsGuid() );
+                    person.ConnectionStatusValueId = null;
+                }
+            } );
 
-                        person.EthnicityValueId = dv?.Id;
-                    }
-                    else
-                    {
-                        person.EthnicityValueId = null;
-                    }
-                } );
-
-                bag.IfValidProperty( nameof( bag.PersonGender ), () => person.Gender = bag.PersonGender );
-
-                bag.IfValidProperty( nameof( bag.PersonGradeOffset ), () => {
-                    try
-                    {
-                        int offset = Int32.Parse( bag.PersonGradeOffset.Value );
-
-                        if (offset >= 0)
-                        {
-                            person.GradeOffset = offset;
-                        }
-                    }
-                    catch { }
-                } );
-
-                bag.IfValidProperty( nameof( bag.PersonMaritalStatus ), () =>
+            bag.IfValidProperty( nameof( bag.PersonEthnicity ), () =>
+            {
+                if ( bag.PersonEthnicity != null )
                 {
-                    if ( bag.PersonMaritalStatus != null )
-                    {
-                        var dv = DefinedValueCache.Get( bag.PersonMaritalStatus.Value.AsGuid() );
+                    var dv = DefinedValueCache.Get( bag.PersonEthnicity.Value.AsGuid() );
 
-                        person.MaritalStatusValueId = dv?.Id;
-                    }
-                    else
-                    {
-                        person.MaritalStatusValueId = null;
-                    }
-                } );
-
-                bag.IfValidProperty( nameof( bag.PersonGroupRole ), () =>
+                    person.EthnicityValueId = dv?.Id;
+                }
+                else
                 {
-                    var ageClass = AgeClassification.Unknown;
+                    person.EthnicityValueId = null;
+                }
+            } );
 
-                    if (bag.PersonGroupRole != null && bag.PersonGroupRole.Value.AsGuid().Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
-                    {
-                        ageClass = AgeClassification.Adult;
-                    }
-                    else if (bag.PersonGroupRole != null && bag.PersonGroupRole.Value.AsGuid().Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
-                    {
-                        ageClass = AgeClassification.Child;
-                    }
+            bag.IfValidProperty( nameof( bag.PersonGender ), () => person.Gender = bag.PersonGender );
 
-                    person.AgeClassification = ageClass;
-                } );
-
-                bag.IfValidProperty( nameof( bag.PersonRace ), () =>
+            bag.IfValidProperty( nameof( bag.PersonGradeOffset ), () =>
+            {
+                if ( bag.PersonGradeOffset == null )
                 {
-                    if ( bag.PersonRace != null )
-                    {
-                        var dv = DefinedValueCache.Get( bag.PersonRace.Value.AsGuid() );
+                    person.GradeOffset = null;
+                    return;
+                }
 
-                        person.RaceValueId = dv?.Id;
-                    }
-                    else
-                    {
-                        person.RaceValueId = null;
-                    }
-                } );
-
-                bag.IfValidProperty( nameof( bag.PersonSuffix ), () =>
+                try
                 {
-                    if ( bag.PersonSuffix != null )
-                    {
-                        var dv = DefinedValueCache.Get( bag.PersonSuffix.Value.AsGuid() );
+                    int offset = Int32.Parse( bag.PersonGradeOffset.Value );
 
-                        person.SuffixValueId = dv?.Id;
-                    }
-                    else
+                    if ( offset >= 0 )
                     {
-                        person.SuffixValueId = null;
+                        person.GradeOffset = offset;
                     }
-                } );
+                }
+                catch { }
+            } );
 
-                bag.IfValidProperty( nameof( bag.PersonTitle ), () =>
+            bag.IfValidProperty( nameof( bag.PersonMaritalStatus ), () =>
+            {
+                if ( bag.PersonMaritalStatus != null )
                 {
-                    if ( bag.PersonTitle != null )
-                    {
-                        var dv = DefinedValueCache.Get( bag.PersonTitle.Value.AsGuid() );
+                    var dv = DefinedValueCache.Get( bag.PersonMaritalStatus.Value.AsGuid() );
 
-                        person.TitleValueId = dv?.Id;
-                    }
-                    else
-                    {
-                        person.TitleValueId = null;
-                    }
-                } );
-            }
+                    person.MaritalStatusValueId = dv?.Id;
+                }
+                else
+                {
+                    person.MaritalStatusValueId = null;
+                }
+            } );
+
+            /*
+                The original didn't actually apply changes to this, so right now we're still ignoring it.
+                There are a couple reasons:
+                1. We're not actually showing them the role. This value is generated based on AgeClassification.
+                2. If they are part of multiple families, which one (or all of them?) get updated with this value?
+            */
+            //bag.IfValidProperty( nameof( bag.PersonGroupRole ), () => {} );
+
+            bag.IfValidProperty( nameof( bag.PersonRace ), () =>
+            {
+                if ( bag.PersonRace != null )
+                {
+                    var dv = DefinedValueCache.Get( bag.PersonRace.Value.AsGuid() );
+
+                    person.RaceValueId = dv?.Id;
+                }
+                else
+                {
+                    person.RaceValueId = null;
+                }
+            } );
+
+            bag.IfValidProperty( nameof( bag.PersonSuffix ), () =>
+            {
+                if ( bag.PersonSuffix != null )
+                {
+                    var dv = DefinedValueCache.Get( bag.PersonSuffix.Value.AsGuid() );
+
+                    person.SuffixValueId = dv?.Id;
+                }
+                else
+                {
+                    person.SuffixValueId = null;
+                }
+            } );
+
+            bag.IfValidProperty( nameof( bag.PersonTitle ), () =>
+            {
+                if ( bag.PersonTitle != null )
+                {
+                    var dv = DefinedValueCache.Get( bag.PersonTitle.Value.AsGuid() );
+
+                    person.TitleValueId = dv?.Id;
+                }
+                else
+                {
+                    person.TitleValueId = null;
+                }
+            } );
         }
 
-        /// TODO
-        internal static PersonBasicEditorBag GetPersonBasicEditorBag( this Person person)
+        /// <summary>
+        /// Create a <see cref="PersonBasicEditorBag"/> that represents this <see cref="Person"/>.
+        /// The bag is used by the PersonBasicEditor Obsidian control to edit the person's data.
+        /// </summary>
+        /// <param name="person">The <see cref="Person"/> you want the created <see cref="PersonBasicEditorBag"/> to represent./param>
+        internal static PersonBasicEditorBag GetPersonBasicEditorBag( this Person person )
         {
             ListItemBag familyRole = null;
 
@@ -190,15 +193,15 @@ namespace Rock
             {
                 familyRole = new ListItemBag
                 {
-                    Text = "Adult",
+                    Text = GroupTypeCache.GetFamilyGroupType().Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Name,
                     Value = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT
                 };
             }
-            else if (person.AgeClassification == AgeClassification.Child)
+            else if ( person.AgeClassification == AgeClassification.Child )
             {
                 familyRole = new ListItemBag
                 {
-                    Text = "Child",
+                    Text = GroupTypeCache.GetFamilyGroupType().Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Name,
                     Value = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD
                 };
             }
