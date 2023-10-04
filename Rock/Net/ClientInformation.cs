@@ -91,7 +91,16 @@ namespace Rock.Net
             }
 
             UserAgent = request.UserAgent;
-            _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( UserAgent ) );
+
+            _browser = new Lazy<ClientInfo>( () =>
+            {
+                if ( UserAgent.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                return _uaParser.Parse( UserAgent );
+            } );
         }
 
         /// <summary>
@@ -111,7 +120,16 @@ namespace Rock.Net
             }
 
             UserAgent = request.Headers.GetValues( "USER-AGENT" )?.FirstOrDefault() ?? string.Empty;
-            _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( UserAgent ) );
+
+            _browser = new Lazy<ClientInfo>( () =>
+            {
+                if ( UserAgent.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                return _uaParser.Parse( UserAgent );
+            } );
         }
 
         #endregion

@@ -508,12 +508,12 @@ namespace Rock.Net
                 mergeFields.Add( "PageParameter", PageParameters );
             }
 
-            if ( options.GetOSFamily )
+            if ( options.GetOSFamily && ClientInformation.Browser != null )
             {
                 mergeFields.Add( "OSFamily", ClientInformation.Browser.OS.Family.ToLower() );
             }
 
-            if ( options.GetDeviceFamily )
+            if ( options.GetDeviceFamily && ClientInformation.Browser != null )
             {
                 mergeFields.Add( "DeviceFamily", ClientInformation.Browser.Device.Family );
             }

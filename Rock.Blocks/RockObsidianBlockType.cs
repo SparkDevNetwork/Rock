@@ -185,6 +185,11 @@ Obsidian.onReady(() => {{
         {
             var browser = RequestContext.ClientInformation.Browser;
 
+            if ( browser == null )
+            {
+                return false;
+            }
+
             var family = browser.UA.Family;
             var major = browser.UA.Major.AsIntegerOrNull();
 
