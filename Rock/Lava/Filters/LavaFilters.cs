@@ -2620,7 +2620,8 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returns a dynamic object from a JSON string.
+        /// Returns a dynamic object from a JSON string. The returned type parameter should be considered 'internal' at this point. It
+        /// is not documented and could be removed if we can use the NestedDictionaryConverter as the default return type. 
         /// See https://www.rockrms.com/page/565#fromjson
         /// </summary>
         /// <param name="input">The input.</param>
@@ -2632,7 +2633,11 @@ namespace Rock.Lava
             {
                 case "Dictionary":
                     {
-                        return JsonConvert.DeserializeObject<Dictionary<string, object>>( input as string );
+                        var jsonSettings = new JsonSerializerSettings{
+                            Converters = new List<JsonConverter> { new NestedDictionaryConverter() }
+                        };
+
+                        return JsonConvert.DeserializeObject<Dictionary<string, object>>( input.ToString(), jsonSettings );
                     }
                 default:
                     {
@@ -2935,10 +2940,22 @@ namespace Rock.Lava
                 }
             }
 
+            if ( source is Dictionary<string, object> dictionary )
+            {
+                // Try treating it as a dictionary 
+                return LavaAppendWatchesHelper.AppendMediaForDictionary( dictionary, startDate, currentPerson, rockContext );
+            }
+
             // ExpandoObject
             if ( source is ExpandoObject xo )
             {
-                return LavaAppendWatchesHelper.AppendMediaForExpando( xo, startDate, currentPerson, rockContext );
+                if ( LavaAppendWatchesHelper.DynamicContainsKey( xo, "MediaId" ) )
+                {
+                    return LavaAppendWatchesHelper.AppendMediaForExpando( xo, startDate, currentPerson, rockContext );
+                }
+
+                // If the expando didn't have the key, it could be a dictionary
+                return LavaAppendWatchesHelper.AppendMediaForDictionary( xo, startDate, currentPerson, rockContext ) ;
             }
             
 
