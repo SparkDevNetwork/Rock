@@ -1659,7 +1659,7 @@ namespace Rock.Model
 
                 // Verify that the group represents a Security Role.
                 var isSecurityRoleGroup = group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
-                if ( isSecurityRoleGroup )
+                if ( !isSecurityRoleGroup )
                 {
                     throw new Exception( $"Action DeleteSecurityRoleGroup failed. The specified group is not a Security Role. [GroupId={groupId}]" );
                 }
