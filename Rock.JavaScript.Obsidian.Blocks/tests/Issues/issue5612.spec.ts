@@ -1,8 +1,8 @@
 import { HttpResult } from "@Obsidian/Types/Utility/http";
-import RegistrationEntry from "../../../src/Event/registrationEntry";
-import { RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel } from "../../../src/Event/RegistrationEntry/types.partial";
-import { mockBlockActions, mountBlock } from "../../blocks";
-import { waitFor } from "../../utils";
+import RegistrationEntry from "../../src/Event/registrationEntry";
+import { RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import { mockBlockActions, mountBlock } from "../blocks";
+import { waitFor } from "../utils";
 import { Guid } from "@Obsidian/Types";
 
 function getConfigurationValues(): RegistrationEntryBlockViewModel {

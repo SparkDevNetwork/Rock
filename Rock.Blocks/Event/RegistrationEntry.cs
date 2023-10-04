@@ -2258,6 +2258,9 @@ namespace Rock.Blocks.Event
                     var attribute = AttributeCache.Get( field.AttributeId.Value );
                     if ( attribute != null )
                     {
+                        // Note: As per discussion with architecture team, it is correct
+                        // behavior that the new value will always overwrite the old
+                        // value, even if the new value is blank.
                         string originalValue = person.GetAttributeValue( attribute.Key );
                         string newValue = PublicAttributeHelper.GetPrivateValue( attribute, fieldValue.ToString() );
                         person.SetAttributeValue( attribute.Key, newValue );
