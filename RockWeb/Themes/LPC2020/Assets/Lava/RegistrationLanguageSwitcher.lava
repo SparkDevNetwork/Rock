@@ -1,0 +1,171 @@
+{% assign registrationInstanceId = 'Global' | PageParameter:'RegistrationInstanceId' | AsInteger %}
+{% assign registrationSessionGuid = 'Global' | PageParameter:'RegistrationSessionGuid' %}
+{% assign campusId = 'Global' | PageParameter:'CampusId' %}
+{% assign slug = 'Global' | PageParameter:'Slug' %}
+{% assign groupId = 'Global' | PageParameter:'GroupId' %}
+{% assign startAtBeginning = 'Global' | PageParameter:'StartAtBeginning' %}
+{% assign occurrenceId = 'Global' | PageParameter:'EventOccurrenceId' %}
+{% assign lang = 'Global' | PageParameter:'lang' %}
+{% assign showButton = false %}
+
+{% comment %} Preserve the baptism scheduler query parameters so that we are able to redirect people back to the baptism scheduler with the applicable parameters {% endcomment %}
+{% assign eventId = 'Global' | PageParameter:'EventId' %}
+{% assign campusGroupId = 'Global' | PageParameter:'CampusGroupId' %}
+{% assign date = 'Global' | PageParameter:'Date' %}
+{% capture eventId %}{% if eventId != null and eventId != empty %}&EventId={{eventId}}{% endif %}{% endcapture %}
+{% capture campusGroupId %}{% if campusGroupId != null and campusGroupId != empty %}&CampusGroupId={{campusGroupId}}{% endif %}{% endcapture %}
+{% capture date %}{% if date != null and date != empty %}&Date={{date}}{% endif %}{% endcapture %}
+
+{% comment %} Preserve utm query parameters for marketing's campaign analytics {% endcomment %}
+{% assign source = 'Global' | PageParameter:'utm_source' %}
+{% assign medium = 'Global' | PageParameter:'utm_medium' %}
+{% assign campaign = 'Global' | PageParameter:'utm_campaign' %}
+{% assign content = 'Global' | PageParameter:'utm_content' %}
+{% assign term = 'Global' | PageParameter:'utm_term' %}
+{% capture source %}{% if source != null and source != empty %}&utm_source={{source}}{% endif %}{% endcapture %}
+{% capture medium %}{% if medium != null and medium != empty %}&utm_medium={{medium}}{% endif %}{% endcapture %}
+{% capture campaign %}{% if campaign != null and campaign != empty %}&utm_campaign={{campaign}}{% endif %}{% endcapture %}
+{% capture content %}{% if content != null and content != empty %}&utm_content={{content}}{% endif %}{% endcapture %}
+{% capture term %}{% if term != null and term != empty %}&utm_term={{term}}{% endif %}{% endcapture %}
+
+{% comment %} Preserve registration query parameters {% endcomment %}
+{% capture registrationSessionGuid %}{% if registrationSessionGuid != null and registrationSessionGuid != empty %}&RegistrationSessionGuid={{registrationSessionGuid}}{% endif %}{% endcapture %}
+{% capture campusId %}{% if campusId != null and campusId != empty %}&CampusId={{campusId}}{% endif %}{% endcapture %}
+{% capture slug %}{% if slug != null and slug != empty %}&Slug={{slug}}{% endif %}{% endcapture %}
+{% capture groupId %}{% if groupId != null and groupId != empty %}&GroupId={{groupId}}{% endif %}{% endcapture %}
+{% capture startAtBeginning %}{% if startAtBeginning != null and startAtBeginning != empty %}&StartAtBeginning={{startAtBeginning}}{% endif %}{% endcapture %}
+{% capture occurrenceId %}{% if occurrenceId != null and occurrenceId != empty %}&OccurrenceId={{occurrenceId}}{% endif %}{% endcapture %}
+
+{% capture redirectUrlPartial %}
+{{- 'Global' | Page:'Path' -}}
+?RegistrationInstanceId={{-registrationInstanceId-}}
+{{- registrationSessionGuid -}}
+{{- campusId -}}
+{{- slug -}}
+{{- groupId -}}
+{{- startAtBeginning -}}
+{{- occurrenceId -}}
+{{- eventId -}}
+{{- campusGroupId -}}
+{{- date -}}
+{{- source -}}
+{{- medium -}}
+{{- campaign -}}
+{{- content -}}
+{{- term -}}
+{% endcapture %}
+
+{% if registrationInstanceId != null and registrationInstanceId > 0 %}
+
+{% registrationinstance where:'Id == {{registrationInstanceId}}' %}
+    {% assign regInst = registrationinstanceItems | First %}
+    {% assign regTempId = regInst.RegistrationTemplateId %}
+{% endregistrationinstance %}
+
+
+{% definedvalue where:'DefinedTypeId == 443' %}
+    {% for dv in definedvalueItems %}
+        {% if dv == regTempId %}
+            {% assign showButton = true %}
+            {% break %}
+        {% endif %}
+    {% endfor %}
+{% enddefinedvalue %}
+
+
+{% if CurrentPerson != null and lang == '' %}
+    {% assign currentPersonId = CurrentPerson.Id %}
+    {% capture perfLang %}{[GetLanguage personid:currentPersonId]}{% endcapture %}
+    {% capture redirectUrl %}{{ redirectUrlPartial }}&lang={{perfLang}}{% endcapture %}
+    {{ redirectUrl | PageRedirect }}
+{% endif %}
+
+
+{% if showButton and lang == "es" %}
+    {% if CurrentPerson != null %}
+        <br>
+    {% endif %}
+    <a id="button1" class="btn btn-primary pull-right" onclick="openDialog()">English</a>
+    <br><br>
+{% elseif showButton %}
+    {% if CurrentPerson != null %}
+        <br>
+    {% endif %}
+    <a id="button1" class="btn btn-primary pull-right" onclick="openDialog()">En Español</a>
+    <br><br>
+{% endif %}
+
+
+{% if lang == 'es' %}
+    {% assign modalTitle = "Would you like to view this page in English?" %}
+    {% assign modalSubTitle = "¿Te gustaría ver esto en Inglés?" %}
+    {% assign modalText  = "Switching languages will clear all responses and take you back to the beginning of this registration." %}
+    {% assign loginText  = "View in English" %}
+    {% assign cancelText = "Cancel" %}
+    {% assign newLang = "en" %}
+    {% assign signaturePlaceholder = "Escribe tu Nombre" %}
+    {% assign signatureAgreement = "Al hacer click en el botón de Firmar, acepto el documento anterior y entiendo que es una representación legal de mi firma." %}
+    {% assign signatureSign = "Firmar" %}
+    {% assign signatureComplete = "Completar" %}
+    {% assign legalName = "Nombre Legal" %}
+    {% assign confirmationEmailPrompt = "Por favor ingresa una dirección de email donde podamos enviar una copia del documento." %}
+{% else %}
+    {% assign modalTitle = "¿Te gustaría ver esto en Español?" %}
+    {% assign modalSubTitle = "Would you like to view this page in Spanish?" %}
+    {% assign modalText  = "Al cambiar el idioma, eliminará todas tus respuestas y te regresará al inicio de este registro." %}
+    {% assign loginText  = "Verlo en Español" %}
+    {% assign cancelText = "Cancelar" %}
+    {% assign newLang = "es" %}
+    {% assign signaturePlaceholder = "Type Name" %}
+    {% assign signatureAgreement = "By clicking the sign button below, I agree to the above volunteer application and understand this is a legal representation of my signature." %}
+    {% assign signatureSign = "Sign" %}
+    {% assign signatureComplete = "Complete" %}
+    {% assign legalName = "Legal Name" %}
+    {% assign confirmationEmailPrompt = "Please enter an email address below where we can send a copy of the volunteer application to." %}
+{% endif %}
+
+
+{% capture expression %}\?.*{% endcapture %}
+<script>
+    function openDialog(){
+        bootbox.dialog({
+            message: "<h3>{{ modalTitle }}</h3><h4>{{ modalSubTitle }}</h4><p>{{ modalText }}</p>",
+            buttons: {
+                ok: {
+                    label: '{{ loginText }}',
+                    className: 'btn-primary',
+                    callback: function () {
+                        window.location.href = '{{ redirectUrlPartial }}&lang={{newLang}}';
+                    }
+                },
+                cancel: {
+                    label: '{{ cancelText }}',
+                    className: 'btn-default',
+                    callback: function () {
+                        // Do Nothing
+                    }
+                }
+            }
+        })
+    }
+
+    $('[id$=tbSignatureTyped]').on("load", function() { $(this).attr('placeholder', '{{ signaturePlaceholder }}'); });
+
+</script>
+<!--
+    jQuery(document).ready(function pageLoaded()
+    {
+        $('[id$=tbSignatureTyped]').attr('placeholder', '{{ signaturePlaceholder }}');
+        if ($('.signature-entry-agreement').length > 0)
+            $('.signature-entry-agreement').get(0).lastChild.nodeValue = '{{ signatureAgreement }}';
+        if ($('[id$=btnSignSignature]').length > 0)
+            $('[id$=btnSignSignature]').get(0).lastChild.nodeValue = '{{ signatureSign }}';
+        if ($('[id$=btnCompleteSignature]').length > 0)
+            $('[id$=btnCompleteSignature]').get(0).lastChild.nodeValue = '{{ signatureComplete }}';
+        if ($('[for$=lCompletionSignedName]').length > 0)
+            $('[for$=lCompletionSignedName]').get(0).lastChild.nodeValue = '{{ legalName }}';
+        if ($('[for$=ebEmailAddress]').length > 0)
+            $('[for$=ebEmailAddress]').get(0).lastChild.nodeValue = '{{ confirmationEmailPrompt }}';
+    }
+    -->
+{% endif %}

@@ -1,0 +1,65 @@
+
+<div class='panel panel-default'>
+	<div class='panel-heading'>Mission Trips</div>
+	<div class='panel-body'>
+	
+		{% assign tripCount = MissionGroups | Size | Plus: 0 %}
+		
+		{% if tripCount == 0 %}
+			<p>You are currently not signed up for any mission trips at this time. </p>
+		{% endif %}
+		
+		{% for item in MissionGroups %}
+			{% assign amountOwed = item.FundraisingGoal | Minus: item.AmountRaised %}
+			{% if amountOwed > 0 %}
+				{% assign percentRaised = item.AmountRaised | DividedBy: item.FundraisingGoal | Times: 100 | Floor %}
+			{% else %}
+				{% assign percentRaised = 100 %}
+			{% endif %}
+			<div class='row margin-b-lg'>
+				<div class='col-md-4'>
+					{% assign photoUrl = item.Group | Attribute:'OpportunityPhoto','Url' %}
+					{% if photoUrl != '' %}
+						<img src='{{ photoUrl }}' class='img-responsive img-thumbnail' />
+					{% endif %}
+				</div>
+				<div class='col-md-8'>
+					{% assign groupIdString = item.Group.Id | ToString %}
+					{% assign groupMemberString = item.GroupMember.Id | ToString %}
+					{% assign detailsPage = LinkedPages.ParticipantPage | Append: '?GroupId=' | Append: groupIdString | Append: '&GroupMemberId=' | Append: groupMemberString %}
+					<h3 class='margin-t-none'>{{item.Group | Attribute:'OpportunityTitle' }}</h3>
+					<span> 
+						{% if item.OpportunityEndDate %}
+							<span>
+							{{ item.OpportunityStartDate | Date:'MMMM d, yyyy' }} to {{ item.OpportunityEndDate | Date:'MMMM d, yyyy' }} 
+						{% else %}
+							{{ item.OpportunityStartDate | Date:'MMMM d, yyyy' }} <br />
+						{% endif %}
+					<span>
+					<span class='pull-right'>
+						{{ item.Role }} 
+					</span>
+					<br />
+					{% if item.FundraisingGoal > 0 %}
+						<label> Fundraising Progress </label>
+						<label class='pull-right'>
+							{% if amountOwed > 0 %}
+								 {{amountOwed | FormatAsCurrency}} remaining
+							{% else %}
+								{{ percentRaised }}% funded
+							{% endif %}
+						</label>
+						<div class='progress'>
+							<div class='progress-bar' role='progressbar' aria-valuenow='{{ percentRaised }}' aria-valuemin='0' aria-valuemax='100' style='width: {{ percentRaised }}%;'>
+								<span class='sr-only'>{{ percentRaised }}% Complete</span>
+							</div>
+						</div>
+					{% endif %}
+					<div class="margin-v-md">
+						<a href="{{detailsPage}}" class="btn btn-default btn-xs">View Details <i class='fa fa-chevron-right'></i></a>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+</div>

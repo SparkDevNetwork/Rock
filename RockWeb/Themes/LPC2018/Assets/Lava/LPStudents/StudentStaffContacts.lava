@@ -1,0 +1,164 @@
+{% comment %}
+    Title: Student Ministry Staff Contacts
+    Description:
+        Staff Contacts page
+{% endcomment %}
+
+<style text="text/css">
+    div.spacer:before{
+        position: relative;
+        display: inline-block;
+        content: '';
+        border-bottom: 2px solid #e2e2e2;
+        width: 50%;
+        left:25%;
+        bottom:0;
+    }
+    a.phoneLink{
+        text-decoration: none;
+        color:rgba(73,84,107,0.75);
+
+    }
+</style>
+<div id="channelHeader">
+    <div class="row">
+        <div class="col-xs-12" style="text-align:center;">
+            <img src="/content/LPStudents/four-nineteen.png" style="width: 50%;" alt="four-nineteen.png">
+        </div>
+        <div class="col-xs-12">
+            <h2 style="text-align:center;">Staff Contacts</h2>
+
+        </div>
+    </div>
+</div>
+<div class="spacer"></div>
+<div class="row">
+    <div class="col-xs-12">
+        {[ accordion firstopen:'false' ]}
+            [[item title:'Rockwall Middle School']]
+                <h3>Matt Humber</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign mattH = 107087 | PersonByAliasId  %}
+                        <img src='{{mattH.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Matt Humber"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Middle School Pastor</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:9725238837" class="phoneLink">(972) 523-8837</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:matth@lakepointe.org">Email Matt</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3>Zak Schmidt</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign zakS = 277686 | PersonByAliasId  %}
+                        <img src='{{zakS.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Zak Schmidt"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Middle School Next Steps</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                               <i class="far fa-phone-alt"></i> <a href="tel:2146081951" class="phoneLink">(214) 608-1951</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:zaks@lakepointe.org">Email Zak</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3>Allison Tatom</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign allisonT = 266628 | PersonByAliasId  %}
+                        <img src='{{allisonT.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Zak Schmidt"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>Middle School Team</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                               <i class="far fa-phone-alt"></i> <a href="tel:8082021602" class="phoneLink">(808) 202-1602</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:allisont@lakepointe.org">Email Allison</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            [[enditem ]]
+            [[ item title:'Firewheel']]
+                 <h3>Mauri Villasenor</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign mauriV = 134989 | PersonByAliasId  %}
+                        <img src='{{mauriV.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Matt Humber"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>LP Student Pastor</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:9724952713" class="phoneLink">(972) 495-2713</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:mauriciov@lakepointe.org">Email Mauri</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <h3>Lena Collins</h3>
+                <div class="row">
+                    <div class="col-sm-3" style="text-align:center;">
+                        {% assign lenac = 89240 | PersonByAliasId  %}
+                        <img src='{{lenac.PhotoUrl}}' style='height:100px;' class="img-responsive responsive" alt="Matt Humber"/>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label>LP Students Team</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-phone-alt"></i> <a href="tel:9724952713" class="phoneLink">(972) 495-2713</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <i class="far fa-envelope"></i> <a href="mailto:lenac@lakepointe.org">Email Lena</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            [[ enditem ]]
+        {[ endaccordion ]}
+    </div>
+</div>

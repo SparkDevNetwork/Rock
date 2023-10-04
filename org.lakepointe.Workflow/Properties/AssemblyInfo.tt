@@ -1,0 +1,57 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#
+    string output = File.ReadAllText(this.Host.ResolvePath("AssemblyInfo.cs"));
+    Regex pattern = new Regex("AssemblyVersion\\(\"(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<revision>\\d+)\\.(?<build>\\d+)\"\\)");
+    MatchCollection matches = pattern.Matches(output);
+    if( matches.Count == 1 )
+    {
+        major = Convert.ToInt32(matches[0].Groups["major"].Value);
+        minor = Convert.ToInt32(matches[0].Groups["minor"].Value);
+        build = Convert.ToInt32(matches[0].Groups["build"].Value) + 1;
+        revision = Convert.ToInt32(matches[0].Groups["revision"].Value);
+        if( this.Host.ResolveParameterValue("-","-","BuildConfiguration") == "Release" )
+            revision++;
+    }
+#>
+
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Resources;
+
+// General Information about an assembly is controlled through the following
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
+[assembly: AssemblyTitle( "org.lakepointe.Workflow" )]
+[assembly: AssemblyDescription( "" )]
+[assembly: AssemblyConfiguration( "" )]
+[assembly: AssemblyCompany( "" )]
+[assembly: AssemblyProduct( "org.lakepointe.Workflow" )]
+[assembly: AssemblyCopyright( "Copyright ©  2018" )]
+[assembly: AssemblyTrademark( "" )]
+[assembly: AssemblyCulture( "" )]
+
+// Setting ComVisible to false makes the types in this assembly not visible
+// to COM components.  If you need to access a type in this assembly from
+// COM, set the ComVisible attribute to true on that type.
+[assembly: ComVisible( false )]
+
+// Version information for an assembly consists of the following four values:
+//
+//      Major Version
+//      Minor Version
+//      Build Number
+//      Revision
+//
+[assembly: AssemblyVersion("<#= this.major #>.<#= this.minor #>.<#= this.revision #>.<#= this.build #>")]
+[assembly: AssemblyFileVersion("<#= this.major #>.<#= this.minor #>.<#= this.revision #>.<#= this.build #>")]
+
+<#+
+    int major = 1;
+    int minor = 8;
+    int revision = 1;
+    int build = 0;
+#>

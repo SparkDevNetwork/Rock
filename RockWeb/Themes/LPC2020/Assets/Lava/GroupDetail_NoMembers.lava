@@ -1,0 +1,186 @@
+{% assign groupFeatures = Group.GroupType | Attribute:'GroupLeaderToolboxFeatureSet','RawValue' %}
+{% assign addGuestButton = groupFeatures | RegExMatch:'6abaaa35-3e8d-4386-a755-4fb8c31beef8' %}
+{% assign schedulerButton = groupFeatures | RegExMatch:'2b7997c0-e98b-40eb-9f6c-d9375bac79f1' %}
+{% assign showHeadCount = groupFeatures | RegExMatch:'a70d029b-90c0-4e00-bcd3-ea3dec2dca7b' %}
+{% assign requestUpdates = groupFeatures | RegExMatch:'8b91f1cd-dcf6-4d04-aeb7-cbcff5b48134' %}
+{% assign displayParentInfo = groupFeatures | RegExMatch:'bb45f157-ce0e-48e1-8946-21eb3c9c7a85' %}
+{% assign forwardAttendanceNotes = groupFeatures | RegExMatch:'31dcc393-d2e2-48b0-8fd8-481bcdfe6230' %}
+{% assign addSendEmailToCoachButton = groupFeatures | RegExMatch:'59608021-6cef-4934-9547-d7c71c2a0666' %}
+
+{% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.ManageMembers == true or AllowedActions.Administrate == true %}
+	{% assign isCurrentPersonLeader = false %}
+	{% assign countActive = -1 %}
+	{% assign countInactive = -1 %}
+	{% assign countPending = -1 %}
+	{% for member in Group.Members %}
+		{% case member.GroupMemberStatus %}
+			{% when 'Active' %}
+				{% assign countActive = countActive | Plus: 1 %}
+			{% when 'Inactive' %}
+				{% assign countInactive = countInactive | Plus: 1 %}
+			{% when 'Pending' %}
+				{% assign countPending = countPending | Plus: 1 %}
+			{% else %}
+		{% endcase %}
+
+		{% if member.GroupRole.IsLeader and member.GroupMemberStatus == 1 and member.PersonId == CurrentPerson.Id %}
+			{% assign isCurrentPersonLeader = true %}
+		{% endif %}
+	{% endfor %}
+	{% assign countInactive = -1 %} {% comment %} Hack to prevent Inactive members from being displayed {% endcomment %}
+
+	{% comment %}
+	{% for groupLocation in Group.GroupLocations %}
+		{% if groupLocation.Location.GeoPoint != '' %}
+
+		<div class="packagesummary-image"
+			 style="background: url('https://maps.googleapis.com/maps/api/staticmap?size=1400x400&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&scale=2&key={{ 'Global' | Attribute:'GoogleAPIKey' }}') no-repeat center;
+					width: 100%;
+					height: 200px;">
+		</div>
+
+		{% endif %}
+	{% endfor %}
+	{% endcomment %}
+
+	<h1>{{ Group.Name }}</h1>
+	{% if addGuestButton == true %}
+    <a href='/page/2445?Group={{Group.Guid}}&IsFormPrefilled=False' class="btn btn-primary btn-xs">Add Guest for {{Group.Name}}</a></br></br>
+	{% endif %}
+	{% if isCurrentPersonLeader == true and schedulerButton == true %}
+    <a href='/schedulegroup?GroupId={{Group.Id}}' class="btn btn-primary btn-xs">Scheduler</a></br></br>
+	{% endif %}
+	{{ Group.Description }}
+
+	{% if Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
+		{% assign warningLevel = 'warning' %}
+
+		{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
+			{% assign warningLevel = 'danger' %}
+		{% endif %}
+
+		{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the counter is zero based{% endcomment %}
+		{% assign overageAmount = activeMemberCount | Minus:Group.GroupCapacity %}
+
+		{% if overageAmount > 0 %}
+			<div class="alert alert-{{ warningLevel }} margin-t-sm">This group is over capacity by {{ overageAmount }} {{ 'individual' | PluralizeForQuantity:overageAmount }}.</div>
+		{% endif %}
+	{% endif %}
+
+	<div class="row">
+		<div class="col-md-6">
+		<h4>Group Details:</h4>
+		{% for attribute in Group.AttributeValues %}
+		<strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+		{% endfor %}
+		{% if addSendEmailToCoachButton == true %}
+			{% assign coachRoleId = Group.GroupType.Roles | Where:'Name','Coach' | Select:'Id' | First %}
+			{% if coachRoleId != null %}
+				{% assign coachEmails = Group.Members | Where:'GroupRoleId',coachRoleId | Select:'Person' | Where:'IsEmailActive',1 | Select:'Email' | Join:',' %}
+			{% endif %}
+			{% if coachEmails and coachEmails != '' %}
+				<a href="mailto:{{ coachEmails }}" class="btn btn-xs btn-default" style="margin-bottom:10px;">Send Email to Group Coach</a> <br />
+			{% else %}
+				{% assign coach = Group | Attribute:'AGCoach','Object' %}
+				{% if coach.Email != '' %}
+					<a href="mailto:{{ coach.Email }}" class="btn btn-xs btn-default" style="margin-bottom:10px;">Send Email to Group Coach</a> <br />
+				{% else %}
+					{% assign lgCoach = Group | Attribute:'LGCoach','Object' %} {% comment %} Actually the Groups Pastor {% endcomment %}
+					{% if lgCoach and lgCoach != '' %}
+						{% assign emailLength = lgCoach.Email | Size %}
+						{% if emailLength > 4  %}
+							<a href="mailto:{{ lgCoach.Email }}" class="btn btn-xs btn-default" style="margin-bottom:10px;">Send Email to Groups Pastor</a> <br />
+						{% endif %}
+					{% endif %}
+				{% endif %}
+
+			{% endif %}
+		{% endif %}
+		{% if showHeadCount == true %}
+			<a href="/page/2309?GroupID={{Group.Id}}&gvp={{'Global' | Page:'Id' }}" class="btn btn-xs btn-default">Enter Headcount</a>
+		{% endif %}
+		</div>
+
+		<div class="col-md-6">
+		<h4>Leaders:</h4>
+		<ul>
+			{% for member in Group.Members %}
+
+			{% if member.GroupRole.IsLeader and member.GroupMemberStatus == 1 %}
+			<li>
+			{{ member.Person.FullName }} <small>({{ member.GroupRole.Name }})</small>
+			</li>
+			{% endif %}
+			{% endfor %}
+		</ul>
+		</div>
+
+		<div class="col-md-6">
+			{% assign any = false %}
+			{% for location in Group.GroupLocations %}
+				{% assign address = location.Location.FormattedAddress %}
+				{% if address != null and address != '' %}
+					{% assign any = true %}
+					{% break %}
+				{% endif %}
+			{% endfor %}
+			{% if any == true %}
+				<h4>Location:</h4>
+				{% for location in Group.GroupLocations %}
+					{% assign address = location.Location.FormattedAddress | RegExReplace:'-[0-9]+$','' %}
+					<p>
+						<a href="https://www.google.com/maps/place/{{ address | Replace:' ','+' | Replace:'\r\n',',+' }}" target="_blank" rel="noopener noreferrer">{{ location.Location.FormattedHtmlAddress }}</a>
+					</p>
+				{% endfor %}
+			{% endif %}
+		</div>
+	</div>
+
+	{% if requestUpdates == true %}
+		{% assign gm =  Group.Members | Where:'PersonId', CurrentPerson.Id | Where:'GroupMemberStatus',1 | First %}
+		{% if gm != null and gm.GroupRole.IsLeader == true %}
+			<div class="actions margin-v-md clearfix">
+				{% capture editLink %}/page/2308?Group={{Group.Guid}}{% endcapture %}
+				<!--<a class="btn btn-default btn-sm pull-right" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}">Edit</a>-->
+				<a class="btn btn-default btn-sm pull-right" href="{{editLink}}">Request Update</a>
+			</div>
+		{% endif %}
+	{% endif %}
+
+{% comment %}
+	{% if AllowedActions.Edit == true %}
+	<div class="actions margin-v-md clearfix">
+		{% capture editLink %}/page/2308?Group={{Group.Guid}}{% endcapture %}
+		<!--<a class="btn btn-default btn-sm pull-right" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}">Edit</a>-->
+		<a class="btn btn-default btn-sm pull-right" href="{{editLink}}">Edit</a>
+	</div>
+	{% endif %}
+{% endcomment %}
+
+	{% if LinkedPages.RosterPage != '' and  LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False' %}
+		<ul class="nav nav-tabs margin-v-lg">
+			{% if LinkedPages.RosterPage != '' %}
+				{% if LinkedPages.RosterPage == CurrentPage.Path %}
+					<li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+				{% else %}
+					<li role="presentation"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+				{% endif %}
+			{% endif %}
+
+			{% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
+				{% if LinkedPages.AttendancePage == CurrentPage.Path %}
+					<li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+				{% else %}
+					<li role="presentation"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+				{% endif %}
+			{% endif %}
+		</ul>
+	{% endif %}
+
+
+
+{% else %}
+	{% if Group.Id %}
+		<div class='alert alert-warning'>You do not have permission to view this group.</div>
+	{% endif %}
+{% endif %}

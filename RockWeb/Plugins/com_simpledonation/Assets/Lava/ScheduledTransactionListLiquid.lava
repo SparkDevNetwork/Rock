@@ -1,0 +1,46 @@
+{% assign isRegistration = false %}
+<div id="scheduledtransaction_{{ScheduledTransaction.Id}}" class="scheduledtransaction-summary">
+  {% financialscheduledtransaction id:'{{ ScheduledTransaction.Id }}' securityenabled:'false' %}
+    {% for scheduledTransactionDetail in financialscheduledtransaction.ScheduledTransactionDetails %}
+      {% if scheduledTransactionDetail.EntityType != null and scheduledTransactionDetail.EntityId != null %}
+        {% assign entityTypeGuid = scheduledTransactionDetail.EntityType.Guid | Upcase %}
+        {% if entityTypeGuid == 'D2F294C6-E161-4A56-85C7-CD74D535F61A' %}
+          {% registration id:'{{scheduledTransactionDetail.EntityId}}' securityenabled:'false' %}
+            {% assign isRegistration = true %}
+            Scheduled Event Payment: {{registration.RegistrationInstance.Name}}<br/>
+          {% endregistration %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endfinancialscheduledtransaction %}
+  <strong>{{ ScheduledTransaction.PersonName }}</strong><br/>
+  {{ ScheduledTransaction.ScheduledAmount | FormatAsCurrency }} on
+  {% if ScheduledTransaction.CurrencyType != "Credit Card" %}
+  {{ ScheduledTransaction.CurrencyType }} {{ ScheduledTransaction.AccountNumberMasked }}
+  {% else %}
+  {{ ScheduledTransaction.CreditCardType }} {{ ScheduledTransaction.CurrencyType }} {{ ScheduledTransaction.AccountNumberMasked }}
+  {% endif %}<br/>
+    {{ ScheduledTransaction.FrequencyDescription | downcase }}{% if ScheduledTransaction.EndDate != null and ScheduledTransaction.FrequencyDescription != 'One Time' %} until {{ ScheduledTransaction.EndDate | Date:"MMMM d, yyyy" }}{% endif %}.
+
+    {% if ScheduledTransaction.NextPaymentDate != null %}
+    Next gift will be on {{ ScheduledTransaction.NextPaymentDate | Date:"MMMM d, yyyy" }}.
+    {% endif %}
+
+    {% if ScheduledTransaction.EditPage == null %}
+    <p>Please contact us to if you need to change this scheduled transaction.</p>
+    {% endif %}
+
+  </div>
+
+<script>
+  {% if isRegistration %}
+  $(document).ready(function() {
+  var lavaRow = $("#scheduledtransaction_{{ScheduledTransaction.Id}}")[0];
+  var scheduledTransactionRow = lavaRow.parentElement;
+  var actionRow = scheduledTransactionRow.querySelectorAll(".actions")[0];
+  var editButton = actionRow.querySelectorAll(".edit")[0];
+  scheduledTransactionRow.style.display = 'none';
+  });
+  {% endif %}
+</script>
+

@@ -1,0 +1,831 @@
+{% comment %}
+    Title: LPStudentsVolunteeerPortal.lava
+    Description:
+        Lava content formatting and filtering for the LP Students Volunteer Portal page.
+        Contains debug query strings that override variables to allow for developers to debug this file without adding and removing themselves from serving groups
+    Debug Query Strings:
+        Date - Date object (ex '12/31/2022')
+        Campus - Comma seperated campus Ids
+        United - Boolean written as integer ('0' for false, '1' for true)
+        StudentConnect - Boolean written as integer ('0' for false, '1' for true)
+        MiddleSchool - Boolean written as integer ('0' for false, '1' for true)
+        HighSchool - Boolean written as integer ('0' for false, '1' for true)
+{% endcomment %}
+<style>
+    [style*="--aspect-ratio"] > :first-child {
+        width: 100%;
+    }
+        [style*="--aspect-ratio"] > img {
+        height: auto;
+    }
+    @supports (--custom:property) {
+        [style*="--aspect-ratio"] {
+            position: relative;
+        }
+        [style*="--aspect-ratio"]::before {
+            content: "";
+            display: block;
+            padding-bottom: calc(100% / (var(--aspect-ratio)));
+        }
+        [style*="--aspect-ratio"] > :first-child {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+        }
+    }
+
+    .contentItem{
+        padding-top:15px;
+        padding-bottom:15px;
+    }
+    .contentItem h1, .contentItem h2, .contentItem h3 {
+        margin-top:11px !important;
+    }
+
+    div.spacer:before{
+        position: relative;
+        display: inline-block;
+        content: '';
+        border-bottom: 2px solid #e2e2e2;
+        width: 50%;
+        left:25%;
+        bottom:0;
+
+    }
+
+    #tools {
+        text-align:center;
+    }
+    #tools a:hover{
+        text-decoration:none;
+
+    }
+    #tools a{
+
+        border: 1px solid #e2e2e2;
+        text-align:center;
+        width:250px;
+        overflow:hidden;
+        padding-top:15px;
+        margin:10px;
+        display: inline-block;
+    }
+    .toolIcon{
+        font-Size: 24pt;
+    }
+
+    .contentItem:not(.buttons) > div {
+        margin-bottom: 15px;
+    }
+
+    .half-width-button {
+        width: 100%;
+    }
+
+    @media screen and (min-width: 981px) {
+        .half-width-button {
+            width: 50%;
+            margin: auto;
+        }
+    }
+</style>
+
+{% sql personAliasGuid:'{{ CurrentPerson.PrimaryAlias.Guid }}' return:'roles' %}
+/* Query running from RockWeb/Plugins/org_lakepointe/Assets/Lava/LPStudentsVolunteerPortal.lava */
+/* Query written by Jon Corey on 04/03/2022 */
+/* Updated by Jon Corey on 04/04/2023 to ensure only one row is returned and that it has all nescessary data */
+/* Purpose: Check if the person serves in Student Connect, serves in United, serves with Middle School, and/or serves with High School. */
+/*          Returns one row where each column is the number of groups where the person serves in that area. */
+SELECT COUNT(CASE g.GroupTypeId WHEN 431 THEN 1 ELSE NULL END) AS StudentConnect,
+    COUNT(CASE g.GroupTypeId WHEN 432 THEN 1 ELSE NULL END) AS United,
+    COUNT(CASE WHEN av.Value like '%Middle%' THEN 1 ELSE NULL END ) AS MiddleSchool,
+    COUNT(CASE WHEN av.Value like '%High%' THEN 1 ELSE NULL END ) AS HighSchool,
+	STRING_AGG( g.CampusId, ',') as Campuses
+    FROM GroupMember gm
+    JOIN PersonAlias pa ON gm.PersonId = pa.PersonId
+    JOIN [dbo].[Group] g ON gm.GroupId = g.Id
+    LEFT OUTER JOIN [dbo].[AttributeValue] av ON av.EntityId = gm.Id
+        AND (av.AttributeId = 35951 OR AttributeId = 36566)
+    WHERE pa.Guid = @personAliasGuid AND g.GroupTypeId IN (431, 432) AND g.IsActive = 1;
+{% endsql %}
+
+{% assign today = 'Global' | PageParameter:'Date' | AsDateTime %}
+{% if today == null %}
+    {% assign today = 'Now' | Date | AsDateTime %}
+{% endif %}
+
+{% assign united = 'Global' | PageParameter:'United' | AsInteger %}
+{% if united == null %}
+    {% assign united = roles[0].United %}
+{% endif %}
+
+{% assign studentConnect = 'Global' | PageParameter:'StudentConnect' | AsInteger %}
+{% if studentConnect == null %}
+    {% assign studentConnect = roles[0].StudentConnect %}
+{% endif %}
+
+{% assign middleSchool = 'Global' | PageParameter:'MiddleSchool' | AsInteger %}
+{% if middleSchool == null %}
+    {% assign middleSchool = roles[0].MiddleSchool %}
+{% endif %}
+
+{% assign highSchool = 'Global' | PageParameter:'HighSchool' | AsInteger %}
+{% if highSchool == null %}
+    {% assign highSchool = roles[0].HighSchool %}
+{% endif %}
+
+{% assign personsCampus = 'Global' | PageParameter:'Campus' | UrlDecode %}
+{% if personsCampus != null and personsCampus != '' %}
+    {% assign campusIds = personsCampus | Split:',' %}
+{% else %}
+    {% assign campusIds = roles[0].Campuses | Split:',' %}
+{% endif %}
+{% for id in campusIds %}
+    {% if id != null and id != '' %}
+        {% campus id:'{{id}}' %}
+            {% assign campuses = campuses | AddToArray:campus.Guid %}
+        {% endcampus %}
+    {% endif %}
+{% endfor %}
+
+{% assign totalCount = 0 %}
+
+<div id="channelHeader">
+    <div class="row">
+        <div class="col-xs-12" style="text-align:center;">
+            <img src="/content/LPStudents/LPStudents_Logo_Color.png" style="width: 50%;" alt="LP Students"/>
+        </div>
+        <div class="col-xs-12">
+            <h2 style="text-align:center;">Welcome to the LP Students Leader News Portal</h2>
+        </div>
+    </div>
+</div>
+
+<div class="spacer"></div>
+
+<!-- Campus News -->
+{% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+    SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime, image.Value AS [Image], campuses.Value as Campuses, targetGroups.Value as TargetGroups
+    FROM [dbo].[ContentChannelItem] cci
+    JOIN [dbo].[AttributeValue] campuses ON campuses.EntityId = cci.Id AND campuses.AttributeId = 117963
+    JOIN [dbo].[AttributeValue] targetGroups ON targetGroups.EntityId = cci.Id AND targetGroups.AttributeId = 117964
+    LEFT OUTER JOIN [dbo].[AttributeValue] image ON image.EntityId = cci.Id AND image.AttributeId = 111302
+    WHERE cci.ContentChannelId = 99
+        AND (cci.StartDateTime <= @now)
+        AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
+    ORDER BY cci.Priority, campuses.Value, cci.StartDateTime
+{% endsql %}
+
+{% comment %} Build person's target groups {% endcomment %}
+{% if united > 0 and highSchool > 0 %}
+    {% assign targetGroups = targetGroups | AddToArray:'1' %}
+{% endif %}
+{% if united > 0 and middleSchool > 0 %}
+    {% assign targetGroups = targetGroups | AddToArray:'2' %}
+{% endif %}
+{% if studentConnect > 0 %}
+    {% assign targetGroups = targetGroups | AddToArray:'3' %}
+{% endif %}
+
+{% assign prevCampus = '' %}
+{% for item in Items %}
+    {% assign itemCampuses = item.Campuses | Split:',' %}
+    {% assign display = 0 %}
+    {% assign count = 0 %}
+    {% for itemCampus in itemCampuses %}
+        {% assign isInAudience = campuses | Contains:itemCampus %}
+        {% if isInAudience == true %}
+            {% assign itemTargets = item.TargetGroups | Split:',' %}
+            {% for itemTarget in itemTargets %}
+                {% assign isInAudience = targetGroups | Contains:itemTarget %}
+                {% if isInAudience == true %}
+                    {% assign display = 1 %}
+                    {% assign overlap = overlap | AddToArray:itemCampus %}{% comment %} Overlap between the item's campuses and the person's campuses. Use this as the header for the section {% endcomment %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+    {% if display == 1 %}
+        {% if prevCampus != overlap[0] %}
+            {% campus where:'Guid == "{{ overlap[0] }}"' %}
+                {% assign campusName = campus.Name %}
+            {% endcampus %}
+            <h1>Campus News - {{ campusName }}</h1>
+        {% endif %}
+        {% assign prevCampus = overlap[0] %}
+        {% assign overlap = null %}
+
+        {% assign totalCount = totalCount | Plus:1 %}
+        {% assign x = 0 %}
+        {% if item.Content and item.Content != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Image and item.Image != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if x > 0 %}
+            {% if x == 1 %}
+                {% assign cw = 'col-md-12' %}
+            {% else %}
+                {% assign cw = 'col-md-6' %}
+            {% endif %}
+            <div class="contentItem row">
+            {% if item.Content and item.Content != '' %}
+                <div class='{{ cw }}'>
+                    {{ item.Content }}
+                </div>
+            {% endif %}
+            {% if item.Image and item.Image != '' %}
+                <div class='{{ cw }}' style="text-align:center;">
+                    <img src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?Guid={{ item.Image }}" style="max-width: 100%; max-height: 500px;">
+                </div>
+            {% endif %}
+            </div>
+        {% endif %}
+        <div class="spacer"></div>
+    {% endif %}
+{% endfor %}
+
+<!-- Central News -->
+{% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+    SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+        image.Value AS [Image], video.Value AS [Video], pdf.Value AS [PDF]
+    FROM [dbo].[ContentChannelItem] cci
+    LEFT OUTER JOIN [dbo].[AttributeValue] image ON image.EntityId = cci.Id AND image.AttributeId = 111305
+    LEFT OUTER JOIN [dbo].[AttributeValue] video ON video.EntityId = cci.Id AND video.AttributeId = 111304
+    LEFT OUTER JOIN [dbo].[AttributeValue] pdf ON pdf.EntityId = cci.Id AND pdf.AttributeId = 111309
+    WHERE cci.ContentChannelId = 100
+        AND (cci.StartDateTime <= @now)
+        AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
+    ORDER BY cci.Priority, cci.StartDateTime
+{% endsql %}
+
+{% for item in Items %}
+    {% if forloop.first %}
+        <h1>Central News</h1>
+    {% endif %}
+    {% assign totalCount = totalCount | Plus:1 %}
+    {% assign x = 0 %}
+    {% assign y = 0 %}
+    {% if item.Content and item.Content != '' %}{% assign x = x | Plus:1 %}{% endif %}
+    {% if item.Image and item.Image != '' %}{% assign x = x | Plus:1 %}{% endif %}
+    {% if item.PDF and item.PDF != '' %}{% assign x = x | Plus:1 %}{% endif %}
+    {% if item.Video and item.Video != '' %}{% assign x = x | Plus:1 %}{% endif %}
+    {% if x > 0 %}
+        {% if x == 1 %}
+            {% assign cw = 'col-md-12' %}
+        {% else %}
+            {% assign cw = 'col-md-6' %}
+        {% endif %}
+        <div class="contentItem">
+            <div class="row">
+                {% if item.Content and item.Content != '' %}
+                    {% assign y = y | Plus:1 %}
+                    <div class='{{ cw }}'>
+                        {{ item.Content }}
+                    </div>
+                {% endif %}
+                {% if item.Image and item.Image != '' %}
+                    {% assign y = y | Plus:1 %}
+                    <div class='{{ cw }}' style="text-align:center;">
+                        <img src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?Guid={{ item.Image }}" style="max-width: 100%; max-height: 500px;">
+                    </div>
+                {% endif %}
+                {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                {% if item.PDF and item.PDF != '' %}
+                    {% assign y = y | Plus:1 %}
+                    <div class='{{ cw }}' style="text-align:center;">
+                        <div style="--aspect-ratio: 16/9;" class="DesktopPdfViewer">
+                            <iframe src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}" title="Central News Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                        </div>
+                        <div style="--aspect-ratio: 16/9;" class="MobilePdfViewer">
+                            <iframe src="https://docs.google.com/gview?url={{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}&embedded=true" title="Central News Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                {% if item.Video and item.Video != '' %}
+                    <div class='{{ cw }}' style="text-align:center;">
+                        <div style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+    <div class="spacer"></div>
+{% endfor %}
+
+<!-- Central Leader Development -->
+{% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+    SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+        image.Value AS [Image], video.Value AS [Video], pdf.Value AS [PDF]
+    FROM [dbo].[ContentChannelItem] cci
+    LEFT OUTER JOIN [dbo].[AttributeValue] image ON image.EntityId = cci.Id AND image.AttributeId = 111306
+    LEFT OUTER JOIN [dbo].[AttributeValue] video ON video.EntityId = cci.Id AND video.AttributeId = 111307
+    LEFT OUTER JOIN [dbo].[AttributeValue] pdf ON pdf.EntityId = cci.Id AND pdf.AttributeId = 111308
+    WHERE cci.ContentChannelId = 101
+        AND (cci.StartDateTime <= @now)
+        AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
+    ORDER BY cci.Priority, cci.StartDateTime
+{% endsql %}
+
+{% for item in Items %}
+    {% if forloop.first %}
+        <h1>Central Leader Development</h1>
+    {% endif %}
+    {% assign totalCount = totalCount | Plus:1 %}
+    {% assign x = 0 %}
+    {% assign y = 0 %}
+    {% if item.Content and item.Content != '' %}{% assign x = x | Plus:1 %}{% endif %}
+    {% if item.Image and item.Image != '' %}{% assign x = x | Plus:1 %}{% endif %}
+    {% if item.PDF and item.PDF != '' %}{% assign x = x | Plus:1 %}{% endif %}
+    {% if item.Video and item.Video != '' %}{% assign x = x | Plus:1 %}{% endif %}
+    {% if x > 0 %}
+        {% if x == 1 %}
+            {% assign cw = 'col-md-12' %}
+        {% else %}
+            {% assign cw = 'col-md-6' %}
+        {% endif %}
+        <div class="contentItem">
+            <div class="row">
+                {% if item.Content and item.Content != '' %}
+                    {% assign y = y | Plus:1 %}
+                    <div class='{{ cw }}'>
+                        {{ item.Content }}
+                    </div>
+                {% endif %}
+                {% if item.Image and item.Image != '' %}
+                    {% assign y = y | Plus:1 %}
+                    <div class='{{ cw }}' style="text-align:center;">
+                        <img src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?Guid={{ item.Image }}" style="max-width: 100%; max-height: 500px;">
+                    </div>
+                {% endif %}
+                {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                {% if item.PDF and item.PDF != '' %}
+                    {% assign y = y | Plus:1 %}
+                    <div class='{{ cw }}' style="text-align:center;">
+                        <div style="--aspect-ratio: 16/9;" class="DesktopPdfViewer">
+                            <iframe src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}" title="Central News Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                        </div>
+                        <div style="--aspect-ratio: 16/9;" class="MobilePdfViewer">
+                            <iframe src="https://docs.google.com/gview?url={{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}&embedded=true" title="Central Leader Development Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                {% if item.Video and item.Video != '' %}
+                    <div class='{{ cw }}' style="text-align:center;">
+                        <div style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% if item.Video and item.Video != '' %}
+            <div class="contentItem row buttons">
+                <div class='col-md-12'>
+                    <p class="half-width-button"><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}page/4024" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">More Training Content</a></p>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+    <div class="spacer"></div>
+{% endfor %}
+
+<!-- Student Connect Curriculum -->
+{% if studentConnect > 0 %}
+    {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+        SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+            image.Value AS [Image], video.Value AS [Video], pdf.Value AS [PDF], button1.Value AS [Button1], button1Label.Value AS [Button1Label], button2.Value AS [Button2], button2Label.Value AS [Button2Label],
+            button3.Value AS [Button3], button3Label.Value AS [Button3Label], button4.Value AS [Button4], button4Label.Value AS [Button4Label], button5.Value AS [Button5], button5Label.Value AS [Button5Label]
+        FROM [dbo].[ContentChannelItem] cci
+        LEFT OUTER JOIN [dbo].[AttributeValue] image ON image.EntityId = cci.Id AND image.AttributeId = 111312
+        LEFT OUTER JOIN [dbo].[AttributeValue] video ON video.EntityId = cci.Id AND video.AttributeId = 111311
+        LEFT OUTER JOIN [dbo].[AttributeValue] pdf ON pdf.EntityId = cci.Id AND pdf.AttributeId = 111313
+        LEFT OUTER JOIN [dbo].[AttributeValue] button1 ON button1.EntityId = cci.Id AND button1.AttributeId = 111314
+        LEFT OUTER JOIN [dbo].[AttributeValue] button1Label ON button1Label.EntityId = cci.Id AND button1Label.AttributeId = 111428
+        LEFT OUTER JOIN [dbo].[AttributeValue] button2 ON button2.EntityId = cci.Id AND button2.AttributeId = 111315
+        LEFT OUTER JOIN [dbo].[AttributeValue] button2Label ON button2Label.EntityId = cci.Id AND button2Label.AttributeId = 111429
+        LEFT OUTER JOIN [dbo].[AttributeValue] button3 ON button3.EntityId = cci.Id AND button3.AttributeId = 111316
+        LEFT OUTER JOIN [dbo].[AttributeValue] button3Label ON button3Label.EntityId = cci.Id AND button3Label.AttributeId = 111430
+        LEFT OUTER JOIN [dbo].[AttributeValue] button4 ON button4.EntityId = cci.Id AND button4.AttributeId = 111317
+        LEFT OUTER JOIN [dbo].[AttributeValue] button4Label ON button4Label.EntityId = cci.Id AND button4Label.AttributeId = 111431
+        LEFT OUTER JOIN [dbo].[AttributeValue] button5 ON button5.EntityId = cci.Id AND button5.AttributeId = 111318
+        LEFT OUTER JOIN [dbo].[AttributeValue] button5Label ON button5Label.EntityId = cci.Id AND button5Label.AttributeId = 111432
+        WHERE cci.ContentChannelId = 102
+            AND (cci.StartDateTime <= @now)
+            AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
+        ORDER BY cci.Priority, cci.StartDateTime
+    {% endsql %}
+
+    {% for item in Items %}
+        {% if forloop.first %}
+            <h1>Student Connect Curriculum</h1>
+        {% endif %}
+        {% assign totalCount = totalCount | Plus:1 %}
+        {% assign x = 0 %}
+        {% assign y = 0 %}
+        {% if item.Content and item.Content != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Image and item.Image != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.PDF and item.PDF != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Video and item.Video != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button1 and item.Button1 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button2 and item.Button2 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button3 and item.Button3 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button4 and item.Button4 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button5 and item.Button5 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if x > 0 %}
+            {% if x == 1 %}
+                {% assign cw = 'col-md-12' %}
+            {% else %}
+                {% assign cw = 'col-md-6' %}
+            {% endif %}
+            <div class="contentItem">
+                <div class="row">
+                    {% if item.Content and item.Content != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}'>
+                            {{ item.Content }}
+                        </div>
+                    {% endif %}
+                    {% if item.Image and item.Image != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <img src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?Guid={{ item.Image }}" style="max-width: 100%; max-height: 500px;">
+                        </div>
+                    {% endif %}
+                    {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                    {% if item.PDF and item.PDF != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <div style="--aspect-ratio: 16/9;" class="DesktopPdfViewer">
+                                <iframe src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}" title="Central News Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                            </div>
+                            <div style="--aspect-ratio: 16/9;" class="MobilePdfViewer">
+                                <iframe src="https://docs.google.com/gview?url={{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}&embedded=true" title="Student Connect Curriculum Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                    {% if item.Video and item.Video != '' %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <div style="--aspect-ratio: 16/9;">
+                                <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="contentItem row buttons">
+                {% if item.Button1 and item.Button1 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button1Label | Default:'Week 1 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button2 and item.Button2 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button2Label | Default:'Week 2 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button3 and item.Button3 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button3Label | Default:'Week 3 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button4 and item.Button4 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button4Label | Default:'Week 4 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button5 and item.Button5 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button5Label | Default:'Week 5 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+        <div class="spacer"></div>
+    {% endfor %}
+{% endif %}
+
+<!-- United Curriculum Current Series -->
+{% if united > 0 %}
+    {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+        SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+            image.Value AS [Image], video.Value AS [Video], pdf.Value AS [PDF], button1.Value AS [Button1], button1Label.Value AS [Button1Label], button2.Value AS [Button2], button2Label.Value AS [Button2Label],
+            button3.Value AS [Button3], button3Label.Value AS [Button3Label], button4.Value AS [Button4], button4Label.Value AS [Button4Label]
+        FROM [dbo].[ContentChannelItem] cci
+        LEFT OUTER JOIN [dbo].[AttributeValue] image ON image.EntityId = cci.Id AND image.AttributeId = 111320
+        LEFT OUTER JOIN [dbo].[AttributeValue] video ON video.EntityId = cci.Id AND video.AttributeId = 111321
+        LEFT OUTER JOIN [dbo].[AttributeValue] pdf ON pdf.EntityId = cci.Id AND pdf.AttributeId = 111319
+        LEFT OUTER JOIN [dbo].[AttributeValue] button1 ON button1.EntityId = cci.Id AND button1.AttributeId = 111322
+        LEFT OUTER JOIN [dbo].[AttributeValue] button1Label ON button1Label.EntityId = cci.Id AND button1Label.AttributeId = 111433
+        LEFT OUTER JOIN [dbo].[AttributeValue] button2 ON button2.EntityId = cci.Id AND button2.AttributeId = 111323
+        LEFT OUTER JOIN [dbo].[AttributeValue] button2Label ON button2Label.EntityId = cci.Id AND button2Label.AttributeId = 111434
+        LEFT OUTER JOIN [dbo].[AttributeValue] button3 ON button3.EntityId = cci.Id AND button3.AttributeId = 111324
+        LEFT OUTER JOIN [dbo].[AttributeValue] button3Label ON button3Label.EntityId = cci.Id AND button3Label.AttributeId = 111435
+        LEFT OUTER JOIN [dbo].[AttributeValue] button4 ON button4.EntityId = cci.Id AND button4.AttributeId = 111325
+        LEFT OUTER JOIN [dbo].[AttributeValue] button4Label ON button4Label.EntityId = cci.Id AND button4Label.AttributeId = 111436
+        WHERE cci.ContentChannelId = 103
+            AND (cci.StartDateTime <= @now)
+            AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
+        ORDER BY cci.Priority, cci.StartDateTime
+    {% endsql %}
+
+    {% for item in Items %}
+        {% if forloop.first %}
+            <h1>United Curriculum</h1>
+        {% endif %}
+        {% assign totalCount = totalCount | Plus:1 %}
+        {% assign x = 0 %}
+        {% assign y = 0 %}
+        {% if item.Content and item.Content != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Image and item.Image != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.PDF and item.PDF != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Video and item.Video != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button1 and item.Button1 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button2 and item.Button2 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button3 and item.Button3 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button4 and item.Button4 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if x > 0 %}
+            {% if x == 1 %}
+                {% assign cw = 'col-md-12' %}
+            {% else %}
+                {% assign cw = 'col-md-6' %}
+            {% endif %}
+            <div class="contentItem row">
+                <div class="row">
+                    {% if item.Content and item.Content != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}'>
+                            {{ item.Content }}
+                        </div>
+                    {% endif %}
+                    {% if item.Image and item.Image != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <img src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?Guid={{ item.Image }}" style="max-width: 100%; max-height: 500px;">
+                        </div>
+                    {% endif %}
+                    {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                    {% if item.PDF and item.PDF != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <div style="--aspect-ratio: 16/9;" class="DesktopPdfViewer">
+                                <iframe src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}" title="Central News Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                            </div>
+                            <div style="--aspect-ratio: 16/9;" class="MobilePdfViewer">
+                                <iframe src="https://docs.google.com/gview?url={{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}&embedded=true" title="United Curriculum Current Series Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                    {% if item.Video and item.Video != '' %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <div style="--aspect-ratio: 16/9;">
+                                <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="contentItem row buttons">
+                {% if item.Button1 and item.Button1 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button1Label | Default:'Week 1 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button2 and item.Button2 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button2Label | Default:'Week 2 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button3 and item.Button3 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button3Label | Default:'Week 3 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button4 and item.Button4 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button4Label | Default:'Week 4 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+        <div class="spacer"></div>
+    {% endfor %}
+{% endif %}
+
+<!-- United Curriculum Upcoming Series -->
+{% if united > 0 %}
+    {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+        SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+            image.Value AS [Image], video.Value AS [Video], pdf.Value AS [PDF], button1.Value AS [Button1], button1Label.Value AS [Button1Label], button2.Value AS [Button2], button2Label.Value AS [Button2Label],
+            button3.Value AS [Button3], button3Label.Value AS [Button3Label], button4.Value AS [Button4], button4Label.Value AS [Button4Label]
+        FROM [dbo].[ContentChannelItem] cci
+        LEFT OUTER JOIN [dbo].[AttributeValue] image ON image.EntityId = cci.Id AND image.AttributeId = 111327
+        LEFT OUTER JOIN [dbo].[AttributeValue] video ON video.EntityId = cci.Id AND video.AttributeId = 111328
+        LEFT OUTER JOIN [dbo].[AttributeValue] pdf ON pdf.EntityId = cci.Id AND pdf.AttributeId = 111326
+        LEFT OUTER JOIN [dbo].[AttributeValue] button1 ON button1.EntityId = cci.Id AND button1.AttributeId = 111329
+        LEFT OUTER JOIN [dbo].[AttributeValue] button1Label ON button1Label.EntityId = cci.Id AND button1Label.AttributeId = 111437
+        LEFT OUTER JOIN [dbo].[AttributeValue] button2 ON button2.EntityId = cci.Id AND button2.AttributeId = 111330
+        LEFT OUTER JOIN [dbo].[AttributeValue] button2Label ON button2Label.EntityId = cci.Id AND button2Label.AttributeId = 111438
+        LEFT OUTER JOIN [dbo].[AttributeValue] button3 ON button3.EntityId = cci.Id AND button3.AttributeId = 111331
+        LEFT OUTER JOIN [dbo].[AttributeValue] button3Label ON button3Label.EntityId = cci.Id AND button3Label.AttributeId = 111439
+        LEFT OUTER JOIN [dbo].[AttributeValue] button4 ON button4.EntityId = cci.Id AND button4.AttributeId = 111332
+        LEFT OUTER JOIN [dbo].[AttributeValue] button4Label ON button4Label.EntityId = cci.Id AND button4Label.AttributeId = 111440
+        WHERE cci.ContentChannelId = 104
+            AND (cci.StartDateTime <= @now)
+            AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
+        ORDER BY cci.Priority, cci.StartDateTime
+    {% endsql %}
+
+    {% for item in Items %}
+        {% if forloop.first %}
+            <h1>United Curriculum Upcoming Series</h1>
+        {% endif %}
+        {% assign totalCount = totalCount | Plus:1 %}
+        {% assign x = 0 %}
+        {% assign y = 0 %}
+        {% if item.Content and item.Content != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Image and item.Image != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.PDF and item.PDF != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Video and item.Video != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button1 and item.Button1 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button2 and item.Button2 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button3 and item.Button3 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button4 and item.Button4 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if x > 0 %}
+            {% if x == 1 %}
+                {% assign cw = 'col-md-12' %}
+            {% else %}
+                {% assign cw = 'col-md-6' %}
+            {% endif %}
+            <div class="contentItem">
+                <div class="row">
+                    {% if item.Content and item.Content != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}'>
+                            {{ item.Content }}
+                        </div>
+                    {% endif %}
+                    {% if item.Image and item.Image != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <img src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?Guid={{ item.Image }}" style="max-width: 100%; max-height: 500px;">
+                        </div>
+                    {% endif %}
+                    {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                    {% if item.PDF and item.PDF != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <div style="--aspect-ratio: 16/9;" class="DesktopPdfViewer">
+                                <iframe src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}" title="Central News Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                            </div>
+                            <div style="--aspect-ratio: 16/9;" class="MobilePdfViewer">
+                                <iframe src="https://docs.google.com/gview?url={{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}&embedded=true" title="United Curriculum Upcoming Series Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                    {% if item.Video and item.Video != '' %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <div style="--aspect-ratio: 16/9;">
+                                <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="contentItem row buttons">
+                {% if item.Button1 and item.Button1 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button1Label | Default:'Week 1 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button2 and item.Button2 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button2Label | Default:'Week 2 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button3 and item.Button3 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button3Label | Default:'Week 3 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button4 and item.Button4 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button4Label | Default:'Week 4 Curriculum' }}</a></p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+        <div class="spacer"></div>
+    {% endfor %}
+{% endif %}
+
+<!-- New Believers -->
+{% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+    SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+        video.Value AS [Video], pdf.Value AS [PDF]
+    FROM [dbo].[ContentChannelItem] cci
+    LEFT OUTER JOIN [dbo].[AttributeValue] video ON video.EntityId = cci.Id AND video.AttributeId = 111333
+    LEFT OUTER JOIN [dbo].[AttributeValue] pdf ON pdf.EntityId = cci.Id AND pdf.AttributeId = 111334
+    WHERE cci.ContentChannelId = 105
+        AND (cci.StartDateTime <= @now)
+        AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
+    ORDER BY cci.Priority, cci.StartDateTime
+{% endsql %}
+
+{% for item in Items %}
+    {% if forloop.first %}
+        <h1>New Believers</h1>
+    {% endif %}
+    {% assign totalCount = totalCount | Plus:1 %}
+    {% assign x = 0 %}
+    {% assign y = 0 %}
+    {% if item.Content and item.Content != '' %}{% assign x = x | Plus:1 %}{% endif %}
+    {% if item.Video and item.Video != '' %}{% assign x = x | Plus:1 %}{% endif %}
+    {% if item.PDF and item.PDF != '' %}{% assign x = x | Plus:1 %}{% endif %}
+    {% if x > 0 %}
+        {% if x == 1 %}
+            {% assign cw = 'col-md-12' %}
+        {% else %}
+            {% assign cw = 'col-md-6' %}
+        {% endif %}
+        <div class="contentItem">
+            <div class="row">
+                {% if item.Content and item.Content != '' %}
+                    {% assign y = y | Plus:1 %}
+                    <div class='{{ cw }}'>
+                        {{ item.Content }}
+                    </div>
+                {% endif %}
+                {% if item.Video and item.Video != '' %}
+                    {% assign y = y | Plus:1 %}
+                    <div class='{{ cw }}' style="text-align:center;">
+                        <div style="--aspect-ratio: 16/9;">
+                            <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                {% if item.PDF and item.PDF != '' %}
+                    <div class='{{ cw }}' style="text-align:center;">
+                        <div style="--aspect-ratio: 16/9;" class="DesktopPdfViewer">
+                            <iframe src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}" title="Central News Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                        </div>
+                        <div style="--aspect-ratio: 16/9;" class="MobilePdfViewer">
+                            <iframe src="https://docs.google.com/gview?url={{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}&embedded=true" title="New Believers Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+    <div class="spacer"></div>
+{% endfor %}
+
+<!-- footer -->
+{% if totalCount == 0 %}
+    <h2 style="text-align:center;">No Content is available at this time</h2>
+{% endif %}
+
+<div id="channelFooter">
+    <div class="row">
+        <div class="col-xs-12">
+            <h2 style="text-align:center;">Leader Tools</h2>
+            <div id="tools">
+                <a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/2326" class="btn btn-primary GonnaBeOut">
+                    <div class="toolIcon"><i class="far fa-sign-out"></i></div>
+                    Gonna be out
+                </a>
+                <a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/4025?Campus={{ CurrentPerson.PrimaryCampus.Guid }}" class="btn btn-primary StaffContacts">
+                    <div class="toolIcon"><i class="far fa-book-user"></i></div>
+                    Staff Contacts
+                </a>
+                <a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/4024" class="btn btn-primary LeaderTraining">
+                    <div class="toolIcon"><i class="far fa-chalkboard-teacher"></i></div>
+                    Leader Training
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="//fast.wistia.net/assets/external/E-v1.js" async></script>
+<style>
+    .MobilePdfViewer {
+        display: none;
+    }
+    .DesktopPdfViewer {
+        display: block;
+    }
+    @media (max-width:767px) {
+        .MobilePdfViewer {
+            display: block;
+        }
+        .DesktopPdfViewer {
+            display: none;
+        }
+    }
+</style>

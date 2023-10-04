@@ -1395,8 +1395,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         }
                     }
 
-                    checkedInPeople += item.CheckedInPeople.Count;
-                    presentPeople += item.PresentPeople.Count;
+                    // LPC MODIFICATION
+                    // In our use case, these two lines are double-counting people already counted above. So =, not +=
+                    checkedInPeople = item.CheckedInPeople.Count;
+                    presentPeople = item.PresentPeople.Count;
+                    // END LPC MODIFICATION
 
                     rptPeople.Visible = true;
                     rptPeople.DataSource = people;

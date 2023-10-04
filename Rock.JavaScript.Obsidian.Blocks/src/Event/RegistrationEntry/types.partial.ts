@@ -188,6 +188,10 @@ export type RegistrarInfo = {
     nickName: string;
     lastName: string;
     email: string;
+    // LPC CODE
+    mobilePhone: string;
+    preferredLanguage: string;
+    // END LPC CODE
     updateEmail: boolean;
     familyGuid: Guid | null;
 };
@@ -215,6 +219,7 @@ export type RegistrationEntryBlockSession = RegistrationEntryBlockArgs & {
     discountAmount: number;
     discountPercentage: number;
     previouslyPaid: number;
+    discountMaxRegistrants: number;
 };
 
 export const enum Step {
@@ -231,6 +236,9 @@ export type RegistrantBasicInfo = {
     firstName: string;
     lastName: string;
     email: string;
+    // LPC CODE
+    mobilePhone: string;
+    // END LPC CODE
     guid: Guid;
 };
 
@@ -250,6 +258,7 @@ export type RegistrationEntryState = {
     discountCode: string;
     discountAmount: number;
     discountPercentage: number;
+    discountMaxRegistrants: number;
     successViewModel: RegistrationEntryBlockSuccessViewModel | null;
     amountToPayToday: number;
     sessionExpirationDateMs: number | null;

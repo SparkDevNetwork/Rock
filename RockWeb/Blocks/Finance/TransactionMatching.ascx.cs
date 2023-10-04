@@ -394,19 +394,21 @@ namespace RockWeb.Blocks.Finance
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
             var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
-            IEnumerable<FinancialAccountCache> financialAccountList;
+            // SNS 20230404 The LPC changes below (localized to this LoadDropDowns() method) revert a 3/23/2022 Spark change
+            // (https://github.com/lakepointe/Rock/commit/981f4d41777d043760559df07ef17c221be599d2#diff-08863471e16a228be6a6f00152141adfbbce797b21d1182ff318e82dd0ec2400)
+            // that broke the ordering of the accounts on the right side of the tool. The primary intent of the change was to
+            // increase efficiency by pulling the accounts from cache, but the inability of cached accounts to leverage the
+            // GetTree() call broke the ordering.
+            // Reported as a bug to Spark but unable to reproduce on RockSolidChurchDemo because of lack of unmatched transactions.
+            var accountQry = new FinancialAccountService( rockContext )
+                .GetTree()
+                .Where( a => a.IsActive );
 
             // no accounts specified means "all Active"
             if ( blockAccountGuidList.Any() )
             {
-                financialAccountList = FinancialAccountCache.GetByGuids( blockAccountGuidList );
+                accountQry = accountQry.Where( a => blockAccountGuidList.Contains( a.Guid ) );
             }
-            else
-            {
-                financialAccountList = FinancialAccountCache.All();
-            }
-
-            financialAccountList = financialAccountList.Where( a => a.IsActive );
 
             if ( !personalAccountGuidList.Any() )
             {
@@ -416,27 +418,26 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    // if no personal accounts are selected, but there are optional accounts, only show the optional accounts (added manually)
-                    financialAccountList = financialAccountList.Where( a => false );
+                    // if no personal accounts are selected, but there are optional accounts, only show the optional accounts
+                    accountQry = accountQry.Where( a => false );
                 }
             }
             else
             {
                 // if there are person accounts selected, limit accounts to personal accounts
-                var selectedAccountList = financialAccountList.Where( a => personalAccountGuidList.Contains( a.Guid ) );
+                var selectedAccountQry = accountQry.Where( a => personalAccountGuidList.Contains( a.Guid ) );
 
                 // If include child accounts is selected, then also select all child accounts of the selected accounts.
                 if ( ( this.GetUserPreference( keyPrefix + "include-child-accounts" ) ?? string.Empty ).AsBoolean() )
                 {
-                    var selectedParentIds = selectedAccountList.Select( a => a.Id ).ToList();
-
+                    var selectedParentIds = selectedAccountQry.Select( a => a.Id ).ToList();
                     // Now find only those accounts that are descendants of one of the selected (parent) Ids
                     // OR if it is one of the selected Ids.
-                    financialAccountList = financialAccountList.Where( a => a.GetAncestorFinancialAccountIds().Any( x => selectedParentIds.Contains( x ) ) || selectedParentIds.Contains( a.Id ) );
+                    accountQry = accountQry.Where( a => a.ParentAccountIds.Any( x => selectedParentIds.Contains( x ) ) || selectedParentIds.Contains( a.Id ) );
                 }
                 else
                 {
-                    financialAccountList = selectedAccountList;
+                    accountQry = selectedAccountQry;
                 }
             }
 
@@ -450,19 +451,19 @@ namespace RockWeb.Blocks.Finance
                 {
                     hlCampus.Text = "Batch Campus: " + CampusCache.Get( batchCampusId.Value ).Name;
                     hlCampus.Visible = true;
-
-                    // Filter out anything that does not match the batch's campus.
-                    financialAccountList = financialAccountList.Where( a => a.CampusId.HasValue && a.CampusId.Value == batchCampusId );
                 }
+
+                // Filter out anything that does not match the batch's campus.
+                accountQry = accountQry.Where( a => a.CampusId.HasValue && a.CampusId.Value == batchCampusId );
             }
 
             int? campusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
             if ( campusId.HasValue )
             {
-                financialAccountList = financialAccountList.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
+                accountQry = accountQry.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
             }
 
-            _visibleDisplayedAccountIds = new List<int>( financialAccountList.Select( a => a.Id ).ToList() );
+            _visibleDisplayedAccountIds = new List<int>( accountQry.Select( a => a.Id ).ToList() );
             _visibleOptionalAccountIds = new List<int>();
 
             // make the datasource all accounts, but only show the ones that are in _visibleAccountIds or have a non-zero amount

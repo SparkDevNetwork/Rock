@@ -1,0 +1,30 @@
+{%- comment -%} Test Drive Label for All Campuses {%- endcomment -%}
+
+{%- comment -%}
+    Zebra 200 DPI Label
+{%- endcomment -%}
+
+{%- comment -%}
+    LABEL HEADER FOR PRINTER
+{%- endcomment -%}
+CT~~CD,~CC^~CT~
+^XA~JSN^LT0^MNW^MTD^PON^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^MMC^PW800^LL0400^LS0
+
+{%- comment -%}
+    Print Name
+{%- endcomment -%}
+^FO7,27^FB786,1,0,C^A0N,83,83^FH\^FD{{ Person.NickName }}^FS
+^FO7,113^FB786,1,0,C^A0N,60,60^FH\^FD{{ Person.LastName }}^FS
+
+{%- comment -%}
+    Print Observer Title
+{%- endcomment -%}
+^FO7,253^FB786,1,0,C^A0N,55,55^FH\^FDTEST DRIVE^FS
+
+^FO7,313^FB786,2,0,C^A0N,35,35^FH\^FDL3 POSITIONS - MUST REMAIN WITH STAFF OR COACH AT ALL TIMES^FS
+
+{%- comment -%}
+    LABEL END FOR PRINTER
+{%- endcomment -%}
+^XZ

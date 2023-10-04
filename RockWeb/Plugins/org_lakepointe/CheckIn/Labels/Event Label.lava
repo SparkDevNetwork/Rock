@@ -1,0 +1,40 @@
+{%- comment -%} Event Label for All Campuses {%- endcomment -%}
+
+{%- comment -%}
+    Zebra 200 DPI Label
+{%- endcomment -%}
+
+{%- comment -%}
+    LABEL HEADER FOR PRINTER
+{%- endcomment -%}
+CT~~CD,~CC^~CT~
+^XA~JSN^LT0^MNW^MTD^PON^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^MMC^PW800^LL0400^LS0
+
+{%- comment -%}
+    Obtain Picture
+{%- endcomment -%}
+^FD{{ Person | ZebraPhoto:'290',1.15,0.9,'LOGO.PNG',0 }}^FS
+
+{%- comment -%}
+    Print Picture & Title
+{%- endcomment -%}
+^FO503,7^GB290,290^FS
+^FO503,7^XGR:LOGO.PNG^FS
+^IDR:LOGO.PNG^FS
+
+{%- comment -%}
+    Print Name
+{%- endcomment -%}
+^FO7,67^A0N,83,83^TBN,490,83^FH\^FD{{ Person.NickName }}^FS
+^FO7,153^A0N,60,60^TBN,490,60^FH\^FD{{ Person.LastName }}^FS
+
+{%- comment -%}
+    Print Campus Information
+{%- endcomment -%}
+^FO7,293^FB547,1,0,L^A0N,30,30^FH\^FD{{Person | Campus | Property:'Name'}}^FS
+
+{%- comment -%}
+    LABEL END FOR PRINTER
+{%- endcomment -%}
+^XZ

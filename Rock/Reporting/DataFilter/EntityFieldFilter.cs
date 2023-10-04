@@ -58,6 +58,7 @@ namespace Rock.Reporting.DataFilter
             if (ddlEntityField is RockDropDownList rockDropDownList)
             {
                 rockDropDownList.EnhanceForLongLists = true;
+                rockDropDownList.PrependText = "<div></div>";
             }
 
             if ( entityFieldPickerIsHidden )

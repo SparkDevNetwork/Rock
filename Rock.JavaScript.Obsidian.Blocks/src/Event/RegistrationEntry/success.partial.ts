@@ -19,6 +19,23 @@ import { Guid } from "@Obsidian/Types";
 import { defineComponent, inject } from "vue";
 import SaveFinancialAccountForm from "@Obsidian/Controls/saveFinancialAccountForm";
 import { RegistrationEntryState } from "./types.partial";
+// LPC CODE
+import { useStore } from "@Obsidian/PageState";
+
+const store = useStore();
+
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+// END LPC CODE
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Success",
@@ -33,7 +50,9 @@ export default defineComponent({
     computed: {
         /** The term to refer to a registrant */
         registrationTerm (): string {
-            return this.registrationEntryState.viewModel.registrationTerm.toLowerCase();
+            // MODIFIED LPC CODE
+            return getLang() == 'es' ? 'registro' : this.registrationEntryState.viewModel.registrationTerm.toLowerCase();
+            // END MODIFIED LPC CODE
         },
 
         /** The success lava markup */
@@ -62,6 +81,9 @@ export default defineComponent({
             return this.registrationEntryState.viewModel.enableSaveAccount && this.registrationEntryState.savedAccountGuid === null;
         }
     },
+    methods: {
+        getLang
+    },
     template: `
 <div>
     <div v-html="messageHtml"></div>
@@ -71,7 +93,9 @@ export default defineComponent({
         :gatewayPersonIdentifier="gatewayPersonIdentifier"
         class="well">
         <template #header>
-            <h3>Make Payments Even Easier</h3>
+            <!-- MODIFIED LPC CODE -->
+            <h3>{{ getLang() == 'es' ? 'Haga los pagos aún más fáciles' : 'Make Payments Even Easier' }}</h3>
+            <!-- END MODIFIED LPC CODE -->
         </template>
     </SaveFinancialAccountForm>
 </div>`

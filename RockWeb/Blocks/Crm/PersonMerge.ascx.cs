@@ -1539,6 +1539,14 @@ namespace RockWeb.Blocks.Crm
                                               .ToList();
 
             var showWarning = conflictingHiddenProperties.Any();
+            // LPC ADD -- identify the attributes that are forcing escalation.
+            if ( showWarning )
+            {
+                var conflictedAttributeIds = conflictingHiddenProperties.Select( v => v.AttributeId.ToString() ).JoinStrings( ", " );
+                nbPermissionNotice.Text = string.Format( "{0} [{1}]", nbPermissionNotice.Text, conflictedAttributeIds );
+            }
+            // END OF LPC ADD
+
             nbPermissionNotice.Visible = showWarning;
 
             var conflictingGroupMemberProperties = MergeData.GroupMemberProperties.Where( p => p.Values.Select( v => v.Value ).Distinct().Count() > 1 || !p.Values.Any( v => v.PersonId == MergeData.PrimaryPersonId ) ).ToList();

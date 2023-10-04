@@ -1,0 +1,98 @@
+{% comment %}
+    Serving Opportunities - Campus Select
+{% endcomment %}
+
+<style>
+    .campusItem
+    {
+        height: 200px;
+        width:100%;
+        text-align:center;
+        display:table;
+        margin-bottom:15px;
+
+    }
+
+    .campusItem.noImg
+    {
+        background-color: #0b1d2d;
+        margin-bottom:20px; 
+    }
+
+    .campusItem img
+    {
+        max-height:195px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .campusName
+    {
+        display: table-cell;
+        vertical-align:middle;
+        font-size:16px;
+        color:#fff;
+    }
+
+    #campusList.no-padding
+    {
+        padding: 0 0 0 0;
+        margin: 0 0 0 0;
+        width: 100%;
+    }
+
+</style>
+
+{% assign urlBase = '~/page/2043' %}
+{% assign selectCampus = 'Global' | PageParameter:'SelectCampus' %}
+
+{% comment%}
+{% if CurrentPerson != null and selectCampus != 1 %}
+    {% assign campusId = Person | Campus | Property:'Id' %}
+    {% assign currentPersonCanEdit = CurrentPerson | HasRightsTo:'Edit' %}
+    
+    {% if currentPersonCanEdit %}
+        <p class='alert alert-warning'>If you could not edit, you would be redirected to <a href='{{baseUrl}}'>{{baseUrl}}</a>.</p>
+    {% else %}
+        {{ baseUrl | PageRedirect }}
+    {% endif %}
+{% endif %}
+{% endcomment %}
+{% capture browserTitle %} Serving Opportunities :: Choose Your Campus {% endcapture %}
+{{ browserTitle | SetPageTitle }}
+
+
+<div id="campusSelect">
+    <p style="text-align:justify;">
+    Thank you for your interest in serving at Lake Pointe Church. We want to help you discover your purpose and find the 
+    best place to use your gifts to serve others. No matter what gifts you have or what area of ministry you are passionate,
+    there is a place for you to serve.</p>
+    <h3 style="text-align:center;">Select your campus location</h3>
+    <div id="campusList" class="container no-padding">
+        <div class="row">
+            {% campus where:'IsActive == true' Sort:'Order, Name' %}
+                {% for c in campusItems %}
+                    <div class="col-md-4">
+                        {% capture campusUrl %}{{urlBase}}?CampusId={{ c.Id }}{% endcapture %}
+                        <a href="{{ campusUrl | ResolveRockUrl }}">
+                            
+                            {% assign imageRaw = c | Attribute:'Image','RawValue' %}
+                            {% if imageRaw == null or imageRaw == '' %}
+                                <div class="campusItem noImg">
+                                    <h3 class="campusName">{{c.Name}}</h3>
+                                </div>
+                            {% else %}
+                                <div class="campusItem">
+                                    {{ imageRaw }}
+                                    {% capture imageUrl %}~/GetImage.ashx?guid={{imageRaw}}{% endcapture%}
+                                    <img src='{{ imageUrl }}' alt='{{ c.Name }}' class='img-responsive' /> 
+                                </div>
+
+                            {% endif %}
+                        </a>
+                    </div>
+                {% endfor %}
+            {% endcampus %}
+        </div>
+    </div>
+</div>

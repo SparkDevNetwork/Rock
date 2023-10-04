@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # set all strings to UTF-8
 LC_CTYPE=en_US.utf8

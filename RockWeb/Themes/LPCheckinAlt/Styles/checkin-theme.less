@@ -1,0 +1,162 @@
+/*
+
+     Lake Pointe Chruch Default check in Theme
+     Crafted by: Spark Development Network
+
+ */
+
+//
+// Imports
+// --------------------------------------------------
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less";
+@import "../../../Styles/_checkin-core.less";
+@import "../../../Styles/_modal.less";
+@import "../../../Styles/_helpers.less";
+@import "../../../Styles/rock-components/update-panel-status.less"; 
+
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+
+// Fonts
+// -------------------------
+
+// regular (weight 'normal' aka 400)
+@font-face {
+  font-family: "OpenSans";
+  font-style: normal;
+  font-weight: 400;
+  src: url("../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot");
+  src: url("../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix") format("embedded-opentype"),
+    url("../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff2") format("woff2"),
+    url("../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff") format("woff");
+}
+
+// light (weight 300)
+@font-face {
+  font-family: "OpenSans";
+  font-style: normal;
+  font-weight: 300;
+  src: url("../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot");
+  src: url("../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix") format("embedded-opentype"),
+    url("../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff2") format("woff2"),
+    url("../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff") format("woff");
+}
+
+// semi-bold (weight 600)
+@font-face {
+  font-family: "OpenSans";
+  font-style: normal;
+  font-weight: 600;
+  src: url("../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot");
+  src: url("../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix") format("embedded-opentype"),
+    url("../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff2") format("woff2"),
+    url("../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff") format("woff");
+}
+
+// bold (weight 700)
+@font-face {
+  font-family: "OpenSans";
+  font-style: normal;
+  font-weight: 700;
+  src: url("../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot");
+  src: url("../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix") format("embedded-opentype"),
+    url("../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff2") format("woff2"),
+    url("../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff") format("woff");
+}
+
+/*#endregion */
+
+
+//
+// Person and Time Select Block Styles
+// --------------------------------------------------
+.checkin-person-time-select {
+  margin: 0 auto;
+  width: 100%;
+  display: table;
+
+  .checkin-header, .checkin-header h1 {
+    margin-bottom: -16px;
+  }
+  .checkin-timelist {
+    width: 100%;
+  }
+  table {
+    width: 100%;
+    border-color: transparent;
+    table-layout: fixed;
+  }
+  td, th {
+    padding: 8px;
+  }
+  .first-row {
+    font-size: 28px;
+    font-weight: bold;
+    th:first-of-type {
+      width: 35%;
+    }
+  }
+  .first-col {
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .btn-checkbox {
+    padding: 0;
+    width: 80px;
+    height: 80px;
+    i.fa {
+      font-size: 64px;
+      line-height: 64px;
+    }
+  }
+}
+
+//
+// Welcome Block Styles
+// --------------------------------------------------
+.checkin-closed-header {
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+  > h1 {
+    font-size: min(18vw, 250px);
+  }
+}
+.checkin-closed-body {
+  font-size: 32px;
+  text-align: center;
+}
+
+//
+// Mix-ins
+// --------------------------------------------------
+.checkinBackground () {
+  background: @bg-color @background-image top right no-repeat fixed;
+}
+
+.checkinBackgroundRetina() {
+  background-image: @background-image-retina;
+  background-size: @background-image-retina-size;
+}
+
+
+//
+// Custom Overrides
+// --------------------------------------------------
+
+.checkin-count h3,
+.checkin-count li {
+  color: #4c4c4b;
+}
+
+body {
+  display: none;
+  -ms-touch-action: none !important;
+  touch-action: none;   /* Disable any special actions on tap/touch */
+
+  -ms-content-zooming: none; /* Disables zooming */
+}
+
+@import "_css-overrides.less";

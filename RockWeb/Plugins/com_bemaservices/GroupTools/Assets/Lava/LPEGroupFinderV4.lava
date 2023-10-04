@@ -1,0 +1,779 @@
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.27.2/axios.min.js"></script>
+<script src="https://unpkg.com/vue-multiselect@2.1.0"></script>
+{% assign categoryIdParameter = 'Global' | PageParameter:'CategoryId' | AsInteger %}
+
+{% page where:'Guid == "02027F5F-DA02-4871-857D-1362570495A4"'%}
+{% for page in pageItems %}
+  {% assign linkedPage = page %}
+{% endfor %}
+{% endpage %}
+
+{% assign groupTypeId = '327,25,381' %}
+{% assign groupTypeParameter = 'Global' | PageParameter:'GroupTypeId' | AsInteger %}
+{% if groupTypeParameter > 0 %}
+  {% assign groupTypeId = groupTypeParameter %}
+{% endif %}
+
+{% assign campusIdString = 'Global' | PageParameter:'CampusIds' | ToString %}
+{% assign campusIds = campusIdString | Split:',' %}
+{% capture selectedCampuses %}
+  [
+    {% if campusIdString != '' %}
+      {% campus where:'IsActive == true' %}
+        {% for campus in campusItems %}
+          {% assign idString = campus.Id | ToString %}
+          {% for campusId in campusIds %}
+            {% if campusId == idString %}
+              { Id:{{campus.Id}}, Name:"{{campus.Name | Replace:'"',"'" }}"},
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endcampus %}
+    {% else %}
+      {% assign person = CurrentPerson %}
+      {% if person != null %}
+        {% assign campus = person | Campus %}
+        {% if campus != empty %}
+          { Id:{{campus.Id}}, Name:"{{campus.Name | Replace:'"',"'"}}"},
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  ]
+{% endcapture %}
+
+{% capture campusData %}
+  [
+    {% campus where:'IsActive == true && CampusStatusValueId == 4546' %}
+      {% for campus in campusItems %}
+        { Id:{{campus.Id}}, Name:"{{campus.Name | Replace:'"',"'"}}"},
+      {% endfor %}
+    {% endcampus %}
+  ]
+{% endcapture %}
+
+{% assign meetingDayString = 'Global' | PageParameter:'MeetingDays' | ToString %}
+{% assign meetingDays = meetingDayString | Split:',' %}
+{% capture selectedMeetingDays %}
+  {% if meetingDayString != '' %}
+    {% for meetingDay in meetingDays %}
+      {% if meetingDay == '0' %}
+        { Value:0, Text:'Domingo' },
+      {% endif %}
+      {% if meetingDay == '1' %}
+        { Value:1, Text:'Lunes' },
+      {% endif %}
+      {% if meetingDay == '2' %}
+        { Value:2, Text:'Martes' },
+      {% endif %}
+      {% if meetingDay == '3' %}
+        { Value:3, Text:'Miércoles' },
+      {% endif %}
+      {% if meetingDay == '4' %}
+        { Value:4, Text:'Jueves' },
+      {% endif %}
+      {% if meetingDay == '5' %}
+        { Value:5, Text:'Viernes' },
+      {% endif %}
+      {% if meetingDay == '6' %}
+        { Value:6, Text:'Sábado' },
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endcapture %}
+
+{% assign categoryIdString = 'Global' | PageParameter:'CategoryIds' | ToString %}
+{% assign categoryIds = categoryIdString | Split:',' %}
+{% capture selectedCategories %}
+  [
+    {% if categoryIdString != '' %}
+      {% definedtype where:'Guid == "8BF1BECD-9B0C-4689-8204-8405327DCBCF"' %}
+        {% for definedtype in definedtypeItems %}
+          {% for definedValue in definedtype.DefinedValues %}
+            {% if definedValue.Value == 'Married' %}
+              { Value:4820, Text:'Matrimonios'},
+            {% endif %}
+            {% if definedValue.Value == 'Single' %}
+              { Value:4822, Text:'Solteros'},
+            {% endif %}
+            {% if definedValue.Value == 'Everyone Welcome' %}
+              { Value:4828, Text:'Mixto'},
+            {% endif %}
+            {% if definedValue.Value == "Women's" %}
+              { Value:4824, Text:'Mujeres'},
+            {% endif %}
+            {% if definedValue.Value == "Men's" %}
+              { Value:4821, Text:'Hombres'},
+            {% endif %}
+            {% if definedValue.Value != 'Featured' and definedValue.Value != 'New' %}
+              {% assign idString = definedValue.Id | ToString %}
+              {% for categoryId in categoryIds %}
+                {% if categoryId == idString %}
+                  { Value:{{definedValue.Id}}, Text:"{{definedValue.Value | Replace:'"',"'"}}"},
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+          {% endfor %}
+        {% endfor %}
+      {% enddefinedtype %}
+    {% endif %}
+  ]
+{% endcapture %}
+
+{% capture categoryData %}
+  [
+    {% definedtype where:'Guid == "8BF1BECD-9B0C-4689-8204-8405327DCBCF"' %}
+      {% for definedtype in definedtypeItems %}
+        {% for definedValue in definedtype.DefinedValues %}
+        {% if definedValue.Value == 'Married' %}
+          { Value:4820, Text:'Matrimonios'},
+        {% endif %}
+        {% if definedValue.Value == 'Single' %}
+          { Value:4822, Text:'Solteros'},
+        {% endif %}
+        {% if definedValue.Value == 'Everyone Welcome' %}
+          { Value:4828, Text:'Mixto'},
+        {% endif %}
+        {% if definedValue.Value == "Women's" %}
+          { Value:4824, Text:'Mujeres'},
+        {% endif %}
+        {% if definedValue.Value == "Men's" %}
+          { Value:4821, Text:'Hombres'},
+        {% endif %}
+          {% if definedValue.Value != 'Featured' and definedValue.Value != 'New' %}
+            { Value:{{definedValue.Id}}, Text:"{{definedValue.Value | Replace:'"',"'"}}"},
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% enddefinedtype %}
+  ]
+{% endcapture %}
+
+{% assign ageRangeIdString = 'Global' | PageParameter:'AgeRanges' | ToString %}
+{% assign ageRangeIds = ageRangeIdString | Split:',' %}
+{% capture selectedAgeRanges %}
+  [
+    {% if ageRangeIdString != '' %}
+      {% definedtype id:'418' %}
+        {% for definedtype in definedtypeItems %}
+          {% for definedValue in definedtype.DefinedValues %}
+            {% if definedValue.Value != 'Featured' and definedValue.Value != 'New' %}
+              {% assign idString = definedValue.Id | ToString %}
+              {% for ageRangeId in ageRangeIds %}
+                {% if ageRangeId == '6460' %}
+                  { Value:6460, Text:'Multi'},
+                {% endif %}
+                {% if ageRangeId == idString %}
+                  { Value:{{definedValue.Id}}, Text:"{{definedValue.Value | Replace:'"',"'"}}"},
+                {% endif %}
+
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% enddefinedtype %}
+    {% endif %}
+  ]
+{% endcapture %}
+
+{% capture ageRangeData %}
+  [
+    {% definedtype id:'418' %}
+      {% for definedtype in definedtypeItems %}
+        {% for definedValue in definedtype.DefinedValues %}
+          {% if definedValue.Value != 'Featured' and definedValue.Value != 'New' %}
+            { Value:{{definedValue.Id}}, Text:"{{definedValue.Value | Replace:'"',"'"}}"},
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% enddefinedtype %}
+  ]
+{% endcapture %}
+
+<div id="app">
+
+  <div class="row margin-b-md">
+    <div class="col-md-2 col-md-offset-2">
+      <div class="form-group">
+        <label class="control-label">Día de Reunión</label>
+        <div class="control-wrapper">
+          <multiselect v-model="meetingDayValues" :options="meetingDayOptions" :multiple="true"
+              :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder=""
+              label="Text" track-by="Text" :preselect-first="false" @input="meetingDayFilterChange()">
+            <template slot="selection" slot-scope="{ meetingDayValues, search, isOpen }">
+              <span class="multiselect__single" v-if="meetingDayValues.length &amp;&amp; !isOpen">
+                {{ meetingDayValues.length }} options selected
+              </span>
+            </template>
+          </multiselect>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="form-group">
+        <label class="control-label">Categoría</label>
+        <div class="control-wrapper">
+          <multiselect v-model="categoryValues" :options="categoryOptions" :multiple="true"
+              :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder=""
+              label="Text" track-by="Text" :preselect-first="false" @input="categoryFilterChange()">
+            <template slot="selection" slot-scope="{ categoryValues, search, isOpen }">
+              <span class="multiselect__single" v-if="categoryValues.length &amp;&amp; !isOpen">
+                {{ categoryValues.length }} options selected
+              </span>
+            </template>
+          </multiselect>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="form-group">
+        <label class="control-label">Rango de Edad</label>
+        <div class="control-wrapper">
+          <multiselect v-model="ageRangeValues" :options="ageRangeOptions" :multiple="true"
+              :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder=""
+              label="Text" track-by="Text" :preselect-first="false" @input="ageRangeFilterChange()">
+            <template slot="selection" slot-scope="{ ageRangeValues, search, isOpen }">
+              <span class="multiselect__single" v-if="ageRangeValues.length &amp;&amp; !isOpen">
+                {{  ageRangeValues.length }} options selected
+              </span>
+            </template>
+          </multiselect>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="form-group">
+        <label class="control-label">Búsqueda</label>
+        <div class="control-wrapper">
+          <input v-model="keywords" class="textbox" label="Text" track-by="Text" @input="debounceKeywordFilterChange" />
+          <i class="far fa-search searchicon"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h5>
+    <span v-if="groupCount >= 0">{*groupCount*} Grupos Encontrados</span>
+    <span v-else>Buscando por Grupos...</span>
+  </h5>
+  <!--The div element for the map -->
+  <div id="map_wrapper">
+        <div id="map" class="mapping"></div>
+    </div>
+
+  <div v-if="groups.length === 0 && groupCount > 0" class="loading">Cargando Grupos...</div>
+  <div v-for="i in Math.ceil(groups.length / 3)" class="row">
+    <div v-for="group in groups.slice((i - 1) * 3, i * 3)" class="col-md-4">
+      <div class="columns column-block">
+        <div class="sg-card border-radius-md">
+          <div class="sg-card-content p-t-1">
+            <p v-if="group.Capacity > 0" class="sg-card-campus fontSize-xs">
+              Lugares Disponibles: {*group.Capacity -
+              group.GroupMemberCount*}
+            </p>
+            <h2 class="sg-card-name fontSize-body">{*group.Name*}</h2>
+            <p class="sg-card-campus fontSize-xs">{*group.Campus*}</p>
+            <p class="sg-card-description">{*group.Description*}.</p>
+            <div class="description-fade"></div>
+          </div>
+          <div class="sg-card-side-bar">
+            <div class="sg-card-meta" :style="'background-color:' + group.Color+';'">
+              <!-- /////////////// <div class="fontSize-body sg-day-of-week">{*group.DayOfWeek*}</div>  -->
+              <div class="fontSize-body sg-day-of-week">
+                <span v-if="group.DayOfWeek == 'Sun'">Dom</span>
+                <span v-else-if="group.DayOfWeek == 'Mon'">Lun</span>
+                <span v-else-if="group.DayOfWeek == 'Tue'">Mar</span>
+                <span v-else-if="group.DayOfWeek == 'Wed'">Mie</span>
+                <span v-else-if="group.DayOfWeek == 'Thu'">Jue</span>
+                <span v-else-if="group.DayOfWeek == 'Fri'">Vie</span>
+                <span v-else-if="group.DayOfWeek == 'Sat'">Sab</span>
+                <span v-else>{*group.DayOfWeek*}</span>
+              </div>
+              <div class="fontSize-xxs">{*group.TimeOfDay*}</div>
+              <!-- /////////////// <div class="fontSize-xxs">{*group.Frequency*}</div>  -->
+              <div class="fontSize-xxs">
+                <span v-if="group.Frequency == 'Weekly'"> Semanal</span>
+                <span v-else-if="group.Frequency == 'Bidaily'"> Diario</span>
+                <span v-else-if="group.Frequency == 'Daily'"> Diario</span>
+                <span v-else-if="group.Frequency == 'Monthly'"> Mensual</span>
+                <span v-else>{*group.Frequency*}</span>
+              </div>
+
+            </div>
+
+            <div class="sg-card-info m-b-half" :style="'color:' + group.Color+';'">
+              <span v-if="group.Category == 'Married'"> Matrimonios</span>
+              <span v-else-if="group.Category == 'Single'"> Solteros</span>
+              <span v-else-if="group.Category == 'Everyone Welcome'"> Mixtos</span>
+              <span v-else-if="group.Category == 'Women\'s'"> Mujeres</span>
+              <span v-else-if="group.Category == 'Men\'s'"> Hombres</span>
+              <span v-else-if="group.Category == 'Recovery'"> Recuperación</span>
+              <span v-else>{*group.Category*}</span>
+            </div>
+
+            <div v-if="group.SecondaryCategories != null && group.SecondaryCategories.length > 0">
+              <div v-for="secondaryCategory in group.SecondaryCategories.slice(0,3)"
+                  class="sg-card-info m-b-half"
+                  :style="'color:' + secondaryCategory.Color+';margin-top:0px !important;'">
+                <template
+                    v-if="secondaryCategory.Category !== 'Featured' && secondaryCategory.Category !== 'New' ">
+                  {*secondaryCategory.Category*}
+                </template>
+              </div>
+            </div>
+            <div class="fontSize-xxs m-b-half sg-card-info-age">
+              <span v-if="group.AttributeValues != null && group.AttributeValues['AgeRange'] != null">
+                <span v-if="group.AttributeValues['AgeRange'].FormattedValue == 'Multi-Generational'"> Multi-Generacional</span>
+                <span v-else>{* group.AttributeValues['AgeRange'].FormattedValue *}</span>
+              </span>
+            </div>
+          </div>
+          <div class="sg-card-content">
+            <a class="more-info-Text" :href="'/page/{{linkedPage.Id}}?Group=' + group.Guid">Más Información</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var infoWindow = new google.maps.InfoWindow()
+
+  function openInfoWindowById(id) {
+    marker = $.grep(allMarkers, function (m) { return m.id == id })[0];
+    openInfoWindow(marker);
+  }
+
+  function openInfoWindow(marker) {
+    infoWindow.setContent($('<div/>').html(marker.info_window).text());
+    infoWindow.open(map, marker);
+  }
+
+  var app = new Vue({
+    el: '#app',
+    delimiters: ['{*', '*}'],
+    components: {
+      Multiselect: window.VueMultiselect.default
+    },
+    data() {
+      return {
+        request: null,
+        bottom: false,
+        groups: [],
+        groupIds: [],
+        filteredgroupIds:"",
+        limit: 39,
+        groupCount: -1,
+        keywords: "{{'Global' | PageParameter:'Keywords' | ToString }}",
+        meetingDayValues: [{{ selectedMeetingDays | ReplaceLast: ',', '' }}],
+        meetingDayOptions: [
+          { Value: 0, Text: 'Domingo' },
+          { Value: 1, Text: 'Lunes' },
+          { Value: 2, Text: 'Martes' },
+          { Value: 3, Text: 'Miércoles' },
+          { Value: 4, Text: 'Jueves' },
+          { Value: 5, Text: 'Viernes' },
+          { Value: 6, Text: 'Sábado' },
+        ],
+        campusValues: {{ selectedCampuses | ReplaceLast: ',', '' }},
+        campusOptions: {{ campusData | ReplaceLast: ',', '' }},
+
+        categoryValues: {{ selectedCategories | ReplaceLast: ',', '' }},
+        categoryOptions: [
+          { Value: 4820, Text: 'Matrimonios'},
+          { Value: 4821, Text: 'Hombres'},
+          { Value: 4822, Text: 'Solteros'},
+          { Value: 4824, Text: 'Mujeres'},
+          { Value: 4827, Text: 'Recuperación'},
+          { Value: 4828, Text: 'Mixtos'},
+        ],
+        ageRangeValues: {{ selectedAgeRanges | ReplaceLast: ',', '' }},
+        ageRangeOptions: [
+          { Value: 6454, Text: '18-22'},
+          { Value: 6455, Text: '20s & 30s'},
+          { Value: 6456, Text: '30s & 40s'},
+          { Value: 6457, Text: '40s & 50s'},
+          { Value: 6458, Text: '50s & 60s'},
+          { Value: 6459, Text: '60+'},
+          { Value: 6460, Text: 'Multi-Generacional'},
+        ],
+
+        debounceIndex: 0,
+
+        markerScale: 1,
+        allMarkers: [],
+        map: null,
+        bounds: new google.maps.LatLngBounds(),
+        min: .999999,
+        max: 1.000001,
+      }
+    },
+    watch: {
+      bottom(bottom) {
+        if (bottom) {
+          if (this.groupCount > this.groups.length) {
+            this.addGroups();
+          }
+        }
+      }
+    },
+    created() {
+      window.addEventListener('scroll', () => {
+        this.bottom = this.bottomVisible()
+      })
+      this.getGroupCount();
+    },
+    methods: {
+      bottomVisible() {
+        var docViewTop = $(window).scrollTop();
+        var docViewBottom = docViewTop + $(window).height();
+        var elemTop = $('#zone-footer').offset().top;
+        var elemBottom = elemTop + $('#zone-footer').height();
+        return (elemTop <= docViewBottom);
+      },
+      initializeMap() {
+
+        var mapStyle = [
+        {
+          "elementType": "labels.text.stroke",
+          "stylers": [ { "visibility": "off" } ]
+        },
+        {
+          "featureType": "poi",
+          "stylers": [ { "visibility": "off" } ]
+        },
+        {
+          "featureType": "road",
+          "elementType": "geometry",
+          "stylers": [ { "visibility": "simplified" } ]
+        },
+        {
+          "featureType": "water",
+          "stylers": [ { "visibility": "on" }, { "color": "#c6dfec" } ]
+        },
+        {
+          "featureType": "administrative.neighborhood",
+          "elementType": "labels.text.fill",
+          "stylers": [ { "visibility": "off" } ]
+        },
+        {
+          "featureType": "road.local",
+          "elementType": "labels.text",
+          "stylers": [ { "weight": 0.5 }, { "color": "#333333" }
+          ]
+        },
+        {
+          "featureType": "transit.station",
+          "elementType": "labels.icon",
+          "stylers": [ { "visibility": "off" } ]
+        } ]
+
+        // Set default map options
+        var mapOptions = {
+          mapTypeId: 'roadmap'
+          , styles: mapStyle
+          , center: new google.maps.LatLng(32.89759249275533, -96.46578705117611)
+          , maxZoom: 14
+          , minZoom: null
+          , zoom: null
+          , streetViewControl: false
+        };
+
+        // Display a map on the page
+        this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
+        this.map.setTilt(45);
+
+        if (this.groups != null) {
+          for (var i = 0; i < this.groups.length; i++) {
+            var items = this.addMapItem(i, this.groups[i], this.groups[i].Color ? this.groups[i].Color : 'FE7569');
+            for (var j = 0; j < items.length; j++) {
+                items[j].setMap(this.map);
+            }
+          }
+        }
+
+        // adjust any markers that may overlap
+        this.adjustOverlappedMarkers();
+
+        if (!this.bounds.isEmpty()) {
+          if (mapOptions.zoom || mapOptions.zoom === 0) {
+            this.map.setCenter(this.bounds.getCenter());
+          } else {
+            this.map.fitBounds(this.bounds);
+          }
+        }
+
+      },
+      addMapItem(i, mapItem, color) {
+        var contentString = "<h4 class='margin-t-none'>" + mapItem.Name + "</h4>" +
+          "<a class='more-info-Text' href='/page/{{linkedPage.Id}}?Group=" + mapItem.Guid + "' target='_blank'>Más Información</a>";
+
+        var encodedStr = contentString.replace(/[\u00A0-\u9999<>\&]/g, function (i) {
+          return '&#' + i.charCodeAt(0) + ';';
+        });
+
+        var items = [];
+
+        mapItem.MeetingLocations.forEach((value, index) => {
+          if (value.Point) {
+            var position = new google.maps.LatLng(value.Point.Latitude, value.Point.Longitude);
+            this.bounds.extend(position);
+
+            if (!color) {
+              color = '#FE7569';
+            }
+
+            if (color.length > 0 && color.toLowerCase().indexOf('rgb') < 0 && color[0] != '#') {
+              color = '#' + color;
+            }
+
+            var pinImage = {
+              path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+              fillColor: color,
+              fillOpacity: 1,
+              strokeColor: '#000',
+              strokeWeight: 0,
+              scale: this.markerScale,
+              labelOrigin: new google.maps.Point(0, 0),
+              anchor: new google.maps.Point(0, 0),
+            };
+
+            marker = new google.maps.Marker({
+              id: mapItem.Id,
+              position: position,
+              map: this.map,
+              title: this.htmlDecode(mapItem.Name),
+              icon: pinImage,
+              info_window: encodedStr,
+            });
+
+            items.push(marker);
+            this.allMarkers.push(marker);
+
+            google.maps.event.addListener(marker, 'click', (function (marker, i) {
+              return function () {
+                openInfoWindow(marker);
+              }
+            })(marker, i));
+          }
+        });
+        return items;
+      },
+      setAllMap(markers, map) {
+        for (var i = 0; i < markers.length; i++) {
+          markers[i].setMap(map);
+        }
+      },
+      htmlDecode(input) {
+          var e = document.createElement('div');
+          e.innerHTML = input;
+          return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+      },
+      adjustOverlappedMarkers() {
+        if (this.allMarkers.length > 1) {
+          for (i = 0; i < this.allMarkers.length - 1; i++) {
+            var marker1 = this.allMarkers[i];
+            var pos1 = marker1.getPosition();
+            for (j = i + 1; j < this.allMarkers.length; j++) {
+              var marker2 = this.allMarkers[j];
+              var pos2 = marker2.getPosition();
+              if (pos1.equals(pos2)) {
+                var newLat = pos1.lat() * (Math.random() * (this.max - this.min) + this.min);
+                var newLng = pos1.lng() * (Math.random() * (this.max - this.min) + this.min);
+                marker1.setPosition(new google.maps.LatLng(newLat, newLng));
+              }
+            }
+          }
+        }
+      },
+      getGroupCount() {
+        this.groupCount = -1;
+        var url = '/api/com_bemaservices/GroupTools/GetGroupFinderInformationV4?{% if categoryIdParameter > 0 %}groupTypeDefinedValueId={{categoryIdParameter}}&{% endif %}IncludeGroupsWithoutCampus=True&limitByCapacity=true&includePendingMembersInGroupCapacity=True&includeGroupsWithoutCapacity=true&GroupTypeIds={{groupTypeId}}' + this.getFilterParameters();
+        axios.get(url, {
+          headers: {
+            'Authorization-Token': `6FuURHoPOhKk04168thMRtAl`
+          }
+        })
+        .then(response => {
+          var groupFinderInfo = response.data;
+          this.groupCount = groupFinderInfo.TotalCount;
+
+          //this.ageRangeOptions = groupFinderInfo.SecondaryCategoryOptions;
+          this.filteredGroupIds = groupFinderInfo.GroupIdList;
+          this.addGroups();
+        })
+      },
+      addGroups() {
+        let axiosSource = axios.CancelToken.source();
+        this.request = { cancel: axiosSource.cancel };
+        var url = '/api/com_bemaservices/GroupTools/GetGroupsInformationV4?{% if categoryIdParameter > 0 %}groupTypeDefinedValueId={{categoryIdParameter}}&{% endif %}IncludeGroupsWithoutCampus=True&limitByCapacity=true&includePendingMembersInGroupCapacity=True&includeGroupsWithoutCapacity=true&SkipLeaders=True{% if categoryIdParameter != '6502' and categoryIdParameter != '6503' %}&SkipMeetingLocations=True{% endif %}&SkipGroupMemberCount=False&SkipLifeStage=true&RequestedAttributeIds=104125&GroupTypeIds={{groupTypeId}}&Limit=' + this.limit + '&Offset=' + this.groups.length + this.getFilterParameters();
+
+        if (this.filteredGroupIds != "") {
+          url += '&GroupIds=' + this.filteredGroupIds;
+        }
+
+        axios.get(url, {
+          cancelToken: axiosSource.token,
+          headers: {
+            'Authorization-Token': `6FuURHoPOhKk04168thMRtAl`
+          }
+        })
+        .then(response => {
+          response.data.forEach((value, index) => {
+            if (this.groupCount > this.groups.length) {
+              if (!this.groupIds.includes(value.Id)) {
+                this.groupIds.push(value.Id);
+                this.groups.push(value);
+              }
+            }
+            {% if categoryIdParameter == '6502' or categoryIdParameter == '6503' %}
+              this.initializeMap();
+            {% else %}
+              var mapElement = document.getElementById('map');
+              mapElement.style.display = 'none';
+            {% endif %}
+          });
+          if (this.bottomVisible()) {
+            if (this.groupCount > this.groups.length) {
+              this.addGroups();
+            }
+          }
+        })
+      },
+      insertParam(key, value) {
+        if ('URLSearchParams' in window) {
+          var searchParams = new URLSearchParams(window.location.search)
+          searchParams.set(key, value);
+          var newRelativePathQuery = window.location.pathname + '?' + searchParams.toString();
+          history.pushState(null, '', newRelativePathQuery);
+        }
+      },
+      categoryFilterChange(){
+        var categoryIdsString = "";
+        this.categoryValues.forEach(function (categoryValue) {
+          categoryIdsString += categoryValue.Value + ",";
+        });
+
+        if (categoryIdsString != "") {
+          categoryIdsString = categoryIdsString.slice(0, -1);
+        }
+
+        this.insertParam("CategoryIds", categoryIdsString);
+        this.filterChange();
+      },
+      ageRangeFilterChange(){
+        var ageRangeIdsString = "";
+        this.ageRangeValues.forEach(function (ageRangeValue) {
+         ageRangeIdsString += ageRangeValue.Value + ",";
+        });
+
+        if (ageRangeIdsString != "") {
+          ageRangeIdsString = ageRangeIdsString.slice(0, -1);
+        }
+
+        this.insertParam("AgeRanges", ageRangeIdsString);
+        this.filterChange();
+      },
+      ageFilterChange(){
+        this.insertParam("Age", this.age);
+        this.filterChange();
+      },
+      keywordFilterChange(){
+        this.insertParam("Keywords", this.keywords);
+        this.filterChange();
+      },
+      debounceKeywordFilterChange() {
+        this.debounceIndex++;
+        let index = this.debounceIndex;
+
+        setTimeout(() => { if (index == this.debounceIndex) { this.keywordFilterChange(); this.debounceIndex = 0; } }, 500)
+      },
+      campusFilterChange(){
+        var campusIdsString = "";
+        this.campusValues.forEach(function (campusValue) {
+          campusIdsString += campusValue.Id + ",";
+        });
+        if (campusIdsString != "") {
+          campusIdsString = campusIdsString.slice(0, -1);
+        }
+
+        this.insertParam("CampusIds", campusIdsString);
+        this.filterChange();
+      },
+      meetingDayFilterChange(){
+        var meetingDaysString = "";
+        this.meetingDayValues.forEach(function (meetingDayValue) {
+          meetingDaysString += meetingDayValue.Value + ",";
+        });
+
+        if (meetingDaysString != "") {
+          meetingDaysString = meetingDaysString.slice(0, -1);
+        }
+
+        this.insertParam("MeetingDays", meetingDaysString);
+        this.filterChange();
+      },
+      filterChange(){
+        this.cancel();
+        this.groups = [];
+        this.groupIds = [];
+        this.getGroupCount();
+      },
+      cancel() {
+        if (this.request) this.request.cancel();
+      },
+      reset() {
+        this.cancel();
+        this.request = null;
+      },
+      getFilterParameters(){
+        var url = "&secondaryCategoryAttributeKey=AgeRange"
+
+        var campusIdsString = "";
+        this.campusValues.forEach(function (campusValue) {
+          campusIdsString += campusValue.Id + ",";
+        });
+        if (campusIdsString != "") {
+          url += '&CampusIds=' + campusIdsString.slice(0, -1);
+        }
+
+        var meetingDaysString = "";
+        this.meetingDayValues.forEach(function (meetingDayValue) {
+          meetingDaysString += meetingDayValue.Value + ",";
+        });
+        if (meetingDaysString != "") {
+          url += '&MeetingDays=' + meetingDaysString.slice(0, -1);
+        }
+
+        var categoryIdsString = "";
+        this.categoryValues.forEach(function (categoryValue) {
+          categoryIdsString += categoryValue.Value + ",";
+        });
+        if (categoryIdsString != "") {
+          url += '&CategoryIds=' + categoryIdsString.slice(0, -1);
+        }
+
+        var ageRangeIdsString = "";
+        this.ageRangeValues.forEach(function (ageRangeValue) {
+          ageRangeIdsString += ageRangeValue.Value + ",";
+        });
+        if (ageRangeIdsString != "") {
+          url += '&secondaryCategoryFilterIds=' + ageRangeIdsString.slice(0, -1);
+        }
+
+        var keywordString = "";
+        keywordString = this.keywords;
+        if (keywordString != "") {
+          url += '&Keywords=' + keywordString;
+        }
+
+        return url;
+      }
+    }
+  })
+</script>

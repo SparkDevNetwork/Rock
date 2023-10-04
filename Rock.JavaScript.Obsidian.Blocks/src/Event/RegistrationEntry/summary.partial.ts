@@ -30,6 +30,23 @@ import DiscountCodeForm from "./discountCodeForm.partial";
 import Registrar from "./registrar.partial";
 import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { Guid } from "@Obsidian/Types";
+// LPC CODE
+import { useStore } from "@Obsidian/PageState";
+
+const store = useStore();
+
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+// END LPC CODE
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Summary",
@@ -114,16 +131,22 @@ export default defineComponent({
 
         /** The text to be displayed on the "Finish" button */
         finishButtonText(): string {
+            // MODIFIED LPC CODE
+            const lang = getLang(); 
             if (this.registrationEntryState.amountToPayToday) {
-                return this.viewModel.isRedirectGateway ? "Pay" : "Next";
+                return this.viewModel.isRedirectGateway ? (lang === "es" ? "Pagar" : "Pay") : (lang === "es" ? "Siguiente" : "Next");
             }
             else {
-                return "Finish";
+                return lang === "es" ? "Terminar" : "Finish";
             }
+            // END MODIFIED LPC CODE
         }
     },
 
     methods: {
+        // LPC CODE
+        getLang,
+        // END LPC CODE
         /** User clicked the "previous" button */
         onPrevious() {
             this.$emit("previous");
@@ -207,13 +230,19 @@ export default defineComponent({
         <Registrar />
 
         <div v-if="hasPaymentCost">
-            <h4>Payment Summary</h4>
+            <!-- MODIFIED LPC CODE -->
+            <h4 v-if="getLang() == 'es'"> Resumen de pago</h4>
+            <h4 v-else>Payment Summary</h4>
+            <!-- END MODIFIED LPC CODE -->
             <DiscountCodeForm />
             <CostSummary />
         </div>
 
         <div v-if="!hasPaymentCost" class="margin-b-md">
-            <p>The following {{registrantTerm}} will be registered for {{instanceName}}:</p>
+            <!-- MODIFIED LPC CODE -->
+            <p v-if="getLang() == 'es'">La siguiente persona será registrada a {{instanceName}}:</p>
+            <p v-else>The following {{registrantTerm}} will be registered for {{instanceName}}:</p>
+            <!-- END MODIFIED LPC CODE -->
             <ul>
                 <li v-for="r in registrantInfos" :key="r.guid">
                     <strong>{{r.firstName}} {{r.lastName}}</strong>
@@ -225,7 +254,9 @@ export default defineComponent({
 
         <div class="actions text-right">
             <RockButton v-if="viewModel.allowRegistrationUpdates" class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
-                Previous
+                <!-- MODIFIED LPC CODE -->
+                {{ getLang() == 'es' ? 'Anterior' : 'Previous' }}
+                <!-- END MODIFIED LPC CODE -->
             </RockButton>
             <RockButton btnType="primary" type="submit" :isLoading="loading" autoDisable>
                 {{finishButtonText}}

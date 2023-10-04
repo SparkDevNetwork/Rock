@@ -1,0 +1,36 @@
+{%- comment -%} Small Group Label for All Campuses {%- endcomment -%}
+
+{%- comment -%}
+    Zebra 200 DPI Label
+{%- endcomment -%}
+
+{%- comment -%}
+    LABEL HEADER FOR PRINTER
+{%- endcomment -%}
+CT~~CD,~CC^~CT~
+^XA~JSN^LT0^MNW^MTD^PON^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^MMC^PW800^LL0400^LS0
+
+{%- comment -%}
+    Print Name
+{%- endcomment -%}
+^FO7,67^FB786,1,0,C^A0N,100,100^FH\^FD{{ Person.NickName }}^FS
+^FO7,153^FB786,1,0,C^A0N,75,75^FH\^FD{{ Person.LastName }}^FS
+
+{%- comment -%}
+    Print Group Information
+{%- endcomment -%}
+{% assign title = Group.Id | GroupById | Attribute:'EventTitle' %}
+{% if title != '' %}
+    ^FO7,275^FB786,1,0,C^A0N,40,40^FH\^FD{{title}}^FS
+{% endif %}
+
+{% assign room = Group.Id | GroupById | Attribute:'RoomNumber1' %}
+{% if room != '' %}
+    ^FO7,325^FB786,1,0,C^A0N,40,40^FH\^FDRoom {{room}}^FS
+{% endif %}
+
+{%- comment -%}
+    LABEL END FOR PRINTER
+{%- endcomment -%}
+^XZ

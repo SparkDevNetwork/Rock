@@ -1,0 +1,27 @@
+﻿
+
+<div class="row side-by-side">
+	{% for item in Items %}
+	<div class="col-md-12 section">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-6 col-sm-12">
+					<div class="title-section">
+						<h3 class="section-title">{{ item | Attribute:'Subtitle' }}</h3>
+						<h1 class="header-title">{{ item.Title }}</h1>
+					</div>
+					<div class="content-section">
+						<p class="content-text">{{ item | Attribute:'SummaryText' }}</p>
+					</div>
+					<p>
+					  <a class="view-details btn btn-primary" href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}" role="button">View details</a>
+					</p>
+				</div>
+				<div class="col-md-6 col-sm-12">
+					<a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">{{ item | Attribute:'Image' }}</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endfor -%}
+</div>

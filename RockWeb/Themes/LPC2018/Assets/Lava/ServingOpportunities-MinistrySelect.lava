@@ -1,0 +1,149 @@
+{% comment %}
+    Serving Opportunities - Ministry Area Select
+{% endcomment %}
+
+<style>
+    .filter-label
+    {
+        font-size:100%;    
+    }
+
+    .areaItem
+    {
+        height: 200px;
+        max-height:200px;
+        width:100%;
+        text-align:center;
+        display:table;
+        margin-bottom: 15px;  
+
+    }
+    .areaItem.noImg
+    {
+        background-color: #0b1d2d;   
+        margin-bottom:20px; 
+    }
+    .areaItem img
+    {
+        max-height:195px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .areaName
+    {
+        display: table-cell;
+        vertical-align:middle;
+        font-size:16px;
+        color:#fff;
+    }
+    #ministryGrid.no-padding
+    {
+        padding: 0 0 0 0;
+        margin: 0 0 0 0;
+        width: 100%;
+    }
+
+
+</style>
+
+{% assign campusSelectPage = '~/page/2042?SelectCampus=1' | ResolveRockUrl %}
+
+{% if Context.Campus == null %}
+    {% assign userCanEdit = CurrentPerson | HasRightsTo:'Edit' %}
+    
+    {% if userCanEdit %}
+        <p class='alert alert-warning'>
+            <strong>No Campus Selected!</strong> If you could not edit you would have been
+            redirected to <a href="{{ campusSelectPage }}">{{ campusSelectPage }}</a>.</p>
+    {% else %}
+        {{ campusSelectPage | PageRedirect }}
+    {% endif %}
+
+{% else %} 
+    {% capture opportunityPageBaseUrl %} ~/page/2044?CampusId={{ Context.Campus.Id }} {% endcapture %}
+    {% assign opportunityPageBaseUrl = opportunityPageBaseUrl | Trim %}
+
+    {% sql CampusId:'{{Context.Campus.Id}}' return:'areas' %}
+        DECLARE @DefinedTypeGuid UNIQUEIDENTIFIER = 'EDF53115-1066-4767-A808-F19A27A1CDE3'
+        DECLARE @EntityTypeId INT = ( SELECT TOP 1 Id FROM EntityType WHERE Guid = '53D4BF38-C49E-4A52-8B0E-5E016FB9574E' )
+        DECLARE @DefinedTypeId INT = ( SELECT TOP 1 Id FROM DefinedType WHERE GUID = @DefinedTypeGuid )
+        DECLARE @ConnectionTypeAttributeId  INT = ( SELECT TOP 1 Id  FROM Attribute WHERE EntityTypeId = @EntityTypeId AND EntityTypeQualifierColumn = 'DefinedTypeId' AND EntityTypeQualifierValue = @DefinedTypeId and [Key] = 'ConnectionType' ) 
+        DECLARE @ImageAttributeId INT = (SELECT TOP 1 Id FROM Attribute WHERE EntityTypeId = @EntityTypeId AND EntityTypeQualifierColumn = 'DefinedTypeId' and EntityTypeQualifierValue = @DefinedTypeId and [Key] = 'Image' )
+
+        SELECT	
+            dv.Id as AreaId,
+            dv.Value, 
+            ct.Id as ConnectionTypeId,
+            imageAv.Value AS ImageValue,
+            ct.Name as ConnectionTypeName,
+            (
+                SELECT 
+                    COUNT(o.Id) 
+                FROM 
+                    ConnectionOpportunity o 
+                    INNER JOIN ConnectionOpportunityCampus oc on o.Id = oc.ConnectionOpportunityId 
+                WHERE 
+                    oc.CampusId = @CampusId 
+                    and o.ConnectionTypeId = ct.Id 
+            ) AS OpportunityCount
+        FROM 
+            DefinedValue dv 
+            INNER JOIN AttributeValue av on dv.Id = av.EntityId and av.AttributeId = @ConnectionTypeAttributeId and av.Value <> '' 
+            LEFT OUTER JOIN AttributeValue imageAv on dv.Id = imageAv.EntityId and imageAv.AttributeId = @ImageAttributeId and av.Value <> '' 
+            INNER JOIN ConnectionType ct on av.Value = ct.Guid
+        WHERE
+            dv.DefinedTypeId = @DefinedTypeId
+            and dv.IsActive = 1
+            and ct.IsActive = 1
+            and 
+                (
+                    SELECT 
+                        COUNT(o.Id) 
+                    FROM 
+                        ConnectionOpportunity o 
+                        INNER JOIN ConnectionOpportunityCampus oc on o.Id = oc.ConnectionOpportunityId 
+                    WHERE 
+                        oc.CampusId = @CampusId 
+                        and o.ConnectionTypeId = ct.Id
+                ) > 0
+        ORDER BY 
+            dv.[Order], 
+            dv.Value
+    {% endsql %}
+    
+    {% capture browserTitle %}{{'Global' | Page:'Title' }} - {{ Context.Campus.Name | Replace:'Campus','' | Trim }}{% endcapture %}
+    {{ browserTitle |  SetPageTitle:'BrowserTitle' }}
+
+    <div id="MinistryAreas">
+        <h3 style='text-align:center;'>Select your ministry area of interest</h3>
+        <div class="row">
+            <div class="col-md-12">
+                <label class="control-label filter-label">Campus:</label> <span class='label label-default filter-label'>{{ Context.Campus.Name }}</span>
+                <small><a href="{{ campusSelectPage }}">Change</a></small>
+            </div>
+        </div>
+        <div id="ministryGrid" class="container no-padding">
+            <div class="row">
+                {% for area in areas %}
+                    <div class="col-md-4">
+                        {% assign opportunityUrl = opportunityPageBaseUrl | Append:'&AreaId=' | Append: area.AreaId %}
+                        <a href="{{opportunityUrl | ResolveRockUrl }}">
+                        {% if area.ImageValue == null or area.ImageValue == '' %}
+                            <div class="areaItem noImg">
+                                <h3 class="areaName">{{ area.Value }}</h3>
+                            </div>
+                        {% else %}
+                            <div class="areaItem">
+                                {% capture imageUrl %}~/GetImage.ashx?guid={{ area.ImageValue }}{% endcapture %}                   
+                                <img src='{{ imageUrl }}' alt='{{ area.Value }}' class='img-responsive' /> 
+                            </div>
+                        {% endif %}
+                            
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+{% endif %}

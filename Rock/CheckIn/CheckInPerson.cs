@@ -126,6 +126,27 @@ namespace Rock.CheckIn
         [DataMember]
         public List<CheckInSchedule> PossibleSchedules { get; set; }
 
+        // LPC CODE SNS 20230721
+
+        // The limitation of PossibleSchedules (above) and SelectedSchedules (below) is that it is a list
+        // of schedules shared among the family, so if any family member selects a schedule, it will be selected
+        // for every family member for whom that is a "possible" schedule. That doesn't work with our concept
+        // of family check-in where different members of the family might be checking into different schedules.
+        // So here we create a separate list of schedules this specific person has selected.
+
+        /// <summary>
+        /// Gets a list of schedules this specific person has specifically selected. (Note that all of these
+        /// schedules should have the selected flag set, but all PossibleSchedules that have the selected flag
+        /// (as returned by SelectedSchedules) may not have been specifically selected for _this_ person.)
+        /// </summary>
+        /// <value>
+        /// The schedules selected for this person.
+        /// </value>
+        [DataMember]
+        public List<CheckInSchedule> PersonSelectedSchedules { get; set; }
+
+        // END LPC CODE
+
         /// <summary>
         /// Gets or sets state parameters which can be used by workflow actions to track state of current person's check-in
         /// </summary>

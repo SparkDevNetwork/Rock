@@ -15,6 +15,9 @@
 // </copyright>
 
 using System;
+// LPC CODE
+using System.Collections.Generic;
+// END LPC CODE
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -184,7 +187,46 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void ShowPersonImage()
         {
-            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400 )}&Style=icon"" alt class=""img-profile"">";
+            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-profile"">";
+
+            // LPC CODE
+            TaggedItemService taggedItemService = new TaggedItemService( new RockContext() );
+            List<TaggedItem> taggedItems = taggedItemService
+                .Queryable()
+                .Where( t => ( t.TagId == 1 || t.TagId == 256 ) && t.EntityGuid == Person.Guid )
+                .ToList();
+
+            string color = "";
+            string icon = "";
+            string fontSize = "";
+
+            foreach ( var taggedItem in taggedItems )
+            {
+                if ( taggedItem.TagId == 1 && icon == "" )
+                {
+                    // Staff
+                    color = "#008000";
+                    icon = "fa-id-badge";
+                    fontSize = "1.5rem";
+                }
+                else if ( taggedItem.TagId == 256 )
+                {
+                    // Security Alert
+                    color = "#ad0000";
+                    icon = "fa-exclamation-triangle";
+                    fontSize = "1.3rem";
+                }
+            }
+            if ( icon != "" )
+            {
+                litPersonAlerts.Text = $@"
+                    <div style=""z-index: 1011; position: relative; padding: 0.5rem; background: linear-gradient(225deg, {color} 0%, {color} 50%, transparent 50%, transparent 100%); width: 4rem; height: 4rem; margin-left: auto; pointer-events: none; text-align: right; margin-top: 3px;"">
+                        <i class=""fas {icon}"" 
+                        style=""z-index: 1012; font-size: {fontSize}; color: white;""></i>
+                    </div>
+                    ";
+            }
+            // END LPC CODE
         }
 
         private string GetPersonName()

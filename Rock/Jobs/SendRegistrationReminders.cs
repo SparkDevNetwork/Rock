@@ -98,6 +98,19 @@ namespace Rock.Jobs
                             emailMessage.AppRoot = publicAppRoot;
                             emailMessage.Message = template.ReminderEmailTemplate;
 
+                            // LPC CODE
+                            registration.PersonAlias.Person.LoadAttributes();
+                            string lang = registration.PersonAlias.Person.GetAttributeTextValue( "PreferredLanguage" );
+                            if ( lang == "Spanish" || lang == "Español" )
+                            {
+                                emailMessage.Message += "<style>.EnglishText { display: none !important; }</style>";
+                            }
+                            else
+                            {
+                                emailMessage.Message += "<style>.SpanishText { display: none !important; }</style>";
+                            }
+                            // END LPC CODE
+
                             var emailErrors = new List<string>();
                             emailMessage.Send( out emailErrors );
                             errors.AddRange( emailErrors );

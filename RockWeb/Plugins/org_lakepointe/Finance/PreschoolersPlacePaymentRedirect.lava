@@ -1,0 +1,81 @@
+{% comment %}
+    Preschooler's place landing page for payemnt scheduling
+{% endcomment %}
+
+{% sql instanceId:'2733' personId:'{{ CurrentPerson.Id }}'%}
+    SELECT r.Id
+    FROM Registration r
+    INNER JOIN PersonAlias pa on r.PersonAliasId = pa.Id
+    WHERE r.RegistrationInstanceId = @instanceId
+        AND pa.PersonId = @personid
+{% endsql %}
+
+{% assign registrationCount = results | Size %}
+{% assign today = 'Now' | Date:'MM/dd/yyyy' | AsDateTime %}
+{% assign sept1 = '7/1/2023' | Date:'MM/dd/yyyy' |  AsDateTime %}
+
+{% capture paymentDate %}{% if today < sept1 %}&paymentDate={{ '9/1/2023' | UrlEncode }}{% endif %}{% endcapture %}
+
+{% if registrationCount == 0 %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="alert alert-warning">
+                <strong>Can not find registration</strong><br />
+                <p>We are not able to find your Preschooler's Place registration.  Please contact Lori Ham at (469) 698-2300 or
+                    lorih@lakepointe.church for assistance.</p>
+            </div>
+        </div>
+    </div>
+{% elseif registrationCount == 1 %}
+    {% assign item = results | First %}
+    {% assign registrationId = item.Id %}
+    {% capture redirectUrl %}{{'Global' | Attribute:'PublicApplicationRoot' }}ScheduleEventPayments?RegistrationId={{ item.Id }}{{paymentDate}}{% endcapture %}
+
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-warning">If you could not edit you would be redirected to: <a href="{{ redirectUrl }}">{{ redirectUrl }}/a>.</p>
+    {% else %}
+        {{ redirectUrl | PageRedirect }}
+    {% endif %}
+{% else %}
+    <div class="row">
+        <div class="col-xs-12">
+            <p>Please select a registration below to setup recurring payments.</p>
+            <div class="row" >
+                <div class="col-md-1 col-xs-2">
+                    &nbsp;
+                </div>
+                <div class="col-md-3 col-xs-5">
+                    <strong>Date Registered</strong>
+                </div>
+                <div class="col-md-3 col-xs-5">
+                    <strong>Registrants</strong>
+                </div>
+            </div>
+            {% for item in results %}
+                <div class="row" style="padding-bottom:5px;padding-top:5px;">
+                    <div class="col-md-1 col-xs-2">
+                        <span style="text-align:center;">
+                            {% capture redirectUrl %}{{'Global' | Attribute:'PublicApplicationRoot' }}ScheduleEventPayments?RegistrationId={{ item.Id }}{{paymentDate}}{% endcapture %}
+                            <a href="{{redirectUrl}}" class="btn btn-default"><i class="fa fa-angle-right"></i></a>
+                        </span>
+                    </div>
+                    {% registration id:'{{item.Id}}' %}
+                    <div class="col-md-3 col-xs-5">
+                        {{ registration.CreatedDateTime | Date:'M/d/yyyy h:mm tt'}}
+                    </div>
+                    <div class="col-md-3 col-xs-5">
+                        {% capture registrantList %}
+                            {% for registrant in registration.Registrants %}
+                                {{ registrant.Person.FullName }}<br />
+                            {% endfor%}
+                        {% endcapture %}
+                        {{ registrantList | ReplaceLast:'<br />','' | Trim }}
+                    </div>
+                    {% endregistration %}
+                </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+{% endif %}

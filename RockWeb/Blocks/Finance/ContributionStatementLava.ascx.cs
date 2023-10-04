@@ -321,7 +321,9 @@ namespace RockWeb.Blocks.Finance
                                         m => m.PersonId,
                                         ( p, m ) => new { p, m } )
                                     .SelectMany( x => x.m.DefaultIfEmpty(), ( y, z ) => new { Person = y.p, GroupMember = z } )
-                                    .Select( p => new { FirstName = p.Person.NickName, LastName = p.Person.LastName, FamilyRoleOrder = p.GroupMember.GroupRole.Order, Gender = p.Person.Gender, PersonId = p.Person.Id } )
+                                    // LPC MODIFIED - Contribution Statements need a legal name, not a nickname
+                                    .Select( p => new { FirstName = p.Person.FirstName, LastName = p.Person.LastName, FamilyRoleOrder = p.GroupMember.GroupRole.Order, Gender = p.Person.Gender, PersonId = p.Person.Id } )
+                                    // END LPC MODIFIED
                                     .DistinctBy( p => p.PersonId )
                                     .OrderBy( p => p.FamilyRoleOrder ).ThenBy( p => p.Gender )
                                     .ToList();

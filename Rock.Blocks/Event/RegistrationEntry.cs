@@ -35,6 +35,9 @@ using Rock.Model;
 using Rock.Pdf;
 using Rock.Security;
 using Rock.Tasks;
+// LPC CODE
+using Rock.Transactions;
+// END LPC CODE
 using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
@@ -225,6 +228,8 @@ namespace Rock.Blocks.Event
 
                         if ( discount == null || ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value ) )
                         {
+                            // Empty discount so that the last discount code won't be tried by default
+                            discount = null;
                             continue;
                         }
 
@@ -250,14 +255,20 @@ namespace Rock.Blocks.Event
                         DiscountCode = registration.DiscountCode,
                         UsagesRemaining = (int?) null,
                         DiscountAmount = registration.DiscountAmount,
-                        DiscountPercentage = registration.DiscountPercentage
+                        DiscountPercentage = registration.DiscountPercentage,
+                        DiscountMaxRegistrants = registration.Registrants?.Where( r => r.DiscountApplies == true ).Count()
                     } );
                 }
 
-                if ( discount == null )
+                if ( discount == null || discount.UsagesRemaining < 1 )
                 {
                     // The code is not found
                     return ActionNotFound();
+                }
+
+                if ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value )
+                {
+                    return ActionForbidden( $"The discount requires a minimum of {discount.RegistrationTemplateDiscount.MinRegistrants.Value} registrants" );
                 }
 
                 return ActionOk( new
@@ -265,7 +276,8 @@ namespace Rock.Blocks.Event
                     DiscountCode = discount.RegistrationTemplateDiscount.Code,
                     UsagesRemaining = discount.UsagesRemaining,
                     DiscountAmount = discount.RegistrationTemplateDiscount.DiscountAmount,
-                    DiscountPercentage = discount.RegistrationTemplateDiscount.DiscountPercentage
+                    DiscountPercentage = discount.RegistrationTemplateDiscount.DiscountPercentage,
+                    DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants
                 } );
             }
         }
@@ -326,6 +338,72 @@ namespace Rock.Blocks.Event
                 return ActionOk( redirectUrl );
             }
         }
+
+        // LPC CODE
+        /// <summary>
+        /// Gets the person's mobile phone number.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns>The person's mobile phone number.</returns>
+        [BlockAction]
+        public BlockActionResult GetMobilePhone( RegistrationEntryBlockArgs args )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var context = GetContext( rockContext, args, out var errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    return ActionBadRequest( errorMessage );
+                }
+
+                var personService = new PersonService( rockContext );
+                var currentPerson = personService.GetCurrentPerson();
+
+                if ( currentPerson == null )
+                {
+                    return ActionBadRequest( "The current person was null" );
+                }
+
+                PhoneNumber phoneNumber = currentPerson.GetPhoneNumber( new Guid( "407E7E45-7B2E-4FCD-9605-ECB1339F2453" ) );
+                string phoneNumberString = phoneNumber == null ? string.Empty : phoneNumber.ToString();
+
+                return ActionOk( phoneNumberString );
+            }
+        }
+
+        /// <summary>
+        /// Gets the person's preferred language.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns>The person's preferred language.</returns>
+        [BlockAction]
+        public BlockActionResult GetPreferredLanguage( RegistrationEntryBlockArgs args )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var context = GetContext( rockContext, args, out var errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    return ActionBadRequest( errorMessage );
+                }
+
+                var personService = new PersonService( rockContext );
+                var currentPerson = personService.GetCurrentPerson();
+
+                if ( currentPerson == null )
+                {
+                    return ActionBadRequest( "The current person was null" );
+                }
+
+                currentPerson.LoadAttributes();
+                var preferredLanguageText = currentPerson.GetAttributeTextValue( "PreferredLanguage" );
+
+                return ActionOk( preferredLanguageText );
+            }
+        }
+        // END LPC CODE
 
         /// <summary>
         /// Persists the session.
@@ -807,10 +885,15 @@ namespace Rock.Blocks.Event
                 multipleFamilyGroupIds.AddOrReplace( currentPerson.PrimaryFamily.Guid, currentPerson.PrimaryFamily.Id );
             }
 
+            // LPC CODE
+            Person person = null;
+            // END LPC CODE
             if ( !context.Registration.PersonAliasId.HasValue )
             {
                 // If a match was not found, create a new person
-                var person = new Person
+                // LPC MODIFIED CODE
+                person = new Person
+                // END LPC MODIFIED CODE
                 {
                     FirstName = context.Registration.FirstName,
                     LastName = context.Registration.LastName,
@@ -848,6 +931,9 @@ namespace Rock.Blocks.Event
             }
             else
             {
+                // LPC MODIFIED CODE
+                person = new PersonAliasService( rockContext ).GetPerson( context.Registration.PersonAliasId.Value );
+                // END LPC MODIFIED CODE
                 if ( context.Registration.ConfirmationEmail.IsNotNullOrWhiteSpace() )
                 {
                     var isEmailDifferent = !context.Registration.ConfirmationEmail.Trim().Equals( registrar.Email.Trim(), StringComparison.OrdinalIgnoreCase );
@@ -858,7 +944,7 @@ namespace Rock.Blocks.Event
                     // requested it be updated or it is forced by the block settings.
                     if ( isEmailDifferent && ( forceEmailUpdate || args.Registrar.UpdateEmail ) )
                     {
-                        var person = new PersonAliasService( rockContext ).GetPerson( context.Registration.PersonAliasId.Value );
+                        // LPC MODIFIED CODE - Moved this line to just inside the else ^
 
                         if ( person != null )
                         {
@@ -868,6 +954,56 @@ namespace Rock.Blocks.Event
                     }
                 }
             }
+
+            // LPC CODE
+            PhoneNumber currentPhone = person.GetPhoneNumber( new Guid( "407E7E45-7B2E-4FCD-9605-ECB1339F2453" ) );
+            string currentPhoneString = currentPhone != null ? currentPhone.ToString() : null;
+
+            // Only update phone number if the new phone is not empty and the new phone is not the same as the current phone
+            if ( args.Registrar.MobilePhone != null && args.Registrar.MobilePhone != ""
+                && currentPhoneString != args.Registrar.MobilePhone )
+            {
+                person.UpdatePhoneNumber( 12, "", args.Registrar.MobilePhone, true, null, rockContext );
+            }
+
+            person.LoadAttributes();
+            if ( args.Registrar.PreferredLanguage == "English" )
+            {
+                DefinedValueService definedValueService = new DefinedValueService( rockContext );
+                List<DefinedValue> definedValues = definedValueService.ExecuteQuery( @"SELECT dv.*
+    FROM [dbo].[Attribute] a
+    JOIN [dbo].[AttributeQualifier] aq on aq.[AttributeId] = a.[Id]
+    JOIN [dbo].[DefinedValue] dv on dv.[DefinedTypeId] = aq.[Value]
+    WHERE a.[Key] = 'PreferredLanguage'
+    and aq.[Key] = 'definedtype'
+     and ISNUMERIC(aq.[Value]) = 1
+    and dv.[Value] = 'English'" ).ToList();
+
+                if ( definedValues.Count() > 0 )
+                {
+                    person.SetAttributeValue( "PreferredLanguage", definedValues.First().Guid );
+                    person.SaveAttributeValues( rockContext );
+                }
+            }
+            else if ( args.Registrar.PreferredLanguage == "Spanish" )
+            {
+                DefinedValueService definedValueService = new DefinedValueService( rockContext );
+                List<DefinedValue> definedValues = definedValueService.ExecuteQuery( @"SELECT dv.*
+    FROM [dbo].[Attribute] a
+    JOIN [dbo].[AttributeQualifier] aq on aq.[AttributeId] = a.[Id]
+    JOIN [dbo].[DefinedValue] dv on dv.[DefinedTypeId] = aq.[Value]
+    WHERE a.[Key] = 'PreferredLanguage'
+    and aq.[Key] = 'definedtype'
+     and ISNUMERIC(aq.[Value]) = 1
+    and dv.[Value] = 'Spanish'" ).ToList();
+
+                if ( definedValues.Count() > 0 )
+                {
+                    person.SetAttributeValue( "PreferredLanguage", definedValues.First().Guid );
+                    person.SaveAttributeValues( rockContext );
+                }
+            }
+            // END LPC CODE
 
             // Determine the campus
             var registrarFamily = registrar.GetFamily( rockContext );
@@ -2044,11 +2180,11 @@ namespace Rock.Blocks.Event
                 registrant.Guid = registrantInfo.Guid;
                 registrantService.Add( registrant );
                 registrant.RegistrationId = context.Registration.Id;
+                registrant.Cost = context.RegistrationSettings.PerRegistrantCost;
             }
 
             registrant.OnWaitList = isWaitlist;
             registrant.PersonAliasId = person.PrimaryAliasId;
-            registrant.Cost = context.RegistrationSettings.PerRegistrantCost;
 
             // Check if discount applies
             var maxRegistrants = context.Discount?.RegistrationTemplateDiscount.MaxRegistrants;
@@ -2230,6 +2366,50 @@ namespace Rock.Blocks.Event
             // Clear this registrant's family guid so it's not updated again
             registrantInfo.FamilyGuid = Guid.Empty;
             registrantInfo.PersonGuid = person.Guid;
+
+            // LPC CODE
+            // Create an interaction for the registrant
+            string utm_source = PageParameter( "utm_source" );
+            string utm_medium = PageParameter( "utm_medium" );
+            string utm_campaign = PageParameter( "utm_campaign" );
+            string utm_content = PageParameter( "utm_content" );
+            string utm_term = PageParameter( "utm_term" );
+
+            int? systemEventsMediumId = new DefinedValueService( rockContext ).GetId(
+                SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_SYSTEM_EVENTS.AsGuid() );
+
+            var entityTypeService = new EntityTypeService( rockContext );
+            int? registrationInstanceEntityTypeId = entityTypeService.GetId( SystemGuid.EntityType.REGISTRATION_INSTANCE.AsGuid() );
+            int? registrationEntityTypeId = entityTypeService.GetId( SystemGuid.EntityType.REGISTRATION.AsGuid() );
+            int? registrationRegistrantEntityTypeId = entityTypeService.GetId( SystemGuid.EntityType.REGISTRATION_REGISTRANT.AsGuid() );
+
+            var info = new InteractionTransactionInfo
+            {
+                ChannelTypeMediumValueId = systemEventsMediumId,
+                ChannelName = "Registrations",
+                ComponentEntityTypeId = registrationInstanceEntityTypeId,
+                InteractionEntityTypeId = registrationRegistrantEntityTypeId,
+
+                ComponentEntityId = context.Registration.RegistrationInstanceId,
+                ComponentName = context.Registration.RegistrationInstance.Name,
+
+                InteractionEntityId = registrant.Id,
+                InteractionOperation = "Registered",
+                InteractionSummary = $"Registered for: {context.Registration.RegistrationInstance.Name}",
+                InteractionData = null,
+                InteractionRelatedEntityTypeId = registrationEntityTypeId,
+                InteractionRelatedEntityId = context.Registration.Id,
+                PersonAliasId = registrant.PersonAliasId,
+                InteractionSource = string.IsNullOrEmpty( utm_source ) ? null : utm_source,
+                InteractionMedium = string.IsNullOrEmpty( utm_medium ) ? null : utm_medium,
+                InteractionCampaign = string.IsNullOrEmpty( utm_campaign ) ? null : utm_campaign,
+                InteractionContent = string.IsNullOrEmpty( utm_content ) ? null : utm_content,
+                InteractionTerm = string.IsNullOrEmpty( utm_term ) ? null : utm_term
+            };
+
+            var interactionTransaction = new InteractionTransaction( info );
+            interactionTransaction.Enqueue();
+            // END LPC CODE
         }
 
         /// <summary>
@@ -3633,10 +3813,33 @@ namespace Rock.Blocks.Event
 
             AddRegistrantsToGroup( rockContext, settings, registration, args );
 
+            // LPC CODE
+            // Set the email's language
+            string lang = "en";
+            if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
+            {
+                registration.PersonAlias.Person.LoadAttributes();
+                Guid preferredLanguage = registration.PersonAlias.Person.GetAttributeValue( "PreferredLanguage" ).AsGuid();
+
+                // Get attribute value from guid
+                if ( preferredLanguage != Guid.Empty )
+                {
+                    string value = new DefinedValueService( rockContext ).Get( preferredLanguage ).Value;
+                    if ( value == "Spanish" )
+                    {
+                        lang = "es";
+                    }
+                }
+            }
+            // END LPC CODE
+
             // Send/Resend a confirmation
             var processSendRegistrationConfirmationMsg = new ProcessSendRegistrationConfirmation.Message()
             {
-                RegistrationId = registration.Id
+                // MODIFIED LPC CODE
+                RegistrationId = registration.Id,
+                Language = lang
+                // END MODIFIED LPC CODE
             };
 
             processSendRegistrationConfirmationMsg.Send();

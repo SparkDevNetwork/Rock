@@ -177,7 +177,9 @@ namespace Rock.Utility
             }
 
             var service = new AttributeValueService( ( RockContext ) serviceInstance.Context );
-            var attributeValues = service.Queryable();
+
+            var attributeValues = service.Queryable().Where( v =>
+                v.EntityId.HasValue );
 
             AttributeCache attributeCache = null;
 
@@ -254,7 +256,7 @@ namespace Rock.Utility
                 return new NoAttributeFilterExpression();
             }
 
-            IQueryable<int> ids = attributeValues.Select( v => v.EntityId ?? 0 );
+            IQueryable<int> ids = attributeValues.Select( v => v.EntityId.Value );
 
             MemberExpression propertyExpression = Expression.Property( parameterExpression, "Id" );
             ConstantExpression idsExpression = Expression.Constant( ids.AsQueryable(), typeof( IQueryable<int> ) );

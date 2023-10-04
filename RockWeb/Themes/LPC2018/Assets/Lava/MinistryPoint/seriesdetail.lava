@@ -1,0 +1,45 @@
+{% comment %}
+  Series Detail Page
+{% endcomment%}
+
+
+{% capture ministryPointSeriesList%}/MinistryPointSeries{% endcapture %}
+<div class="row breadcrumbs">
+  <div class="col-xs-12">
+    <a href="{{ministryPointSeriesList}}">Ministry Point Series List</a> &gt;
+    {{Item.Title}}
+  </div>
+</div>
+
+<h1 style="text-align:center;">{{ Item.Title }}</h1>
+<div class="row">
+  <div class="col-sm-6" style="text-align:center;">
+      {% assign fileGuid = Item | Attribute:'SeriesGraphic','RawValue' %}
+      {%capture imageUrl %}/GetImage.ashx?Guid={{fileGuid}}&height=250{% endcapture %}
+      <img src="{{ imageUrl }}" alt="{{ item.Title }}" class="img-responsive" />
+  </div>
+  <div class="col-sm-6">
+    {{ Item.Content }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+    <h2>Lessons:</h2>
+    {% assign childItemCount = Item.ChildItems | Size %}
+    {% if childItemCount == 0 %}
+      <div class="alert alert-info">
+        <strong>No Lessons Found</strong>
+      </div>
+    {% else %}
+      {% assign childItems = Item.ChildItems | OrderBy:'ChildContentChannelItem.Priority' %}
+      {% for ci in childItems %}
+        <h3>{{ ci.ChildContentChannelItem.Title }}</h3>
+          <div style="margin-left:25px;">
+            {{ ci.ChildContentChannelItem.Summary }}
+            <a href="/MinistryPointLesson/{{ci.ChildContentChannelItem.Id}}" class="btn btn-primary">View Lesson</a>
+          </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+

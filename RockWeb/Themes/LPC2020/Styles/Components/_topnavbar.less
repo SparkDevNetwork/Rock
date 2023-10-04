@@ -1,0 +1,538 @@
+//
+///This is for the navbar at the top of the page
+//
+	
+/*Common styles to header nav area for all screen sizes*/
+
+#navTransparency {
+	box-shadow: 0px 3px 12px -6px #0000004d;
+}
+
+.navbar-default {
+	font-weight: 500;
+	line-height: 23px;
+	background-color: @nav-bg;
+	border: 0;
+	margin-bottom: 0;
+	margin-bottom: 0;
+	height: 75px;
+	
+	.container-fluid {
+		text-align: left;
+		position: relative;
+		padding: 0;
+		padding-right: 30px;
+		padding-left: 30px;
+		min-height: 75px;
+		max-width: 1080px;
+		position: relative;
+		width: 85%;
+		max-width: 1450px;
+		margin: auto;
+		@media (max-width: @screen-sm) {
+			width: 100%;
+		}
+
+		& > .navbar-header, & > .navbar-collapse {
+			margin: 0;
+		}
+	}
+	.navbar-collapse {
+		transition: 0s ease-in-out 0s;
+	}
+	
+	.navbar-header {
+		height: 100%;
+		width: 100%;
+	}
+
+	.navbar-brand {
+		padding: 0;
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		-webkit-transition: all .4s ease-in-out;
+		-moz-transition: all .4s ease-in-out;
+		transition: all .4s ease-in-out;
+		.logo_helper {
+		    display: inline-block;
+			width: 0;
+			height: 100%;
+			vertical-align: middle;
+		}
+		a img {
+			display: inline-block;
+			float: none;
+			margin-bottom: 0;
+			margin-left: -1px;
+			max-height: 53.25%;
+			transform: translate3d(0px, 0px, 0px);
+			vertical-align: middle;
+			max-width: 100%;
+			height: auto;
+			margin-top:-1px;
+		}
+	}
+}
+
+
+/*This is the styling for the hamburger menus in SMALL/MOBILE view state*/ 
+
+.navbar {
+	.navbar-toggle {
+		border-radius: @border-radius-base;
+		border: 0;
+		.transition(padding 0.1s);
+		padding: 0.25rem;
+		text-align: left;
+		position: relative;
+		margin: 0 auto;
+		margin-top: 24px;
+		min-height: 30px;
+		z-index: 9999;
+		background-color: transparent;
+		margin-right: 2px;
+		display: inline;
+
+		&:hover, &:focus {
+			background-color: transparent;
+		}
+
+		.icon {
+			right: 0;
+			top: 10px;
+			display: inline;
+		}
+
+		.icon-bar {
+			width: 22px;
+			.transition(all 0.2s);
+			background-color: @theme-1;
+		}
+
+		&.collapsed .icon-bar {
+			background-color: @navbar-default-toggle-icon-bar-bg;
+		}
+
+		.top-bar {
+			.transform(translate(3px)rotate(45deg));
+			.transform-origin(10% 10%);
+		}
+
+		.middle-bar {
+			opacity: 0;
+		}
+
+		.bottom-bar {
+			.transform(translate(3px)rotate(-45deg));
+			.transform-origin(10% 90%);
+		}
+
+		&.collapsed {
+			.top-bar {
+				.transform(rotate(0));
+			}
+
+			.middle-bar {
+				opacity: 1;
+			}
+
+			.bottom-bar {
+				.transform(rotate(0));
+			}
+		}
+	}
+}
+
+.top-nav-container .nav-option {
+	display: inline-block;
+    padding-top: 24px;
+    padding-bottom: 24px;
+	.btn-primary {
+		padding: 15px 26px;
+		color: @theme-2-text;
+		&:hover, &:focus {
+			background-color: darken(@btn-primary-bg, 10%);
+			border-color: darken(@btn-primary-border, 10%);
+			color: @theme-2-text;
+		}
+	}
+	.social-icons .btn-primary {
+		display: inline-block;
+		color: @theme-2-text !important;
+		padding: 4px;
+		width: 32px;
+		height: 32px;
+		font-size: 16px;
+		&:hover, &:focus {
+			background-color: darken(@btn-primary-bg, 10%);
+			border-color: darken(@btn-primary-border, 10%);
+		}
+	}
+	.dropdown-link {
+		margin-top: -4px;
+		.dropdown-arrow {
+			color: @theme-1;
+			font-size: 18px;
+			padding-left: 8px;
+		}
+	}
+	.dropdown-arrow-up {
+		display: none;
+	}
+	.ministries-link {
+		.link-heading {
+			font-weight: 600 !important;
+			font-size: 15px !important;
+			margin-bottom: 8px;
+		}
+		.link-sub-heading {
+			margin-bottom: 4px;
+		}
+	}
+	.panel {
+		height: max-content;
+		width: max-content;
+		position: absolute;
+		right: 8px;
+		top: 56px;
+		display: none;
+		border-radius: @border-radius-base;
+		.row {
+			margin: 0;
+			.panel-section {
+				padding: 20px 10px;
+				&.church-online-section {
+					height: 400px;
+					width: 267px;
+				}
+				&.locations-section {
+					height: 400px;
+					width: 533px;
+				}
+				&.next-step-section, &.ministries-section {
+					height: 517px;
+					width: 388px;
+				}
+				h4 {
+					margin: 4px 0;
+					font-size: 15px;
+					font-weight: bold;
+				}
+				hr {
+					margin-top: 0;
+				}
+				p {
+					font-size: 13px;
+					font-weight: 300;
+					line-height: 1;
+				}
+				a {
+					line-height: 1.5;
+					color: @theme-1;
+					p {
+						text-transform: none;
+					}
+				}
+				ul {
+					padding: 0 0 12px 0;
+					li {
+						padding-bottom: 12px;
+						a {
+							strong {
+								text-transform: none;
+							}
+							&:hover i, &:focus i {
+								color: @theme-1;
+							}
+						}
+					}
+				}
+				.icon-list {
+					i {
+						font-size: 22px;
+						width: 20px;
+						padding-right: 44px;
+						&.fa-laptop {
+							font-size: 18px;
+						}
+					}
+				}
+				.locations-header {
+					padding-left: 16px;
+					width: 50%;
+				}
+				.ministries-header {
+					padding-left: 16px;
+				}
+				.campus-row {
+					padding-bottom: 28px;
+					.campus {
+						h5 {
+							margin: 0;
+						}
+						p {
+							margin: 0;
+							padding-bottom: 6px;
+							color: @theme-3-text;
+							text-transform: none;
+						}
+						em {
+							font-style: normal;
+							font-size: 11px;
+						}
+					}
+				}
+			}
+			.panel-section:first-of-type {
+				padding-left: 20px;
+				background-color: @theme-2;
+				color: @theme-2-text;
+				border-top-left-radius: @border-radius-base;
+				border-bottom-left-radius: @border-radius-base;
+				h4 {
+					color: @theme-2-text;
+				}
+				hr {
+					border-color: @theme-2-text;
+				}
+				ul.icon-list li a {
+					color: @theme-2-text !important;
+				}
+				a p {
+					color: @theme-2-text;
+				}
+			}
+			.panel-section:last-of-type {
+				padding-right: 20px;
+				border-top-right-radius: @border-radius-base;
+				border-bottom-right-radius: @border-radius-base;
+				hr {
+					border-color: @theme-3-text;
+				}
+				ul.icon-list li a {
+					color: @theme-3-text !important;
+				}
+				a p {
+					color: @theme-3-text;
+				}
+			}
+		}
+	}
+	&:hover, &:focus, &:focus-within {
+		.panel {
+			display: block;
+		}
+		.dropdown-arrow-up {
+			display: inline-block;
+		}
+		.dropdown-arrow-down {
+			display: none;
+		}
+	}
+}
+
+/*Style specific to flyout menu in SMALL/MOBILE view*/
+@media (max-width: @grid-float-breakpoint) {
+	.navbar-default {
+		.container-fluid {
+			position: unset;
+			padding-right:8px;
+			width: unset;
+			padding-left: 30px;
+			padding-right: 30px;
+			margin: 0;
+		}
+		.navbar-collapse {
+			top: 0;
+			right: 0;
+			bottom: 0;
+			border-top: none;
+			z-index: 9998;	
+			transform-origin: right;
+			transform: rotateY(90deg);
+			transition: .8s ease-in-out;
+			position: fixed;
+			width:340px;
+			min-height: 100vh;
+			padding-top: 45px !important;
+			padding-right: 0px !important;
+			padding-bottom: 20px !important;
+			padding-left: 0px !important;
+			display: block;
+			visibility: hidden;
+			overflow: hidden;
+			background: @nav-bg;
+			.top-nav-container {
+				padding-left:35px !important;
+				padding-right:35px !important;
+			}
+			.header-social {
+				margin: 0;
+				.lp_social_media_follow {
+					margin: 19.5px 0;
+					float: none;
+					justify-content: center;
+					.lp-social-icon {
+						transition:none;
+						padding:7px;
+						width:16px;
+						height:16px;
+						transform:unset;
+					}
+				}
+			}
+			.navbar-nav {
+				float:none;
+				margin: 1px 0 0 0;
+				li {
+					list-style: none;
+					padding: 11px 21px;
+					margin-bottom: 12px;
+					margin-top: 0;
+					margin-left: 0;
+					margin-right: 0;
+					background: @theme-1;
+					text-align: center;
+					display: block;
+					-webkit-transition: all .2s ease-in-out;
+					-moz-transition: all .2s ease-in-out;
+					border-radius: @border-radius-base;
+					transition: all .2s ease-in-out;
+					a {
+						font-style: normal;
+						text-transform: uppercase;
+						text-decoration: none;
+						display: block;
+						
+						
+						font-family: none, sans-serif;
+						padding: 0;
+						color: @theme-1-text;
+						font-size: 15px;
+						font-weight: 700;
+						line-height:1.7em;
+						&:active {
+							background-color: none;
+						}
+					}
+				}
+				.active a {
+					background-color: unset;
+				}
+				.btn-primary {
+					border-color: @theme-1;
+				}
+				.dropdown-option {
+					display: none;
+					pointer-events: none;
+				}
+			}	
+			
+
+			&.collapsing {
+			  visibility: visible;
+			}
+
+			&.in {
+				top: 0;
+				right: 0;
+				bottom: 0;
+				border-top: none;
+				z-index: 9998;	
+				transform: rotateY(0deg);
+				transition: .8s ease-in-out;
+				position: fixed;
+				width:340px;
+				min-height: 100vh;
+				padding-top: 64px !important;
+				padding-right: 0px !important;
+				padding-bottom: 20px !important;
+				padding-left: 0px !important;
+				display: block;
+				visibility: visible;
+				overflow: hidden;
+				overflow-y: auto;
+				background: @nav-bg;
+			}
+		}
+	}
+}
+
+@media (min-width: @grid-float-breakpoint-min) {
+
+/*Styles for header nav area for LARGE screen size*/
+	
+	.top-nav-container {
+		float:right;
+		padding: 23px 0;
+		align-items: center;
+	}
+    
+	.navbar-default {
+		.navbar-toggle {
+			display:none!important;
+		}
+		.navbar-collapse {
+			visibility: visible;
+		}
+		.container-fluid {
+			padding-right:30px;
+			padding-left:30px;
+		}
+		.navbar-nav {
+			margin-right: 0;
+			float: right;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 29px;
+			padding-bottom: 1px;
+			
+			li {
+				list-style: none;
+				font-size: 14px;
+				padding-right: 30px;
+				&:last-of-type {
+					padding-right: 11px;
+				}
+				
+				a {
+					padding: 0;
+					font-size:14px;
+					color: @nav-color;
+					line-height: 1em;
+					font-weight: 500;
+					font-style: normal;
+					text-transform: uppercase;
+					text-decoration: none;
+					display: block;
+					&:hover, &:focus {
+						color: @theme-1;
+					}	
+				}
+
+				&.active {
+					& > a, & > a:hover, & > a:focus {
+					  background-color: transparent;
+					  color: @theme-1;
+					}
+				}
+
+				&.open > a, &.open > a:hover, &.open > a:focus {
+					background-color: transparent;
+					border-color: rgba(0, 0, 0, 0.03);
+				}
+			}
+		}
+		.header-social {
+			margin: 0 0 0 22px;
+			.lp_social_media_follow {
+				float: unset;
+				justify-content: unset;
+			}
+		}
+	}	
+}
+
+

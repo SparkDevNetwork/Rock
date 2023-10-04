@@ -1,0 +1,114 @@
+
+/*Card Styles*/
+
+
+.background-patterned {
+	background-image: url(https://lakepointelivedev.msjlpum7-liquidwebsites.com/wp-content/uploads/2020/06/Lake-Pointe-Background-Black.jpg)!important;	
+}
+
+.card-container {
+	padding-top: 60px;
+	padding-bottom: 20px;
+	&.image-cards {
+		background-image: none!important;
+	}
+	.row {
+		display: flex;
+		flex-wrap: wrap;
+		padding-top: 20px;
+		padding-bottom: 20px;
+		&:first-of-type {
+			padding-bottom: 40px;
+		}
+	}
+}
+
+.card { 
+	text-align: center;
+	background-color: @theme-3;
+	border-radius: @border-radius-base;
+	padding: 40px!important;
+	height: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: column;
+	transition: all .5s ease-in-out;
+	box-shadow: 0 20px 150px rgba(22, 22, 22, 0.12); 
+	&:hover, &:focus {
+		transform:translate(0px, -6px);
+		transition: all .4s ease-in-out;
+	}
+	
+	.header-title {
+		font-weight: 500;
+	}
+	
+	.content-section {
+		flex-grow: 1;
+	}
+	
+	p {
+		
+	}
+	
+	.image-wrap {
+		margin-bottom: 5%;
+	}
+	
+	img {
+		max-height: 250px;
+		object-fit: cover;
+	}
+	
+	.icon-wrap {
+		width: 80px;
+		height: 80px;
+		margin-left: auto;
+		margin-right: auto;
+		margin-bottom: 20px;
+		font-size: 34px;
+		padding: 25px !important;
+		position: relative;
+		.icon {
+			-webkit-border-radius: 100% !important;
+			-moz-border-radius: 100% !important;
+			border-radius: 100% !important;
+			transform: perspective(1px) translateZ(0);
+			background-color: @brand-primary;
+			position: absolute;
+			top:0;
+			bottom: 0;
+			left:0;
+			right:0;
+			&:before {
+				content: "";
+				position:absolute;
+				left:0;
+				right:0;
+				top:0;
+				bottom:0;
+				transition: all .8s ease-in-out;
+				border: rgba(240,75,40,0.7) solid 6px;
+				border-radius: 50%;
+			}
+			i {
+				color: white;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				height: 100%
+			}
+		}
+		&:hover .icon:before, &:focus .icon::before {
+			border: rgba(240,75,40,0) solid 6px;
+			top: -10px;
+			right: -10px;
+			bottom: -10px;
+			left: -10px;
+		}
+	}	
+}
+
+.step-card {
+	border-radius: @border-radius-base;
+}

@@ -49,3 +49,11 @@ node_modules
 /Installers/CheckScannerInstall/UpgradeLog.htm
 /Installers/CheckScannerInstall/UpgradeLog2.htm
 /Installers/CheckScannerInstall_2017/CheckScannerInstall
+
+# LPC Ignores
+org.lakepointe.*/[Bb]in/*
+org.secc.RecurringCommunications/[Bb]in/*
+org.secc.PastoralCare/[Bb]in/*
+com.kfs.*/[Bb]in/*
+com.kingdomfirstsolutions.*/[Bb]in/*
+*.zip

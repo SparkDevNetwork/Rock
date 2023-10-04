@@ -1,0 +1,46 @@
+<div class="panel panel-default">
+  <div class="panel-heading">Groups</div>
+
+  {% assign groupCount = Groups | Size %}
+
+  {% if groupCount == 0 %}
+  <div class="margin-all-md"> No Groups Available To List</div>
+  {% endif %}
+
+  <ul class="list-group list-group-panel">
+    {% for group in Groups %}
+
+    {% capture isLeaderIcon %}
+    {% if group.IsLeader %}
+      <i class='fa fa-asterisk'></i>
+    {% endif %}
+    {% endcapture %}
+
+    <li class="list-group-item">
+      <a href="{{ LinkedPages.DetailPage }}?GroupId={{group.Group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
+        {{ group.Group.Name }} <small>({{ group.Role }}{{ isLeaderIcon }})</small>
+        {% if group.IsLeader %}
+          {% assign pending = 0 %}
+          {% for member in group.Group.Members %}
+            {% if member.GroupMemberStatus == 'Pending' %}
+              {% assign pending = pending | Plus:1 %}
+            {% endif %}
+          {% endfor %}
+          {% if pending != 0 %}
+            <span title="number of pending members" class="badge badge-danger">{{pending}}</span>
+          {% endif %}
+        {% endif %}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+
+</div>
+
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+  $('.js-group-item').tooltip();
+  });
+
+</script>

@@ -9,6 +9,9 @@
         </script>
 
         <div id="profile-image" class="profile-image profile-image-sm">
+            <!-- LPC CODE -->
+            <asp:Literal ID="litPersonAlerts" runat="server" />
+            <!-- END LPC CODE -->
             <div class="fluid-crop">
                 <a href="#" class="fluidbox fluidbox-closed">
                     <asp:Literal ID="lImage" runat="server" />

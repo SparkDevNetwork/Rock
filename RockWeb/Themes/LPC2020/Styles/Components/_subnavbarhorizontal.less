@@ -1,0 +1,122 @@
+//
+///This is for the horizontal sub-nav on sub pages
+//
+	
+
+/*Styles for sub menu below the header area in SMALL/MOBILE view*/
+
+.navbar-lpc {
+	background-color: @nav-bg;
+	margin-bottom: 0;
+	.navbar-toggle {
+		z-index: 995 !important;
+		margin-top: 33px;
+		float: left;
+		margin-top: 16px;
+		
+		.icon-bar {
+			background-color: @theme-1;
+		}
+		&.collapsed .icon-bar {
+			background-color: @theme-2;
+		}
+	}
+	
+	.navbar-collapse .nav,
+	.loginstatus {
+		display: block;
+		> li {
+			> a {
+				padding: 10px 15px;
+				color: @theme-3-text;
+				opacity: 1;
+				text-decoration: none;
+				-webkit-transition: all .4s ease-in-out;
+				-moz-transition: all .4s ease-in-out;
+				transition: all .4s ease-in-out;
+
+				&:hover, &:focus {
+					background-color: transparent;
+				}
+			}
+			.dropdown-menu {
+				animation: fadeBottom 0.4s cubic-bezier(0.68,0.08,0.38,0.89) !important;
+			}
+			&:hover .dropdown-menu, &:focus .dropdown-menu, &:focus-within .dropdown-menu {
+				display: block;
+			}
+		}
+	}
+	.loginstatus {
+		float:right;
+	}
+
+
+/*Styles for dropdown menu*/
+
+	.dropdown-menu {
+		border:none;
+		background-color: @theme-1;
+		right: 0;
+		left: unset;
+		> li > a {
+			color: @theme-1-text;
+			opacity: 1;
+			-webkit-transition: all .4s ease-in-out;
+			-moz-transition: all .4s ease-in-out;
+			transition: all .4s ease-in-out;
+			&:hover, &:focus {
+				background-color: darken(@btn-primary-bg, 10%);
+			}
+		}	
+		.divider {
+			display:none;
+		}
+	}
+}
+
+
+// this replaces the default arrow with a different arrow from font-awesome
+
+.loginstatus {
+	.fa-caret-down:before {
+		content: "\f105";
+		position: absolute;
+		top: 9px;
+		font-size: 26px;
+		color: @theme-1;
+		-webkit-transition: all .2s ease-in-out;
+		-moz-transition: all .2s ease-in-out;
+		transition: all .2s ease-in-out;
+	}
+	&:hover .fa-caret-down:before, &:focus .fa-caret-down:before {
+		transform: rotate(90deg);
+		opacity: 0.8;
+	}
+}
+
+
+
+@media (min-width: @grid-float-breakpoint-min) {
+
+	/*Styles for sub menu below the header area in LARGE window view*/
+
+	.navbar-lpc {
+		min-height: 70px;
+		background-color: transparent;
+		
+		.navbar-collapse .nav,
+		.loginstatus {
+			display: flex;
+			padding-top:12px;
+			padding-bottom: unset;
+			& > li > a {
+				padding: 10px 15px 10px 0;
+			}
+		}
+		.navbar-toggle {
+			display: none;
+		}
+	}
+}
+

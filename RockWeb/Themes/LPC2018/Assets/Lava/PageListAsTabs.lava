@@ -1,0 +1,23 @@
+{% comment %}
+This is what was originally in this file. It doesn't seem to be valid code,
+but not sure how it got here or why.
+
+<div class="nav navbar nav-pagelist">
+  <ul class="nav nav-pills">
+    {% for childPage in Page.Pages %}
+    <li {% if="" childPage.Current =""= 'true' %}class='active'{% endif='' %}>
+      <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endcomment %}
+<div class="nav navbar nav-pagelist">
+  <ul class="nav nav-pills">
+    {% for childPage in Page.Pages %}
+    <li {% if childPage.Current %}class='active'{% endif %}>
+      <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>

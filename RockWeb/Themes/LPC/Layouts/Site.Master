@@ -1,0 +1,163 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+</script>
+
+<html class="no-js">
+<head runat="server">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,100,100italic,300,300italic,400italic,700,700italic,900,900italic&subset=latin,latin-ext" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>"></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/favicon.ico", true) %>" />
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-ipad-retina.png", true) %>" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-iphone-retina.png", true) %>" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-ipad.png", true) %>" />
+    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-iphone.png", true) %>" />
+
+</head>
+<body runat="server" id="body">
+
+    <form id="form1" runat="server">
+
+        <!-- Page Header -->
+        <header class="navbar-fixed-top">
+            <div class="topbar text-center">
+                <Rock:Zone Name="Top" runat="server" />
+            </div>
+            <!-- Brand Bar -->
+            <div class="nav-wrapper">
+                <nav class="navbar navbar-default">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <Rock:Zone Name="Header" runat="server" />
+                        </div>
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                            <span class="select_page">Select Page</span>
+                            <span class="icon">
+                                <span class="icon-bar top-bar"></span>
+                                <span class="icon-bar middle-bar"></span>
+                                <span class="icon-bar bottom-bar"></span>
+                            </span>
+                        </button>
+                        <div class="navbar-collapse collapse" id="navbar">
+                            <!-- Main Navigation -->
+                            <Rock:Zone Name="Top Navigation" runat="server" />
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <nav class="navbar navbar-lpc">
+            <div class="container">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#subnavbar" aria-expanded="false" aria-controls="subnavbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon">
+                        <span class="icon-bar top-bar"></span>
+                        <span class="icon-bar middle-bar"></span>
+                        <span class="icon-bar bottom-bar"></span>
+                    </span>
+                </button>
+                <div class="navbar-collapse collapse" id="subnavbar">
+                    <!-- Main Navigation -->
+                    <div class="navbar-inline-block">
+                        <Rock:Zone Name="Navigation" runat="server" />
+                    </div>
+                    <div class="navbar-inline-block">
+                        <Rock:Zone Name="Login" runat="server" />
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+        <div class="container-fluid">
+            <div class="row">
+                <Rock:Zone Name="Top Feature" runat="server" />
+            </div>
+        </div>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+        <div class="container-fluid">
+            <div class="row">
+                <Rock:Zone Name="Bottom Feature" runat="server" />
+            </div>
+        </div>
+
+        <span class="et_pb_scroll_top et-pb-icon"></span>
+
+        <footer>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:Zone Name="Footer" runat="server" />
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bar">
+                <div class="container">
+                    <Rock:Zone Name="FooterBar" runat="server" />
+                </div>
+            </div>
+        </footer>
+
+        <script src="/Themes/LPC/Scripts/jquery.lwtCountdown.js"></script>
+        <script src="/Themes/LPC/Scripts/custom.js"></script>
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server" />
+        <asp:UpdateProgress ID="updateProgress" runat="server" DisplayAfter="800">
+            <ProgressTemplate>
+                <div class="updateprogress-status">
+                    <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
+                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+</body>
+
+</html>

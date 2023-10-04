@@ -1,0 +1,124 @@
+{% comment %}
+    Calendar based off of Event Items instead of details
+{% endcomment%}
+
+{% assign eventItemCount = EventItems | Size %}
+
+{% if eventItemCount == 0 %}
+    <div class="panel panel-default margin-t-md">
+        <div class="margin-all-md">There are currently no events for this selection</div>
+    </div>
+{% endif %}
+
+<div class="event-calendar">
+    {% assign eventCount = 0 %}
+    {% assign EventItemsOrdered = EventItems | Sort:'DisplayPriority desc' %}
+    {% for eventItem in EventItemsOrdered %}
+
+        {% assign multipleDates = false %}
+        {% assign multipleLocations = false %}
+        {% assign eventDate = null %}
+        {% assign locationNameTemp = '' %}
+
+
+		{% for occurrence in eventItem.Occurrences %}
+			{% if eventDate == null %}
+                {% assign eventDate = occurrence.DateTime %}
+            {% elseif eventDate != occurrence.DateTime %}
+                {% assign multipleDates = true %}
+            {% endif %}
+
+            {% if locationNameTemp == '' %}
+                {% assign locationNameTemp = occurrence.LocationDescription %}
+            {% endif %}
+            {% if locationNameTemp != occurrence.LocationDescription %}
+                {% assign multipleLocations = true %}
+            {% endif %}
+
+            {% if multipleDates == true and multipleLocations == true %}
+              {% break %}
+            {% endif %}
+        {% endfor %}
+
+        {% assign eventItemOccurrence = eventItem.Occurrences | First %}
+
+        {% assign currentLocalPath = 'Global' | Page:'Path' %}
+		{% assign currentPageId = 'Global' | Page:'Id' | AsInteger %}
+		<div class="col-xs-12 col-sm-6 col-md-4 px-xs-0 my-3" style="height:unset;">
+		  {% if eventItemOccurrence.DetailPage != null %}
+			  <a href="{{ eventItemOccurrence.DetailPage }}">
+		  {% elseif currentPageId == 2467 %} <!- no header/footer page -->
+			  <a href="/page/2468?EventItemId={{eventItemOccurrence.EventItemOccurrence.EventItem.Id}}">
+		  {% elseif currentLocalPath contains '/page/' %}
+			<a href="{{DetailsPage}}?EventItemId={{eventItemOccurrence.EventItemOccurrence.EventItem.Id}}">
+		  {% else %}
+			<a href="{{'~/Events/' | ResolveRockUrl }}{{ eventItemOccurrence.EventItemOccurrence.EventItem.Id }}">
+		  {% endif %}
+
+
+			<div class="card">
+
+				{% assign PhotoId = eventItemOccurrence.EventItemOccurrence.EventItem.PhotoId %}
+
+				<div class="image-wrap">
+					<img src="/GetImage.ashx?id={{ PhotoId }}" class="img-responsive"></img>
+				</div>
+
+				<div class="title-section">
+					<h4>
+					  {{ eventItemOccurrence.Name }}
+					  {% assign currentName = eventItemOccurrence.Name %}
+					</h4>
+				</div>
+
+				{% assign currentItemDate = '' %}
+				{% assign scheduleText = eventItemOccurrence.EventItemOccurrence | Attribute:'ScheduleText' %}
+				{% assign scheduleTextNoHtml = scheduleText | StripHtml | Trim %}
+				<h5>
+
+							<i class="fa fa-calendar" aria-hidden="true"></i>
+							{% if scheduleTextNoHtml and scheduleTextNoHtml != '' %}
+							  {{ scheduleText }}
+							{% elseif multipleDates == true %}
+								Multiple Dates
+							{% else %}
+							  {% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
+								{{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d' }}  &#9679;  {{ eventItemOccurrence.Time }}
+								{% assign currentItemDate = eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' %}
+							  {% else %}
+								{{ eventItemOccurrence.Date | Date: 'ddd' }}. &#9679;
+								{{ eventItemOccurrence.Date | Date: 'MMM d' }}
+								{% assign currentItemDate = eventItemOccurrence.Date | Date: 'MMM d' %}
+								{% if eventItemOccurrence.Time != '12:00 AM' %}
+								  &#9679;  {{ eventItemOccurrence.Time }}
+								{% endif %}
+							  {% endif %}
+							{% endif  %}
+				</h5>
+
+				{% if eventItemOccurrence.LocationDescription != '' and multipleLocations == false  %}
+				<h5>
+				  <i class="fa fa-map-marker"></i>
+				  {{ eventItemOccurrence.LocationDescription }}
+				</h5>
+				{% elseif multipleLocations == true %}
+					<h5><i class="fa fa-map-marker"></i>
+				  Multiple Locations</h5>
+
+				{% endif %}
+
+				<div>
+				  {{ eventItemOccurrence.Summary }}
+				</div>
+				{% assign childcareAvailable = eventItemOccurrence.EventItemOccurrence | Attribute: 'ChildcareAvailable' %}
+
+				{% if childcareAvailable == 'Yes' %}
+				<div style="margin-bottom: 5px;"><i class="fal fa-child"></i> Childcare Available
+				</div>
+				{% endif %}
+
+			</div>
+			</a>
+		</div>
+	{% endfor %}
+</div>

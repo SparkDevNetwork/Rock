@@ -1,0 +1,251 @@
+{% comment %}
+    Title: StudentVolunteeerPortal.lava
+    Description:
+        Lava content formatting and filtering for the Student
+        Volunteer Portal page.
+{% endcomment %}
+<style>
+    [style*="--aspect-ratio"] > :first-child {
+        width: 100%;
+    }
+        [style*="--aspect-ratio"] > img {
+        height: auto;
+    }
+    @supports (--custom:property) {
+        [style*="--aspect-ratio"] {
+            position: relative;
+        }
+        [style*="--aspect-ratio"]::before {
+            content: "";
+            display: block;
+            padding-bottom: calc(100% / (var(--aspect-ratio)));
+        }
+        [style*="--aspect-ratio"] > :first-child {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+        }
+    }
+
+    .contentItem{
+        padding-top:15px;
+        padding-bottom:15px;
+    }
+    .contentItem h1, .contentItem h2, .contentItem h3 {
+        margin-top:11px !important;
+    }
+
+    div.spacer:before{
+        position: relative;
+        display: inline-block;
+        content: '';
+        border-bottom: 2px solid #e2e2e2;
+        width: 50%;
+        left:25%;
+        bottom:0;
+
+    }
+
+    #tools {
+        text-align:center;
+    }
+    #tools a:hover{
+        text-decoration:none;
+
+    }
+    #tools a{
+
+        border: 1px solid #e2e2e2;
+        text-align:center;
+        width:200px;
+        overflow:hidden;
+        padding-top:15px;
+        margin:10px;
+        display: inline-block;
+    }
+    .toolIcon{
+        font-Size: 24pt;
+    }
+</style>
+
+{% assign testDate = 'Global' | PageParameter:'testDate' | AsDateTime %}
+{% assign testCampus = 'Global' | PageParameter:'Campus' | Downcase %}
+{% assign testUnited = 'Global' | PageParameter:'United' | AsBoolean %}
+{% assign testSC = 'Global' | PageParameter:'Connect' | AsBoolean %}
+{% assign testGroups = 'Global' | PageParameter:'Groups' | AsBoolean %}
+
+
+{% assign volunteerGroupTypeId = '432' %}
+{% assign groupVolGroupTypeId = '431' %}
+{% assign unitedGuid = '5dc7b5d0-8f01-4acc-a62f-6a63b8bb9047'%}
+{% assign connectGuid = '6001b464-a8d9-46c5-b2cf-a576a7b11ab4' %}
+{% assign groupsGuid = '32c31353-2412-46e4-a18d-758284d789fa' %}
+
+{% assign showSC = false %}
+{% assign showUnited = false %}
+{% assign showGroups = false %}
+
+{% if testDate == null %}
+    {% assign testDate = 'Now' | Date | AsDateTime %}
+{% endif %}
+
+{% if testUnited == null and testSC == null and testGroups == null %}
+    {% assign groupMembers = CurrentPerson | Groups:volunteerGroupTypeId, 'Active' %}
+    {% for gm in groupMembers%}
+        {% assign servingArea = gm | Attribute:'StudentMinistryServingArea','RawValue' %}
+
+        {% if servingArea contains unitedGuid %}
+            {% assign showUnited = true %}
+        {% endif %}
+
+        {% if servingArea contains connectGuid %}
+            {% assign showSC = true %}
+        {% endif %}
+
+        {% if servingArea contains groupsGuid %}
+            {% assign showGroups = true %}
+        {% endif %}
+
+        {% if testCampus == '' %}
+            {% assign testCampus = gm.Group.Campus.Guid %}
+        {% endif %}
+
+        {% if showSC == true and showUnited == true and showGroups == true %}
+            {% break %}
+        {% endif %}
+    {% endfor %}
+
+    {% assign groupMembers = CurrentPerson | Groups:groupVolGroupTypeId, 'Active' %}
+    {% for gm in groupMembers%}
+        {% assign servingArea = gm | Attribute:'StudentMinistryServingArea','RawValue' %}
+
+        {% if servingArea contains unitedGuid %}
+            {% assign showUnited = true %}
+        {% endif %}
+
+        {% if servingArea contains connectGuid %}
+            {% assign showSC = true %}
+        {% endif %}
+
+        {% if servingArea contains groupsGuid %}
+            {% assign showGroups = true %}
+        {% endif %}
+
+        {% if testCampus == '' %}
+            {% assign testCampus = gm.Group.Campus.Guid %}
+        {% endif %}
+
+        {% if showSC == true and showUnited == true and showGroups == true %}
+            {% break %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if showUnited == false and testUnited == true%}
+    {% assign showUnited = true %}
+{% endif %}
+
+{% if showSC == false and testSC == true %}
+  {% assign showSC = true %}
+{% endif %}
+
+{% if showGroups == false and testGroups == true %}
+    {% assign showGroups = true %}
+{% endif %}
+
+{% assign itemCount = 0 %}
+
+<div id="channelHeader">
+    <div class="row">
+        <div class="col-xs-12" style="text-align:center;">
+            <img src="/content/LPStudents/LPStudents_Logo_Color.png" style="width: 50%;" alt="LPStudents_Logo_Color.png">
+        </div>
+        <div class="col-xs-12">
+            <h2 style="text-align:center;">Welcome to the Student Ministry Volunteer Portal</h2>
+
+        </div>
+    </div>
+</div>
+
+<div class="spacer"></div>
+{% for item in Items %}
+
+    {% if item.StartDateTime >= testDate or item.ExpireDateTime <= testDate %}
+        {% continue %}
+    {% endif %}
+
+    {% assign contentForCampus =  item | Attribute:'Campuses','RawValue' | Split:',' | Contains:testCampus %}
+
+    {% if contentForCampus == false %}
+        {% continue %}
+    {% endif %}
+    {% assign contentAudienceRaw = item | Attribute:'ServingArea','RawValue' | Trim %}
+    {% assign contentAudiences = contentAudienceRaw | Split:','  %}
+    {% assign contentUnited = contentAudiences | Contains:unitedGuid %}
+    {% assign contentSC = contentAudiences | Contains:connectGuid %}
+    {% assign contentGroups = contentAudiences | Contains:groupsGuid %}
+
+    {% assign contentForAudience = false %}
+    {% if contentAudienceRaw != '' %}
+        {% if contentUnited == true and showUnited == true %}
+            {% assign contentForAudience = true %}
+        {% endif %}
+        {% if contentSC == true and showSC == true %}
+            {% assign contentForAudience = true %}
+        {% endif %}
+        {% if contentGroups == true and showGroups == true %}
+            {% assign contentForAudience = true %}
+        {% endif %}
+    {% else %}
+        {% assign contentForAudience = true %}
+    {% endif %}
+
+    {% if contentForAudience == false %}
+        {% continue %}
+    {% endif %}
+
+    {% assign itemCount = itemCount | Plus:1 %}
+    <div class="contentItem row" >
+        {% assign video = item | Attribute:'Video','RawValue' %}
+
+        {% if video != '' %}
+            <div class="col-sm-6" style="text-align:center;">
+                <div style="--aspect-ratio: 16/9;">
+                    <iframe src="//fast.wistia.net/embed/iframe/{{ video }}?playerColor=f04b28" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                    <script src="//fast.wistia.net/assets/external/E-v1.js" async></script>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                {{ item.Content }}
+            </div>
+        {% else %}
+            <div class="col-xs-12">
+                {{ item.Content }}
+            </div>
+        {% endif %}
+    </div>
+{% endfor %}
+{% if itemCount == 0 %}
+    <h2>No Content is available at this time</h2>
+{% endif %}
+{% if showSC == true or showUnited == true or showGroups == true %}
+<div class="spacer"></div>
+<div id="channelFooter">
+    <div class="row">
+        <div class="col-xs-12">
+            <h2 style="text-align:center;">Leader Tools</h2>
+            <div id="tools">
+                <a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/2326?Campus={{testCampus}}" class="btn btn-primary">
+                    <div class="toolIcon"><i class="far fa-sign-out"></i></div>
+                    Gonna be out
+                </a>
+                <a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/2327" class="btn btn-primary">
+                    <div class="toolIcon"><i class="far fa-book-user"></i></div>
+                    Staff Contacts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

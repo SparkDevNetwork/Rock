@@ -1,0 +1,78 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<html class="no-js">
+<head runat="server">
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+	<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Montserrat%3A100%2C100italic%2C200%2C200italic%2C300%2C300italic%2Cregular%2Citalic%2C500%2C500italic%2C600%2C600italic%2C700%2C700italic%2C800%2C800italic%2C900%2C900italic&#038;ver=4.9.8#038;subset=latin,latin-ext' type='text/css' media='all' />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/checkin-theme.css", true) %>"/>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/fastclick.js" ) %>" ></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<body id="body" runat="server">
+    <form id="form1" runat="server">
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+		        <ProgressTemplate>
+		            <div class="updateprogress-status">
+                        <div class="spinner">
+                          <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                        </div>
+                    </div>
+                    <div class="updateprogress-bg modal-backdrop"></div>
+		        </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+    <script>
+        window.addEventListener('load', function () {
+            new FastClick(document.body);
+        }, false);
+
+        // add quick fade-in effect to the page
+        $(document).ready(function () {
+            $("body").rockFadeIn();
+        });
+        
+        Sys.Application.add_load(HandleBackForwardCache);
+
+        // Fixes an issue with the wait spinner caused by browser Back/Forward caching.
+        function HandleBackForwardCache() {
+            // Forcibly hide the wait spinner, and clear the pending request if the page is being reloaded from bfcache. (Currently WebKit only)
+            // Browsers that implement bfcache will otherwise trigger updateprogress because the pending request is still in the PageRequestManager state.
+            // This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
+            // (https://bugs.webkit.org/show_bug.cgi?id=156356)
+            window.addEventListener('pageshow', function (e) {
+                if ( e.persisted ) {
+                    document.querySelector('#updateProgress').style.display = 'none';
+                    // Check if the page is in postback, and if so, reset the PageRequestManager state.
+                    if (Sys.WebForms.PageRequestManager.getInstance().get_isInAsyncPostBack()) {
+                        // Reset the PageRequestManager state. & Manually clear the request object
+                        Sys.WebForms.PageRequestManager.getInstance()._processingRequest = false;
+                        Sys.WebForms.PageRequestManager.getInstance()._request = null;
+                    }
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>

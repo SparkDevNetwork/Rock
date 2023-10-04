@@ -1118,7 +1118,15 @@ namespace RockWeb.Blocks.Connection
                         connectionRequestActivity.ConnectionActivityTypeId = transferredActivityId;
                         connectionRequestActivity.Note = tbTransferNote.Text;
                         connectionRequestActivityService.Add( connectionRequestActivity );
-                        connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
+						
+						// SNS Don't trash group assignment if they're not changing the opportunity
+                        if ( newOpportunityId.Value != connectionRequest.ConnectionOpportunityId )
+                        {
+                            connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
+                            connectionRequest.AssignedGroupId = null;
+                            connectionRequest.AssignedGroupMemberRoleId = null;
+                            connectionRequest.AssignedGroupMemberStatus = null;
+                        }
 
                         if ( newOpportunity.ShowStatusOnTransfer && ddlTransferStatus.Visible )
                         {
@@ -1130,10 +1138,6 @@ namespace RockWeb.Blocks.Connection
                         {
                             connectionRequest.CampusId = cpTransferCampus.SelectedCampusId;
                         }
-
-                        connectionRequest.AssignedGroupId = null;
-                        connectionRequest.AssignedGroupMemberRoleId = null;
-                        connectionRequest.AssignedGroupMemberStatus = null;
 
                         // assign the connector based on the selection
                         if ( rbTransferCurrentConnector.Checked )
@@ -2337,10 +2341,11 @@ namespace RockWeb.Blocks.Connection
                 ignoredConnectionTypes.Add( ConnectionState.FutureFollowUp );
             }
 
-            if ( connectionRequest == null || connectionRequest.ConnectionState != ConnectionState.Connected )
-            {
-                ignoredConnectionTypes.Add( ConnectionState.Connected );
-            }
+            // LPC Change - v14 removed "Connected" state from connection request edit. This change reverts that.
+            // if ( connectionRequest == null || connectionRequest.ConnectionState != ConnectionState.Connected )
+            // {
+            //     ignoredConnectionTypes.Add( ConnectionState.Connected );
+            // }
 
             // Ignore binding the Connection Types that are in the provided array.
             rblState.BindToEnum( ignoreTypes: ignoredConnectionTypes.ToArray() );

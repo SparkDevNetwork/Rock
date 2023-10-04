@@ -1,0 +1,222 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+<script runat="server">
+    protected void Page_Load( object sender, EventArgs e )
+    {
+        var rockPage = this.Page as Rock.Web.UI.RockPage;
+        var _backgroundImage = "";
+        var _overrideTitle = "";
+
+        if ( rockPage != null )
+        {
+            var pageCache = Rock.Web.Cache.PageCache.Get( rockPage.PageId );
+            if ( pageCache != null )
+            {
+                h1PageTitle.Visible = pageCache.PageDisplayTitle;
+                divPageDesc.Visible = pageCache.PageDisplayDescription;
+                Rock.Web.Cache.BlockCache HeaderBlocks = pageCache.Blocks.Find( b => b.Zone == "PageHeader" );
+                if ( HeaderBlocks == null && !pageCache.PageDisplayTitle && !pageCache.PageDisplayDescription )
+                {
+                    divParallax.Attributes.Add( "class", "hide hide-block" );
+                }
+                _backgroundImage = pageCache.GetAttributeValue( "HeaderImage" );
+                _overrideTitle = pageCache.GetAttributeValue( "PageTitleOverride" );
+
+                if ( string.IsNullOrWhiteSpace( _overrideTitle ) )
+                {
+                    _overrideTitle = pageCache.PageTitle;
+                }
+                //pageCache.PageTitle = Regex.Replace( pageCache.PageTitle, "_([^_]*)_", m => String.Format( "<span>{0}</span>", m.Groups[1].Value ) );
+                h1PageTitle.InnerHtml = Regex.Replace( _overrideTitle, " (.*)$", m => String.Format( "<span>{0}</span>", m.Value ) );
+
+                Rock.Web.Cache.BlockCache Navigation = pageCache.Blocks.Find( b => b.Zone == "Navigation" );
+                Rock.Web.Cache.BlockCache Login = pageCache.Blocks.Find( b => b.Zone == "Login" );
+                if ( Navigation == null && Login == null )
+                {
+                    NavbarLPC.Attributes.Add( "class", "hide hide-block" );
+                }
+            }
+        }
+
+        if ( !string.IsNullOrWhiteSpace( _backgroundImage ) )
+        {
+            if ( !_backgroundImage.Contains( "http" ) )
+            {
+                _backgroundImage = "/GetImage.ashx?guid=" + _backgroundImage;
+            }
+            divHeaderBg.Style.Add( "background-image", "url(\"" + _backgroundImage + "\")" );
+            divParallax.Attributes["class"] += " parallax-padding";
+        }
+        else
+        {
+            divHeaderBg.Attributes["class"] += " defaultBg";
+        }
+    }
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+</script>
+
+<html class="no-js">
+<head runat="server">
+
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+    <!-- Included CSS Files -->
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Montserrat%3A100%2C100italic%2C200%2C200italic%2C300%2C300italic%2Cregular%2Citalic%2C500%2C500italic%2C600%2C600italic%2C700%2C700italic%2C800%2C800italic%2C900%2C900italic&#038;ver=4.9.8#038;subset=latin,latin-ext' type='text/css' media='all' />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>"></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<body runat="server" id="body">
+
+    <form id="form1" runat="server">
+
+        <!-- Pre-loader -->
+    <div class="preloader">
+	    <div class="status">&nbsp;</div>
+    </div>
+
+        <!-- Page Header -->
+        <header>
+            <div class="topbar text-center">
+                <Rock:Zone Name="Top" runat="server" />
+            </div>
+            <!-- Brand Bar -->
+            <nav class="navbar navbar-default navbar-static-top">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                            <span class="icon">
+                                <span class="icon-bar top-bar"></span>
+                                <span class="icon-bar middle-bar"></span>
+                                <span class="icon-bar bottom-bar"></span>
+                            </span>
+                        </button>
+                        <div class="navbar-logo">
+                            <Rock:Zone Name="Header" runat="server" />
+                        </div>
+                    </div>
+                    <div class="navbar-collapse collapse" id="navbar">
+                        <!-- Top Navigation -->
+                        <Rock:Zone Name="Top Navigation" runat="server" />
+                    </div>
+                </div>
+            </nav>
+
+        </header>
+        <div class="container-fluid section-parallax marvelKenBurnsSection" id="divParallax" runat="server">
+            <div class="row">
+                <div id="divHeaderBg" class="section-page-title et_parallax_bg" runat="server"></div>
+                <div class="section-parallax-content padding-h-lg text-center">
+                    <Rock:PageIcon ID="PageIcon" runat="server" />
+                    <h1 id="h1PageTitle" runat="server">
+                        <Rock:PageTitle ID="PageTitle" runat="server" />
+                    </h1>
+                    <div class="parallax_desc" id="divPageDesc" runat="server">
+                        <Rock:PageDescription ID="PageDescription" runat="server"></Rock:PageDescription>
+                    </div>
+                    <Rock:Zone Name="Page Header" runat="server" />
+                </div>
+            </div>
+        </div>
+
+        <nav id="NavbarLPC" class="navbar navbar-lpc" runat="server">
+            <div class="container">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#subnavbar" aria-expanded="false" aria-controls="subnavbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon">
+                        <span class="icon-bar top-bar"></span>
+                        <span class="icon-bar middle-bar"></span>
+                        <span class="icon-bar bottom-bar"></span>
+                    </span>
+                </button>
+                <div class="navbar-collapse collapse" id="subnavbar">
+                    <!-- Main Navigation -->
+                    <div class="navbar-inline-block">
+                        <Rock:Zone Name="Navigation" runat="server" />
+                    </div>
+                    <div class="navbar-inline-block">
+                        <Rock:Zone Name="Login" runat="server" />
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+        <footer class="test">
+            <div class="footer-wrap test">
+                <div class="test">
+                    <div class="">
+                        <Rock:Zone Name="Footer" runat="server" />
+                    </div>
+                </div>
+
+            </div>
+        </footer>
+
+        <script>
+            $(window).load(function () {
+                $('.status').fadeOut('fast'); // will first fade out the loading animation
+                $('.preloader').delay(350).fadeOut('fast'); // will fade out the white DIV that covers the website.
+                $('.home').delay(350).css({ 'overflow': 'visible' });
+
+                // will first fade out the loading animation
+                $(".status").fadeOut();
+                // will fade out the whole DIV that covers the website.
+                $(".preloader").delay(1000).fadeOut("slow");
+            });
+
+            $(document).ready(function() {
+                $('.dropdown-toggle').removeAttr('data-toggle');
+            });
+        </script>
+
+        <script src="/Themes/LPC2018/Scripts/jquery.lwtCountdown.js"></script>
+        <script src="/Themes/LPC2018/Scripts/custom.js"></script>
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server" />
+        <asp:UpdateProgress ID="updateProgress" runat="server" DisplayAfter="800">
+            <ProgressTemplate>
+                <div class="updateprogress-status">
+                    <div class="spinner">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
+                </div>
+                <div class="updateprogress-bg modal-backdrop"></div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+</body>
+
+</html>

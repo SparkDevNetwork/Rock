@@ -1,0 +1,117 @@
+{% comment %} Volunteer Label {% endcomment %}
+
+{% comment %} Determine Group Information {% endcomment %}
+
+{% assign groupTimeJSONString = '[' %}
+{% assign groupMap = '' %}
+
+{% for gt in Person.GroupTypes %}
+    {%  for g in gt.Groups %}
+        {% assign groupObject = g.Id | GroupById %}
+
+        {% capture groupScheduleStartTime %}{[ GetGroupScheduleStartTime group:groupObject ]}{% endcapture %}
+        {% assign cleanGroupScheduleStartTime = groupScheduleStartTime | Date:'H:mm' | Remove:':' %}
+        {% capture groupTimeObject %}{"Time":{{cleanGroupScheduleStartTime}},"Value":"{{groupObject.Id}}"},{% endcapture %}
+        {% assign groupTimeJSONString = groupTimeJSONString | Append:groupTimeObject %}
+
+        {% assign groupMap = groupMap | AddToDictionary:groupObject.Id, groupObject %}
+    {% endfor %}
+{% endfor %}
+
+{% assign groupTimeJSONString = groupTimeJSONString | ReplaceLast:',','' | Append:']' %}
+{% assign sortedGroupTimeJSON = groupTimeJSONString | FromJSON | Sort:'Time' %}
+{% assign groupCount = sortedGroupTimeJSON | Size %}
+
+{% assign g1Id = sortedGroupTimeJSON | Index:0 | Property:'Value'%}
+{% assign g1 = groupMap[g1Id] %}
+
+{% if groupCount > 1 %}
+    {% assign g2Id = sortedGroupTimeJSON | Index:1 | Property:'Value'%}
+    {% assign g2 = groupMap[g2Id] %}
+{% endif%}
+
+{% if groupCount > 2 %}
+    {% assign g3Id = sortedGroupTimeJSON | Index:2 | Property:'Value'%}
+    {% assign g3 = groupMap[g3Id] %}
+{% endif%}
+
+
+CT~~CD,~CC^~CT~
+^XA~JSN^LT0^MNW^MTD^PON^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^MMC^PW800^LL0400^LS0
+
+{% comment %} Print Picture & Title {% endcomment %}
+^FD{{ Person | ZebraPhoto:'290',1.15,0.9,'LOGO.PNG',0 }}^FS
+^FO503,7^GB290,290^FS
+^FO503,7^XGR:LOGO.PNG^FS
+^IDR:LOGO.PNG^FS
+
+{% comment %} Print Name {% endcomment %}
+^FO7,15^A0N,83,83^TBN,490,83^FH\^FD{{ Person.NickName }}^FS
+^FO7,90^A0N,60,60^TBN,490,60^FH\^FD{{ Person.LastName }}^FS
+
+{% comment %} Print Group Information {% endcomment %}
+^FO7,160^FB490,1,0,L^A0N,30,30^FH\^FD{{g1.Name}}^FS
+
+{% if g2 != '' %}
+^FO7,190^FB490,1,0,L^A0N,30,30^FH\^FD{{g2.Name}}^FS
+{% endif %}
+
+{% if g3 != '' %}
+^FO7,220^FB490,1,0,L^A0N,30,30^FH\^FD{{g3.Name}}^FS
+{% endif %}
+
+^FO700,305^GFA,521,1032,12,:Z64:eJxFkjFOxDAQRSdKYQkKH8E3WV/MIpE4CJQrDoFMRblHIBINZegsrbGZmT9OUo2efvz+OHm70pUeVpJn2alRyDrfGy2r33ROlQK5Xefa17DNBTySz1PVucRXV/h15Ux3WpD3ZW4UVZD4jGqCwukhSK5SNEH1pyC5fgiK66vbIUjulmcTVH87BMl9HoLivg9BcvkQVJ/7GiFgvgxBcTkOgfAhkPwQCB8CyRfifpvyNAScf2przCIQPgScvwyBcG8Czjf/M8vrynFFkt8uswgC+CSJgPNJBMZJBAHnc0m/DR5YgHwjFhhfuOS0B9t3LoMHLjlZnldqg3OdZeS5zmVwrhMsz+mDy0rghdNxNS7pbHlO+804SR1wueG5gPMZLADv8gkbeNA64F4+YXxXziux4Ev5o/yEHv2ZsqArhwAcAuMQgIdzXxM8K4fgA1wF38oh+FUOwV05BH/gKujgEIBDAA6BcRWAQwBuV4RZBTZjA8x2RZhV8EKnADMEnU4Bz/99D0Rf:EE30
+
+{% comment %} Obtain Security Information and Print Shield {% endcomment %}
+{% assign now = 'Now' | Date | AsDateTime %}
+{% assign l3 = Person | Attribute:'L3' | AsDateTime %}
+{% assign l2 = Person | Attribute:'L2' | AsDateTime %}
+{% assign l1 = Person | Attribute:'L1' | AsDateTime %}
+{% assign l0 = Person | Attribute:'L0' | AsDateTime %}
+{% assign lt = Person | Attribute:'LT' | AsDateTime %}
+{% assign lc = Person | Attribute:'LC' | AsDateTime %}
+{% assign b1 = Person | Attribute:'BackgroundCheckExpireDate' | AsDateTime %}
+{% assign b2 = Person | Attribute:'Arena-29-279' | AsDateTime %}
+{% if b1 != nil %}
+    {% assign background = b1 %}
+{% else %}
+    {% assign background = b2 %}
+{% endif %}
+
+{% if Group.GroupTypeId == 564 %}
+    ^FO315,260^GFA,657,2760,20,:Z64:eJzllj1OwzAUgJ1GyBIMGRktcYEeIR24B8dgTI7CXA5RHyVjNzpGqOQRJ37Pz++5LUJiwlP06avfj13bxvzPcd9r5rxmh0+Fqg4UawAGyV4ATgJtAGASzM5MTtgGdsxZF9g5QzUso+fscWWesxXByIuI7IuxbWTwlphDlkrZIIKJIltisMuKWMeQFbEOLOUB2IgTNpx5NR1l0xVY+Nzv9++8ZGyxY4Ex3BJrSk2hjyn1uMcfCG9JQHptwXMFryl4Vnibp/WLe/XrbvniXj1XWtOKRG+uVHtzbDlfiJ2zS54PBQtvuOTxPv/OMz/1ulveeNvrC96SKWOzN0lGfY77r+XrMSZmzPO6CtzDlYme4/tAemG/DMJzOevxB9ILifqVNdFb/sbRs9G7A+1tGYte1dEmjl48iZDZ2D/O6oJXcc9oD89K7tH5WfBCneidC975mtcmb2QMvdM1zxW8JnkDMps8X/D8Na9OXo+sSp5hHnzkbaErILtBiDGvQ8Yui0OBOWTsimuRDYnRxeATo9O9L3gJ0cbgNybeW9lFWGKdSo8SzJhT6VGCGbMqPaM6nxLM72kju0cJigdCK7pHgX3OGtE9DCzfFiGwesA4/S4pvl+sepaEQ0OFmCtR080THjX7y/EN0Nvabw==:C27A
+{% else %}
+    {% if l3 != nil and now > l3 %}
+        ^FO312,260^GFA,753,2760,20,:Z64:eJzlls1u3CAQxyFWhNQ97DFHPwp5iT4PfpQ9bw99hPAoPkY57aGVrMj11MAMMzAo50pFysb727/nCxgw5v8cl0OzK2jm4dYjG+ChX4Vj6dgMAK8tejpR//KU2N57TaM1GDKL6lWAT8leCmtSeUO2iiQQwa8miTJEbWZiwmBF8E7omVlNxTOrqQTBYpNEGVthTrJdRvdxlxE6jOxFRDjj7xfheKa6B2aeKuI7XX2IVZfn9sosUFiu1e01IfbxqOVm3Wa+vRcd23sYt/e69fxcTGtvPdWvSlf+iKXwo03fOt1EuqXRrTkC1n380LpcLtvVD8a6aLv5QN9jXWtv0bq91Fmug7OEV9YVFsUEElvQsGR5CytdXi+4iR2y/P9odU+CkS777XT5odc5qOu5rPv7LT8ckp170vY6KOsAGe3emOZta3WrYKR7JEZ9B6iAvupM1c1jHbEw1t1/om5l3eJQF5H5MreNLjGbdL7VmdRbPPeNueSa8yV2pf3RsmjmPzkAI3WXLQVae7Sj8EWzc1iOSbCJ9+8u2IF2K7PIHJc0F2Yp+TAL5Uzw8hiA0khBNuiQjT+D7PhpId9wv9NIC+/39wDytJiBBrPa20UfH/X72nnFiTQNWD0/5Gk2YuEL3SoYBR0F8yoNDlAgSqQ5ga0KuSaySYYBtoeyDo8CjA3zKjw+k5Tj7sZhtdviuGdeuS1s6ZhT14js+LNnZnB/Oa8Iq2JucB+atLl/YvwFBTTc/A==:D859
+    {% elseif l2 != nil and now > l2 %}
+        ^FO307,255^GFA,737,2940,20,:Z64:eJztljFu3DAQRckQhooUqlKrT5MjaC9h5DSB1OcSWwZOkSOsjqLSpcpFsBFDkTOcP5yF4cKNAU+xaz/9nflDjig59xFvE7NF3cmyy2qQj5thfYwm4RDj0rIY49WkS9GwPwdrKk8H05XDgeJfxbrMdMJLYc9t1RQ3YJ+JYSsDs5NqooS04iuThN8qi2fVRAluJQiKu25CtTIiW5H9mJCVRL9+okNeuwkYGxuFea7XSSeefQUx6PmyF12oaRrdxgZAt/KugG7h5Qbd7L6eMwNdSrYd86Z0n1LpvtH5pOi0Ln3uRtel/0Tn89VjnrUusyZfy4puMCw+pV7Bc50g0Anrm/2I5O+qdDvomN3yWml2zRuMc3Bsyet0S/5jU+zsotE51FG+OcT2tzcYCJ7d0hrP7kD2kI1kbzC6pXwvqDuXWkpH9UnX57Kzjy0je4pd6VacC+vAHt+XWfdMpVC31PJ1YNJ16hoYlUW2l9WrzGd7Ha2i6MrQa91GZetBlJeDV9HVDVncl8fH73Cksv2gdVys6i6iW5kNpPNw5o/yW6MLoOuFzcw6yedaFoCFynZkT0f8BnbvfL53jssBvb2sG5mtL7OB2UlYz2wWVk98QfXJsAO799ySWxhiMm1Ug4qRwQVZb9qoBmdkwVhmg8oeGWwe/JOxQgZXzYZm9arBWbOHhP65JprV48LmBWY0ZWXeMIJN5/xk34fuvTe5B4veU/wHYa3kYw==:F2F0
+    {% elseif l1 != nil and now > l1 %}
+        ^FO311,255^GFA,629,2980,20,:Z64:eJztlrFtwzAQRSmrYJFCIygbZAS5CJARskY2IAEvkk2sJdKrTOkiRRAYuljiUfzHO8ddgAC5ynj4/nefkkg691+/WbsvzTxpdqT3GjVEp5rdEc0164mU4QXVhs3CzpI9LIyiYGFlY9V1qU9kPjHReWD2Cl0DM4jSMaK5dO4zo70IkWoSIVJ9KDuIEoBxlB2gHKVFdtZ2eUIO+/gEkdPEM3tEYGfBBm7YwjA9//bABv5Pq5jTbJYscCblN2XdVNho+EWDOcPP7aLK4RrDrzN0veE3RJwv6YJevwNFtc6Xz8jXrDN0PRnPyNBR9hPvgdAxY7/buut+Dt+r636z1HnNTN3K+H1ub/n9oGtu+X1KndfM1K0s7wiGjr/f5GfpJqkT7Hhdt/qNzAZD14NfFCwK1oGfEyzpMvPgZ+jmSucJtujW0DXFz9KVHbr4nSRbdYWFzW/a2LqA8SDYulhvz4QnQ1pAXBbcxzcEO2rR5eMDj7PWYNuGfzZ0eCBldjLYBCwwG4HlIBFYDgJoC4LMq5G3AQVr9Mh5QMmCGrmcDVi9GoUHrC4I+O0KJtumxvWFY1Cj2PeNzriXNKqtWxLXdovhXrEO7gab4YtCzt0b7I/XN/LlIng=:0F5C
+    {% elseif l0 != nil and now > l0 %}
+        ^FO323,265^GFA,537,2160,16,:Z64:eJy91dGNwyAMAFA4pPYzim4ARsloZDRGYQQ+W4mLLwHbYCC6+2o+qjzJYEOoUeojz6OzC4IaXsJPOIQtwN4aAKIIBzHgDBcDHMgBF5uMSzawt2IqURfygCf6kOEAvnOZwBAhtdm4RFcdRHjJ2ITnAb1d64hrqxPozkY4/eEjL3Zdz5/3asm4/0u1E97ntsKh2g/eLm/k/Opb25kdORbDvZeriGyTd6X3GZV3bu7ETjc2HDnz9Z7HsDVbTwy9d11qpu87WLHzeTjXnveg2sV8TOP/HC67Ylc+SJg6KBxme3ucaLBF65IYy1w8LoS8k5eJz80pBxd9kLk39H5wz8j/ZvXFNuhl4jRxW2ei5sJ1K9rQaleM2zt6qw7kwGGjbfVO/SVyGWWB+N2V9MH96YXnTjpx+/tZv4EbINATm+46c5j2w+pdyYbY+6bfUotK6L4/U4Hc8J1IzwV4shXp2UQsoF4wRqSnApobTKbHhP7ei0g33mdaTo/9tnk2Md14X5qm2lJhlLZefeb5BRflAEM=:5A39
+    {% elseif lt != nil and now > lt %}
+        ^FO306,258^GFA,569,3456,24,:Z64:eJztlrFxwzAMRcmwYJFCZUqNkBE4heqMQo6SOktYo6h0qTKFLUSWTBIkAEnJXVzkgvL5H/g/5DtAqf96aGmBnz557i8sNgDvHH8BGDkOABPnZubA8NcbHyh3N844gqVCje3Ke7YNAInsV36t8DMA+0AbeRU54iqy9umHgjcJwxnzt8xx5CdAhRwZzFHkBnP0QIs5SjAPZ/pYqhyRTzZ8YSjnLBMX+mlfD1gP39Tv99db/UMIKgTS/9p1Sncd4bfBm/oLe8zht/SK8EP9L4/T+029Inp3pI+kR//PVuCH9ONRvSJ66V2pfyNwe0Q/CPpe4ESviN4IeiP0L3jIXGOufq5XEvfZ/yToJ6JfebEynKB3+/piY7SZFwug2eJqUz9gbjPvMTeZB8y1wLf1th6zuL/ieiQbGATeCtxFXi3gtKlGgQ8lt5H3JU+bMJRcR66qinErfQxMDg7HjicFJhdQw8ZNAYaaG4Fr3r54/6wBmHvJsXbuAZgDbglwptwy008BqJ16Vec6sXYWQ+w9adjzcJkQh+cJsc/Oydj28wOB53+svgDu9w1R:20AB
+    {% elseif lc != nil and now > lc %}
+        ^FO307,253^GFA,725,3020,20,:Z64:eJztljFy6yAQQJE9GRUpXLrUEf4RlJvkKOIoqX/zj2COotIlhQtNhmjjBXbZBfybzKRJKDTy8zPswgI25rd9azt02Nm1DLYGPQE0bAZ4q9kC4Cv0DAC71Wy6M3jR7IJsVWhABDfFTpGB6vA1MSfQISF4F+yYmUzlQkyMvBDz7U9hZ3ZmBm13AFeVRGpBzAk3K+aEmmu64whjdB+52xxhfN/ikkBevYH6GWtmczqhsEAdh5Jt/MnMGQ883KS9lVZFeDH8UXuW3oTHb8W7l8rpGjMq3v3tNcQAhYeO1V7Ap/CGmMYRY7xIz2NsHhMp/W2Yw4YJS29SXupvxodiK7JQmCG2p07Jcym0yqP13Zg5LsHtsbf0PdfzuAb9Fzz/2Js73iy9teNlNknP/d/jfB2zMi/usXfK3v73wvttRLbk9bDCm/O69TzDzHMdSDblR2bHrGDR0MExiPoL0hvT4MKL9YzJkGdE3TOLX6f9sSnvT9xHW/F4v/ni8b70wnOcuOEFWXmCDE80nQeO2KmcG5LR+WIFww8HEGwEPq8IpZ1pzT957mKx3M+/RUyBOGSLx4Uh77Meo2KRV9dcVV9OVFWVYrawkVhB5QKxLds7nmSUnLqWe2xu0mC2SjY1afTv1WOTBrFdMdOGku+uik3NsHlgq9nYDCuvjtJwZm4Vw2CuNZuaYY3Y4rLDUKPu/yFzfmlZ7//VD2mfC+DYRQ==:8C79
+    {% endif %}
+{% endif %}
+
+{% comment %} Obtain Icon Information and Print Icons {% endcomment %}
+{% assign trainingDate = Person | Attribute:'TrainingDate' %}
+{% assign trainingResult = Person | Attribute:'TrainingResult' %}
+{% if trainingDate != blank and trainingResult == 'Pass' %}
+    ^FO12,334^GFA,329,804,12,:Z64:eJzF0s1pxDAQBeARPug4JagUNRZWXnzI0SWkFXWQFtTBCnxRQPhFv7NeSG6BCAyfYDQaPUykAsky59MO66QCpGgB4rTOnMRxEXNQWexJmpqVbj+ayE7bP/Kvd13meZkzLmKdtbzl+t6Wg/V9A3jCKLMgDczDZQs/zwCzqLR6oN1RMjmw720Ol/SReTt7exyR1zqrrg7dfLFJFtuoMUHFpfitTrCW/sOOuutdtU6lF9+r66cy39MwlRnEJ29x+sbv1e0NjvcwbfenzeeHFz/af9PMPZPWR+MccZTH9Biav3o8rjq72NOsNhLhf69vzJapGw==:79BA
+{% endif %}
+
+{% assign cb = Person | Attribute:'CoreBeliefClr' %}
+{% if cb != '' %}
+    ^FO97,333^GFA,193,708,12,:Z64:eJzN0bENgCAQBdAjFJSO4Ca6mdK5Fp1rOIIlJsqpBD6nMdaQmDwKz39foiqOYQu3vMIj7zBzyNQ8MRwILxtPvUtuFmqXPNLdV9jkD/SWNEyk/Ic74eF6fApz+4jxssOPx+gtrVPmPOe/MmhY5JT5rwWxV7OWfWUPsh/FM3qTfT56lv1r8V+qPSebmlQV:9688
+{% endif %}
+
+{% assign tClear = Person | Attribute:'Arena-29-259' %}
+{% if tClear != '' %}
+    ^FO181,333^GFA,209,792,12,:Z64:eJzF0kEKwyAQBdARFy5zBI/izWKPZm9S6AUC3WQR/K1OnBnIJimU/oU8MBM/KBHlhUYcNrFHFQfjCIhRko6qPfSbAJ2dXsZPPSsWSId4k79TVFK6ZoeWInWAx6jzyXLw1Lb9ym5jbt2rNW+mGjt1V3Ps3Nds1tnsVjMFzlfeGx58ZjazuUnnuI1w1zfwY3u5inP+U949460Z:5FD5
+{% endif %}
+
+^XZ

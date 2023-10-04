@@ -1,0 +1,18 @@
+﻿<!--Based on v1.0 20200917 -->
+<h3><center>PROPÓSITO</center></h3>
+<p>El propósito de las Políticas de Seguridad para Menores es garantizar un ambiente seguro para proteger a todos los menores de edad, miembros del staff y voluntarios, además de la misión de Lakepointe Church.</p>
+<h2><center>RESPONSABILIDAD Y CUMPLIMIENTO DE REPORTES</center></h2>
+<h3><center>POLÍTICAS DE TOLERANCIA AL ABUSO</center></h3>
+<p>Lakepointe Church tiene una política de cero tolerancia al abuso en programas y actividades del ministerio. Es responsabilidad de cada miembro del staff y voluntarios en Lakepointe Church de actuar en el mejor interés de todos los menores de edad en cada programa.</p>
+<p>En el caso de que un líder observe un comportamiento inapropiado (ej. violaciones a las políticas, supervisión negligente, pobre demostración de un modelo a seguir, etc.) o sospeche de abuso o negligencia (física, emocional, o sexual), es responsabilidad del individuo de reportar inmediatamente sus observaciones a un supervisor directo, líder de ministerio o al Pastor de Campus.</p>
+<h3><center>REPORTANDO COMPORTAMIENTOS SOSPECHOSOS O INAPROPIADOS</center></h3>
+<p>Lakepointe Church está comprometido a proveer un ambiente seguro y confiable para menores de edad y sus familias. Como tal, cualquier reporte de comportamiento inapropiado o sospecha de abuso o negligencia será tomado seriamente y será reportado por un líder de ministerio, de acuerdo con esta política y la ley del estado, a Servicios de Protección al Menor (CPS) u otra agencia apropiada, cuando sea requerido por ley. </p>
+<h2><center>POLÍTICA PARA LA INTERACCIÓN CON MENORES</center></h2>
+<p>El propósito de la Política para la Interacción con Menores es establecer lineamientos y expectativas de los líderes cuando interactúen con menores de edad para asegurar la seguridad física y emocional de los menores y proteger a los líderes.</p>
+<h3><center>DISCIPLINA</center></h3>
+<p>Se les prohíbe a los líderes de Lakepointe Church usar disciplina física en cualquier manera para el manejo de conducta de menores de edad. <b>Ninguna forma de disciplina física es aceptable.</b> Esta prohibición incluye nalgadas, bofetadas, pellizcos, golpes, mordidas o cualquier otro tipo de fuerza física como represalia o corrección de conductas inapropiadas de niños. Los menores deben ser disciplinados usando “tiempos fuera” y otros métodos no físicos para el manejo de conducta. La conducta incontrolable o inusual debe ser reportada inmediatamente a los padres y a un supervisor directo, líder de ministerio o al Pastor de Campus.</p>
+<h3><center>INTERACCIONES CON MENORES UNO A UNO</center></h3>
+<p>Los líderes nunca deben llevar a cabo reuniones o interacciones con menores de edad uno a uno y desapercibidos mientras participan en actividades o programas del ministerio con menores.</p>
+<h3><center>REGLA DE DOS ADULTOS Y LA REGLA DE TRES</center></h3>
+<p>Para actividades del ministerio que involucren a menores de 5˚ grado en un salón de clases, un mínimo de dos adultos aprobados sin parentesco deben estar presentes. Para programas en espacios públicos (ej. deportes o actividades de campamento), es mejor tener presente a dos adultos aprobados sin parentesco. Cuando esto no sea posible, debe haber al menos un adulto aprobado con un mínimo de tres individuos presentes sin parentesco (por ejemplo, un adulto y 2 menores).</p>
+<p>Para actividades del ministerio que involucren a menores de 6-12˚ grado, es mejor tener presente a dos adultos aprobados sin parentesco. Cuando esto no sea posible, debe haber al menos un adulto aprobado y un mínimo de tres individuos presentes sin parentesco (por ejemplo, un adulto y 2 menores).</p>

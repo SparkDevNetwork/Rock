@@ -1,0 +1,403 @@
+﻿/* Styles for displaying the book shelf. */
+.book-container {
+    display: block;
+    perspective: 1000px;
+    max-width: 260px;
+    margin: 12px auto;
+}
+
+    .book-container .book-cover {
+        height: 0px;
+        padding-bottom: 150%;
+        background-color: rgb(124, 94, 55);
+        background-image: url("/Plugins/com_blueboxmoon/Rockumentation/Assets/45-degree-fabric-dark.png");
+        color: #eee;
+        border-radius: 1px 5px 5px 1px;
+        box-shadow: 2px 2px 4px 2px rgba(0,0,0,0.3);
+        position: relative;
+        transition: 0.3s;
+        transform: rotateY(0deg);
+    }
+
+        .book-container .book-cover:hover {
+            transition: 0.3s;
+            border-radius: 2px 5px 5px 2px;
+            transform: rotateY(10deg);
+        }
+
+        .book-container .book-cover .book-title {
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            right: 10%;
+            bottom: 40%;
+            overflow: hidden;
+            text-align: center;
+            font-size: 1.3em;
+        }
+
+        .book-container .book-cover .book-subtitle {
+            position: absolute;
+            top: 70%;
+            left: 10%;
+            right: 10%;
+            bottom: 10%;
+            overflow: hidden;
+        }
+
+            .book-container .book-cover .book-subtitle .text {
+                position: absolute;
+                left: 0px;
+                width: 100%;
+                bottom: 0px;
+                text-align: center;
+            }
+
+        .book-container .book-cover .book-spine {
+            display: block;
+            background-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.15) 45%, rgba(0, 0, 0, 0.15) 55%, rgba(0, 0, 0, 0) 100%);
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            left: 3%;
+            width: 4%;
+            filter: blur(1px);
+        }
+
+/* Styles for how an article is displayed. */
+.article-header > h1:first-child {
+    margin-top: 0px;
+    margin-bottom: 28px;
+}
+article {
+    font-size: 16px;
+    min-height: 60vh;
+}
+
+    article blockquote {
+        font-size: inherit;
+    }
+
+    article .alert > .alert-title {
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    article img,
+    .article-edit-panel img {
+        max-width: 100%;
+        filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.25));
+    }
+
+    article p > img:only-child {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Code snippets */
+    article pre,
+    article code,
+    article pre code {
+        white-space: pre;
+        word-spacing: normal;
+        word-break: normal;
+        word-wrap: normal;
+        -moz-tab-size: 4;
+        -o-tab-size: 4;
+        tab-size: 4;
+        -webkit-hyphens: none;
+        -moz-hyphens: none;
+        -ms-hyphens: none;
+        hyphens: none;
+    }
+
+    /* The toolbar that shows up above code blocks */
+    article .code-toolbar {
+        background: #ececec;
+        border: 1px solid #dbdbdb;
+        border-bottom: 0px;
+        border-radius: 0;
+    }
+        article .code-toolbar > .language {
+            display: inline-block;
+            margin: 4px 8px;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+        }
+        article .code-toolbar > .copy {
+            display: inline-block;
+            position: relative;
+            float: right;
+            padding: 4px 8px;
+            border-left: 1px solid #dbdbdb;
+            cursor: pointer;
+            transition: background-color linear 0.75s;
+            transition-delay: 1s;
+        }
+            article .code-toolbar > .copy.success {
+                background-color: #5fb079;
+                transition: background-color linear 0.1s;
+            }
+
+    article td,
+    article th {
+        display: table-cell;
+        vertical-align: top;
+        border-width: 1px 0;
+        border-color: #ccc;
+        border-style: solid;
+        line-height: 1.5;
+        padding: 12px 16px;
+    }
+
+    article ol ol {
+        list-style-type: lower-alpha;
+    }
+        article ol ol ol {
+            list-style-type: lower-roman;
+        }
+            article ol ol ol ol {
+                list-style-type: initial;
+            }
+
+/* TOC for book */
+.book-toc {
+    position: fixed;
+    position: sticky;
+    position: -webkit-sticky;
+    font-size: 14px;
+    top: 90px;
+}
+
+    .book-toc .book-toc-container {
+        position: absolute;
+        width: 100%;
+        top: 0px;
+        overflow-y: auto;
+    }
+
+    .book-toc .book-toc-container .version-dropdown {
+        margin-bottom: 8px;
+    }
+
+        .book-toc .book-toc-container .version-dropdown > .btn {
+            width: 100%;
+            text-align: left;
+        }
+
+        .book-toc .book-toc-container .version-dropdown .caret {
+            float: right;
+            margin-top: 10px;
+        }
+
+        .book-toc .book-toc-container > ul {
+            list-style-type: none;
+            padding-left: 0px;
+        }
+
+    .book-toc ul ul {
+        list-style-type: none;
+        padding-left: 12px;
+    }
+
+    .book-toc li .title {
+        display: inline-block;
+        margin-left: 15px;
+        cursor: pointer;
+        color: var(--text-color);
+    }
+
+    .book-toc a {
+        color: var(--text-color);
+        text-decoration: none;
+    }
+
+    .book-toc .tree-group .fa,
+    .book-toc .tree-item .fa {
+        margin-left: -15px;
+        font-size: 12px;
+    }
+
+    .book-toc .active {
+        font-weight: 600;
+    }
+
+    .book-toc li.active a,
+    .book-toc li.tree-item:hover a,
+    .book-toc li.tree-item:focus a {
+        color: var(--brand-color);
+    }
+
+/* TOC for articles */
+nav.article-toc {
+    position: fixed;
+    position: sticky;
+    position: -webkit-sticky;
+    top: 90px;
+}
+    nav.article-toc > ul {
+        position: absolute;
+        width: 100%;
+        top: 0px;
+        overflow-y: auto;
+    }
+    nav.article-toc .nav > li:hover > ul {
+        display: block;
+    }
+
+    nav.article-toc .nav > .active > a,
+    nav.article-toc .nav > .active:hover > a,
+    nav.article-toc .nav > .active:focus > a,
+    nav.article-toc .nav > li > a:hover,
+    nav.article-toc .nav > li > a:focus {
+        color: var(--brand-color);
+        border-left-color: var(--brand-color);
+    }
+
+/* Edit Bar Styles */
+.edit-bar-container {
+    position: relative;
+}
+
+    .edit-bar-container .edit-bar {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+    }
+
+        .edit-bar-container .edit-bar > * {
+            display: inline;
+            float: left;
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .edit-bar-container .edit-bar:hover > * {
+            opacity: 1;
+            transition: opacity 0.25s;
+        }
+
+        .edit-bar-container .edit-bar > *:last-child {
+            opacity: 0.25;
+            cursor: initial;
+        }
+
+        .edit-bar-container .edit-bar .btn-group > * {
+            box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+        }
+
+    .edit-bar-container .edit-bar-tools {
+        cursor: pointer;
+    }
+
+/* General page layout */
+.doc-container {
+    display: flex;
+}
+
+    .doc-container .left-container {
+        display: none;
+    }
+
+    .doc-container .center-container {
+        padding: 0px 24px;
+        width: 100%;
+    }
+
+    .doc-container .right-container {
+        display: none;
+    }
+
+.article-edit-panel {
+    padding: 0px 12px;
+}
+
+@media (min-width: 768px) {
+    .doc-container .left-container {
+        display: initial;
+        width: 25%;
+    }
+
+    .doc-container .center-container {
+        width: 75%;
+    }
+
+    .article-edit-panel {
+        width: 75%;
+        margin: 0 0 0 20%;
+    }
+}
+
+@media (min-width: 992px) {
+    .doc-container .left-container {
+        width: 20%;
+    }
+
+    .doc-container .center-container {
+        width: 65%;
+    }
+
+    .doc-container .right-container {
+        display: initial;
+        width: 15%;
+    }
+
+    .article-edit-panel {
+        width: 65%;
+        margin: 0 15% 0 20%;
+    }
+}
+
+/* Print related styles */
+.for-print article:not(:last-of-type) {
+    page-break-after: always;
+}
+
+.for-print .doc-container {
+    display: block;
+}
+
+.for-print .left-container,
+.for-print .right-container {
+    display: none;
+}
+
+.for-print .center-container {
+    flex: none;
+    width: initial;
+}
+
+@media print {
+    .edit-bar-container,
+    .left-container,
+    .right-container {
+        display: none;
+    }
+
+    /* These are some hacks to allow printing to work in the Rock theme */
+    .row, .col-md-12 {
+        float: none;
+        width: initial;
+    }
+
+    .page-wrapper > .navbar-static-side,
+    .rock-top-header {
+        display: none;
+    }
+
+    form > .page-wrapper {
+        padding-top: 0px;
+    }
+
+    .page-wrapper > #content-wrapper {
+        margin-left: 0px !important;
+    }
+
+    #content-wrapper > .main-content {
+        margin: 0px;
+    }
+
+    .code-toolbar .copy {
+        display: none;
+    }
+}

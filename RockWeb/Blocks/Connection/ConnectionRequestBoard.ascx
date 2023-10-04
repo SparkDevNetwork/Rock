@@ -442,19 +442,18 @@
                                                 </ul>
                                             </div>
                                         </div>
-
-                                        <div class="col-sm-12 col-md-3 text-left text-md-right mb-3 mb-md-0">
-                                            <asp:Literal ID="lRequestModalViewModeSideDescription" runat="server" />
-                                            <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
-                                        </div>
-
                                     </div>
 
                                     <asp:Panel runat="server" CssClass="badge-bar mb-2" ID="pnlRequestModalViewModeBadges">
                                         <Rock:BadgeListControl ID="blRequestModalViewModeBadges" runat="server" />
                                     </asp:Panel>
                                 </div>
-
+                            </div>
+                            <div class="row"> <!-- moved this here to give more room to display the attributes -->
+                                <div class="col-sm-12 col-md-12 text-left mb-3 mb-md-0">
+                                    <asp:Literal ID="lRequestModalViewModeSideDescription" runat="server" />
+                                    <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
+                                </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-12">

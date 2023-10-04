@@ -27,12 +27,35 @@ import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, 
 import { useStore } from "@Obsidian/PageState";
 import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+// LPC CODE
+import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+import DropDownList from "@Obsidian/Controls/dropDownList";
+import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+// END LPC CODE
 
 const store = useStore();
+
+// LPC CODE
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+// END LPC CODE
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Registrar",
     components: {
+        // LPC CODE
+        PhoneNumberBox,
+        DropDownList,
+        // END LPC CODE
         TextBox,
         InlineCheckBox,
         EmailBox,
@@ -40,7 +63,20 @@ export default defineComponent({
         RadioButtonList
     },
     setup () {
+        // LPC CODE
+        const invokeBlockAction = useInvokeBlockAction();
+
+        const languageOptions: ListItemBag[] = [
+            { text: "English", value: "English" },
+            { text: "Español", value: "Spanish" }
+        ];
+        // END LPC CODE
+
         return {
+            // LPC CODE
+            languageOptions,
+            invokeBlockAction,
+            // END LPC CODE
             getRegistrationEntryBlockArgs: inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs,
             registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
         };
@@ -125,7 +161,9 @@ export default defineComponent({
             // Add the current person (registrant) if not already added
             if (!usedFamilyGuids[this.registrationEntryState.ownFamilyGuid]) {
                 options.push({
-                    text: "None",
+                    // MODIFIED LPC CODE
+                    text: getLang() == 'es' ? 'Ninguno' : 'None',
+                    // END MODIFIED LPC CODE
                     value: this.registrationEntryState.ownFamilyGuid
                 });
             }
@@ -134,8 +172,13 @@ export default defineComponent({
         },
     },
     methods: {
+        // LPC CODE
+        getLang,
+        // END LPC CODE
         /** Prefill in the registrar form fields based on the admin's settings */
-        prefillRegistrar () {
+        // LPC MODIFIED CODE
+        async prefillRegistrar() {
+        // END LPC MODIFIED CODE
             this.isRegistrarPanelShown = true;
 
             // If the option is to prompt or use the current person, prefill the current person if available
@@ -145,10 +188,37 @@ export default defineComponent({
                 this.registrar.lastName = this.currentPerson.lastName || "";
                 this.registrar.email = this.currentPerson.email || "";
                 this.registrar.familyGuid = this.currentPerson.primaryFamilyGuid || null;
+
+                // LPC CODE
+                const phoneResult = await this.invokeBlockAction<string>("GetMobilePhone", { args: this.getRegistrationEntryBlockArgs() });
+                this.registrar.mobilePhone = phoneResult.data || "";
+
+                const langResult = await this.invokeBlockAction<string>("GetPreferredLanguage", { args: this.getRegistrationEntryBlockArgs() });
+                this.registrar.preferredLanguage = langResult.data || "";
+
+                if (this.registrar.preferredLanguage == "") {
+                    if (getLang() == 'es') {
+                        this.registrar.preferredLanguage = "Spanish";
+                    }
+                    else {
+                        this.registrar.preferredLanguage = "English";
+                    }
+                }
+                // END LPC CODE
+
                 return;
             }
 
-            if (this.viewModel.registrarOption === RegistrarOption.PromptForRegistrar) {
+            // MODIFIED LPC CODE
+            if (this.viewModel.registrarOption === RegistrarOption.UseLoggedInPerson || this.viewModel.registrarOption === RegistrarOption.PromptForRegistrar) {
+                if (getLang() == 'es') {
+                    this.registrar.preferredLanguage = "Spanish";
+                }
+                else {
+                    this.registrar.preferredLanguage = "English";
+                }
+            // END MODIFIED LPC CODE
+
                 return;
             }
 
@@ -159,6 +229,16 @@ export default defineComponent({
                 this.registrar.lastName = firstRegistrantInfo.lastName;
                 this.registrar.email = firstRegistrantInfo.email;
                 this.registrar.familyGuid = this.firstRegistrant.familyGuid;
+                // LPC CODE
+                this.registrar.mobilePhone = firstRegistrantInfo.mobilePhone;
+
+                if (getLang() == 'es') {
+                    this.registrar.preferredLanguage = "Spanish";
+                }
+                else {
+                    this.registrar.preferredLanguage = "English";
+                }
+                // END LPC CODE
 
                 const hasAllInfo = (!!this.registrar.nickName) && (!!this.registrar.lastName) && (!!this.registrar.email);
 
@@ -180,46 +260,76 @@ export default defineComponent({
     },
     template: `
 <div v-if="isRegistrarPanelShown" class="well">
-    <h4>This Registration Was Completed By</h4>
+    <!-- MODIFIED LPC CODE -->
+    <h4 v-if="getLang() == 'es'">Este Registro Fue Completado Por </h4>
+    <h4 v-else>This Registration Was Completed By</h4>
+    <!-- END MODIFIED LPC CODE -->
     <template v-if="useLoggedInPersonForRegistrar">
+        <!-- MODIFIED LPC CODE -->
         <div class="row">
-          <div class="col-md-6 col-sm-6">
-            <StaticFormControl label="First Name" v-model="registrar.nickName" />
+            <div class="col-md-6 col-sm-6">
+                <StaticFormControl :label="getLang() == 'es' ? 'Nombre' : 'First Name'" v-model="registrar.nickName" />
           </div>
-          <div class="col-md-6 col-sm-6">
-            <StaticFormControl label="Last Name" v-model="registrar.lastName" />
+            <div class="col-md-6 col-sm-6">
+                <StaticFormControl :label="getLang() == 'es' ? 'Apellido' : 'Last Name'" v-model="registrar.lastName" />
           </div>
         </div>
         <div class="row">
-          <div class="col-md-6 col-sm-6">
+            <div class="col-md-6 col-sm-6">
             <StaticFormControl label="Email" v-model="registrar.email" />
           </div>
+            <div class="col-md-6 col-sm-6">
+                <StaticFormControl :label="getLang() == 'es' ? 'Teléfono' : 'Mobile Phone'" v-model="registrar.mobilePhone" />
+            </div>
         </div>
+        <div class="row">
+            <div class="col-md-6">
+                <StaticFormControl :label="getLang() == 'es' ? 'Idioma Preferido' : 'Preferred Language'" v-model="registrar.preferredLanguage" />
+            </div>
+        </div>
+        <!-- END MODIFIED LPC CODE -->
     </template>
     <template v-else>
+        <!-- MODIFIED LPC CODE -->
         <div class="row">
             <div class="col-md-6 col-sm-6">
-                <TextBox label="First Name" rules="required" v-model="registrar.nickName" tabIndex="1" />
+                <TextBox :label="getLang() == 'es' ? 'Nombre' : 'First Name'" rules="required" v-model="registrar.nickName" tabIndex="1" />
             </div>
             <div class="col-md-6 col-sm-6">
-                <TextBox label="Last Name" rules="required" v-model="registrar.lastName" tabIndex="2" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6 col-sm-6">
-                <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.email" tabIndex="3" />
-                <InlineCheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.updateEmail" />
-            </div>
-            <div class="col-md-6 col-sm-6">
+                <TextBox :label="getLang() == 'es' ? 'Apellido' : 'Last Name'" v-model="registrar.lastName" tabIndex="2" />
                 <RadioButtonList
                     v-if="familyOptions.length"
-                    :label="(registrar.nickName || 'Person') + ' is in the same immediate family as'"
+                    :label="(registrar.nickName || (getLang() == 'es'? 'La persona' : 'Person')) + ' ' + (getLang() == 'es'? 'está en la misma familia inmediata que' : 'is in the same immediate family as')"
                     rules='required:{"allowEmptyString": true}'
                     v-model="registrar.familyGuid"
                     :items="familyOptions"
                     validationTitle="Family" />
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-6">
+                <EmailBox :label="getLang() == 'es' ? 'Mandar Email de Confirmación a' : 'Send Confirmation Emails To'"  rules="required" v-model="registrar.email" tabIndex="3" />
+                <InlineCheckBox v-if="doShowUpdateEmailOption" :label="getLang() == 'es' ? '¿Deseas actualizar tu cuenta para usar este email?' : 'Should Your Account Be Updated To Use This Email Address?'" v-model="registrar.updateEmail" />
+            </div>
+            <div class="col-md-6">
+                <PhoneNumberBox
+                    :label="getLang() == 'es' ? 'Teléfono' : 'Mobile Phone'"
+                    v-model="registrar.mobilePhone"
+                    rules="required"
+                    tabIndex="4" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList
+                    :label="getLang() == 'es' ? 'Idioma Preferido' : 'Preferred Language'"
+                    v-model="registrar.preferredLanguage"
+                    :items="languageOptions"
+                    rules="required"
+                    tabIndex="5" />
+            </div>
+        </div>
+        <!-- END MODIFIED LPC CODE -->
     </template>
 </div>`
 });

@@ -1,0 +1,23 @@
+<div class="row service-buttons">
+  <a href="https://portal.lakepointe.church/portal" target="_blank">
+      <div class="col-sm-8 col-xs-6">
+          <div class="card text-center" data-toggle="tooltip" title="Search for solutions or submit a ticket" data-delay='{"show":"500", "hide":"250"}'>
+              <div class="card-body">
+                  <i class="far fa-portal-enter"></i>
+                  <h4 class="card-title">Lakepointe Portal</h4>
+              </div>
+          </div>
+      </div>
+  </a>
+
+  <a href="https://app.espace.cool/Account/Login" target="_blank">
+      <div class="col-sm-4 col-xs-6">
+          <div class="card text-center" data-toggle="tooltip" title="Support for room setups" data-delay='{"show":"500", "hide":"250"}'>
+              <div class="card-body">
+                  <i class="far fa-building-o"></i>
+                  <h4 class="card-title">E-Space Request</h4>
+              </div>
+          </div>
+      </div>
+  </a>
+</div>

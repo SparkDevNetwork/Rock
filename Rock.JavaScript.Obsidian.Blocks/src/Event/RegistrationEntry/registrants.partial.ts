@@ -19,6 +19,24 @@ import { defineComponent, inject } from "vue";
 import Registrant from "./registrant.partial";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { RegistrantInfo, RegistrationEntryState } from "./types.partial";
+// LPC CODE
+import Page from "@Obsidian/Utility/page";
+import { useStore } from "@Obsidian/PageState";
+
+const store = useStore();
+
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+// END LPC CODE
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Registrants",
@@ -38,6 +56,9 @@ export default defineComponent({
         };
     },
     methods: {
+        // LPC CODE
+        getLang,
+        // END LPC CODE
         /** The event that handles when the user clicks to move to the previous registrant */
         async onPrevious() {
             if (this.registrationEntryState.currentRegistrantIndex <= 0) {
@@ -49,6 +70,9 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantIndex--;
             this.registrationEntryState.currentRegistrantFormIndex = lastFormIndex;
             await this.persistSession();
+            // LPC CODE
+            Page.smoothScrollToTop();
+            // END LPC CODE
         },
 
         /** The event that handles when the user clicks to move to the next registrant */
@@ -68,6 +92,9 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantIndex++;
             this.registrationEntryState.currentRegistrantFormIndex = 0;
             await this.persistSession();
+            // LPC CODE
+            Page.smoothScrollToTop();
+            // END LPC CODE
         },
 
         /** Copy the common values from the first registrant to the others */
@@ -129,10 +156,17 @@ export default defineComponent({
     template: `
 <div class="registrationentry-registrant">
     <NotificationBox v-if="hasWaitlist && !isOnWaitlist" alertType="success">
-        This {{registrantTerm}} will be fully registered.
+        <!-- MODIFIED LPC CODE -->
+        <p v-if="getLang() == 'es'">Esta {{registrantTerm}} estará completamente registrada.</p>
+        <p v-else> This {{registrantTerm}} will be fully registered.</p>
+        <!-- END MODIFIED LPC CODE -->
     </NotificationBox>
     <NotificationBox v-else-if="isOnWaitlist" alertType="warning">
-        This {{registrantTerm}} will be on the waiting list.
+        
+        <!-- MODIFIED LPC CODE -->
+        <p v-if="getLang() == 'es'">Esta {{registrantTerm}} estará en la lista de espera.</p>
+        <p v-else> This {{registrantTerm}} will be on the waiting list.</p>
+        <!-- END MODIFIED LPC CODE -->
     </NotificationBox>
     <template v-for="(r, i) in registrants" :key="r.guid">
         <Registrant v-show="currentRegistrantIndex === i" :currentRegistrant="r" :isWaitList="isOnWaitlist" @next="onNext" @previous="onPrevious" />

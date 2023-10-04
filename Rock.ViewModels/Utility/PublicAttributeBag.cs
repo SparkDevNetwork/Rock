@@ -95,5 +95,19 @@ namespace Rock.ViewModels.Utility
         /// </summary>
         /// <value>The configuration values.</value>
         public Dictionary<string, string> ConfigurationValues { get; set; }
+
+        // LPC CODE - Pulled in v15.2 changes
+        /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value> The HTML string the is prepended before the attribute's markup. </value>
+        public string PreHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value> The HTML string the is appended after the attribute's markup. </value>
+        public string PostHtml { get; set; }
+        // END LPC CODE - Pulled in v15.2 changes
     }
 }

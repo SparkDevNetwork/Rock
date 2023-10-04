@@ -1,0 +1,36 @@
+{% assign opportunityCount = Opportunities | Size %}
+
+{% if opportunityCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no opportunities that match the criteria</div>
+  </div>
+{% endif %}
+
+{% for opportunity in Opportunities %}
+  <div class="panel panel-default margin-t-md">
+    <div class="panel-heading clearfix">
+      <h2 class="panel-title pull-left">
+        <i class='{{opportunity.IconCssClass}}'></i> {{ opportunity.PublicName }}
+      </h2>
+    </div>
+    <div class="panel-body">
+      <div class="col-md-2">
+          <img src="{{opportunity.PhotoUrl}}" class="title-image img-responsive margin-b-md">
+      </div>
+      <div class="col-md-10">
+        <p>{{opportunity.Summary}}</p>
+		{% if DetailPage contains "?" %}
+			<a class="btn btn-default" href="{{ DetailPage }}&OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
+		{% else %}
+			<a class="btn btn-default" href="{{ DetailPage }}?OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
+		{% endif %}
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+<script type="text/javascript">
+  $( document ).ready(function() {
+    $('.js-group-item').tooltip();
+  });
+</script>

@@ -1,0 +1,35 @@
+{%- comment -%}
+    Title: GroupTypeOptions.lava
+    Description:
+        Gets a formatted and localized version of the group types with their descriptions
+        for use in a single-select or multi-select attribute. Used to get around HTML
+        restrictions within attribute options.
+    Updates:
+        7/5/2023 - Removed Short-Term Life Group:
+            3^<b>Grupo Vida a Corto Plazo:</b><br>Los Grupos de Vida a Corto Plazo se reúnen dentro o fuera del campus y comienzan en diferentes tiempos durante el año. Estos grupos se reúnen por un periodo de tiempo predeterminado&comma; en base al número de semanas por las que el estudio fue creado. Son temáticos por naturaleza&comma; enfocándose en un problema de vida&comma; la práctica de una expectativa bíblica o un libro de la Biblia.,
+            3^<b>Short-Term Life Group:</b><br>Short-Term Life Groups meet on or off campus and start at various times throughout the year. These Life Groups meet for a pre-determined period of time&comma; based on the number of weeks the study was created for. They are primarily topical in nature focusing on a life issue&comma; the practice of a biblical expectation or a book of the Bible.,
+{%- endcomment -%}
+{%- assign lang = 'Global' | PageParameter:'lang' -%}
+{%- if lang and lang != empty -%}
+    {%- assign language = lang -%}
+{%- else -%}
+    {%- assign personId = CurrentPerson.Id -%}
+    {%- capture language -%}{[ GetLanguage personid:personId ]}{%- endcapture -%}
+{%- endif -%}
+
+{%- if language == 'es' %}
+1^<b>Grupo de Vida en el Campus:</b><br>Los Grupos de Vida en el campus se reúnen en nuestros campus de la iglesia semanalmente y están diseñados para que sus miembros aprendan de la Palabra de Dios a través de la enseñanza de un líder/maestro y de conversaciones entre sí.,
+2^<b>Grupo de Vida en Casa:</b><br>Los Grupos de Vida en Casa se reúnen en casas&comma; cafés&comma; o cualquier otro lugar donde	un grupo se pueda reunir. Estos grupos tienen la opción de reunirse durante todo el verano y entre Acción de Gracias y Año Nuevo. Los Grupos de Vida en Casa están diseñados para que los miembros del grupo puedan aprender de la Palabra de Dios a través de una experiencia conversacional dirigida por un líder que dirige un estudio bíblico basado en predicaciones.,
+4^<b>Re:Comprometerse (Grupo de Apoyo):</b><br>Este tipo de grupo es un ministerio de discipulado bíblico que utiliza el matrimonio para descubrir a Dios. Está diseñado tanto para fortalecer a aquellos matrimonios que quieren crecer en su relación&comma; como a aquellos que estén pasando por problemas&comma; creando para ellos un lugar seguro donde poder hablar. Este ministerio está dirigido por parejas casadas que ya han pasado por el programa y han podido experimentar el diseño de Dios para su matrimonio.,
+5^<b>Re:Generación (Grupo de Recuperación):</b><br>
+Este es un programa de Discipulado bíblico basado en 12 pasos para ayudar a las personas a encontrar la libertad. Los grupos pequeños de Re:Generación se reúnen después de la reunión principal. Este grupo se reúnen en cada uno de los campus de Lakepointe en Español los martes en la tarde. El programa está dirigido por líderes que han completado el programa&comma; siendo este un requisito para poder completar tu solicitud.,
+6^<b>Consejería Pre-matrimonial:</b><br>Estos grupos está diseñados para parejas que se han comprometido o están en una relación seria con intención de casarse. Este grupo aborda preguntas y desafíos comunes en el matrimonio con una perspectiva bíblica. Este ministerio está dirigido por parejas casadas que han seguido este plan de estudios.,
+7^<b>Otros Grupos de Recuperación y Apoyo:</b><br>Los grupos de recuperación están diseñados para abordar cualquier problema que alguien pueda enfrentar a través de un camino estructurado y bíblico para encontrar la sanidad en estas batallas. Los Grupos de apoyo están más enfocados en un tema específico o evento de la vida. Estos grupos&comma; son dirigidos por facilitadores capacitados y son un gran recurso para construir comunidad a través del discipulado y la superación de las luchas.
+{%- else -%}
+1^<b>On-Campus Life Group:</b><br>On-Campus Life Groups meet on our church campus weekly and are designed for group members to learn God's Word through the teaching of a gifted leader/teacher and open dialogue.,
+2^<b>Off-Campus Life Group:</b><br>Off-Campus Life Groups meet in homes&comma; coffee shops&comma; workplaces&comma; or any other location where a group can gather. Off-Campus Life Groups are designed for group members to learn God's Word through a conversational experience led by a Bible study leader directing a sermon-based Bible study.,
+4^<b>ReEngage (Support Group):</b><br>re|engage is a Biblical discipleship ministry that uses marriage to discover God. Re|engage is designed as an enrichment for couples who are doing well. It is also designed as a safe place for couples who are struggling. This ministry is led by married couples who have been through the re|engage curriculum and have experienced God's design for marriage.,
+5^<b>ReGen (Recovery Group):</b><br>ReGen is a 12-step based Biblical discipleship program to help people find freedom.ReGen small groups meet after ReGen large group session.  Regen meets on each Lakepointe campus on Tuesday nights and follows the re:generation curriculum. All ReGen leaders must have completed the re:generation curriculum and meet the requirements of a ReGen leader as well as complete the Life Group application for Lakepointe church.,
+6^<b>Merge:</b><br>Merge is the premarital discipleship ministry at Lakepointe Church. Merge is designed for seriously dating or engaged couples. This group addresses common questions and challenges in marriage with a Biblical perspective. This ministry is led by married couples who have observed this curriculum.,
+7^<b>Other Recovery and Support Groups:</b><br>Recovery Groups are designed to address any issues someone may face through a structured and biblical pathway for healing. Support Groups are more focused on a specific topic or life event. These groups&comma; led by trained facilitators&comma; are a great resource for building community through discipleship and overcoming struggles.
+{%- endif %}

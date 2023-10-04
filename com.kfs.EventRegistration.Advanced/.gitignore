@@ -1,0 +1,12 @@
+/bin/*/*.dll
+/bin/*.dll
+/bin/*.pdb
+/bin/*.xml
+/bin/*.config
+/obj/[Dd]ebug
+/obj/Release
+
+/*.suo
+/*.user
+/Test.aspx
+/Test.aspx.cs

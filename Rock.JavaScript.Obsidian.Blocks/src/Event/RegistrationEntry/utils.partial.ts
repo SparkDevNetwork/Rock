@@ -69,11 +69,17 @@ export function getRegistrantBasicInfo(registrant: RegistrantInfo, registrantFor
     const firstNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.FirstName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
     const lastNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.LastName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
     const emailGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.Email && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
+    // LPC CODE
+    const mobilePhoneGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.MobilePhone && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
+    // END LPC CODE
 
     return {
         firstName: (registrant?.fieldValues[firstNameGuid] || "") as string,
         lastName: (registrant?.fieldValues[lastNameGuid] || "") as string,
         email: (registrant?.fieldValues[emailGuid] || "") as string,
+        // LPC CODE
+        mobilePhone: (registrant?.fieldValues[mobilePhoneGuid] || "") as string,
+        // END LPC CODE
         guid: registrant?.guid
     };
 }

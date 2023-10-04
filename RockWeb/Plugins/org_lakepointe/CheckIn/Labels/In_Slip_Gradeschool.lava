@@ -1,0 +1,237 @@
+{%- comment -%} In Slip - Gradeschool for All Campuses {%- endcomment -%}
+
+{%- comment -%}
+    Zebra 200 DPI Label
+{%- endcomment -%}
+
+{%- comment -%}
+    LABEL HEADER FOR PRINTER
+{%- endcomment -%}
+CT~~CD,~CC^~CT~
+^XA~JSN^LT0^MNW^MTD^POI^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
+^XA^MMC^PW800^LL0400^LS0
+
+{%- comment -%}
+    Obtain Picture
+{%- endcomment -%}
+^FD{{ Person | ZebraPhoto:'133',1.15,0.9,'LOGO.PNG',90 }}^FS
+
+{%- comment -%}
+    Print Picture & Title
+{%- endcomment -%}
+^FO657,10^GB133,133,1^FS
+^FO657,10^XGR:LOGO.PNG^FS
+^IDR:LOGO.PNG^FS
+
+{%- comment -%}
+    Print Times
+{%- endcomment -%}
+^FO750,327^FB67,1,0,R^A0R,50,50^FDIN^FS
+^FO713,227^FB167,1,0,R^A0R,37,37^FH\^FD{{ "Now" | Date:"M/d/yyyy" }}^FS
+^FO677,227^FB167,1,0,R^A0R,37,37^FH\^FD{{-Person | GetLastCheckinTime-}}^FS
+
+{%- comment -%}
+    Print Name
+{%- endcomment -%}
+^FO617,7^FB387,1,0,L^A0R,37,37^FH\^FD{{ Person.NickName }}^FS
+^FO583,7^FB387,1,0,L^A0R,37,37^FH\^FD{{ Person.LastName }}^FS
+^FO553,7^FB293,1,0,L^A0R,27,27^FH\^FD{{Person.BirthDate | Date:"M/d/yyyy"}}^FS
+
+{%- comment -%}
+    Print Group Information
+{%- endcomment -%}
+^FO477,133^FB100,1,0,L^A0R,80,80^FH\^FD{% assign personSelfRelease = Person | Attribute:'Arena-16-384' %}
+{% if personSelfRelease == 'Yes' %}S{% endif %}^FS
+^FO477,63^FB100,1,0,L^A0R,80,80^FH\^FD{% assign personMedicalAlert = Person | Attribute:'Arena-16-81' %}
+{% if personMedicalAlert  != '' %}M{% endif %}^FS
+^FO477,7^FB100,L^A0R,80,80^FH\^FD{% assign personAllergy = Person | Attribute:'Allergy' %}{% if personAllergy != '' -%}A{% endif -%}^FS
+
+^FO473,7^FB387,1,0,L^A0R,20,20^FH\^FD{% assign personAllergy = Person | Attribute:'Allergy' %}{% if personAllergy != '' %}{{ personAllergy | Truncate:100,'...' }}{% endif %}^FS
+^FO427,7^FB350,2,0,L^A0R,20,20^FH\^FD{{Group.Id | GroupById | Attribute:'LOCATION'}}^FS
+^FO367,7^FB350,2,0,L^A0R,20,20^FH\^FD{% for group in GroupType.Groups %}{% if forloop.index0 > 0 %} | {% endif %}{{group.Id | GroupById | Attribute:'SNACK'}}{% endfor %}^FS
+
+^FO380,350^FB310,1,0,C^A0,67,67^FH\^FD{{- Group.Id | GroupById | Attribute:'GROUPID' -}}^FS
+
+{%- comment -%}
+    Print Checkout Information
+{%- endcomment -%}
+^FO333,7^FB127,1,0,L^A0R,20,20^FDChecked in by:^FS
+^FO333,133^FB260,1,0,L^A0R,27,27^FH\^FD{%- assign canCheckin = Person | CanCheckinRelationships:null,true -%}
+{%- assign canCheckInSize = canCheckin | Size -%}
+{%- if canCheckInSize >= 1 -%}
+    {%- assign checkinPerson = canCheckin | Index: 0 -%}
+    {{- checkinPerson.FullName -}}
+{%- endif -%}^FS
+
+{%- comment -%}
+    Print All Authorized People
+{%- endcomment -%}
+^FD^FD
+{%- assign canCheckin = Person | CanCheckinRelationships:null,true -%}
+{%- assign canCheckInSize = canCheckin | Size -%}
+
+{%- assign startX1 = 200 -%}
+{%- assign startY1 = 33 -%}
+
+{%- assign startX2 = 533 -%}
+{%- assign startY2 = 33 -%}
+
+{%- assign changeLabelX = 33 -%}
+{%- assign changeLabelY = 33 -%}
+
+{%- assign changeX = 167 -%}
+{%- assign changeY = 200 -%}
+
+{%- assign picSize = 133 -%}
+{%- assign picSizeString = 133 | ToString -%}
+
+{%- assign numPicsPerRow = 2 -%}
+{%- assign numRowsLabel1 = 2 -%}
+{%- assign numRowsLabelRest = 4 -%}
+{%- assign labelBlock = picSize | Plus:changeLabelY | Plus: changeLabelY -%}
+{%- assign numLabelsSubsPages = 8 -%}
+
+{%- assign currentPicNum = 1 -%}
+
+{%- if canCheckInSize == 0 -%}
+    {%- comment -%}
+        THE PERSON HAS NO AUTHORIZED!
+    {%- endcomment -%}
+    {%- assign person = 1 | PersonById -%}
+    ^FO200,033^GB133,133,1^FS{%- assign photo = person | ZebraPhoto:'133',1.15,0.9,'CHECK1.PNG',90 -%}^FD{{- photo -}}^FS
+    ^FO200,033^XGR:CHECK1.PNG^FS^FO167,000^FB200,2,0,C^A0R,17,17^FH\^FD{{- person.FullName -}}^FS
+{%- else -%}
+    {%- comment -%}
+        We have at least 1 OA.
+    {%- endcomment -%}
+
+    {% comment %}
+        PRINT FIRST LABEL PEOPLE
+    {% endcomment %}
+    {%- assign X = startX1 -%}
+    {%- assign Y = startY1 -%}
+
+    {%- for i in (1..numRowsLabel1) -%}
+        {%- for j in (1..numPicsPerRow) -%}
+            {%- if canCheckInSize >= currentPicNum -%}
+                {%- assign personIndex = currentPicNum | Minus:1 -%}
+                {%- assign person = canCheckin | Index:personIndex -%}
+                ^FO{{- X -}},{{- Y -}}^GB{{- picSize -}},{{- picSize -}},1^FS
+
+                {%- assign currentPicNumString = currentPicNum | ToString -%}
+                {%- assign currentPicNumString = currentPicNum |Append:'.PNG' -%}
+
+                {%- assign photo = person | ZebraPhoto:picSizeString,1.15,0.9,currentPicNumString,90 -%}
+                ^FD{{- photo -}}^FS
+                ^FO{{- X -}},{{- Y -}}^XGR:{{- currentPicNum -}}.PNG^FS
+
+                {%- assign X = X | Minus:changeLabelX -%}
+                {%- assign Y = Y | Minus:changeLabelY -%}
+
+                ^FO{{- X -}},{{- Y -}}^FB{{- labelBlock -}},2,0,C^A0R,17,17^FH\^FD{{- person.FullName -}}^FS
+
+                {%- assign X = X | Plus:changeLabelX -%}
+                {%- assign Y = Y | Plus:changeLabelY -%}
+
+                {%- assign Y = Y | Plus:changeY -%}
+
+                {%- assign currentPicNum = currentPicNum | Plus:1 -%}
+            {%- endif -%}
+        {%- endfor -%}
+
+        {%- assign X = X | Minus:changeX -%}
+        {%- assign Y = startY1 -%}
+    {%- endfor -%}
+
+    {% comment %}
+        PRINT SUBSEQUENT LABEL PEOPLE
+    {% endcomment %}
+    {%- assign newSize = canCheckInSize -%}
+    {%- assign firstLabelPicsNum = numPicsPerRow | Times:numRowsLabel1 -%}
+    {%- assign newSize = newSize | Minus:firstLabelPicsNum -%}
+    {%- assign numLabels = newSize | DividedBy:numLabelsSubsPages,1 | Ceiling -%}
+
+    {%- if numLabels >= 1 -%}
+        {%- for i in (1..numLabels) -%}
+            {% comment %}
+                MAKE A NEW PAGE, KEEP GOING!
+            {% endcomment %}
+            ^MMT
+            ^XZ
+            ^XA
+
+            {% comment %}
+                Print Security Code and Date
+            {% endcomment %}
+            ^FO750,7^FB387,1,0,L^A0R,33,33^FH\^FD{{-Person.NickName-}}^FS
+            ^FO713,7^FB387,1,0,L^A0R,33,33^FH\^FD{{-Person.LastName-}}^FS
+
+            ^FO750,327^FB67,1,0,R^A0R,50,50^FDIN^FS
+            ^FO713,227^FB167,1,0,R^A0R,37,37^FH\^FD{{ "Now" | Date:"M/d/yyyy" }}^FS
+            ^FO677,227^FB167,1,0,R^A0R,37,37^FH\^FD{{ "Now" | Date:"hh:mm tt" }}^FS
+
+            {%- assign X = startX2 -%}
+            {%- assign Y = startY2 -%}
+
+            {%- for i in (1..numRowsLabelRest) -%}
+                {%- for j in (1..numPicsPerRow) -%}
+                    {%- if canCheckInSize >= currentPicNum -%}
+                        {%- assign personIndex = currentPicNum | Minus:1 -%}
+                        {%- assign person = canCheckin | Index:personIndex -%}
+                        ^FO{{- X -}},{{- Y -}}^GB{{- picSize -}},{{- picSize -}},1^FS
+
+                        {%- assign currentPicNumString = currentPicNum | ToString -%}
+                        {%- assign currentPicNumString = currentPicNum |Append:'.PNG' -%}
+
+                        {%- assign photo = person | ZebraPhoto:picSizeString,1.15,0.9,currentPicNumString,90 -%}
+                        ^FD{{- photo -}}^FS
+                        ^FO{{- X -}},{{- Y -}}^XGR:{{- currentPicNum -}}.PNG^FS
+
+                        {%- assign X = X | Minus:changeLabelX -%}
+                        {%- assign Y = Y | Minus:changeLabelY -%}
+
+                        ^FO{{- X -}},{{- Y -}}^FB{{- labelBlock -}},2,0,C^A0R,17,17^FH\^FD{{- person.FullName -}}^FS
+
+                        {%- assign X = X | Plus:changeLabelX -%}
+                        {%- assign Y = Y | Plus:changeLabelY -%}
+
+                        {%- assign Y = Y | Plus:changeY -%}
+
+                        {%- assign currentPicNum = currentPicNum | Plus:1 -%}
+                    {%- endif -%}
+                {%- endfor -%}
+
+                {%- assign X = X | Minus:changeX -%}
+                {%- assign Y = startY2 -%}
+            {%- endfor -%}
+        {%- endfor -%}
+    {%- endif -%}
+{%- endif -%}
+
+^IDR:1.PNG^FS
+{%- for i in (2..canCheckInSize) -%}
+    ^IDR:{{-i-}}.PNG^FS
+{%- endfor -%}
+
+^FS^FS
+
+{%- comment -%}
+    Print Memo Label
+{%- endcomment -%}
+^FD^FD
+{%- assign memo = Group.Id | GroupById | Attribute:'MEMO'-%}
+{%- assign memSize = memo | Size -%}
+
+{%- if memSize > 0 -%}
+    ^MMT
+    ^XZ
+    ^XA
+    ^FO33,13^FB350,17,0,L^A0R,27,27^FH\^FD{{-memo-}}^FS
+{%- endif -%}
+^FS^FS
+
+{%- comment -%}
+    LABEL END FOR PRINTER
+{%- endcomment -%}
+^MMC
+^XZ

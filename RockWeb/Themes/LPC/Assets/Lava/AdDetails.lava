@@ -1,0 +1,7 @@
+﻿{% for item in Items %}
+{% assign detailImageGuid = item | Attribute:'DetailImage','RawValue' %}
+{% if detailImageGuid != '' %}
+<img src="/GetImage.ashx?Guid={{ detailImageGuid }}" class="title-image img-responsive">
+  {% endif %}
+  <h1>{{ item.Title }}</h1>{{ item.Content }}
+  {% endfor -%}

@@ -372,6 +372,16 @@ namespace RockWeb.Blocks.CheckIn
                 hfGroupId.Value = checkInFamily.Group.Id.ToString();
                 mdEditFamily.Title = checkInFamily.Group.Name;
 
+                if ( EditFamilyState.FamilyHomeAddressLocation != null )
+                {
+                    addHome.SetValues( EditFamilyState.FamilyHomeAddressLocation );
+                    hfLocationId.Value = EditFamilyState.FamilyHomeAddressLocation.Id.ToString();
+                }
+                else
+                {
+                    hfLocationId.Value = String.Empty;
+                }
+
                 int groupId = hfGroupId.Value.AsInteger();
                 var rockContext = new RockContext();
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -569,6 +579,57 @@ namespace RockWeb.Blocks.CheckIn
             {
                 saveResult = EditFamilyState.SaveFamilyAndPersonsToDatabase( kioskCampusId, rockContext );
             } );
+
+            var homeLocation = new Location();
+            addHome.GetValues( homeLocation );
+
+            if ( homeLocation.Street1 != null && homeLocation.City != null && homeLocation.State != null && homeLocation.PostalCode != null )
+            {
+                var locationService = new LocationService(rockContext);
+                homeLocation = locationService.Get(
+                    homeLocation.Street1,
+                    homeLocation.Street2,
+                    homeLocation.City,
+                    homeLocation.State,
+                    homeLocation.PostalCode,
+                    homeLocation.Country,
+                    true );
+
+                if ( homeLocation.Id != hfLocationId.ValueAsInt() )
+                {
+                    var homeContext = new RockContext();
+                    var groupLocationService = new GroupLocationService( homeContext );
+                    var groupLocation = groupLocationService.Queryable()
+                        .Where( l => l.GroupId == EditFamilyState.GroupId.Value )
+                        .ToList();
+                    var homeLocationDV = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid(), homeContext );
+                    var originalHomeGL = groupLocation.Where( l => l.GroupLocationTypeValueId == homeLocationDV.Id ).FirstOrDefault();
+
+                    if ( originalHomeGL == null || originalHomeGL.Id != homeLocation.Id )
+                    {
+                        if ( originalHomeGL != null )
+                        {
+                            originalHomeGL.IsMailingLocation = false;
+                            originalHomeGL.IsMappedLocation = false;
+                            originalHomeGL.GroupLocationTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid(), homeContext ).Id;
+                        }
+                        var homeGroupLocation = new GroupLocation()
+                        {
+                            GroupLocationTypeValueId = homeLocationDV.Id,
+                            LocationId = homeLocation.Id,
+                            GroupId = EditFamilyState.GroupId.Value,
+                            IsMappedLocation = true,
+                            IsMailingLocation = true
+                        };
+
+                        groupLocationService.Add( homeGroupLocation );
+
+                        homeContext.SaveChanges();
+                    }
+
+                }
+            }
+
 
             // Queue up any Workflows that are configured to fire after a new person and/or family is added
             if ( saveResult.NewFamilyList.Any() )

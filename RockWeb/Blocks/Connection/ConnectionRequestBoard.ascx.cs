@@ -1998,7 +1998,8 @@ namespace RockWeb.Blocks.Connection
             var enableConnectionRelatedControl = true;
             if ( viewModel == null || viewModel.ConnectionState != ConnectionState.Connected )
             {
-                ignoredConnectionTypes.Add( ConnectionState.Connected );
+                // LPC Change - v14 removed "Connected" state from connection request edit. This change reverts that.
+                // ignoredConnectionTypes.Add( ConnectionState.Connected );
             }
             else
             {
