@@ -29,6 +29,7 @@ namespace Rock.Tests.Integration
 {
     [TestClass]
     [DeploymentItem( "app.TestSettings.config" )]
+    [DeploymentItem( "app.ConnectionStrings.config" )]
     public sealed class IntegrationTestInitializer
     {
         public static bool InitializeDatabaseOnStartup = true;
