@@ -416,7 +416,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
             "category": null,
             "disabled": null
         }
-    ]
+    ],
+    "hideProgressBar": false
 };
 
 const addressControlConfiguration = {

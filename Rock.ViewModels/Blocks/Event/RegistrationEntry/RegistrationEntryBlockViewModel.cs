@@ -423,6 +423,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The ethnicities available for the user to select.
         /// </value>
         public List<ListItemBag> Ethnicities { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that indicates if the progress bar should be hidden.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the progress bar should be hidden; otherwise <c>false</c>.
+        /// </value>
+        public bool HideProgressBar { get; set; }
     }
 
     /// <summary>

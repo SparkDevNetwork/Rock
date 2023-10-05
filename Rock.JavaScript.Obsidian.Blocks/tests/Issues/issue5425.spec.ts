@@ -1,6 +1,6 @@
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import RegistrationEntry from "../../src/Event/registrationEntry";
-import { RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import { RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { waitFor } from "../utils";
 import { Guid } from "@Obsidian/Types";
@@ -18,130 +18,61 @@ function getDefaultAttributeFieldValues(): HttpResult<Record<Guid, unknown>> {
         statusCode: 200,
         errorMessage: null,
         data: {
-            "3db902c3-4c74-4059-9563-d97bf4017fd7": ""
         }
     };
 }
 
-describe("Issue 5612", () => {
-    test("Moving to first registrant scrolls to top", async () => {
+describe("Issue 5425", () => {
+    test("Progress bar is hidden when disabled", async () => {
         const blockActions = mockBlockActions({
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
 
-        const instance = mountBlock(RegistrationEntry, getConfigurationValues(), blockActions);
+        // Silence console errors about scrollTo() not being implemented in jsdom.
+        global.scrollTo = jest.fn();
 
-        const scrollToSpy = jest.fn();
-        global.scrollTo = scrollToSpy;
+        const config = getConfigurationValues();
 
-        // Move to the first registrant.
-        await instance.findAll(".btn-primary")
-            .filter(node => node.text() === "Next" && node.isVisible())[0]
-            .trigger("click");
+        config.hideProgressBar = true;
 
-        expect(scrollToSpy).toHaveBeenCalled();
+        const instance = mountBlock(RegistrationEntry,
+            config,
+            blockActions, {
+        });
+
+        // Wait for the block to become ready.
+        waitFor(() => {
+            expect(instance.find(".registrationentry-intro").isVisible()).toBe(true);
+        });
+
+        // Verify the progress tracker is hidden.
+        expect(instance.find(".progress-tracker").exists()).toBe(false);
     });
 
-    test("Moving to second registrant scrolls to top", async () => {
+    test("Progress bar is visible when enabled", async () => {
         const blockActions = mockBlockActions({
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
 
-        const instance = mountBlock(RegistrationEntry, getConfigurationValues(), blockActions);
+        // Silence console errors about scrollTo() not being implemented in jsdom.
+        global.scrollTo = jest.fn();
 
-        const scrollToSpy = jest.fn();
-        global.scrollTo = scrollToSpy;
+        const config = getConfigurationValues();
 
-        // Configure registration for 2 registrants.
-        await instance.find(".registrationentry-intro .numberincrement-up").trigger("click");
-        const registrantCount = instance.find(".registrationentry-intro .numberincrement-value").text();
+        config.hideProgressBar = false;
 
-        // Make sure we now have two registrants.
-        expect(registrantCount).toBe("2");
-
-        // Move to the first registrant.
-        await instance.findAll(".btn-primary")
-            .filter(node => node.text() === "Next" && node.isVisible())[0]
-            .trigger("click");
-
-        await waitFor(() => {
-            expect(instance.find(".registrationentry-registrant").exists()).toBe(true);
+        const instance = mountBlock(RegistrationEntry,
+            config,
+            blockActions, {
         });
 
-        expect(scrollToSpy).toHaveBeenCalled();
-
-        // Find the first registrant.
-        const firstRegistrant = instance.findAll(".registrationentry-registrant > div")[0];
-
-        // Set values so we can move to the next screen.
-        await firstRegistrant.findAll("input")[0].setValue("Ted");
-        await firstRegistrant.findAll("input")[1].setValue("Decker");
-
-        scrollToSpy.mockClear();
-
-        // Move to the second registrant.
-        await instance.findAll(".btn-primary")
-            .filter(node => node.text() === "Next" && node.isVisible())[0]
-            .trigger("click");
-
-        await waitFor(() => {
-            const visibleRegistrant = instance.findAll(".registrationentry-registrant > div")
-                .filter(node => node.isVisible())[0];
-
-            expect(visibleRegistrant.findAll("input")[0].element.value).toBe("");
+        // Wait for the block to become ready.
+        waitFor(() => {
+            expect(instance.find(".registrationentry-intro").isVisible()).toBe(true);
         });
 
-        // There can be a slight delay before the scroll event triggers.
-        await waitFor(() => expect(scrollToSpy).toHaveBeenCalled());
-    });
-
-    test("Moving to second form scrolls to top", async () => {
-        const configuration = getConfigurationValues();
-        configuration.registrantForms.push(JSON.parse(JSON.stringify(secondFormConfiguration)));
-
-        const blockActions = mockBlockActions({
-            GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
-        });
-
-        const instance = mountBlock(RegistrationEntry, configuration, blockActions);
-
-        const scrollToSpy = jest.fn();
-        global.scrollTo = scrollToSpy;
-
-        // Move to the first registrant.
-        await instance.findAll(".btn-primary")
-            .filter(node => node.text() === "Next" && node.isVisible())[0]
-            .trigger("click");
-
-        await waitFor(() => {
-            expect(instance.find(".registrationentry-registrant").exists()).toBe(true);
-        });
-
-        expect(scrollToSpy).toHaveBeenCalled();
-
-        // Find the first registrant.
-        const firstRegistrant = instance.findAll(".registrationentry-registrant > div")[0];
-
-        // Set values so we can move to the next screen.
-        await firstRegistrant.findAll("input")[0].setValue("Ted");
-        await firstRegistrant.findAll("input")[1].setValue("Decker");
-
-        scrollToSpy.mockClear();
-
-        // Move to the second form.
-        await instance.findAll(".btn-primary")
-            .filter(node => node.text() === "Next" && node.isVisible())[0]
-            .trigger("click");
-
-        await waitFor(() => {
-            const secondFormField = firstRegistrant.findAll("label")
-                .filter(node => node.text().startsWith("Second Form Value"))[0];
-
-            expect(secondFormField.isVisible()).toBe(true);
-        });
-
-        // There can be a slight delay before the scroll event triggers.
-        await waitFor(() => expect(scrollToSpy).toHaveBeenCalled());
+        // Verify the progress tracker is hidden.
+        expect(instance.find(".progress-tracker").exists()).toBe(true);
     });
 });
 
@@ -152,19 +83,18 @@ const configurationValues: RegistrationEntryBlockViewModel = {
     "allowRegistrationUpdates": true,
     "timeoutMinutes": null,
     "session": {
-        "registrationSessionGuid": "2dea8731-b754-478d-b8d5-d06aaeec65bd",
+        "registrationSessionGuid": "8475a503-e3e0-4362-9d06-17dc7a893b2c",
         "registrationGuid": null,
         "registrants": [
             {
                 "isOnWaitList": false,
-                "familyGuid": "2d2ce5a1-d9a3-42a2-aea7-81cac4736035",
+                "familyGuid": "5a5ffdd3-91a1-4f87-9f7c-8f66016fc806",
                 "personGuid": null,
-                "fieldValues": {
-                },
+                "fieldValues": {},
                 "cost": 0.0,
                 "feeItemQuantities": {},
                 "signatureData": null,
-                "guid": "9aed944a-1e9e-419b-91a5-3c4ead30fa33"
+                "guid": "6aacfa38-daef-4f46-8b76-30a398517bf8"
             }
         ],
         "fieldValues": null,
@@ -174,9 +104,9 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         "amountToPayNow": 0.0,
         "discountAmount": 0.0,
         "discountPercentage": 0.0,
+        "discountMaxRegistrants": 0.0,
         "previouslyPaid": 0.0,
-        "savedAccountGuid": null,
-        "discountMaxRegistrants": 0
+        "savedAccountGuid": null
     },
     "isUnauthorized": false,
     "instructionsHtml": "",
@@ -187,7 +117,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         {
             "fields": [
                 {
-                    "guid": "9f017ca7-a18e-48cb-a468-e8529bc50bf5",
+                    "guid": "257e3ff3-1d5b-4c54-9ab9-3bb10b98abb3",
                     "fieldSource": 0,
                     "personFieldType": 0,
                     "isRequired": true,
@@ -200,7 +130,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "isSharedValue": false
                 },
                 {
-                    "guid": "88e99b84-edd9-41e6-b37d-c5a612984f23",
+                    "guid": "a44c143e-a511-41f5-8fe3-aba72f4f1e30",
                     "fieldSource": 0,
                     "personFieldType": 1,
                     "isRequired": true,
@@ -234,7 +164,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
     "registrationTerm": "Registration",
     "spotsRemaining": null,
     "waitListEnabled": false,
-    "instanceName": "Issue #5547 Instance",
+    "instanceName": "Issue 5425 Instance",
     "pluralRegistrationTerm": "Registrations",
     "amountDueToday": null,
     "initialAmountToPay": null,
@@ -261,7 +191,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
             "disabled": null
         },
         {
-            "value": "802fafa9-58f5-4ccb-b293-997a262d7703",
+            "value": "96b57219-fe47-48eb-a2b7-4850b5fa7371",
             "text": "Unknown",
             "category": null,
             "disabled": null
@@ -451,37 +381,4 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         }
     ],
     "hideProgressBar": false
-};
-
-const secondFormConfiguration: RegistrationEntryBlockFormViewModel = {
-    "fields": [
-        {
-            "guid": "3db902c3-4c74-4059-9563-d97bf4017fd7",
-            "fieldSource": 4,
-            "personFieldType": 0,
-            "isRequired": false,
-            "attribute": {
-                "fieldTypeGuid": "9c204cd0-1233-41c5-818a-c5da439445aa",
-                "attributeGuid": "c1d421d7-2461-4547-84c3-58bee6e87b3c",
-                "name": "Second Form Value",
-                "key": "SecondFormValue",
-                "description": "",
-                "isRequired": false,
-                "order": 0,
-                "categories": [],
-                "configurationValues": {
-                    "ispassword": "False",
-                    "maxcharacters": "",
-                    "showcountdown": "False"
-                },
-                "preHtml": "",
-                "postHtml": ""
-            },
-            "visibilityRuleType": 1,
-            "visibilityRules": [],
-            "preHtml": "",
-            "postHtml": "",
-            "showOnWaitList": false,
-            "isSharedValue": false
-        }]
 };

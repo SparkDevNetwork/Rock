@@ -2926,6 +2926,7 @@ namespace Rock.Blocks.Event
                 RegistrationTerm = registrationTerm,
                 RegistrantForms = formViewModels,
                 Fees = fees,
+                HideProgressBar = !GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean(),
                 FamilyMembers = familyMembers,
                 MaxRegistrants = context.RegistrationSettings.MaxRegistrants ?? 25,
                 RegistrantsSameFamily = ( int ) context.RegistrationSettings.RegistrantsSameFamily,

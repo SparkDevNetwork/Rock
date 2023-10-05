@@ -594,7 +594,7 @@ export default defineComponent({
     </NotificationBox>
     <template v-else>
         <h1 v-if="currentStep !== steps.intro" v-html="stepTitleHtml"></h1>
-        <ProgressTracker v-if="currentStep !== steps.success" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
+        <ProgressTracker v-if="viewModel.hideProgressBar !== true && currentStep !== steps.success" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
             <template #aside>
                 <div v-if="secondsBeforeExpiration >= 0" v-show="secondsBeforeExpiration <= (30 * 60)" class="remaining-time flex-grow-1 flex-md-grow-0">
                     <NotificationBox v-if="hasSessionRenewalSuccess" alertType="success" class="m-0 pt-3" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
