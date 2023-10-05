@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { Gender } from "@Obsidian/Enums/Crm/gender";
 import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -44,7 +45,7 @@ export type PersonBasicEditorBag = {
 
     personEthnicity?: ListItemBag | null;
 
-    personGender: number;
+    personGender: Gender;
 
     personGradeOffset?: ListItemBag | null;
 

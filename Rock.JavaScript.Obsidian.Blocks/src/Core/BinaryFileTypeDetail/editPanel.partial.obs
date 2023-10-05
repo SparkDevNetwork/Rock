@@ -134,6 +134,9 @@
     import { BinaryFileTypeBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeBag";
     import { BinaryFileTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeDetailOptionsBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { ColorDepth } from "@Obsidian/Enums/Core/colorDepth";
+    import { Format } from "@Obsidian/Enums/Core/format";
+    import { Resolution } from "@Obsidian/Enums/Core/resolution";
 
     const props = defineProps({
         modelValue: {
@@ -327,12 +330,12 @@
             maxFileSizeBytes: maxFileSizeBytes.value,
             maxWidth: maxWidth.value,
             maxHeight: maxHeight.value,
-            preferredColorDepth: toNumber(preferredColorDepth.value),
+            preferredColorDepth: toNumber(preferredColorDepth.value) as ColorDepth,
             preferredRequired: preferredRequired.value,
             cacheToServerFileSystem: cacheToServerFileSystem.value,
             cacheControlHeaderSettings: cacheControlHeaderSettings.value,
-            preferredFormat: toNumber(preferredFormat.value),
-            preferredResolution: toNumber(preferredResolution.value)
+            preferredFormat: toNumber(preferredFormat.value) as Format,
+            preferredResolution: toNumber(preferredResolution.value) as Resolution
         };
 
         emit("update:modelValue", newValue);

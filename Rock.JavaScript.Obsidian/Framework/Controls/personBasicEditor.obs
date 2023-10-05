@@ -43,6 +43,7 @@
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
 
     const props = defineProps({
         /**
@@ -235,7 +236,7 @@
             return internalValue.value.personGender?.toString() ?? undefined;
         },
         set(val) {
-            internalValue.value.personGender = parseInt(val ?? "", 10) ?? null;
+            internalValue.value.personGender = parseInt(val ?? "", 10) as Gender ?? null;
         }
     });
     const personRace = computed({
