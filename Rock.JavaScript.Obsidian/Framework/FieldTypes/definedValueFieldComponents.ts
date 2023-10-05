@@ -141,7 +141,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<DropDownList v-if="!isMultiple || configAttributes.enhanceForLongLists" v-model="internalValue" v-bind="configAttributes" :items="options" :showBlankItem="!isRequired" />
+<DropDownList v-if="!isMultiple || configAttributes.enhanceForLongLists" v-model="internalValue" v-bind="configAttributes" :items="options" />
 <CheckBoxList v-else v-model="internalValues" :items="options" horizontal :repeatColumns="repeatColumns" />
 `
 });
