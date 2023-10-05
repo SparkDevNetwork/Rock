@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -68,7 +68,7 @@ namespace Rock.Workflow.Action
 
             try
             {
-                object sqlResult = DbService.ExecuteScaler( query, System.Data.CommandType.Text, parameters );
+                object sqlResult = DbService.ExecuteScalar( query, System.Data.CommandType.Text, parameters, null );
                 action.AddLogEntry( "SQL query has been run" );
 
                 if ( sqlResult != null )

@@ -38,6 +38,7 @@ namespace Rock.Tests.Integration
         {
             private const string TestDataForeignKey = "test_data";
             private const string ScheduleSat1630Guid = "7883CAC8-6E30-482B-95A7-2F0DEE859BE1";
+            private const string ScheduleSun1200Guid = "1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45";
             private const string FinancesClassOccurrenceSat1630Guid = "E7116C5A-9FEE-42D4-A0DB-7FEBFCCB6B8B";
             private const string FinancesClassOccurrenceSun1200Guid = "3F3EA420-E3F0-435A-9401-C2D058EF37DE";
 
@@ -133,36 +134,66 @@ namespace Rock.Tests.Integration
             /// Creates a new Event Item Occurrence - an actual set of one or more instances of an EventItem.
             /// The EventItem defines the template for the actual scheduled events represented by the EventItemOccurrence.
             /// </summary>
-            public static EventItemOccurrence CreateEventItemOccurrence( CreateEventItemOccurrenceActionArgs actionInfo, RockContext rockContext )
+            public static EventItemOccurrence CreateEventItemOccurrence( CreateEventItemOccurrenceActionArgs args )
             {
-                rockContext = rockContext ?? new RockContext();
+                var rockContext = new RockContext();
+                var occurrenceService = new EventItemOccurrenceService( rockContext );
+
+                EventItemOccurrence occurrence = null;
+                if ( args.Guid != null )
+                {
+                    occurrence = occurrenceService.Get( args.Guid.Value );
+                    if ( occurrence != null )
+                    {
+                        if ( args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Fail )
+                        {
+                            throw new Exception( "Item exists." );
+                        }
+                        else if ( args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Ignore )
+                        {
+                            return occurrence;
+                        }
+                        else if ( args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Replace )
+                        {
+                            var isDeleted = DeleteEventItemOccurrence( args.Guid.ToString(), rockContext );
+                            if ( !isDeleted )
+                            {
+                                throw new Exception( "Could not replace existing item." );
+                            }
+                            occurrence = null;
+                        }
+                    }
+                }
+
+                if ( occurrence == null )
+                {
+                    occurrence = new EventItemOccurrence();
+                    occurrenceService.Add( occurrence );
+                }
 
                 // Get Event
                 var eventItemService = new EventItemService( rockContext );
-                var eventItem = eventItemService.Queryable().GetByIdentifierOrThrow( actionInfo.EventIdentifier );
+                var eventItem = eventItemService.Queryable().GetByIdentifierOrThrow( args.EventIdentifier );
 
                 // Get Schedule
                 var scheduleService = new ScheduleService( rockContext );
-                var schedule = scheduleService.Queryable().GetByIdentifierOrThrow( actionInfo.ScheduleIdentifier );
+                var schedule = scheduleService.Queryable().GetByIdentifierOrThrow( args.ScheduleIdentifier );
 
                 // Get Campus
                 var campusService = new CampusService( rockContext );
-                var campus = campusService.Queryable().GetByIdentifierOrThrow( actionInfo.CampusIdentifier );
+                var campus = campusService.Queryable().GetByIdentifierOrThrow( args.CampusIdentifier );
 
-                // Create new instance and set properties.
-                var occurrenceService = new EventItemOccurrenceService( rockContext );
+                // Set properties.
+                occurrence.Guid = args.Guid ?? Guid.NewGuid();
+                occurrence.ForeignKey = args.ForeignKey;
+                occurrence.EventItemId = eventItem.Id;
+                occurrence.Location = args.MeetingLocation;
+                occurrence.ScheduleId = schedule.Id;
+                occurrence.CampusId = campus.Id;
 
-                var newOccurrence = new EventItemOccurrence();
-                occurrenceService.Add( newOccurrence );
+                rockContext.SaveChanges();
 
-                newOccurrence.Guid = actionInfo.Guid ?? Guid.NewGuid();
-                newOccurrence.ForeignKey = actionInfo.ForeignKey;
-                newOccurrence.EventItemId = eventItem.Id;
-                newOccurrence.Location = actionInfo.MeetingLocation;
-                newOccurrence.ScheduleId = schedule.Id;
-                newOccurrence.CampusId = campus.Id;
-
-                return newOccurrence;
+                return occurrence;
             }
 
             #endregion
@@ -390,6 +421,8 @@ namespace Rock.Tests.Integration
 
             #endregion
 
+            #region Test Data
+
             /// <summary>
             /// Modifies the Rock Solid Finances Class to add multiple schedules and campuses.
             /// </summary>
@@ -398,8 +431,7 @@ namespace Rock.Tests.Integration
                 var rockContext = new RockContext();
 
                 // Create Campus "Stepping Stone".
-                var campus = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
-
+                var campusNew = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
                 rockContext.SaveChanges();
 
                 // Add an occurrence of this event for each Campus.
@@ -410,10 +442,11 @@ namespace Rock.Tests.Integration
                     EventIdentifier = TestGuids.Events.EventIdentifierRockSolidFinancesClass,
                     MeetingLocation = "Meeting Room 1",
                     ScheduleIdentifier = ScheduleSat1630Guid,
-                    CampusIdentifier = TestGuids.Crm.CampusMain
+                    CampusIdentifier = TestGuids.Crm.CampusMain,
+                    ExistingItemStrategy = CreateExistingItemStrategySpecifier.Update
                 };
 
-                var financeEvent1 = CreateEventItemOccurrence( event1Args, rockContext );
+                var financeEvent1 = CreateEventItemOccurrence( event1Args );
 
                 var event2Args = new CreateEventItemOccurrenceActionArgs()
                 {
@@ -421,14 +454,49 @@ namespace Rock.Tests.Integration
                     ForeignKey = TestDataForeignKey,
                     EventIdentifier = TestGuids.Events.EventIdentifierRockSolidFinancesClass,
                     MeetingLocation = "Meeting Room 2",
-                    ScheduleIdentifier = ScheduleSat1630Guid,
-                    CampusIdentifier = TestGuids.Crm.CampusSteppingStone
+                    ScheduleIdentifier = ScheduleSun1200Guid,
+                    CampusIdentifier = TestGuids.Crm.CampusSteppingStone,
+                    ExistingItemStrategy = CreateExistingItemStrategySpecifier.Update
                 };
 
-                var financeEvent2 = CreateEventItemOccurrence( event2Args, rockContext );
+                var financeEvent2 = CreateEventItemOccurrence( event2Args );
+            }
+
+            /// <summary>
+            /// Modifies the Rock Solid Finances Class to remove additional test data.
+            /// </summary>
+            public static void DeleteDataForRockSolidFinancesClass()
+            {
+                var rockContext = new RockContext();
+
+                // Delete event occurrences.
+                var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
+
+                var financeEvent1 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSat1630Guid.AsGuid() );
+                if ( financeEvent1 != null )
+                {
+                    eventItemOccurrenceService.Delete( financeEvent1 );
+                }
+
+                var financeEvent2 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSun1200Guid.AsGuid() );
+                if ( financeEvent2 != null )
+                {
+                    eventItemOccurrenceService.Delete( financeEvent2 );
+                }
+
+                // Remove campus.
+                var campusService = new CampusService( rockContext );
+
+                var campus2 = campusService.Get( TestGuids.Crm.CampusSteppingStone.AsGuid() );
+                if ( campus2 != null )
+                {
+                    campusService.Delete( campus2 );
+                }
 
                 rockContext.SaveChanges();
             }
+
+            #endregion
         }
     }
 }

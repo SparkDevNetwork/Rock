@@ -226,11 +226,19 @@
         return rules;
     });
 
-    async function getConfiguration(): Promise<void> {
-        isLoading.value = true;
+    async function getConfiguration(selectedCountry: string | undefined | null): Promise<void> {
+        let loadingTimer: number | undefined;
+
+        if (countryOptions.value.length === 0) {
+            isLoading.value = true;
+        }
+        else {
+            loadingTimer = window.setTimeout(() => isLoading.value = true, 200);
+        }
+
         const options: Partial<AddressControlGetConfigurationOptionsBag> = {
             useCountryAbbreviation: props.useCountryAbbreviation,
-            countryCode: props.modelValue.country
+            countryCode: selectedCountry
         };
 
         // TODO: At some point, we should find some way to cache this
@@ -288,16 +296,18 @@
         else {
             console.error(result.errorMessage ?? "Unknown error while loading data.");
         }
+
+        clearTimeout(loadingTimer);
         isLoading.value = false;
     }
 
     watch(() => internalValue.country, (currentVal, oldVal) => {
         if (currentVal != oldVal) {
-            getConfiguration();
+            getConfiguration(currentVal);
         }
     }, { deep: true });
 
     // Initialize with configuration from the server
-    getConfiguration();
+    getConfiguration(props.modelValue.country);
 
 </script>

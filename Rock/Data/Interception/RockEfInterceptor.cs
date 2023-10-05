@@ -14,13 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Rock.Bus;
+using Rock.Lava.RockLiquid.Blocks;
 using Rock.Observability;
 using Rock.Web.Cache.NonEntities;
 
@@ -296,8 +299,25 @@ namespace Rock.Data.Interception
                 // Check if this query should get additional observability telemetry
                 if ( DbCommandObservabilityCache.TargetedQueryHashes.Contains( observabilityInfo.CommandHash ) )
                 {
+                    // Append stack trace 
                     activity.AddTag( "rock-db-stacktrace", System.Environment.StackTrace );
+
+                    // Append parameters
+                    var parameters = new StringBuilder();
+                    foreach ( DbParameter parm in command.Parameters )
+                    {
+                        var keyValue = GetSqlParameterKeyValue( parm );
+
+                        parameters.Append( $"{keyValue.Key}: {keyValue.Value}{Environment.NewLine}" );
+                    }
+
+                    activity.AddTag( "rock-db-parameters", parameters.ToString() );
                 }
+
+                // Add observability metric
+                var tags = RockMetricSource.CommonTags;
+                tags.Add( "operation", observabilityInfo.CommandType );
+                RockMetricSource.DatabaseQueriesCounter.Add( 1, tags );
             }
 
             if ( context is RockContext rockContext )
@@ -395,26 +415,32 @@ namespace Rock.Data.Interception
             // Merge each parameter into the SQL string
             foreach ( DbParameter parm in command.Parameters )
             {
-                var key = parm.ParameterName;
+                var keyValue = GetSqlParameterKeyValue( parm );
 
-                // If the parameter doesn't start with @ append it. EF puts @ on parms for INSERTS but not SELECTS
-                if ( !key.StartsWith( "@" ) )
-                {
-                    key = "@" + key;
-                }
-
-                var value = parm.Value.ToString();
-
-                // Check if the value needs to be quoted
-                if ( _quoteRequiredFieldTypes.Contains( parm.DbType ) )
-                {
-                    value = "'" + value.Replace( "'", "''" ) + "'";
-                }
-
-                sql = sql.Replace( key, value );
+                sql = sql.Replace( keyValue.Key, keyValue.Value );
             }
 
             return sql;
+        }
+
+        /// <summary>
+        /// Parses a DbParameter into a key value pair.
+        /// </summary>
+        /// <param name="parm"></param>
+        /// <returns></returns>
+        private (string Key, string Value) GetSqlParameterKeyValue( DbParameter parm )
+        {
+            var key = parm.ParameterName.AddStringAtBeginningIfItDoesNotExist( "@" );
+
+            var value = parm.Value.ToString();
+
+            // Check if the value needs to be quoted
+            if ( _quoteRequiredFieldTypes.Contains( parm.DbType ) )
+            {
+                value = "'" + value.Replace( "'", "''" ) + "'";
+            }
+
+            return (key, value);
         }
 
         #endregion

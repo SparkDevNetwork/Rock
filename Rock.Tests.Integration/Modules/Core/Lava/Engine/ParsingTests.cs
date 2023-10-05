@@ -28,6 +28,17 @@ namespace Rock.Tests.Integration.Core.Lava
     public class LiquidLanguageCompatibilityTests : LavaIntegrationTestBase
     {
         [TestMethod]
+        public void Whitespace_TagLeftAndRight_ProducesCorrectOutput()
+        {
+            var input = @"
+{%- assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:sszzz' | AsDateTime -%}
+";
+            var expectedOutput = @"";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
+        }
+
+        [TestMethod]
         public void Variables_VariableNamesThatDifferOnlyByCase_AreReferencedAsDifferentVariables()
         {
             var input = @"

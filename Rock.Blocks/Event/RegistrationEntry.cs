@@ -676,6 +676,66 @@ namespace Rock.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Gets the attribute field values for the registrant, does not get PersonFields which are handled elsewhere. This action is used to get the default attribute values.
+        /// </summary>
+        /// <param name="args">The registration entry arguments.</param>
+        /// <param name="registrantGuid">The registrant unique identifier of the registrant</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult GetDefaultAttributeFieldValues( RegistrationEntryBlockArgs args, RegistrationEntryBlockFormViewModel[] forms, Guid registrantGuid )
+        {
+            var registrantInfo = args.Registrants.FirstOrDefault( r => r.Guid == registrantGuid );
+            var fieldValues = new Dictionary<Guid, object>();
+
+            if ( forms == null || forms.Length == 0 )
+            {
+                return ActionOk( fieldValues );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                // A null person is okay here as default values can still be returned.
+                Person person = null;
+                if ( registrantInfo != null && registrantInfo.PersonGuid.HasValue )
+                {
+                    person = new PersonService( rockContext ).Get( registrantInfo.PersonGuid.Value );
+                }
+
+                // If we already have a saved registrant get it, otherwise a null registrant will get any default values.
+                var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantGuid );
+
+                // Populate the field values
+                foreach ( var form in forms )
+                {
+                    foreach ( var fieldViewModel in form.Fields )
+                    {
+                        // There are no default values for a PersonField, so skip those.
+                        if ( fieldViewModel.FieldSource == ( int ) RegistrationFieldSource.PersonField )
+                        {
+                            continue;
+                        }
+
+                        var field = new RegistrationTemplateFormFieldService( rockContext ).Get( fieldViewModel.Guid );
+
+                        // Get the field values
+                        if ( fieldViewModel.FieldSource == ( int ) RegistrationFieldSource.PersonAttribute )
+                        {
+                            var personAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, person, field );
+                            fieldValues.AddOrIgnore( fieldViewModel.Guid, personAttributeValue );
+                        }
+                        else if ( fieldViewModel.FieldSource == ( int ) RegistrationFieldSource.RegistrantAttribute )
+                        {
+                            var registrantAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
+                            fieldValues.AddOrIgnore( fieldViewModel.Guid, registrantAttributeValue );
+                        }
+                    }
+                }
+            }
+
+            return ActionOk( fieldValues );
+        }
+
         #endregion Block Actions
 
         #region Methods
@@ -825,7 +885,10 @@ namespace Rock.Blocks.Event
 
                 if ( context.RegistrationSettings.RegistrarOption == RegistrarOption.UseLoggedInPerson && currentPerson != null )
                 {
-                    registrar = currentPerson;
+                    // Registrar is sometimes used with save operations later on
+                    // so we need to load a new person that is in our RockContext.
+                    // Fixes #5624.
+                    registrar = new PersonService( rockContext ).Get( currentPerson.Id );
                     context.Registration.PersonAliasId = currentPerson.PrimaryAliasId;
                 }
                 else if ( context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant )
@@ -1029,7 +1092,8 @@ namespace Rock.Blocks.Event
             foreach ( var attribute in registrationAttributes )
             {
                 var value = args.FieldValues.GetValueOrNull( attribute.Guid );
-                context.Registration.SetAttributeValue( attribute.Key, value.ToStringSafe() );
+                var newValue = PublicAttributeHelper.GetPrivateValue( attribute, value.ToStringSafe() );
+                context.Registration.SetAttributeValue( attribute.Key, newValue );
             }
 
             // Save the registration ( so we can get an id )
@@ -1204,7 +1268,10 @@ namespace Rock.Blocks.Event
 
             if ( currentPersonNamesMatch )
             {
-                registrar = currentPerson;
+                // Registrar is sometimes used with save operations later on
+                // so we need to load a new person that is in our RockContext.
+                // Fixes #5624.
+                registrar = new PersonService( rockContext ).Get( currentPerson.Id );
                 context.Registration.PersonAliasId = currentPerson.PrimaryAliasId;
             }
             else
@@ -1377,28 +1444,33 @@ namespace Rock.Blocks.Event
         /// <summary>
         /// Gets the field values.
         /// </summary>
+        /// <param name="registrationContext">The registration context.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The person.</param>
         /// <param name="registrant">The registrant to use when retrieving registrant attribute values..</param>
         /// <param name="forms">The forms.</param>
+        /// <param name="forcePersonValues"><c>true</c> if person field values should always be retrieved from the Person.</param>
         /// <returns></returns>
-        private Dictionary<Guid, object> GetCurrentValueFieldValues( RegistrationContext registrationContext, RockContext rockContext, Person person, RegistrationRegistrant registrant, IEnumerable<RegistrationTemplateForm> forms )
+        private Dictionary<Guid, object> GetCurrentValueFieldValues( RegistrationContext registrationContext, RockContext rockContext, Person person, RegistrationRegistrant registrant, IEnumerable<RegistrationTemplateForm> forms, bool forcePersonValues )
         {
             var fieldValues = new Dictionary<Guid, object>();
-
-            if ( person is null )
-            {
-                return fieldValues;
-            }
-
             var familySelection = registrationContext?.RegistrationSettings.AreCurrentFamilyMembersShown ?? true;
 
-                    
             foreach ( var form in forms )
             {
                 var fields = form.Fields.Where( f =>
                 {
                     if ( f.ShowCurrentValue && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
+                    {
+                        return true;
+                    }
+
+                    // If we are returning to an existing registration then we
+                    // want to always pull in the current data from the Person.
+                    // Otherwise when returning to an existing registration some
+                    // field values (such as person attributes and First/Last name
+                    // among others) will be blank.
+                    if ( forcePersonValues && ( f.FieldSource == RegistrationFieldSource.PersonField || f.FieldSource == RegistrationFieldSource.PersonAttribute ) )
                     {
                         return true;
                     }
@@ -1464,6 +1536,11 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private object GetPersonCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field, RegistrationContext registrationContext )
         {
+            if ( person == null )
+            {
+                return null;
+            }
+
             switch ( field.PersonFieldType )
             {
                 case RegistrationPersonFieldType.FirstName:
@@ -1510,7 +1587,8 @@ namespace Rock.Blocks.Event
                         Street2 = location?.Street2 ?? string.Empty,
                         City = location?.City ?? string.Empty,
                         State = location?.State ?? string.Empty,
-                        PostalCode = location?.PostalCode ?? string.Empty
+                        PostalCode = location?.PostalCode ?? string.Empty,
+                        Country = location?.Country ?? string.Empty
                     };
 
                 case RegistrationPersonFieldType.MaritalStatus:
@@ -2186,6 +2264,9 @@ namespace Rock.Blocks.Event
                     var attribute = AttributeCache.Get( field.AttributeId.Value );
                     if ( attribute != null )
                     {
+                        // Note: As per discussion with architecture team, it is correct
+                        // behavior that the new value will always overwrite the old
+                        // value, even if the new value is blank.
                         string originalValue = person.GetAttributeValue( attribute.Key );
                         string newValue = PublicAttributeHelper.GetPrivateValue( attribute, fieldValue.ToString() );
                         person.SetAttributeValue( attribute.Key, newValue );
@@ -2580,7 +2661,7 @@ namespace Rock.Blocks.Event
             }
 
             // If the registration is existing, then add the args that describe it to the view model
-            var session = GetRegistrationEntryBlockSession( rockContext, context.RegistrationSettings );
+            var session = GetRegistrationEntryBlockSession( rockContext, context );
 
             /*
                 9/7/2022 - SMC / DSH / NA
@@ -2617,12 +2698,12 @@ namespace Rock.Blocks.Event
 
                 if ( session.GroupId.HasValue )
                 {
-                    RequestContext.PageParameters.Add( PageParameterKey.GroupId, session.GroupId.ToString() );
+                    RequestContext.PageParameters.AddOrReplace( PageParameterKey.GroupId, session.GroupId.ToString() );
                 }
 
                 if ( session.Slug.IsNotNullOrWhiteSpace() )
                 {
-                    RequestContext.PageParameters.Add( PageParameterKey.Slug, session.Slug );
+                    RequestContext.PageParameters.AddOrReplace( PageParameterKey.Slug, session.Slug );
                 }
 
                 // Get a new context with the args
@@ -2685,7 +2766,7 @@ namespace Rock.Blocks.Event
                         Guid = gm.Person.Guid,
                         FamilyGuid = gm.FamilyGuid,
                         FullName = gm.Person.FullName,
-                        FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels )
+                        FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels, false )
                     } )
                     .ToList() :
                     new List<RegistrationEntryBlockFamilyMemberViewModel>();
@@ -2902,9 +2983,8 @@ namespace Rock.Blocks.Event
                 savedAccounts = savedAccountClientService.GetSavedFinancialAccountsForPersonAsAccountListItems( RequestContext.CurrentPerson.Id, accountOptions );
             }
 
-            // If we don't have a session that means we are starting new. Create
-            // an empty session.
-            if ( session == null && currentPerson != null )
+            // If we don't have a session that means we are starting new. Create an empty session.
+            if ( session == null )
             {
                 session = new RegistrationEntryBlockSession
                 {
@@ -2914,7 +2994,7 @@ namespace Rock.Blocks.Event
                 session.Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo>();
                 var isOnWaitList = context.SpotsRemaining.HasValue && context.SpotsRemaining.Value == 0;
 
-                if ( context.RegistrationSettings.AreCurrentFamilyMembersShown )
+                if ( context.RegistrationSettings.AreCurrentFamilyMembersShown && currentPerson != null )
                 {
                     // Fill in first registrant info as a member of the family.
                     session.Registrants.Add( new ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo
@@ -2924,7 +3004,7 @@ namespace Rock.Blocks.Event
                         IsOnWaitList = isOnWaitList,
                         PersonGuid = currentPerson.Guid,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels )
+                        FieldValues = GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels, false )
                     } );
                 }
                 else
@@ -2938,7 +3018,7 @@ namespace Rock.Blocks.Event
                         IsOnWaitList = isOnWaitList,
                         PersonGuid = null,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels ) : new Dictionary<Guid, object>()
+                        FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels, false ) : new Dictionary<Guid, object>()
                     } );
                 }
             }
@@ -2968,6 +3048,7 @@ namespace Rock.Blocks.Event
                 RegistrationTerm = registrationTerm,
                 RegistrantForms = formViewModels,
                 Fees = fees,
+                HideProgressBar = !GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean(),
                 FamilyMembers = familyMembers,
                 MaxRegistrants = context.RegistrationSettings.MaxRegistrants ?? 25,
                 ShowSmsOptIn = context.RegistrationSettings.ShowSmsOptIn,
@@ -3656,9 +3737,9 @@ namespace Rock.Blocks.Event
         /// Gets the registration entry block arguments if this is an existing registration.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="settings">The settings.</param>
+        /// <param name="registrationContext">The registration context.</param>
         /// <returns></returns>
-        private RegistrationEntryBlockSession GetRegistrationEntryBlockSession( RockContext rockContext, RegistrationSettings settings )
+        private RegistrationEntryBlockSession GetRegistrationEntryBlockSession( RockContext rockContext, RegistrationContext registrationContext )
         {
             // Try to restore the session from the RegistrationSessionGuid, which is typically a PushPay redirect
             var registrationSessionGuid = GetRegistrationSessionPageParameter( null );
@@ -3708,7 +3789,7 @@ namespace Rock.Blocks.Event
                         ( r.PersonAliasId.HasValue && authorizedAliasIds.Contains( r.PersonAliasId.Value ) ) ||
                         ( r.CreatedByPersonAliasId.HasValue && authorizedAliasIds.Contains( r.CreatedByPersonAliasId.Value ) )
                     ) &&
-                    r.RegistrationInstanceId == settings.RegistrationInstanceId );
+                    r.RegistrationInstanceId == registrationContext.RegistrationSettings.RegistrationInstanceId );
 
             if ( registration is null )
             {
@@ -3742,7 +3823,7 @@ namespace Rock.Blocks.Event
             };
 
             // Add attributes about the registration itself
-            var registrationAttributes = GetRegistrationAttributes( settings.RegistrationTemplateId );
+            var registrationAttributes = GetRegistrationAttributes( registrationContext.RegistrationSettings.RegistrationTemplateId );
             registration.LoadAttributes( rockContext );
 
             foreach ( var attribute in registrationAttributes )
@@ -3763,7 +3844,7 @@ namespace Rock.Blocks.Event
                     FamilyGuid = person?.GetFamily( rockContext )?.Guid,
                     Guid = registrant.Guid,
                     PersonGuid = person?.Guid,
-                    FieldValues = GetCurrentValueFieldValues( null, rockContext, person, registrant, settings.Forms ),
+                    FieldValues = GetCurrentValueFieldValues( registrationContext, rockContext, person, registrant, registrationContext.RegistrationSettings.Forms, true ),
                     FeeItemQuantities = new Dictionary<Guid, int>(),
                     IsOnWaitList = registrant.OnWaitList,
                     Cost = registrant.Cost
@@ -3771,7 +3852,7 @@ namespace Rock.Blocks.Event
 
                 // Person fields and person attribute fields are already loaded via GetCurrentValueFieldValues, but we still need
                 // to get registrant attributes
-                foreach ( var form in settings.Forms )
+                foreach ( var form in registrationContext.RegistrationSettings.Forms )
                 {
                     var fields = form.Fields
                         .Where( f =>
@@ -3790,7 +3871,7 @@ namespace Rock.Blocks.Event
                 }
 
                 // Add the fees
-                foreach ( var fee in settings.Fees.Where( f => f.IsActive ) )
+                foreach ( var fee in registrationContext.RegistrationSettings.Fees.Where( f => f.IsActive ) )
                 {
                     foreach ( var feeItem in fee.FeeItems.Where( f => f.IsActive ) )
                     {
@@ -3942,7 +4023,9 @@ namespace Rock.Blocks.Event
             // Send/Resend a confirmation
             var processSendRegistrationConfirmationMsg = new ProcessSendRegistrationConfirmation.Message()
             {
-                RegistrationId = registration.Id
+                RegistrationId = registration.Id,
+                AppRoot = RequestContext.RootUrlPath.EnsureTrailingForwardslash(),
+                ThemeRoot = RequestContext.RootUrlPath + RequestContext.ResolveRockUrl( "~~/" )
             };
 
             processSendRegistrationConfirmationMsg.Send();
@@ -3952,7 +4035,9 @@ namespace Rock.Blocks.Event
                 // Send notice of a new registration
                 new ProcessSendRegistrationNotification.Message
                 {
-                    RegistrationId = registration.Id
+                    RegistrationId = registration.Id,
+                    AppRoot = RequestContext.RootUrlPath.EnsureTrailingForwardslash(),
+                    ThemeRoot = RequestContext.RootUrlPath + RequestContext.ResolveRockUrl( "~~/" )
                 }.Send();
 
                 var registrationService = new RegistrationService( new RockContext() );

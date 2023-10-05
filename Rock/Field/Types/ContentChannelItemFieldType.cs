@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +35,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) content channel item filtered by a selected content channel
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONTENT_CHANNEL_ITEM )]
     public class ContentChannelItemFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
@@ -44,6 +45,25 @@ namespace Rock.Field.Types
         /// Configuration Key for Content Channel
         /// </summary>
         public static readonly string CONTENT_CHANNEL_KEY = "contentchannel";
+
+        /// <summary>
+        /// Configuration Key for Content Channel options for the dropdownlist
+        /// </summary>
+        public static readonly string CONTENT_CHANNELS = "contentchannels";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationProperties = base.GetPublicEditConfigurationProperties( privateConfigurationValues );
+
+            // Get the Code editor options that are available
+            var contentChannels = ContentChannelCache.All().OrderBy( a => a.Name ).ToList();
+            var options = contentChannels.ConvertAll( c => new ListItemBag() { Text = c.Name, Value = c.Guid.ToString().ToUpper() } );
+
+            configurationProperties[CONTENT_CHANNELS] = options.ToCamelCaseJson( false, true );
+
+            return configurationProperties;
+        }
 
         #endregion
 
@@ -71,6 +91,91 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var contentChannelItem = new ContentChannelItemService( rockContext ).Queryable()
+                        .AsNoTracking()
+                        .Where( c => c.Guid == guid.Value )
+                        .Select( c => new ListItemBag
+                        {
+                            Value = c.Guid.ToString(),
+                            Text = c.Title
+                        } )
+                        .FirstOrDefault();
+
+                    if ( contentChannelItem != null )
+                    {
+                        return contentChannelItem.ToCamelCaseJson( false, true );
+                    }
+                }
+            }
+
+            return base.GetPublicEditValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var jsonValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( jsonValue != null )
+            {
+                return jsonValue.Value;
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( privateConfigurationValues.ContainsKey( CONTENT_CHANNEL_KEY ) )
+            {
+                var id = privateConfigurationValues[CONTENT_CHANNEL_KEY].AsIntegerOrNull();
+
+                if ( id.HasValue )
+                {
+                    var contentChannel = ContentChannelCache.Get( id.Value );
+                    configurationValues[CONTENT_CHANNEL_KEY] = contentChannel?.Guid.ToString();
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( publicConfigurationValues.ContainsKey( CONTENT_CHANNEL_KEY ) )
+            {
+                var guid = publicConfigurationValues[CONTENT_CHANNEL_KEY].AsGuidOrNull();
+
+                if ( guid.HasValue )
+                {
+                    var contentChannel = ContentChannelCache.Get( guid.Value );
+                    configurationValues[CONTENT_CHANNEL_KEY] = contentChannel?.Id.ToString();
+                }
+            }
+
+            return configurationValues;
+        }
 
         #endregion
 

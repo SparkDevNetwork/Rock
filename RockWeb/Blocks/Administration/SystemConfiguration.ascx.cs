@@ -558,7 +558,7 @@ namespace RockWeb.Blocks.Administration
             DbCommandObservabilityCache.ClearTargetedQueryHashes();
 
             // Update the provider
-            ObservabilityHelper.ConfigureTraceProvider();
+            ObservabilityHelper.ConfigureObservability();
         }
 
         #endregion

@@ -361,11 +361,10 @@ namespace Rock.Rest.v2
 
             var orgCountryCode = globalAttributesCache.OrganizationCountry;
             var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
-            var countryCode = options.CountryCode.IsNullOrWhiteSpace() ? "US" : options.CountryCode;
+            var countryCode = options.CountryCode.IsNullOrWhiteSpace() ? defaultCountryCode : options.CountryCode;
 
             var orgStateCode = globalAttributesCache.OrganizationState;
             var defaultStateCode = countryCode == orgCountryCode ? orgStateCode : string.Empty;
-
 
             // Generate List of Countries
             var countries = new List<ListItemBag>();
@@ -770,7 +769,7 @@ namespace Rock.Rest.v2
         /// <returns>A list of badge types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BadgePickerGetBadges" )]
-        [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
+        [Rock.SystemGuid.RestActionGuid( "6D50B8E4-985E-4AC6-B491-74B827108882" )]
         public IHttpActionResult BadgePickerGetBadges( [FromBody] BadgePickerGetBadgesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -3534,7 +3533,7 @@ namespace Rock.Rest.v2
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "LocationListGetLocations" )]
-        [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
+        [Rock.SystemGuid.RestActionGuid( "DA17BFF5-B9B8-4CD1-AAB4-2F703EDBEF46" )]
         public IHttpActionResult LocationListGetLocations( [FromBody] LocationListGetLocationsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )

@@ -65,7 +65,7 @@ namespace Rock.Jobs
 
         public object SqlScalar( string sql )
         {
-            return DbService.ExecuteScaler( sql );
+            return DbService.ExecuteScalar( sql );
         }
     }
 }

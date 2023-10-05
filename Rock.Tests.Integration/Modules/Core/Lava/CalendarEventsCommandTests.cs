@@ -48,17 +48,14 @@ namespace Rock.Tests.Integration.Core.Lava
 {% endcalendarevents %}
 ";
 
+        private static string InternalCalendarGuidString = "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798";
+        private static string YouthAudienceGuidString = "59CD7FD8-6A62-4C3B-8966-1520E74EED58";
+        private static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
+
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
-            DeleteTestData();
-            InitializeTestData();
-        }
-
-        [ClassCleanup]
-        public static void Cleanup()
-        {
-            DeleteTestData();
+            TestDataHelper.Events.AddDataForRockSolidFinancesClass();
         }
 
         private string GetTestTemplate( string parameters )
@@ -417,118 +414,5 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
 
             TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
-
-        #region Test Data
-
-        private static string TestDataForeignKey = "test_data";
-        private static string EventFinancesClassGuid = "6EFC00B0-F5D3-4352-BC3B-F09852FB5788";
-        private static string ScheduleSat1630Guid = "7883CAC8-6E30-482B-95A7-2F0DEE859BE1";
-        private static string ScheduleSun1200Guid = "1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45";
-        private static string FinancesClassOccurrenceSat1630Guid = "E7116C5A-9FEE-42D4-A0DB-7FEBFCCB6B8B";
-        private static string FinancesClassOccurrenceSun1200Guid = "3F3EA420-E3F0-435A-9401-C2D058EF37DE";
-        private static string InternalCalendarGuidString = "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798";
-        private static string YouthAudienceGuidString = "59CD7FD8-6A62-4C3B-8966-1520E74EED58";
-        private static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
-
-        private static void InitializeTestData()
-        {
-            InitializeEventRockSolidFinancesClassTestData();
-        }
-
-        /// <summary>
-        /// Modifies the Rock Solid Finances Class to add multiple schedules and campuses.
-        /// </summary>
-        private static void InitializeEventRockSolidFinancesClassTestData()
-        {
-            var rockContext = new RockContext();
-
-            // Get Campus 2.
-            var campus2 = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
-
-            // Get existing schedules.
-            var scheduleService = new ScheduleService( rockContext );
-
-            var scheduleSat1630Id = scheduleService.GetId( ScheduleSat1630Guid.AsGuid() );
-            var scheduleSat1800Id = scheduleService.GetId( ScheduleSun1200Guid.AsGuid() );
-
-            // Get Event "Rock Solid Finances".
-            var eventItemService = new EventItemService( rockContext );
-            var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
-
-            var financeEvent = eventItemService.Get( EventFinancesClassGuid.AsGuid() );
-
-            // Add an occurrence of this event for each Schedule.
-            var financeEvent1 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSat1630Guid.AsGuid() );
-
-            if ( financeEvent1 == null )
-            {
-                financeEvent1 = new EventItemOccurrence();
-            }
-
-            var mainCampusId = CampusCache.GetId( MainCampusGuidString.AsGuid() );
-            var secondCampusId = campus2.Id;
-
-            financeEvent1.Location = "Meeting Room 1";
-            financeEvent1.ForeignKey = TestDataForeignKey;
-            financeEvent1.ScheduleId = scheduleSat1630Id;
-            financeEvent1.Guid = FinancesClassOccurrenceSat1630Guid.AsGuid();
-            financeEvent1.CampusId = mainCampusId;
-
-            financeEvent.EventItemOccurrences.Add( financeEvent1 );
-
-            var financeEvent2 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSun1200Guid.AsGuid() );
-
-            if ( financeEvent2 == null )
-            {
-                financeEvent2 = new EventItemOccurrence();
-            }
-
-            financeEvent2.Location = "Meeting Room 2";
-            financeEvent2.ForeignKey = TestDataForeignKey;
-            financeEvent2.ScheduleId = scheduleSat1800Id;
-            financeEvent2.Guid = FinancesClassOccurrenceSun1200Guid.AsGuid();
-            financeEvent2.CampusId = secondCampusId;
-
-            financeEvent.EventItemOccurrences.Add( financeEvent2 );
-
-            rockContext.SaveChanges();
-        }
-
-        /// <summary>
-        /// Modifies the Rock Solid Finances Class to add multiple schedules and campuses.
-        /// </summary>
-        private static void DeleteTestData()
-        {
-            var rockContext = new RockContext();
-
-            // Delete event occurrences.
-            var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
-
-            var financeEvent1 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSat1630Guid.AsGuid() );
-            if ( financeEvent1 != null )
-            {
-                eventItemOccurrenceService.Delete( financeEvent1 );
-            }
-
-            var financeEvent2 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSun1200Guid.AsGuid() );
-            if ( financeEvent2 != null )
-            {
-                eventItemOccurrenceService.Delete( financeEvent2 );
-            }
-
-            // Remove campus.
-            var campusService = new CampusService( rockContext );
-
-            var campus2 = campusService.Get( TestGuids.Crm.CampusSteppingStone.AsGuid() );
-            if ( campus2 != null )
-            {
-                campusService.Delete( campus2 );
-            }
-
-            rockContext.SaveChanges();
-        }
-
-        #endregion
-
     }
 }

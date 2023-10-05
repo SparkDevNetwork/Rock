@@ -143,5 +143,10 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         /// The  account entry step box.
         /// </value>
         public AccountEntryRegisterResponseBox AccountEntryRegisterStepBox { get; set; }
+
+        /// <summary>
+        /// Indicating whether the Gender dropdown is shown.
+        /// </summary>
+        public bool IsGenderPickerShown { get; set; }
     }
 }

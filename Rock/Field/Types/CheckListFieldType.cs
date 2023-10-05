@@ -28,6 +28,8 @@ using Newtonsoft.Json;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 using static Rock.Web.UI.Controls.ListItems;
@@ -38,7 +40,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of options as checkboxes.  Value is saved as a comma-delimited list
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CHECK_LIST )]
     public class CheckListFieldType : FieldType, ISplitMultiValueFieldType
     {
@@ -48,6 +50,25 @@ namespace Rock.Field.Types
         private const string REPEAT_COLUMNS = "repeatColumns";
 
         #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+            if ( usage != ConfigurationValueUsage.Configure )
+            {
+                var values = JsonConvert.DeserializeObject<List<KeyValuePair>>( privateConfigurationValues[VALUES_KEY] );
+                values = values.Where( a => a.Value.IsNotNullOrWhiteSpace() ).ToList();
+                publicConfigurationValues[VALUES_KEY] = values.ToCamelCaseJson( false, true );
+            }
+
+            return publicConfigurationValues;
+        }
+
+        #endregion
+
 
         #region Formatting
 
