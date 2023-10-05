@@ -12,6 +12,7 @@ import { Note } from "./note";
 import { Embed } from "./embed";
 import { Fillin } from "./fillin";
 import { RockImage } from "./rockimage";
+import { Raw } from "./raw";
 
 export const EditorTools = {
     Header,
@@ -24,6 +25,7 @@ export const EditorTools = {
     Delimiter,
     Warning,
     Marker,
+    Raw,
     Table,
     Embed,
     Fillin,

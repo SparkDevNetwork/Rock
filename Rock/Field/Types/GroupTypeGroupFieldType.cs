@@ -24,6 +24,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,7 +34,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) group filtered by a selected group type
     /// Stored as "GroupType.Guid|Group.Guid"
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_TYPE_GROUP )]
     public class GroupTypeGroupFieldType : FieldType, IEntityReferenceFieldType
     {
@@ -79,6 +80,51 @@ namespace Rock.Field.Types
             }
 
             return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !TryGetValueParts( privateValue, out var groupTypeGuid, out var groupGuid ) )
+            {
+                return base.GetPublicEditValue( privateValue, privateConfigurationValues );
+            }
+            var groupType = GroupTypeCache.Get( groupTypeGuid.Value )
+                    .ToListItemBag();
+
+            ViewModels.Utility.ListItemBag group = null;
+            if ( groupGuid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    group = new GroupService( rockContext ).Get( groupGuid.Value )
+                        .ToListItemBag();
+                }
+            }
+            return new GroupAndGroupType { GroupType = groupType, Group = group }
+                .ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var privateValue = base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+            var groupAndGroupType = privateValue.FromJsonOrNull<GroupAndGroupType>();
+            if ( groupAndGroupType.GroupType == null )
+            {
+                return string.Empty;
+            }
+            if ( groupAndGroupType.Group == null )
+            {
+                return groupAndGroupType.GroupType.Value;
+            }
+            return $"{groupAndGroupType.GroupType.Value}|{groupAndGroupType.Group.Value}";
         }
 
         /// <summary>
@@ -355,5 +401,14 @@ namespace Rock.Field.Types
 
 #endif
         #endregion
+
+        /// <summary>
+        /// A POCO to store the Group and the Group Type as a ListItemBag
+        /// </summary>
+        private class GroupAndGroupType
+        {
+            public ListItemBag GroupType { get; set; }
+            public ListItemBag Group { get; set; }
+        }
     }
 }

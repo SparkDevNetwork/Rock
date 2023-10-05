@@ -14,30 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 
-using Rock.Utility;
-
-namespace Rock.ViewModels.Blocks.Tv.AppleTvPageDetail
+namespace Rock.SystemGuid
 {
     /// <summary>
-    /// 
+    /// Guids for Snippet Types.
     /// </summary>
-    public class TimeIntervalBag
+    public static class SnippetType
     {
         /// <summary>
-        /// Gets or sets the value.
+        /// SMS Snippet Type
         /// </summary>
-        /// <value>
-        /// The value.
-        /// </value>
-        public int? Value { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unit.
-        /// </summary>
-        /// <value>
-        /// The unit.
-        /// </value>
-        public TimeIntervalUnit Unit { get; set; }
-    }
+        public const string SMS = "D6074803-9405-47E3-974C-E95C9AD05874";
+   }
 }

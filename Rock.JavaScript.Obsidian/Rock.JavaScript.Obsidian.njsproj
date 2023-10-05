@@ -320,6 +320,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\Notes\" />
@@ -377,6 +378,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Group\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupMemberScheduleTemplateDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Group\GroupRequirementTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupSchedulePreference\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleSignup\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\" />
@@ -389,6 +391,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
+    <Folder Include="Framework\ViewModels\Blocks\Reporting\InteractionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\" />
@@ -774,6 +777,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\systemPhoneNumberDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\binaryFileTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\binaryFileTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
@@ -924,6 +929,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupMemberScheduleTemplateDetail\groupMemberScheduleTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupRegistration\groupRegistrationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupRegistration\groupRegistrationBlockBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupRequirementTypeDetail\groupRequirementTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupRequirementTypeDetail\groupRequirementTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupSchedulePreference\assignmentScheduleAndLocationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupSchedulePreference\preferencePageContentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleSignup\personScheduleSignupBag.d.ts" />
@@ -956,6 +963,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntryInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\InteractionDetail\interactionDetailInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateFileValidationBag.d.ts" />
@@ -1060,7 +1068,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\noteMentionItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\phoneNumberBoxWithSmsControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheability.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheabilityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\timeIntervalBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\attributeFieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customColumnDefinitionBag.d.ts" />

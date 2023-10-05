@@ -118,15 +118,17 @@ namespace Rock.Lava.Blocks
                 attributes.AddOrReplace( attributeKey, settings.GetString( attributeKey ) );
             }
 
-            /* Process inside a new stack level so our own created variables do not
-             * persist throughout the rest of the workflow. */
-            context.ExecuteInChildScope( (System.Action<ILavaRenderContext>)((newContext) =>
+            // Process the workflow inside a new context so that the output variables created by this WorkflowActivate block
+            // do not collide with any same-named variables defined outside the block.
+            // The following variables are added to the context for use within this block: Workflow, Activity, Error.
+            context.ExecuteInChildScope( ( newContext ) =>
             {
                 var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
-                
+
                 WorkflowService workflowService = new WorkflowService( rockContext );
                 Rock.Model.Workflow workflow = null;
                 WorkflowActivity activity = null;
+                var errorMessage = string.Empty;
 
                 /* They provided a WorkflowType, so we need to kick off a new workflow. */
                 if ( parmWorkflowType != null )
@@ -167,19 +169,17 @@ namespace Rock.Lava.Blocks
 
                             if ( errorMessages.Any() )
                             {
-                                context["Error"] = string.Join( "; ", errorMessages.ToArray() );
+                                errorMessage = string.Join( "; ", errorMessages.ToArray() );
                             }
-
-                            context["Workflow"] = workflow;
                         }
                         else
                         {
-                            context["Error"] = "Could not activate workflow.";
+                            errorMessage = "Could not activate workflow.";
                         }
                     }
                     else
                     {
-                        context["Error"] = "Workflow type not found.";
+                        errorMessage = "Workflow type not found.";
                     }
                 }
 
@@ -243,7 +243,7 @@ namespace Rock.Lava.Blocks
                                     }
                                     else
                                     {
-                                        context["Error"] = "Activity type was not found.";
+                                        errorMessage = "Activity type was not found.";
                                         hasError = true;
                                     }
                                 }
@@ -256,38 +256,44 @@ namespace Rock.Lava.Blocks
 
                                     if ( errorMessages.Any() )
                                     {
-                                        context["Error"] = string.Join( "; ", errorMessages.ToArray() );
+                                        errorMessage = string.Join( "; ", errorMessages.ToArray() );
                                     }
-
-                                    context["Workflow"] = workflow;
-                                    context["Activity"] = activity;
                                 }
                             }
                             else
                             {
-                                context["Error"] = "Cannot activate activity on workflow that is currently being processed.";
+                                errorMessage = "Cannot activate activity on workflow that is currently being processed.";
                             }
                         }
                         else
                         {
-                            context["Error"] = "Workflow has already been completed.";
+                            errorMessage = "Workflow has already been completed.";
                         }
                     }
                     else
                     {
-                        context["Error"] = "Workflow not found.";
+                        errorMessage = "Workflow not found.";
                     }
                 }
                 else
                 {
-                    context["Error"] = "Must specify one of WorkflowType or WorkflowId.";
+                    errorMessage = "Must specify one of WorkflowType or WorkflowId.";
+                }
+
+                // Set the output variables that are available for use in this block.
+                if ( errorMessage.IsNotNullOrWhiteSpace() )
+                {
+                    context.SetMergeField( "Error", errorMessage, LavaContextRelativeScopeSpecifier.Local );
+                }
+                else
+                {
+                    context.SetMergeField( "Workflow", workflow, LavaContextRelativeScopeSpecifier.Local );
+                    context.SetMergeField( "Activity", activity, LavaContextRelativeScopeSpecifier.Local );
                 }
 
                 base.OnRender( context, result );
-                //RenderAll( NodeList, context, result );
-                // TODO: Test this! - NodeList is empty here, so the call to RenderAll seems unnecessary?
                 
-            }) );
+            } );
         }
 
         /// <summary>

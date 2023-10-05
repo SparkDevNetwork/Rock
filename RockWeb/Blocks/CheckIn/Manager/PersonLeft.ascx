@@ -38,12 +38,7 @@
             <asp:Panel ID="pnlContact" runat="server" CssClass="border-top border-gray-400 p-2 p-lg-3">
                 <div class="pnlSms">
                     <!-- Shows the results of the message send -->
-                    <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true" />
-
-                    <!-- During entry -->
-                    <textarea runat="server" rows="3" cols="30" id="tbSmsMessage" visible="false" placeholder="Your SMS message here..." class="form-control js-sms-message mb-2"></textarea>
-                    <asp:LinkButton runat="server" Visible="false" ID="btnSmsSend" CssClass="btn btn-xs btn-primary js-btn-send mb-3" OnClick="btnSend_Click">Send</asp:LinkButton>
-                    <asp:LinkButton runat="server" Visible="false" ID="btnSmsCancel" CssClass="btn btn-xs btn-link mb-3" OnClick="btnSmsCancel_Click">Cancel</asp:LinkButton>
+                    <Rock:NotificationBox ID="nbSmsSendResult" runat="server" Visible="false" NotificationBoxType="Success" Dismissable="true" />
                 </div>
 
                 <asp:Repeater ID="rptrPhones" runat="server" OnItemDataBound="rptrPhones_ItemDataBound">
@@ -100,24 +95,58 @@
             </asp:Repeater>
         </asp:Panel>
 
-        <%-- Ensures that a blank SMS cannot be sent --%>
-        <script type="text/javascript">
-            function setSmsSendDisabled(boolean) {
-                $('.js-btn-send').attr('disabled', boolean);
-            }
+        <Rock:ModalDialog ID="mdSms" runat="server" ValidationGroup="vgSMS" Title="New Text Message" OnSaveClick="mdSms_SaveClick" SaveButtonText="Send" Visible="false">
+            <Content>
+                <Rock:NotificationBox ID="nbSmsError" runat="server" Visible="false" NotificationBoxType="Danger" />
 
-            Sys.Application.add_load(function () {
-                setSmsSendDisabled(true);
-                $('.js-sms-message').on('input', function (e) {
-                    var tbValue = $(this).val();
-                    setSmsSendDisabled(!tbValue.trim());
-                });
+                <div>
+                    <Rock:RockLiteral ID="lSmsRecipient" runat="server" Label="Recipient" />
+                </div>
 
-                $('.js-btn-sms').on('click', function (e) {
-                    setSmsSendDisabled(true);
-                });
-            });
-        </script>
+                <div class="row">
+                    <div class="col-xs-9">
+                        <Rock:RockTextBox ID="tbSmsMessage" runat="server" TextMode="MultiLine" Rows="5" Placeholder="Your SMS message here..." Label="Message" />
+                    </div>
+                    <div class="col-xs-3">
+                        <Rock:ImageUploader ID="imgSmsImage" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" Help="Optional image to include in the message." Label="Image" />
+                    </div>
+                </div>
+
+                <div class="form-group static-control">
+                    <div class="row">
+                        <div class="col-xs-9">
+                            <label class="control-label">Snippets</label>
+                        </div>
+
+                        <div class="col-xs-3">
+                            <Rock:Toggle runat="server" ID="tglUsePersonal"
+                                CssClass="pull-right"
+                                ButtonSizeCssClass="btn-xs"
+                                OnCssClass="btn-primary"
+                                OffCssClass="btn-primary"
+                                OnText="Personal" OffText="Shared"
+                                AutoPostBack="true"
+                                OnCheckedChanged="tglUsePersonal_CheckedChanged" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <asp:Repeater ID="rptrSmsSnippets" runat="server">
+                            <ItemTemplate>
+                                <div class="col-xs-4 pt-2">
+                                    <asp:LinkButton ID="btnSmsSnippet" runat="server" CssClass="btn btn-default btn-block overflow-hidden" OnCommand="btnSmsSnippet_Command" CommandName="InputSnippet" CommandArgument='<%#Eval("Id") %>' Text='<%#Eval("Name") %>' />
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
+
+                    <asp:Panel ID="pnlSmsNoSnippets" runat="server" Visible="false">
+                        There are no <asp:Label ID="lblSmsSnippetType" runat="server" Text="shared" /> SMS snippets available.
+                    </asp:Panel>
+
+                </div>
+            </Content>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>

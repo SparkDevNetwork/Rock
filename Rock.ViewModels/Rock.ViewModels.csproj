@@ -55,6 +55,8 @@
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerValidationResultsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeBag.cs" />
+    <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
@@ -80,6 +82,9 @@
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutDetailOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateBag.cs" />
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateBox.cs" />
+    <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeBag.cs" />
+    <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\InteractionDetail\InteractionDetailInitializationBox.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
@@ -107,8 +112,6 @@
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDateAndTimeFieldBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementTypeDetail\AchievementTypeBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementTypeDetail\AchievementTypeDetailOptionsBag.cs" />
-    <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeBag.cs" />
-    <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\SearchKeyBag.cs" />
     <Compile Include="Blocks\Group\GroupSchedulePreference\PreferencePageContentBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleBag.cs" />
@@ -376,8 +379,8 @@
     <Compile Include="Controls\DatePartsPickerValueBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
-    <Compile Include="Blocks\Tv\AppleTvPageDetail\RockCacheabilityBag.cs" />
-    <Compile Include="Blocks\Tv\AppleTvPageDetail\TimeIntervalBag.cs" />
+    <Compile Include="Controls\RockCacheabilityBag.cs" />
+    <Compile Include="Utility\TimeIntervalBag.cs" />
     <Compile Include="Core\Grid\CustomActionBag.cs" />
     <Compile Include="Core\Grid\CustomColumnDefinitionBag.cs" />
     <Compile Include="Core\Grid\GridCommunicationBag.cs" />

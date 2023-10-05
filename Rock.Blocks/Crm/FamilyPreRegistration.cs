@@ -39,6 +39,7 @@ namespace Rock.Blocks.Crm
     [DisplayName( "Family Pre Registration" )]
     [Category( "CRM" )]
     [Description( "Provides a way to allow people to pre-register their families for weekend check-in." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -2314,6 +2315,7 @@ namespace Rock.Blocks.Crm
                 };
             }
 
+            var displayMobilePhoneChildren = this.GetAttributeValue( AttributeKey.ChildMobilePhone ) == "Hide" ? false : true;
             var displaySmsAttributeValue = this.GetAttributeValue( AttributeKey.DisplaySmsOptIn );
             var smsOptInDisplayText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
 
@@ -2353,7 +2355,7 @@ namespace Rock.Blocks.Crm
                     IsHidden = false,
                     IsShowFirstAdult = true,
                     IsShowAllAdults = true,
-                    IsShowChildren = true
+                    IsShowChildren = true && displayMobilePhoneChildren
                 };
                 default:
                 return new FamilyPreRegistrationSmsOptInFieldBag

@@ -36,6 +36,7 @@
     "@editorjs/marker": "^1.3.0",
     "@editorjs/nested-list": "^1.3.0",
     "@editorjs/quote": "^2.5.0",
+    "@editorjs/raw": "^2.4.0",
     "@editorjs/warning": "^1.3.0",
     "editorjs-drag-drop": "^1.1.13",
     "editorjs-hyperlink": "^1.0.6",

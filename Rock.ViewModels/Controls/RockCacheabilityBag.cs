@@ -15,10 +15,12 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Tv.AppleTvPageDetail
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Controls
 {
     /// <summary>
-    /// 
+    /// Represents the Cache-Control settings used inside Rock.
     /// </summary>
     public class RockCacheabilityBag
     {

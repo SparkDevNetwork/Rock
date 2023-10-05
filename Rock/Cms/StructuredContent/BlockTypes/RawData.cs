@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,20 +14,24 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Runtime.Serialization;
 
-import { RockCacheabilityType } from "@Obsidian/Enums/Controls/rockCacheabilityType";
-import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
+namespace Rock.Cms.StructuredContent.BlockTypes
+{
+    /// <summary>
+    /// The data used by the <see cref="RawRenderer"/> block type.
+    /// </summary>
+    [DataContract]
+    public class RawData
+    {
+        /// <summary>
+        /// Gets or sets the html.
+        /// </summary>
+        /// <value>
+        /// The html.
+        /// </value>
+        [DataMember( Name = "html" )]
+        public string Html { get; set; }
+    }
 
-/**
- * Represents a setting for how to cache a resource. Based on Rock.Utility.RockCacheability
- */
-export type RockCacheability = {
-    /** Cache header type */
-    rockCacheabilityType: RockCacheabilityType;
-
-    /** Max amount of time to cache */
-    maxAge: TimeInterval;
-
-    /** Max amount of time to cache in a shared cache */
-    sharedMaxAge: TimeInterval;
-};
+}

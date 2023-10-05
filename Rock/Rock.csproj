@@ -35,7 +35,7 @@
     <DefineConstants>TRACE;WEBFORMS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Rock.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Rock.xml</DocumentationFile>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -860,6 +860,8 @@
     <Compile Include="Cms\StructuredContent\BlockTypes\ParagraphData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\QuoteRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\QuoteData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\RawData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\RawRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\TableRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\TableData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\WarningRenderer.cs" />
@@ -1139,6 +1141,7 @@
     <Compile Include="Net\RockResponseContext.WebForms.cs" />
     <Compile Include="Observability\ObservabilityHelper.cs" />
     <Compile Include="Observability\RockActivitySource.cs" />
+    <Compile Include="Observability\RockMetricSource.cs" />
     <Compile Include="Obsidian\UI\GridActionUrlKey.cs" />
     <Compile Include="Obsidian\UI\GridBuilder.cs" />
     <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
@@ -1275,6 +1278,7 @@
     <Compile Include="Security\Authentication\OneTimePasscode\OneTimePasscodeAuthenticationResult.cs" />
     <Compile Include="Security\Authentication\PasswordlessAuthentication.cs" />
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
+    <Compile Include="SystemGuid\SnippetType.cs" />
     <Compile Include="Utility\ContentLibraryApi\CachedContentLibraryApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApi.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
@@ -2042,6 +2046,7 @@
     <Compile Include="Utility\ExtensionMethods\StreamExtensions.cs" />
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
+    <Compile Include="Utility\NestedDictionaryConverter.cs" />
     <Compile Include="Utility\PersonPreferenceCollection.cs" />
     <Compile Include="Utility\PrayerRequestLastPrayedDetail.cs" />
     <Compile Include="Utility\PrayerRequestQueryOptions.cs" />
@@ -2877,7 +2882,6 @@
     <Compile Include="Lava\Blocks\SqlBlock.cs" />
     <Compile Include="Lava\Blocks\WorkflowActivateBlock.cs" />
     <Compile Include="Lava\LavaHelper.cs" />
-    <Compile Include="Lava\LavaSupportLevel.cs" />
     <Compile Include="Lava\Shortcodes\BootstrapAlertShortcode.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
@@ -3377,7 +3381,7 @@
     <Compile Include="Reporting\DataTransform\Person\FamilyMembersTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\FatherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandchildTransform.cs" />
-    <Compile Include="Reporting\DataTransform\Person\GrandparentTransform.cs" />
+    <Compile Include="Reporting\DataTransform\Person\GrandParentTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\MotherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\SpouseTransform.cs" />
     <Compile Include="Reporting\IRecipientDataSelect.cs" />
@@ -3620,7 +3624,7 @@
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="UniversalSearch\FormattedSearchResult.cs" />
-    <Compile Include="UniversalSearch\IndexComponents\Elasticsearch.cs" />
+    <Compile Include="UniversalSearch\IndexComponents\ElasticSearch.cs" />
     <Compile Include="UniversalSearch\IndexComponents\Lucene.cs" />
     <Compile Include="UniversalSearch\IndexModels\Attributes\RockIndexField.cs" />
     <Compile Include="UniversalSearch\IndexModels\BusinessIndex.cs" />

@@ -64,13 +64,17 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202309211800387_Rollup_20230921.cs" />
-    <Compile Include="Migrations\202309211800387_Rollup_20230921.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.designer.cs">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202309211825241_CodeGenerated_20230921.cs" />
-    <Compile Include="Migrations\202309211825241_CodeGenerated_20230921.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211825241_CodeGenerated_20230921.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211825241_CodeGenerated_20230921.designer.cs">
       <DependentUpon>202309211825241_CodeGenerated_20230921.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309262134456_ShowInteractiveExperiencePage.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309262134456_ShowInteractiveExperiencePage.designer.cs">
+      <DependentUpon>202309262134456_ShowInteractiveExperiencePage.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309181122586_Rollup_20230918.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309181122586_Rollup_20230918.designer.cs">
@@ -1826,11 +1830,14 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202309211800387_Rollup_20230921.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.resx">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202309211825241_CodeGenerated_20230921.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309211825241_CodeGenerated_20230921.resx">
       <DependentUpon>202309211825241_CodeGenerated_20230921.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309262134456_ShowInteractiveExperiencePage.resx">
+      <DependentUpon>202309262134456_ShowInteractiveExperiencePage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309181122586_Rollup_20230918.resx">
       <DependentUpon>202309181122586_Rollup_20230918.cs</DependentUpon>

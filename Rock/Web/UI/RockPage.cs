@@ -36,6 +36,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Net;
+using Rock.Observability;
 using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
@@ -753,6 +754,14 @@ namespace Rock.Web.UI
                 if ( this.IsPostBack )
                 {
                     Activity.Current.DisplayName = Activity.Current.DisplayName + " [Postback]";
+                }
+                else
+                {
+                    // Only add a metric if for non-postback requests
+                    var pageTags = RockMetricSource.CommonTags;
+                    pageTags.Add( "rock-page", this.PageId );
+                    pageTags.Add( "rock-site", this.Site.Name );
+                    RockMetricSource.PageRequestCounter.Add( 1, pageTags );
                 }
 
                 // Add attributes

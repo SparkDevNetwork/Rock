@@ -698,6 +698,7 @@ mission. We are so grateful for your commitment.</p>
             public const string StartDate = "StartDate";
             public const string Transfer = "Transfer";
             public const string ParticipationMode = "ParticipationMode";
+            public const string CampusId = "CampusId";
         }
 
         private static class ViewStateKey
@@ -1147,7 +1148,7 @@ mission. We are so grateful for your commitment.</p>
                 caapPromptForAccountAmounts.AmountEntryMode = CampusAccountAmountPicker.AccountAmountEntryMode.SingleAccount;
             }
 
-            caapPromptForAccountAmounts.CampusId = this.CurrentPerson?.PrimaryCampusId;
+            caapPromptForAccountAmounts.CampusId = GetCampusId( _targetPerson );
             caapPromptForAccountAmounts.UseAccountCampusMappingLogic = this.GetAttributeValue( AttributeKey.UseAccountCampusMappingLogic ).AsBooleanOrNull() ?? false;
             caapPromptForAccountAmounts.AskForCampusIfKnown = this.GetAttributeValue( AttributeKey.AskForCampusIfKnown ).AsBoolean();
             caapPromptForAccountAmounts.IncludeInactiveCampuses = this.GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
@@ -1213,6 +1214,25 @@ mission. We are so grateful for your commitment.</p>
             {
                 caapPromptForAccountAmounts.AccountAmounts = accountAmounts;
             }
+        }
+
+        /// <summary>
+        /// Sets the selected CampusId from a CampusId url parameter or the target person of the transaction.
+        /// </summary>
+        private int? GetCampusId( Person person )
+        {
+            var campusId = this.PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+
+            if ( !campusId.HasValue && person != null )
+            {
+                var personCampus = person.GetCampus();
+                if ( personCampus != null )
+                {
+                    campusId = personCampus.Id;
+                }
+            }
+
+            return campusId;
         }
 
         /// <summary>
