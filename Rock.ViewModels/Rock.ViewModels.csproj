@@ -112,8 +112,6 @@
     <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDateAndTimeFieldBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementTypeDetail\AchievementTypeBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementTypeDetail\AchievementTypeDetailOptionsBag.cs" />
-    <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeBag.cs" />
-    <Compile Include="Blocks\Engagement\StreakTypeDetail\StreakTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BusinessDetail\SearchKeyBag.cs" />
     <Compile Include="Blocks\Group\GroupSchedulePreference\PreferencePageContentBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleBag.cs" />
