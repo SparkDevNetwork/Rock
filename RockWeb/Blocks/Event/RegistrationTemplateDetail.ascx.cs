@@ -2932,10 +2932,6 @@ The logged-in person's information will be used to complete the registrar inform
 
             ddlFieldSource.BindToEnum<RegistrationFieldSource>();
 
-            ddlPersonField.BindToEnum<RegistrationPersonFieldType>( sortAlpha: true );
-            ddlPersonField.Items.Remove( ddlPersonField.Items.FindByValue( "0" ) );
-            ddlPersonField.Items.Remove( ddlPersonField.Items.FindByValue( "1" ) );
-
             rblFeeType.BindToEnum<RegistrationFeeType>();
 
             ddlSignatureDocumentTemplate.Items.Clear();
@@ -3145,6 +3141,17 @@ The logged-in person's information will be used to complete the registrar inform
 
                 var fieldList = FormFieldsState[formGuid];
 
+                // Find all the existing fields for the various types.
+                var personPropertyFields = FormFieldsState.SelectMany( forms => forms.Value )
+                    .Where( field => field.FieldSource == RegistrationFieldSource.PersonField )
+                    .ToList();
+                var personAttributeFields = FormFieldsState.SelectMany( forms => forms.Value )
+                    .Where( field => field.FieldSource == RegistrationFieldSource.PersonAttribute )
+                    .ToList();
+                var groupAttributeFields = FormFieldsState.SelectMany( forms => forms.Value )
+                    .Where( field => field.FieldSource == RegistrationFieldSource.GroupMemberAttribute )
+                    .ToList();
+
                 RegistrationTemplateFormField formField = fieldList.FirstOrDefault( a => a.Guid.Equals( formFieldGuid ) );
                 if ( formField == null )
                 {
@@ -3164,9 +3171,23 @@ The logged-in person's information will be used to complete the registrar inform
                 ceFormFieldPreHtml.Text = formField.PreText;
                 ceFormFieldPostHtml.Text = formField.PostText;
                 ddlFieldSource.SetValue( formField.FieldSource.ConvertToInt() );
-                ddlPersonField.SetValue( formField.PersonFieldType.ConvertToInt() );
-                lPersonField.Text = formField.PersonFieldType.ConvertToString();
 
+                // Populate the Person Field picker and then remove any fields
+                // that already exist on any form.
+                ddlPersonField.Items.Clear();
+                ddlPersonField.BindToEnum<RegistrationPersonFieldType>( sortAlpha: true );
+
+                foreach ( var field in personPropertyFields )
+                {
+                    var existingItem = ddlPersonField.Items.FindByValue( field.PersonFieldType.ConvertToInt().ToString() );
+                    if ( existingItem != null && field.Guid != formFieldGuid )
+                    {
+                        ddlPersonField.Items.Remove( existingItem );
+                    }
+                }
+
+                // Populate the Person Attribute picker and skip any attributes
+                // that already exist on the form.
                 ddlPersonAttributes.Items.Clear();
                 var person = new Person();
                 person.LoadAttributes();
@@ -3174,6 +3195,17 @@ The logged-in person's information will be used to complete the registrar inform
                     .OrderBy( a => a.Value.Name )
                     .Select( a => a.Value ) )
                 {
+                    // Check if this attribute already exists on any form and
+                    // is not the same field we are editing.
+                    var existingItem = personAttributeFields
+                        .Where( paf => paf.Guid != formFieldGuid && paf.AttributeId == attr.Id )
+                        .FirstOrDefault();
+
+                    if ( existingItem != null )
+                    {
+                        continue;
+                    }
+
                     if ( attr.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         var listItem = new ListItem( attr.Name, attr.Id.ToString() );
@@ -3182,16 +3214,30 @@ The logged-in person's information will be used to complete the registrar inform
                     }
                 }
 
+                // Populate the Group Member Attribute picker and skip any attributes
+                // that already exist on the form.
                 ddlGroupTypeAttributes.Items.Clear();
                 var group = new Group();
                 group.GroupTypeId = gtpGroupType.SelectedGroupTypeId ?? 0;
                 var groupMember = new GroupMember();
                 groupMember.Group = group;
+                groupMember.GroupTypeId = gtpGroupType.SelectedGroupTypeId ?? 0;
                 groupMember.LoadAttributes();
                 foreach ( var attr in groupMember.Attributes
                     .OrderBy( a => a.Value.Name )
                     .Select( a => a.Value ) )
                 {
+                    // Check if this attribute already exists on any form and
+                    // is not the same field we are editing.
+                    var existingItem = groupAttributeFields
+                        .Where( paf => paf.Guid != formFieldGuid && paf.AttributeId == attr.Id )
+                        .FirstOrDefault();
+
+                    if ( existingItem != null )
+                    {
+                        continue;
+                    }
+
                     if ( attr.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         ddlGroupTypeAttributes.Items.Add( new ListItem( attr.Name, attr.Id.ToString() ) );
@@ -3201,7 +3247,12 @@ The logged-in person's information will be used to complete the registrar inform
                 var attribute = new Attribute();
                 attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
 
-                if ( formField.FieldSource == RegistrationFieldSource.PersonAttribute )
+                if ( formField.FieldSource == RegistrationFieldSource.PersonField )
+                {
+                    ddlPersonField.SetValue( formField.PersonFieldType.ConvertToInt() );
+                    lPersonField.Text = formField.PersonFieldType.ConvertToString();
+                }
+                else if ( formField.FieldSource == RegistrationFieldSource.PersonAttribute )
                 {
                     ddlPersonAttributes.SetValue( formField.AttributeId );
                 }

@@ -417,6 +417,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
             "disabled": null
         }
     ],
+    "hideProgressBar": false,
     "showSmsOptIn": false
 };
 
