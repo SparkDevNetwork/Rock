@@ -51,8 +51,6 @@
 
                     <h1 runat="server">General Information</h1>
 
-                    <Rock:PersonBasicEditor ID="pbex" runat="server" ShowEmail ShowMobilePhone ShowSmsOptIn />
-
                     <h2 id="input-sizing">Input Sizing Rules</h2>
 
                     <div class="alert alert-warning">
