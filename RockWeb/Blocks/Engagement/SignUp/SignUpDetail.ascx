@@ -194,7 +194,7 @@
                                             <Rock:RockBoundField DataField="FriendlyDateTime" HeaderText="Date/Time" />
                                             <Rock:RockBoundField DataField="FriendlyLocation" HeaderText="Location" />
                                             <Rock:RockBoundField DataField="ProgressBar" HeaderText="Sign-Ups" ItemStyle-CssClass="progress-sign-ups-cell align-middle" HtmlEncode="false" />
-                                            <Rock:LinkButtonField ID="lbOpportunityDetail" Text="<i class='fa fa-users'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="lbOpportunityDetail_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                            <Rock:LinkButtonField ID="lbOpportunityDetail" Text="<i class='fa fa-users'></i>" ToolTip="Attendee List" CssClass="btn btn-default btn-sm btn-square" OnClick="lbOpportunityDetail_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                             <Rock:EditField ID="efOpportunities" OnClick="gOpportunities_Edit" />
                                             <Rock:DeleteField ID="dfOpportunities" OnClick="gOpportunities_Delete" />
                                         </Columns>
@@ -377,7 +377,8 @@
                     var opportunityConfirmMessage = 'Are you sure you want to delete this Opportunity?';
 
                     if ($row.hasClass('js-has-participants')) {
-                        var participantCount = parseInt($row.find('.js-slots-filled').html());
+                        var $progressBar = $row.find('.js-progress-sign-ups');
+                        var participantCount = parseInt($progressBar.attr('data-slots-filled'));
                         participantLabel = participantCount > 1
                             ? 'participants'
                             : 'participant';
