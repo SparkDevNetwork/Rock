@@ -42,6 +42,11 @@ namespace Rock.Web.Cache.NonEntities
         /// </summary>
         public string Prefix { get; set; }
 
+        /// <summary>
+        /// The type of SQL command (select, update, insert, delete, exec)
+        /// </summary>
+        public string CommandType { get; set; }
+
         #endregion
 
         #region Constructor
@@ -172,6 +177,8 @@ namespace Rock.Web.Cache.NonEntities
                             break;
                         }
                 }
+
+                item.CommandType = sqlFirstWord;
             }
             catch ( Exception ) { }
 
