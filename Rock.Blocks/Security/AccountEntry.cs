@@ -854,7 +854,8 @@ namespace Rock.Blocks.Security
                 UsernameFieldLabel = GetAttributeValue( AttributeKey.UsernameFieldLabel ),
                 UsernameRegex = isEmailRequiredForUsername ? @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" ),
                 UsernameRegexDescription = isEmailRequiredForUsername ? string.Empty : GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ),
-                Step = step
+                Step = step,
+                IsGenderPickerShown = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean()
             };
         }
 
