@@ -22,6 +22,7 @@ using System;
 using System.Configuration;
 using System.Diagnostics;
 using Rock.Bus;
+using OpenTelemetry.Metrics;
 
 namespace Rock.Observability
 {
@@ -31,6 +32,17 @@ namespace Rock.Observability
     public static class ObservabilityHelper
     {
         private static TracerProvider _currentTracerProvider;
+        private static MeterProvider _currentMeterProvider;
+
+
+        /// <summary>
+        /// The global meter provider.
+        /// </summary>
+        public static MeterProvider MeterProvider {
+            get {
+                return _currentMeterProvider;
+            }
+        }
 
         /// <summary>
         /// The version number is used for every activity, which can be hundreds
@@ -46,6 +58,7 @@ namespace Rock.Observability
         static ObservabilityHelper()
         {
             _currentTracerProvider = null;
+            _currentMeterProvider = null;
         }
 
         #region Properties
@@ -62,6 +75,27 @@ namespace Rock.Observability
         /// Configures the observability TraceProvider and passes back a reference to it.
         /// </summary>
         /// <returns></returns>
+        public static TracerProvider ConfigureObservability( bool isRockStartup = false )
+        {
+            // Configure the trace provider
+            ConfigureTraceProvider();
+
+            // Configure the metric provider
+            ConfigureMeterProvider();
+
+            // Wire-up the system metrics
+            if ( isRockStartup )
+            {
+                RockMetricSource.StartCoreMetrics();
+            }
+            
+            return _currentTracerProvider;
+        }
+
+        /// <summary>
+        /// Configures the trace provider.
+        /// </summary>
+        /// <returns></returns>
         public static TracerProvider ConfigureTraceProvider()
         {
             // Determine if a trace provider is already configured.
@@ -73,7 +107,7 @@ namespace Rock.Observability
             Uri endpointUri = null;
             Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out endpointUri );
             var observabilityEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
-            var endpointHeaders = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS )?.Replace("^", "=").Replace("|", ",");
+            var endpointHeaders = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS )?.Replace( "^", "=" ).Replace( "|", "," );
             var endpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ).ToString().ConvertToEnumOrNull<OpenTelemetry.Exporter.OtlpExportProtocol>() ?? OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
             var serviceName = ObservabilityHelper.ServiceName;
 
@@ -87,13 +121,13 @@ namespace Rock.Observability
                         o.Headers = endpointHeaders;
                     } )
 
-               // Other configuration, like adding an exporter and setting resources
-               .AddSource( serviceName )  // Be sure to update this in RockActivitySource.cs also!!!    
+                   // Other configuration, like adding an exporter and setting resources
+                   .AddSource( serviceName )  // Be sure to update this in RockActivitySource.cs also!!!    
 
-               .SetResourceBuilder(
-                   ResourceBuilder.CreateDefault()
-                       .AddService( serviceName: serviceName, serviceVersion: "1.0.0" ) )
-               .Build();
+                   .SetResourceBuilder(
+                       ResourceBuilder.CreateDefault()
+                           .AddService( serviceName: serviceName, serviceVersion: "1.0.0" ) )
+                   .Build();
 
                 // If there was already a trace provider running call the ActivitySource refresh to ensure it knows to update it's service name
                 if ( traceProviderPreviouslyConfigured )
@@ -103,6 +137,43 @@ namespace Rock.Observability
             }
 
             return _currentTracerProvider;
+        }
+
+        /// <summary>
+        /// Configures and returns a meter provider
+        /// </summary>
+        /// <returns></returns>
+        public static MeterProvider ConfigureMeterProvider()
+        {
+            // Determine if a trace provider is already configured.
+            var metricProviderPreviouslyConfigured = _currentMeterProvider != null;
+
+            // Clear out the current trace provider
+            _currentMeterProvider?.Dispose();
+
+            Uri endpointUri = null;
+            Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out endpointUri );
+            var observabilityEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
+            var endpointHeaders = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS )?.Replace( "^", "=" ).Replace( "|", "," );
+            var endpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ).ToString().ConvertToEnumOrNull<OpenTelemetry.Exporter.OtlpExportProtocol>() ?? OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+            var serviceName = ObservabilityHelper.ServiceName;
+
+            if ( observabilityEnabled && endpointUri != null )
+            {
+                _currentMeterProvider = Sdk.CreateMeterProviderBuilder()
+                    .SetResourceBuilder( ResourceBuilder.CreateDefault().AddService( serviceName: serviceName, serviceVersion: "1.0.0" ) )
+                    .AddMeter( serviceName )
+                    .AddOtlpExporter( o =>
+                    {
+                        o.Endpoint = endpointUri;
+                        o.Protocol = endpointProtocol;
+                        o.Headers = endpointHeaders;
+                    }
+                    )
+                    .Build();
+            }
+
+            return _currentMeterProvider;
         }
 
         /// <summary>

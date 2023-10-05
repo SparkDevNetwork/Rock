@@ -313,6 +313,11 @@ namespace Rock.Data.Interception
 
                     activity.AddTag( "rock-db-parameters", parameters.ToString() );
                 }
+
+                // Add observability metric
+                var tags = RockMetricSource.CommonTags;
+                tags.Add( "operation", observabilityInfo.CommandType );
+                RockMetricSource.DatabaseQueriesCounter.Add( 1, tags );
             }
 
             if ( context is RockContext rockContext )

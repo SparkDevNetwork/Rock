@@ -1138,6 +1138,7 @@
     <Compile Include="Net\RockResponseContext.WebForms.cs" />
     <Compile Include="Observability\ObservabilityHelper.cs" />
     <Compile Include="Observability\RockActivitySource.cs" />
+    <Compile Include="Observability\RockMetricSource.cs" />
     <Compile Include="Obsidian\UI\GridActionUrlKey.cs" />
     <Compile Include="Obsidian\UI\GridBuilder.cs" />
     <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
