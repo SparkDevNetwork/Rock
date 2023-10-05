@@ -306,7 +306,7 @@ export const EditComponent = defineComponent({
     </template>
     <template v-else>
 
-        <DropDownList v-if="!isMultiple || (isMultiple && configAttributes.enhanceForLongLists)" :multiple="isMultiple" v-model="internalValue" v-bind="configAttributes" :items="options" :showBlankItem="!isRequired">
+        <DropDownList v-if="!isMultiple || (isMultiple && configAttributes.enhanceForLongLists)" :multiple="isMultiple" v-model="internalValue" v-bind="configAttributes" :items="options">
             <template #inputGroupAppend v-if="allowAdd">
                 <span class="input-group-btn">
                     <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
