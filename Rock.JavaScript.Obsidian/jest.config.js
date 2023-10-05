@@ -9,11 +9,11 @@ module.exports = {
             isolatedModules: true,
         }
     },
-    preset: 'ts-jest',
-    testEnvironment: 'jsdom',
+    preset: "ts-jest",
+    testEnvironment: "jsdom",
     testMatch: [
         "**/?(*.)+(spec|test).ts"
     ],
     moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts"],
-    moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: "../" })
+    moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: __dirname })
 };
