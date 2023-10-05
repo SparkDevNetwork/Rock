@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { Gender } from "@Obsidian/Enums/Crm/gender";
 import { Guid } from "@Obsidian/Types";
 import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
 import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
@@ -44,7 +45,7 @@ export type AccountEntryPersonInfoBag = {
     firstName?: string | null;
 
     /** Gets or sets the gender. */
-    gender?: number | null;
+    gender?: Gender | null;
 
     /** Gets or sets the last name. */
     lastName?: string | null;

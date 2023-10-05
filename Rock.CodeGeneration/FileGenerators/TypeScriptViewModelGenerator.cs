@@ -536,6 +536,17 @@ namespace Rock.CodeGeneration.FileGenerators
                     NamedImport = type.Name
                 } );
             }
+            else if ( type.IsEnum && type.GetCustomAttribute<Rock.Enums.EnumDomainAttribute>() != null )
+            {
+                var domain = type.GetCustomAttribute<Rock.Enums.EnumDomainAttribute>().Domain;
+                var path = $"{SupportTools.GetDomainFolderName( domain )}/{type.Name.CamelCase()}";
+                tsType = type.Name;
+                imports.Add( new TypeScriptImport
+                {
+                    SourcePath = $"@Obsidian/Enums/{path}",
+                    NamedImport = type.Name
+                } );
+            }
             else if ( type.IsEnum )
             {
                 tsType = "number";
