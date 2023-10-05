@@ -141,5 +141,10 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         /// Indicates whether username availability checking is disabled.
         /// </summary>
         public bool IsUsernameAvailabilityCheckDisabled { get; set; }
+
+        /// <summary>
+        /// Indicating whether the Gender dropdown is shown.
+        /// </summary>
+        public bool IsGenderPickerShown { get; set; }
     }
 }

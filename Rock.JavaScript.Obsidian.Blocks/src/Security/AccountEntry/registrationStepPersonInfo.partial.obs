@@ -20,6 +20,7 @@
                 label="Email"
                 rules="required"></EmailBox>
             <GenderDropDownList
+                v-if="isGenderPickerShown"
                 v-model="internalGender"
                 :disabled="disabled"></GenderDropDownList>
             <BirthdayPicker
@@ -51,7 +52,10 @@
             v-if="isCampusPickerShown"
             :disabled="disabled"
             :label="campusPickerLabel"
-            @update:modelValue="onCampusChanged"></CampusPicker>
+            @update:modelValue="onCampusChanged"
+            :forceVisible="true"
+            :includeInactive="true"
+            :showBlankItem="true"></CampusPicker>
     </div>
 </template>
 
@@ -100,6 +104,7 @@
     const isAddressRequired = computed(() => props.config.isAddressRequired);
     const isCampusPickerShown = computed(() => props.config.isCampusPickerShown);
     const isEmailHidden = computed(() => props.config.isEmailHidden);
+    const isGenderPickerShown = computed(() => props.config.isGenderPickerShown);
 
     const internalFirstName = computed<string>({
         get() {
