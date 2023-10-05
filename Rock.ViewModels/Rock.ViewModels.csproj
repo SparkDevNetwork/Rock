@@ -406,7 +406,6 @@
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\PingExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
-    <Compile Include="Rest\Controls\PersonBasicEditorGetPersonDataOptionsBag.cs" />
     <Compile Include="Rest\Controls\PersonBasicEditorBag.cs" />
     <Compile Include="Rest\Controls\AccountPickerGetPreviewItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\AccountPickerGetSearchedAccountsOptionsBag.cs" />
