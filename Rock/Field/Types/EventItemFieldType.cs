@@ -74,11 +74,11 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var groupValue = publicValue.FromJsonOrNull<ListItemBag>();
+            var jsonValue = publicValue.FromJsonOrNull<ListItemBag>();
 
-            if ( groupValue != null )
+            if ( jsonValue != null )
             {
-                return groupValue.Value;
+                return jsonValue.Value;
             }
 
             return string.Empty;
@@ -91,14 +91,19 @@ namespace Rock.Field.Types
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var eventItem = new EventItemService( rockContext ).GetNoTracking( guid );
+                    var eventItem = new EventItemService( rockContext ).Queryable( )
+                        .AsNoTracking()
+                        .Where( f => f.Guid == guid )
+                        .Select( f => new ListItemBag()
+                        {
+                            Text = f.Name,
+                            Value = f.Guid.ToString()
+                        } )
+                        .FirstOrDefault();
+
                     if ( eventItem != null )
                     {
-                        return new ListItemBag()
-                        {
-                            Value = eventItem.Guid.ToString(),
-                            Text = eventItem.Name,
-                        }.ToCamelCaseJson( false, true );
+                        return eventItem.ToCamelCaseJson( false, true );
                     }
                 }
             }
