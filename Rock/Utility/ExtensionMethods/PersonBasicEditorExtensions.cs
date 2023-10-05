@@ -40,6 +40,7 @@ namespace Rock
         /// </summary>
         /// <param name="bag">The <see cref="PersonBasicEditorBag"/> with data to apply to a person.</param>
         /// <param name="person">The <see cref="Person"/> you want to update with the bag's data.</param>
+        /// <param name="rockContext"></param>
         internal static void UpdatePersonFromBag( this PersonBasicEditorBag bag, Person person, RockContext rockContext )
         {
             bag.IfValidProperty( nameof( bag.FirstName ), () => person.FirstName = bag.FirstName );
@@ -184,7 +185,7 @@ namespace Rock
         /// Create a <see cref="PersonBasicEditorBag"/> that represents this <see cref="Person"/>.
         /// The bag is used by the PersonBasicEditor Obsidian control to edit the person's data.
         /// </summary>
-        /// <param name="person">The <see cref="Person"/> you want the created <see cref="PersonBasicEditorBag"/> to represent./param>
+        /// <param name="person">The <see cref="Person"/> you want the created <see cref="PersonBasicEditorBag"/> to represent.</param>
         internal static PersonBasicEditorBag GetPersonBasicEditorBag( this Person person )
         {
             ListItemBag familyRole = null;

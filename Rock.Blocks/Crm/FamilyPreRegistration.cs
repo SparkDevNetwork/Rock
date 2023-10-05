@@ -2355,7 +2355,7 @@ namespace Rock.Blocks.Crm
                     IsHidden = false,
                     IsShowFirstAdult = true,
                     IsShowAllAdults = true,
-                    IsShowChildren = true && displayMobilePhoneChildren
+                    IsShowChildren = displayMobilePhoneChildren
                 };
                 default:
                 return new FamilyPreRegistrationSmsOptInFieldBag

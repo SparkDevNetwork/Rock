@@ -21,27 +21,8 @@
 // </copyright>
 //
 
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-
-export type MobileLayoutBag = {
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
-
-    /** Gets or sets the user defined description of the Layout. */
-    description?: string | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the layout mobile phone. */
-    layoutMobilePhone?: string | null;
-
-    /** Gets or sets the layout mobile tablet. */
-    layoutMobileTablet?: string | null;
-
-    /** Gets or sets the logical name of the Layout. */
-    name?: string | null;
+/** Guids for Snippet Types. */
+export const SnippetType = {
+    /** SMS Snippet Type */
+    Sms: "D6074803-9405-47E3-974C-E95C9AD05874",
 };

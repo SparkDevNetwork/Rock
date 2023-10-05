@@ -22,6 +22,9 @@ using Rock.ViewModels.Controls;
 
 namespace Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class BinaryFileTypeBag : EntityBagBase
     {
         /// <summary>
@@ -106,7 +109,13 @@ namespace Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail
         /// The binary file type attributes.
         /// </value>
         public List<PublicEditableAttributeBag> BinaryFileTypeAttributes { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public bool RestrictedEdit { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public string EditModeMessage { get; set; }
     }
 }

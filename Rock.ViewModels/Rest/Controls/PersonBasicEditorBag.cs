@@ -27,23 +27,74 @@ namespace Rock.ViewModels.Rest.Controls
     /// </summary>
     public class PersonBasicEditorBag : IValidPropertiesBox
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public string FirstName { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public string LastName { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public ListItemBag PersonTitle { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public ListItemBag PersonSuffix { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public ListItemBag PersonMaritalStatus { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public ListItemBag PersonGradeOffset { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public ListItemBag PersonGroupRole { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public ListItemBag PersonConnectionStatus { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public Gender PersonGender { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public ListItemBag PersonRace { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public ListItemBag PersonEthnicity { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public DatePartsPickerValueBag PersonBirthDate { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public string Email { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public string MobilePhoneNumber { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public string MobilePhoneCountryCode { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsMessagingEnabled { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<string> ValidProperties {get; set;}
     }
 }
