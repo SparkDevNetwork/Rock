@@ -20,6 +20,9 @@ using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Group.GroupRequirementTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class GroupRequirementTypeBag : EntityBagBase
     {
         /// <summary>

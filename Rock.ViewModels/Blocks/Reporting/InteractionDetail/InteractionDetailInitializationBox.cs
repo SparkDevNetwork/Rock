@@ -22,6 +22,9 @@ namespace Rock.ViewModels.Blocks.Reporting.InteractionDetail
     /// </summary>
     public class InteractionDetailInitializationBox : BlockBox
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public string Content { get; set; }
     }
 }

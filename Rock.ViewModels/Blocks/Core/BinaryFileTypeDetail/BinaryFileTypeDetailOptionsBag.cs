@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class BinaryFileTypeDetailOptionsBag
     {
         /// <summary>

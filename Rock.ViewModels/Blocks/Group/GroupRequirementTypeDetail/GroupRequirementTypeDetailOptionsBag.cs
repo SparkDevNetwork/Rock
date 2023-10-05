@@ -20,9 +20,18 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Group.GroupRequirementTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class GroupRequirementTypeDetailOptionsBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public List<ListItemBag> RequirementTypeOptions { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public List<ListItemBag> DueDateOptions { get; set; }
     }
 }

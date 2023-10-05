@@ -21,6 +21,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.AchievementTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class AchievementTypeBag : EntityBagBase
     {
         /// <summary>
