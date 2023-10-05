@@ -20,7 +20,7 @@ using System.Linq;
 
 using Rock.ViewModels.Utility;
 
-namespace Rock.Blocks
+namespace Rock
 {
     internal static class IValidPropertiesBoxExtensions
     {

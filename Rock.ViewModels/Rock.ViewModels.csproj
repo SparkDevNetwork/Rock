@@ -376,6 +376,7 @@
     <Compile Include="Cms\ObsidianBlockPreferencesBag.cs" />
     <Compile Include="Communication\ConversationAttachmentBag.cs" />
     <Compile Include="Communication\ConversationMessageBag.cs" />
+    <Compile Include="Controls\DatePartsPickerValueBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Controls\RockCacheabilityBag.cs" />
@@ -408,6 +409,7 @@
     <Compile Include="Event\InteractiveExperiences\JoinExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\PingExperienceResponseBag.cs" />
     <Compile Include="Event\InteractiveExperiences\VisualizerRenderConfigurationBag.cs" />
+    <Compile Include="Rest\Controls\PersonBasicEditorBag.cs" />
     <Compile Include="Rest\Controls\AccountPickerGetPreviewItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\AccountPickerGetSearchedAccountsOptionsBag.cs" />
     <Compile Include="Rest\Controls\AccountPickerGetParentGuidsOptionsBag.cs" />

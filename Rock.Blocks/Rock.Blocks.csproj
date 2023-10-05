@@ -154,7 +154,6 @@
     <Compile Include="Event\RegistrationEntry.cs" />
     <Compile Include="Example\FieldTypeGallery.cs" />
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
-    <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="ExtensionMethods\SettingsExtensions.cs" />
     <Compile Include="Reporting\MergeTemplateDetail.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
