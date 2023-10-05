@@ -21,6 +21,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialBatchList
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FinancialBatchListOptionsBag
     {
         /// <summary>

@@ -2025,6 +2025,13 @@ namespace Rock.Client.SystemGuid
 
     /// <summary>
     /// </summary>
+    public class SnippetType
+    {
+        public const string SMS = "D6074803-9405-47E3-974C-E95C9AD05874";
+    }
+
+    /// <summary>
+    /// </summary>
     public class StreakType
     {
         public const string WEEKLY_ATTENDANCE = "B9FADD97-38A4-4141-B6DB-48154563A2A9";
