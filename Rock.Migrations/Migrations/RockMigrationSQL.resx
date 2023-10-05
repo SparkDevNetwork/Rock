@@ -119,16 +119,16 @@
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="_201311251734059_CreateDatabase" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>createdatabase\201311251734059_createdatabase.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>CreateDatabase\201311251734059_CreateDatabase.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_201707311527250_FirstNameGender" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>createdatabase\201707311527250_firstnamegender.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>CreateDatabase\201707311527250_FirstNameGender.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201707311527250_NickName" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>createdatabase\201707311527250_nickname.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>CreateDatabase\201707311527250_NickName.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201707311527250_LastName" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>createdatabase\201707311527250_lastname.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>CreateDatabase\201707311527250_LastName.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="_202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Version 12.0\Version 1.12.0\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
@@ -137,204 +137,204 @@
     <value>Version 12.0\Version 1.12.0\202011102025121_Rollup_1110_kpisortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202012022334116_spCrm_PersonDuplicateFinder_spCrm_PersonDuplicateFinder" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.0\202012022334116_spcrm_personduplicatefinder_spcrm_personduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.0\202012022334116_spCrm_PersonDuplicateFinder_spCrm_PersonDuplicateFinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202101292141445_Rollup_01291_spCrm_FamilyAnalyticsAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.1\202101292141445_rollup_01291_spcrm_familyanalyticsattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.1\202101292141445_Rollup_01291_spCrm_FamilyAnalyticsAttendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202101292141445_Rollup_01291_spCrm_FamilyAnalyticsGiving" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.1\202101292141445_rollup_01291_spcrm_familyanalyticsgiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.1\202101292141445_Rollup_01291_spCrm_FamilyAnalyticsGiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202012151955324_Rollup_1215_parallaxupdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.1\202012151955324_rollup_1215_parallaxupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.1\202012151955324_Rollup_1215_parallaxupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202102032221004_Rollup_0203_KPIStyling" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.1\202102032221004_rollup_0203_kpistyling.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.1\202102032221004_Rollup_0203_KPIStyling.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202102162206327_Rollup_0216_KPIUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.3\202102162206327_rollup_0216_kpiupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.3\202102162206327_Rollup_0216_KPIUpdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202104131841162_Rollup_0413_kpiupdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202104131841162_rollup_0413_kpiupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.4\202104131841162_Rollup_0413_kpiupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202104291818024_GroupSalutation_spAnalytics_ETL_Family" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202104291818024_groupsalutation_spanalytics_etl_family.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_spAnalytics_ETL_Family.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202104291818024_GroupSalutation_spFinance_ContributionStatementQuery" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202104291818024_groupsalutation_spfinance_contributionstatementquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_spFinance_ContributionStatementQuery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202104291818024_GroupSalutation_ufnCrm_GetFamilyTitle" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202104291818024_groupsalutation_ufncrm_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202104291818024_groupsalutation_ufncrm_getfamilytitlefromgivingid.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202104291818024_groupsalutation_ufncrm_getfamilytitleincludeinactive.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202105112043293_Rollup_0511_mapshortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202105112043293_rollup_0511_mapshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.4\202105112043293_Rollup_0511_mapshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202105112043293_Rollup_0511_kpi_tooltipdelay" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202105112043293_rollup_0511_kpi-tooltipdelay.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.4\202105112043293_Rollup_0511_kpi-tooltipdelay.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202105251443228_SparklineChart_SparklineUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202105251443228_sparklinechart_sparklineupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.4\202105251443228_SparklineChart_SparklineUpdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202105280103566_StatementGenerator_RockDefaultTemplate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplate.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.4\202105280103566_StatementGenerator_RockDefaultTemplate.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202105280103566_StatementGenerator_RockDefaultTemplateFooter" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplatefooter.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.4\202105280103566_StatementGenerator_RockDefaultTemplateFooter.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202105280103566_StatementGenerator_RockDefaultTemplateLogo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplatelogo.data;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.4\202105280103566_StatementGenerator_RockDefaultTemplateLogo.data;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202105280103566_StatementGenerator_RockDefaultTemplateReportSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplatereportsettings.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.4\202105280103566_StatementGenerator_RockDefaultTemplateReportSettings.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202106042044568_statementgeneratordefaulttemplateupdate_rockdefaulttemplate.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.5\202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202106081803525_Rollup_0608_LavaHeatMap" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202106081803525_rollup_0608_lavaheatmap.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.5\202106081803525_Rollup_0608_LavaHeatMap.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202106081803525_Rollup_0608_UpdateTrendChart" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202106081803525_rollup_0608_updatetrendchart.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.5\202106081803525_Rollup_0608_UpdateTrendChart.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202106221850270_Rollup_06221_UpdateStatementGenerator" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202106221850270_rollup_06221_updatestatementgenerator.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.5\202106221850270_Rollup_06221_UpdateStatementGenerator.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202107061930320_Rollup_0706_chartupdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202107061930320_rollup_0706_chartupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.5\202107061930320_Rollup_0706_chartupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202107061930320_Rollup_0706_KPIShortCode" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202107061930320_rollup_0706_kpishortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.5\202107061930320_Rollup_0706_KPIShortCode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202107061930320_Rollup_0706_update_easypie" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202107061930320_rollup_0706_update-easypie.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.5\202107061930320_Rollup_0706_update-easypie.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202107061930320_Rollup_0706_update_sparklinesimg" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202107061930320_rollup_0706_update-sparklinesimg.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.5\202107061930320_Rollup_0706_update-sparklinesimg.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.5\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202107121730176_registrationinstancetimeout_updatepersonentity.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.5\202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202107141741515_AchievementType_AddAchievementTypes" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202107141741515_achievementtype_addachievementtypes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.5\202107141741515_AchievementType_AddAchievementTypes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202107141741515_AchievementType_AddMedalBinaryFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202107141741515_achievementtype_addmedalbinaryfile.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.5\202107141741515_AchievementType_AddMedalBinaryFile.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202107141741515_AchievementType_AddTrophyBinaryFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202107141741515_achievementtype_addtrophybinaryfile.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.5\202107141741515_AchievementType_AddTrophyBinaryFile.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202107141741515_AchievementType_AddWeeklyAttendanceStreakType" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202107141741515_achievementtype_addweeklyattendancestreaktype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 12.0\Version 1.12.5\202107141741515_AchievementType_AddWeeklyAttendanceStreakType.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202108031829239_Rollup_0803_LavaDocumentationUpdates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.5\202108031829239_rollup_0803_lavadocumentationupdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 12.0\Version 1.12.5\202108031829239_Rollup_0803_LavaDocumentationUpdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202108251744427_Rollups_20210825_kpilinkshortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 13.0\version 1.13.0\202108251744427_rollups_20210825_kpilinkshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 13.0\Version 1.13.0\202108251744427_Rollups_20210825_kpilinkshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202109081805229_Rollup_20210908_routemigration" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 13.0\version 1.13.0\202109081805229_rollup_20210908_routemigration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 13.0\Version 1.13.0\202109081805229_Rollup_20210908_routemigration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202109212048053_Rollup_20210921_routemigration" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 13.0\version 1.13.0\202109212048053_rollup_20210921_routemigration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 13.0\Version 1.13.0\202109212048053_Rollup_20210921_routemigration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202202111031395_FixPersonMergeWithGroupAssignments_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 13.0\version 1.13.2\202202111031395_FixPersonMergeWithGroupAssignments_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 13.0\Version 1.13.2\202202111031395_FixPersonMergeWithGroupAssignments_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202203152204281_Rollup_20220315_update_chartjs" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 13.0\version 1.13.3\202203152204281_Rollup_20220315_update-chartjs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 13.0\Version 1.13.3\202203152204281_Rollup_20220315_update-chartjs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202204072027407_Rollup_20220407_FixDuplicateConnectionOpportunitySelectBlock" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 13.0\version 1.13.3\202204072027407_rollup_20220407_fixduplicateconnectionopportunityselectblock.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 13.0\Version 1.13.3\202204072027407_Rollup_20220407_FixDuplicateConnectionOpportunitySelectBlock.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202204072027407_Rollup_20220407_FixDuplicateConnectionRequestBoardBlock" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 13.0\version 1.13.3\202204072027407_rollup_20220407_fixduplicateconnectionrequestboardblock.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 13.0\Version 1.13.3\202204072027407_Rollup_20220407_FixDuplicateConnectionRequestBoardBlock.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202204072027407_Rollup_20220407_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 13.0\version 1.13.3\202204072027407_rollup_20220407_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 13.0\Version 1.13.3\202204072027407_Rollup_20220407_spCrm_FamilyAnalyticsEraDataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_Attendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 13.0\version 1.13.4\202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_Attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 13.0\Version 1.13.4\202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_Attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 13.0\version 1.13.4\202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 13.0\Version 1.13.4\202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202207152352391_Rollup_20220715_RecoverERAStartDate_Update" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Version 14.0\Version 1.14.0\202207152352391_rollup_20220715_recovererastartdate_update.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 14.0\Version 1.14.0\202207152352391_Rollup_20220715_RecoverERAStartDate_Update.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202207152352391_Rollup_20220715_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Version 14.0\Version 1.14.0\202207152352391_rollup_20220715_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 14.0\Version 1.14.0\202207152352391_Rollup_20220715_spCrm_FamilyAnalyticsEraDataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202207182110401_Rollup_20220718_updatechart" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Version 14.0\Version 1.14.0\202207182110401_rollup_20220718_updatechart.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 14.0\Version 1.14.0\202207182110401_Rollup_20220718_updatechart.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202208031818446_Rollup_20220803_ChartShortcodeYAxisLabelFix" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Version 14.0\Version 1.14.0\202208031818446_rollup_20220803_chartshortcodeyaxislabelfix.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 14.0\Version 1.14.0\202208031818446_Rollup_20220803_ChartShortcodeYAxisLabelFix.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202208122155278_Rollup_20220812_Follow20Shortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Version 14.0\Version 1.14.0\202208122155278_rollup_20220812_follow20shortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 14.0\Version 1.14.0\202208122155278_Rollup_20220812_Follow20Shortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202209291606147_Rollup_20220929_AddChartGridlinecolorProperty" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Version 14.0\Version 1.14.1\202209291606147_rollup_20220929_addchartgridlinecolorproperty.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 14.0\Version 1.14.1\202209291606147_Rollup_20220929_AddChartGridlinecolorProperty.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Version 14.0\Version 1.14.1\202211031956456_rollup_20221103_axislabelsonchartshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 14.0\Version 1.14.1\202211031956456_Rollup_20221103_AxisLabelsOnChartShortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Version 14.0\Version 1.14.1\202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202212011956416_Rollup_20221201_Update_spAnalytics_ETL_Family_11182022" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Version 14.0\Version 1.14.1\202212011956416_rollup_20221201_update_spanalytics_etl_family_11182022.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>Version 14.0\Version 1.14.1\202212011956416_Rollup_20221201_Update_spAnalytics_ETL_Family_11182022.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_202212011956416_Rollup_20221201_chartupdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Version 14.0\Version 1.14.1\202212011956416_rollup_20221201_chartupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 14.0\Version 1.14.1\202212011956416_Rollup_20221201_chartupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 14.0\version 1.14.1\202301062147044_rollup_20230106_updateanalyticsstoredprocedure_spcrm_familyanalyticsattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsAttendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 14.0\version 1.14.1\202301062147044_rollup_20230106_updateanalyticsstoredprocedure_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsEraDataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsGiving" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 14.0\version 1.14.1\202301062147044_rollup_20230106_updateanalyticsstoredprocedure_spcrm_familyanalyticsgiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsGiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsUpdateVisitDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 14.0\version 1.14.1\202301062147044_rollup_20230106_updateanalyticsstoredprocedure_spcrm_familyanalyticsupdatevisitdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsUpdateVisitDates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 15.0\version 1.15.0\202302092033593_rollup_20230209_updatereminderssystemcommunication.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 15.0\Version 1.15.0\202302092033593_Rollup_20230209_UpdateRemindersSystemCommunication.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202302092033593_Rollup_20230209_UpdatespCrm_PersonDuplicateFinderProcedure" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 15.0\version 1.15.0\202302092033593_rollup_20230209_updatespcrm_personduplicatefinderprocedure.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 15.0\Version 1.15.0\202302092033593_Rollup_20230209_UpdatespCrm_PersonDuplicateFinderProcedure.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 15.0\version 1.15.0\202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 15.0\Version 1.15.0\202302101002183_DeleteOrphanedAttributeMatricesSP_spCore_DeleteOrphanedAttributeMatrices.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 15.0\version 1.15.0\202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 15.0\Version 1.15.0\202302232150265_Rollup_20230223_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202303231713546_Rollup_20230323_ChartColorUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 15.0\version 1.15.0\202303231713546_Rollup_20230323_ChartColorUpdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 15.0\Version 1.15.0\202303231713546_Rollup_20230323_ChartColorUpdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 15.0\version 1.15.0\202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 15.0\Version 1.15.0\202303231713546_Rollup_20230323_UpdateEmailReminderstoUseAvatars.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202304042314453_Rollup_20230404_updatechartjs" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 15.0\version 1.15.0\202304042314453_rollup_20230404_updatechartjs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 15.0\Version 1.15.0\202304042314453_Rollup_20230404_updatechartjs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 16.0\version 1.16.0\202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 16.0\Version 1.16.0\202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202306151802148_UpdateChartShortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 16.0\version 1.16.0\202306151802148_UpdateChartShortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 16.0\Version 1.16.0\202306151802148_UpdateChartShortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>
