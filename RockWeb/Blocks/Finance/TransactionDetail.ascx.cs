@@ -375,6 +375,12 @@ namespace RockWeb.Blocks.Finance
                 */
                 var pageRef = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId );
                 pageRef.Parameters.Add( "TransactionId", savedTransactionId.ToString() );
+
+                if ( PageParameter( "BatchId" ).IsNotNullOrWhiteSpace() )
+                {
+                    pageRef.Parameters.Add( "BatchId", PageParameter( "BatchId" ) );
+                }
+
                 NavigateToPage( pageRef );
             }
         }
