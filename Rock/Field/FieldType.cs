@@ -629,12 +629,9 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
-            var control = EditControl( configurationValues, id );
-            if ( control != null )
-            {
-                control.ID = string.Format( "{0}_ctlCompareValue", id );
-            }
+            id = $"{id ?? string.Empty}_ctlCompareValue";
 
+            var control = EditControl( configurationValues, id );
             if ( control is WebControl )
             {
                 ( ( WebControl ) control ).AddCssClass( "js-filter-control" );
