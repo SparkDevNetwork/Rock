@@ -50,7 +50,9 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantIndex--;
             this.registrationEntryState.currentRegistrantFormIndex = lastFormIndex;
             await this.persistSession();
-            smoothScrollToTop();
+
+            // Wait for the form to be rendered and then scroll to the top.
+            setTimeout(() => smoothScrollToTop(), 10);
         },
 
         /** The event that handles when the user clicks to move to the next registrant */
@@ -70,7 +72,9 @@ export default defineComponent({
             this.registrationEntryState.currentRegistrantIndex++;
             this.registrationEntryState.currentRegistrantFormIndex = 0;
             await this.persistSession();
-            smoothScrollToTop();
+
+            // Wait for the form to be rendered and then scroll to the top.
+            setTimeout(() => smoothScrollToTop(), 10);
         },
 
         /** Copy the common values from the first registrant to the others */
