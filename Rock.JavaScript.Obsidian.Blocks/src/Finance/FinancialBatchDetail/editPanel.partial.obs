@@ -62,6 +62,7 @@
     import { FinancialBatchBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchBag";
     import { FinancialBatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BatchStatus } from "@Obsidian/Enums/Finance/batchStatus";
 
     const props = defineProps({
         modelValue: {
@@ -141,7 +142,7 @@
             ...props.modelValue,
             attributeValues: attributeValues.value,
             name: name.value,
-            status: toNumber(status.value),
+            status: toNumber(status.value) as BatchStatus,
             batchStartDateTime: batchStartDateTime.value,
             batchEndDateTime: batchEndDateTime.value,
             campus: campus.value,

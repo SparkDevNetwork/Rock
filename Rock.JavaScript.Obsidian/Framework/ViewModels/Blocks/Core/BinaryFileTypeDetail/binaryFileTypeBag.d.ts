@@ -21,6 +21,9 @@
 // </copyright>
 //
 
+import { ColorDepth } from "@Obsidian/Enums/Core/colorDepth";
+import { Format } from "@Obsidian/Enums/Core/format";
+import { Resolution } from "@Obsidian/Enums/Core/resolution";
 import { RockCacheabilityBag } from "@Obsidian/ViewModels/Controls/rockCacheabilityBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -69,16 +72,16 @@ export type BinaryFileTypeBag = {
     name?: string | null;
 
     /** Gets or sets the preferred color depth of the file type. */
-    preferredColorDepth: number;
+    preferredColorDepth: ColorDepth;
 
     /** Gets or sets the preferred format of the file type. */
-    preferredFormat: number;
+    preferredFormat: Format;
 
     /** Gets or sets a value indicating whether the preferred attributes of the file type are required */
     preferredRequired: boolean;
 
     /** Gets or sets the preferred resolution of the file type. */
-    preferredResolution: number;
+    preferredResolution: Resolution;
 
     /** Gets or sets a value indicating whether security should be checked when displaying files of this type */
     requiresViewSecurity: boolean;

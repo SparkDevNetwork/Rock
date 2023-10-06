@@ -70,7 +70,7 @@
 
     const maxAge = computed<TimeIntervalBag>({
         get() {
-            return internalValue.value.maxAge;
+            return internalValue.value.maxAge ?? { unit: TimeIntervalUnit.Minutes };
         },
         set(newValue) {
             internalValue.value = {
@@ -83,7 +83,7 @@
 
     const sharedMaxAge = computed<TimeIntervalBag>({
         get() {
-            return internalValue.value.sharedMaxAge;
+            return internalValue.value.sharedMaxAge ?? { unit: TimeIntervalUnit.Minutes };
         },
         set(newValue) {
             internalValue.value = {

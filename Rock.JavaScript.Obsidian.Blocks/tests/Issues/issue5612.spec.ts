@@ -39,7 +39,7 @@ describe("Issue 5612", () => {
             .filter(node => node.text() === "Next" && node.isVisible())[0]
             .trigger("click");
 
-        expect(scrollToSpy).toHaveBeenCalled();
+        waitFor(() => expect(scrollToSpy).toHaveBeenCalled());
     });
 
     test("Moving to second registrant scrolls to top", async () => {
@@ -68,7 +68,7 @@ describe("Issue 5612", () => {
             expect(instance.find(".registrationentry-registrant").exists()).toBe(true);
         });
 
-        expect(scrollToSpy).toHaveBeenCalled();
+        waitFor(() => expect(scrollToSpy).toHaveBeenCalled());
 
         // Find the first registrant.
         const firstRegistrant = instance.findAll(".registrationentry-registrant > div")[0];
@@ -117,7 +117,7 @@ describe("Issue 5612", () => {
             expect(instance.find(".registrationentry-registrant").exists()).toBe(true);
         });
 
-        expect(scrollToSpy).toHaveBeenCalled();
+        waitFor(() => expect(scrollToSpy).toHaveBeenCalled());
 
         // Find the first registrant.
         const firstRegistrant = instance.findAll(".registrationentry-registrant > div")[0];

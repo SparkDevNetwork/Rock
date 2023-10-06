@@ -5441,14 +5441,11 @@ const tabbedBarGallery = defineComponent({
     setup() {
         return {
             list: ["Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians"],
+            selectedTab: ref(""),
             type: ref("tabs"),
             typeItems: [{ value: "tabs", text: "Tabs" }, { value: "pills", text: "Pills" }],
             importCode: getSfcControlImportPath("tabbedBar"),
-            exampleCode: `<TabbedBar :tabs="arrayOfItems">
-    <template #default="{item}">
-        {{ item }}
-    </template>
-</TabbedBar>`
+            exampleCode: `<TabbedBar v-model="selectedTab" :tabs="arrayOfItems" :type="type" />`
         };
     },
     template: `
@@ -5456,8 +5453,7 @@ const tabbedBarGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode" >
 
-    <TabbedBar :tabs="list" :type="type">
-    </TabbedBar>
+    <TabbedBar v-model="selectedTab" :tabs="list" :type="type" />
 
     <template #settings>
         <div class="row">
@@ -5483,9 +5479,6 @@ const tabbedContentGallery = defineComponent({
             list: ["Matthew", "Mark", "Luke", "John"],
             importCode: getSfcControlImportPath("tabbedContent"),
             exampleCode: `<TabbedContent :tabs="arrayOfItems">
-    <template #tab="{item}">
-        {{ item }}
-    </template>
     <template #tabpane="{item}">
         This is the content for {{item}}.
     </template>
@@ -5497,11 +5490,7 @@ const tabbedContentGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode" >
 
-
     <TabbedContent :tabs="list">
-        <template #tab="{item}">
-            {{ item }}
-        </template>
         <template #tabpane="{item}">
             This is the content for {{item}}.
         </template>

@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         private int _scheduleId;
 
         private bool _canView;
-        private bool _canEdit;
+        private bool _canManageMembers;
 
         private GroupTypeCache _groupTypeCache;
 
@@ -221,9 +221,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 if ( group != null )
                 {
                     _canView = group.IsAuthorized( Authorization.VIEW, this.CurrentPerson );
-                    _canEdit = IsUserAuthorized( Authorization.EDIT )
-                        || group.IsAuthorized( Authorization.EDIT, this.CurrentPerson )
-                        || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson );
+                    _canManageMembers = group.IsAuthorized( Authorization.EDIT, this.CurrentPerson )
+                        || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson )
+                        || group.IsAuthorized( Authorization.SCHEDULE, this.CurrentPerson );
 
                     InitializeGrid( group );
                 }
@@ -687,7 +687,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     .Include( g => g.Campus )
                     .Include( g => g.GroupSyncs )
                     .Include( g => g.GroupType )
-                    .Include( g => g.ParentGroup )
+                    .Include( g => g.ParentGroup ) // ParentGroup may be needed for a proper authorization check.
                     .FirstOrDefault( g => g.Id == _groupId );
 
                 RockPage.SaveSharedItem( key, group );
@@ -731,8 +731,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
             // we'll have custom JavaScript (see SignUpOpportunityAttendeeList.ascx ) do this instead.
             gAttendees.ShowConfirmDeleteDialog = false;
 
-            gAttendees.Actions.ShowAdd = _canEdit;
-            gAttendees.IsDeleteEnabled = _canEdit;
+            gAttendees.Actions.ShowAdd = _canManageMembers;
+            gAttendees.IsDeleteEnabled = _canManageMembers;
 
             AddGridRowButtons();
 

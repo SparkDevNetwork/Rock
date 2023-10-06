@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { ContentChannelItemStatus } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
 import { Guid } from "@Obsidian/Types";
 
 /** Bag containing information required to download a Content Library item. */
@@ -35,5 +36,5 @@ export type LibraryViewerDownloadItemBag = {
     startDate?: string | null;
 
     /** Gets or sets the downloaded Content Channel Item status. */
-    status?: number | null;
+    status?: ContentChannelItemStatus | null;
 };
