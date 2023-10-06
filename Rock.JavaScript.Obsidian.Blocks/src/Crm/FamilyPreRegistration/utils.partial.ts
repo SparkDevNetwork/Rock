@@ -113,7 +113,7 @@ export function createPersonViewModel(person: Ref<PersonRequestBag>): PersonRequ
                 return person.value.gender.toString();
             },
             set(newValue: string) {
-                person.value.gender = Number(newValue);
+                person.value.gender = Number(newValue) as Gender;
             }
         }),
         gradeListItemBag: createListItemBagWrapper(person, "gradeDefinedValueGuid"),
