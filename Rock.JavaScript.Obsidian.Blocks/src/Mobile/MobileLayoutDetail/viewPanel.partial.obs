@@ -42,7 +42,7 @@
 
     // #region Computed Values
 
-    const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
+    const isSystem = computed((): boolean => /* props.modelValue?.isSystem ?? -dsh to fix build */ false);
 
     /** The values to display full-width at the top of the block. */
     const topValues = computed((): ValueDetailListItem[] => {
