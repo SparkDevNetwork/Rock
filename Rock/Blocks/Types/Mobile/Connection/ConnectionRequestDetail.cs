@@ -87,6 +87,13 @@ namespace Rock.Blocks.Types.Mobile.Connection
         Key = AttributeKey.WorkflowPage,
         Order = 4 )]
 
+    [LinkedPage(
+        "Reminder Page",
+        Description = "Page to link to when the reminder button is tapped.",
+        IsRequired = false,
+        Key = AttributeKey.ReminderPage,
+        Order = 5 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE )]
@@ -109,6 +116,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
             public const string GroupDetailPage = "GroupDetailPage";
 
             public const string WorkflowPage = "WorkflowPage";
+
+            public const string ReminderPage = "ReminderPage";
         }
 
         /// <summary>
@@ -151,7 +160,13 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// </value>
         protected Guid? WorkflowPageGuid => GetAttributeValue( AttributeKey.WorkflowPage ).AsGuidOrNull();
 
-        #endregion
+        /// <summary>
+        /// Gets the reminder page unique identifier.
+        /// </summary>
+        protected Guid? ReminderPageGuid => GetAttributeValue( AttributeKey.ReminderPage ).AsGuidOrNull();
+
+
+       #endregion
 
         #region IRockMobileBlockType Implementation
 
@@ -161,17 +176,37 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()
         {
-            return new
+            return new Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.Configuration
             {
-                PersonProfilePageGuid,
-                GroupDetailPageGuid,
-                WorkflowPageGuid
+                PersonProfilePageGuid = PersonProfilePageGuid,
+                GroupDetailPageGuid = GroupDetailPageGuid,
+                WorkflowPageGuid = WorkflowPageGuid,
+                ReminderPageGuid = ReminderPageGuid,
+                AreRemindersConfigured = CheckReminderConfiguration()
             };
         }
 
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Checks if there's any reminder with the ConnectionRequest entity type.
+        /// </summary>
+        private static bool CheckReminderConfiguration()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequestEntityTypeId = EntityTypeCache.Get( typeof( ConnectionRequest ) ).Id;
+
+                var reminderTypesExist = new ReminderTypeService( rockContext )
+                    .Queryable()
+                    .Where( rt => rt.EntityTypeId == connectionRequestEntityTypeId )
+                    .Any();
+
+                return reminderTypesExist;
+            }
+        }
 
         /// <summary>
         /// Determines whether the connection request is critical.
@@ -402,7 +437,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 StatusGuid = request.ConnectionStatus.Guid,
                 StatusName = request.ConnectionStatus.Name,
                 WorkflowTypes = connectionWorkflows,
-                Activities = activitiesViewModel
+                Activities = activitiesViewModel,
+                ConnectionRequestGuid = request.Guid
             };
 
             if ( isEditable )
@@ -2363,6 +2399,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// </summary>
             /// <value>The activities.</value>
             public List<ActivityViewModel> Activities { get; set; }
+
+            /// <summary>
+            /// Gets or sets the connection request guid.
+            /// </summary>
+            public Guid ConnectionRequestGuid { get; set; }
         }
 
         /// <summary>
