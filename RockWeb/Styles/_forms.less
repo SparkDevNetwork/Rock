@@ -317,17 +317,27 @@ dl:not(.dl-horizontal) {
 }
 
 .form-control-group {
-  .clearfix();
-
-  .form-control,
-  .input-group,
-  .chosen-container,
-  .timepicker-input {
-    float: left;
+  &,
+  & > .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
     margin-right: 6px;
+    align-items: center;
   }
 
-  // Add spacing so time "to" is centered
+  > .row,
+  > .form-row {
+    // For stacking .form-row + .form-row
+    width: 100%;
+  }
+
+  > .form-row::before,
+  > .form-row::after {
+    display: none;
+  }
+
+  // Add spacing so time "to" is centered on Request Filter Detail Block
   .form-control-static + .timepicker-input {
     margin-left: 35px;
   }
@@ -337,17 +347,18 @@ dl:not(.dl-horizontal) {
     margin-right: 0;
   }
 
+  // Defined Value w/ Add
+  &.controls-row {
+    flex-wrap: nowrap;
+    margin-right: 0;
+  }
+
   & > span {
-    float: left;
-    margin: (@input-padding-y - 1) 6px (@input-padding-y + 1) 0;
+    display: inline-flex;
+    align-items: center;
     font-size: @input-font-size;
     line-height: @input-line-height;
     color: @text-muted;
-  }
-
-  & > label {
-    float: left;
-    margin-top: 8px;
   }
 
   .form-group-auto & {
@@ -419,8 +430,8 @@ dl:not(.dl-horizontal) {
 }
 
 .date-parts-picker {
-  display: flex;
-  flex-wrap: wrap;
+  // display: flex;
+  // flex-wrap: wrap;
 
   .control-label {
     width: 100%;
@@ -430,20 +441,16 @@ dl:not(.dl-horizontal) {
     flex: 1 1 auto;
     min-width: @input-width-sm;
     max-width: floor(@input-width-sm * 1.25);
-
-    &:last-of-type {
-      margin-right: 0;
-    }
   }
 }
 
 .month-year-picker .separator,
 .month-day-picker .separator {
-  @separator-margin: ((@input-height-base - @font-size-lg) / 2);
-  margin: @separator-margin 6px @separator-margin 0;
+  // @separator-margin: ((@input-height-base - @font-size-lg) / 2);
+  // margin: @separator-margin 6px @separator-margin 0;
   font-size: @font-size-lg;
   line-height: 1;
-  color: @text-muted;
+  // color: @text-muted;
 }
 
 .rock-check-box {
