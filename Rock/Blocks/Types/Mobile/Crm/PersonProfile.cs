@@ -91,6 +91,15 @@ namespace Rock.Blocks.Types.Mobile.Crm
         Order = 5
         )]
 
+
+    [LinkedPage(
+        "Reminder Page",
+        Description = "Page to link to when the reminder button is tapped.",
+        IsRequired = false,
+        Key = AttributeKey.ReminderPage,
+        Order = 6 )]
+
+
     #endregion
 
     [ContextAware( typeof( Person ) )]
@@ -116,6 +125,8 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 MaritalStatusValues = GetMaritalStatusValues(),
                 ShowDemographicsPanel = GetAttributeValue( AttributeKey.ShowDemographicsPanel ).AsBoolean(),
                 ShowContactInformationPanel = GetAttributeValue( AttributeKey.ShowContactInformationPanel ).AsBoolean(),
+                ReminderPageGuid = GetAttributeValue( AttributeKey.ReminderPage ).AsGuidOrNull(),
+                AreRemindersConfigured = CheckReminderConfiguration()
             };
         }
 
@@ -157,6 +168,11 @@ namespace Rock.Blocks.Types.Mobile.Crm
             /// The show contact information panel attribute key.
             /// </summary>
             public const string ShowContactInformationPanel = "ShowContactInformationPanel";
+
+            /// <summary>
+            /// The reminder page attribute key.
+            /// </summary>
+            public const string ReminderPage = "ReminderPage";
         }
 
         #endregion
@@ -236,6 +252,24 @@ namespace Rock.Blocks.Types.Mobile.Crm
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Checks if there's any reminder with the PersonAlias entity type.
+        /// </summary>
+        private static bool CheckReminderConfiguration()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var personAliasEntityTypeId = EntityTypeCache.Get( typeof( PersonAlias ) ).Id;
+
+                var reminderTypesExist = new ReminderTypeService( rockContext )
+                    .Queryable()
+                    .Where( rt => rt.EntityTypeId == personAliasEntityTypeId )
+                    .Any();
+
+                return reminderTypesExist;
+            }
+        }
 
         /// <summary>
         /// Gets the connection status defined values.
@@ -594,6 +628,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
             return new PersonBag
             {
                 Guid = person.Guid,
+                PrimaryAliasGuid = person.PrimaryAlias.Guid,
                 CanEdit = IsAuthorizedToEditPerson(),
                 IsFollowed = IsPersonFollowed( rockContext, person ),
                 FirstName = person.FirstName,
