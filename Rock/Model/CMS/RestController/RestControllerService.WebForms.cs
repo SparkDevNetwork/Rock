@@ -256,16 +256,24 @@ namespace Rock.Model
                     }
                 }
 
-                var actions = discoveredController.DiscoveredRestActions.Select( d => d.ApiId ).ToList();
-                foreach ( var action in controller.Actions.Where( a => !actions.Contains( a.ApiId ) ).ToList() )
+                var actionApiIds = discoveredController.DiscoveredRestActions.Select( d => d.ApiId ).ToList();
+                var actionGuids = discoveredController.DiscoveredRestActions.Select( d => d.ReflectedGuid ).ToList();
+                var actionsToRemove = controller.Actions
+                    .Where( a => !actionApiIds.Contains( a.ApiId ) && !actionGuids.Contains( a.Guid ) )
+                    .ToList();
+                foreach ( var action in actionsToRemove )
                 {
                     actionService.Delete( action );
                     controller.Actions.Remove( action );
                 }
             }
 
-            var controllers = discoveredControllers.Select( d => d.ClassName ).ToList();
-            foreach ( var controller in restControllerService.Queryable().Where( c => !controllers.Contains( c.ClassName ) ).ToList() )
+            var controllerNames = discoveredControllers.Select( d => d.ClassName ).ToList();
+            var controllerGuids = discoveredControllers.Select( d => d.ReflectedGuid ).ToList();
+            var controllersToRemove = restControllerService.Queryable()
+                .Where( c => !controllerNames.Contains( c.ClassName ) && !controllerGuids.Contains( c.Guid ) )
+                .ToList();
+            foreach ( var controller in controllersToRemove )
             {
                 restControllerService.Delete( controller );
             }
