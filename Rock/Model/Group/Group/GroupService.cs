@@ -712,9 +712,8 @@ namespace Rock.Model
             List<int> groupMemberIdsThatLackGroupRequirementsList = groupMemberList
                 .Where( a =>
                     !qryGroupRequirements
-                        .Where( r =>
-                            !r.GroupRoleId.HasValue ||
-                            r.GroupRoleId.Value == a.GroupRoleId )
+                        .Where( r => !r.GroupRoleId.HasValue || r.GroupRoleId.Value == a.GroupRoleId )
+                        .Where( r => r.AppliesToAgeClassification == AppliesToAgeClassification.All || r.AppliesToAgeClassification.ConvertToInt() == a.Person.AgeClassification.ConvertToInt() )
                         .Select( x => x.Id )
                         .All( r =>
                             a.GroupMemberRequirements
