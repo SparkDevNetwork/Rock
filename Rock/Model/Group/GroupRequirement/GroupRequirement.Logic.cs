@@ -537,6 +537,7 @@ namespace Rock.Model
                     // They meet the requirement so update the Requirement Met Date/Time.
                     groupMemberRequirement.RequirementMetDateTime = currentDateTime;
                     groupMemberRequirement.RequirementFailDateTime = null;
+                    groupMemberRequirement.RequirementWarningDateTime = null;
                 }
                 else if ( meetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
                 {
