@@ -113,13 +113,16 @@ namespace Rock.Model
                 // If the person's age classification we are comparing is not the one applied to this requirement,
                 // then mark that person's requirement status as 'Not Applicable'.
                 var notApplicablePersonQry = personQry.Where( p => ( int ) p.AgeClassification != ( int ) this.AppliesToAgeClassification );
-                var results = notApplicablePersonQry.Select( p => p.Id ).ToList().Select( a =>
-                new PersonGroupRequirementStatus
-                {
-                    PersonId = a,
-                    GroupRequirement = this,
-                    MeetsGroupRequirement = MeetsGroupRequirement.NotApplicable
-                } );
+                var results = notApplicablePersonQry
+                    .Select( p => p.Id )
+                    .ToList()
+                    .Select( a =>
+                    new PersonGroupRequirementStatus
+                    {
+                        PersonId = a,
+                        GroupRequirement = this,
+                        MeetsGroupRequirement = MeetsGroupRequirement.NotApplicable
+                    } );
 
                 if ( results != null )
                 {
@@ -389,8 +392,7 @@ namespace Rock.Model
             {
                 // manual
                 GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                var groupMemberRequirementQry = groupMemberRequirementService.Queryable()
-                    .Where( a => a.GroupMember.GroupId == groupId && a.GroupRequirementId == this.Id );
+                var groupMemberRequirementQry = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == groupId && a.GroupRequirementId == this.Id );
                 var groupMemberRequirementWithMetDateTimeQry = groupMemberRequirementQry.Where( a => a.RequirementMetDateTime.HasValue );
 
                 var result = personQry.ToList().Select( a =>
@@ -400,7 +402,8 @@ namespace Rock.Model
                             this.GroupRequirementType.DueDateOffsetInDays,
                             this.DueDateStaticDate,
                             this.DueDateAttributeId.HasValue ? new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( this.DueDateAttributeId.Value, this.GroupId )?.Value.AsDateTime() ?? null : null,
-                new GroupService( rockContext ).Get( groupId ).Members.Where( m => m.PersonId == a.Id && m.GroupRoleId == groupRoleId ).Select( m => m.DateTimeAdded ).DefaultIfEmpty( null ).FirstOrDefault() );
+                            new GroupService( rockContext )
+                            .Get( groupId ).Members.Where( m => m.PersonId == a.Id && m.GroupRoleId == groupRoleId ).Select( m => m.DateTimeAdded ).DefaultIfEmpty( null ).FirstOrDefault() );
 
                     return new PersonGroupRequirementStatus
                     {
@@ -504,6 +507,15 @@ namespace Rock.Model
             if ( this.GroupRoleId != null )
             {
                 groupMemberQry = groupMemberQry.Where( a => a.GroupRoleId == this.GroupRoleId );
+            }
+
+            if ( this.AppliesToAgeClassification == AppliesToAgeClassification.Adults )
+            {
+                groupMemberQry = groupMemberQry.Where( a => a.Person.AgeClassification == AgeClassification.Adult );
+            }
+            else if ( this.AppliesToAgeClassification == AppliesToAgeClassification.Children )
+            {
+                groupMemberQry = groupMemberQry.Where( a => a.Person.AgeClassification == AgeClassification.Child );
             }
 
             // just in case the same person is in the same group multiple times, get a list of the groupMember records for this person
