@@ -219,7 +219,7 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaHidden]
-        public int ValueChecksum { get; private set; }
+        public int? ValueChecksum { get; private set; }
 
         #endregion
 
