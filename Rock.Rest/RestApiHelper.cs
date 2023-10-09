@@ -19,9 +19,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Web.Http;
-using System.Web.Http.Controllers;
-using System.Web.Http.Results;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -29,7 +26,13 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 
+#if WEBFORMS
+using System.Web.Http;
+using System.Web.Http.Controllers;
+using System.Web.Http.Results;
+
 using IActionResult = System.Web.Http.IHttpActionResult;
+#endif
 
 namespace Rock.Rest
 {
@@ -49,11 +52,15 @@ namespace Rock.Rest
         /// <para>
         /// Gets or sets a value indicating whether security is ignored. When
         /// security is not ignored the entity will be checked for either VIEW
-        /// or EDIT permissions depending on the operation. If that fails then
-        /// the current REST action will be checked for ADMINISTRATE permission.
+        /// or EDIT permissions depending on the operation.
         /// </para>
         /// <para>
-        /// In other words, having ADMINISTRATE authorization to the REST
+        /// The default value is determined by having access to the REST action
+        /// of either <c>UnrestrictedView</c> or <c>UnrestrictedEdit</c>
+        /// permissions depending on the operation.
+        /// </para>
+        /// <para>
+        /// In other words, having unrestricted authorization to the REST
         /// action will cause entity security to be bypassed.
         /// </para>
         /// </summary>
@@ -67,6 +74,22 @@ namespace Rock.Rest
         public RestApiHelper( ApiControllerBase controller )
         {
             _controller = controller;
+
+            // Set initial value of IsSecurityIgnored based on Unrestricted access.
+            if ( _controller.ActionContext.ActionDescriptor is ReflectedHttpActionDescriptor actionDescriptor )
+            {
+                var restGuid = actionDescriptor.MethodInfo.GetCustomAttribute<SystemGuid.RestActionGuidAttribute>()?.Guid;
+
+                if ( restGuid.HasValue )
+                {
+                    var restAction = RestActionCache.Get( restGuid.Value );
+                    var securityAction = _controller.Request.Method == System.Net.Http.HttpMethod.Get
+                        ? "UnrestrictedView"
+                        : "UnrestrictedEdit";
+
+                    IsSecurityIgnored = restAction?.IsAuthorized( securityAction, _controller.RockRequestContext.CurrentPerson ) ?? false;
+                }
+            }
         }
 
         #region API Methods
@@ -531,21 +554,6 @@ namespace Rock.Rest
             if ( !IsSecurityIgnored && entity is ISecured securedEntity )
             {
                 var isAuthorized = securedEntity.IsAuthorized( action, _controller.RockRequestContext.CurrentPerson );
-
-                // If they were not authorized by the entity, check if they have
-                // Administrate authorization to the API, which grants them access
-                // anyway.
-                if ( !isAuthorized && _controller.ActionContext.ActionDescriptor is ReflectedHttpActionDescriptor actionDescriptor )
-                {
-                    var restGuid = actionDescriptor.MethodInfo.GetCustomAttribute<SystemGuid.RestActionGuidAttribute>()?.Guid;
-
-                    if ( restGuid.HasValue )
-                    {
-                        var restAction = RestActionCache.Get( restGuid.Value );
-
-                        isAuthorized = restAction?.IsAuthorized( Security.Authorization.ADMINISTRATE, _controller.RockRequestContext.CurrentPerson ) ?? false;
-                    }
-                }
 
                 if ( !isAuthorized )
                 {

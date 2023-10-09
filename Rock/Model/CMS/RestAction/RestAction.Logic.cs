@@ -81,11 +81,12 @@ namespace Rock.Model
                 // any SecurityActionAttributes defined on it.
                 if ( _supportedActions == null )
                 {
-                    var actions = base.SupportedActions;
                     var controller = RestControllerCache.Get( ControllerId );
 
                     if ( controller != null )
                     {
+                        var actions = new Dictionary<string, string>( controller.SupportedActions );
+
                         // Might be nice to cache this data in the future.
                         var type = Reflection.FindType( typeof( object ), controller.ClassName );
                         var method = type?.GetMethods()
@@ -99,9 +100,29 @@ namespace Rock.Model
                                 actions.AddOrIgnore( sa.Action, sa.Description );
                             }
                         }
-                    }
 
-                    _supportedActions = actions;
+                        // If this is the new API endpoints, automatically remove actions
+                        // that do not apply based on the method.
+                        if ( controller.ClassName.StartsWith( "Rock.Rest.v2." ) )
+                        {
+                            if ( Method.Equals( "GET", System.StringComparison.OrdinalIgnoreCase ) )
+                            {
+                                actions.Remove( Authorization.EDIT );
+                                actions.Remove( "UnrestrictedEdit" );
+                            }
+                            else
+                            {
+                                actions.Remove( Authorization.VIEW );
+                                actions.Remove( "UnrestrictedView" );
+                            }
+                        }
+
+                        _supportedActions = actions;
+                    }
+                    else
+                    {
+                        _supportedActions = base.SupportedActions;
+                    }
                 }
 
                 return _supportedActions;

@@ -23,6 +23,7 @@ using System.Net;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Security;
 
 #if WEBFORMS
 using System.Web.Http;
@@ -37,6 +38,8 @@ namespace Rock.Rest.v2.Models
     /// Provides API endpoints for the Groups controller.
     /// </summary>
     [RoutePrefix( "api/v2/models/groups" )]
+    [SecurityAction( "UnrestrictedView", "Allows viewing entities regardless of per-entity security authorization." )]
+    [SecurityAction( "UnrestrictedEdit", "Allows editing entities regardless of per-entity security authorization." )]
     [Rock.SystemGuid.RestControllerGuid( "999c734f-e206-4a25-8145-1213b4ffd8a9" )]
     public partial class GroupsController : ApiControllerBase
     {
