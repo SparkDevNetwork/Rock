@@ -106,9 +106,11 @@ namespace Rock.Jobs
                     }
                     groupMissingRequirements.AncestorPathName = groupService.GroupAncestorPathName( group.Id );
 
-                    // get list of the group leaders
+                    // Get list of the active, unarchived group leaders and those who should receive Group Requirement Notifications
                     groupMissingRequirements.Leaders = group.Members
-                        .Where( m => m.GroupRole.ReceiveRequirementsNotifications && m.GroupMemberStatus == GroupMemberStatus.Active && m.IsArchived == false )
+                        .Where( m => ( m.GroupRole.ReceiveRequirementsNotifications || m.GroupRole.IsLeader )
+                        && m.GroupMemberStatus == GroupMemberStatus.Active
+                        && m.IsArchived == false )
                         .Select( m => new GroupMemberResult
                         {
                             Id = m.Id,
