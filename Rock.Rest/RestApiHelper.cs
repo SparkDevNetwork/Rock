@@ -131,14 +131,14 @@ namespace Rock.Rest
                 }
 
                 var locationUri = new Uri( $"/api/v2/models/{typeof( TEntity ).Name.Pluralize().ToLower()}/{entity.Id}", UriKind.Relative );
-                var response = new CreatedAtResult
+                var response = new CreatedAtResultBag
                 {
                     Id = entity.Id,
                     Guid = entity.Guid,
                     IdKey = entity.IdKey
                 };
 
-                return new CreatedNegotiatedContentResult<CreatedAtResult>( locationUri, response, _controller );
+                return new CreatedNegotiatedContentResult<CreatedAtResultBag>( locationUri, response, _controller );
             }
             catch ( Exception ex )
             {
@@ -151,11 +151,11 @@ namespace Rock.Rest
         /// <summary>
         /// GET endpoint. Use this to get an existing <typeparamref name="TEntity"/>.
         /// </summary>
-        /// <param name="key">The identifier, unique identifier or IdKey of the item.</param>
+        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
         /// <returns>The response that should be sent back.</returns>
-        public IActionResult Get( string key )
+        public IActionResult Get( string id )
         {
-            if ( key.IsNullOrWhiteSpace() )
+            if ( id.IsNullOrWhiteSpace() )
             {
                 return BadRequest( "Invalid key specified." );
             }
@@ -165,7 +165,7 @@ namespace Rock.Rest
                 using ( var rockContext = new RockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
-                    var entity = service.Get( key );
+                    var entity = service.Get( id );
 
                     if ( entity == null )
                     {
@@ -191,10 +191,10 @@ namespace Rock.Rest
         /// <summary>
         /// PUT endpoint. Use this to update an existing <typeparamref name="TEntity"/>.
         /// </summary>
-        /// <param name="key">The identifier, unique identifier or IdKey of the item.</param>
+        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
         /// <param name="entity">The entity data to update the existing entity with.</param>
         /// <returns>The response that should be sent back.</returns>
-        public IActionResult Update( string key, TEntity entity )
+        public IActionResult Update( string id, TEntity entity )
         {
             try
             {
@@ -206,7 +206,7 @@ namespace Rock.Rest
                 using ( var rockContext = new RockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
-                    var targetEntity = service.Get( key );
+                    var targetEntity = service.Get( id );
 
                     if ( targetEntity == null )
                     {
@@ -251,16 +251,16 @@ namespace Rock.Rest
         /// <summary>
         /// DELETE endpoint. Use this to delete an existing <typeparamref name="TEntity"/>.
         /// </summary>
-        /// <param name="key">The identifier, unique identifier or IdKey of the item.</param>
+        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
         /// <returns>The response that should be sent back.</returns>
-        public IActionResult Delete( string key )
+        public IActionResult Delete( string id )
         {
             try
             {
                 using ( var rockContext = new RockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
-                    var entity = service.Get( key );
+                    var entity = service.Get( id );
 
                     if ( entity == null )
                     {
@@ -291,10 +291,10 @@ namespace Rock.Rest
         /// PATCH endpoint. Use this to perform a partial update to an
         /// existing <typeparamref name="TEntity"/>.
         /// </summary>
-        /// <param name="key">The identifier, unique identifier or IdKey of the item.</param>
+        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
         /// <param name="values">The new values to be set on the entity.</param>
         /// <returns>The response that should be sent back.</returns>
-        public IActionResult Patch( string key, Dictionary<string, object> values )
+        public IActionResult Patch( string id, Dictionary<string, object> values )
         {
             try
             {
@@ -311,7 +311,7 @@ namespace Rock.Rest
                 using ( var rockContext = new RockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
-                    var entity = service.Get( key );
+                    var entity = service.Get( id );
 
                     if ( entity == null )
                     {
@@ -403,11 +403,11 @@ namespace Rock.Rest
         /// <summary>
         /// Get all the attribute values for the <typeparamref name="TEntity"/>.
         /// </summary>
-        /// <param name="key">The identifier, unique identifier or IdKey of the item.</param>
+        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
         /// <returns>The response that should be sent back.</returns>
-        public IActionResult GetAttributeValues( string key )
+        public IActionResult GetAttributeValues( string id )
         {
-            if ( key.IsNullOrWhiteSpace() )
+            if ( id.IsNullOrWhiteSpace() )
             {
                 return BadRequest( "Invalid key specified." );
             }
@@ -422,7 +422,7 @@ namespace Rock.Rest
                 using ( var rockContext = new RockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
-                    var entity = service.Get( key );
+                    var entity = service.Get( id );
 
                     if ( entity == null )
                     {
@@ -466,12 +466,12 @@ namespace Rock.Rest
         /// PATCH endpoint. Use this to perform a partial update of attribute
         /// values to an existing <typeparamref name="TEntity"/>.
         /// </summary>
-        /// <param name="key">The identifier, unique identifier or IdKey of the item.</param>
+        /// <param name="id">The identifier, unique identifier or IdKey of the item.</param>
         /// <param name="values">The new values to be set on the entity.</param>
         /// <returns>The response that should be sent back.</returns>
-        public IActionResult PatchAttributeValues( string key, Dictionary<string, string> values )
+        public IActionResult PatchAttributeValues( string id, Dictionary<string, string> values )
         {
-            if ( key.IsNullOrWhiteSpace() )
+            if ( id.IsNullOrWhiteSpace() )
             {
                 return BadRequest( "Invalid key specified." );
             }
@@ -492,7 +492,7 @@ namespace Rock.Rest
                 using ( var rockContext = new RockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
-                    var entity = service.Get( key );
+                    var entity = service.Get( id );
 
                     if ( entity == null )
                     {
@@ -619,7 +619,7 @@ namespace Rock.Rest
     /// <summary>
     /// The response to be sent for a newly created item.
     /// </summary>
-    internal class CreatedAtResult
+    internal class CreatedAtResultBag
     {
         /// <summary>
         /// Gets or sets the integer identifier.
