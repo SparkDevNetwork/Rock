@@ -730,7 +730,7 @@ namespace RockWeb.Blocks.Cms
         #region Helper Classes
 
         [LavaType]
-        private class ContentChannelGridItem
+        private class ContentChannelGridItem : LavaDataObject
         {
             public int Id { get; internal set; }
             public Guid Guid { get; internal set; }
