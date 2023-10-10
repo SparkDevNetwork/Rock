@@ -246,6 +246,38 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             }
         }
 
+        /// <summary>
+        /// Verify that the "business" tag is registered as an entity command.
+        /// Tags are automatically registered for Rock Entity models, but the "business" tag is registered manually
+        /// as an alias for the Person entity.
+        /// </summary>
+        [TestMethod]
+        public void EntityCommandBlock_BusinessAlias_ReturnsPersonEntities()
+        {
+            var template = @"
+{% business where:'LastName == ""Ace Hardware""' iterator:'items' %}
+<ul>
+  {% for item in items %}
+    <li>{{ item.LastName }}</li>
+  {% endfor %}
+</ul>
+{% endbusiness %}
+";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
+
+                var options = new LavaTestRenderOptions
+                {
+                    EnabledCommands = "rockentity",
+                    OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains
+                };
+
+                TestHelper.AssertTemplateOutput( engine, "Ace Hardware", template, options );
+            } );
+        }
+
         [DataTestMethod]
         [DataRow( @"LastName == ""Decker"" && NickName ==""Ted""", "Ted Decker" )]
         [DataRow( @"LastName == ""Decker"" && NickName !=""Ted""", "Cindy Decker" )]
