@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Model.CMS.ContentChannelItem.Options;
@@ -728,7 +729,8 @@ namespace RockWeb.Blocks.Cms
 
         #region Helper Classes
 
-        private class ContentChannelGridItem
+        [LavaType]
+        private class ContentChannelGridItem : LavaDataObject
         {
             public int Id { get; internal set; }
             public Guid Guid { get; internal set; }
