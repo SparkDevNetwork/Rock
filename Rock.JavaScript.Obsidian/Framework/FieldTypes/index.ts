@@ -158,6 +158,9 @@ registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldTy
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
 
+import { EntityFieldType } from "./entityField.partial";
+registerFieldType(FieldTypeGuids.Entity, new EntityFieldType());
+
 import { EntityTypeFieldType } from "./entityTypeField.partial";
 registerFieldType(FieldTypeGuids.Entitytype, new EntityTypeFieldType());
 
