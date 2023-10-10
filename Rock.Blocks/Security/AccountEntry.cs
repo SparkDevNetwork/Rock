@@ -296,7 +296,7 @@ namespace Rock.Blocks.Security
     [Rock.SystemGuid.BlockTypeGuid( "E5C34503-DDAD-4881-8463-0E1E20B1675D" )]
     public class AccountEntry : RockBlockType
     {
-        #region Attribute Keys
+        #region Keys
 
         private static class AttributeKey
         {
@@ -330,6 +330,14 @@ namespace Rock.Blocks.Security
             public const string DisableUsernameAvailabilityCheck = "DisableUsernameAvailabilityCheck";
             public const string ConfirmAccountPasswordlessTemplate = "ConfirmAccountPasswordlessTemplate";
             public const string ConfirmCaptionPasswordless = "ConfirmCaptionPasswordless";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string Status = "status";
+            public const string State = "State";
+            public const string AreUsernameAndPasswordRequired = "AreUsernameAndPasswordRequired";
+            public const string ReturnUrl = "returnurl";
         }
 
         #endregion
@@ -785,7 +793,7 @@ namespace Rock.Blocks.Security
         private AccountEntryInitializationBox GetInitializationBox( string encryptedStateOverride = null )
         {
             // Automatically set the phone number or email if this user is coming from the passwordless login flow.
-            var passwordlessLoginStateString = encryptedStateOverride ?? Uri.UnescapeDataString( PageParameter( "State" ) );
+            var passwordlessLoginStateString = encryptedStateOverride ?? Uri.UnescapeDataString( PageParameter( PageParameterKey.State ) );
             var passwordlessLoginState = PasswordlessAuthentication.GetDecryptedAuthenticationState( passwordlessLoginStateString );
 
             var requiredPhoneTypes = GetAttributeValue( AttributeKey.PhoneTypesRequired )
@@ -830,7 +838,7 @@ namespace Rock.Blocks.Security
             };
 
             var currentPerson = GetCurrentPerson();
-            if ( PageParameter( "status" ).ToLower() == "success" && currentPerson != null )
+            if ( PageParameter( PageParameterKey.Status ).ToLower() == "success" && currentPerson != null )
             {
                 accountEntryRegisterStepBox = new AccountEntryRegisterResponseBox()
                 {
@@ -844,6 +852,8 @@ namespace Rock.Blocks.Security
                 };
             }
 
+            var areUsernameAndPasswordRequired = PageParameter( PageParameterKey.AreUsernameAndPasswordRequired ).AsBoolean();
+
             return new AccountEntryInitializationBox
             {
                 ArePhoneNumbersShown = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean(),
@@ -851,7 +861,9 @@ namespace Rock.Blocks.Security
                 ConfirmationSentCaption = GetAttributeValue( AttributeKey.ConfirmCaption ),
                 Email = passwordlessLoginState?.Email,
                 ExistingAccountCaption = GetAttributeValue( AttributeKey.ExistingAccountCaption ),
-                IsAccountInfoHidden = passwordlessLoginState != null,
+                // Account info (username and password) should only be hidden if registering through the passwordless
+                // authentication flow AND if username and password are not required.
+                IsAccountInfoHidden = passwordlessLoginState != null && !areUsernameAndPasswordRequired,
                 IsAddressRequired = GetAttributeValue( AttributeKey.AddressRequired ).AsBoolean(),
                 IsAddressShown = GetAttributeValue( AttributeKey.ShowAddress ).AsBoolean(),
                 IsCampusPickerShown = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean(),
@@ -899,7 +911,7 @@ namespace Rock.Blocks.Security
         /// <returns>The redirect URL after login.</returns>
         private string GetRedirectUrlAfterRegistration()
         {
-            var returnUrl = GetSafeDecodedUrl( PageParameter( "returnurl" ) );
+            var returnUrl = GetSafeDecodedUrl( PageParameter( PageParameterKey.ReturnUrl ) );
 
             if ( returnUrl.IsNotNullOrWhiteSpace() )
             {
@@ -1434,6 +1446,12 @@ namespace Rock.Blocks.Security
                 }
 
                 userLogin = CreatePasswordlessUserLogin( person, true, PasswordlessAuthentication.GetUsername( passwordlessAuthenticationState.UniqueIdentifier ), rockContext );
+
+                // 2FA: Also create a Database login if the username and password were provided.
+                if ( box.AccountInfo?.Username?.IsNotNullOrWhiteSpace() == true && box.AccountInfo.Password.IsNotNullOrWhiteSpace() )
+                {
+                    CreateUserLogin( person, true, box.AccountInfo.Username, box.AccountInfo.Password, rockContext );
+                }
             }
             else
             {

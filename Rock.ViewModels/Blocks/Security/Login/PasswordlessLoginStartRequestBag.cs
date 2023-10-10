@@ -58,5 +58,13 @@ namespace Rock.ViewModels.Blocks.Security.Login
         /// The matching person value.
         /// </value>
         public string MatchingPersonValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MFA details.
+        /// </summary>
+        /// <value>
+        /// The MFA details.
+        /// </value>
+        public string MfaTicket { get; set; }
     }
 }

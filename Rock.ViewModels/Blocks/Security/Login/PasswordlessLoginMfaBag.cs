@@ -14,30 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
+
 namespace Rock.ViewModels.Blocks.Security.Login
 {
     /// <summary>
-    /// A bag that contains the credential login request information.
+    /// A bag that contains the passwordless login MFA information.
     /// </summary>
-    public class CredentialLoginRequestBag
+    public class PasswordlessLoginMfaBag
     {
         /// <summary>
-        /// Gets or sets the username.
+        /// Gets or sets a value indicating whether email and mobile phone are missing.
         /// </summary>
-        /// <value>The username.</value>
-        public string Username { get; set; }
+        /// <value>
+        ///   <c>true</c> if email and mobile phone are missing; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsEmailAndMobilePhoneMissing { get; set; }
 
         /// <summary>
-        /// Gets or sets the password.
+        /// Gets a value indicating whether there is an error.
         /// </summary>
-        /// <value>The password.</value>
-        public string Password { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [remember me].
-        /// </summary>
-        /// <value><c>true</c> if [remember me]; otherwise, <c>false</c>.</value>
-        public bool RememberMe { get; set; }
+        /// <value>
+        ///   <c>true</c> if there is an error; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsError => IsEmailAndMobilePhoneMissing;
 
         /// <summary>
         /// Gets or sets the MFA ticket.
@@ -45,6 +44,6 @@ namespace Rock.ViewModels.Blocks.Security.Login
         /// <value>
         /// The MFA ticket.
         /// </value>
-        public string MfaTicket { get; set; }
+        public string Ticket { get; set; }
     }
 }
