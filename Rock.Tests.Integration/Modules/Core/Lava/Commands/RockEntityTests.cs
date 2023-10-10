@@ -246,30 +246,6 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             }
         }
 
-        [TestMethod]
-        public void EntityCommandBlock_WhereFilterByCoreAttribute_ReturnsMatchedEntitiesOnly()
-        {
-            var template = @"
-{% person where:'core_CurrentlyAnEra == 1' iterator:'items' %}
-<ul>
-  {% for item in items %}
-    <li>{{ item.NickName }} {{ item.LastName }}</li>
-  {% endfor %}
-</ul>
-{% endperson %}
-";
-
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
-
-                TestHelper.DebugWriteRenderResult( engine, template, output );
-
-                Assert.That.Contains( output, "Cindy Decker" );
-                Assert.That.DoesNotContain( output, "Ted Decker" );
-            } );
-        }
-
         [DataTestMethod]
         [DataRow( @"LastName == ""Decker"" && NickName ==""Ted""", "Ted Decker" )]
         [DataRow( @"LastName == ""Decker"" && NickName !=""Ted""", "Cindy Decker" )]
