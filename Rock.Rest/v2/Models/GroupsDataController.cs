@@ -37,7 +37,7 @@ namespace Rock.Rest.v2.Models
     /// <summary>
     /// Provides data API endpoints for Groups.
     /// </summary>
-    [RoutePrefix( "api/v2/models/data/groups" )]
+    [RoutePrefix( "api/v2/models/groups/data" )]
     [SecurityAction( "UnrestrictedView", "Allows viewing entities regardless of per-entity security authorization." )]
     [SecurityAction( "UnrestrictedEdit", "Allows editing entities regardless of per-entity security authorization." )]
     [Rock.SystemGuid.RestControllerGuid( "999c734f-e206-4a25-8145-1213b4ffd8a9" )]

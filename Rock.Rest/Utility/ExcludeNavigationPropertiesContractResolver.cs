@@ -38,28 +38,36 @@ namespace Rock.Rest.Utility
             var props = base.CreateProperties( type, memberSerialization );
 
             props = props
-                .Where( p =>
-                {
-                    if ( typeof( IEntity ).IsAssignableFrom( p.PropertyType ) )
-                    {
-                        return false;
-                    }
-
-                    if ( !p.PropertyType.IsGenericType )
-                    {
-                        return true;
-                    }
-
-                    if ( p.PropertyType.GetGenericTypeDefinition() != typeof( ICollection<> ) )
-                    {
-                        return true;
-                    }
-
-                    return !typeof( IEntity ).IsAssignableFrom( p.PropertyType.GetGenericArguments()[0] );
-                } )
+                .Where( p => !IsNavigationPropertyType( p.PropertyType ) )
                 .ToList();
 
             return props;
+        }
+
+        /// <summary>
+        /// Determines if the type is a navigation property. This is determined
+        /// by it either being of type IEntity or of type ICollection&lt;IEntity&gt;.
+        /// </summary>
+        /// <param name="type">The property type.</param>
+        /// <returns><c>true</c> if the property type is a navigation property; otherwise <c>false</c>.</returns>
+        internal static bool IsNavigationPropertyType( Type type )
+        {
+            if ( typeof( IEntity ).IsAssignableFrom( type ) )
+            {
+                return true;
+            }
+
+            if ( !type.IsGenericType )
+            {
+                return false;
+            }
+
+            if ( type.GetGenericTypeDefinition() != typeof( ICollection<> ) )
+            {
+                return false;
+            }
+
+            return typeof( IEntity ).IsAssignableFrom( type.GetGenericArguments()[0] );
         }
     }
 }
