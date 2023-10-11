@@ -32,7 +32,7 @@ using IActionResult = System.Web.Http.IHttpActionResult;
 using RouteAttribute = System.Web.Http.RouteAttribute;
 #endif
 
-namespace Rock.Rest.v2.Models
+namespace Rock.Rest.v2.Models.Data
 {
     /// <summary>
     /// Provides data API endpoints for Groups.
