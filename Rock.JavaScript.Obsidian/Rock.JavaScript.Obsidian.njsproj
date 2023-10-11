@@ -572,7 +572,7 @@
     <TypeScriptCompile Include="Framework\Enums\Finance\batchStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Finance\benevolenceWorkflowTriggerType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Finance\financialScheduledTransactionStatus.ts" />
-    <TypeScriptCompile Include="Framework\Enums\Finance\mICRStatus.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Finance\micrStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Finance\transactionGraphBy.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\appliesToAgeClassification.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\attendanceRecordRequiredForCheckIn.ts" />
