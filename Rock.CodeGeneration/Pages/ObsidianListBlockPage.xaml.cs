@@ -300,7 +300,7 @@ namespace Rock.CodeGeneration.Pages
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"{options.EntityType.Name.CamelCase()}List.obs", typeScriptBlockPath, result ) );
+                files.Add( new GeneratedFile( $"{options.EntityType.Name.ToCamelCase()}List.obs", typeScriptBlockPath, result ) );
             }
 
             // Generate the Obsidian <Entity>List\types.partial.ts file.

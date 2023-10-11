@@ -72,7 +72,7 @@ namespace Rock.CodeGeneration.FileGenerators
 
                 AppendCommentBlock( sb, property, 4 );
 
-                sb.Append( $"    {property.Name.CamelCase()}" );
+                sb.Append( $"    {property.Name.ToCamelCase()}" );
 
                 // If its nullable that means it could also be undefined.
                 if ( isNullable )
@@ -517,7 +517,7 @@ namespace Rock.CodeGeneration.FileGenerators
             }
             else if ( type.Namespace.StartsWith( "Rock.ViewModels" ) && ( type.Name.EndsWith( "Bag" ) || type.Name.EndsWith( "Box" ) ) )
             {
-                var path = $"{type.Namespace.Substring( 15 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.CamelCase()}";
+                var path = $"{type.Namespace.Substring( 15 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.ToCamelCase()}";
                 tsType = type.Name;
                 imports.Add( new TypeScriptImport
                 {
@@ -528,7 +528,7 @@ namespace Rock.CodeGeneration.FileGenerators
             }
             else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Enums" ) )
             {
-                var path = $"{type.Namespace.Substring( 10 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.CamelCase()}";
+                var path = $"{type.Namespace.Substring( 10 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.ToCamelCase()}";
                 tsType = type.Name;
                 imports.Add( new TypeScriptImport
                 {
@@ -539,7 +539,7 @@ namespace Rock.CodeGeneration.FileGenerators
             else if ( type.IsEnum && type.GetCustomAttribute<Rock.Enums.EnumDomainAttribute>() != null )
             {
                 var domain = type.GetCustomAttribute<Rock.Enums.EnumDomainAttribute>().Domain;
-                var path = $"{SupportTools.GetDomainFolderName( domain )}/{type.Name.CamelCase()}";
+                var path = $"{SupportTools.GetDomainFolderName( domain )}/{type.Name.ToCamelCase()}";
                 tsType = type.Name;
                 imports.Add( new TypeScriptImport
                 {
