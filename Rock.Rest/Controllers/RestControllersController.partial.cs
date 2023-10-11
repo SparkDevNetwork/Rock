@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -55,11 +55,20 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "CE1D0D07-CB40-467B-8616-8D070786C175" )]
         public List<string> RestControllerNames( bool includeObsolete )
         {
-            var restControllerClassList = this.Get().OrderBy( a => a.Name ).Select( a => new
-            {
-                a.ClassName,
-                a.Name
-            } ).ToList();
+            // NOTE: This is intentionally not a method parameter because it
+            // is meant to be a temporary hack to allow the old REST API
+            // browser to exclude v2 API endpoints. In the future this will
+            // change / be removed.
+            var onlyIncludeV1 = Request.GetQueryString( "v" ) == "v1";
+
+            var restControllerClassList = this.Get().OrderBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.ClassName,
+                    a.Name
+                } )
+                .Where( a => !onlyIncludeV1 || !a.ClassName.Contains( ".v2." ) )
+                .ToList();
 
             if ( includeObsolete )
             {

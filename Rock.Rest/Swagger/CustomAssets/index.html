@@ -171,7 +171,7 @@
         $.get('%(RootUrl)' + '/api/RestControllers/EnsureRestControllers', function ()
         {
             // get the list of controller, not including obsolete controllers
-            $.get('%(RootUrl)' + '/api/RestControllers/RestControllerNames?includeObsolete=false', function (data)
+            $.get('%(RootUrl)' + '/api/RestControllers/RestControllerNames?includeObsolete=false&v=v1', function (data)
             {
                 var $rockControllerList = $('#rock-controller-list ul');
                 $.each(data, function (index, controllerName)
