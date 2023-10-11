@@ -621,7 +621,7 @@ namespace Rock.Lava.Blocks
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity
-           engine.RegisterBlock( "business", ( name ) => { return new RockEntityBlock(); } );
+           engine.RegisterBlock( "business", ( name ) => CreateEntityBlockInstance( name ) );
 
             // Register the core models, replacing existing blocks of the same name if necessary.
             foreach ( var entityType in entityTypes
@@ -661,13 +661,19 @@ namespace Rock.Lava.Blocks
                     entityName = entityType.Name.Replace( '.', '_' );
                 }
 
-                engine.RegisterBlock( entityName,
-                    ( name ) =>
-                    {
-                        // Return a block having a tag name corresponding to the entity name.
-                        return new RockEntityBlock() { SourceElementName = entityName, EntityName = entityName };
-                    } );
+                engine.RegisterBlock( entityName, ( name ) => CreateEntityBlockInstance( name ) );
             }
+        }
+
+        /// <summary>
+        /// Factory method to return a new block for the specified Entity.
+        /// </summary>
+        /// <param name="entityName"></param>
+        /// <returns></returns>
+        private static RockEntityBlock CreateEntityBlockInstance( string entityName )
+        {
+            // Return a block having a tag name corresponding to the entity name.
+            return new RockEntityBlock() { SourceElementName = entityName, EntityName = entityName };
         }
 
         /// <summary>
