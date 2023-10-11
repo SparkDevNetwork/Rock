@@ -370,6 +370,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Finance\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BenevolenceTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialAccountDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\" />
@@ -902,6 +903,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\businessDetailBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\businessDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\searchKeyBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialAccountDetail\financialAccountBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialAccountDetail\financialAccountDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialAccountDetail\financialAccountParticipantBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchAccountTotalsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchCurrencyTotalsBag.d.ts" />

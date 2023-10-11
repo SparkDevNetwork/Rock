@@ -74,6 +74,9 @@
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceWorkflowBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountParticipantBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusResponseBag.cs" />
