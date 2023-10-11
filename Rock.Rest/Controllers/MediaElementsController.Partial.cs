@@ -167,7 +167,7 @@ namespace Rock.Rest.Controllers
             }
             else
             {
-                personAliasId = RockRequestContext.CurrentPerson?.Id;
+                personAliasId = RockRequestContext.CurrentPerson?.PrimaryAliasId;
 
                 if ( !personAliasId.HasValue )
                 {
