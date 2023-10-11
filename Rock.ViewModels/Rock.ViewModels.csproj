@@ -71,6 +71,9 @@
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceWorkflowBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusResponseBag.cs" />

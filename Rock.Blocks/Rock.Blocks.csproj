@@ -75,6 +75,7 @@
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
     <Compile Include="Engagement\AchievementTypeDetail.cs" />
+    <Compile Include="Finance\BenevolenceTypeDetail.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
