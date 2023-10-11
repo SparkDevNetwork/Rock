@@ -46,6 +46,8 @@ namespace Rock.Rest.Swagger
             config
                 .EnableSwagger( swaggerRoute, c =>
                 {
+                    c.CustomProvider( provider => new RockV2SwaggerProvider( provider ) );
+
                     // Resolve the root URL in a way that is safe with proxies.
                     c.RootUrl( req => DefaultRootUrlResolver( req ) );
 

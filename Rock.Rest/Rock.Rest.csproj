@@ -178,6 +178,7 @@
     <Compile Include="Swagger\RockV2DocumentFilter.cs" />
     <Compile Include="Swagger\RockV2OperationFilter.cs" />
     <Compile Include="Swagger\RockV2SchemaFilter.cs" />
+    <Compile Include="Swagger\RockV2SwaggerProvider.cs" />
     <Compile Include="Swagger\SwaggerConfigV2.cs" />
     <Compile Include="Utility\ExcludeNavigationPropertiesContractResolver.cs" />
     <Compile Include="ProducesResponseTypeAttribute.cs" />
