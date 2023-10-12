@@ -221,6 +221,9 @@ registerFieldType(FieldTypeGuids.KeyValueList, new KeyValueListFieldType());
 import { LavaFieldType } from "./lavaField.partial";
 registerFieldType(FieldTypeGuids.Lava, new LavaFieldType());
 
+import { LavaCommandsFieldType } from "./lavaCommandsField.partial";
+registerFieldType(FieldTypeGuids.LavaCommands, new LavaCommandsFieldType());
+
 import { LocationListFieldType } from "./locationListField.partial";
 registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 
