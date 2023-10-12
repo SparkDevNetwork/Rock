@@ -1080,6 +1080,7 @@
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicDomainService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\EntitySearchService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceActionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceAnswerService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceOccurrenceService.CodeGenerated.cs" />
