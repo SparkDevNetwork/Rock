@@ -21,6 +21,10 @@
 // </copyright>
 //
 
+import { CameraBarcodeConfiguration } from "@Obsidian/Enums/Core/cameraBarcodeConfiguration";
+import { KioskType } from "@Obsidian/Enums/Core/kioskType";
+import { PrintFrom } from "@Obsidian/Enums/Core/printFrom";
+import { PrintTo } from "@Obsidian/Enums/Core/printTo";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -32,7 +36,7 @@ export type DeviceBag = {
     attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the type of the camera barcode configuration. */
-    cameraBarcodeConfigurationType?: number | null;
+    cameraBarcodeConfigurationType?: CameraBarcodeConfiguration | null;
 
     /** Gets or sets a description of the device. */
     description?: string | null;
@@ -59,7 +63,7 @@ export type DeviceBag = {
     isActive: boolean;
 
     /** Gets or sets the type of the kiosk. */
-    kioskType?: number | null;
+    kioskType?: KioskType | null;
 
     /** Gets or sets the physical location or geographic fence for the device. */
     location?: ListItemBag | null;
@@ -74,8 +78,8 @@ export type DeviceBag = {
     printerDevice?: ListItemBag | null;
 
     /** Gets or sets where print jobs for this device originates from. */
-    printFrom: number;
+    printFrom: PrintFrom;
 
     /** Gets or sets a flag that overrides which printer the print job is set to. */
-    printToOverride: number;
+    printToOverride: PrintTo;
 };

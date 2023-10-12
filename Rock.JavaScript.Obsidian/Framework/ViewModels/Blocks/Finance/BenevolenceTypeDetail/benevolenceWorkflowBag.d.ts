@@ -31,6 +31,9 @@ export type BenevolenceWorkflowBag = {
     /** Gets or sets the unique identifier. */
     guid?: Guid | null;
 
+    /** Gets or sets a value indicating whether this instance is inherited. */
+    isInherited: boolean;
+
     /** Gets or sets the qualifier. */
     primaryQualifier?: string | null;
 

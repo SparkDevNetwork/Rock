@@ -11,7 +11,7 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceTypeDetail
         /// <value>
         /// The unique identifier.
         /// </value>
-        public string Guid { get; set; }
+        public Guid Guid { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the workflow type.

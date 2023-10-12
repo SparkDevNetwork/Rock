@@ -285,7 +285,7 @@ namespace Rock.Blocks.Finance
                 return new BenevolenceWorkflowBag()
                 {
                     BenevolenceTypeId = workflow.BenevolenceTypeId,
-                    Guid = workflow.Guid.ToString(),
+                    Guid = workflow.Guid,
                     WorkflowType = workflow.WorkflowType.ToListItemBag(),
                     Trigger = workflow.TriggerType.ConvertToString(),
                     WorkflowTypeName = workflow.BenevolenceTypeId > 0 ? workflow.WorkflowType.Name + " <span class='label label-default'>Inherited</span>" : workflow.WorkflowType.Name,
@@ -511,7 +511,7 @@ namespace Rock.Blocks.Finance
                 entity.AdditionalSettingsJson = additionalSettings.ToJson();
 
                 // remove any workflows that were removed in the UI
-                var uiWorkflows = box.Entity.Workflows.Select( l => l.Guid.AsGuid() );
+                var uiWorkflows = box.Entity.Workflows.Select( l => l.Guid );
 
                 foreach ( var benevolenceWorkflow in entity.BenevolenceWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
                 {
@@ -523,7 +523,7 @@ namespace Rock.Blocks.Finance
                 foreach ( var workflowBag in box.Entity.Workflows )
                 {
                     BenevolenceWorkflow benevolenceWorkflow = entity.BenevolenceWorkflows
-                        .FirstOrDefault( b => !workflowBag.Guid.Equals( Guid.Empty ) && b.Guid.ToString() == workflowBag.Guid );
+                        .FirstOrDefault( b => !workflowBag.Guid.Equals( Guid.Empty ) && b.Guid == workflowBag.Guid );
 
                     if ( benevolenceWorkflow == null )
                     {

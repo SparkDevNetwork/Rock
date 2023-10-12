@@ -136,7 +136,7 @@
     const stepStatuses = ref(props.options.statuses ?? []);
     const primaryQualifier = ref("");
     const secondaryQualifier = ref("");
-    const workflow = ref<BenevolenceWorkflowBag>({});
+    const workflow = ref<BenevolenceWorkflowBag>({ isInherited: false });
     const workflowExists = ref(false);
     const isLoading = ref(false);
     const invokeBlockAction = useInvokeBlockAction();
@@ -211,6 +211,7 @@
 
         const workflowBag: BenevolenceWorkflowBag = {
             trigger: triggerType?.value,
+            isInherited: false,
             workflowType: workflow.value.workflowType,
             workflowTypeName: workflow.value.workflowType?.text,
             primaryQualifier: primaryQualifier.value,
@@ -265,6 +266,7 @@
                 const currentLength = workflows.value.length + 1;
                 const newWorkflow: BenevolenceWorkflowBag = {
                     trigger: selectedTriggerType?.value,
+                    isInherited: false,
                     workflowType: workflow.value.workflowType,
                     workflowTypeName: workflow.value.workflowType?.text,
                     primaryQualifier: primaryQualifier.value,
@@ -279,7 +281,7 @@
             }
         }
 
-        workflow.value = {};
+        workflow.value = { isInherited: false };
         triggerType.value = "";
         primaryQualifier.value = "";
         secondaryQualifier.value = "";

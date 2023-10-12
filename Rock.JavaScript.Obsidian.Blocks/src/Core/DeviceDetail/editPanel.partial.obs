@@ -110,6 +110,10 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { KioskType } from "@Obsidian/Enums/Core/kioskType";
+    import { PrintFrom } from "@Obsidian/Enums/Core/printFrom";
+    import { PrintTo } from "@Obsidian/Enums/Core/printTo";
+    import { CameraBarcodeConfiguration } from "@Obsidian/Enums/Core/cameraBarcodeConfiguration";
 
     const props = defineProps({
         modelValue: {
@@ -259,11 +263,11 @@
             ipAddress: ipAddress.value,
             hasCamera: hasCamera.value,
             deviceType: deviceType.value,
-            printFrom: toNumber(printFrom.value),
-            printToOverride: toNumber(printTo.value),
+            printFrom: toNumber(printFrom.value) as PrintFrom,
+            printToOverride: toNumber(printTo.value) as PrintTo,
             printerDevice: { text: "", value: printerDevice.value },
-            kioskType: toNumberOrNull(kioskType.value),
-            cameraBarcodeConfigurationType: toNumberOrNull(cameraBarcodeConfigurationType.value),
+            kioskType: toNumberOrNull(kioskType.value) as KioskType | null,
+            cameraBarcodeConfigurationType: toNumberOrNull(cameraBarcodeConfigurationType.value) as CameraBarcodeConfiguration | null,
             locations: locations.value
         };
 

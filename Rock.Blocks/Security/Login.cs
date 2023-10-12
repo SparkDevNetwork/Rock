@@ -1782,8 +1782,6 @@ namespace Rock.Blocks.Security
 
         private class PasswordlessLoginConfigurationValidation
         {
-            public bool IsValid;
-
             public bool IsPasswordlessLoginInactive { get; internal set; }
 
             public bool IsPasswordlessLoginConfirmationCommunicationMissing { get; internal set; }
