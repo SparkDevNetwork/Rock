@@ -61,7 +61,7 @@ namespace Rock.Model
                     WhereExpression = entitySearch.WhereExpression,
                     GroupByExpression = entitySearch.GroupByExpression,
                     SelectExpression = entitySearch.SelectExpression,
-                    OrderExpression = entitySearch.OrderExpression,
+                    OrderByExpression = entitySearch.OrderByExpression,
                     MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery,
                     IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced
                 };
@@ -88,7 +88,7 @@ namespace Rock.Model
                     WhereExpression = entitySearch.WhereExpression,
                     GroupByExpression = entitySearch.GroupByExpression,
                     SelectExpression = entitySearch.SelectExpression,
-                    OrderExpression = entitySearch.OrderExpression,
+                    OrderByExpression = entitySearch.OrderByExpression,
                     MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery,
                     IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced
                 };
@@ -145,9 +145,9 @@ namespace Rock.Model
                 resultQry = resultQry.Select( config, systemQuery.SelectExpression );
             }
 
-            if ( systemQuery.OrderExpression.IsNotNullOrWhiteSpace() )
+            if ( systemQuery.OrderByExpression.IsNotNullOrWhiteSpace() )
             {
-                resultQry = resultQry.OrderBy( config, systemQuery.OrderExpression );
+                resultQry = resultQry.OrderBy( config, systemQuery.OrderByExpression );
             }
 
             // Perform the user query elements.

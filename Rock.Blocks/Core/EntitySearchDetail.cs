@@ -181,7 +181,7 @@ namespace Rock.Blocks.Core
                 Key = entity.Key,
                 MaximumResultsPerQuery = entity.MaximumResultsPerQuery,
                 Name = entity.Name,
-                OrderExpression = entity.OrderExpression,
+                OrderByExpression = entity.OrderByExpression,
                 SelectExpression = entity.SelectExpression,
                 WhereExpression = entity.WhereExpression
             };
@@ -262,8 +262,8 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
 
-            box.IfValidProperty( nameof( box.Entity.OrderExpression ),
-                () => entity.OrderExpression = box.Entity.OrderExpression );
+            box.IfValidProperty( nameof( box.Entity.OrderByExpression ),
+                () => entity.OrderByExpression = box.Entity.OrderByExpression );
 
             box.IfValidProperty( nameof( box.Entity.SelectExpression ),
                 () => entity.SelectExpression = box.Entity.SelectExpression );

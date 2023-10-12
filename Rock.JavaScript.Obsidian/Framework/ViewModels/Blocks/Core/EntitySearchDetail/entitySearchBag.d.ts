@@ -84,7 +84,7 @@ export type EntitySearchBag = {
      * Gets or sets the expression that will be used to order the results.
      * This is processed after Rock.Model.EntitySearch.SelectExpression.
      */
-    orderExpression?: string | null;
+    orderByExpression?: string | null;
 
     /**
      * Gets or sets the expression that will be used to define the structure

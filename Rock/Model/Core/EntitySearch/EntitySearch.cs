@@ -115,7 +115,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>A <see cref="string"/> containing the dynamic LINQ <c>OrderBy()</c> expression.</value>
         [DataMember]
-        public string OrderExpression { get; set; }
+        public string OrderByExpression { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of results per query. More data can

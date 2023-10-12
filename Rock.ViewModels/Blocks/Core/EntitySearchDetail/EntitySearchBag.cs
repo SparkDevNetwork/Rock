@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -81,7 +81,7 @@ namespace Rock.ViewModels.Blocks.Core.EntitySearchDetail
         /// Gets or sets the expression that will be used to order the results.
         /// This is processed after Rock.Model.EntitySearch.SelectExpression.
         /// </summary>
-        public string OrderExpression { get; set; }
+        public string OrderByExpression { get; set; }
 
         /// <summary>
         /// Gets or sets the expression that will be used to define the structure

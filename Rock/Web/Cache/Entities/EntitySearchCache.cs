@@ -97,7 +97,7 @@ namespace Rock.Web.Cache
         /// This is processed after <see cref="SelectExpression"/>.
         /// </summary>
         /// <value>A <see cref="string"/> containing the dynamic LINQ <c>OrderBy()</c> expression.</value>
-        public string OrderExpression { get; private set; }
+        public string OrderByExpression { get; private set; }
 
         /// <summary>
         /// Gets the maximum number of results per query. More data can
@@ -159,7 +159,7 @@ namespace Rock.Web.Cache
             WhereExpression = entitySearch.WhereExpression;
             GroupByExpression = entitySearch.GroupByExpression;
             SelectExpression = entitySearch.SelectExpression;
-            OrderExpression = entitySearch.OrderExpression;
+            OrderByExpression = entitySearch.OrderByExpression;
             MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery;
             IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced;
             IsRefinementAllowed = entitySearch.IsRefinementAllowed;
