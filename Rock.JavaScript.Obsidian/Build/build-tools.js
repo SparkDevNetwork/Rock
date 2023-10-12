@@ -76,27 +76,24 @@ function fastBuild(pattern) {
 
     let newestFileStamp = 0;
 
-    glob.glob(pattern.replace(/\\/g, "/"), (err, files) => {
-        if (err) {
-            return;
-        }
+    const files = glob.globSync(pattern.replace(/\\/g, "/"));
 
-        for (const file of files) {
-            const st = statSync(file);
-            if (st.mtime.getTime() > newestFileStamp) {
-                newestFileStamp = st.mtime.getTime();
-            }
-        }
+    for (const file of files) {
+        const st = statSync(file);
 
-        if (newestFileStamp > buildstamp.mtime.getTime()) {
-            // Newer file sources exist, build required.
-            performBuild();
+        if (st.mtime.getTime() > newestFileStamp) {
+            newestFileStamp = st.mtime.getTime();
         }
-        else {
-            // Dist is up to date, no build required.
-            exit(0);
-        }
-    });
+    }
+
+    if (newestFileStamp > buildstamp.mtime.getTime()) {
+        // Newer file sources exist, build required.
+        performBuild();
+    }
+    else {
+        // Dist is up to date, no build required.
+        exit(0);
+    }
 }
 
 // #endregion
