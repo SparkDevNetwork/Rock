@@ -16,12 +16,15 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
 
 using Rock.Core;
 using Rock.Data;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Core;
 using Rock.Web.Cache;
 
@@ -190,7 +193,29 @@ namespace Rock.Model
                 resultQry = resultQry.Take( takeCount.Value );
             }
 
-            return resultQry.ToDynamicList();
+            var visitedExpression = new IdKeyExpressionVisitor().Visit( resultQry.Expression );
+
+            resultQry = resultQry.Provider.CreateQuery( visitedExpression );
+
+            var results = resultQry.ToDynamicList();
+
+            // Check if we need to translate any IdKey properties.
+            if ( results.Any() && results[0] is IDynamicMetaObjectProvider )
+            {
+                foreach ( var item in results )
+                {
+                    if ( item.idKey is string && item.idKey.StartsWith( "##" ) )
+                    {
+                        item.IdKey = IdHasher.Instance.GetHash( item.idKey.Substring( 2 ).AsInteger() );
+                    }
+                    else if ( item.IdKey is string && item.IdKey.StartsWith( "##" ) )
+                    {
+                        item.IdKey = IdHasher.Instance.GetHash( item.IdKey.Substring( 2 ).AsInteger() );
+                    }
+                }
+            }
+
+            return results;
         }
 
         /// <summary>
@@ -239,5 +264,69 @@ namespace Rock.Model
         }
 
         #endregion
+
+        /// <summary>
+        /// Expression visitor that handles IdKey requests for Entity Searches.
+        /// </summary>
+        internal class IdKeyExpressionVisitor : ExpressionVisitor
+        {
+            /// <inheritdoc/>
+            protected override Expression VisitBinary( BinaryExpression node )
+            {
+                // IdKey is only valid for equals and not equals comparisons.
+                if ( node.NodeType != ExpressionType.Equal && node.NodeType != ExpressionType.NotEqual )
+                {
+                    return base.VisitBinary( node );
+                }
+
+                if ( IsIdKeyMember( node.Left ) )
+                {
+                    // This should never be the case, but this covers any strange things.
+                    if ( !( node.Left is MemberExpression idKeyExpression ) || idKeyExpression.Expression == null || !( node.Right is ConstantExpression constantExpression ) )
+                    {
+                        return base.VisitBinary( node );
+                    }
+
+                    // Create an expression that compares the de-hashed value against Id.
+                    var memberExpression = Expression.Property( idKeyExpression.Expression, nameof( IEntity.Id ) );
+                    var id = IdHasher.Instance.GetId( constantExpression.Value.ToString() ) ?? 0;
+
+                    return node.NodeType == ExpressionType.Equal
+                        ? Expression.Equal( memberExpression, Expression.Constant( id ) )
+                        : Expression.NotEqual( memberExpression, Expression.Constant( id ) );
+                }
+
+                if ( IsIdKeyMember( node.Right ) && node.Left is ConstantExpression )
+                {
+                    // This should never be the case, but this covers any strange things.
+                    if ( !( node.Right is MemberExpression idKeyExpression ) || idKeyExpression.Expression == null || !( node.Left is ConstantExpression constantExpression ) )
+                    {
+                        return base.VisitBinary( node );
+                    }
+
+                    // Create an expression that compares the de-hashed value against Id.
+                    var memberExpression = Expression.Property( idKeyExpression.Expression, nameof( IEntity.Id ) );
+                    var id = IdHasher.Instance.GetId( constantExpression.Value.ToString() ) ?? 0;
+
+                    return node.NodeType == ExpressionType.Equal
+                        ? Expression.Equal( Expression.Constant( id ), memberExpression )
+                        : Expression.NotEqual( Expression.Constant( id ), memberExpression );
+                }
+
+                return base.VisitBinary( node );
+            }
+
+            /// <summary>
+            /// Determines if the expression is one that accesses the IdKey property.
+            /// </summary>
+            /// <param name="expression">The expression to be checked.</param>
+            /// <returns><c>true</c> if the expresion matches the expected pattern; <c>false</c> otherwise.</returns>
+            private static bool IsIdKeyMember( Expression expression )
+            {
+                return expression is MemberExpression memberExpression
+                    && typeof( IEntity ).IsAssignableFrom( memberExpression.Member.ReflectedType )
+                    && memberExpression.Member.Name == nameof( IEntity.IdKey );
+            }
+        }
     }
 }
