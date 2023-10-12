@@ -22,12 +22,14 @@
                    :help="helpText"
                    :configurationValues="configurationValues"
                    :rules="rules"
-                   @updateConfigurationValue="onUpdateConfigurationValue" />
+                   @updateConfigurationValue="onUpdateConfigurationValue"
+                   :dataEntryMode="dataEntryMode" />
     </div>
 </template>
 
 <script setup lang="ts">
     import { getFieldType, provideFieldTypeAttributeGuid } from "@Obsidian/Utility/fieldTypes";
+    import { DataEntryMode, getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { computed, PropType, provide } from "vue";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
@@ -58,6 +60,10 @@
         isCondensed: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        dataEntryMode: {
+            type: String as PropType<DataEntryMode>,
+            default: undefined
         }
     });
 
