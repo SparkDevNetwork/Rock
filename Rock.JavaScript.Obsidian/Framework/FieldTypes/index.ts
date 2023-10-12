@@ -218,6 +218,9 @@ registerFieldType(FieldTypeGuids.IntegerRange, new IntegerRangeFieldType());
 import { KeyValueListFieldType } from "./keyValueListField.partial";
 registerFieldType(FieldTypeGuids.KeyValueList, new KeyValueListFieldType());
 
+import { LavaFieldType } from "./lavaField.partial";
+registerFieldType(FieldTypeGuids.Lava, new LavaFieldType());
+
 import { LocationListFieldType } from "./locationListField.partial";
 registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 
