@@ -28,6 +28,15 @@
         <template #edit>
             <EditPanel v-model="entitySearchEditBag" :options="options" />
         </template>
+
+        <template v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add" #helpContent>
+            <div class="p-4 pb-0">
+                <p>Sample where expression</p>
+                <pre><code>GroupTypeId == 4 && IsActive == true</code></pre>
+            </div>
+
+            <hr />
+        </template>
     </DetailBlock>
 </template>
 
@@ -41,7 +50,7 @@
     import EditPanel from "./EntitySearchDetail/editPanel.partial.obs";
     import ViewPanel from "./EntitySearchDetail/viewPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { NavigationUrlKey } from "./EntitySearchDetail/types.partial";
+    import { EntitySearchBagAdditions, NavigationUrlKey } from "./EntitySearchDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { EntitySearchBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchBag";
     import { EntitySearchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchDetailOptionsBag";
@@ -212,8 +221,15 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
+        // Remove our custom properties from the bag before sending it.
+        const entityBag: EntitySearchBag & EntitySearchBagAdditions = { ...entitySearchEditBag.value };
+        delete entityBag.isWhereEnabled;
+        delete entityBag.isGroupByEnabled;
+        delete entityBag.isSelectEnabled;
+        delete entityBag.isOrderByEnabled;
+
         const data: DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag> = {
-            entity: entitySearchEditBag.value,
+            entity: entityBag,
             isEditable: true,
             validProperties: validProperties
         };

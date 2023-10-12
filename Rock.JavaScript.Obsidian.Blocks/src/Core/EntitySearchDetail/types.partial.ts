@@ -18,3 +18,21 @@
 export const enum NavigationUrlKey {
     ParentPage = "ParentPage"
 }
+
+/**
+ * Defines additions to the EntitySearchBag that are used internally by
+ * the block but don't get sent down from the C# code.
+ */
+export type EntitySearchBagAdditions = {
+    /** Determines if the where expression has been enabled in the editor. */
+    isWhereEnabled?: boolean;
+
+    /** Determines if the group by expression has been enabled in the editor. */
+    isGroupByEnabled?: boolean;
+
+    /** Determines if the select expression has been enabled in the editor. */
+    isSelectEnabled?: boolean;
+
+    /** Determines if the order by expression has been enabled in the editor. */
+    isOrderByEnabled?: boolean;
+};

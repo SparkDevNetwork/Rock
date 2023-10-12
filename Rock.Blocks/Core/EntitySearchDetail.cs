@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.EntitySearchDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
@@ -47,7 +48,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "db9f0335-91cb-4f89-a3bd-c084829798c6" )]
     [Rock.SystemGuid.BlockTypeGuid( "eb07313e-a0f6-4eb7-bdd1-6e5a22d456ff" )]
-    public class EntitySearchDetail : RockDetailBlockType
+    public class EntitySearchDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -81,6 +82,31 @@ namespace Rock.Blocks.Core
             }
         }
 
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.EntitySearchId );
+                var pageParameters = new Dictionary<string, string>();
+
+                var name = EntitySearchCache.Get( key, true )?.Name;
+
+                if ( name != null )
+                {
+                    pageParameters.Add( PageParameterKey.EntitySearchId, key );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( name ?? "New Entity Search", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+                };
+            }
+        }
+
         /// <summary>
         /// Gets the box options required for the component to render the view
         /// or edit the entity.
@@ -106,6 +132,12 @@ namespace Rock.Blocks.Core
         private bool ValidateEntitySearch( EntitySearch entitySearch, RockContext rockContext, out string errorMessage )
         {
             errorMessage = null;
+
+            if ( !entitySearch.IsValid )
+            {
+                errorMessage = entitySearch.ValidationResults?.FirstOrDefault()?.ErrorMessage ?? "Entity Search contains invalid data and can't be saved.";
+                return false;
+            }
 
             return true;
         }

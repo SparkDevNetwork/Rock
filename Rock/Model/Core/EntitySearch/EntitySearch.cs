@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 
 using Rock.Data;
 using Rock.Utility;
@@ -154,6 +155,32 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
+
+        #endregion
+
+        #region Properties
+
+        /// <inheritdoc />
+        public override bool IsValid
+        {
+            get
+            {
+                if ( !base.IsValid )
+                {
+                    return false;
+                }
+
+                if ( Regex.IsMatch( Key, "[^a-zA-Z0-9-]" ) )
+                {
+                    var validationResult = new ValidationResult( $"{nameof( Key )} may only contain letters, numbers and underscore.", new[] { nameof( Key ) } );
+                    ValidationResults.Add( validationResult );
+
+                    return false;
+                }
+
+                return true;
+            }
+        }
 
         #endregion
 
