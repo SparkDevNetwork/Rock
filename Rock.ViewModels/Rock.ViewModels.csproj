@@ -59,6 +59,9 @@
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\EntitySearchDetail\EntitySearchBag.cs" />
+    <Compile Include="Blocks\Core\EntitySearchDetail\EntitySearchDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\EntitySearchList\EntitySearchListOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />

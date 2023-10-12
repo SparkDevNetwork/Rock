@@ -59,6 +59,10 @@
     <Content Include="src\Core\deviceDetail.obs" />
     <Content Include="src\Core\DeviceDetail\editPanel.partial.obs" />
     <Content Include="src\Core\DeviceDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\entitySearchDetail.obs" />
+    <Content Include="src\Core\EntitySearchDetail\editPanel.partial.obs" />
+    <Content Include="src\Core\EntitySearchDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\entitySearchList.obs" />
     <Content Include="src\Core\followingEventTypeDetail.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\viewPanel.partial.obs" />
@@ -282,6 +286,8 @@
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
     <Folder Include="src\Core\DeviceDetail\" />
+    <Folder Include="src\Core\EntitySearchDetail\" />
+    <Folder Include="src\Core\EntitySearchList\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
     <Folder Include="src\Core\SuggestionDetail\" />
@@ -429,6 +435,8 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\DeviceDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\EntitySearchDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\EntitySearchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SuggestionDetail\types.partial.ts" />
