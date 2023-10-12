@@ -32,6 +32,8 @@ namespace Rock.Utility
         /// <summary>
         /// The view model file used by clients.
         /// </summary>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "This flag is no longer used and will be removed in the future." )]
         ViewModelFile = 0x0001,
 
         /// <summary>
