@@ -868,6 +868,14 @@ namespace Rock.Data
         public DbSet<EntityCampusFilter> EntityCampusFilters { get; set; }
 
         /// <summary>
+        /// Gets or sets the entity searches.
+        /// </summary>
+        /// <value>
+        /// The entity searches.
+        /// </value>
+        public DbSet<EntitySearch> EntitySearches { get; set; }
+
+        /// <summary>
         /// Gets or sets the entity sets.
         /// </summary>
         /// <value>

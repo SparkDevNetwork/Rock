@@ -24,6 +24,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Web.Cache;
+using Rock.ViewModels.Core;
 
 #if WEBFORMS
 using System.Web.Http;
@@ -177,108 +179,39 @@ namespace Rock.Rest.v2.Models.Data
 
         [HttpPost]
         [Authenticate]
-        [Route( "search" )]
+        [Route( "search/{searchKey}" )]
         [SystemGuid.RestActionGuid( "2568b739-a6c9-4d91-9bed-a3485c51954b" )]
-        public IActionResult PostSearch( [FromBody] SearchQueryBag query )
+        public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query, string searchKey )
         {
-            using ( var rockContext = new RockContext() )
+            var entityType = EntityTypeCache.Get<Group>();
+            var entitySearch = EntitySearchCache.GetByEntityTypeAndKey( entityType, searchKey );
+
+            if ( entitySearch == null )
             {
-                bool enforceEntitySecurity = false;
-                var service = new GroupService( rockContext );
-                var config = _parsingConfig;
-
-                IQueryable<Group> qry = service.Queryable();
-
-                // Simulate the system where clause.
-                if ( "".IsNotNullOrWhiteSpace() )
-                {
-                    qry = qry.Where( config, "Id != 0" );
-                }
-
-                //  Simulate security checks.
-                if ( enforceEntitySecurity )
-                {
-                    qry = qry.ToList().AsQueryable();
-                }
-
-                IQueryable resultQry = qry;
-
-                // Simulate system group clause.
-                if ( "".IsNotNullOrWhiteSpace() )
-                {
-                    resultQry = resultQry.GroupBy( config, "" );
-                }
-
-                // Simulate system select clause.
-                if ( "".IsNotNullOrWhiteSpace() )
-                {
-                    resultQry = resultQry.Select( config, "new { Id, Name, Guid }" );
-                }
-
-                if ( query.Where.IsNotNullOrWhiteSpace() )
-                {
-                    resultQry = resultQry.Where( config, query.Where );
-                }
-
-                if ( query.Group.IsNotNullOrWhiteSpace() )
-                {
-                    resultQry = resultQry.GroupBy( config, query.Group );
-                }
-
-                if ( query.Select.IsNotNullOrWhiteSpace() )
-                {
-                    resultQry = resultQry.Select( config, query.Select );
-                }
-
-                // Apply either the system or user order by clause.
-                if ( query.Order.IsNotNullOrWhiteSpace() )
-                {
-                    resultQry = resultQry.OrderBy( config, query.Order );
-                }
-
-                if ( query.Skip.HasValue )
-                {
-                    resultQry = resultQry.Skip( query.Skip.Value );
-                }
-
-                if ( query.Take.HasValue )
-                {
-                    resultQry = resultQry.Take( query.Take.Value );
-                }
-
-                if ( _searchFormatter == null )
-                {
-                    var formatter = Utility.ApiPickerJsonMediaTypeFormatter.CreateV2Formatter();
-                    if ( formatter.SerializerSettings.ContractResolver is Newtonsoft.Json.Serialization.DefaultContractResolver defaultContractResolver )
-                    {
-                        defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
-                    }
-
-                    _searchFormatter = formatter;
-                }
-
-                return Content( HttpStatusCode.OK, resultQry.ToDynamicList(), _searchFormatter );
+                return NotFound(); // TODO: "Search key not found."
             }
+
+            if ( !entitySearch.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+            {
+                return NotFound(); // TODO: Not authorized.
+            }
+
+            var results = EntitySearchService.GetSearchResults( entitySearch, query );
+
+            if ( _searchFormatter == null )
+            {
+                var formatter = Utility.ApiPickerJsonMediaTypeFormatter.CreateV2Formatter();
+                if ( formatter.SerializerSettings.ContractResolver is Newtonsoft.Json.Serialization.DefaultContractResolver defaultContractResolver )
+                {
+                    defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
+                }
+
+                _searchFormatter = formatter;
+            }
+
+            return Content( HttpStatusCode.OK, results, _searchFormatter );
         }
+
         private static System.Net.Http.Formatting.JsonMediaTypeFormatter _searchFormatter;
-        private readonly static ParsingConfig _parsingConfig = new ParsingConfig
-        {
-            DisableMemberAccessToIndexAccessorFallback = true
-        };
-    }
-
-    public class SearchQueryBag
-    {
-        public string Where { get; set; }
-
-        public string Select { get; set; }
-
-        public string Group { get; set; }
-
-        public string Order { get; set; }
-
-        public int? Take { get; set; }
-
-        public int? Skip { get; set; }
     }
 }

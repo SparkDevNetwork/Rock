@@ -27,18 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for AttributeValue that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for EntitySearch that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class AttributeValueEntity
+    public partial class EntitySearchEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int AttributeId { get; set; }
+        public string Description { get; set; }
 
         /// <summary />
-        public int? EntityId { get; set; }
+        public int EntityTypeId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -47,10 +47,22 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IsPersistedValueDirty { get; set; }
+        public string GroupByExpression { get; set; }
 
         /// <summary />
-        public bool IsSystem { get; set; }
+        public bool IsActive { get; set; } = true;
+
+        /// <summary />
+        public bool IsEntitySecurityEnforced { get; set; }
+
+        /// <summary />
+        public bool IsRefinementAllowed { get; set; }
+
+        /// <summary />
+        public string Key { get; set; }
+
+        /// <summary />
+        public int? MaximumResultsPerQuery { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -58,22 +70,16 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string PersistedCondensedHtmlValue { get; set; } = @"";
+        public string Name { get; set; }
 
         /// <summary />
-        public string PersistedCondensedTextValue { get; set; } = @"";
+        public string OrderExpression { get; set; }
 
         /// <summary />
-        public string PersistedHtmlValue { get; set; } = @"";
+        public string SelectExpression { get; set; }
 
         /// <summary />
-        public string PersistedTextValue { get; set; } = @"";
-
-        /// <summary />
-        public string Value { get; set; } = @"";
-
-        /// <summary />
-        public decimal? ValueAsNumeric { get; set; }
+        public string WhereExpression { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -102,25 +108,27 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source AttributeValue object
+        /// Copies the base properties from a source EntitySearch object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( AttributeValue source )
+        public void CopyPropertiesFrom( EntitySearch source )
         {
             this.Id = source.Id;
-            this.AttributeId = source.AttributeId;
-            this.EntityId = source.EntityId;
+            this.Description = source.Description;
+            this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IsPersistedValueDirty = source.IsPersistedValueDirty;
-            this.IsSystem = source.IsSystem;
+            this.GroupByExpression = source.GroupByExpression;
+            this.IsActive = source.IsActive;
+            this.IsEntitySecurityEnforced = source.IsEntitySecurityEnforced;
+            this.IsRefinementAllowed = source.IsRefinementAllowed;
+            this.Key = source.Key;
+            this.MaximumResultsPerQuery = source.MaximumResultsPerQuery;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.PersistedCondensedHtmlValue = source.PersistedCondensedHtmlValue;
-            this.PersistedCondensedTextValue = source.PersistedCondensedTextValue;
-            this.PersistedHtmlValue = source.PersistedHtmlValue;
-            this.PersistedTextValue = source.PersistedTextValue;
-            this.Value = source.Value;
-            this.ValueAsNumeric = source.ValueAsNumeric;
+            this.Name = source.Name;
+            this.OrderExpression = source.OrderExpression;
+            this.SelectExpression = source.SelectExpression;
+            this.WhereExpression = source.WhereExpression;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -132,27 +140,12 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for AttributeValue that includes all the fields that are available for GETs. Use this for GETs (use AttributeValueEntity for POST/PUTs)
+    /// Client model for EntitySearch that includes all the fields that are available for GETs. Use this for GETs (use EntitySearchEntity for POST/PUTs)
     /// </summary>
-    public partial class AttributeValue : AttributeValueEntity
+    public partial class EntitySearch : EntitySearchEntity
     {
         /// <summary />
-        public Attribute Attribute { get; set; }
-
-        /// <summary />
-        public ICollection<AttributeValueHistorical> AttributeValuesHistorical { get; set; }
-
-        /// <summary />
-        public bool? ValueAsBoolean { get; set; }
-
-        /// <summary />
-        public DateTime? ValueAsDateTime { get; set; }
-
-        /// <summary />
-        public int? ValueAsPersonId { get; set; }
-
-        /// <summary />
-        public int? ValueChecksum { get; set; }
+        public EntityType EntityType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
