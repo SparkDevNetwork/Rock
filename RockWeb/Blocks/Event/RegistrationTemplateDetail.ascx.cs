@@ -3228,7 +3228,7 @@ The logged-in person's information will be used to complete the registrar inform
                     // Check if this attribute already exists on any form and
                     // is not the same field we are editing.
                     var existingItem = groupAttributeFields
-                        .Where( paf => paf.Guid != formFieldGuid && paf.AttributeId == attr.Id )
+                        .Where( gaf => gaf.Guid != formFieldGuid && gaf.AttributeId == attr.Id )
                         .FirstOrDefault();
 
                     if ( existingItem != null )
