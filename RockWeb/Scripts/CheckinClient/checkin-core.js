@@ -7,6 +7,15 @@ $(function () {
 });
 
 Sys.Application.add_load(function () {
+    // Detect if running in Rock Check-in App
+    if ((window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage !== "undefined") ||
+        (typeof window.external != 'undefined' && typeof window.external.PrintLabels != 'undefined') ||
+        (typeof eoWebBrowser != 'undefined')) {
+        document.body.classList.add('browser-rock-windows');
+    } else if (typeof window.RockCheckinNative != 'undefined') {
+        // this is running on the IPad App
+        document.body.classList.add('browser-rock-ios');
+    }
 
     if (bodyScroll) {
         try {
