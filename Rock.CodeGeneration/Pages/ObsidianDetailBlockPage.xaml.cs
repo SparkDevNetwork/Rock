@@ -197,11 +197,11 @@ namespace Rock.CodeGeneration.Pages
             };
 
             // Generate the <Entity>Bag.cs file.
-            var content = generator.GenerateEntityBag( options.EntityType.Name, bagNamespace, options.Properties );
+            var content = generator.GenerateEntityBag( options.EntityType.Name, bagNamespace, options.Properties, $"The item details for the {options.EntityType.Name.SplitCase()} Detail block." );
             files.Add( new GeneratedFile( $"{options.EntityType.Name}Bag.cs", bagPath, content ) );
 
             // Generate the <Entity>DetailOptionsBag.cs file.
-            content = generator.GenerateOptionsBag( $"{options.EntityType.Name}DetailOptionsBag", bagNamespace );
+            content = generator.GenerateOptionsBag( $"{options.EntityType.Name}DetailOptionsBag", bagNamespace, $"The additional configuration options for the {options.EntityType.Name.SplitCase()} Detail block." );
             files.Add( new GeneratedFile( $"{options.EntityType.Name}DetailOptionsBag.cs", bagPath, content ) );
 
             // Generate the main <Entity>Detail.cs file.
