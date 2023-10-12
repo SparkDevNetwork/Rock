@@ -186,6 +186,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="LavaTimeSpanValue.cs" />
     <Compile Include="LavaEnumValue.cs" />
     <Compile Include="Parser\FluidLavaTagStatement.cs" />
     <Compile Include="Parser\FluidLavaBlockStatement.cs" />

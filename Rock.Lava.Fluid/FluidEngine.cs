@@ -142,6 +142,10 @@ namespace Rock.Lava.Fluid
                 {
                     return new LavaDateTimeValue( dto );
                 }
+                else if ( value is TimeSpan ts )
+                {
+                    return new LavaTimeSpanValue( ts );
+                }
 
                 // This converter cannot process the value.
                 return null;
