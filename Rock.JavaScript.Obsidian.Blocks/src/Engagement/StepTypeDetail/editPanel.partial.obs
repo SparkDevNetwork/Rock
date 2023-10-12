@@ -52,9 +52,10 @@
                           text="Yes" />
             </div>
 
-            <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="3" />
-
         </div>
+
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="3" />
 
         <Panel title="Step Attributes" :hasCollapse="true" :isDrawerOpen="true">
             <Grid :definition="props.modelValue.stepTypeAttributesGridDefinition ?? undefined"

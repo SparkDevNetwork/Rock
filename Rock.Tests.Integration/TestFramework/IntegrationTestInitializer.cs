@@ -29,6 +29,7 @@ namespace Rock.Tests.Integration
 {
     [TestClass]
     [DeploymentItem( "app.TestSettings.config" )]
+    [DeploymentItem( "app.ConnectionStrings.config" )]
     public sealed class IntegrationTestInitializer
     {
         public static bool InitializeDatabaseOnStartup = true;
@@ -93,8 +94,6 @@ namespace Rock.Tests.Integration
         /// <param name="context">The context.</param>
         public static void Initialize( TestContext context )
         {
-            Rock.AssemblyInitializer.Initialize();
-
             // Copy the configuration settings to the TestContext so they can be accessed by the integration tests project initializer.
             AddTestContextSettingsFromConfigurationFile( context );
 
@@ -122,6 +121,12 @@ namespace Rock.Tests.Integration
             {
                 LogHelper.Log( $"Initializing test database... (disabled)" );
             }
+
+            LogHelper.Log( $"Initializing Rock..." );
+
+            // This will migrate the database so it needs to run after we initialize
+            // the database in our own way.
+            Rock.AssemblyInitializer.Initialize();
 
             LogHelper.Log( $"Initialization completed." );
         }

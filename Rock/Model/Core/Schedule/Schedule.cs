@@ -116,7 +116,6 @@ namespace Rock.Model
         /// The weekly time of day.
         /// </value>
         [DataMember]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public TimeSpan? WeeklyTimeOfDay { get; set; }
 
         /// <summary>

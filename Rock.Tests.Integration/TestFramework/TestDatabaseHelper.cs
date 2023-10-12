@@ -244,6 +244,7 @@ namespace Rock.Tests.Integration
 
                 var migrateDatabase = false;
                 var createDatabase = false;
+                var loadSampleData = false;
 
                 if ( databaseExists )
                 {
@@ -254,6 +255,7 @@ namespace Rock.Tests.Integration
                     var targetMigration = GetTargetMigration();
 
                     migrateDatabase = lastMigration != targetMigration;
+                    loadSampleData = lastMigration == null;
 
                     if ( forceReplace )
                     {
@@ -273,11 +275,13 @@ BACKUP DATABASE [{dbName}]
                         DeleteDatabase( connectionString ); // connection, dbName );
 
                         createDatabase = true;
+                        loadSampleData = true;
                     }
                 }
                 else
                 {
                     createDatabase = true;
+                    loadSampleData = true;
                 }
 
                 //
@@ -318,10 +322,10 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                     }
                     TestHelper.Log( $"Running migrations..." );
 
-                    MigrateDatabase( connection.ConnectionString );
+                    MigrateDatabase( connectionString );
                 }
 
-                if ( createDatabase )
+                if ( loadSampleData )
                 {
                     DatabaseInitializer?.InitializeSnapshot( snapshotName, sampleDataUrl );
                 }

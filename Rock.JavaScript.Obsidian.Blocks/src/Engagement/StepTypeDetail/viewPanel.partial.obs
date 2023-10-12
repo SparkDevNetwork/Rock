@@ -9,7 +9,12 @@
                 <div class="col-md-6 description">
                     {{ description }}
                 </div>
-                <div class="col-md-offset-3 col-md-3">
+                <div class="col-xs-12 col-sm-6 d-flex align-items-start justify-content-end">
+                    <SlidingDateRangePicker v-model="filterDate"
+                                            :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
+                                            :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
+                                            class="pull-right"
+                                            previewLocation="None" />
                     <RockButton :btnSize="BtnSize.Default"
                                 :btnType="BtnType.Default"
                                 class="btn btn-default btn-square pull-right"
@@ -18,11 +23,6 @@
                                 :isLoading="isRefreshLoading">
                         <i class="fa fa-refresh"></i>
                     </RockButton>
-                    <SlidingDateRangePicker v-model="filterDate"
-                                            :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
-                                            :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
-                                            class="pull-right"
-                                            previewLocation="None" />
                 </div>
             </div>
             <div v-html="kpi"></div>
@@ -34,15 +34,12 @@
             </div>
         </div>
 
-        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
-
     </fieldset>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref } from "vue";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { RangeType, SlidingDateRange, TimeUnit, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -68,8 +65,6 @@
 
     // #region Values
 
-    const attributes = ref(props.modelValue?.attributes ?? {});
-    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
     const name = ref(props.modelValue?.name ?? "");
     const description = ref(props.modelValue?.description ?? "");
     //const chartData = ref(props.modelValue?.chartData ?? "{}");

@@ -203,7 +203,7 @@ namespace Rock.Rest.Controllers
             parameters.Add( "PersonId", personId );
             parameters.Add( "WeekDuration", weekCount );
 
-            var result = DbService.ExecuteScaler( "spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters );
+            var result = DbService.ExecuteScalar( "spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters );
             if ( result != null )
             {
                 return ( int ) result;

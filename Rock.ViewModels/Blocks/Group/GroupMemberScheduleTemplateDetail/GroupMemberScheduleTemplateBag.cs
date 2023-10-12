@@ -19,6 +19,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupMemberScheduleTemplateDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class GroupMemberScheduleTemplateBag : EntityBagBase
     {
         /// <summary>

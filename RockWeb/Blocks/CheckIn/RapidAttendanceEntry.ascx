@@ -201,7 +201,7 @@
                                     </div>
                                 </asp:Panel>
                                 <div class="actions margin-t-md">
-                                    <Rock:BootstrapButton ID="bbtnSave" CssClass="btn btn-primary btn-xs" runat="server" AccessKey="s" ToolTip="Alt+s" DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
+                                    <Rock:BootstrapButton ID="bbtnSave" CssClass="btn btn-primary" runat="server" AccessKey="s" ToolTip="Alt+s" DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
                                         CompletedText="Success" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" Text="Save" OnClick="bbtnSave_Click" />
                                 </div>
                             </asp:Panel>

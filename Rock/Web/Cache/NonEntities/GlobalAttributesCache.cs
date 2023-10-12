@@ -55,7 +55,7 @@ namespace Rock.Web.Cache
         private const string ORG_LOC_COUNTRY = "com.rockrms.orgLocationCountry";
 
         /// <summary>
-        /// This setting is the formatted organization's location (used by legacy lava support).
+        /// This setting is the formatted organization's location.
         /// </summary>
         private const string ORG_LOC_FORMATTED = "com.rockrms.orgLoctionFormatted";
 
@@ -602,29 +602,6 @@ namespace Rock.Web.Cache
                 }
 
                 return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Gets the lava support level.
-        /// </summary>
-        /// <value>
-        /// The lava support level.
-        /// </value>
-        [RockObsolete( "1.16" )]
-        [Obsolete( "Legacy Lava is no longer supported." )]
-        public Lava.LavaSupportLevel LavaSupportLevel
-        {
-            get
-            {
-                /* [13-Sep-2023] DJL
-                 * 
-                 * As of v1.16, Legacy Lava is no longer supported and the corresponding global attribute value is removed during the database migration process.
-                 * A database that is compatible with this version of Rock is assumed to no longer require Legacy Lava support.
-                 * 
-                 * Reason: Legacy Lava No Longer Supported.
-                 */
-                return Lava.LavaSupportLevel.NoLegacy;
             }
         }
 

@@ -83,7 +83,7 @@
     const internalItemValue = ref<ListItemBag | null>(null);
     const loadedContentChannelItemItems = ref<ListItemBag[] | null>(null);
 
-    const mode = ref<'edit' | 'view'>('view');
+    const mode = ref<"edit" | "view">("view");
 
     // #endregion
 
@@ -189,15 +189,15 @@
     }
 
     /** Close the editor and set the selected value as the "officially selected item" by emitting it to the parent. */
-    function selectItem() {
+    function selectItem(): void {
         emit("update:modelValue", internalItemValue.value);
-        mode.value = 'view'
+        mode.value = "view";
     }
 
     /** Exit edit mode */
-    function cancelEdit() {
+    function cancelEdit(): void {
         loadContentChannelItemOptionsFromValue();
-        mode.value = 'view'
+        mode.value = "view";
     }
 
     // #endregion
@@ -213,8 +213,6 @@
 
     /** Reload CC items if the channel or excluded CC items list change */
     watch([contentChannelGuidValue, () => props.excludeContentChannelItems], () => {
-        internalItemValue.value = null;
-
         loadedContentChannelItemItems.value = null;
         loadContentChannelItemOptions();
     });

@@ -73,7 +73,7 @@
     const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
 
-    removeCurrentUrlQueryParams("State");
+    removeCurrentUrlQueryParams("State", "AreUsernameAndPasswordRequired");
 
     //#region Values
 
@@ -454,6 +454,7 @@
     }
 
     //#endregion
+
     displayStep(config.accountEntryRegisterStepBox || { step: AccountEntryStep.Registration });
     onConfigurationValuesChanged(useReloadBlock());
 </script>

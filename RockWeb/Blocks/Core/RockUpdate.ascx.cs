@@ -147,20 +147,11 @@ namespace RockWeb.Blocks.Core
                     nbBackupMessage.Visible = false;
                 }
 
-                var hasMinimumSqlServerOrHigher = VersionValidationHelper.CheckSqlServerVersion( VersionValidationHelper.SqlServerVersion.v2016 );
+                var hasMinimumCompatibilityLevelOrHigher = VersionValidationHelper.CheckSqlServerCompatibilityLevel( VersionValidationHelper.SqlServerCompatibilityLevel.v2016 );
 
-                if ( !hasMinimumSqlServerOrHigher )
+                if ( !hasMinimumCompatibilityLevelOrHigher )
                 {
                     nbSqlServerVersionIssue.Visible = true;
-                }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-                var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel;
-                var isConfiguredForLegacyLava = lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy;
-#pragma warning restore CS0618 // Type or member is obsolete
-                if ( isConfiguredForLegacyLava )
-                {
-                    nbLegacyLavaIssue.Visible = true;
                 }
 
                 _releases = GetOrderedReleaseList( rockUpdateService, _installedVersion );
@@ -181,15 +172,9 @@ namespace RockWeb.Blocks.Core
                     if ( new Version( _releases.Last().SemanticVersion ) >= new Version( "1.16.0" ) )
                     {
                         // if SqlServer2016Issue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
-                        if ( !hasMinimumSqlServerOrHigher )
+                        if ( !hasMinimumCompatibilityLevelOrHigher )
                         {
                             nbSqlServerVersionIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
-                        }
-
-                        // if LegacyLavaIssue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
-                        if ( isConfiguredForLegacyLava )
-                        {
-                            nbLegacyLavaIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                         }
                     }
 

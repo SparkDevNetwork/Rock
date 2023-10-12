@@ -81,27 +81,41 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.CancelPage,
         Order = 5 )]
 
+    [CodeEditorField( "Header Content",
+        Key = AttributeKeys.HeaderContent,
+        Description = "The content to display for the header. This only works if the block isn't in a ScrollView.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 6 )]
+
+    [CodeEditorField( "Footer Content",
+        Key = AttributeKeys.FooterContent,
+        Description = "The content to display for the footer. This only works if the block isn't in a ScrollView. Disappears when the keyboard is shown.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 7 )]
+
     [BooleanField(
         "Enable Auth0 Login",
         Key = AttributeKeys.EnableAuth0Login,
         Description = "Whether or not to enable Auth0 as an authentication provider. This must be configured in `Security > Authentication Services` beforehand.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        Order = 6 )]
+        Order = 8 )]
 
     [BooleanField( "Enable Database Login",
         Key = AttributeKeys.EnableDatabaseLogin,
         Description = "Whether or not to enable `Database` as an authentication provider.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        Order = 7 )]
+        Order = 9 )]
 
     [TextField( "Auth0 Login Button Text",
         Key = AttributeKeys.Auth0LoginButtonText,
         Description = "The text of the Auth0 login button.",
         IsRequired = false,
         DefaultValue = "Login With Auth0",
-        Order = 8 )]
+        Order = 10 )]
 
     #endregion
 
@@ -159,6 +173,16 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The auth0 login button text.
             /// </summary>
             public const string Auth0LoginButtonText = "Auth0LoginButtonText";
+
+            /// <summary>
+            /// The header content key.
+            /// </summary>
+            public const string HeaderContent = "HeaderContent";
+
+            /// <summary>
+            /// The footer content key.
+            /// </summary>
+            public const string FooterContent = "FooterContent";
         }
 
         #region IRockMobileBlockType Implementation
@@ -183,7 +207,9 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 CancelPageGuid = GetAttributeValue( AttributeKeys.CancelPage ).AsGuidOrNull(),
                 EnableAuth0Login = GetAttributeValue( AttributeKeys.EnableAuth0Login ).AsBoolean(),
                 EnableDatabaseLogin = GetAttributeValue( AttributeKeys.EnableDatabaseLogin ).AsBoolean(),
-                Auth0LoginButtonText = GetAttributeValue( AttributeKeys.Auth0LoginButtonText )
+                Auth0LoginButtonText = GetAttributeValue( AttributeKeys.Auth0LoginButtonText ),
+                HeaderContent = GetAttributeValue( AttributeKeys.HeaderContent ),
+                FooterContent = GetAttributeValue( AttributeKeys.FooterContent )
             };
         }
 

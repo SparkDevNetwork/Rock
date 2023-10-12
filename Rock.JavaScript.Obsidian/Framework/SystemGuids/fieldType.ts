@@ -103,6 +103,8 @@ export const FieldType = {
     ContentChannelType: "2B58514E-47F8-4740-A72C-B862B030855B",
     /** Content Channel Types field type */
     ContentChannelTypes: "DF974799-6656-4F0C-883D-85E44EEC999A",
+    /** Content Channels field type */
+    ContentChannels: "0E2B924A-C1AC-4A7C-AD77-A036581552D4",
     /** Currency field type */
     Currency: "3EE69CBC-35CE-4496-88CC-8327A447603F",
     /** A measure of necessity and/or availability of a data entry field. */

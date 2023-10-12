@@ -712,9 +712,8 @@ namespace Rock.Model
             List<int> groupMemberIdsThatLackGroupRequirementsList = groupMemberList
                 .Where( a =>
                     !qryGroupRequirements
-                        .Where( r =>
-                            !r.GroupRoleId.HasValue ||
-                            r.GroupRoleId.Value == a.GroupRoleId )
+                        .Where( r => !r.GroupRoleId.HasValue || r.GroupRoleId.Value == a.GroupRoleId )
+                        .Where( r => r.AppliesToAgeClassification == AppliesToAgeClassification.All || r.AppliesToAgeClassification.ConvertToInt() == a.Person.AgeClassification.ConvertToInt() )
                         .Select( x => x.Id )
                         .All( r =>
                             a.GroupMemberRequirements
@@ -1659,7 +1658,7 @@ namespace Rock.Model
 
                 // Verify that the group represents a Security Role.
                 var isSecurityRoleGroup = group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
-                if ( isSecurityRoleGroup )
+                if ( !isSecurityRoleGroup )
                 {
                     throw new Exception( $"Action DeleteSecurityRoleGroup failed. The specified group is not a Security Role. [GroupId={groupId}]" );
                 }

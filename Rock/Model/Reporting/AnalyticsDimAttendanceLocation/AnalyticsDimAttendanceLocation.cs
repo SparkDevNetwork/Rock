@@ -30,7 +30,6 @@ namespace Rock.Model
     [Table( "AnalyticsDimAttendanceLocation" )]
     [DataContract]
     [HideFromReporting]
-    [CodeGenExclude( CodeGenFeature.ViewModelFile )]
     public class AnalyticsDimAttendanceLocation
     {
         #region Entity Properties

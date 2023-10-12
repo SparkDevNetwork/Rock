@@ -116,12 +116,13 @@ export type RegistrationEntryBlockViewModel = {
     races: ListItemBag[];
     ethnicities: ListItemBag[];
     showSmsOptIn: boolean;
-    smsOptInText: string;
 
     isInlineSignatureRequired: boolean;
     isSignatureDrawn: boolean;
     signatureDocumentTerm?: string | null;
     signatureDocumentTemplateName?: string | null;
+
+    hideProgressBar: boolean;
 };
 
 export type RegistrationEntryBlockFamilyMemberViewModel = {
@@ -207,11 +208,11 @@ export type RegistrationEntryBlockArgs = {
     registrationGuid: Guid | null;
     registrationSessionGuid: Guid | null;
     registrants: RegistrantInfo[];
-    fieldValues: Record<Guid, unknown>;
-    registrar: RegistrarInfo;
+    fieldValues: Record<Guid, unknown> | null;
+    registrar: RegistrarInfo | null;
     savedAccountGuid: Guid | null;
-    gatewayToken: string;
-    discountCode: string;
+    gatewayToken: string | null;
+    discountCode: string | null;
     amountToPayNow: number;
 };
 

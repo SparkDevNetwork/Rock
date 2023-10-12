@@ -40,7 +40,8 @@
                 </div>
             </template>
             <template #footerSecondaryActions>
-                <RockButton :btnSize="BtnSize.Default"
+                <RockButton v-if="panelMode == DetailPanelMode.View"
+                            :btnSize="BtnSize.Default"
                             :btnType="BtnType.Danger"
                             @click="onRebuild">
                         Rebuild

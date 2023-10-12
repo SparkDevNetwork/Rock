@@ -221,7 +221,7 @@ namespace Rock.CodeGeneration.Pages
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"{options.EntityType.Name.CamelCase()}Detail.obs", typeScriptBlockPath, result ) );
+                files.Add( new GeneratedFile( $"{options.EntityType.Name.ToCamelCase()}Detail.obs", typeScriptBlockPath, result ) );
             }
 
             // Generate the Obsidian <Entity>Detail\viewPanel.partial.obs file.
