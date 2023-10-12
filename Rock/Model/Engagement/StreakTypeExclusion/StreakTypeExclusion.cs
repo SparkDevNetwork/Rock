@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,7 +56,6 @@ namespace Rock.Model
         /// More significant bits (going left) are more recent dates.
         /// </summary>
         [DataMember]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] ExclusionMap { get; set; }
 
         #endregion Entity Properties
