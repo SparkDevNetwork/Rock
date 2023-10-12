@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, ref, watch } from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
 import AddressControl from "@Obsidian/Controls/addressControl.obs";
 import { AddressFieldValue } from "./addressField.partial";
@@ -31,6 +31,9 @@ export const EditComponent = defineComponent({
     setup(props, { emit }) {
         const internalValue = ref({} as AddressFieldValue);
 
+        const disableFrontEndValidation = computed(() => props.dataEntryMode == "defaultValue");
+        const setDefaultValues = computed(() => props.dataEntryMode != "defaultValue");
+
         watch(() => props.modelValue, () => {
             try {
                 internalValue.value = JSON.parse(props.modelValue || "{}");
@@ -44,13 +47,17 @@ export const EditComponent = defineComponent({
             emit("update:modelValue", JSON.stringify(internalValue.value));
         }, { deep: true });
 
+        console.log(JSON.stringify(props, null, 4));
+
         return {
-            internalValue
+            internalValue,
+            disableFrontEndValidation,
+            setDefaultValues
         };
     },
 
     template: `
-<AddressControl v-model="internalValue" />
+<AddressControl v-model="internalValue" :disableFrontEndValidation="disableFrontEndValidation" :setDefaultValues="setDefaultValues" />
 `
 });
 

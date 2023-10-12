@@ -230,6 +230,7 @@ import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/int
 import WorkflowPicker from "@Obsidian/Controls/workflowPicker.obs";
 import ValueList from "@Obsidian/Controls/valueList.obs";
 import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
+import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
 import DropDownMenuGallery from "./ControlGallery/dropDownMenuGallery.partial.obs";
 import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.partial.obs";
 import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
@@ -1676,13 +1677,28 @@ const addressControlGallery = defineComponent({
         RockForm,
         RockButton,
         CheckBox,
-        AddressControl
+        AddressControl,
+        ButtonDropDownList
     },
     setup() {
+        const showCountrySelected = ref("default");
+        const showCountry = computed(() => {
+            return showCountrySelected.value == "true" ? true :
+                showCountrySelected.value == "false" ? false : null;
+        });
+
         return {
             value: ref({}),
             submit: ref(false),
             required: ref(false),
+            partial: ref(false),
+            showCountry,
+            showCountrySelected,
+            showCountryOptions: [
+                {text: "Default", value: "default"},
+                {text: "Yes", value: "true"},
+                {text: "No", value: "false"},
+            ],
             importCode: getSfcControlImportPath("addressControl"),
             exampleCode: `<AddressControl label="Address" v-model="value" />`
         };
@@ -1694,7 +1710,7 @@ const addressControlGallery = defineComponent({
     enableReflection >
 
     <RockForm v-model:submit="submit">
-    <AddressControl label="Address" v-model="value" :rules="required ? 'required' : ''" />
+    <AddressControl label="Address" v-model="value" :rules="required ? 'required' : ''" :partialAddressIsAllowed="partial" :showCountry="showCountry" />
 
     <RockButton @click="submit=true">Validate</RockButton>
     </RockForm>
@@ -1703,6 +1719,12 @@ const addressControlGallery = defineComponent({
         <div class="row">
             <div class="col-sm-4">
                 <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-sm-4">
+                <CheckBox label="Allow Partial Addresses" v-model="partial" />
+            </div>
+            <div class="col-sm-4">
+                <ButtonDropDownList label="Show Country" v-model="showCountrySelected" :items="showCountryOptions" help="If no value is passed in, the visibility of the Country field will depend on the 'Support International Addresses' Global Attribute setting." />
             </div>
         </div>
         <p>All props match that of a <code>Rock Form Field</code></p>

@@ -22,7 +22,7 @@
                         <TextBox v-model="internalValue.locality" :placeholder="county.label" :validationTitle="county.label" :rules="rules.locality" :disabled="disabled" :autocomplete="county.autocomplete" />
                     </div>
                     <div class="form-group col-sm-3" v-if="state.isVisible">
-                        <DropDownList v-if="hasStateList" :showBlankItem="false" v-model="internalValue.state" :items="stateOptions" :validationTitle="state.label" :rules="rules.state" :disabled="disabled" :autocomplete="state.autocomplete" />
+                        <DropDownList v-if="hasStateList" :showBlankItem="state.rules != RequirementLevel.Required || disableFrontEndValidation" v-model="internalValue.state" :items="stateOptions" :validationTitle="state.label" :rules="rules.state" :disabled="disabled" :autocomplete="state.autocomplete" />
                         <TextBox v-else v-model="internalValue.state" :placeholder="state.label" :validationTitle="state.label" :rules="rules.state" :disabled="disabled" :autocomplete="state.autocomplete" />
                     </div>
                     <div class="form-group col-sm-3" v-if="zip.isVisible">
@@ -35,7 +35,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { computed, PropType, reactive, ref, watch } from "vue";
+    import { computed, ComputedRef, PropType, reactive, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
     import DropDownList from "./dropDownList.obs";
     import TextBox from "./textBox.obs";
@@ -70,28 +70,40 @@
             default: ""
         },
 
+        showCountry: {
+            type: Boolean as PropType<boolean | null>,
+            default: null
+        },
+
         showCounty: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: false
         },
 
         showAddressLine2: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: true
         },
 
         useCountryAbbreviation: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: false
+        },
+
+        /** If true, set automatically fill state and country fields with default values */
+        setDefaultValues: {
+            type: Boolean,
+            default: true
         },
 
         /**
          * If true, doesn't apply any "required" rules to any of the individual fields, preventing
          * the RockForm from showing an error if they're not filled. This allows parent components to
-         * handle validation, which is especially useful if the address itself isn't required.
+         * handle validation, which is especially useful if the address itself isn't required or if
+         * you want to allow partial addresses (e.g. for default values).
          */
         disableFrontEndValidation: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean,
             default: false
         },
 
@@ -133,16 +145,17 @@
     });
 
     const isLoading = ref<boolean>(false);
+    const isInternational = ref(false);
 
     type FieldConfig = {
-        isVisible: boolean,
+        isVisible: boolean | ComputedRef<boolean>,
         label: string,
         rules?: RequirementLevel,
         autocomplete: string
     };
 
     const country = reactive<FieldConfig>({
-        isVisible: true,
+        isVisible: computed(() => props.showCountry ?? isInternational.value),
         label: "Country",
         autocomplete: "country"
     });
@@ -186,6 +199,7 @@
     const countryOptions = ref<ListItemBag[]>([]);
     const stateOptions = ref<ListItemBag[]>([]);
     const hasStateList = ref<boolean>(false);
+
 
     const rules = computed(() => {
         const rules: Record<keyof AddressControlBag, ValidationRule | undefined> = {
@@ -248,7 +262,7 @@
             const data = result.data;
 
             // Label and rules are static
-            country.isVisible = data.showCountrySelection;
+            isInternational.value = data.showCountrySelection;
 
             // Label is static
             address1.isVisible = data.addressLine1Requirement != RequirementLevel.Unavailable;
@@ -284,12 +298,12 @@
             const stateValue = data.defaultState ?? "";
 
             // If we don't have a country set yet, and we have a good countryValue, set to that
-            if (!internalValue.country && countryValue) {
+            if (!internalValue.country && countryValue && props.setDefaultValues) {
                 internalValue.country = countryValue;
             }
 
             // If we don't have a state set yet, and we have a good stateValue, set to that
-            if (!internalValue.state && stateValue) {
+            if (!internalValue.state && stateValue && props.setDefaultValues) {
                 internalValue.state = stateValue;
             }
         }
