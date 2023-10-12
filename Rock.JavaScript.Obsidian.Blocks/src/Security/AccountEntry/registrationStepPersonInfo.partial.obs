@@ -20,6 +20,7 @@
                 label="Email"
                 rules="required"></EmailBox>
             <GenderDropDownList
+                v-if="isGenderPickerShown"
                 v-model="internalGender"
                 :disabled="disabled"></GenderDropDownList>
             <BirthdayPicker
@@ -51,7 +52,10 @@
             v-if="isCampusPickerShown"
             :disabled="disabled"
             :label="campusPickerLabel"
-            @update:modelValue="onCampusChanged"></CampusPicker>
+            @update:modelValue="onCampusChanged"
+            :forceVisible="true"
+            :includeInactive="true"
+            :showBlankItem="true"></CampusPicker>
     </div>
 </template>
 
@@ -71,6 +75,7 @@
     import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
 
     const props = defineProps({
         modelValue: {
@@ -100,6 +105,7 @@
     const isAddressRequired = computed(() => props.config.isAddressRequired);
     const isCampusPickerShown = computed(() => props.config.isCampusPickerShown);
     const isEmailHidden = computed(() => props.config.isEmailHidden);
+    const isGenderPickerShown = computed(() => props.config.isGenderPickerShown);
 
     const internalFirstName = computed<string>({
         get() {
@@ -133,7 +139,7 @@
             return (props.modelValue?.gender ?? 0).toString();
         },
         set(newValue: string) {
-            emit("update:modelValue", { ...props.modelValue, gender: toNumber(newValue) });
+            emit("update:modelValue", { ...props.modelValue, gender: toNumber(newValue) as Gender });
         }
     });
 

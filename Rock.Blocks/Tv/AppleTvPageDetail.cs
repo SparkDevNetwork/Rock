@@ -31,6 +31,8 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Tv.AppleTvAppDetail;
 using Rock.ViewModels.Blocks.Tv.AppleTvPageDetail;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Tv
@@ -180,20 +182,7 @@ namespace Rock.Blocks.Tv
             }
 
             var response = entity.AdditionalSettings.FromJsonOrNull<ApplePageResponse>() ?? new ApplePageResponse();
-            var cacheability = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>() ?? new RockCacheability()
-            {
-                RockCacheablityType = RockCacheablityType.Private,
-                MaxAge = new TimeInterval
-                {
-                    Value = 0,
-                    Unit = TimeIntervalUnit.Minutes
-                },
-                SharedMaxAge = new TimeInterval
-                {
-                    Value = 0,
-                    Unit = TimeIntervalUnit.Minutes
-                }
-            };
+            var cacheability = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>();
 
             return new AppleTvPageBag
             {
@@ -214,14 +203,14 @@ namespace Rock.Blocks.Tv
         /// <returns></returns>
         private RockCacheabilityBag ToCacheabilityBag( RockCacheability cacheability )
         {
-            var defaultValue = new RockCacheabilityBag()
+            var bag = new RockCacheabilityBag()
             {
                 MaxAge = new TimeIntervalBag
                 {
                     Unit = TimeIntervalUnit.Minutes,
                     Value = 0
                 },
-                RockCacheabilityType = RockCacheablityType.Private.ConvertToInt(),
+                RockCacheabilityType = RockCacheablityType.Public.ConvertToInt(),
                 SharedMaxAge = new TimeIntervalBag
                 {
                     Unit = TimeIntervalUnit.Minutes,
@@ -231,36 +220,78 @@ namespace Rock.Blocks.Tv
 
             if ( cacheability == null )
             {
-                return defaultValue;
+                return bag;
             }
 
-            if ( cacheability.RockCacheablityType == RockCacheablityType.Private )
+            if ( cacheability.MaxAge != null )
             {
-                defaultValue.MaxAge = new TimeIntervalBag
+                bag.MaxAge = new TimeIntervalBag
                 {
                     Unit = cacheability.MaxAge.Unit,
                     Value = cacheability.MaxAge.Value
                 };
+            }
 
-                return defaultValue;
+            if ( cacheability.RockCacheablityType == RockCacheablityType.Private )
+            {
+                bag.RockCacheabilityType = cacheability.RockCacheablityType.ConvertToInt();
             }
             else
             {
-                return new RockCacheabilityBag()
+                bag.RockCacheabilityType = cacheability.RockCacheablityType.ConvertToInt();
+
+                if ( cacheability.SharedMaxAge != null )
                 {
-                    MaxAge = new TimeIntervalBag
-                    {
-                        Unit = cacheability.MaxAge.Unit,
-                        Value = cacheability.MaxAge.Value
-                    },
-                    RockCacheabilityType = cacheability.RockCacheablityType.ConvertToInt(),
-                    SharedMaxAge = new TimeIntervalBag
+                    bag.SharedMaxAge = new TimeIntervalBag
                     {
                         Unit = cacheability.SharedMaxAge.Unit,
                         Value = cacheability.SharedMaxAge.Value
-                    },
+                    };
+                }
+            }
+
+            return bag;
+        }
+
+        /// <summary>
+        /// Converts the <see cref="RockCacheabilityBag"/> to a <see cref="RockCacheability"/>.
+        /// </summary>
+        /// <param name="cacheControlHeaderSettings">The cacheability bag.</param>
+        /// <returns></returns>
+        private static RockCacheability ToCacheability( RockCacheabilityBag cacheControlHeaderSettings )
+        {
+            var cacheability = new RockCacheability()
+            {
+                MaxAge = new TimeInterval
+                {
+                    Unit = cacheControlHeaderSettings.MaxAge.Unit,
+                    Value = cacheControlHeaderSettings.MaxAge.Value,
+                },
+                RockCacheablityType = ( RockCacheablityType ) cacheControlHeaderSettings.RockCacheabilityType,
+            };
+
+            if ( cacheability.RockCacheablityType == RockCacheablityType.Public )
+            {
+                cacheability.SharedMaxAge = new TimeInterval
+                {
+                    Unit = cacheControlHeaderSettings.SharedMaxAge.Unit,
+                    Value = cacheControlHeaderSettings.SharedMaxAge.Value,
                 };
             }
+
+            return cacheability;
+        }
+
+        /// <summary>
+        /// Updates the additional settings fot the entity.
+        /// </summary>
+        /// <param name="bag">The bag.</param>
+        /// <param name="entity">The entity.</param>
+        private static void SaveAdditionalSettings( AppleTvPageBag bag, Page entity )
+        {
+            var pageResponse = entity.AdditionalSettings.FromJsonOrNull<ApplePageResponse>() ?? new ApplePageResponse();
+            pageResponse.Content = bag.PageTVML;
+            entity.AdditionalSettings = pageResponse.ToJson();
         }
 
         /// <summary>
@@ -330,6 +361,12 @@ namespace Rock.Blocks.Tv
             box.IfValidProperty( nameof( box.Entity.ShowInMenu ),
                 () => entity.DisplayInNavWhen = box.Entity.ShowInMenu ? DisplayInNavWhen.WhenAllowed : DisplayInNavWhen.Never );
 
+            box.IfValidProperty( nameof( box.Entity.RockCacheability ),
+                () => entity.CacheControlHeaderSettings = ToCacheability( box.Entity.RockCacheability ).ToJson() );
+
+            box.IfValidProperty( nameof( box.Entity.PageTVML ),
+                () => SaveAdditionalSettings( box.Entity, entity ) );
+
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
                 {
@@ -360,7 +397,10 @@ namespace Rock.Blocks.Tv
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId )
+                } )
             };
         }
 
@@ -507,7 +547,7 @@ namespace Rock.Blocks.Tv
 
                 if ( isNew )
                 {
-                    entity.ParentPageId = site?.DefaultPageId;
+                    entity.ParentPageId = site.DefaultPageId;
                     entity.LayoutId = site.DefaultPage.LayoutId;
 
                     // Set the order of the new page to be the last one
@@ -517,31 +557,6 @@ namespace Rock.Blocks.Tv
                         .FirstOrDefault();
                     entity.Order = currentMaxOrder + 1;
                 }
-
-                var pageResponse = entity.AdditionalSettings.FromJsonOrNull<ApplePageResponse>() ?? new ApplePageResponse();
-                pageResponse.Content = box.Entity.PageTVML;
-                entity.AdditionalSettings = pageResponse.ToJson();
-
-                var cacheability = new RockCacheability()
-                {
-                    MaxAge = new TimeInterval
-                    {
-                        Unit = box.Entity.RockCacheability.MaxAge.Unit,
-                        Value = box.Entity.RockCacheability.MaxAge.Value,
-                    },
-                    RockCacheablityType = ( RockCacheablityType ) box.Entity.RockCacheability.RockCacheabilityType,
-                };
-
-                if ( cacheability.RockCacheablityType == RockCacheablityType.Public )
-                {
-                    cacheability.SharedMaxAge = new TimeInterval
-                    {
-                        Unit = box.Entity.RockCacheability.SharedMaxAge.Unit,
-                        Value = box.Entity.RockCacheability.SharedMaxAge.Value,
-                    };
-                }
-
-                entity.CacheControlHeaderSettings = cacheability.ToJson();
 
                 rockContext.WrapTransaction( () =>
                 {
@@ -553,19 +568,10 @@ namespace Rock.Blocks.Tv
 
                 rockContext.SaveChanges();
 
-                if ( isNew )
+                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
                 {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.SitePageId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                    [PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId )
+                } ) );
             }
         }
 

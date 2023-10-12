@@ -191,6 +191,7 @@
                                                 <Rock:DefinedValuePicker ID="dvpCreditCardType" runat="server" Label="Credit Card Type" />
                                                 <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
                                                 <div class="actions">
+                                                    <asp:LinkButton ID="obSubmitPaymentCancel" runat="server" Text ="Cancel" CssClass="btn btn-link" OnClick="lbCancelPayment_Click" CausesValidation="false"></asp:LinkButton>
                                                     <asp:LinkButton ID="lbSubmitPayment" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="lbSubmitPayment_Click" CausesValidation="true" ValidationGroup="Payment" />
                                                 </div>
                                             </asp:PlaceHolder>
@@ -207,11 +208,11 @@
                                                 <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="" ShowAddressLine2="false" Required="true" />
 
                                                 <div class="navigation actions">
-
+                                                    <asp:LinkButton ID="btnGetPaymentInfoNextCancel" runat="server" Text ="Cancel" CssClass="btn btn-link" OnClick="lbCancelPayment_Click" CausesValidation="false"></asp:LinkButton>
                                                     <%-- NOTE: btnGetPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
                                                         Even though this is a LinkButton, btnGetPaymentInfoNext won't autopostback  (see $('.js-submit-hostedpaymentinfo').off().on('click').. )
                                                     --%>
-                                                    <Rock:BootstrapButton ID="btnGetPaymentInfoNext" runat="server" Text="Submit" CssClass="btn btn-primary js-submit-hostedpaymentinfo pull-right" DataLoadingText="Processing..." />
+                                                    <Rock:BootstrapButton ID="btnGetPaymentInfoNext" runat="server" Text="Submit" CssClass="btn btn-primary js-submit-hostedpaymentinfo" DataLoadingText="Processing..." />
                                                 </div>
                                             </asp:Panel>
 

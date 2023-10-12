@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
+using System.Text;
 using System.Threading.Tasks;
 using Rock.Logging;
 using Rock.Model;
@@ -169,7 +170,9 @@ namespace Rock.Communication.Transport
             var mailMessage = new MailMessage
             {
                 IsBodyHtml = true,
-                Priority = MailPriority.Normal
+                Priority = MailPriority.Normal,
+                BodyEncoding = Encoding.UTF8,
+                SubjectEncoding = Encoding.UTF8
             };
 
             // From

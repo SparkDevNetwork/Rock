@@ -23,6 +23,9 @@
 
 /** A bag that contains the credential login request information. */
 export type CredentialLoginRequestBag = {
+    /** Gets or sets the MFA ticket. */
+    mfaTicket?: string | null;
+
     /** Gets or sets the password. */
     password?: string | null;
 

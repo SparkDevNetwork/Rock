@@ -394,6 +394,14 @@ namespace RockWeb.Blocks.Crm
             // disable security button
             var showSecurityButton = GetAttributeValue( AttributeKeys.ShowSecurityButton ).AsBoolean();
 
+            var viewDocumentField = gFileList.ColumnsOfType<HyperLinkField>().FirstOrDefault();
+            var viewDocumentFieldIndex = gFileList.Columns.IndexOf( viewDocumentField );
+            var viewDocumentHyperLink = ( HyperLink ) e.Row.Cells[viewDocumentFieldIndex].Controls[0];
+            viewDocumentHyperLink.NavigateUrl = $"~/GetFile.ashx?id={document.BinaryFile.Id}";
+            var viewableExtensions = new string[] { ".PDF", ".GIF", ".JPG", ".PNG"  };
+            var fileExtension = System.IO.Path.GetExtension( document.BinaryFile.FileName ).ToUpper();
+            viewDocumentHyperLink.Visible = viewableExtensions.Contains( fileExtension );
+
             var securityField = gFileList.ColumnsOfType<SecurityField>().FirstOrDefault();
             var securityFieldIndex = gFileList.Columns.IndexOf( securityField );
             var securityButtonCell = ( ( DataControlFieldCell ) e.Row.Cells[securityFieldIndex] ).Controls[0];

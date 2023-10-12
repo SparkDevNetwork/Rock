@@ -389,7 +389,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
         private IEnumerable<PhoneNumberBag> LoadPhoneNumbers()
         {
             // First load up all of the available numbers.
-            var smsNumbers = SystemPhoneNumberCache.All()
+            var smsNumbers = SystemPhoneNumberCache.All( false )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
                 .ThenBy( spn => spn.Id )

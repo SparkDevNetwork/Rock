@@ -431,13 +431,20 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public List<ListItemBag> Ethnicities { get; set; }
 
         /// <summary>
+        /// Gets or sets a value that indicates if the progress bar should be hidden.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the progress bar should be hidden; otherwise <c>false</c>.
+        /// </value>
+        public bool HideProgressBar { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to show the SMS OptIn checkbox under the phone number
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowSmsOptIn { get; set; }
-
     }
 
     /// <summary>

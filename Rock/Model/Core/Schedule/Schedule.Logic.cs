@@ -1016,18 +1016,40 @@ namespace Rock.Model
             var calEvent = this.GetICalEvent();
             if ( calEvent != null && calEvent.DtStart != null )
             {
-                // Is the current time earlier than the event's start time?
-                if ( time.TimeOfDay.TotalSeconds < calEvent.DtStart.Value.TimeOfDay.TotalSeconds )
+                // If compare is greater than zero, then the End Day is in the next day.
+                var endDateTimeIsNextDay = calEvent.DtEnd.Date > calEvent.DtStart.Date;
+                if ( endDateTimeIsNextDay )
                 {
-                    return false;
+                    /*
+                       edrotning 2023-09-28
+                       Since we are just comparing the time and not the date here, the end time is going to be smaller than the start time, this is because the start Time is on the previous day.
+                       The given time falls outside of the start time to midnight and the midnight to end time windows
+                       has to be greater than the end time, which is going to be an earlier time than the start time.
+                    */
+                        if ( time.TimeOfDay.TotalSeconds < calEvent.DtStart.Value.TimeOfDay.TotalSeconds
+                            && time.TimeOfDay.TotalSeconds >= calEvent.DtEnd.Value.TimeOfDay.TotalSeconds )
+                        {
+                            return false;
+                        }
+                }
+                else
+                {
+                    // Start and end time are on the same day, so simple compare of seconds
+
+                    if ( time.TimeOfDay.TotalSeconds < calEvent.DtStart.Value.TimeOfDay.TotalSeconds )
+                    {
+                        // The given time is earlier than the event's start time
+                        return false;
+                    }
+
+                    if ( time.TimeOfDay.TotalSeconds > calEvent.DtEnd.Value.TimeOfDay.TotalSeconds )
+                    {
+                        // The given time is later than the event's end time
+                        return false;
+                    }
                 }
 
-                // Is the current time later than the event's end time?
-                if ( time.TimeOfDay.TotalSeconds > calEvent.DtEnd.Value.TimeOfDay.TotalSeconds )
-                {
-                    return false;
-                }
-
+                // After verifying the times, get the occurrences for this schedule for the provided date.
                 var occurrences = GetICalOccurrences( time.Date );
                 return occurrences.Count > 0;
             }

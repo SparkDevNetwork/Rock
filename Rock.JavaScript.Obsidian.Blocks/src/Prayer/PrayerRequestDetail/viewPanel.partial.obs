@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" :showEmptyValues="false" />
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
     </fieldset>
 </template>
 

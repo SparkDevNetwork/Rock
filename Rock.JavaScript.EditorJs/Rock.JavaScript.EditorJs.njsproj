@@ -97,9 +97,11 @@
     <TypeScriptCompile Include="src\%40types\%40editorjs\marker.d.ts" />
     <TypeScriptCompile Include="src\%40types\%40editorjs\nested-list.d.ts" />
     <TypeScriptCompile Include="src\%40types\%40editorjs\quote.d.ts" />
+    <TypeScriptCompile Include="src\%40types\%40editorjs\raw.d.ts" />
     <TypeScriptCompile Include="src\%40types\%40editorjs\warning.d.ts" />
     <TypeScriptCompile Include="src\%40types\editorjs-drag-drop.d.ts" />
     <TypeScriptCompile Include="src\embed.ts" />
+    <TypeScriptCompile Include="src\raw.ts" />
     <TypeScriptCompile Include="src\rockimage.ts" />
     <TypeScriptCompile Include="src\table.ts" />
     <TypeScriptCompile Include="src\vendor\table\src\plugin.d.ts" />

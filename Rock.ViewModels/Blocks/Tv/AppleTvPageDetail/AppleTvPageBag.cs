@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Tv.AppleTvPageDetail

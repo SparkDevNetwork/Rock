@@ -21,6 +21,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialStatementTemplateDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FinancialStatementTemplateBag : EntityBagBase
     {
         /// <summary>

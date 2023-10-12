@@ -19,6 +19,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Group.GroupMemberScheduleTemplateDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class GroupMemberScheduleTemplateBox : BlockBox
     {
         /// <summary>

@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Prayer
         "Prayed Workflow",
         AllowMultiple = false,
         Key = AttributeKey.PrayedWorkflow,
-        Description = "The workflow type to launch when someone presses the Pray button. Prayer Request will be passed to the workflow as a generic \"Entity\" field type. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: PrayerOfferedByPersonId.",
+        Description = "The workflow type to launch when someone presses the Pray button. Prayer Request will be passed to the workflow as a generic \"Entity\" field type. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: PrayerOfferedByPersonAliasGuid, PrayerOfferedByPerson.",
         IsRequired = false,
         Order = 11 )]
     [WorkflowTypeField(

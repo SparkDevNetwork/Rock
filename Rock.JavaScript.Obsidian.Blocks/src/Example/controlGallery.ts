@@ -193,7 +193,7 @@ import WorkflowActionTypePicker from "@Obsidian/Controls/workflowActionTypePicke
 import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
 import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.obs";
 import MonthYearPicker from "@Obsidian/Controls/monthYearPicker.obs";
-import { RockCacheability } from "@Obsidian/ViewModels/Controls/rockCacheability";
+import { RockCacheabilityBag } from "@Obsidian/ViewModels/Controls/rockCacheabilityBag";
 import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
 import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
 import IntervalPicker from "@Obsidian/Controls/intervalPicker.obs";
@@ -242,6 +242,7 @@ import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
 import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
 import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
 import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
+import PersonBasicEditorGallery from "./ControlGallery/personBasicEditorGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -5440,14 +5441,11 @@ const tabbedBarGallery = defineComponent({
     setup() {
         return {
             list: ["Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians"],
+            selectedTab: ref(""),
             type: ref("tabs"),
             typeItems: [{ value: "tabs", text: "Tabs" }, { value: "pills", text: "Pills" }],
             importCode: getSfcControlImportPath("tabbedBar"),
-            exampleCode: `<TabbedBar :tabs="arrayOfItems">
-    <template #default="{item}">
-        {{ item }}
-    </template>
-</TabbedBar>`
+            exampleCode: `<TabbedBar v-model="selectedTab" :tabs="arrayOfItems" :type="type" />`
         };
     },
     template: `
@@ -5455,8 +5453,7 @@ const tabbedBarGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode" >
 
-    <TabbedBar :tabs="list" :type="type">
-    </TabbedBar>
+    <TabbedBar v-model="selectedTab" :tabs="list" :type="type" />
 
     <template #settings>
         <div class="row">
@@ -5482,9 +5479,6 @@ const tabbedContentGallery = defineComponent({
             list: ["Matthew", "Mark", "Luke", "John"],
             importCode: getSfcControlImportPath("tabbedContent"),
             exampleCode: `<TabbedContent :tabs="arrayOfItems">
-    <template #tab="{item}">
-        {{ item }}
-    </template>
     <template #tabpane="{item}">
         This is the content for {{item}}.
     </template>
@@ -5496,11 +5490,7 @@ const tabbedContentGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode" >
 
-
     <TabbedContent :tabs="list">
-        <template #tab="{item}">
-            {{ item }}
-        </template>
         <template #tabpane="{item}">
             This is the content for {{item}}.
         </template>
@@ -6155,7 +6145,7 @@ const cacheabilityPickerGallery = defineComponent({
     },
     setup() {
         return {
-            value: ref<RockCacheability | null>(null),
+            value: ref<RockCacheabilityBag | null>(null),
             importCode: getSfcControlImportPath("cacheabilityPicker"),
             exampleCode: `<CacheabilityPicker v-model="value" :showBlankItem="false" :multiple="false" />`
         };
@@ -8171,10 +8161,11 @@ const controlGalleryComponents: Record<string, Component> = [
     PdfViewerGallery,
     ChartGallery,
     EntityPickerGallery,
+    PersonBasicEditorGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
-        a.name = a.__name ?? a.name;
+        a.name = upperCaseFirstCharacter((a.__name ?? a.name).replace(/\.partial$/, ""));
         return a;
     })
     // Sort list by component name

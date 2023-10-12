@@ -209,6 +209,11 @@ namespace Rock.SystemGuid
         public const string CONTENT_CHANNEL = "D835A0EC-C8DB-483A-A37C-E8FB6E956C3D";
 
         /// <summary>
+        /// Content Channels field type
+        /// </summary>
+        public const string CONTENT_CHANNELS = "0E2B924A-C1AC-4A7C-AD77-A036581552D4";
+
+        /// <summary>
         /// Content Channel Item field type
         /// </summary>
         public const string CONTENT_CHANNEL_ITEM = "19BFB635-DC31-4C1E-8BB5-CDA120890BDE";

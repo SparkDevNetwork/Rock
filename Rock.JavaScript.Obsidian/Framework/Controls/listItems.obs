@@ -15,7 +15,7 @@
                                 <span class="reorder-handle input-group-addon">
                                     <i class="fa fa-bars"></i>
                                 </span>
-                                <input v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePrompt">
+                                <input v-model="value.value" class="key-value-value form-control input-width-lg" type="text" :placeholder="valuePrompt">
                             </div>
                             <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
                         </div>
@@ -35,7 +35,7 @@
 }
 </style>
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
+    import { ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
@@ -69,12 +69,6 @@
     // convert the string[] of the modelValue to ValueItem[] so it can be edited correctly
     const internalValues = ref(parseModelValue(props.modelValue));
 
-    const valueInputClasses = computed((): string => {
-        let classes = "key-value-value form-control input-width-lg";
-
-        return classes;
-    });
-
     watch(() => props.modelValue, () => {
         internalValues.value = parseModelValue(props.modelValue);
     });
@@ -85,7 +79,7 @@
 
     const onAddClick = (): void => {
         let defaultValue = "";
-        let defaultGuid = newGuid().toString();
+        let defaultGuid = newGuid();
         internalValues.value.push({ key: defaultGuid, value: defaultValue });
     };
 

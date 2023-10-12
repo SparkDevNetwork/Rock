@@ -1,22 +1,23 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField :modelValue="internalValue"
+                   v-bind="standardProps"
                    formGroupClasses="check-box-list"
                    name="check-box-list">
-        <template #default="{ uniqueId }">
+        <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <slot name="prepend" :isInputGroupSupported="false" />
                 <div class="controls rockcheckboxlist" :class="containerClasses">
                     <template v-if="horizontal">
                         <label v-for="item in items" class="checkbox-inline" :for="uniqueIdForItem(uniqueId, item)">
-                            <input :disabled="disabled" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
+                            <input v-bind="field" :disabled="disabled" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                             <span class="label-text">{{ textForItem(item) }}</span>
                         </label>
                     </template>
                     <template v-else>
                         <div v-for="item in items" class="checkbox">
-                            <label :for="uniqueIdForItem(uniqueId, item)">
-                                <input :disabled="disabled" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
+                            <label :for="uniqueIdForItem(uniqueId, item)" :class="labelClasses(item)">
+                                <input v-bind="field" :disabled="disabled" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                                 <span class="label-text">{{ textForItem(item) }}</span>
                             </label>
                         </div>
@@ -35,6 +36,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
     import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         modelValue: {
@@ -63,10 +65,17 @@
             default: false
         },
 
+        displayAsCheckList: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         compareValue: {
             type: Function as PropType<((value: string, itemValue: string) => boolean)>,
             default: defaultControlCompareValue
-        }
+        },
+
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
@@ -74,6 +83,8 @@
     }>();
 
     const internalValue = ref([...props.modelValue]);
+
+    const standardProps = useStandardRockFormFieldProps(props);
 
     const valueForItem = (item: ListItemBag): string => item.value ?? "";
     const textForItem = (item: ListItemBag): string => item.text ?? "";
@@ -83,19 +94,21 @@
     const containerClasses = computed(() => {
         const classes: string[] = [];
 
-        if (props.horizontal) {
-            classes.push("rockcheckboxlist-horizontal");
-
-            if (props.repeatColumns > 0) {
-                classes.push(`in-columns in-columns-${props.repeatColumns}`);
-            }
-        }
-        else {
-            classes.push("rockcheckboxlist-vertical input-group");
+        if (props.repeatColumns > 0) {
+            classes.push(`in-columns in-columns-${props.repeatColumns}`);
         }
 
         return classes.join(" ");
     });
+
+    const labelClasses = (item: ListItemBag): string => {
+        const classes: string[] = [];
+        if (props.displayAsCheckList && internalValue.value.includes(item.value ?? "")) {
+            classes.push("text-linethrough");
+        }
+
+        return classes.join(" ");
+    };
 
     const syncInternalValue = (): void => {
         let value = [...props.modelValue];

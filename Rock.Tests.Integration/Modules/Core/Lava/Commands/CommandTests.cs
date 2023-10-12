@@ -715,12 +715,13 @@ Brian;Daniel;Nancy;William;
         {
             var mergeFields = new LavaDataDictionary
             {
-                { "WorkflowName", "Ted's Workflow" }
+                { "WorkflowName", "Ted's Workflow" },
+                { "ItSupportWorkflowTypeGuid", "51FE9641-FB8F-41BF-B09E-235900C3E53E" }
             };
 
             // Activate Workflow: IT Support
             var input = @"
-{% workflowactivate workflowtype:'51FE9641-FB8F-41BF-B09E-235900C3E53E' workflowname:'{{WorkflowName}}' %}
+{% workflowactivate workflowtype:'{{ItSupportWorkflowTypeGuid}}' workflowname:'{{WorkflowName}}' %}
   Activated new workflow with the name '{{ Workflow.Name }}'.
 {% endworkflowactivate %}
 ";
@@ -731,6 +732,47 @@ Brian;Daniel;Nancy;William;
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
+
+        [TestMethod]
+        public void WorkflowActivateBlock_InternalVariablesAreScopedToBlock()
+        {
+            /* The WorkflowActivate tag injects additional variables into a child scope of the render context
+             * that are only intended for use within the block: Workflow, Activity, Error.
+             * These variables should not modify existing variables defined outside the block.
+             */
+
+            var mergeFields = new LavaDataDictionary
+            {
+                { "ItSupportWorkflowTypeGuid", "51FE9641-FB8F-41BF-B09E-235900C3E53E" }
+            };
+
+            var input = @"
+{% assign counter = 0 %}
+{% assign Workflow = 'Request 0' %}
+Outer Workflow Value: {{ Workflow }}
+{% workflowactivate workflowtype:'{{ItSupportWorkflowTypeGuid}}' workflowname:'Request 1' %}
+    {% assign counter = counter | Plus:1 %}
+    Workflow {{ counter }}: {{ Workflow.Name }}
+{% endworkflowactivate %}
+{% workflowactivate workflowtype:'{{ItSupportWorkflowTypeGuid}}' workflowname:'Request 2' %}
+    {% assign counter = counter | Plus:1 %}
+    Workflow {{ counter }}: {{ Workflow.Name }}
+{% endworkflowactivate %}
+Outer Workflow Value: {{ Workflow }}
+";
+
+            var expectedOutput = @"
+Outer Workflow Value: Request 0
+Workflow 1: Request 1
+Workflow 2: Request 2
+Outer Workflow Value: Request 0
+";
+
+            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
         #endregion
 
 

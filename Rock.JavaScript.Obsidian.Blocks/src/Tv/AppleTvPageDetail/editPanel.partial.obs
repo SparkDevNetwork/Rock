@@ -33,8 +33,6 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
-import { RockCacheability } from "@Obsidian/ViewModels/Controls/rockCacheability";
-import { RockCacheabilityBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/rockCacheabilityBag";
 
     const props = defineProps({
         modelValue: {
@@ -61,7 +59,7 @@ import { RockCacheabilityBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageD
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const showInMenu = ref(props.modelValue.showInMenu);
     const pageTVML = ref(props.modelValue.pageTVML ?? "");
-    const cacheability = ref<RockCacheability>(props.modelValue.rockCacheability as RockCacheability);
+    const cacheability = ref(props.modelValue.rockCacheability ?? null);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -89,6 +87,7 @@ import { RockCacheabilityBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageD
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(showInMenu, props.modelValue.showInMenu);
         updateRefValue(pageTVML, props.modelValue.pageTVML ?? "");
+        updateRefValue(cacheability, props.modelValue.rockCacheability ?? null);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -101,7 +100,7 @@ import { RockCacheabilityBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageD
             description: description.value,
             showInMenu: showInMenu.value,
             pageTVML: pageTVML.value,
-            rockCacheability: cacheability.value as RockCacheabilityBag
+            rockCacheability: cacheability.value
         };
 
         emit("update:modelValue", newValue);

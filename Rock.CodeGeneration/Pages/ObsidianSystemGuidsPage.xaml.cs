@@ -72,7 +72,7 @@ namespace Rock.CodeGeneration.Pages
         /// <returns>A string that represents the file name.</returns>
         private string GetFileNameForType( Type type )
         {
-            return $"{type.Name.CamelCase()}.ts";
+            return $"{type.Name.ToCamelCase()}.ts";
         }
 
         /// <summary>
