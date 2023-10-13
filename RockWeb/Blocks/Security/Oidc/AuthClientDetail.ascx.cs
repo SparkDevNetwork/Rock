@@ -171,6 +171,7 @@ namespace RockWeb.Blocks.Security.Oidc
             tbClientId.Text = authClient.ClientId;
             tbRedirectUri.Text = authClient.RedirectUri;
             tbPostLogoutRedirectUri.Text = authClient.PostLogoutRedirectUri;
+            tbScopeApprovalExpiration.Text = authClient.ScopeApprovalExpiration.ToString();
 
             SetClaimsCheckboxValues( authClient.AllowedClaims.FromJsonOrNull<List<string>>() );
             var editAllowed = authClient.IsAuthorized( Authorization.EDIT, CurrentPerson );
@@ -310,6 +311,7 @@ namespace RockWeb.Blocks.Security.Oidc
 
             authClient.RedirectUri = tbRedirectUri.Text;
             authClient.PostLogoutRedirectUri = tbPostLogoutRedirectUri.Text;
+            authClient.ScopeApprovalExpiration = tbScopeApprovalExpiration.Text.AsInteger();
 
             if ( tbClientSecret.Text != CLIENT_SECRET_PLACE_HOLDER )
             {
