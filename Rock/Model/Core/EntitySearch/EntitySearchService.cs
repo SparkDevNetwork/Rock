@@ -53,8 +53,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entitySearch">The entity search definition.</param>
         /// <param name="userQuery">The additional user query details.</param>
+        /// <param name="currentPerson">The person that is requesting execution of the query.</param>
         /// <returns>A list of dynamic objects that represents the results.</returns>
-        public static List<dynamic> GetSearchResults( EntitySearchCache entitySearch, EntitySearchQueryBag userQuery )
+        public static List<dynamic> GetSearchResults( EntitySearchCache entitySearch, EntitySearchQueryBag userQuery, Person currentPerson )
         {
             var entityType = entitySearch.EntityType.GetEntityType()
                 ?? throw new Exception( $"Entity type {entitySearch.EntityType.Name} was not found." );
@@ -68,7 +69,9 @@ namespace Rock.Model
                     SelectExpression = entitySearch.SelectExpression,
                     OrderByExpression = entitySearch.OrderByExpression,
                     MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery,
-                    IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced
+                    IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced,
+                    IsRefinementAllowed = entitySearch.IsRefinementAllowed,
+                    CurrentPerson = currentPerson
                 };
 
                 return GetSearchResults( entityType, systemQuery, userQuery, rockContext );
@@ -80,8 +83,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entitySearch">The entity search definition.</param>
         /// <param name="userQuery">The additional user query details.</param>
+        /// <param name="currentPerson">The person that is requesting execution of the query.</param>
         /// <returns>A list of dynamic objects that represents the results.</returns>
-        public static List<dynamic> GetSearchResults( EntitySearch entitySearch, EntitySearchQueryBag userQuery )
+        public static List<dynamic> GetSearchResults( EntitySearch entitySearch, EntitySearchQueryBag userQuery, Person currentPerson )
         {
             var entityType = EntityTypeCache.Get( entitySearch.EntityTypeId )?.GetEntityType()
                 ?? throw new Exception( $"Entity type {entitySearch.EntityType.Name} was not found." );
@@ -95,7 +99,9 @@ namespace Rock.Model
                     SelectExpression = entitySearch.SelectExpression,
                     OrderByExpression = entitySearch.OrderByExpression,
                     MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery,
-                    IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced
+                    IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced,
+                    IsRefinementAllowed = entitySearch.IsRefinementAllowed,
+                    CurrentPerson = currentPerson
                 };
 
                 return GetSearchResults( entityType, systemQuery, userQuery, rockContext );
@@ -134,7 +140,7 @@ namespace Rock.Model
                     }
 
                     queryable = queryable.ToList()
-                        .Where( a => ( ( ISecured ) a ).IsAuthorized( Authorization.VIEW, null ) )
+                        .Where( a => ( ( ISecured ) a ).IsAuthorized( Authorization.VIEW, systemQuery.CurrentPerson ) )
                         .AsQueryable();
                 }
 
@@ -166,7 +172,7 @@ namespace Rock.Model
 
             // Perform the user query elements.
 
-            if ( userQuery != null )
+            if ( systemQuery?.IsRefinementAllowed != false && userQuery != null )
             {
                 if ( userQuery.Where.IsNotNullOrWhiteSpace() )
                 {

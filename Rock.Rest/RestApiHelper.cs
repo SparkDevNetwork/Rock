@@ -25,6 +25,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Net;
+using Rock.ViewModels.Core;
 
 #if WEBFORMS
 using System.Web.Http;
@@ -537,6 +539,58 @@ namespace Rock.Rest
             }
         }
 
+        /// <summary>
+        /// GET and POST endpoint. Use this to perform a query via a defined
+        /// Entity Search.
+        /// </summary>
+        /// <param name="searchKey">The search key to use for the query.</param>
+        /// <param name="query">The custom user query options.</param>
+        /// <returns>The response that should be sent back.</returns>
+        public IActionResult Search( string searchKey, EntitySearchQueryBag query )
+        {
+            try
+            {
+                var entityType = EntityTypeCache.Get<TEntity>();
+                var entitySearch = EntitySearchCache.GetByEntityTypeAndKey( entityType, searchKey );
+
+                if ( entitySearch == null )
+                {
+                    return NotFound( "Search key was not found." );
+                }
+
+                if ( !entitySearch.IsAuthorized( Rock.Security.Authorization.VIEW, _controller.RockRequestContext.CurrentPerson ) )
+                {
+                    return Unauthorized( "You are not authorized to perform this search." );
+                }
+
+                if ( !entitySearch.IsRefinementAllowed && query != null )
+                {
+                    return BadRequest( "Custom query options have been disabled." );
+                }
+
+                var results = EntitySearchService.GetSearchResults( entitySearch, query, _controller.RockRequestContext.CurrentPerson );
+
+                // Because of the way the search results come back, it basically
+                // looks like dictionaries, so make sure the serializer knows to
+                // encode those since we wouldn't normally. This should not cause
+                // a problem for attribute value keys because those are not
+                // included in these responses.
+                var formatter = Utility.ApiPickerJsonMediaTypeFormatter.CreateV2Formatter();
+                if ( formatter.SerializerSettings.ContractResolver is Newtonsoft.Json.Serialization.DefaultContractResolver defaultContractResolver )
+                {
+                    defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
+                }
+
+                return new FormattedContentResult<object>( HttpStatusCode.OK, results, formatter, null, _controller );
+            }
+            catch ( System.Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+
+                return InternalServerError( ex.Message );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -557,9 +611,7 @@ namespace Rock.Rest
 
                 if ( !isAuthorized )
                 {
-                    var error = new HttpError( $"You are not authorized to {action.SplitCase().ToLower()} this item." );
-
-                    errorResult = new NegotiatedContentResult<HttpError>( HttpStatusCode.Unauthorized, error, _controller );
+                    errorResult = Unauthorized($"You are not authorized to {action.SplitCase().ToLower()} this item." );
 
                     return false;
                 }
@@ -589,6 +641,18 @@ namespace Rock.Rest
             var error = new HttpError( errorMessage );
 
             return new NegotiatedContentResult<HttpError>( HttpStatusCode.NotFound, error, _controller );
+        }
+
+        /// <summary>
+        /// Creates an unauthorized response with the given error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>The response object.</returns>
+        private IActionResult Unauthorized( string errorMessage )
+        {
+            var error = new HttpError( errorMessage );
+
+            return new NegotiatedContentResult<HttpError>( HttpStatusCode.Unauthorized, error, _controller );
         }
 
         /// <summary>

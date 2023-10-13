@@ -176,51 +176,40 @@ namespace Rock.Rest.v2.Models.Data
             return new RestApiHelper<Group, GroupService>( this ).PatchAttributeValues( id, values );
         }
 
+        /// <summary>
+        /// Performs a search of items using the specified system query.
+        /// </summary>
+        /// <param name="searchKey">The key that identifies the entity search query to execute.</param>
+        /// <returns>An array of objects returned by the query.</returns>
+        [HttpGet]
+        [Authenticate]
+        [Route( "search/{searchKey}" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [SystemGuid.RestActionGuid( "fe935789-f662-4e30-9bce-b1afec49e3d5" )]
+        public IActionResult GetSearch( string searchKey )
+        {
+            return new RestApiHelper<Group, GroupService>( this ).Search( searchKey, null );
+        }
+
+        /// <summary>
+        /// Performs a search of items using the specified system query.
+        /// </summary>
+        /// <param name="query">Additional query refinement options to be applied.</param>
+        /// <param name="searchKey">The key that identifies the entity search query to execute.</param>
+        /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
         [Route( "search/{searchKey}" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "2568b739-a6c9-4d91-9bed-a3485c51954b" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query, string searchKey )
         {
-            try
-            {
-                var entityType = EntityTypeCache.Get<Group>();
-                var entitySearch = EntitySearchCache.GetByEntityTypeAndKey( entityType, searchKey );
-
-                if ( entitySearch == null )
-                {
-                    return NotFound(); // TODO: "Search key not found."
-                }
-
-                if ( !entitySearch.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                {
-                    return NotFound(); // TODO: Not authorized.
-                }
-
-                var results = EntitySearchService.GetSearchResults( entitySearch, query );
-
-                if ( _searchFormatter == null )
-                {
-                    var formatter = Utility.ApiPickerJsonMediaTypeFormatter.CreateV2Formatter();
-                    if ( formatter.SerializerSettings.ContractResolver is Newtonsoft.Json.Serialization.DefaultContractResolver defaultContractResolver )
-                    {
-                        defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
-                    }
-
-                    _searchFormatter = formatter;
-                }
-
-                return Content( HttpStatusCode.OK, results, _searchFormatter );
-            }
-            catch ( System.Exception ex )
-            {
-                ExceptionLogService.LogException( ex );
-                var error = new HttpError( ex.Message );
-
-                return new NegotiatedContentResult<HttpError>( HttpStatusCode.InternalServerError, error, this );
-            }
+            return new RestApiHelper<Group, GroupService>( this ).Search( searchKey, query );
         }
-
-        private static System.Net.Http.Formatting.JsonMediaTypeFormatter _searchFormatter;
     }
 }

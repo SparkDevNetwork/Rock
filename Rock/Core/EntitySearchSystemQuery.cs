@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+using System.Runtime.Serialization;
+
+using Rock.Model;
+
 namespace Rock.Core
 {
     /// <summary>
@@ -64,5 +68,18 @@ namespace Rock.Core
         /// </summary>
         /// <value><c>true</c> if this search will enforce entity security; otherwise, <c>false</c>.</value>
         public bool IsEntitySecurityEnforced { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether search query will allow
+        /// custom refinement options in the form of an additional user query.
+        /// </summary>
+        /// <value><c>true</c> if this query allows refinement; otherwise, <c>false</c>.</value>
+        public bool IsRefinementAllowed { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current person that is requesting this query be executed.
+        /// </summary>
+        /// <value>An optional <see cref="Person"/> object representing the current person.</value>
+        public Person CurrentPerson { get; set; }
     }
 }
