@@ -40,7 +40,7 @@ namespace Rock.Tests.Integration.Core.Lava
         /// Verify that a comment block containing another comment block is parsed as a single comment.
         /// This test validates a Rock-specific change to the Fluid Parser.
         /// </summary>
-        [Ignore("This is a known issue, but it is documented here for reference and may be fixed in the future.")]
+        [Ignore( "This is a known issue, but it is documented here for reference and may be fixed in the future." )]
         [TestMethod]
         public void CommentBlock_WithNestedCommentBlock_ParsesCorrectly()
         {
@@ -257,7 +257,7 @@ Line 1<br>
 
             var expectedOutput = @"Line 1<br>";
 
-            TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, input );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input );
         }
 
         [TestMethod]
@@ -303,6 +303,68 @@ Line 4<br>
             fileProvider.Add( "_comments.lava", commentsTemplate );
 
             return fileProvider;
+        }
+
+        [TestMethod]
+        public void ShorthandBlockComment_InShortcode_DoesNotRender()
+        {
+            var input = @"
+{[ panel title:'Test' ]}
+Line 1<br>
+Line 2 Start<br>/- This is an inline block comment -/Line 2 End<br>
+Line 3<br>
+{[ endpanel ]}
+";
+
+            var expectedOutput = @"
+<div class=`panel panel-default`>
+    <div class=`panel-heading`>
+      <h3 class=`panel-title`>
+          Test
+      </h3>
+    </div>
+    <div class=`panel-body`>
+        Line 1<br>
+        Line 2 Start<br>Line 2 End<br>
+        Line 3<br>
+    </div>
+</div>
+";
+            expectedOutput = expectedOutput.Trim().Replace( "`", @"""" );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        [TestMethod]
+        public void ShorthandLineComment_InShortcode_DoesNotRender()
+        {
+            var input = @"
+{[ panel title:'Test' ]}
+Line 1<br>
+Line 2<br>//- This is a single line comment.
+Line 3<br>
+{[ endpanel ]}
+";
+
+            var expectedOutput = @"
+<div class=`panel panel-default`>
+    <div class=`panel-heading`>
+      <h3 class=`panel-title`>
+          Test
+      </h3>
+    </div>
+    <div class=`panel-body`>
+        Line 1<br>
+        Line 2<br>
+        Line 3<br>
+    </div>
+</div>
+";
+
+            input = input.Trim();
+            expectedOutput = expectedOutput.Trim().Replace( "`", @"""" );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
     }
 }
