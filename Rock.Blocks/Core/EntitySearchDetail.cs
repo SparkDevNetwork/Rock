@@ -515,6 +515,47 @@ namespace Rock.Blocks.Core
             return ActionBadRequest( "Attributes are not supported by this block." );
         }
 
+        /// <summary>
+        /// Generates a preview of the search query.
+        /// </summary>
+        /// <param name="box">The box that contains all the information required.</param>
+        /// <returns>The results of the query.</returns>
+        [BlockAction]
+        public BlockActionResult Preview( DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag> box )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityService = new EntitySearchService( rockContext );
+
+                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+                {
+                    return actionError;
+                }
+
+                // Update the entity instance from the information in the bag.
+                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                {
+                    return ActionBadRequest( "Invalid data." );
+                }
+
+                // Ensure everything is valid before saving.
+                if ( !ValidateEntitySearch( entity, rockContext, out var validationMessage ) )
+                {
+                    return ActionBadRequest( validationMessage );
+                }
+
+                // Never show more than 100 items for a preview.
+                if ( !entity.MaximumResultsPerQuery.HasValue || entity.MaximumResultsPerQuery.Value > 100 )
+                {
+                    entity.MaximumResultsPerQuery = 100;
+                }
+
+                var results = EntitySearchService.GetSearchResults( entity, null, RequestContext.CurrentPerson );
+
+                return ActionOk( results );
+            }
+        }
+
         #endregion
     }
 }

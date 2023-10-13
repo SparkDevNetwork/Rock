@@ -17,6 +17,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="false"
+                 :footerSecondaryActions="footerSecondaryActions"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -142,9 +143,46 @@
         return config.options ?? {};
     });
 
+    const footerSecondaryActions = computed((): PanelAction[] => {
+        if (panelMode.value === DetailPanelMode.View || !entitySearchEditBag.value) {
+            return [];
+        }
+
+        return [
+            {
+                type: "default",
+                title: "Preview",
+                iconCssClass: "fa fa-search",
+                handler: onShowPreview,
+                disabled: !entitySearchEditBag.value.whereExpression
+                    && !entitySearchEditBag.value.groupByExpression
+                    && !entitySearchEditBag.value.selectExpression
+                    && !entitySearchEditBag.value.orderByExpression
+            }
+        ];
+    });
+
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets a new object that excludes any of our additional properties.
+     *
+     * @param bag The entity search bag to be copied and cleaned.
+     *
+     * @returns A new object that excludes any additional properties.
+     */
+    function getCleanEditBag(bag: EntitySearchBag): EntitySearchBag {
+        const newBag: EntitySearchBag & EntitySearchBagAdditions = { ...bag };
+
+        delete newBag.isWhereEnabled;
+        delete newBag.isGroupByEnabled;
+        delete newBag.isSelectEnabled;
+        delete newBag.isOrderByEnabled;
+
+        return newBag;
+    }
 
     // #endregion
 
@@ -222,11 +260,7 @@
         errorMessage.value = "";
 
         // Remove our custom properties from the bag before sending it.
-        const entityBag: EntitySearchBag & EntitySearchBagAdditions = { ...entitySearchEditBag.value };
-        delete entityBag.isWhereEnabled;
-        delete entityBag.isGroupByEnabled;
-        delete entityBag.isSelectEnabled;
-        delete entityBag.isOrderByEnabled;
+        const entityBag = getCleanEditBag(entitySearchEditBag.value);
 
         const data: DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag> = {
             entity: entityBag,
@@ -252,6 +286,31 @@
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to save entity search.";
 
         return false;
+    }
+
+    async function onShowPreview(): Promise<void> {
+        // Remove our custom properties from the bag before sending it.
+        const entityBag = getCleanEditBag(entitySearchEditBag.value);
+
+        const data: DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag> = {
+            entity: entityBag,
+            isEditable: true,
+            validProperties: validProperties
+        };
+
+        const result = await invokeBlockAction<EntitySearchBag | string>("Preview", {
+            box: data
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && Array.isArray(result.data)) {
+                console.log(result.data);
+
+                return;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save entity search.";
     }
 
     // #endregion
