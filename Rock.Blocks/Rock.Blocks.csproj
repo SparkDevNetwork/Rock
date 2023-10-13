@@ -67,6 +67,7 @@
     <Compile Include="Communication\EmailPreferenceEntry.cs" />
     <Compile Include="Core\DeviceDetail.cs" />
     <Compile Include="Core\Notes.cs" />
+    <Compile Include="Core\NoteWatchDetail.cs" />
     <Compile Include="Core\NotificationMessageList.cs" />
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />
