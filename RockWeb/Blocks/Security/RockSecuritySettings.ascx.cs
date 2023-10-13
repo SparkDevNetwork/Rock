@@ -110,6 +110,9 @@ namespace RockWeb.Blocks.Security
 
             _securitySettingsService.SecuritySettings.DisableTokensForAccountProtectionProfiles =
                 cblDisableTokensForAccountProtectionProfiles.SelectedValuesAsInt.Select( a => ( AccountProtectionProfile ) a ).ToList();
+            
+            _securitySettingsService.SecuritySettings.RequireTwoFactorAuthenticationForAccountProtectionProfiles =
+                cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.SelectedValuesAsInt.Select( a => ( AccountProtectionProfile ) a ).ToList();
 
             _securitySettingsService.SecuritySettings.AccountProtectionProfileSecurityGroup.AddOrReplace( AccountProtectionProfile.Extreme, extremeProfile );
             _securitySettingsService.SecuritySettings.AccountProtectionProfileSecurityGroup.AddOrReplace( AccountProtectionProfile.High, highProfile );
@@ -160,11 +163,13 @@ namespace RockWeb.Blocks.Security
         {
             cblIgnoredAccountProtectionProfiles.Items.Clear();
             cblDisableTokensForAccountProtectionProfiles.Items.Clear();
+            cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.Items.Clear();
 
             foreach ( AccountProtectionProfile item in Enum.GetValues( typeof( AccountProtectionProfile ) ) )
             {
                 cblIgnoredAccountProtectionProfiles.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
                 cblDisableTokensForAccountProtectionProfiles.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
+                cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
                 cblDisablePasswordlessSignInForAccountProtectionProfiles.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
             }
         }
@@ -208,6 +213,12 @@ namespace RockWeb.Blocks.Security
                 _securitySettingsService
                     .SecuritySettings
                     .DisableTokensForAccountProtectionProfiles
+                    .Select( a => a.ConvertToInt().ToString() ) );
+
+            cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.SetValues(
+                _securitySettingsService
+                    .SecuritySettings
+                    .RequireTwoFactorAuthenticationForAccountProtectionProfiles
                     .Select( a => a.ConvertToInt().ToString() ) );
         }
 

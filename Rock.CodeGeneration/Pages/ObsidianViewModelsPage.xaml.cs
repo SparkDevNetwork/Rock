@@ -160,7 +160,7 @@ namespace Rock.CodeGeneration.Pages
         /// <returns>A string that represents the file name.</returns>
         private string GetFileNameForType( Type type )
         {
-            return $"{type.Name.Split( '`' )[0].CamelCase()}.d.ts";
+            return $"{type.Name.Split( '`' )[0].ToCamelCase()}.d.ts";
         }
 
         /// <summary>

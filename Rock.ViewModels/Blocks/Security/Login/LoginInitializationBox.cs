@@ -122,5 +122,53 @@ namespace Rock.ViewModels.Blocks.Security.Login
         /// </summary>
         /// <remarks>Only set configuration has errors.</remarks>
         public List<string> ConfigurationErrors { get; set; }
+
+        /// <summary>
+        /// Gets or sets the two-factor email phone required message.
+        /// </summary>
+        /// <value>
+        /// The two-factor email phone required message.
+        /// </value>
+        public string TwoFactorEmailPhoneRequiredMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the two-factor email phone not available message.
+        /// </summary>
+        /// <value>
+        /// The two-factor email phone not available message.
+        /// </value>
+        public string TwoFactorEmailPhoneNotAvailableMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the two-factor login required message.
+        /// </summary>
+        /// <value>
+        /// The two-factor login required message.
+        /// </value>
+        public string TwoFactorLoginRequiredMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the two-factor login not available message.
+        /// </summary>
+        /// <value>
+        /// The two-factor login not available message.
+        /// </value>
+        public string TwoFactorLoginNotAvailableMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the two-factor not supported by authentication method message.
+        /// </summary>
+        /// <value>
+        /// The two-factor not supported by authentication method message.
+        /// </value>
+        public string TwoFactorNotSupportedByAuthenticationMethodMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether two-factor authentication is not supported for the selected authentication factor.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if two-factor authentication is not supported for the selected authentication factor; otherwise, <c>false</c> or <c>null</c> if no 2FA occurred.
+        /// </value>
+        public bool? Is2FANotSupportedForAuthenticationFactor { get; set; }
     }
 }

@@ -11,28 +11,27 @@
             </div>
         </div>
 
-        <div class="row">
-            <div v-if="!hideControls" class="col-md-6">
+        <div class="row d-flex flex-wrap">
+            <div v-if="!hideControls" class="col-xs-12 col-sm-6">
                 <h5>Successful Attempts</h5>
             </div>
 
-            <div v-if="!hideControls" class="col-md-3 col-sm-6 col-md-offset-3">
+            <div v-if="!hideControls" class="col-xs-12 col-sm-6 d-flex align-items-start justify-content-end">
+                <SlidingDateRangePicker v-model="filterDate"
+                                        :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
+                                        :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
+                                        previewLocation="None" />
                 <RockButton :btnSize="BtnSize.Default"
                             :btnType="BtnType.Default"
-                            class="btn btn-default btn-square pull-right"
+                            class="btn btn-default btn-square flex-shrink-0"
                             @click="onRefresh"
                             loadingText="..."
                             :isLoading="isRefreshLoading">
                     <i class="fa fa-refresh"></i>
                 </RockButton>
-                <SlidingDateRangePicker v-model="filterDate"
-                                        :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
-                                        :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
-                                        class="pull-right"
-                                        previewLocation="None" />
             </div>
 
-            <div v-if="!hideChart" style="height: 350px;" class="col-md-12">
+            <div v-if="!hideChart" style="height: 350px;" class="col-xs-12">
                 <Chart v-if="chartData" type="line" :data="chartData" :options="options" />
             </div>
         </div>

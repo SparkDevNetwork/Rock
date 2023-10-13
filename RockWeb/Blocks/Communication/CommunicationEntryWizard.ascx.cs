@@ -717,7 +717,7 @@ function onTaskCompleted( resultData )
             UpdateRecipientListCount();
 
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
-            var systemPhoneNumbers = SystemPhoneNumberCache.All()
+            var systemPhoneNumbers = SystemPhoneNumberCache.All( false )
                 .Where( spn => spn.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
@@ -925,6 +925,7 @@ function onTaskCompleted( resultData )
             nbRecipientsAlert.Visible = false;
             pnlHeadingLabels.Visible = false;
             var recipients = GetRecipientFromListSelection();
+            recipients.ToList();
             if ( !recipients.Any() )
             {
                 nbRecipientsAlert.Text = "The selected list doesn't have any people. <span>At least one recipient is required.</span>";
@@ -2672,7 +2673,7 @@ function onTaskCompleted( resultData )
         /// <param name="sender">The sender.</param>
         public void InitializeSMSFromSender( Person sender )
         {
-            var numbers = SystemPhoneNumberCache.All();
+            var numbers = SystemPhoneNumberCache.All( false );
             if ( numbers != null )
             {
                 foreach ( var number in numbers )

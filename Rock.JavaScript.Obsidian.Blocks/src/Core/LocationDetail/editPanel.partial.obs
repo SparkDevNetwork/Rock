@@ -2,10 +2,10 @@
 <template>
     <fieldset>
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6" v-if="!hasPersonId">
 
-                <LocationPicker v-model="parentLocation"
-                                label="Parent Location" />
+                <LocationItemPicker v-model="parentLocation"
+                                    label="Parent Location" />
 
                 <TextBox v-model="name"
                          label="Name"
@@ -24,19 +24,23 @@
                               :enhanceForLongLists="false"
                               :grouped="false"
                               :multiple="false" />
+
+                <ImageEditor v-model="image" label="Image" noPictureUrl="/Assets/Images/no-picture.svg" :binaryFileTypeGuid="BinaryFiletype.LocationImage" />
+
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
             </div>
 
             <div class="col-md-6">
-                <CheckBox v-model="isActive"
+                <CheckBox v-if="!hasPersonId"
+                          v-model="isActive"
                           label="Active" />
 
                 <AddressControl label="" v-model="addressFields" />
 
                 <NotificationBox v-if="standardizationResults" alertType="info" v-html="standardizationResults" />
 
-                <RockButton
-                            btnSize="sm"
-                            btnType="action"
+                <RockButton btnType="action"
+                            class="mb-3"
                             @click="onStandardizeClick"
                             autoDisable>
                     Verify Address
@@ -44,14 +48,15 @@
 
                 <CheckBox v-model="isGeoPointLocked"
                           label="Location Locked"
+                          text="Yes"
                           help="Locks the location to prevent verification services (standardization/geocoding) from updating the address or point." />
 
                 <div class="row">
                     <div class="col-sm-7">
-                        <TextBox label="Point" v-model="geoPointWellKnownText" readonly />
-                        <TextBox label="Geo-Fence" v-model="geoFenceWellKnownText" readonly />
+                        <GeoPicker v-model="geoPointWellKnownText" label="Point" drawingMode="Point" :mapStyleValueGuid="mapStyleGuid" />
+                        <GeoPicker v-if="!hasPersonId" v-model="geoFenceWellKnownText" label="Geo-Fence" drawingMode="Polygon" :mapStyleValueGuid="mapStyleGuid" />
                     </div>
-                    <div class="col-sm-5">
+                    <div v-if="!hasPersonId" class="col-sm-5">
                         <NumberBox label="Threshold" v-model="softRoomThreshold" help="The maximum number of people that room allows before a check-in will require a manager override." />
                         <NumberBox label="Threshold (Absolute)" v-model="firmRoomThreshold" help="The absolute maximum number of people that room allows. Check-in will not allow check-in after this number of people have checked in." />
                     </div>
@@ -60,7 +65,6 @@
             </div>
         </div>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
 </template>
 
@@ -72,10 +76,12 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
+    import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import GeoPicker from "@Obsidian/Controls/geoPicker.obs";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { LocationBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationBag";
@@ -83,6 +89,7 @@
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressStandardizationResultBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/addressStandardizationResultBag";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
 
     const props = defineProps({
         modelValue: {
@@ -117,8 +124,11 @@
     const addressFields = ref(props.modelValue.addressFields ?? {});
     const geoPointWellKnownText = propertyRef(props.modelValue.geoPoint_WellKnownText ?? "", "GeoPoint");
     const geoFenceWellKnownText = propertyRef(props.modelValue.geoFence_WellKnownText ?? "", "GeoFence");
+    const image = propertyRef(props.modelValue.image ?? {}, "ImageId");
     const standardizeAttemptedResult = ref("");
     const geocodeAttemptedResult = ref("");
+    const hasPersonId = ref(props.options.hasPersonId);
+    const mapStyleGuid = ref(props.options.mapStyleGuid ?? "");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -131,7 +141,8 @@
         softRoomThreshold,
         firmRoomThreshold,
         geoPointWellKnownText,
-        geoFenceWellKnownText
+        geoFenceWellKnownText,
+        image
     ];
 
     // #endregion
@@ -151,10 +162,6 @@
             return "";
         }
     });
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 
@@ -185,12 +192,12 @@
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(locationTypeValue, props.modelValue.locationTypeValue ?? null);
         updateRefValue(printerDevice, props.modelValue.printerDevice?.value ?? "");
+        updateRefValue(image, props.modelValue.image ?? {});
 
         updateRefValue(isGeoPointLocked, props.modelValue.isGeoPointLocked ?? false);
         updateRefValue(softRoomThreshold, props.modelValue.softRoomThreshold ?? null);
         updateRefValue(firmRoomThreshold, props.modelValue.firmRoomThreshold ?? null);
 
-        // TODO, temporary code until we have a GeoPicker
         updateRefValue(geoPointWellKnownText, props.modelValue.geoPoint_WellKnownText ?? "");
         updateRefValue(geoFenceWellKnownText, props.modelValue.geoFence_WellKnownText ?? "");
     });
@@ -207,6 +214,7 @@
             locationTypeValue: locationTypeValue.value,
             parentLocation: parentLocation.value,
             printerDevice: { value: printerDevice.value },
+            image: image.value,
             isGeoPointLocked: isGeoPointLocked.value,
             softRoomThreshold: softRoomThreshold.value,
             firmRoomThreshold: firmRoomThreshold.value,

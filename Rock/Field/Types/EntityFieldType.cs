@@ -24,6 +24,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,7 +34,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Entity filtered by a selected Entity Type
     /// Stored as EntityType.Guid|EntityId
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ENTITY )]
     public class EntityFieldType : FieldType, IEntityFieldType
     {
@@ -41,7 +42,7 @@ namespace Rock.Field.Types
         #region Configuration
 
         /// <summary>
-        /// 
+        /// Configuration value for the help text displayed by the picker
         /// </summary>
         private const string ENTITY_CONTROL_HELP_TEXT_FORMAT = "entityControlHelpTextFormat";
 
@@ -52,7 +53,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var entityId = GetEntityId( privateValue, out EntityTypeCache entityType );
+            var entityId = GetEntityIdentifier( privateValue, out EntityTypeCache entityType ).AsIntegerOrNull();
 
             if ( !entityId.HasValue )
             {
@@ -78,6 +79,68 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var publicValue = string.Empty;
+            var entity = GetEntity( privateValue, out EntityTypeCache entityType );
+
+            if ( entityType != null )
+            {
+                var fieldType = entityType.SingleValueFieldType;
+                if ( fieldType != null )
+                {
+                    // Use the Entity's field type to get the PublicEditValue since the obsidian EntityPicker uses the
+                    // Entity's field type to render the right control.
+                    var field = fieldType.Field;
+                    publicValue = field.GetPublicEditValue( entity?.Guid.ToStringSafe(), new Dictionary<string, string>() );
+                }
+            }
+
+            return new EntityFieldValue()
+            {
+                EntityType = entityType.ToListItemBag(),
+                Value = publicValue
+            }.ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // GetPrivateEditValue does not use the entity's fieldType's GetPrivateEditValue because most of the field types
+            // return/save the guid value as the private value, however the entityType guid combined with the int Id value is
+            // what is required in this instance.
+
+            var entityValue = publicValue.FromJsonOrNull<EntityFieldValue>();
+
+            if ( entityValue != null )
+            {
+                var jsonValue = entityValue.Value.FromJsonOrNull<ListItemBag>();
+
+                // Some EntityTypes return their Entity value as a ListItemBag, and others return just the guid value (Campus)
+                // or a string value. If it is a ListItemBag json we are interested in the actual value at this point.
+                if ( jsonValue != null )
+                {
+                    entityValue.Value = jsonValue.Value;
+                }
+
+                // Webforms EntityPicker saves the EntityType Guid along with the Entity Id, so we use the Guid returned from the
+                // client to get the EntityId for backwards compatibility.
+                var privateValue = $"{entityValue.EntityType?.Value}|{entityValue.Value}";
+                var entity = GetEntity( privateValue, out _ );
+
+                return $"{entityValue.EntityType?.Value}|{entity?.Id}";
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
         #endregion
 
         #region Entity Methods
@@ -100,7 +163,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
-            int? entityId = GetEntityId( value, out EntityTypeCache entityType );
+            var entityIdentifier = GetEntityIdentifier( value, out EntityTypeCache entityType );
 
             if ( entityType == null )
             {
@@ -124,7 +187,7 @@ namespace Rock.Field.Types
                 getMethod = entityService.GetType().GetMethod( "Get", methodParamTypes );
             }
 
-            return ( IEntity ) getMethod.Invoke( entityService, new object[] { entityId } );
+            return ( IEntity ) getMethod.Invoke( entityService, new object[] { entityIdentifier } );
         }
 
         #endregion
@@ -132,12 +195,12 @@ namespace Rock.Field.Types
         #region Private Methods
 
         /// <summary>
-        /// Gets the entity identifier, and also returns the EntityType as an out param.
+        /// Gets the entity identifier as a Guid or Int string, and also returns the EntityType as an out param.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
-        private int? GetEntityId( string value, out EntityTypeCache entityType )
+        private string GetEntityIdentifier( string value, out EntityTypeCache entityType )
         {
             entityType = null;
 
@@ -155,7 +218,64 @@ namespace Rock.Field.Types
 
             entityType = EntityTypeCache.Get( entityTypeGuid.Value );
 
-            return values[1].AsIntegerOrNull();
+            return values[1];
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        private IEntity GetEntity( string value, out EntityTypeCache entityType )
+        {
+            var entityIdentifier = GetEntityIdentifier( value, out entityType );
+
+            if ( entityType == null )
+            {
+                return null;
+            }
+
+            IService entityService;
+            MethodInfo getMethod;
+            object[] parameters;
+            Type[] methodParamTypes;
+            RockContext rockContext = new RockContext();
+
+            if ( entityIdentifier.AsIntegerOrNull().HasValue )
+            {
+                methodParamTypes = new Type[] { typeof( int ) };
+                parameters = new object[] { entityIdentifier.AsIntegerOrNull() };
+
+                if ( entityType.GetEntityType() == typeof( Person ) )
+                {
+                    entityService = new PersonAliasService( rockContext );
+                    getMethod = entityService.GetType().GetMethod( "GetByAliasId", methodParamTypes );
+                }
+                else
+                {
+                    entityService = Reflection.GetServiceForEntityType( entityType.GetEntityType(), rockContext );
+                    getMethod = entityService.GetType().GetMethod( "Get", methodParamTypes );
+                }
+            }
+            else
+            {
+                methodParamTypes = new Type[] { typeof( Guid ) };
+                parameters = new object[] { entityIdentifier.AsGuidOrNull() };
+
+                if ( entityType.GetEntityType() == typeof( Person ) )
+                {
+                    entityService = new PersonAliasService( rockContext );
+                    getMethod = entityService.GetType().GetMethod( "GetPerson", methodParamTypes );
+                }
+                else
+                {
+                    entityService = Reflection.GetServiceForEntityType( entityType.GetEntityType(), rockContext );
+                    getMethod = entityService.GetType().GetMethod( "Get", methodParamTypes );
+                }
+            }
+
+            return ( IEntity ) getMethod.Invoke( entityService, parameters );
         }
 
         #endregion
@@ -296,7 +416,7 @@ namespace Rock.Field.Types
             EntityPicker entityPicker = control as EntityPicker;
             if ( entityPicker != null )
             {
-                int? entityId = GetEntityId( value, out EntityTypeCache entityType );
+                int? entityId = GetEntityIdentifier( value, out EntityTypeCache entityType ).AsIntegerOrNull();
 
                 if ( entityType != null )
                 {
@@ -328,7 +448,7 @@ namespace Rock.Field.Types
             }
 
             // we can return the EntityId itself, but it won't do the caller any good unless they already know what the EntityType is
-            return GetEntityId( editValue, out _ );
+            return GetEntityIdentifier( editValue, out _ ).AsIntegerOrNull();
         }
 
         /// <summary>
@@ -343,6 +463,32 @@ namespace Rock.Field.Types
         }
 
 #endif
+        #endregion
+
+        #region Helper Class
+
+        /// <summary>
+        /// Helper class for the EntityField value.
+        /// </summary>
+        private sealed class EntityFieldValue
+        {
+            /// <summary>
+            /// Gets or sets the entity value.
+            /// </summary>
+            /// <value>
+            /// The value.
+            /// </value>
+            public string Value { get; set; }
+
+            /// <summary>
+            /// Gets or sets the type of the entity.
+            /// </summary>
+            /// <value>
+            /// The type of the entity.
+            /// </value>
+            public ListItemBag EntityType { get; set; }
+        }
+
         #endregion
     }
 }

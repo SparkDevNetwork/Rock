@@ -868,7 +868,9 @@ namespace Rock.Web
                     trackedPageParameters.AddOrIgnore( p.Key, p.Value );
                 }
 
-                foreach ( var qs in initialPageReference.QueryString.AllKeys )
+                // As Querystring is a NameValueCollection, it may contain entries with key as null.
+                // However, adding null as a key to a Dictionary throws an exception and so we would like to filter those entries out of Querystring.
+                foreach ( var qs in initialPageReference.QueryString.AllKeys.Where( k => k != null ) )
                 {
                     trackedPageParameters.AddOrIgnore( qs, initialPageReference.QueryString[qs] );
                 }

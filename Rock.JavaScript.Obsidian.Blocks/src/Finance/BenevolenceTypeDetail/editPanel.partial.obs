@@ -1,0 +1,322 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="showFinancialResults"
+                          label="Show Financial Results" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <CodeEditor v-model="requestLavaTemplate"
+                    label="Request Lava Template"
+                    theme="rock"
+                    mode="text"
+                    :editorHeight="200"
+                    help="Used to show personalized resources or instructions based on the information on the request. The request will be provided in the <strong>'BenevolenceRequest'</strong> merge field." />
+
+        <div class="row">
+            <div class="col-md-6">
+                <NumberBox v-model="maximumNumberOfDocuments"
+                           label="Maximum Number of Documents"
+                           help="The maximum number of documents that can be added to a request."
+                           rules="required" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <h4>Workflows</h4>
+            <div class="panel-body">
+                <div class="grid grid-panel">
+                    <Grid :data="gridData" itemTerm="Workflow" keyField="key" liveUpdates light @addItem="onAddWorkflowItem">
+                        <TextColumn name="workflowType" field="workflowType" title="Workflow Type" />
+                        <TextColumn name="trigger" field="trigger" title="Trigger" />
+                        <EditColumn @click="onEditWorkflowItem" />
+                        <DeleteColumn @click="onDeleteWorkflowItem" disableConfirmation />
+                    </Grid>
+                </div>
+            </div>
+            <Modal v-model="isWorkflowModalOpen" saveText="Add" title="Select Workflow" @save="onAddWorkflowClick">
+
+                <NotificationBox v-if="workflowExists" alertType="danger">This workflow record already exists for this benevolence type.</NotificationBox>
+
+                <fieldset>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList v-model="triggerType"
+                                          :items="triggerTypes"
+                                          :showBlankItem="false"
+                                          label="Launch Workflow When"
+                                          rules="required" />
+                        </div>
+                        <div class="col-md-6">
+                            <WorkflowTypePicker v-model="workflow.workflowType"
+                                                label="Workflow Type"
+                                                rules="required" />
+                        </div>
+                    </div>
+                    <div class="row" v-if="showQualifiers">
+                        <div class="col-md-6">
+                            <DropDownList v-model="primaryQualifier" :items="stepStatuses" label="From" showBlankItem />
+                            <DropDownList v-model="secondaryQualifier" :items="stepStatuses" label="To" showBlankItem />
+                        </div>
+                        <div class="col-md-6">
+                        </div>
+                    </div>
+                </fieldset>
+
+            </Modal>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, reactive, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import Grid, { DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { BenevolenceTypeBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceTypeDetail/benevolenceTypeBag";
+    import { BenevolenceTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceTypeDetail/benevolenceTypeDetailOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { BenevolenceWorkflowBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceTypeDetail/benevolenceWorkflowBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<BenevolenceTypeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<BenevolenceTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: BenevolenceTypeBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const showFinancialResults = propertyRef(props.modelValue.showFinancialResults ?? false, "ShowFinancialResults");
+    const requestLavaTemplate = propertyRef(props.modelValue.requestLavaTemplate ?? "", "RequestLavaTemplate");
+    const maximumNumberOfDocuments = ref(props.modelValue.maximumNumberOfDocuments);
+    const workflows = ref(props.modelValue.workflows ?? []);
+    const isWorkflowModalOpen = ref(false);
+    const triggerType = ref("");
+    const triggerTypes = ref(props.options.triggerTypes ?? []);
+    const stepStatuses = ref(props.options.statuses ?? []);
+    const primaryQualifier = ref("");
+    const secondaryQualifier = ref("");
+    const workflow = ref<BenevolenceWorkflowBag>({ isInherited: false });
+    const workflowExists = ref(false);
+    const isLoading = ref(false);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, showFinancialResults, requestLavaTemplate];
+
+    // #endregion
+
+    // #region Computed Values
+    const gridData: GridDataBag = reactive<GridDataBag>({
+        rows: workflows.value.map(x => convertToRowItem(x))
+    });
+
+    const showQualifiers = computed(() => {
+        return triggerType.value === "Status Changed";
+    });
+    // #endregion
+
+    // #region Functions
+    function convertToRowItem(workflow: BenevolenceWorkflowBag): Record<string, unknown> {
+        return {
+            key: workflow.guid,
+            workflowType: workflow.workflowType?.text,
+            trigger: workflow.trigger
+        };
+    }
+    // #endregion
+
+    // #region Event Handlers
+
+    function onAddWorkflowItem(): void {
+        // Reset statuses and show modal.
+        workflow.value = {} as BenevolenceWorkflowBag;
+        triggerType.value = "";
+        primaryQualifier.value = "";
+        secondaryQualifier.value = "";
+        isWorkflowModalOpen.value = true;
+    }
+
+    function onEditWorkflowItem(key: string): void {
+        const selectedWorkflow = workflows.value.find(x => x.guid == key);
+        if (selectedWorkflow) {
+            workflow.value = selectedWorkflow;
+            triggerType.value = selectedWorkflow.trigger ?? "";
+            primaryQualifier.value = selectedWorkflow.primaryQualifier ?? "";
+            secondaryQualifier.value = selectedWorkflow.secondaryQualifier ?? "";
+        }
+        isWorkflowModalOpen.value = true;
+    }
+
+    function onDeleteWorkflowItem(key: string): void {
+        // Close modal and remove deleted trigger from the current collection  of triggers.
+        isWorkflowModalOpen.value = false;
+        workflows.value = workflows.value.filter(s => s.guid !== key);
+
+        // Update the grid.
+        if (gridData.rows) {
+            const index = gridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                gridData.rows?.splice(index, 1);
+            }
+        }
+    }
+
+    const onAddWorkflowClick = async (): Promise<void> => {
+
+        workflowExists.value = false;
+        isLoading.value = true;
+
+        const workflowBag: BenevolenceWorkflowBag = {
+            trigger: triggerType?.value,
+            isInherited: false,
+            workflowType: workflow.value.workflowType,
+            workflowTypeName: workflow.value.workflowType?.text,
+            primaryQualifier: primaryQualifier.value,
+            secondaryQualifier: secondaryQualifier.value,
+        };
+
+        const result = await invokeBlockAction<{ exists: boolean }>("IsExistingWorkflow", {
+            workflowBag: workflowBag
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200) {
+                workflowExists.value = result.data.exists;
+            }
+        }
+
+        if (workflowExists.value !== true) {
+            onSaveWorkflow();
+        }
+
+        isLoading.value = false;
+    };
+
+    const onSaveWorkflow = (): void => {
+        isWorkflowModalOpen.value = false;
+        const selectedTriggerType = triggerTypes.value.find(t => t.value == triggerType.value);
+
+        if (triggerType.value && workflow.value.workflowType?.value && gridData.rows) {
+            const index = workflows.value.findIndex(a => (a.guid === workflow.value.guid));
+
+            if (index !== -1) {
+                // Get the updated WorkflowTrigger and RowItem.
+                let editedWorkflow = workflows.value.find(a => a.guid == workflow.value.guid);
+                let rowItem = gridData.rows.find(x => x["key"] == workflow.value.guid);
+
+                if (editedWorkflow && rowItem) {
+                    // Replace old WorkflowTrigger with updated WorkflowTrigger.
+                    editedWorkflow.trigger = selectedTriggerType?.value;
+                    editedWorkflow.primaryQualifier = primaryQualifier.value;
+                    editedWorkflow.secondaryQualifier = secondaryQualifier.value;
+                    workflows.value.splice(index, 1, editedWorkflow);
+
+                    // Update the GridRowItem with changes
+                    const rowIndex = gridData.rows.findIndex(r => r["key"] === workflow.value.guid);
+                    rowItem = convertToRowItem(editedWorkflow);
+                    gridData.rows?.splice(rowIndex, 1, rowItem);
+                }
+            }
+            else {
+                // Create new entry and set the size of the current triggers as a pseudo id so
+                // it can be tracked for frontend edits and deletes
+                const currentLength = workflows.value.length + 1;
+                const newWorkflow: BenevolenceWorkflowBag = {
+                    trigger: selectedTriggerType?.value,
+                    isInherited: false,
+                    workflowType: workflow.value.workflowType,
+                    workflowTypeName: workflow.value.workflowType?.text,
+                    primaryQualifier: primaryQualifier.value,
+                    secondaryQualifier: secondaryQualifier.value,
+                    guid: currentLength.toString(),
+                };
+                workflows.value.push(newWorkflow);
+
+                // Add new RowItem to the grid to represent the newly added trigger.
+                const newRowItem = convertToRowItem(newWorkflow);
+                gridData.rows.push(newRowItem);
+            }
+        }
+
+        workflow.value = { isInherited: false };
+        triggerType.value = "";
+        primaryQualifier.value = "";
+        secondaryQualifier.value = "";
+    };
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(showFinancialResults, props.modelValue.showFinancialResults ?? false);
+        updateRefValue(requestLavaTemplate, props.modelValue.requestLavaTemplate ?? "");
+        updateRefValue(maximumNumberOfDocuments, props.modelValue.maximumNumberOfDocuments);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs, workflows, maximumNumberOfDocuments], () => {
+        const newValue: BenevolenceTypeBag = {
+            ...props.modelValue,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            showFinancialResults: showFinancialResults.value,
+            requestLavaTemplate: requestLavaTemplate.value,
+            maximumNumberOfDocuments: maximumNumberOfDocuments.value,
+            workflows: workflows.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

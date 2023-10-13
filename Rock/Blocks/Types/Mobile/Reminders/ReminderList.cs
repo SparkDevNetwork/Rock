@@ -132,7 +132,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             using ( var rockContext = new RockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
-                var personService = new PersonService( rockContext );
+                var personAliasService = new PersonAliasService( rockContext );
                 var reminders = reminderService.GetReminders( personGuid, entityTypeGuid, entityGuid, reminderTypeGuid );
 
                 // If this block was specified to only include certain reminder types, limit to those.
@@ -196,7 +196,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
                 // We need some more data post query (such as a specific photo url generated based on the entity)
                 // so let's loop over our bags and populate those properties.
-                reminderBagList.ForEach( ( bag ) => PopulateAdditionalPropertiesForReminderInfoBag( bag, personService ) );
+                reminderBagList.ForEach( ( bag ) => PopulateAdditionalPropertiesForReminderInfoBag( bag, personAliasService ) );
 
                 return reminderBagList;
             }
@@ -206,19 +206,19 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// Populates the additional properties for reminder information bag.
         /// </summary>
         /// <param name="bag">The bag.</param>
-        /// <param name="personService">The person service.</param>
-        private void PopulateAdditionalPropertiesForReminderInfoBag( ReminderInfoBag bag, PersonService personService )
+        /// <param name="personAliasService">The person service.</param>
+        private void PopulateAdditionalPropertiesForReminderInfoBag( ReminderInfoBag bag, PersonAliasService personAliasService )
         {
             var entityType = EntityTypeCache.Get( bag.EntityTypeGuid );
 
             string name = "", path;
 
             // If this is a Person, use the Person properties.
-            if ( entityType != null && entityType.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid() )
+            if ( entityType != null && entityType.Guid == Rock.SystemGuid.EntityType.PERSON_ALIAS.AsGuid() )
             {
-                var person = personService.Get( bag.EntityGuid );
-                path = person.PhotoUrl;
-                name = person.FullName;
+                var personAlias = personAliasService.Get( bag.EntityGuid );
+                path = personAlias.Person.PhotoUrl;
+                name = personAlias.Person.FullName;
             }
             // Otherwise, use the first letter of the entity type.
             else

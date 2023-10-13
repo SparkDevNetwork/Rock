@@ -104,6 +104,9 @@ registerFieldType(FieldTypeGuids.ContentChannelTypes, new ContentChannelTypesFie
 import { ContentChannelsFieldType } from "./contentChannelsField.partial";
 registerFieldType(FieldTypeGuids.ContentChannels, new ContentChannelsFieldType());
 
+import { ConnectionActivityTypeField } from "./connectionActivityTypeField.partial";
+registerFieldType(FieldTypeGuids.ConnectionActivityType, new ConnectionActivityTypeField());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
@@ -157,6 +160,9 @@ registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldTy
 
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
+
+import { EntityFieldType } from "./entityField.partial";
+registerFieldType(FieldTypeGuids.Entity, new EntityFieldType());
 
 import { EntityTypeFieldType } from "./entityTypeField.partial";
 registerFieldType(FieldTypeGuids.Entitytype, new EntityTypeFieldType());
@@ -212,8 +218,17 @@ registerFieldType(FieldTypeGuids.Integer, new IntegerFieldType());
 import { IntegerRangeFieldType } from "./integerRangeField.partial";
 registerFieldType(FieldTypeGuids.IntegerRange, new IntegerRangeFieldType());
 
+import { InteractionChannelFieldType } from "./interactionChannelField.partial";
+registerFieldType(FieldTypeGuids.InteractionChannel, new InteractionChannelFieldType());
+
 import { KeyValueListFieldType } from "./keyValueListField.partial";
 registerFieldType(FieldTypeGuids.KeyValueList, new KeyValueListFieldType());
+
+import { LavaFieldType } from "./lavaField.partial";
+registerFieldType(FieldTypeGuids.Lava, new LavaFieldType());
+
+import { LavaCommandsFieldType } from "./lavaCommandsField.partial";
+registerFieldType(FieldTypeGuids.LavaCommands, new LavaCommandsFieldType());
 
 import { LocationListFieldType } from "./locationListField.partial";
 registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());

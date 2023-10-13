@@ -21,7 +21,7 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Core.LocationDetail
 {
     /// <summary>
-    /// 
+    /// Contains details of the location.
     /// </summary>
     /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class LocationBag : EntityBagBase
@@ -34,7 +34,7 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// <summary>
         /// Gets or sets the image identifier.
         /// </summary>
-        public int? ImageId { get; set; }
+        public ListItemBag Image { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.

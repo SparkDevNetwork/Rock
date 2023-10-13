@@ -28,7 +28,7 @@ using Rock.Web.UI.Controls;
 
 /*
  * 8/18/2022 - DSH
- * 
+ *
  * This field type persists values about the Location. It tracks all the different
  * properties that might change and will update if those change. However, addresses
  * get formatted by Lava. We could mark this field type as Volatile, but that could
@@ -81,6 +81,7 @@ namespace Rock.Field.Types
         public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             var guid = privateValue.AsGuidOrNull();
+            var partialAddress = privateValue.FromJsonOrNull<AddressFieldValue>();
             Location location = null;
 
             if ( guid.HasValue )
@@ -99,6 +100,10 @@ namespace Rock.Field.Types
                     PostalCode = location.PostalCode,
                     Country = location.Country
                 }.ToCamelCaseJson( false, true );
+            }
+            else if ( partialAddress != null )
+            {
+                return partialAddress.ToCamelCaseJson( false, true );
             }
             else
             {
@@ -135,20 +140,27 @@ namespace Rock.Field.Types
 
             using ( var rockContext = new RockContext() )
             {
-                var locationService = new LocationService( rockContext );
-                var location = locationService.Get( addressValue.Street1,
-                    addressValue.Street2,
-                    addressValue.City,
-                    addressValue.State,
-                    addressValue.PostalCode,
-                    addressValue.Country.IfEmpty( globalAttributesCache.OrganizationCountry ) );
-
-                if ( location == null )
+                try
                 {
-                    return string.Empty;
-                }
+                    var locationService = new LocationService( rockContext );
+                    var location = locationService.Get( addressValue.Street1,
+                        addressValue.Street2,
+                        addressValue.City,
+                        addressValue.State,
+                        addressValue.PostalCode,
+                        addressValue.Country.IfEmpty( globalAttributesCache.OrganizationCountry ) );
 
-                return location.Guid.ToString();
+                    if ( location == null )
+                    {
+                        return string.Empty;
+                    }
+
+                    return location.Guid.ToString();
+                }
+                catch ( Exception ex )
+                {
+                    return publicValue;
+                }
             }
         }
 
@@ -291,12 +303,11 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var dataEntryMode = configurationValues.GetConfigurationValueAsString( "DataEntryMode" ).ToLower();
-            
+
             var control = new AddressControl { ID = id };
             if ( dataEntryMode == "defaultvalue" )
             {
-                // If we are configuring the default value for this field,
-                // accept partial addresses.
+                // If we are configuring the default value for this field, accept partial addresses.
                 control.PartialAddressIsAllowed = true;
                 control.SetDefaultValues = false;
             }
