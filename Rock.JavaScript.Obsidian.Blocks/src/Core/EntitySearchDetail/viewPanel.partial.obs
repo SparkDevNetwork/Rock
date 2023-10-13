@@ -13,12 +13,12 @@
                 <ValueDetailList :modelValue="rightSideValues" />
             </div>
         </div>
-    
-</fieldset>
+
+    </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, PropType } from "vue";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
@@ -26,8 +26,8 @@
     import { EntitySearchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchDetailOptionsBag";
 
     const props = defineProps({
-    modelValue: {
-    type: Object as PropType<EntitySearchBag | null>,
+        modelValue: {
+            type: Object as PropType<EntitySearchBag | null>,
             required: false
         },
 
@@ -67,6 +67,14 @@
             return valueBuilder.build();
         }
 
+        if (props.modelValue.entityType?.text) {
+            valueBuilder.addTextValue("Entity Type", props.modelValue.entityType.text);
+        }
+
+        if (props.modelValue.key) {
+            valueBuilder.addTextValue("Key", props.modelValue.key);
+        }
+
         return valueBuilder.build();
     });
 
@@ -77,6 +85,10 @@
         if (!props.modelValue) {
             return valueBuilder.build();
         }
+
+        valueBuilder.addTextValue("Enforce Entity Security", props.modelValue.isEntitySecurityEnforced ? "Yes" : "No");
+
+        valueBuilder.addTextValue("Allow Query Refinement", props.modelValue.isRefinementAllowed ? "Yes" : "No");
 
         return valueBuilder.build();
     });

@@ -64,7 +64,8 @@
                           description="The expression that limits the items that will be included in the results."
                           toggleText="Enabled">
             <TextBox v-model="whereExpression"
-                     textMode="multiline" />
+                     textMode="multiline"
+                     :rows="8" />
         </SectionContainer>
 
         <SectionContainer v-model="isGroupByEnabled"
@@ -72,7 +73,8 @@
                           description="The expression defines how data should be grouped into aggregate information."
                           toggleText="Enabled">
             <TextBox v-model="groupByExpression"
-                     textMode="multiline" />
+                     textMode="multiline"
+                     :rows="8" />
         </SectionContainer>
 
         <SectionContainer v-model="isSelectEnabled"
@@ -80,15 +82,15 @@
                           description="The expression that specifies what properties are returned by the search."
                           toggleText="Enabled">
             <TextBox v-model="selectExpression"
-                     textMode="multiline" />
+                     textMode="multiline"
+                     :rows="8" />
         </SectionContainer>
 
         <SectionContainer v-model="isOrderByEnabled"
                           title="Ordering"
                           description="The list of properties that should be used to order the results."
                           toggleText="Enabled">
-            <TextBox v-model="whereExpression"
-                     textMode="multiline" />
+            <TextBox v-model="orderByExpression" />
         </SectionContainer>
     </fieldset>
 </template>
