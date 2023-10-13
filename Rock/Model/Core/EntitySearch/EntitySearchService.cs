@@ -115,44 +115,53 @@ namespace Rock.Model
             where TEntity : IEntity
         {
             var config = _parsingConfig;
-            int? takeCount = systemQuery.MaximumResultsPerQuery;
+            int? takeCount = systemQuery?.MaximumResultsPerQuery;
+            IQueryable resultQry;
 
             // Perform the system query elements.
-
-            if ( systemQuery.WhereExpression.IsNotNullOrWhiteSpace() )
+            if ( systemQuery != null )
             {
-                queryable = queryable.Where( config, systemQuery.WhereExpression );
-            }
-
-            if ( systemQuery.IsEntitySecurityEnforced )
-            {
-                if ( !typeof( ISecured ).IsAssignableFrom( typeof( TEntity ) ) )
+                if ( systemQuery.WhereExpression.IsNotNullOrWhiteSpace() )
                 {
-                    throw new Exception( $"Entity type '{typeof( TEntity ).FullName}' does not support security but enforcing security was specified." );
+                    queryable = queryable.Where( config, systemQuery.WhereExpression );
                 }
 
-                queryable = queryable.ToList()
-                    .Where( a => ( ( ISecured ) a ).IsAuthorized( Authorization.VIEW, null ) )
-                    .AsQueryable();
+                if ( systemQuery.IsEntitySecurityEnforced )
+                {
+                    if ( !typeof( ISecured ).IsAssignableFrom( typeof( TEntity ) ) )
+                    {
+                        throw new Exception( $"Entity type '{typeof( TEntity ).FullName}' does not support security but enforcing security was specified." );
+                    }
+
+                    queryable = queryable.ToList()
+                        .Where( a => ( ( ISecured ) a ).IsAuthorized( Authorization.VIEW, null ) )
+                        .AsQueryable();
+                }
+
+                // Switch to a generic IQueryable for dynamic LINQ since we don't
+                // know the structure of the .Select() call.
+                resultQry = queryable;
+
+                if ( systemQuery.GroupByExpression.IsNotNullOrWhiteSpace() )
+                {
+                    resultQry = resultQry.GroupBy( config, systemQuery.GroupByExpression );
+                }
+
+                if ( systemQuery.SelectExpression.IsNotNullOrWhiteSpace() )
+                {
+                    resultQry = resultQry.Select( config, systemQuery.SelectExpression );
+                }
+
+                if ( systemQuery.OrderByExpression.IsNotNullOrWhiteSpace() )
+                {
+                    resultQry = resultQry.OrderBy( config, systemQuery.OrderByExpression );
+                }
             }
-
-            // Switch to a generic IQueryable for dynamic LINQ since we don't
-            // know the structure of the .Select() call.
-            IQueryable resultQry = queryable;
-
-            if ( systemQuery.GroupByExpression.IsNotNullOrWhiteSpace() )
+            else
             {
-                resultQry = resultQry.GroupBy( config, systemQuery.GroupByExpression );
-            }
-
-            if ( systemQuery.SelectExpression.IsNotNullOrWhiteSpace() )
-            {
-                resultQry = resultQry.Select( config, systemQuery.SelectExpression );
-            }
-
-            if ( systemQuery.OrderByExpression.IsNotNullOrWhiteSpace() )
-            {
-                resultQry = resultQry.OrderBy( config, systemQuery.OrderByExpression );
+                // Switch to a generic IQueryable for dynamic LINQ since we don't
+                // know the structure of the .Select() call.
+                resultQry = queryable;
             }
 
             // Perform the user query elements.
