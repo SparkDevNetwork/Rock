@@ -104,6 +104,9 @@ registerFieldType(FieldTypeGuids.ContentChannelTypes, new ContentChannelTypesFie
 import { ContentChannelsFieldType } from "./contentChannelsField.partial";
 registerFieldType(FieldTypeGuids.ContentChannels, new ContentChannelsFieldType());
 
+import { ConnectionActivityTypeField } from "./connectionActivityTypeField.partial";
+registerFieldType(FieldTypeGuids.ConnectionActivityType, new ConnectionActivityTypeField());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
