@@ -2182,7 +2182,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "6BDA28C3-E6D7-42EB-9011-0C076455D4A7" )]
         public IHttpActionResult EntityPickerGetFieldTypeConfiguration( [FromBody] EntityPickerGetFieldTypeConfigurationOptionsBag options )
         {
-            if (options.EntityTypeGuid == null)
+            if ( options.EntityTypeGuid == null )
             {
                 return NotFound();
             }
@@ -4538,7 +4538,7 @@ namespace Rock.Rest.v2
                     if ( metricCategory != null )
                     {
                         // Swap the Id to the Metric Guid (instead of MetricCategory.Guid).
-                        categoryItem.Value = metricCategory.Guid.ToString();
+                        categoryItem.Value = metricCategory.Metric.Guid.ToString();
                     }
                 }
 
