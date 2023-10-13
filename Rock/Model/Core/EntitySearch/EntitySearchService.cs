@@ -15,12 +15,13 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 using Rock.Core;
 using Rock.Data;
@@ -194,30 +195,66 @@ namespace Rock.Model
                 resultQry = resultQry.Take( takeCount.Value );
             }
 
-            var hashPrefix = new Random().Next( ushort.MaxValue ).ToString( "X4" );
-            var visitedExpression = new IdKeyExpressionVisitor( hashPrefix ).Visit( resultQry.Expression );
+            // The key prefix is used to allow ProcessIdKeyForItem() method to
+            // find properties that should be hashed into IdKey values. The '\0'
+            // character is to help ensure an early out when doing comparisons.
+            // The reason we use a random hex value is to prevent injection attacks
+            // aimed and translating an arbitrary integer value into an IdKey value.
+            // i.e. Don't let the user do something like '{ "\058" as IdKey }' to
+            // translate 58 into the IdKey value. This is not a huge concern but it
+            // closes an attack vector at the cost of fractions of a millisecond.
+            var idKeyPrefix = $"\0{new Random().Next( ushort.MaxValue ):X4}-";
+            var visitedExpression = new IdKeyExpressionVisitor( idKeyPrefix ).Visit( resultQry.Expression );
 
             resultQry = resultQry.Provider.CreateQuery( visitedExpression );
 
             var results = resultQry.ToDynamicList();
 
             // Check if we need to translate any IdKey properties.
-            if ( results.Any() && results[0] is IDynamicMetaObjectProvider )
+            foreach ( var item in results )
             {
-                foreach ( var item in results )
-                {
-                    if ( item.idKey is string firstIdKeyStr && firstIdKeyStr.StartsWith( hashPrefix ) )
-                    {
-                        item.IdKey = IdHasher.Instance.GetHash( firstIdKeyStr.Substring( hashPrefix.Length ).AsInteger() );
-                    }
-                    else if ( item.IdKey is string secondIdKeyStr && secondIdKeyStr.StartsWith( hashPrefix ) )
-                    {
-                        item.IdKey = IdHasher.Instance.GetHash( secondIdKeyStr.Substring( hashPrefix.Length ).AsInteger() );
-                    }
-                }
+                ProcessIdKeyForItem( item, idKeyPrefix );
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Scans for any IdKey values that need to be translated from Id into IdKey.
+        /// </summary>
+        /// <param name="item">The object to be scanned and updated.</param>
+        /// <param name="idKeyPrefix">The prefix used to designate IdKey values.</param>
+        private static void ProcessIdKeyForItem( object item, string idKeyPrefix )
+        {
+            if ( item is DynamicClass dynamicItem )
+            {
+                var propertyNames = dynamicItem.GetDynamicMemberNames().ToList();
+
+                foreach ( var propertyName in propertyNames )
+                {
+                    var propertyValue = dynamicItem.GetDynamicPropertyValue( propertyName );
+
+                    // Check if this is an encoded IdKey value.
+                    if ( propertyValue is string strValue && strValue.StartsWith( idKeyPrefix ) )
+                    {
+                        dynamicItem.SetDynamicPropertyValue( propertyName, IdHasher.Instance.GetHash( strValue.Substring( idKeyPrefix.Length ).AsInteger() ) );
+                    }
+
+                    // Otherwise check if it is a child object to be scanned.
+                    else if ( propertyValue is DynamicClass || propertyValue is ICollection )
+                    {
+                        ProcessIdKeyForItem( propertyValue, idKeyPrefix );
+                    }
+                }
+            }
+            else if ( item is ICollection childItems )
+            {
+                // Scan each child object.
+                foreach ( var childItem in childItems )
+                {
+                    ProcessIdKeyForItem( childItem, idKeyPrefix );
+                }
+            }
         }
 
         /// <summary>
@@ -244,7 +281,18 @@ namespace Rock.Model
 
             var genericMethod = method.MakeGenericMethod( entityType );
 
-            return ( List<object> ) genericMethod.Invoke( null, new object[] { queryable, systemQuery, userQuery } );
+            try
+            {
+                return ( List<object> ) genericMethod.Invoke( null, new object[] { queryable, systemQuery, userQuery } );
+            }
+            catch ( TargetInvocationException ex )
+            {
+                // Throw the actual exception and preserve the stack trace.
+                ExceptionDispatchInfo.Capture( ex.InnerException ).Throw();
+
+                // This is never reached.
+                return new List<dynamic>();
+            }
         }
 
         /// <summary>
@@ -272,6 +320,9 @@ namespace Rock.Model
         /// </summary>
         internal class IdKeyExpressionVisitor : ExpressionVisitor
         {
+            /// <summary>
+            /// The prefix for IdKey property accessors.
+            /// </summary>
             private readonly string _idKeyPrefix;
 
             /// <summary>

@@ -24,6 +24,8 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.ViewModels.Core;
 
+using System.Web.Http.Results;
+
 #if WEBFORMS
 using System.Web.Http;
 
@@ -180,33 +182,43 @@ namespace Rock.Rest.v2.Models.Data
         [SystemGuid.RestActionGuid( "2568b739-a6c9-4d91-9bed-a3485c51954b" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query, string searchKey )
         {
-            var entityType = EntityTypeCache.Get<Group>();
-            var entitySearch = EntitySearchCache.GetByEntityTypeAndKey( entityType, searchKey );
-
-            if ( entitySearch == null )
+            try
             {
-                return NotFound(); // TODO: "Search key not found."
-            }
+                var entityType = EntityTypeCache.Get<Group>();
+                var entitySearch = EntitySearchCache.GetByEntityTypeAndKey( entityType, searchKey );
 
-            if ( !entitySearch.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-            {
-                return NotFound(); // TODO: Not authorized.
-            }
-
-            var results = EntitySearchService.GetSearchResults( entitySearch, query );
-
-            if ( _searchFormatter == null )
-            {
-                var formatter = Utility.ApiPickerJsonMediaTypeFormatter.CreateV2Formatter();
-                if ( formatter.SerializerSettings.ContractResolver is Newtonsoft.Json.Serialization.DefaultContractResolver defaultContractResolver )
+                if ( entitySearch == null )
                 {
-                    defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
+                    return NotFound(); // TODO: "Search key not found."
                 }
 
-                _searchFormatter = formatter;
-            }
+                if ( !entitySearch.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return NotFound(); // TODO: Not authorized.
+                }
 
-            return Content( HttpStatusCode.OK, results, _searchFormatter );
+                var results = EntitySearchService.GetSearchResults( entitySearch, query );
+
+                if ( _searchFormatter == null )
+                {
+                    var formatter = Utility.ApiPickerJsonMediaTypeFormatter.CreateV2Formatter();
+                    if ( formatter.SerializerSettings.ContractResolver is Newtonsoft.Json.Serialization.DefaultContractResolver defaultContractResolver )
+                    {
+                        defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
+                    }
+
+                    _searchFormatter = formatter;
+                }
+
+                return Content( HttpStatusCode.OK, results, _searchFormatter );
+            }
+            catch ( System.Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                var error = new HttpError( ex.Message );
+
+                return new NegotiatedContentResult<HttpError>( HttpStatusCode.InternalServerError, error, this );
+            }
         }
 
         private static System.Net.Http.Formatting.JsonMediaTypeFormatter _searchFormatter;
