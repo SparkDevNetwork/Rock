@@ -913,27 +913,27 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                return Ok( GetCampuses(options, rockContext) );
+                return Ok( GetCampuses( options, rockContext ) );
             }
         }
 
-        private List<CampusPickerItemBag> GetCampuses ( CampusPickerGetCampusesOptionsBag options, RockContext rockContext )
+        private List<CampusPickerItemBag> GetCampuses( CampusPickerGetCampusesOptionsBag options, RockContext rockContext )
         {
-                var items = new CampusService( rockContext )
-                    .Queryable()
-                    .OrderBy( f => f.Order )
-                    .ThenBy( f => f.Name )
-                    .Select( c => new CampusPickerItemBag
-                    {
-                        Value = c.Guid.ToString(),
-                        Text = c.Name,
-                        IsActive = c.IsActive ?? true,
-                        CampusStatus = c.CampusStatusValue.Guid,
-                        CampusType = c.CampusTypeValue.Guid
-                    } )
-                    .ToList();
+            var items = new CampusService( rockContext )
+                .Queryable()
+                .OrderBy( f => f.Order )
+                .ThenBy( f => f.Name )
+                .Select( c => new CampusPickerItemBag
+                {
+                    Value = c.Guid.ToString(),
+                    Text = c.Name,
+                    IsActive = c.IsActive ?? true,
+                    CampusStatus = c.CampusStatusValue.Guid,
+                    CampusType = c.CampusTypeValue.Guid
+                } )
+                .ToList();
 
-                return items;
+            return items;
         }
 
         #endregion
@@ -994,11 +994,11 @@ namespace Rock.Rest.v2
                     var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions() );
                     mergeFields.Add( "Account", account );
                     var accountAmountLabel = accountHeaderTemplate.ResolveMergeFields( mergeFields );
-                    items.Add(new CampusAccountAmountPickerGetAccountsResultItemBag
+                    items.Add( new CampusAccountAmountPickerGetAccountsResultItemBag
                     {
                         Name = accountAmountLabel,
                         Value = account.Guid,
-                        CampusAccounts = getCampusAccounts(account, campuses)
+                        CampusAccounts = getCampusAccounts( account, campuses )
                     } );
                 }
 
@@ -1006,11 +1006,11 @@ namespace Rock.Rest.v2
             }
         }
 
-        private Dictionary<Guid, ListItemBag> getCampusAccounts (FinancialAccount baseAccount, List<CampusCache> campuses)
+        private Dictionary<Guid, ListItemBag> getCampusAccounts( FinancialAccount baseAccount, List<CampusCache> campuses )
         {
             var results = new Dictionary<Guid, ListItemBag>();
 
-            foreach(var campus in campuses)
+            foreach ( var campus in campuses )
             {
                 results.Add( campus.Guid, GetBestMatchingAccountForCampusFromDisplayedAccount( campus.Id, baseAccount ) );
             }
@@ -1020,7 +1020,7 @@ namespace Rock.Rest.v2
 
         private ListItemBag GetBestMatchingAccountForCampusFromDisplayedAccount( int campusId, FinancialAccount baseAccount )
         {
-            if ( baseAccount.CampusId.HasValue && baseAccount.CampusId == campusId)
+            if ( baseAccount.CampusId.HasValue && baseAccount.CampusId == campusId )
             {
                 // displayed account is directly associated with selected campusId, so return it
                 return GetAccountListItemBag( baseAccount );
@@ -1042,7 +1042,7 @@ namespace Rock.Rest.v2
             }
         }
 
-        private ListItemBag GetAccountListItemBag(FinancialAccount account)
+        private ListItemBag GetAccountListItemBag( FinancialAccount account )
         {
             return new ListItemBag
             {
@@ -2190,7 +2190,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "6BDA28C3-E6D7-42EB-9011-0C076455D4A7" )]
         public IHttpActionResult EntityPickerGetFieldTypeConfiguration( [FromBody] EntityPickerGetFieldTypeConfigurationOptionsBag options )
         {
-            if (options.EntityTypeGuid == null)
+            if ( options.EntityTypeGuid == null )
             {
                 return NotFound();
             }
@@ -4558,7 +4558,7 @@ namespace Rock.Rest.v2
                     if ( metricCategory != null )
                     {
                         // Swap the Id to the Metric Guid (instead of MetricCategory.Guid).
-                        categoryItem.Value = metricCategory.Guid.ToString();
+                        categoryItem.Value = metricCategory.Metric.Guid.ToString();
                     }
                 }
 
@@ -4992,7 +4992,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "PhoneNumberBoxGetConfiguration" )]
         [Rock.SystemGuid.RestActionGuid( "2f15c4a2-92c7-4bd3-bf48-7eb11a644142" )]
-        public IHttpActionResult PhoneNumberBoxGetConfiguration([FromBody] PhoneNumberBoxGetConfigurationOptionsBag options )
+        public IHttpActionResult PhoneNumberBoxGetConfiguration( [FromBody] PhoneNumberBoxGetConfigurationOptionsBag options )
         {
             var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
