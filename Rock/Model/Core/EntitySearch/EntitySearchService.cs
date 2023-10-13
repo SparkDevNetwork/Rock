@@ -20,6 +20,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
+using System.Reflection;
 
 using Rock.Core;
 using Rock.Data;
@@ -193,7 +194,8 @@ namespace Rock.Model
                 resultQry = resultQry.Take( takeCount.Value );
             }
 
-            var visitedExpression = new IdKeyExpressionVisitor().Visit( resultQry.Expression );
+            var hashPrefix = new Random().Next( ushort.MaxValue ).ToString( "X4" );
+            var visitedExpression = new IdKeyExpressionVisitor( hashPrefix ).Visit( resultQry.Expression );
 
             resultQry = resultQry.Provider.CreateQuery( visitedExpression );
 
@@ -204,13 +206,13 @@ namespace Rock.Model
             {
                 foreach ( var item in results )
                 {
-                    if ( item.idKey is string && item.idKey.StartsWith( "##" ) )
+                    if ( item.idKey is string firstIdKeyStr && firstIdKeyStr.StartsWith( hashPrefix ) )
                     {
-                        item.IdKey = IdHasher.Instance.GetHash( item.idKey.Substring( 2 ).AsInteger() );
+                        item.IdKey = IdHasher.Instance.GetHash( firstIdKeyStr.Substring( hashPrefix.Length ).AsInteger() );
                     }
-                    else if ( item.IdKey is string && item.IdKey.StartsWith( "##" ) )
+                    else if ( item.IdKey is string secondIdKeyStr && secondIdKeyStr.StartsWith( hashPrefix ) )
                     {
-                        item.IdKey = IdHasher.Instance.GetHash( item.IdKey.Substring( 2 ).AsInteger() );
+                        item.IdKey = IdHasher.Instance.GetHash( secondIdKeyStr.Substring( hashPrefix.Length ).AsInteger() );
                     }
                 }
             }
@@ -270,6 +272,57 @@ namespace Rock.Model
         /// </summary>
         internal class IdKeyExpressionVisitor : ExpressionVisitor
         {
+            private readonly string _idKeyPrefix;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="IdKeyExpressionVisitor"/> class.
+            /// </summary>
+            /// <param name="idKeyPrefix">The IdKey prefix to use when rewriting select statements.</param>
+            public IdKeyExpressionVisitor( string idKeyPrefix )
+            {
+                _idKeyPrefix = idKeyPrefix;
+            }
+
+            /// <inheritdoc/>
+            protected override MemberAssignment VisitMemberAssignment( MemberAssignment node )
+            {
+                if ( IsIdKeyMember( node.Expression, out var idKeyExpression ) )
+                {
+                    // At this point in the code, we are processing an expression
+                    // designed to assign some member the value of IEntity.IdKey.
+                    // But that doesn't actually exist in the database so we have
+                    // to fake it. We are going to do that by effectively doing:
+                    // x = _idKeyPrefix + Id
+                    //
+                    // The first thing we need to do is convert the Id column to
+                    // a string value. Then we need to combine the prefix text
+                    // with the converted Id value. Later, when instantiating the
+                    // results, another piece of code will handle translating these
+                    // values into hashed IdKey values.
+
+                    // Convert the Id column into a string.
+                    var idExpression = Expression.Property( idKeyExpression.Expression, nameof( IEntity.Id ) );
+                    var idStringExpression = Expression.Call( idExpression, typeof( object ).GetMethod( "ToString" ) );
+
+                    // Get the prefix value. This seems excessive since we could
+                    // just do Expression.Constant( _idKeyPrefix ) and get the
+                    // result data - but it is actually much slower to do it that
+                    // way. On the order of an extra 20ms. Don't ask me why, I
+                    // don't understand the difference. But doing it this way is
+                    // also the way C# LINQ would build the expression so we
+                    // will follow suite.
+                    var prefixMember = Expression.MakeMemberAccess( Expression.Constant( this ), this.GetType().GetField( nameof( _idKeyPrefix ), BindingFlags.NonPublic | BindingFlags.Instance ) );
+
+                    // Create a new string that concatenates the prefix and the Id.
+                    var strConcatMethod = typeof( string ).GetMethod( "Concat", new[] { typeof( string ), typeof( string ) } );
+                    var idEncodedExpression = Expression.Add( prefixMember, idStringExpression, strConcatMethod );
+
+                    return node.Update( idEncodedExpression );
+                }
+
+                return base.VisitMemberAssignment( node );
+            }
+
             /// <inheritdoc/>
             protected override Expression VisitBinary( BinaryExpression node )
             {
@@ -279,10 +332,10 @@ namespace Rock.Model
                     return base.VisitBinary( node );
                 }
 
-                if ( IsIdKeyMember( node.Left ) )
+                if ( IsIdKeyMember( node.Left, out var idKeyExpression ) )
                 {
-                    // This should never be the case, but this covers any strange things.
-                    if ( !( node.Left is MemberExpression idKeyExpression ) || idKeyExpression.Expression == null || !( node.Right is ConstantExpression constantExpression ) )
+                    // Make sure we are doing a comparison we can handle.
+                    if ( !( node.Right is ConstantExpression constantExpression ) )
                     {
                         return base.VisitBinary( node );
                     }
@@ -296,10 +349,10 @@ namespace Rock.Model
                         : Expression.NotEqual( memberExpression, Expression.Constant( id ) );
                 }
 
-                if ( IsIdKeyMember( node.Right ) && node.Left is ConstantExpression )
+                if ( IsIdKeyMember( node.Right, out idKeyExpression ) )
                 {
-                    // This should never be the case, but this covers any strange things.
-                    if ( !( node.Right is MemberExpression idKeyExpression ) || idKeyExpression.Expression == null || !( node.Left is ConstantExpression constantExpression ) )
+                    // Make sure we are doing a comparison we can handle.
+                    if ( !( node.Left is ConstantExpression constantExpression ) )
                     {
                         return base.VisitBinary( node );
                     }
@@ -320,10 +373,13 @@ namespace Rock.Model
             /// Determines if the expression is one that accesses the IdKey property.
             /// </summary>
             /// <param name="expression">The expression to be checked.</param>
+            /// <param name="memberExpression">Contains the expression cast as a member expression if return value is <c>true</c>.</param>
             /// <returns><c>true</c> if the expresion matches the expected pattern; <c>false</c> otherwise.</returns>
-            private static bool IsIdKeyMember( Expression expression )
+            private static bool IsIdKeyMember( Expression expression, out MemberExpression memberExpression )
             {
-                return expression is MemberExpression memberExpression
+                memberExpression = expression as MemberExpression;
+
+                return memberExpression != null
                     && typeof( IEntity ).IsAssignableFrom( memberExpression.Member.ReflectedType )
                     && memberExpression.Member.Name == nameof( IEntity.IdKey );
             }
