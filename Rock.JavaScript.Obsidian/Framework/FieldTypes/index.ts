@@ -296,6 +296,9 @@ registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
 import { StreakTypeFieldType } from "./streakTypeField.partial";
 registerFieldType(FieldTypeGuids.StreakType, new StreakTypeFieldType());
 
+import { StructureContentEditorFieldType } from "./structureContentEditorField.partial";
+registerFieldType(FieldTypeGuids.StructureContentEditor, new StructureContentEditorFieldType());
+
 import { TextFieldType } from "./textField.partial";
 registerFieldType(FieldTypeGuids.Text, new TextFieldType());
 
