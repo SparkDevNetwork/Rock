@@ -86,7 +86,7 @@ import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
 import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
-import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
+import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
 import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox.obs";
 import TimePicker from "@Obsidian/Controls/timePicker.obs";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
@@ -1381,17 +1381,17 @@ const numberRangeBoxGallery = defineComponent({
 });
 
 /** Demonstrates a gender picker */
-const genderDropDownListGallery = defineComponent({
-    name: "GenderDropDownListGallery",
+const genderPickerGallery = defineComponent({
+    name: "GenderPickerGallery",
     components: {
         GalleryAndResult,
-        GenderDropDownList
+        GenderPicker
     },
     setup() {
         return {
             value: ref("1"),
-            importCode: getControlImportPath("genderDropDownList"),
-            exampleCode: `<GenderDropDownList label="Your Gender" v-model="value" />`
+            importCode: getControlImportPath("genderPicker"),
+            exampleCode: `<GenderPicker label="Your Gender" v-model="value" />`
         };
     },
     template: `
@@ -1400,7 +1400,7 @@ const genderDropDownListGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <GenderDropDownList label="Your Gender" v-model="value" />
+    <GenderPicker label="Your Gender" v-model="value" />
 
     <template #settings>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
@@ -8047,7 +8047,7 @@ const controlGalleryComponents: Record<string, Component> = [
     colorPickerGallery,
     numberBoxGallery,
     numberRangeBoxGallery,
-    genderDropDownListGallery,
+    genderPickerGallery,
     socialSecurityNumberBoxGallery,
     timePickerGallery,
     ratingGallery,

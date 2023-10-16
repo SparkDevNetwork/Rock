@@ -64,7 +64,17 @@ namespace Rock
                 person.UpdatePhoneNumber( numberTypeMobile.Id, bag.MobilePhoneCountryCode, bag.MobilePhoneNumber, messagingEnabled, isUnlisted, rockContext );
             } );
 
-            bag.IfValidProperty( nameof( bag.PersonBirthDate ), () => person.SetBirthDate( new DateTime( bag.PersonBirthDate.Year, bag.PersonBirthDate.Month, bag.PersonBirthDate.Day ) ) );
+            bag.IfValidProperty( nameof( bag.PersonBirthDate ), () =>
+            {
+                if ( bag.PersonBirthDate != null )
+                {
+                    person.SetBirthDate( new DateTime( bag.PersonBirthDate.Year, bag.PersonBirthDate.Month, bag.PersonBirthDate.Day ) );
+                }
+                else
+                {
+                    person.SetBirthDate( null );
+                }
+            } );
 
             bag.IfValidProperty( nameof( bag.PersonConnectionStatus ), () =>
             {
