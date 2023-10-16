@@ -87,7 +87,7 @@
     <Content Include="Framework\Controls\following.obs" />
     <Content Include="Framework\Controls\fullscreen.obs" />
     <Content Include="Framework\Controls\gatewayControl.obs" />
-    <Content Include="Framework\Controls\genderDropDownList.obs" />
+    <Content Include="Framework\Controls\genderPicker.obs" />
     <Content Include="Framework\Controls\gradePicker.obs" />
     <Content Include="Framework\Controls\groupAndRolePicker.obs" />
     <Content Include="Framework\Controls\groupMemberPicker.obs" />
