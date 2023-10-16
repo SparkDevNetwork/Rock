@@ -144,7 +144,8 @@ namespace Rock.Model
             where TEntity : IEntity
         {
             var config = _parsingConfig;
-            int? takeCount = systemQuery?.MaximumResultsPerQuery;
+            var takeCount = systemQuery?.MaximumResultsPerQuery;
+            var isRefinementAllowed = systemQuery?.IsRefinementAllowed != false;
             IQueryable resultQry;
 
             // Perform the system query elements.
@@ -205,28 +206,29 @@ namespace Rock.Model
 
             // Perform the user query elements.
 
-            if ( systemQuery?.IsRefinementAllowed != false && userQuery != null )
+            if ( userQuery != null )
             {
-                if ( userQuery.Where.IsNotNullOrWhiteSpace() )
+                if ( isRefinementAllowed && userQuery.Where.IsNotNullOrWhiteSpace() )
                 {
                     resultQry = resultQry.Where( config, userQuery.Where );
                 }
 
-                if ( userQuery.GroupBy.IsNotNullOrWhiteSpace() )
+                if ( isRefinementAllowed && userQuery.GroupBy.IsNotNullOrWhiteSpace() )
                 {
                     resultQry = resultQry.GroupBy( config, userQuery.GroupBy );
                 }
 
-                if ( userQuery.Select.IsNotNullOrWhiteSpace() )
+                if ( isRefinementAllowed && userQuery.Select.IsNotNullOrWhiteSpace() )
                 {
                     resultQry = resultQry.Select( config, userQuery.Select );
                 }
 
-                if ( userQuery.OrderBy.IsNotNullOrWhiteSpace() )
+                if ( isRefinementAllowed && userQuery.OrderBy.IsNotNullOrWhiteSpace() )
                 {
                     resultQry = resultQry.OrderBy( config, userQuery.OrderBy );
                 }
 
+                // Skip and Take are always allowed.
                 if ( userQuery.Skip.HasValue )
                 {
                     resultQry = resultQry.Skip( userQuery.Skip.Value );
@@ -241,6 +243,15 @@ namespace Rock.Model
             if ( takeCount.HasValue )
             {
                 resultQry = resultQry.Take( takeCount.Value );
+            }
+
+            // If they only want the count then just return that.
+            if ( userQuery?.IsCountOnly == true )
+            {
+                return new EntitySearchResultsBag
+                {
+                    Count = resultQry.Count()
+                };
             }
 
             // The key prefix is used to allow ProcessIdKeyForItem() method to
@@ -268,6 +279,7 @@ namespace Rock.Model
 
             return new EntitySearchResultsBag
             {
+                Count = results.Count,
                 Items = results
             };
         }

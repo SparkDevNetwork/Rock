@@ -24,6 +24,12 @@ namespace Rock.ViewModels.Core
     public class EntitySearchResultsBag
     {
         /// <summary>
+        /// Gets or sets the number of items in this result.
+        /// </summary>
+        /// <value>The number of items in this result.</value>
+        public int Count { get; set; }
+
+        /// <summary>
         /// Gets or sets the set of objects that matched the query.
         /// </summary>
         /// <value>The set of objects that matched the query.</value>

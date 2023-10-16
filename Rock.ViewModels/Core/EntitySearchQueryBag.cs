@@ -63,5 +63,12 @@ namespace Rock.ViewModels.Core
         /// </summary>
         /// <value>An optional <see cref="int"/> that specifies the number of results to include.</value>
         public int? Take { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether only the number of matching
+        /// items should be returned.
+        /// </summary>
+        /// <value><c>true</c> if this query only wants the count; otherwise, <c>false</c>.</value>
+        public bool IsCountOnly { get; set; }
     }
 }
