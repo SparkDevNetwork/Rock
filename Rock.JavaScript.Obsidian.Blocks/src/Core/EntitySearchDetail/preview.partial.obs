@@ -1,0 +1,86 @@
+<template>
+    <Modal v-model="isModalVisible" title="Preview Search Results">
+        <NotificationBox v-if="errorMessage" alertType="warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <LoadingIndicator v-else-if="isLoading" />
+
+        <div v-else v-html="previewContent" class="preview-content"></div>
+    </Modal>
+</template>
+
+<style scoped>
+.preview-content {
+    white-space: pre-wrap;
+    max-height: 400px;
+    overflow-y: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import HighlightJs from "@Obsidian/Libs/highlightJs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntitySearchBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchBag";
+    import { EntitySearchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchDetailOptionsBag";
+    import { EntitySearchResultsBag } from "@Obsidian/ViewModels/Core/entitySearchResultsBag";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { Ref, ref } from "vue";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const isModalVisible = ref(false);
+    const isLoading = ref(false);
+    const errorMessage = ref("");
+    const previewContent = ref("");
+    let cancellationToken: Ref<boolean> | undefined;
+
+    defineExpose({
+        showPreview
+    });
+
+    /**
+     * Shows the preview modal and begins a request to get the preview results.
+     *
+     * @param data The data to send to the server that contains the current query values.
+     */
+    async function showPreview(data: DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag>): Promise<void> {
+        isModalVisible.value = true;
+        isLoading.value = true;
+        errorMessage.value = "";
+        previewContent.value = "";
+
+        // Cancel any previous preview request.
+        if (cancellationToken) {
+            cancellationToken.value = true;
+        }
+
+        const token = ref(false);
+        cancellationToken = token;
+
+        const result = await invokeBlockAction<EntitySearchResultsBag>("Preview", {
+            box: data
+        });
+
+        // Check if we have been cancelled.
+        if (token.value) {
+            return;
+        }
+
+        isLoading.value = false;
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && Array.isArray(result.data.items)) {
+                previewContent.value = HighlightJs.highlight(JSON.stringify(result.data.items, undefined, 2), {
+                    language: "json"
+                })?.value;
+
+                return;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to preview search results.";
+    }
+</script>

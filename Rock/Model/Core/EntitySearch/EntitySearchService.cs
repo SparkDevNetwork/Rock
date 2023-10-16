@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
@@ -39,6 +40,9 @@ namespace Rock.Model
     {
         #region Fields
 
+        /// <summary>
+        /// The parsing configuration for dynamic LINQ library.
+        /// </summary>
         private readonly static ParsingConfig _parsingConfig = new ParsingConfig
         {
             DisableMemberAccessToIndexAccessorFallback = true
@@ -55,7 +59,7 @@ namespace Rock.Model
         /// <param name="userQuery">The additional user query details.</param>
         /// <param name="currentPerson">The person that is requesting execution of the query.</param>
         /// <returns>A list of dynamic objects that represents the results.</returns>
-        public static List<dynamic> GetSearchResults( EntitySearchCache entitySearch, EntitySearchQueryBag userQuery, Person currentPerson )
+        public static EntitySearchResultsBag GetSearchResults( EntitySearchCache entitySearch, EntitySearchQueryBag userQuery, Person currentPerson )
         {
             var entityType = entitySearch.EntityType.GetEntityType()
                 ?? throw new Exception( $"Entity type {entitySearch.EntityType.Name} was not found." );
@@ -86,7 +90,7 @@ namespace Rock.Model
         /// <param name="userQuery">The additional user query details.</param>
         /// <param name="currentPerson">The person that is requesting execution of the query.</param>
         /// <returns>A list of dynamic objects that represents the results.</returns>
-        public static List<dynamic> GetSearchResults( EntitySearch entitySearch, EntitySearchQueryBag userQuery, Person currentPerson )
+        public static EntitySearchResultsBag GetSearchResults( EntitySearch entitySearch, EntitySearchQueryBag userQuery, Person currentPerson )
         {
             var entityType = EntityTypeCache.Get( entitySearch.EntityTypeId )?.GetEntityType()
                 ?? throw new Exception( $"Entity type {entitySearch.EntityType.Name} was not found." );
@@ -119,7 +123,7 @@ namespace Rock.Model
         /// <param name="systemQuery">The system query definition.</param>
         /// <param name="userQuery">The additional user query details.</param>
         /// <returns>A list of dynamic objects that represents the results.</returns>
-        internal static List<dynamic> GetSearchResultsInternal<TEntity>( IQueryable<TEntity> queryable, EntitySearchSystemQuery systemQuery, EntitySearchQueryBag userQuery )
+        internal static EntitySearchResultsBag GetSearchResultsInternal<TEntity>( IQueryable<TEntity> queryable, EntitySearchSystemQuery systemQuery, EntitySearchQueryBag userQuery )
             where TEntity : IEntity
         {
             var config = _parsingConfig;
@@ -231,19 +235,24 @@ namespace Rock.Model
             // translate 58 into the IdKey value. This is not a huge concern but it
             // closes an attack vector at the cost of fractions of a millisecond.
             var idKeyPrefix = $"\0{new Random().Next( ushort.MaxValue ):X4}-";
-            var visitedExpression = new IdKeyExpressionVisitor( idKeyPrefix ).Visit( resultQry.Expression );
 
+            // Create a new expression that converts IdKey accessors into simple Id
+            // accessors with the prefix so we can decode them later.
+            var visitedExpression = new IdKeyExpressionVisitor( idKeyPrefix ).Visit( resultQry.Expression );
             resultQry = resultQry.Provider.CreateQuery( visitedExpression );
 
             var results = resultQry.ToDynamicList();
 
-            // Check if we need to translate any IdKey properties.
+            // Do final translation of the results.
             foreach ( var item in results )
             {
                 ProcessResultItem( item, idKeyPrefix );
             }
 
-            return results;
+            return new EntitySearchResultsBag
+            {
+                Items = results
+            };
         }
 
         /// <summary>
@@ -337,7 +346,7 @@ namespace Rock.Model
         /// <param name="userQuery">The additional user query details.</param>
         /// <param name="rockContext">The database context to search in.</param>
         /// <returns>A list of dynamic objects that represents the results.</returns>
-        private static List<dynamic> GetSearchResults( Type entityType, EntitySearchSystemQuery systemQuery, EntitySearchQueryBag userQuery, RockContext rockContext )
+        private static EntitySearchResultsBag GetSearchResults( Type entityType, EntitySearchSystemQuery systemQuery, EntitySearchQueryBag userQuery, RockContext rockContext )
         {
             if ( !typeof( IEntity ).IsAssignableFrom( entityType ) )
             {
@@ -354,7 +363,7 @@ namespace Rock.Model
 
             try
             {
-                return ( List<object> ) genericMethod.Invoke( null, new object[] { queryable, systemQuery, userQuery } );
+                return ( EntitySearchResultsBag ) genericMethod.Invoke( null, new object[] { queryable, systemQuery, userQuery } );
             }
             catch ( TargetInvocationException ex )
             {
@@ -362,7 +371,7 @@ namespace Rock.Model
                 ExceptionDispatchInfo.Capture( ex.InnerException ).Throw();
 
                 // This is never reached.
-                return new List<dynamic>();
+                return new EntitySearchResultsBag();
             }
         }
 
@@ -375,7 +384,7 @@ namespace Rock.Model
         /// <param name="userQuery">The additional user query details.</param>
         /// <param name="rockContext">The database context to search in.</param>
         /// <returns>A list of dynamic objects that represents the results.</returns>
-        private static List<dynamic> GetSearchResults<TEntity>( EntitySearchSystemQuery systemQuery, EntitySearchQueryBag userQuery, RockContext rockContext )
+        private static EntitySearchResultsBag GetSearchResults<TEntity>( EntitySearchSystemQuery systemQuery, EntitySearchQueryBag userQuery, RockContext rockContext )
             where TEntity : IEntity
         {
             var queryable = Reflection.GetQueryableForEntityType( typeof( TEntity ), rockContext )

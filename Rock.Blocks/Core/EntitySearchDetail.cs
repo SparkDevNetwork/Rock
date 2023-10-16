@@ -550,9 +550,9 @@ namespace Rock.Blocks.Core
                 }
 
                 // Never show more than 100 items for a preview.
-                if ( !entity.MaximumResultsPerQuery.HasValue || entity.MaximumResultsPerQuery.Value > 100 )
+                if ( !entity.MaximumResultsPerQuery.HasValue || entity.MaximumResultsPerQuery.Value > 10 )
                 {
-                    entity.MaximumResultsPerQuery = 100;
+                    entity.MaximumResultsPerQuery = 10;
                 }
 
                 var results = EntitySearchService.GetSearchResults( entity, null, RequestContext.CurrentPerson );

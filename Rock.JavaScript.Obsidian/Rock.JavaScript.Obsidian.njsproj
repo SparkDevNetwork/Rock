@@ -1090,6 +1090,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\entitySearchQueryBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\timeIntervalBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\entitySearchResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\attributeFieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customColumnDefinitionBag.d.ts" />

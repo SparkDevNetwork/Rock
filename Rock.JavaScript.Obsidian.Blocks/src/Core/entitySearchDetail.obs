@@ -39,10 +39,12 @@
             <hr />
         </template>
     </DetailBlock>
+
+    <Preview ref="previewComponent" />
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, shallowRef } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -50,11 +52,13 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./EntitySearchDetail/editPanel.partial.obs";
     import ViewPanel from "./EntitySearchDetail/viewPanel.partial.obs";
+    import Preview from "./EntitySearchDetail/preview.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntitySearchBagAdditions, NavigationUrlKey } from "./EntitySearchDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { EntitySearchBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchBag";
     import { EntitySearchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchDetailOptionsBag";
+    import HighlightJs from "@Obsidian/Libs/highlightJs";
 
     const config = useConfigurationValues<DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -71,6 +75,7 @@
     const entityTypeGuid = EntityType.EntitySearch;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+    const previewComponent = shallowRef<InstanceType<typeof Preview>>();
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
@@ -299,19 +304,7 @@
             validProperties: validProperties
         };
 
-        const result = await invokeBlockAction<EntitySearchBag | string>("Preview", {
-            box: data
-        });
-
-        if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && Array.isArray(result.data)) {
-                console.log(result.data);
-
-                return;
-            }
-        }
-
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save entity search.";
+        previewComponent.value?.showPreview(data);
     }
 
     // #endregion

@@ -581,7 +581,7 @@ namespace Rock.Rest
                     defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
                 }
 
-                return new FormattedContentResult<object>( HttpStatusCode.OK, results, formatter, null, _controller );
+                return new FormattedContentResult<EntitySearchResultsBag>( HttpStatusCode.OK, results, formatter, null, _controller );
             }
             catch ( System.Exception ex )
             {
