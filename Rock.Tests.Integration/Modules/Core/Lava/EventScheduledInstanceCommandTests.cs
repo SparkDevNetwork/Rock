@@ -20,7 +20,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Tests.Integration.Events;
 using Rock.Tests.Shared;
+using static Rock.Tests.Integration.Events.EventsDataManager;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
@@ -51,7 +53,7 @@ namespace Rock.Tests.Integration.Core.Lava
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
-            TestDataHelper.Events.AddDataForRockSolidFinancesClass();
+            EventsDataManager.Instance.AddDataForRockSolidFinancesClass();
         }
 
         private string GetTestTemplate( string parameters )
@@ -218,19 +220,31 @@ namespace Rock.Tests.Integration.Core.Lava
 
             var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime, endDate, new TimeSpan(1,0,0) );
 
-            var createEventInfo = new TestDataHelper.Events.CreateEventItemActionArgs
+            var createEventInfo = new CreateEventItemActionArgs
             {
                 Guid = NewEventGuid.AsGuid(),
-                Schedule = schedule,
-                EventName = "Test Daily Event",
-                MeetingLocation = "Test Location"
+                Properties = new EventItemInfo
+                {
+                    Schedule = schedule,
+                    EventName = "Test Daily Event"
+                }
+            };
+            var createOccurrenceInfo = new CreateEventItemOccurrenceActionArgs
+            {
+                Properties = new EventItemOccurrenceInfo
+                {
+                    EventIdentifier = NewEventGuid,
+                    MeetingLocationDescription = "Test Location"
+                }
             };
 
-            TestDataHelper.Events.DeleteEventItem( NewEventGuid, rockContext );
+            var eventsManager = EventsDataManager.Instance;
+            eventsManager.DeleteEventItem( NewEventGuid, rockContext );
             rockContext.SaveChanges();
 
-            TestDataHelper.Events.CreateEventItem( createEventInfo, rockContext );
+            eventsManager.AddEventItem( createEventInfo );
             rockContext.SaveChanges();
+            eventsManager.AddEventItemOccurrence( createOccurrenceInfo );
 
             try
             {
@@ -262,7 +276,7 @@ namespace Rock.Tests.Integration.Core.Lava
             finally
             {
                 // Remove the test event so it does not interfere with other tests.
-                TestDataHelper.Events.DeleteEventItem( NewEventGuid, rockContext );
+                eventsManager.DeleteEventItem( NewEventGuid, rockContext );
                 rockContext.SaveChanges();
             }
         }
