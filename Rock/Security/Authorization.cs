@@ -734,9 +734,10 @@ namespace Rock.Security
         /// <param name="userName">Name of the user.</param>
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
-        private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool isImpersonated )
+        /// <param name="isTwoFactorAuthenticated">if set to <c>true</c> [is two-factor authenticated].</param>
+        private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool isImpersonated, bool isTwoFactorAuthenticated )
         {
-            return GetAuthCookie( userName, isPersisted, isImpersonated, FormsAuthentication.Timeout );
+            return GetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated, FormsAuthentication.Timeout );
         }
 
         /// <summary>
@@ -746,17 +747,20 @@ namespace Rock.Security
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
         /// <param name="expiresIn">The cookie expiration.</param>
-        private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool isImpersonated, TimeSpan expiresIn )
+        /// <param name="isTwoFactorAuthenticated">if set to <c>true</c> [is two-factor authenticated].</param>
+        private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool isImpersonated, bool isTwoFactorAuthenticated, TimeSpan expiresIn )
         {
+            var userData = new AuthenticationTicketUserData( isImpersonated, isTwoFactorAuthenticated );
+
             var ticket = new FormsAuthenticationTicket(
                 1,
                 userName,
                 RockInstanceConfig.SystemDateTime,
                 RockInstanceConfig.SystemDateTime.Add( expiresIn ),
                 isPersisted,
-                isImpersonated.ToString(),
+                userData.ToJson(),
                 FormsAuthentication.FormsCookiePath );
-
+            
             var authCookie = GetAuthCookie( GetCookieDomain(), FormsAuthentication.Encrypt( ticket ) );
 
             if ( ticket.IsPersistent )
@@ -776,7 +780,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static SimpleCookie GetSimpleAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
-            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated );
+            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated: false );
 
             if ( authCookie == null )
             {
@@ -792,14 +796,40 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Sets the auth cookie.
+        /// Gets the user data in an authentication ticket.
         /// </summary>
-        /// <param name="userName">Name of the user.</param>
-        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
-        /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
-        public static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated )
+        /// <param name="formsAuthenticationTicket">The forms authentication ticket.</param>
+        /// <returns>The user data.</returns>
+        internal static IAuthenticationTicketUserData GetUserData( FormsAuthenticationTicket formsAuthenticationTicket )
         {
-            SetAuthCookie( userName, isPersisted, isImpersonated, FormsAuthentication.Timeout );
+            if ( formsAuthenticationTicket == null )
+            {
+                return null;
+            }
+
+            var userData = formsAuthenticationTicket.UserData.FromJsonOrNull<AuthenticationTicketUserData>();
+
+            if ( userData != null )
+            {
+                return userData;
+            }
+
+            /*
+                10/19/2023 - JMH
+
+                If we are here, then the ticket's user data is not a JSON AuthenticationTicketUserData object.
+
+                The user data used to contain a stringified boolean value indicating whether the authenticated
+                user is impersonated.
+
+                Assuming the user data is in this old format, return a new AuthenticationTicketUserData object
+                and try to set the IsImpersonated property to the current ticket's user data value.
+
+                Reason: Two-Factor Authentication
+             */
+            return new AuthenticationTicketUserData(
+                isImpersonated: formsAuthenticationTicket.UserData?.ToString().ToLower() == "true",
+                isTwoFactorAuthenticated: false );
         }
 
         /// <summary>
@@ -808,15 +838,39 @@ namespace Rock.Security
         /// <param name="userName">Name of the user.</param>
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
-        /// <param name="expiresIn">The cookie expiration.</param>
-        internal static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated, TimeSpan expiresIn )
+        public static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
-            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated, expiresIn );
+            SetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated: false );
+        }
+
+        /// <summary>
+        /// Sets the auth cookie.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
+        /// <param name="isTwoFactorAuthenticated">if set to <c>true</c> [is two-factor authenticated].</param>
+        public static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated, bool isTwoFactorAuthenticated )
+        {
+            SetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated, FormsAuthentication.Timeout );
+        }
+
+        /// <summary>
+        /// Sets the auth cookie.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
+        /// <param name="isTwoFactorAuthenticated">if set to <c>true</c> [is two-factor authenticated].</param>
+        /// <param name="expiresIn">The cookie expiration.</param>
+        internal static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated, bool isTwoFactorAuthenticated, TimeSpan expiresIn )
+        {
+            var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated, expiresIn );
             RockPage.AddOrUpdateCookie( authCookie );
 
             // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly
             // when the user signs out.
-            if ( !authCookie.Domain.IsNotNullOrWhiteSpace() )
+            if ( authCookie.Domain.IsNullOrWhiteSpace() )
             {
                 return;
             }
@@ -1398,6 +1452,33 @@ namespace Rock.Security
         }
 
         #endregion
+
+        #region Private Helper Classes        
+
+        /// <summary>
+        /// User data in an authentication ticket.
+        /// </summary>
+        private class AuthenticationTicketUserData : IAuthenticationTicketUserData
+        {
+            /// <inheritdoc />
+            public bool IsImpersonated { get; }
+            
+            /// <inheritdoc />
+            public bool IsTwoFactorAuthenticated { get; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="AuthenticationTicketUserData"/> class.
+            /// </summary>
+            /// <param name="isImpersonated">if set to <c>true</c> then authenticated user is impersonated.</param>
+            /// <param name="isTwoFactorAuthenticated">if set to <c>true</c> then authenticated user is two-factor authenticated.</param>
+            public AuthenticationTicketUserData( bool isImpersonated, bool isTwoFactorAuthenticated )
+            {
+                this.IsImpersonated = isImpersonated;
+                this.IsTwoFactorAuthenticated = isTwoFactorAuthenticated;
+            }
+        }
+
+        #endregion
     }
 
     #region Helper Class/Struct
@@ -1647,6 +1728,28 @@ namespace Rock.Security
             GroupId = auth.GroupId;
             Order = auth.Order;
         }
+    }
+
+    /// <summary>
+    /// User data in an authentication ticket.
+    /// </summary>
+    internal interface IAuthenticationTicketUserData
+    {
+        /// <summary>
+        /// Gets a value indicating whether the authenticated individual is impersonated.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the authenticated individual is impersonated; otherwise, <c>false</c>.
+        /// </value>
+        bool IsImpersonated { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the authenticated individual is two-factor authenticated.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the authenticated individual is two-factor authenticated; otherwise, <c>false</c>.
+        /// </value>
+        bool IsTwoFactorAuthenticated { get; }
     }
 
     #endregion
