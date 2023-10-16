@@ -29,6 +29,12 @@ namespace Rock.ViewModels.Blocks.Core.EntitySearchDetail
         public double Duration { get; set; }
 
         /// <summary>
+        /// Gets or sets the number of queries generated to perform the search.
+        /// </summary>
+        /// <value>The query count.</value>
+        public int QueryCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the data returned by the query, encoded as a JSON string.
         /// </summary>
         /// <value>The data returned by the query.</value>

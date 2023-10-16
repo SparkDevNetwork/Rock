@@ -557,11 +557,16 @@ namespace Rock.Blocks.Core
 
                 var resultsBag = new PreviewResultsBag();
 
+                // Enable query count tracking so we can display it in the UI.
+                rockContext.QueryMetricDetailLevel = QueryMetricDetailLevel.Count;
+
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                var results = EntitySearchService.GetSearchResults( entity, null, RequestContext.CurrentPerson );
+                var results = EntitySearchService.GetSearchResults( entity, null, RequestContext.CurrentPerson, rockContext );
                 resultsBag.Data = Rock.Rest.Utility.BlockUtilities.ToV2ResponseJson( results.Items, true );
                 sw.Stop();
+
                 resultsBag.Duration = sw.Elapsed.TotalMilliseconds;
+                resultsBag.QueryCount = rockContext.QueryCount;
 
                 return ActionOk( resultsBag );
             }

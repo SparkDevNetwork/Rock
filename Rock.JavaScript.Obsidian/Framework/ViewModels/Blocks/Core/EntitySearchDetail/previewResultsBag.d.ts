@@ -28,4 +28,7 @@ export type PreviewResultsBag = {
 
     /** Gets or sets the duration of the query in milliseconds. */
     duration: number;
+
+    /** Gets or sets the number of queries generated to perform the search. */
+    queryCount: number;
 };

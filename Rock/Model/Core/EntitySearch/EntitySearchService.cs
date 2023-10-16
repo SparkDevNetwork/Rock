@@ -92,26 +92,43 @@ namespace Rock.Model
         /// <returns>A list of dynamic objects that represents the results.</returns>
         public static EntitySearchResultsBag GetSearchResults( EntitySearch entitySearch, EntitySearchQueryBag userQuery, Person currentPerson )
         {
+            using ( var rockContext = new RockContext() )
+            {
+                return GetSearchResults( entitySearch, userQuery, currentPerson, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Gets the search results for the search specified by the search object.
+        /// </summary>
+        /// <remarks>
+        /// This method only exists for the EntitySearchDetail block so it can get
+        /// query counts in preview mode.
+        /// </remarks>
+        /// <param name="entitySearch">The entity search definition.</param>
+        /// <param name="userQuery">The additional user query details.</param>
+        /// <param name="currentPerson">The person that is requesting execution of the query.</param>
+        /// <param name="rockContext">The database context.</param>
+        /// <returns>A list of dynamic objects that represents the results.</returns>
+        internal static EntitySearchResultsBag GetSearchResults( EntitySearch entitySearch, EntitySearchQueryBag userQuery, Person currentPerson, RockContext rockContext )
+        {
             var entityType = EntityTypeCache.Get( entitySearch.EntityTypeId )?.GetEntityType()
                 ?? throw new Exception( $"Entity type {entitySearch.EntityType.Name} was not found." );
 
-            using ( var rockContext = new RockContext() )
+            var systemQuery = new EntitySearchSystemQuery
             {
-                var systemQuery = new EntitySearchSystemQuery
-                {
-                    WhereExpression = entitySearch.WhereExpression,
-                    GroupByExpression = entitySearch.GroupByExpression,
-                    SelectExpression = entitySearch.SelectExpression,
-                    OrderByExpression = entitySearch.OrderByExpression,
-                    MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery,
-                    IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced,
-                    IncludePaths = entitySearch.IncludePaths,
-                    IsRefinementAllowed = entitySearch.IsRefinementAllowed,
-                    CurrentPerson = currentPerson
-                };
+                WhereExpression = entitySearch.WhereExpression,
+                GroupByExpression = entitySearch.GroupByExpression,
+                SelectExpression = entitySearch.SelectExpression,
+                OrderByExpression = entitySearch.OrderByExpression,
+                MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery,
+                IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced,
+                IncludePaths = entitySearch.IncludePaths,
+                IsRefinementAllowed = entitySearch.IsRefinementAllowed,
+                CurrentPerson = currentPerson
+            };
 
-                return GetSearchResults( entityType, systemQuery, userQuery, rockContext );
-            }
+            return GetSearchResults( entityType, systemQuery, userQuery, rockContext );
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
 <template>
-    <Modal v-model="isModalVisible" title="Preview Search Results">
+    <Modal v-model="isModalVisible" title="Preview Search Results" cancelText="Close">
         <NotificationBox v-if="errorMessage" alertType="warning">
             {{ errorMessage }}
         </NotificationBox>
@@ -7,8 +7,9 @@
         <LoadingIndicator v-else-if="isLoading" />
 
         <div v-else>
-            <div class="mb-2">
+            <div class="d-flex gap mb-2">
                 <span class="label" :class="durationClass">Duration: {{ asFormattedString(duration, 2) }}ms</span>
+                <span class="label" :class="queryCountClass">Query Count: {{ asFormattedString(queryCount, 0) }}</span>
             </div>
 
             <div v-html="previewContent" class="preview-content"></div>
@@ -43,6 +44,7 @@
     const errorMessage = ref("");
     const previewContent = ref("");
     const duration = ref(0);
+    const queryCount = ref(0);
     let cancellationToken: Ref<boolean> | undefined;
 
     defineExpose({
@@ -54,6 +56,18 @@
             return "label-success";
         }
         else if (duration.value < 250) {
+            return "label-warning";
+        }
+        else {
+            return "label-danger";
+        }
+    });
+
+    const queryCountClass = computed((): string => {
+        if (queryCount.value <= 1) {
+            return "label-success";
+        }
+        else if (queryCount.value < 25) {
             return "label-warning";
         }
         else {
@@ -95,6 +109,8 @@
             const json = JSON.stringify(JSON.parse(result.data.data), undefined, 2);
 
             duration.value = result.data.duration;
+            queryCount.value = result.data.queryCount;
+
             previewContent.value = HighlightJs.highlight(json, {
                 language: "json"
             })?.value;
