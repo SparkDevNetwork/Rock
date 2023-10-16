@@ -53,6 +53,11 @@ namespace Rock.ViewModels.Blocks.Core.EntitySearchDetail
         public bool IsEntitySecurityEnforced { get; set; }
 
         /// <summary>
+        /// Gets or sets the property paths to be included by Entity Framework.
+        /// </summary>
+        public string IncludePaths { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether search query will allow
         /// custom refinement options in the form of an additional user query.
         /// </summary>

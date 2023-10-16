@@ -27,8 +27,6 @@ namespace Rock.Web.Cache
     /// <summary>
     /// Cached representation of <see cref="Rock.Model.EntitySearch"/>.
     /// </summary>
-    [Serializable]
-    [DataContract]
     public class EntitySearchCache : ModelCache<EntitySearchCache, EntitySearch>
     {
         #region Properties
@@ -37,7 +35,6 @@ namespace Rock.Web.Cache
         /// Gets or sets the name of the search query.
         /// </summary>
         /// <value>A <see cref="string"/> that represents the name.</value>
-        [DataMember]
         public string Name { get; private set; }
 
         /// <summary>
@@ -45,7 +42,6 @@ namespace Rock.Web.Cache
         /// will be targeted by this search. This property is required.
         /// </summary>
         /// <value>An <see cref="int"/> representing the Id</value>
-        [DataMember]
         public int EntityTypeId { get; private set; }
 
         /// <summary>
@@ -55,21 +51,18 @@ namespace Rock.Web.Cache
         /// is required.
         /// </summary>
         /// <value>A <see cref="string"/> that represents the key.</value>
-        [DataMember]
         public string Key { get; private set; }
 
         /// <summary>
         /// Gets the text that describes the purpose of this search.
         /// </summary>
         /// <value>A <see cref="string"/> that describes the search.</value>
-        [DataMember]
         public string Description { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this search is active.
         /// </summary>
         /// <value><c>true</c> if this search is active; otherwise, <c>false</c>.</value>
-        [Required]
         public bool IsActive { get; private set; } = true;
 
         /// <summary>
@@ -115,11 +108,22 @@ namespace Rock.Web.Cache
         public bool IsEntitySecurityEnforced { get; private set; }
 
         /// <summary>
+        /// <para>
+        /// Gets the property paths to be included by Entity Framework.
+        /// This is only valid when <see cref="IsEntitySecurityEnforced"/> is <c>true</c>.
+        /// </para>
+        /// <para>
+        /// Example: <c>GroupType,Members.Person</c>
+        /// </para>
+        /// </summary>
+        /// <value>The property paths to include as a comma seperated list.</value>
+        public string IncludePaths { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether search query will allow
         /// custom refinement options in the form of an additional user query.
         /// </summary>
         /// <value><c>true</c> if this query allows refinement; otherwise, <c>false</c>.</value>
-        [DataMember]
         public bool IsRefinementAllowed { get; private set; }
 
         #endregion
@@ -162,6 +166,7 @@ namespace Rock.Web.Cache
             OrderByExpression = entitySearch.OrderByExpression;
             MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery;
             IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced;
+            IncludePaths = entitySearch.IncludePaths;
             IsRefinementAllowed = entitySearch.IsRefinementAllowed;
         }
 

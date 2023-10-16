@@ -78,6 +78,7 @@
         "description",
         "entityType",
         "groupByExpression",
+        "includePaths",
         "isActive",
         "isEntitySecurityEnforced",
         "isRefinementAllowed",

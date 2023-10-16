@@ -70,6 +70,18 @@ namespace Rock.Core
         public bool IsEntitySecurityEnforced { get; set; }
 
         /// <summary>
+        /// <para>
+        /// Gets or sets the property paths to be included by Entity Framework.
+        /// This is only valid when <see cref="IsEntitySecurityEnforced"/> is <c>true</c>.
+        /// </para>
+        /// <para>
+        /// Example: <c>GroupType,Members.Person</c>
+        /// </para>
+        /// </summary>
+        /// <value>The property paths to include as a comma seperated list.</value>
+        public string IncludePaths { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether search query will allow
         /// custom refinement options in the form of an additional user query.
         /// </summary>

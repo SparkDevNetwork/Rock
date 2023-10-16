@@ -47,6 +47,9 @@ export type EntitySearchBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
+    /** Gets or sets the property paths to be included by Entity Framework. */
+    includePaths?: string | null;
+
     /** Gets or sets a value indicating whether this search is active. */
     isActive: boolean;
 

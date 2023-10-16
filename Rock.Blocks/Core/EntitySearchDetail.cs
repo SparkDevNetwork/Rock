@@ -206,16 +206,12 @@ namespace Rock.Blocks.Core
                 IdKey = entity.IdKey,
                 Description = entity.Description,
                 EntityType = entity.EntityType.ToListItemBag(),
-                GroupByExpression = entity.GroupByExpression,
                 IsActive = entity.IsActive,
                 IsEntitySecurityEnforced = entity.IsEntitySecurityEnforced,
                 IsRefinementAllowed = entity.IsRefinementAllowed,
                 Key = entity.Key,
                 MaximumResultsPerQuery = entity.MaximumResultsPerQuery,
-                Name = entity.Name,
-                OrderByExpression = entity.OrderByExpression,
-                SelectExpression = entity.SelectExpression,
-                WhereExpression = entity.WhereExpression
+                Name = entity.Name
             };
         }
 
@@ -250,6 +246,12 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
+            bag.IncludePaths = entity.IncludePaths;
+            bag.GroupByExpression = entity.GroupByExpression;
+            bag.OrderByExpression = entity.OrderByExpression;
+            bag.SelectExpression = entity.SelectExpression;
+            bag.WhereExpression = entity.WhereExpression;
+
             return bag;
         }
 
@@ -281,6 +283,9 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Entity.IsEntitySecurityEnforced ),
                 () => entity.IsEntitySecurityEnforced = box.Entity.IsEntitySecurityEnforced );
+
+            box.IfValidProperty( nameof(box.Entity.IncludePaths ),
+                () => entity.IncludePaths = box.Entity.IncludePaths );
 
             box.IfValidProperty( nameof( box.Entity.IsRefinementAllowed ),
                 () => entity.IsRefinementAllowed = box.Entity.IsRefinementAllowed );

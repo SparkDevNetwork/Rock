@@ -70,6 +70,7 @@ namespace Rock.Model
                     OrderByExpression = entitySearch.OrderByExpression,
                     MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery,
                     IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced,
+                    IncludePaths = entitySearch.IncludePaths,
                     IsRefinementAllowed = entitySearch.IsRefinementAllowed,
                     CurrentPerson = currentPerson
                 };
@@ -100,6 +101,7 @@ namespace Rock.Model
                     OrderByExpression = entitySearch.OrderByExpression,
                     MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery,
                     IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced,
+                    IncludePaths = entitySearch.IncludePaths,
                     IsRefinementAllowed = entitySearch.IsRefinementAllowed,
                     CurrentPerson = currentPerson
                 };
@@ -137,6 +139,16 @@ namespace Rock.Model
                     if ( !typeof( ISecured ).IsAssignableFrom( typeof( TEntity ) ) )
                     {
                         throw new Exception( $"Entity type '{typeof( TEntity ).FullName}' does not support security but enforcing security was specified." );
+                    }
+
+                    if ( systemQuery.IncludePaths.IsNotNullOrWhiteSpace() )
+                    {
+                        var paths = systemQuery.IncludePaths.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+                        foreach ( var path in paths )
+                        {
+                            queryable = queryable.Include( path.Trim() );
+                        }
                     }
 
                     queryable = queryable.ToList()
@@ -228,18 +240,27 @@ namespace Rock.Model
             // Check if we need to translate any IdKey properties.
             foreach ( var item in results )
             {
-                ProcessIdKeyForItem( item, idKeyPrefix );
+                ProcessResultItem( item, idKeyPrefix );
             }
 
             return results;
         }
 
         /// <summary>
-        /// Scans for any IdKey values that need to be translated from Id into IdKey.
+        /// <para>
+        /// Performs post-query processing of the result item.
+        /// </para>
+        /// <para>
+        /// Scans for any IdKey values that need to be translated from Id
+        /// into IdKey.
+        /// </para>
+        /// <para>
+        /// Scans for IEnumerable arrays that are not ILists.
+        /// </para>
         /// </summary>
         /// <param name="item">The object to be scanned and updated.</param>
         /// <param name="idKeyPrefix">The prefix used to designate IdKey values.</param>
-        private static void ProcessIdKeyForItem( object item, string idKeyPrefix )
+        private static void ProcessResultItem( object item, string idKeyPrefix )
         {
             if ( item is DynamicClass dynamicItem )
             {
@@ -250,15 +271,29 @@ namespace Rock.Model
                     var propertyValue = dynamicItem.GetDynamicPropertyValue( propertyName );
 
                     // Check if this is an encoded IdKey value.
-                    if ( propertyValue is string strValue && strValue.StartsWith( idKeyPrefix ) )
+                    if ( propertyValue is string strValue )
                     {
-                        dynamicItem.SetDynamicPropertyValue( propertyName, IdHasher.Instance.GetHash( strValue.Substring( idKeyPrefix.Length ).AsInteger() ) );
+                        if ( strValue.StartsWith( idKeyPrefix ) )
+                        {
+                            dynamicItem.SetDynamicPropertyValue( propertyName, IdHasher.Instance.GetHash( strValue.Substring( idKeyPrefix.Length ).AsInteger() ) );
+                        }
+
+                        continue;
+                    }
+
+                    // Check if value is an enumerable but not a collection. If so then
+                    // convert it to a collection. This can happen when entity security
+                    // is enforced.
+                    if ( propertyValue is IEnumerable && !( propertyValue is ICollection ) )
+                    {
+                        propertyValue = ConvertEnumerableToList( propertyValue );
+                        dynamicItem.SetDynamicPropertyValue( propertyName, propertyValue );
                     }
 
                     // Otherwise check if it is a child object to be scanned.
-                    else if ( propertyValue is DynamicClass || propertyValue is ICollection )
+                    if ( propertyValue is DynamicClass || propertyValue is ICollection )
                     {
-                        ProcessIdKeyForItem( propertyValue, idKeyPrefix );
+                        ProcessResultItem( propertyValue, idKeyPrefix );
                     }
                 }
             }
@@ -267,9 +302,30 @@ namespace Rock.Model
                 // Scan each child object.
                 foreach ( var childItem in childItems )
                 {
-                    ProcessIdKeyForItem( childItem, idKeyPrefix );
+                    ProcessResultItem( childItem, idKeyPrefix );
                 }
             }
+        }
+
+        private static object ConvertEnumerableToList( object source )
+        {
+            var collectionType = source.GetType()
+                .GetInterfaces()
+                .FirstOrDefault( i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof( IEnumerable<> ) )
+                ?.GetGenericArguments()[0];
+
+            if ( collectionType == null )
+            {
+                throw new Exception( "Invalid enumerable type found in search results." );
+            }
+
+            var miCast = typeof( Enumerable ).GetMethod( nameof( Enumerable.Cast ) );
+            var miCastGeneric = miCast.MakeGenericMethod( collectionType );
+            var miToList = typeof( Enumerable ).GetMethod( nameof( Enumerable.ToList ) );
+            var miToListGeneric = miToList.MakeGenericMethod( collectionType );
+
+            var castValue = miCastGeneric.Invoke( null, new object[] { source } );
+            return miToListGeneric.Invoke( null, new object[] { castValue } );
         }
 
         /// <summary>

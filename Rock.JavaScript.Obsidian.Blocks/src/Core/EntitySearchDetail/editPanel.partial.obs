@@ -36,15 +36,24 @@
 
         <div class="row">
             <div class="col-md-6">
-                <NumberBox v-model="maximumResults"
-                           label="Maximum Results Per Query"
-                           help="The maximum number of results that can be returned by a single query." />
-            </div>
-
-            <div class="col-md-6">
                 <CheckBox v-model="isEntitySecurityEnforced"
                           label="Enforce Entity Security"
                           help="Uses entity security to further filter results. Enabling this will dramatically decrease performance as all entities must be loaded to check security." />
+            </div>
+
+            <div class="col-md-6">
+                <TextBox v-if="isEntitySecurityEnforced"
+                         v-model="includePaths"
+                         label="Include Paths"
+                         help="Defines the property paths that should be initially loaded. This should only specify navigation properties that are being used in the select statement." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <NumberBox v-model="maximumResults"
+                           label="Maximum Results Per Query"
+                           help="The maximum number of results that can be returned by a single query." />
             </div>
         </div>
 
@@ -133,6 +142,7 @@
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const maximumResults = propertyRef(props.modelValue.maximumResultsPerQuery ?? null, "MaximumResultsPerQuery");
     const isEntitySecurityEnforced = propertyRef(props.modelValue.isEntitySecurityEnforced, "IsEntitySecurityEnforced");
+    const includePaths = propertyRef(props.modelValue.includePaths ?? "", "IncludePaths");
     const isRefinementAllowed = propertyRef(props.modelValue.isRefinementAllowed, "IsRefinementAllowed");
     const whereExpression = propertyRef(props.modelValue.whereExpression ?? "", "WhereExpression");
     const isWhereEnabled = ref(props.modelValue.isWhereEnabled ?? !!whereExpression.value);
@@ -145,7 +155,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [name, isActive, entityType, key, description, maximumResults, isEntitySecurityEnforced, isRefinementAllowed, whereExpression, groupByExpression, selectExpression, orderByExpression];
+    const propRefs = [name, isActive, entityType, key, description, maximumResults, isEntitySecurityEnforced, includePaths, isRefinementAllowed, whereExpression, groupByExpression, selectExpression, orderByExpression];
 
     const keyRules: ValidationRule[] = [
         "required",
@@ -195,6 +205,7 @@
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(maximumResults, props.modelValue.maximumResultsPerQuery ?? null);
         updateRefValue(isEntitySecurityEnforced, props.modelValue.isEntitySecurityEnforced);
+        updateRefValue(includePaths, props.modelValue.includePaths ?? "");
         updateRefValue(isRefinementAllowed, props.modelValue.isRefinementAllowed);
         updateRefValue(whereExpression, props.modelValue.whereExpression ?? "");
         updateRefValue(isWhereEnabled, props.modelValue.isWhereEnabled ?? !!whereExpression.value);
@@ -218,6 +229,7 @@
             description: description.value,
             maximumResultsPerQuery: maximumResults.value,
             isEntitySecurityEnforced: isEntitySecurityEnforced.value,
+            includePaths: includePaths.value,
             isRefinementAllowed: isRefinementAllowed.value,
             whereExpression: whereExpression.value,
             isWhereEnabled: isWhereEnabled.value,
