@@ -20,6 +20,7 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
 using Rock.Constants;
@@ -55,6 +56,7 @@ namespace Rock.Field.Types
             var publicConfigurationValues = new Dictionary<string, string>( privateConfigurationValues );
             if ( usage == ConfigurationValueUsage.Configure )
             {
+                // Put all the entities under the to be displayed in EntityPicker Dropdown in the Attribute Configuration Modal.
                 publicConfigurationValues[ENTITY_TYPES] = new EntityTypeService( new RockContext() )
                     .GetEntities()
                     .OrderBy( e => e.FriendlyName )
@@ -62,19 +64,38 @@ namespace Rock.Field.Types
                     .ToList()
                     .Select( e => e.ToListItemBag() )
                     .ToCamelCaseJson( false, true );
+            }
 
-                var entityTypeName = publicConfigurationValues[ENTITY_TYPE_NAME_KEY];
-                var entityType = EntityTypeCache.Get( entityTypeName );
-                if ( entityType != null )
-                {
-                    publicConfigurationValues[ENTITY_TYPE_NAME_KEY] = entityType.Guid.ToString();
-                }
+            var entityTypeName = privateConfigurationValues.GetValueOrDefault( ENTITY_TYPE_NAME_KEY, None.IdValue );
+            var entityType = EntityTypeCache.Get( entityTypeName );
+            // The value of the Entity Type Name is set from either the Webforms or the Obsidian Attributes Configuration Modal.
+            // The Entity Type Name to represent NO_ENTITY could be either "0" or an empty string based on which modal it is set from.
+            // We are trying to cater to both as of now.
+            if ( !string.IsNullOrWhiteSpace( entityType?.Name ) && entityTypeName != None.IdValue )
+            {
+                publicConfigurationValues[ENTITY_TYPE_NAME_KEY] = entityType.Guid.ToString();
             }
 
             using ( var rockContext = new RockContext() )
             {
-                var entityTypeGuid = privateConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY );
-                if ( string.IsNullOrWhiteSpace( entityTypeGuid ) )
+                if ( !string.IsNullOrWhiteSpace( entityType?.Name ) && entityTypeName != None.IdValue )
+                {
+                    string qualifierColumn = publicConfigurationValues.GetValueOrDefault( QUALIFIER_COLUMN_KEY, string.Empty );
+                    string qualifierValue = publicConfigurationValues.GetValueOrDefault( QUALIFIER_VALUE_KEY, string.Empty );
+
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = new NoteTypeService( rockContext )
+                        .Get( entityType.Id, qualifierColumn, qualifierValue )
+                        .OrderBy( n => n.Name )
+                        .Select( n => new ListItemBag
+                        {
+                            Text = n.Name,
+                            Value = n.Guid.ToString().ToUpper()
+                        } )
+                        .ToList()
+                        .ToCamelCaseJson( false, true );
+                }
+                // Show all the notes types if no entity is specified.
+                else
                 {
                     publicConfigurationValues[VALUES_PUBLIC_KEY] = new NoteTypeService( rockContext )
                         .Queryable()
@@ -94,44 +115,31 @@ namespace Rock.Field.Types
                         } )
                         .ToCamelCaseJson( false, true );
                 }
-                else
-                {
-                    int entityTypeId = 0;
-                    string qualifierColumn = string.Empty;
-                    string qualifierValue = string.Empty;
-
-                    if ( privateConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
-                    {
-                        if ( !string.IsNullOrWhiteSpace( entityTypeGuid ) && entityTypeGuid != None.IdValue )
-                        {
-                            var entityType = EntityTypeCache.Get( entityTypeGuid.AsGuid() );
-                            if ( entityType != null )
-                            {
-                                entityTypeId = entityType.Id;
-                            }
-                        }
-                    }
-                    if ( publicConfigurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) )
-                    {
-                        qualifierColumn = publicConfigurationValues[QUALIFIER_COLUMN_KEY];
-                    }
-
-                    if ( publicConfigurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
-                    {
-                        qualifierValue = publicConfigurationValues[QUALIFIER_VALUE_KEY];
-                    }
-
-                    publicConfigurationValues[VALUES_PUBLIC_KEY] = new NoteTypeService( rockContext )
-                        .Get( entityTypeId, qualifierColumn, qualifierValue )
-                        .OrderBy( n => n.Name )
-                        .Select( n => new ListItemBag
-                        {
-                            Text = n.Name,
-                            Value = n.Guid.ToString().ToUpper()
-                        } ).ToCamelCaseJson( false, true );
-                }
             }
             return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = new Dictionary<string, string>( publicConfigurationValues );
+            // Remove the values which should not be stored in the database.
+            privateConfigurationValues.Remove( ENTITY_TYPES );
+            privateConfigurationValues.Remove( VALUES_PUBLIC_KEY );
+
+            privateConfigurationValues[ENTITY_TYPE_NAME_KEY] = string.Empty;
+            var entityTypeGuid = publicConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY );
+            if ( entityTypeGuid != null )
+            {
+                var entityType = EntityTypeCache.Get( entityTypeGuid.AsGuid() );
+
+                if ( !string.IsNullOrWhiteSpace( entityType?.Name ) && entityType.Name != None.IdValue )
+                {
+                    privateConfigurationValues[ENTITY_TYPE_NAME_KEY] = entityType.Name;
+                }
+            }
+
+            return privateConfigurationValues;
         }
 
         /// <inheritdoc/>

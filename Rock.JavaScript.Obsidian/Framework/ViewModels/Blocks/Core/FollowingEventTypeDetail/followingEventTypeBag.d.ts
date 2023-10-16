@@ -41,9 +41,6 @@ export type FollowingEventTypeBag = {
     /** Gets or sets the type of the event entity. */
     entityType?: ListItemBag | null;
 
-    /** Gets or sets the event MEF component identifier. */
-    entityTypeId?: number | null;
-
     /** Gets or sets the type of the followed entity. */
     followedEntityType?: ListItemBag | null;
 
