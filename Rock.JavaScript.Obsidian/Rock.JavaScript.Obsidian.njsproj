@@ -792,6 +792,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\EntitySearchDetail\entitySearchBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\EntitySearchDetail\entitySearchDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\EntitySearchDetail\previewResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\EntitySearchList\entitySearchListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\deleteNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\editNoteRequestBag.d.ts" />

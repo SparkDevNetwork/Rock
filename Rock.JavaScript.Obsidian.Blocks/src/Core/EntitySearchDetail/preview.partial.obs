@@ -6,7 +6,13 @@
 
         <LoadingIndicator v-else-if="isLoading" />
 
-        <div v-else v-html="previewContent" class="preview-content"></div>
+        <div v-else>
+            <div class="mb-2">
+                <span class="label" :class="durationClass">Duration: {{ asFormattedString(duration, 2) }}ms</span>
+            </div>
+
+            <div v-html="previewContent" class="preview-content"></div>
+        </div>
     </Modal>
 </template>
 
@@ -24,21 +30,35 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import HighlightJs from "@Obsidian/Libs/highlightJs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { EntitySearchBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchBag";
     import { EntitySearchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchDetailOptionsBag";
-    import { EntitySearchResultsBag } from "@Obsidian/ViewModels/Core/entitySearchResultsBag";
+    import { PreviewResultsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/previewResultsBag";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-    import { Ref, ref } from "vue";
+    import { Ref, computed, ref } from "vue";
 
     const invokeBlockAction = useInvokeBlockAction();
     const isModalVisible = ref(false);
     const isLoading = ref(false);
     const errorMessage = ref("");
     const previewContent = ref("");
+    const duration = ref(0);
     let cancellationToken: Ref<boolean> | undefined;
 
     defineExpose({
         showPreview
+    });
+
+    const durationClass = computed((): string => {
+        if (duration.value < 100) {
+            return "label-success";
+        }
+        else if (duration.value < 250) {
+            return "label-warning";
+        }
+        else {
+            return "label-danger";
+        }
     });
 
     /**
@@ -60,7 +80,7 @@
         const token = ref(false);
         cancellationToken = token;
 
-        const result = await invokeBlockAction<EntitySearchResultsBag>("Preview", {
+        const result = await invokeBlockAction<PreviewResultsBag>("Preview", {
             box: data
         });
 
@@ -71,14 +91,15 @@
 
         isLoading.value = false;
 
-        if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && Array.isArray(result.data.items)) {
-                previewContent.value = HighlightJs.highlight(JSON.stringify(result.data.items, undefined, 2), {
-                    language: "json"
-                })?.value;
+        if (result.isSuccess && result.data?.data) {
+            const json = JSON.stringify(JSON.parse(result.data.data), undefined, 2);
 
-                return;
-            }
+            duration.value = result.data.duration;
+            previewContent.value = HighlightJs.highlight(json, {
+                language: "json"
+            })?.value;
+
+            return;
         }
 
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to preview search results.";

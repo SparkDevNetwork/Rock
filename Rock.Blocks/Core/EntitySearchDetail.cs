@@ -549,15 +549,21 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( validationMessage );
                 }
 
-                // Never show more than 100 items for a preview.
+                // Never show more than 10 items for a preview.
                 if ( !entity.MaximumResultsPerQuery.HasValue || entity.MaximumResultsPerQuery.Value > 10 )
                 {
                     entity.MaximumResultsPerQuery = 10;
                 }
 
-                var results = EntitySearchService.GetSearchResults( entity, null, RequestContext.CurrentPerson );
+                var resultsBag = new PreviewResultsBag();
 
-                return ActionOk( results );
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var results = EntitySearchService.GetSearchResults( entity, null, RequestContext.CurrentPerson );
+                resultsBag.Data = Rock.Rest.Utility.BlockUtilities.ToV2ResponseJson( results.Items, true );
+                sw.Stop();
+                resultsBag.Duration = sw.Elapsed.TotalMilliseconds;
+
+                return ActionOk( resultsBag );
             }
         }
 

@@ -183,6 +183,7 @@
     <Compile Include="Utility\ExcludeNavigationPropertiesContractResolver.cs" />
     <Compile Include="ProducesResponseTypeAttribute.cs" />
     <Compile Include="Utility\RockMessageResponseContext.cs" />
+    <Compile Include="Utility\BlockUtilities.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\Models\Data\GroupsDataController.cs" />
     <Compile Include="v2\TvController.cs" />
