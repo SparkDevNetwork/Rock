@@ -66,12 +66,17 @@ namespace Rock.Core.EntitySearch
             var isRefinementAllowed = systemQuery?.IsRefinementAllowed != false;
             IQueryable resultQry;
 
+            var queryParameters = new Dictionary<string, object>
+            {
+                ["@CurrentPersonId"] = systemQuery?.CurrentPerson?.Id
+            };
+
             // Perform the system query elements.
             if ( systemQuery != null )
             {
                 if ( systemQuery.WhereExpression.IsNotNullOrWhiteSpace() )
                 {
-                    queryable = queryable.Where( config, systemQuery.WhereExpression );
+                    queryable = queryable.Where( config, systemQuery.WhereExpression, queryParameters );
                 }
 
                 if ( systemQuery.IsEntitySecurityEnforced )
@@ -102,21 +107,21 @@ namespace Rock.Core.EntitySearch
 
                 if ( systemQuery.GroupByExpression.IsNotNullOrWhiteSpace() )
                 {
-                    resultQry = resultQry.GroupBy( config, systemQuery.GroupByExpression );
+                    resultQry = resultQry.GroupBy( config, systemQuery.GroupByExpression, queryParameters );
                 }
 
                 if ( systemQuery.SelectManyExpression.IsNotNullOrWhiteSpace() )
                 {
-                    resultQry = resultQry.SelectMany( config, systemQuery.SelectManyExpression );
+                    resultQry = resultQry.SelectMany( config, systemQuery.SelectManyExpression, queryParameters );
                 }
                 else if ( systemQuery.SelectExpression.IsNotNullOrWhiteSpace() )
                 {
-                    resultQry = resultQry.Select( config, systemQuery.SelectExpression );
+                    resultQry = resultQry.Select( config, systemQuery.SelectExpression, queryParameters );
                 }
 
                 if ( systemQuery.OrderByExpression.IsNotNullOrWhiteSpace() )
                 {
-                    resultQry = resultQry.OrderBy( config, systemQuery.OrderByExpression );
+                    resultQry = resultQry.OrderBy( config, systemQuery.OrderByExpression, queryParameters );
                 }
             }
             else
@@ -132,26 +137,26 @@ namespace Rock.Core.EntitySearch
             {
                 if ( isRefinementAllowed && userQuery.Where.IsNotNullOrWhiteSpace() )
                 {
-                    resultQry = resultQry.Where( config, userQuery.Where );
+                    resultQry = resultQry.Where( config, userQuery.Where, queryParameters );
                 }
 
                 if ( isRefinementAllowed && userQuery.GroupBy.IsNotNullOrWhiteSpace() )
                 {
-                    resultQry = resultQry.GroupBy( config, userQuery.GroupBy );
+                    resultQry = resultQry.GroupBy( config, userQuery.GroupBy, queryParameters );
                 }
 
                 if ( isRefinementAllowed && userQuery.SelectMany.IsNotNullOrWhiteSpace() )
                 {
-                    resultQry = resultQry.SelectMany( config, userQuery.SelectMany );
+                    resultQry = resultQry.SelectMany( config, userQuery.SelectMany, queryParameters );
                 }
                 else if ( isRefinementAllowed && userQuery.Select.IsNotNullOrWhiteSpace() )
                 {
-                    resultQry = resultQry.Select( config, userQuery.Select );
+                    resultQry = resultQry.Select( config, userQuery.Select, queryParameters );
                 }
 
                 if ( isRefinementAllowed && userQuery.OrderBy.IsNotNullOrWhiteSpace() )
                 {
-                    resultQry = resultQry.OrderBy( config, userQuery.OrderBy );
+                    resultQry = resultQry.OrderBy( config, userQuery.OrderBy, queryParameters );
                 }
 
                 // Skip and Take are always allowed.
