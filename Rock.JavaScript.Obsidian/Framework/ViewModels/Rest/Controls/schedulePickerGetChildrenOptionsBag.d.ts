@@ -32,7 +32,7 @@ export type SchedulePickerGetChildrenOptionsBag = {
     includeInactiveItems: boolean;
 
     /** Whether to include schedules marked as private in the results. */
-    includePrivateItems: boolean;
+    includePublicItemsOnly: boolean;
 
     /**
      * The parent unique identifier whose children are to

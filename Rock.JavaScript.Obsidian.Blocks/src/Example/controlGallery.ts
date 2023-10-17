@@ -5992,7 +5992,6 @@ const schedulePickerGallery = defineComponent({
     setup() {
         return {
             multiple: ref(false),
-            includInactive: ref(false),
             showOnlyPublic: ref(false),
             value: ref(null),
             importCode: getControlImportPath("schedulePicker"),

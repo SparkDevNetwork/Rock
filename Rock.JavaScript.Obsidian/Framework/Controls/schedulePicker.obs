@@ -56,7 +56,7 @@
     function refreshItemProvider(): void {
         const provider = new ScheduleTreeItemProvider();
         provider.includeInactive = includeInactive.value;
-        provider.includePrivate = !props.showOnlyPublic;
+        provider.includePublicOnly = !props.showOnlyPublic;
         provider.securityGrantToken = securityGrantToken.value;
 
         itemProvider.value = provider;

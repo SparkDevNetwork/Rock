@@ -826,8 +826,8 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
     /** Whether to include inactive schedules in the results. */
     public includeInactive: boolean = false;
 
-    /** Whether to include inactive schedules in the results. */
-    public includePrivate: boolean = false;
+    /** Whether to exclude private schedules in the results. */
+    public includePublicOnly: boolean = false;
 
     /**
      * Gets the child items from the server.
@@ -840,7 +840,7 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
         const options: Partial<SchedulePickerGetChildrenOptionsBag> = {
             parentGuid,
             includeInactiveItems: this.includeInactive,
-            includePrivateItems: this.includePrivate,
+            includePublicItemsOnly: this.includePublicOnly,
             securityGrantToken: this.securityGrantToken,
         };
         const url = "/api/v2/Controls/SchedulePickerGetChildren";

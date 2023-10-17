@@ -5446,7 +5446,7 @@ namespace Rock.Rest.v2
                     SecurityGrant = grant
                 };
 
-                if ( !options.IncludePrivateItems )
+                if ( options.includePublicItemsOnly )
                 {
                     queryOptions.ItemFilterPropertyName = "IsPublic";
                     queryOptions.ItemFilterPropertyValue = true.ToTrueFalse();

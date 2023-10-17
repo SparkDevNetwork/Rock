@@ -39,7 +39,7 @@ namespace Rock.ViewModels.Rest.Controls
         /// <summary>
         /// Whether to include schedules marked as private in the results.
         /// </summary>
-        public bool IncludePrivateItems { get; set; } = false;
+        public bool includePublicItemsOnly { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the security grant token to use when performing
