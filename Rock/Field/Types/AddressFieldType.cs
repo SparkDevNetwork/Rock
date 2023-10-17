@@ -157,7 +157,7 @@ namespace Rock.Field.Types
 
                     return location.Guid.ToString();
                 }
-                catch ( Exception ex )
+                catch
                 {
                     return addressValue.ToJson() ?? string.Empty;
                 }
