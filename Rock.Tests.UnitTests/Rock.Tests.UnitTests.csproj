@@ -113,6 +113,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rock\Blocks\Mobile\Cms\DailyChallengeEntryTests.cs" />
+    <Compile Include="Rock\Core\EntitySearch\EntitySearchTests.cs" />
     <Compile Include="Rock\Field\Types\BooleanFieldTypeTests.cs" />
     <Compile Include="Rock\Field\Types\StructureContentEditorFieldTypeTests.cs" />
     <Compile Include="Rock\Lava\Filters\StructuredContentFilterTests.cs" />
