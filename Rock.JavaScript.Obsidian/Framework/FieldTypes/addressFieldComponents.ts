@@ -32,7 +32,7 @@ export const EditComponent = defineComponent({
         const internalValue = ref({} as AddressFieldValue);
 
         const disableFrontEndValidation = computed(() => props.dataEntryMode == "defaultValue");
-        const setDefaultValues = computed(() => props.dataEntryMode != "defaultValue");
+        const omitDefaultValues = computed(() => props.dataEntryMode == "defaultValue");
 
         watch(() => props.modelValue, () => {
             try {
@@ -47,17 +47,15 @@ export const EditComponent = defineComponent({
             emit("update:modelValue", JSON.stringify(internalValue.value));
         }, { deep: true });
 
-        console.log(JSON.stringify(props, null, 4));
-
         return {
             internalValue,
             disableFrontEndValidation,
-            setDefaultValues
+            omitDefaultValues
         };
     },
 
     template: `
-<AddressControl v-model="internalValue" :disableFrontEndValidation="disableFrontEndValidation" :setDefaultValues="setDefaultValues" />
+<AddressControl v-model="internalValue" :disableFrontEndValidation="disableFrontEndValidation" :omitDefaultValues="omitDefaultValues" />
 `
 });
 
