@@ -5446,6 +5446,12 @@ namespace Rock.Rest.v2
                     SecurityGrant = grant
                 };
 
+                if ( options.includePublicItemsOnly )
+                {
+                    queryOptions.ItemFilterPropertyName = "IsPublic";
+                    queryOptions.ItemFilterPropertyValue = true.ToTrueFalse();
+                }
+
                 var items = clientService.GetCategorizedTreeItems( queryOptions );
 
                 return Ok( items );

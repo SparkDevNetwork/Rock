@@ -5992,6 +5992,7 @@ const schedulePickerGallery = defineComponent({
     setup() {
         return {
             multiple: ref(false),
+            showOnlyPublic: ref(false),
             value: ref(null),
             importCode: getControlImportPath("schedulePicker"),
             exampleCode: `<SchedulePicker label="Schedule" v-model="value" :multiple="false" />`
@@ -6006,11 +6007,18 @@ const schedulePickerGallery = defineComponent({
 
     <SchedulePicker label="Schedule"
         v-model="value"
-        :multiple="multiple" />
+        :multiple="multiple"
+        :showOnlyPublic="showOnlyPublic" />
 
     <template #settings>
-
-        <CheckBox label="Multiple" v-model="multiple" />
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Limit to Public Only" v-model="showOnlyPublic" />
+            </div>
+        </div>
 
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
