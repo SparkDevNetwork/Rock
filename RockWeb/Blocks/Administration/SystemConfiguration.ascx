@@ -128,7 +128,18 @@
                     <div class="actions">
                         <Rock:BootstrapButton ID="btnSaveConfig" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSaveConfig_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="WebConfigSetting"></Rock:BootstrapButton>
                     </div>
+                </Rock:PanelWidget>
+                <Rock:PanelWidget ID="pwFamilyRules" runat="server" Title="Family Rules" Expanded="false">
+                    <Rock:NotificationBox ID="nbFamilyRulesMessage" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbBibleStrictSpouse" runat="server" Label="Bible Strict Spouse" Help="When unchecked, spouse rules are relaxed." />
+                            </div>
+                    </div>
+                    <div class="actions">
+                        <Rock:BootstrapButton ID="btnFamilyRules" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnFamilyRules_Click" Text="Save" DataLoadingText="Saving..." ></Rock:BootstrapButton>
+                    </div>
                 </Rock:PanelWidget>
             </div>
         </div>
