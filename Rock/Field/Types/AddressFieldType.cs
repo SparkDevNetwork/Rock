@@ -159,7 +159,7 @@ namespace Rock.Field.Types
                 }
                 catch ( Exception ex )
                 {
-                    return publicValue;
+                    return addressValue.ToJson() ?? string.Empty;
                 }
             }
         }

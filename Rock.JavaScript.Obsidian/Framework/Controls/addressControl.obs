@@ -90,10 +90,10 @@
             default: false
         },
 
-        /** If true, set automatically fill state and country fields with default values */
-        setDefaultValues: {
+        /** If false, set automatically fill state and country fields with default values if not provided in model value */
+        omitDefaultValues: {
             type: Boolean,
-            default: true
+            default: false
         },
 
         /**
