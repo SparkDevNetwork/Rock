@@ -250,6 +250,7 @@ namespace Rock.Blocks.Core
             bag.GroupByExpression = entity.GroupByExpression;
             bag.OrderByExpression = entity.OrderByExpression;
             bag.SelectExpression = entity.SelectExpression;
+            bag.SelectManyExpression = entity.SelectManyExpression;
             bag.WhereExpression = entity.WhereExpression;
 
             return bag;
@@ -304,6 +305,9 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Entity.SelectExpression ),
                 () => entity.SelectExpression = box.Entity.SelectExpression );
+
+            box.IfValidProperty( nameof( box.Entity.SelectManyExpression ),
+                () => entity.SelectManyExpression = box.Entity.SelectManyExpression );
 
             box.IfValidProperty( nameof( box.Entity.WhereExpression ),
                 () => entity.WhereExpression = box.Entity.WhereExpression );

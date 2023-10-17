@@ -23,6 +23,9 @@
 
 /** Contains the results of an entity search request. */
 export type EntitySearchResultsBag = {
+    /** Gets or sets the number of items in this result. */
+    count: number;
+
     /** Gets or sets the set of objects that matched the query. */
     items?: unknown[] | null;
 };

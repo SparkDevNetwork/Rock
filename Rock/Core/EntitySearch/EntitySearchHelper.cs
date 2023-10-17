@@ -105,7 +105,11 @@ namespace Rock.Core.EntitySearch
                     resultQry = resultQry.GroupBy( config, systemQuery.GroupByExpression );
                 }
 
-                if ( systemQuery.SelectExpression.IsNotNullOrWhiteSpace() )
+                if ( systemQuery.SelectManyExpression.IsNotNullOrWhiteSpace() )
+                {
+                    resultQry = resultQry.SelectMany( config, systemQuery.SelectManyExpression );
+                }
+                else if ( systemQuery.SelectExpression.IsNotNullOrWhiteSpace() )
                 {
                     resultQry = resultQry.Select( config, systemQuery.SelectExpression );
                 }
@@ -136,7 +140,11 @@ namespace Rock.Core.EntitySearch
                     resultQry = resultQry.GroupBy( config, userQuery.GroupBy );
                 }
 
-                if ( isRefinementAllowed && userQuery.Select.IsNotNullOrWhiteSpace() )
+                if ( isRefinementAllowed && userQuery.SelectMany.IsNotNullOrWhiteSpace() )
+                {
+                    resultQry = resultQry.SelectMany( config, userQuery.SelectMany );
+                }
+                else if ( isRefinementAllowed && userQuery.Select.IsNotNullOrWhiteSpace() )
                 {
                     resultQry = resultQry.Select( config, userQuery.Select );
                 }

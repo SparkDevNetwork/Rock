@@ -84,6 +84,14 @@ namespace Rock.Web.Cache
         public string SelectExpression { get; private set; }
 
         /// <summary>
+        /// Gets the expression that will be used to define the structure
+        /// of the resulting items. This is processed after <see cref="GroupByExpression"/>
+        /// and instead of <see cref="SelectExpression"/>.
+        /// </summary>
+        /// <value>A <see cref="string"/> containing the dynamic LINQ <c>SelectMany()</c> expression.</value>
+        public string SelectManyExpression { get; private set; }
+
+        /// <summary>
         /// Gets the expression that will be used to order the results.
         /// This is processed after <see cref="SelectExpression"/>.
         /// </summary>
@@ -161,6 +169,7 @@ namespace Rock.Web.Cache
             WhereExpression = entitySearch.WhereExpression;
             GroupByExpression = entitySearch.GroupByExpression;
             SelectExpression = entitySearch.SelectExpression;
+            SelectManyExpression = entitySearch.SelectManyExpression;
             OrderByExpression = entitySearch.OrderByExpression;
             MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery;
             IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced;

@@ -95,6 +95,12 @@ export type EntitySearchBag = {
      */
     selectExpression?: string | null;
 
+    /**
+     * Gets or sets the expression that will be used to define the structure
+     * of the resulting items. This is processed after Rock.Model.EntitySearch.GroupByExpression.
+     */
+    selectManyExpression?: string | null;
+
     /** Gets or sets the expression that will be used to filter the query. */
     whereExpression?: string | null;
 };

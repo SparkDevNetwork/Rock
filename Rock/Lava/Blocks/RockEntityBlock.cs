@@ -786,9 +786,10 @@ namespace Rock.Lava.Blocks
         {
             var searchKey = parms["entitysearch"];
             var entitySearchCache = EntitySearchCache.GetByEntityTypeAndKey( entityTypeCache, searchKey );
-            var userQuery = new EntitySearchQueryBag();
-
-            userQuery.Where = parms.GetValueOrNull( "expression" );
+            var userQuery = new EntitySearchQueryBag
+            {
+                Where = parms.GetValueOrNull( "expression" )
+            };
 
             if ( parms.GetValueOrNull( "count" ).AsBoolean() )
             {
@@ -803,6 +804,7 @@ namespace Rock.Lava.Blocks
 
             userQuery.GroupBy = parms.GetValueOrNull( "groupby" );
             userQuery.Select = parms.GetValueOrNull( "select" );
+            userQuery.SelectMany = parms.GetValueOrNull( "selectmany" );
             userQuery.OrderBy = parms.GetValueOrNull( "sort" );
             userQuery.Skip = parms.GetValueOrNull( "offset" ).AsIntegerOrNull();
             userQuery.Take = parms.GetValueOrNull( "limit" ).AsIntegerOrNull() ?? 1_000;

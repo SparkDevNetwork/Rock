@@ -111,6 +111,15 @@ namespace Rock.Model
         public string SelectExpression { get; set; }
 
         /// <summary>
+        /// Gets or sets the expression that will be used to define the structure
+        /// of the resulting items. This is processed after <see cref="GroupByExpression"/>
+        /// and instead of <see cref="SelectExpression"/>.
+        /// </summary>
+        /// <value>A <see cref="string"/> containing the dynamic LINQ <c>SelectMany()</c> expression.</value>
+        [DataMember]
+        public string SelectManyExpression { get; set; }
+
+        /// <summary>
         /// Gets or sets the expression that will be used to order the results.
         /// This is processed after <see cref="SelectExpression"/>.
         /// </summary>

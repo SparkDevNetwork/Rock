@@ -58,7 +58,6 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { EntitySearchBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchBag";
     import { EntitySearchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchDetailOptionsBag";
-    import HighlightJs from "@Obsidian/Libs/highlightJs";
 
     const config = useConfigurationValues<DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -90,8 +89,9 @@
         "key",
         "maximumResultsPerQuery",
         "name",
-        "orderExpression",
+        "orderByExpression",
         "selectExpression",
+        "selectManyExpression",
         "whereExpression"
     ];
 
@@ -182,9 +182,30 @@
     function getCleanEditBag(bag: EntitySearchBag): EntitySearchBag {
         const newBag: EntitySearchBag & EntitySearchBagAdditions = { ...bag };
 
+        if (newBag.isWhereEnabled === false) {
+            newBag.whereExpression = "";
+        }
+
+        if (newBag.isGroupByEnabled === false) {
+            newBag.groupByExpression = "";
+        }
+
+        if (newBag.isSelectEnabled === false) {
+            newBag.selectExpression = "";
+        }
+
+        if (newBag.isSelectManyEnabled === false) {
+            newBag.selectManyExpression = "";
+        }
+
+        if (newBag.isOrderByEnabled === false) {
+            newBag.orderByExpression = "";
+        }
+
         delete newBag.isWhereEnabled;
         delete newBag.isGroupByEnabled;
         delete newBag.isSelectEnabled;
+        delete newBag.isSelectManyEnabled;
         delete newBag.isOrderByEnabled;
 
         return newBag;

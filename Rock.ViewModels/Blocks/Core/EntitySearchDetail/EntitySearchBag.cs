@@ -95,6 +95,12 @@ namespace Rock.ViewModels.Blocks.Core.EntitySearchDetail
         public string SelectExpression { get; set; }
 
         /// <summary>
+        /// Gets or sets the expression that will be used to define the structure
+        /// of the resulting items. This is processed after Rock.Model.EntitySearch.GroupByExpression.
+        /// </summary>
+        public string SelectManyExpression { get; set; }
+
+        /// <summary>
         /// Gets or sets the expression that will be used to filter the query.
         /// </summary>
         public string WhereExpression { get; set; }

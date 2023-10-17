@@ -33,6 +33,12 @@ export type EntitySearchQueryBag = {
     groupBy?: string | null;
 
     /**
+     * Gets or sets a value indicating whether only the number of matching
+     * items should be returned.
+     */
+    isCountOnly: boolean;
+
+    /**
      * Gets or sets the expression that will be used to order the results.
      * This is processed after the Rock.ViewModels.Core.EntitySearchQueryBag.Select expression.
      */
@@ -40,10 +46,17 @@ export type EntitySearchQueryBag = {
 
     /**
      * Gets or sets the expression that will be used to define the structure
-     * of the the resulting items. This is processed after the Rock.ViewModels.Core.EntitySearchQueryBag.Select
+     * of the the resulting items. This is processed after the Rock.ViewModels.Core.EntitySearchQueryBag.GroupBy
      * expression.
      */
     select?: string | null;
+
+    /**
+     * Gets or sets the expression that will be used to define the structure
+     * of the the resulting items. This is processed after the Rock.ViewModels.Core.EntitySearchQueryBag.GroupBy
+     * expression and instead of the Rock.ViewModels.Core.EntitySearchQueryBag.Select expression.
+     */
+    selectMany?: string | null;
 
     /**
      * Gets or sets the number of items to skip in the result set. This

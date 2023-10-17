@@ -95,6 +95,15 @@
                      :rows="8" />
         </SectionContainer>
 
+        <SectionContainer v-model="isSelectManyEnabled"
+                          title="Select Many"
+                          description="The expression that specifies what properties are returned by the search. This is designed to select multiple child items so that they become the root items, such as querying a set of Groups and wanting all the GroupMembers returned."
+                          toggleText="Enabled">
+            <TextBox v-model="selectManyExpression"
+                     textMode="multiline"
+                     :rows="8" />
+        </SectionContainer>
+
         <SectionContainer v-model="isOrderByEnabled"
                           title="Ordering"
                           description="The list of properties that should be used to order the results."
@@ -150,17 +159,25 @@
     const isGroupByEnabled = ref(props.modelValue.isGroupByEnabled ?? !!groupByExpression.value);
     const selectExpression = propertyRef(props.modelValue.selectExpression ?? "", "SelectExpression");
     const isSelectEnabled = ref(props.modelValue.isSelectEnabled ?? !!selectExpression.value);
+    const selectManyExpression = propertyRef(props.modelValue.selectManyExpression ?? "", "SelectManyExpression");
+    const isSelectManyEnabled = ref(props.modelValue.isSelectManyEnabled ?? !!selectManyExpression.value);
     const orderByExpression = propertyRef(props.modelValue.orderByExpression ?? "", "OrderByExpression");
     const isOrderByEnabled = ref(props.modelValue.isOrderByEnabled ?? !!orderByExpression.value);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [name, isActive, entityType, key, description, maximumResults, isEntitySecurityEnforced, includePaths, isRefinementAllowed, whereExpression, groupByExpression, selectExpression, orderByExpression];
+    const propRefs = [name, isActive, entityType, key, description, maximumResults, isEntitySecurityEnforced, includePaths, isRefinementAllowed, whereExpression, groupByExpression, selectExpression, selectManyExpression, orderByExpression];
 
     const keyRules: ValidationRule[] = [
         "required",
         validateKey
     ];
+
+    // Only one of Select and SelectMany are supported, not both. Prefer
+    // SelectMany as the priority winner.
+    if (isSelectManyEnabled.value && isSelectEnabled.value) {
+        isSelectEnabled.value = false;
+    }
 
     // #endregion
 
@@ -196,6 +213,18 @@
 
     // #endregion
 
+    watch(isSelectEnabled, () => {
+        if (isSelectEnabled.value === true) {
+            isSelectManyEnabled.value = false;
+        }
+    });
+
+    watch(isSelectManyEnabled, () => {
+        if (isSelectManyEnabled.value === true) {
+            isSelectEnabled.value = false;
+        }
+    });
+
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
         updateRefValue(name, props.modelValue.name ?? "");
@@ -213,13 +242,15 @@
         updateRefValue(isGroupByEnabled, props.modelValue.isGroupByEnabled ?? !!groupByExpression.value);
         updateRefValue(selectExpression, props.modelValue.selectExpression ?? "");
         updateRefValue(isSelectEnabled, props.modelValue.isSelectEnabled ?? !!selectExpression.value);
+        updateRefValue(selectManyExpression, props.modelValue.selectManyExpression ?? "");
+        updateRefValue(isSelectManyEnabled, props.modelValue.isSelectManyEnabled ?? !!selectManyExpression.value);
         updateRefValue(orderByExpression, props.modelValue.orderByExpression ?? "");
         updateRefValue(isOrderByEnabled, props.modelValue.isOrderByEnabled ?? !!orderByExpression.value);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([...propRefs, isWhereEnabled], () => {
+    watch([...propRefs, isWhereEnabled, isGroupByEnabled, isSelectEnabled, isSelectManyEnabled, isOrderByEnabled], () => {
         const newValue: EntitySearchBag & EntitySearchBagAdditions = {
             ...props.modelValue,
             name: name.value,
@@ -237,6 +268,8 @@
             isGroupByEnabled: isGroupByEnabled.value,
             selectExpression: selectExpression.value,
             isSelectEnabled: isSelectEnabled.value,
+            selectManyExpression: selectManyExpression.value,
+            isSelectManyEnabled: isSelectManyEnabled.value,
             orderByExpression: orderByExpression.value,
             isOrderByEnabled: isOrderByEnabled.value
         };

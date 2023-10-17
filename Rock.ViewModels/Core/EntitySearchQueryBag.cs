@@ -37,11 +37,19 @@ namespace Rock.ViewModels.Core
 
         /// <summary>
         /// Gets or sets the expression that will be used to define the structure
-        /// of the the resulting items. This is processed after the <see cref="Select"/>
+        /// of the the resulting items. This is processed after the <see cref="GroupBy"/>
         /// expression.
         /// </summary>
         /// <value>A <see cref="string"/> containing the dynamic LINQ <c>Select()</c> expression.</value>
         public string Select { get; set; }
+
+        /// <summary>
+        /// Gets or sets the expression that will be used to define the structure
+        /// of the the resulting items. This is processed after the <see cref="GroupBy"/>
+        /// expression and instead of the <see cref="Select"/> expression.
+        /// </summary>
+        /// <value>A <see cref="string"/> containing the dynamic LINQ <c>SelectMany()</c> expression.</value>
+        public string SelectMany { get; set; }
 
         /// <summary>
         /// Gets or sets the expression that will be used to order the results.
