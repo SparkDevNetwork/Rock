@@ -22,8 +22,10 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.GroupScheduling
@@ -34,17 +36,67 @@ namespace RockWeb.Blocks.GroupScheduling
     [DisplayName( "Group Schedule Communication" )]
     [Category( "Group Scheduling" )]
     [Description( "Allows an individual to create a communication based on group schedule criteria." )]
+
+    [LinkedPage( "Communications Page",
+        Description = "The page that the person will be pushed to when selecting a conversation.",
+        IsRequired = false,
+        DefaultValue = "",
+        Key = AttributeKey.CommunicationsPage,
+        Order = 1 )]
+
+    [BooleanField(
+        "Require Group in URL",
+        Description = "This will require that the group Id be passed in through the query string via the group GroupId parameter",
+        Order = 2,
+        Key = AttributeKey.RequireGroupInURL )]
+
+    [BooleanField(
+        "Allow Including Child Groups",
+        Description = "This allows the showing/hiding of the Include Child Groups option.",
+        Order = 3,
+        DefaultBooleanValue = true,
+        Key = AttributeKey.AllowIncludingChildGroups )]
+
     [Rock.SystemGuid.BlockTypeGuid( "9F813A6C-25A7-491F-9C01-6D6EE6A7CA04" )]
     public partial class GroupScheduleCommunication : RockBlock
     {
-        #region User Preference Keys
+        #region Keys
 
         private static class UserPreferenceKey
         {
             public const string UserPreferenceConfigurationJSON = "UserPreferenceConfigurationJSON";
         }
 
-        #endregion User Preference Keys
+        /// <summary>
+        /// Keys to use for Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// Key for the Communications Page Attribute
+            /// </summary>
+            public const string CommunicationsPage = "CommunicationsPage";
+
+            /// <summary>
+            /// Key for the Require Group In Url Boolean Attribute
+            /// </summary>
+            public const string RequireGroupInURL = "RequireGroupInURL";
+
+            /// <summary>
+            /// Key for the Allow Including Child Groups Boolean Attribute
+            /// </summary>
+            public const string AllowIncludingChildGroups = "AllowIncludingChildGroups";
+        }
+
+        private static class PageParameterKeys
+        {
+            /// <summary>
+            /// The group identifier
+            /// </summary>
+            public const string GroupId = "GroupId";
+        }
+
+        #endregion Keys
 
         #region Base Control Methods
 
@@ -71,6 +123,21 @@ namespace RockWeb.Blocks.GroupScheduling
 
             if ( !Page.IsPostBack )
             {
+                var allowIncludingChildGroups = GetAttributeValue( AttributeKey.AllowIncludingChildGroups ).AsBoolean();
+                if ( !allowIncludingChildGroups )
+                {
+                    cbIncludeChildGroups.Visible = false;
+                    cbIncludeChildGroups.Enabled = false;
+                }
+
+                var isGroupIdRequired = GetAttributeValue( AttributeKey.RequireGroupInURL ).AsBoolean();
+                var groupId = PageParameter( PageParameterKeys.GroupId );
+                if ( isGroupIdRequired && groupId == string.Empty )
+                {
+                    nbError.Visible = true;
+                    nbError.Text = "Group Id is required.";
+                    pnlView.Visible = false;
+                }
                 PopulateDropDowns();
                 ShowDetails();
             }
@@ -238,7 +305,13 @@ namespace RockWeb.Blocks.GroupScheduling
             var communicationRecipientRockContext = new RockContext();
             communicationRecipientRockContext.BulkInsert( communicationRecipientList );
 
+            // Set the communication page to the current route if the block setting does not specify a Communications Page
             var pageRef = this.RockPage.Site.CommunicationPageReference;
+            if ( GetAttributeValue( AttributeKey.CommunicationsPage ).IsNotNullOrWhiteSpace() )
+            {
+                pageRef = new PageReference( GetAttributeValue( AttributeKey.CommunicationsPage ) );
+            }
+
             string communicationUrl;
             if ( pageRef.PageId > 0 )
             {
@@ -333,8 +406,34 @@ namespace RockWeb.Blocks.GroupScheduling
             {
                 InviteStatuses = cblInviteStatus.SelectedValues.ToArray()
             };
+            var groupService = new GroupService( new RockContext() );
 
-            gpGroups.SetValues( userPreferenceConfiguration.GroupIds ?? new int[0] );
+            var groupIds = userPreferenceConfiguration.GroupIds ?? new int[0];
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKeys.GroupId ) ) )
+            {
+                Group group = groupService.Get( PageParameter( PageParameterKeys.GroupId ) );
+                if ( group == null )
+                {
+                    nbError.Visible = true;
+                    nbError.Text = "Group not found";
+                    pnlView.Visible = false;
+                    return;
+                }
+                groupIds = new[] {
+                    group.Id
+                };
+            }
+
+            gpGroups.SetValues( groupIds );
+
+            // If the Require Group in URL setting is set to true, do not display the group picker. Instead display the GroupName as a static string.
+            if ( GetAttributeValue( AttributeKey.RequireGroupInURL ).AsBoolean() )
+            {
+                gpGroups.Visible = false;
+                lblGroup.Visible = true;
+                lblGroupLabel.Visible = true;
+                lblGroup.Text = groupService.Get( PageParameter( PageParameterKeys.GroupId ) )?.Name;
+            }
             cbIncludeChildGroups.Checked = userPreferenceConfiguration.IncludeChildGroups;
             cblInviteStatus.SetValues( userPreferenceConfiguration.InviteStatuses );
             UpdateListsForSelectedGroups();
