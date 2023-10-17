@@ -15,11 +15,9 @@
 // </copyright>
 //
 
-using System.Runtime.Serialization;
-
 using Rock.Model;
 
-namespace Rock.Core
+namespace Rock.Core.EntitySearch
 {
     /// <summary>
     /// Defines the structure of a <see cref="Rock.Model.EntitySearch"/> query
