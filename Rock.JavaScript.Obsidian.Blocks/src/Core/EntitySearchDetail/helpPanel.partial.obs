@@ -1,0 +1,70 @@
+<template>
+    <h3>Entity Search Overview</h3>
+
+    <p>
+        Entity Search allows you to define a named query that can be re-used
+        in various places in Rock. Such as in the REST API and in Lava. These
+        search queries define everything from what data to include down to
+        exactly what bits of that data is returned to the caller.
+    </p>
+
+    <h3>Entity Security</h3>
+
+    <p>
+        Security is important, but it can be slow. Especially if you don't
+        design your query correctly. If you don't need entity security, then
+        don't turn it on. For example, if your query already filters to only
+        showing items that belong to the current person, then you probably
+        don't need to also check security.
+    </p>
+
+    <p>
+        In order for entity security to be checked, all entities must be
+        loaded into memory. And by all, we mean quite nearly all. Anything
+        that matches your Where expression must be loaded. Regardless of your
+        Select expression or even the maximum number of results returned. The
+        reason is fairly simple in that if you ask for the first 50 items, but
+        you don't have access to the first 10, we need to still fill in the
+        rest of the 50 items. Or if you ask to skip the first 10, we need to
+        know which ones to skip based on security.
+    </p>
+
+    <p>
+        Therefore, if your Where expression for a Group query is something
+        like <code>GroupTypeId == 15</code>, it will load into memory every
+        single Group whose GroupTypeId is 15. Which could easily be in the
+        thousands or tens of thousands.
+    </p>
+
+    <h3>Include Paths</h3>
+
+    <p>
+        When Enforce Entity Security is enabled, all the navigation properties
+        become lazy loaded. This means that when your Select statement pulls
+        in <code>GroupType.Name</code> it must be loaded from the database in
+        a second query. That is fine if you only have one result, but if you
+        have 50 results, that might mean 50 additional queries.
+    </p>
+
+    <p>
+        The Include Paths setting allows you to specify which property paths
+        to include in the initial query. This will usually speed things up,
+        but there are some cases where it can actually make things slower. So
+        you should always test with the Preview button to check your query
+        count and duration to find the best fit.
+    </p>
+
+    <p>
+        Multiple properties and paths can be specified. For example, if your
+        Group query has an Include Paths of <code>GroupType,Members.Person</code>
+        then it would eager load the <code>GroupType</code> property as well
+        as the <code>Person</code> property of the <code>Members</code> array.
+    </p>
+</template>
+
+<script setup lang="ts">
+    // Compiler complains if there is an empty setup setup body so a junk
+    // variable to make the compiler happy.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const junk = null;
+</script>

@@ -118,12 +118,12 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { EntitySearchBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchBag";
     import { EntitySearchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchDetailOptionsBag";
     import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
-    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
     import { EntitySearchBagAdditions } from "./types.partial";
 
     const props = defineProps({

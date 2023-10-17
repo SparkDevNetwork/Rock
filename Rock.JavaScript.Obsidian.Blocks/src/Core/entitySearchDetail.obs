@@ -32,8 +32,7 @@
 
         <template v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add" #helpContent>
             <div class="p-4 pb-0">
-                <p>Sample where expression</p>
-                <pre><code>GroupTypeId == 4 && IsActive == true</code></pre>
+                <HelpPanel />
             </div>
 
             <hr />
@@ -51,6 +50,7 @@
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./EntitySearchDetail/editPanel.partial.obs";
+    import HelpPanel from "./EntitySearchDetail/helpPanel.partial.obs";
     import ViewPanel from "./EntitySearchDetail/viewPanel.partial.obs";
     import Preview from "./EntitySearchDetail/preview.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

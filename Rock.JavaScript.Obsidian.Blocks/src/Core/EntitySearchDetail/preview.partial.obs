@@ -4,16 +4,14 @@
             {{ errorMessage }}
         </NotificationBox>
 
-        <LoadingIndicator v-else-if="isLoading" />
-
-        <div v-else>
+        <Loading v-else :isLoading="isLoading">
             <div class="d-flex gap mb-2">
-                <span class="label" :class="durationClass">Duration: {{ asFormattedString(duration, 2) }}ms</span>
-                <span class="label" :class="queryCountClass">Query Count: {{ asFormattedString(queryCount, 0) }}</span>
+                <span class="label" :class="durationClass" title="The total number of milliseconds the query or queries took to execute.">Duration: {{ asFormattedString(duration, 2) }}ms</span>
+                <span class="label" :class="queryCountClass" title="The total number of queries generated to get all the data.">Query Count: {{ asFormattedString(queryCount, 0) }}</span>
             </div>
 
             <div v-html="previewContent" class="preview-content"></div>
-        </div>
+        </Loading>
     </Modal>
 </template>
 
@@ -26,7 +24,7 @@
 </style>
 
 <script setup lang="ts">
-    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import HighlightJs from "@Obsidian/Libs/highlightJs";
