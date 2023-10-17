@@ -16,6 +16,7 @@
 //
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +34,56 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PHONE_NUMBER )]
     public class PhoneNumberFieldType : FieldType
     {
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Parse the input value to obtain the country code and the remaining digits of the phone number.
+            string countryCodePart;
+            string numberPart;
+
+            var isValid = PhoneNumber.TryParseNumber( privateValue, out countryCodePart, out numberPart );
+            if ( isValid )
+            {
+                // Reformat the number according to the country code.
+                var formattedNumber = PhoneNumber.FormattedNumber( countryCodePart, numberPart, includeCountryCode: false );
+                if ( !string.IsNullOrWhiteSpace( formattedNumber ) )
+                {
+                    numberPart = formattedNumber;
+                }
+
+                return ( new
+                {
+                    CountryCode = countryCodePart,
+                    Number = numberPart
+                } ).ToCamelCaseJson( false, true );
+            }
+
+            return ( new
+            {
+                CountryCode = GetDefaultCountryCode(),
+                Number = numberPart
+            } ).ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return base.GetPublicValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateFilterValue( ComparisonValue publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return base.GetPrivateFilterValue( publicValue, privateConfigurationValues );
+        }
+
+
         #region WebForms
 #if WEBFORMS
 
@@ -50,7 +101,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
