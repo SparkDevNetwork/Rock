@@ -2246,7 +2246,7 @@ namespace RockWeb.Blocks.Connection
             get
             {
                 var connectionOpportunity = GetConnectionOpportunity();
-                return connectionOpportunity.ConnectionType.EnableRequestSecurity
+                return connectionOpportunity != null && connectionOpportunity.ConnectionType.EnableRequestSecurity
                         && connectionOpportunity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             }
         }
@@ -5154,12 +5154,19 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                _connectionTypeViewModels = _connectionTypeViewModels
-                    .Where( vm => vm.ConnectionOpportunities.Any() )
-                    .OrderBy( ct => ct.Order )
-                    .ThenBy( ct => ct.Name )
-                    .ThenBy( ct => ct.Id )
-                    .ToList();
+                if ( _connectionTypeViewModels != null )
+                { 
+                    _connectionTypeViewModels = _connectionTypeViewModels
+                        .Where( vm => vm.ConnectionOpportunities.Any() )
+                        .OrderBy( ct => ct.Order )
+                        .ThenBy( ct => ct.Name )
+                        .ThenBy( ct => ct.Id )
+                        .ToList();
+                }
+                else
+                {
+                    _connectionTypeViewModels = new List<ConnectionTypeViewModel>();
+                }
             }
 
             return _connectionTypeViewModels;

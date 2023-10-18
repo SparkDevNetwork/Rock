@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 
 namespace Rock.SystemGuid
 {
@@ -652,6 +651,11 @@ namespace Rock.SystemGuid
         /// Streak Type field type
         /// </summary>
         public const string STREAK_TYPE = "F1411F4A-BD4B-4F80-9A83-94026C009F4D";
+
+        /// <summary>
+        /// Structured Content field type
+        /// </summary>
+        public const string STRUCTURE_CONTENT_EDITOR = "92C88D02-CE12-4217-80FB-19422B758437";
 
         /// <summary>
         /// System Email field type

@@ -1,12 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockButton
-        btnSize="xs"
-        btnType="danger"
-        class="pull-right"
-        :disabled="disabled"
-        :isSquare="true"
-        @click="$emit('remove', child)">
+                btnSize="xs"
+                btnType="danger"
+                class="pull-right"
+                :disabled="disabled"
+                :isSquare="true"
+                @click="$emit('remove', child)">
         <i class="fa fa-times"></i>
     </RockButton>
 
@@ -17,12 +17,12 @@
     <div class="row">
         <div class="col-sm-6">
             <DropDownList
-                v-model="child.familyRoleGuid"
-                :disabled="disabled"
-                :items="config.childRelationshipTypes ?? undefined"
-                label="Relationship to Adult"
-                :rules="requiredRules"
-                :showBlankItem="false" />
+                          v-model="child.familyRoleGuid"
+                          :disabled="disabled"
+                          :items="config.childRelationshipTypes ?? undefined"
+                          label="Relationship to Adult"
+                          :rules="requiredRules"
+                          :showBlankItem="false" />
         </div>
         <div class="col-sm-6"></div><!-- filler/blocker column -->
     </div>
@@ -30,145 +30,145 @@
     <div class="row clearfix">
         <div class="col-sm-6">
             <StaticFormControl
-                v-if="child.isFirstNameReadOnly"
-                label="First Name"
-                :modelValue="child.firstName" />
+                               v-if="child.isFirstNameReadOnly"
+                               label="First Name"
+                               :modelValue="child.firstName" />
             <TextBox v-else
-                v-model="child.firstName"
-                :disabled="disabled"
-                label="First Name"
-                :rules="requiredRules" />
+                     v-model="child.firstName"
+                     :disabled="disabled"
+                     label="First Name"
+                     :rules="requiredRules" />
         </div>
 
         <div class="col-sm-6">
             <StaticFormControl
-                v-if="child.isLastNameReadOnly"
-                label="Last Name"
-                :modelValue="child.lastName" />
+                               v-if="child.isLastNameReadOnly"
+                               label="Last Name"
+                               :modelValue="child.lastName" />
             <TextBox v-else
-                v-model="child.lastName"
-                :disabled="disabled"
-                label="Last Name"
-                :rules="requiredRules" />
+                     v-model="child.lastName"
+                     :disabled="disabled"
+                     label="Last Name"
+                     :rules="requiredRules" />
         </div>
     </div>
     <div class="row clearfix">
         <div v-if="config.childGenderField?.isShown" class="col-sm-6">
-            <GenderDropDownList
-                v-model="child.genderStringValue"
-                :disabled="disabled"
-                label="Gender"
-                :rules="config.childGenderField.isRequired ? requiredGenderRules : ''" />
+            <GenderPicker
+                          v-model="child.genderStringValue"
+                          :disabled="disabled"
+                          label="Gender"
+                          :rules="config.childGenderField.isRequired ? requiredGenderRules : ''" />
         </div>
 
         <div v-if="config.childSuffixField?.isShown" class="col-sm-6">
             <DefinedValuePicker
-                v-model="child.suffixListItemBag"
-                :definedTypeGuid="DefinedType.PersonSuffix"
-                :disabled="disabled"
-                label="Suffix"
-                lazyMode="lazy"
-                :showBlankItem="true" />
+                                v-model="child.suffixListItemBag"
+                                :definedTypeGuid="DefinedType.PersonSuffix"
+                                :disabled="disabled"
+                                label="Suffix"
+                                lazyMode="lazy"
+                                :showBlankItem="true" />
         </div>
     </div>
     <div class="row clearfix">
         <div v-if="config.childBirthDateField?.isShown" class="col-sm-6">
             <BirthdayPicker
-                v-model="child.birthDate"
-                :disabled="disabled"
-                label="Birth Date"
-                :rules="config.childBirthDateField.isRequired ? requiredBirthdayRules : ''" />
+                            v-model="child.birthDate"
+                            :disabled="disabled"
+                            label="Birth Date"
+                            :rules="config.childBirthDateField.isRequired ? requiredBirthdayRules : ''" />
         </div>
 
         <div v-if="config.childGradeField?.isShown" class="col-sm-6">
             <GradePicker
-                v-model="child.gradeListItemBag"
-                :disabled="disabled"
-                label="Grade"
-                lazyMode="lazy"
-                :useGuidAsValue="true"
-                :rules="config.childGradeField.isRequired ? requiredRules : ''"
-                :showBlankItem="true" />
+                         v-model="child.gradeListItemBag"
+                         :disabled="disabled"
+                         label="Grade"
+                         lazyMode="lazy"
+                         :useGuidAsValue="true"
+                         :rules="config.childGradeField.isRequired ? requiredRules : ''"
+                         :showBlankItem="true" />
         </div>
     </div>
     <div class="row clearfix">
         <div v-if="config.childMobilePhoneField?.isShown" class="col-sm-6">
             <PhoneNumberBox
-                v-model="child.mobilePhone"
-                v-model:countryCode="child.mobilePhoneCountryCode"
-                :disabled="disabled"
-                label="Mobile Phone"
-                :rules="config.childMobilePhoneField.isRequired ? requiredRules : ''" />
+                            v-model="child.mobilePhone"
+                            v-model:countryCode="child.mobilePhoneCountryCode"
+                            :disabled="disabled"
+                            label="Mobile Phone"
+                            :rules="config.childMobilePhoneField.isRequired ? requiredRules : ''" />
         </div>
         <div v-if="config.displaySmsOptIn?.isShowChildren" class="col-sm-6">
             <CheckBox
-                v-model="child.isMessagingEnabled"
-                label=""
-                :disabled="disabled"
-                :text="config.displaySmsOptIn?.smsOptInDisplayText ?? ''"/>
+                      v-model="child.isMessagingEnabled"
+                      label=""
+                      :disabled="disabled"
+                      :text="config.displaySmsOptIn?.smsOptInDisplayText ?? ''" />
         </div>
     </div>
     <div class="row clearfix">
         <div v-if="config.childEmailField?.isShown" class="col-sm-6">
             <EmailBox
-                v-model="child.email"
-                :disabled="disabled"
-                label="Email"
-                :rules="config.childEmailField.isRequired ? requiredRules : ''" />
+                      v-model="child.email"
+                      :disabled="disabled"
+                      label="Email"
+                      :rules="config.childEmailField.isRequired ? requiredRules : ''" />
         </div>
 
         <div v-if="config.childCommunicationPreferenceField?.isShown" class="col-sm-6">
             <RadioButtonList
-                v-model="child.communicationPreferenceStringValue"
-                :disabled="disabled"
-                :horizontal="true"
-                :items="[
-                    { text: 'Email', value: CommunicationPreference.Email.toString() },
-                    { text: 'SMS', value: CommunicationPreference.SMS.toString() }
-                ]"
-                label="Communication Preference"
-                :rules="config.childCommunicationPreferenceField.isRequired ? requiredRules : ''" />
+                             v-model="child.communicationPreferenceStringValue"
+                             :disabled="disabled"
+                             :horizontal="true"
+                             :items="[
+                                 { text: 'Email', value: CommunicationPreference.Email.toString() },
+                                 { text: 'SMS', value: CommunicationPreference.SMS.toString() }
+                             ]"
+                             label="Communication Preference"
+                             :rules="config.childCommunicationPreferenceField.isRequired ? requiredRules : ''" />
         </div>
     </div>
     <div class="row clearfix">
         <div v-if="config.childRaceField?.isShown" class="col-sm-6">
             <RacePicker
-                v-model="child.raceListItemBag"
-                :disabled="disabled"
-                :rules="config.childRaceField.isRequired ? requiredRules : ''"
-                :showBlankItem="true" />
+                        v-model="child.raceListItemBag"
+                        :disabled="disabled"
+                        :rules="config.childRaceField.isRequired ? requiredRules : ''"
+                        :showBlankItem="true" />
         </div>
 
         <div v-if="config.childEthnicityField?.isShown" class="col-sm-6">
             <EthnicityPicker
-                v-model="child.ethnicityListItemBag"
-                :disabled="disabled"
-                :rules="config.childEthnicityField.isRequired ? requiredRules : ''"
-                :showBlankItem="true" />
+                             v-model="child.ethnicityListItemBag"
+                             :disabled="disabled"
+                             :rules="config.childEthnicityField.isRequired ? requiredRules : ''"
+                             :showBlankItem="true" />
         </div>
     </div>
     <div v-if="config.childProfilePhotoField?.isShown" class="row">
         <div class="col-sm-6">
             <ImageEditor
-                v-model="child.profileImageListItemBag"
-                :binaryFileTypeGuid="BinaryFiletype.PersonImage"
-                :disabled="disabled"
-                label="Profile Photo"
-                :rules="config.childProfilePhotoField.isRequired ? requiredRules : ''" />
+                         v-model="child.profileImageListItemBag"
+                         :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                         :disabled="disabled"
+                         label="Profile Photo"
+                         :rules="config.childProfilePhotoField.isRequired ? requiredRules : ''" />
         </div>
         <div class="col-sm-6"></div><!-- filler/blocker column -->
     </div>
 
     <div class="row">
         <AttributeValuesContainer
-            v-if="config.childAttributes != null"
-            v-model="child.attributeValues"
-            :attributes="config.childAttributes"
-            columnBreakpoint="sm"
-            :displayWithinExistingRow="true"
-            isEditMode
-            :numberOfColumns="2"
-            :showCategoryLabel="true" />
+                                  v-if="config.childAttributes != null"
+                                  v-model="child.attributeValues"
+                                  :attributes="config.childAttributes"
+                                  columnBreakpoint="sm"
+                                  :displayWithinExistingRow="true"
+                                  isEditMode
+                                  :numberOfColumns="2"
+                                  :showCategoryLabel="true" />
     </div>
 </template>
 
@@ -189,7 +189,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
-    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
+    import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
     import GradePicker from "@Obsidian/Controls/gradePicker.obs";
     import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";

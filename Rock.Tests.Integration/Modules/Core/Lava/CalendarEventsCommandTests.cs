@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Tests.Integration.Events;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
@@ -55,7 +56,7 @@ namespace Rock.Tests.Integration.Core.Lava
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
-            TestDataHelper.Events.AddDataForRockSolidFinancesClass();
+            EventsDataManager.Instance.AddDataForRockSolidFinancesClass();
         }
 
         private string GetTestTemplate( string parameters )

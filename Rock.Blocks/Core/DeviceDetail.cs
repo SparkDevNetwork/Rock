@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of the given device." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    //[SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -495,15 +495,8 @@ namespace Rock.Blocks.Core
                 entity.Location = new Location();
             }
 
-            if ( bag.GeoPoint.IsNotNullOrWhiteSpace() )
-            {
-                entity.Location.GeoPoint = DbGeography.FromText( bag.GeoPoint );
-            }
-
-            if ( bag.GeoFence.IsNotNullOrWhiteSpace() )
-            {
-                entity.Location.GeoFence = DbGeography.FromText( bag.GeoFence );
-            }
+            entity.Location.GeoPoint = bag.GeoPoint.IsNotNullOrWhiteSpace() ? DbGeography.FromText( bag.GeoPoint ) : null;
+            entity.Location.GeoFence = bag.GeoFence.IsNotNullOrWhiteSpace() ? DbGeography.PolygonFromText( bag.GeoFence, DbGeography.DefaultCoordinateSystemId ) : null;
 
             var locationGuids = bag.Locations.ConvertAll( l => l.Value.AsGuid() );
             // Remove any deleted locations

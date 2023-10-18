@@ -28,7 +28,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Select multiple Interaction Channels from a checkbox list. Stored as a comma-delimited list of InteractionChannel Guids
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.INTERACTION_CHANNELS )]
     public class InteractionChannelsFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {

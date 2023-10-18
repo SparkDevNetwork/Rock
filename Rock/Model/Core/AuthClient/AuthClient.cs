@@ -118,5 +118,16 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [Required]
         public string PostLogoutRedirectUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scope approval expiration in days.
+        /// </summary>
+        /// <value>
+        /// The scope approval expiration in days.
+        /// </value>
+        [DataMember( IsRequired = true )]
+        [Required]
+        [Range( 0, int.MaxValue )]
+        public int ScopeApprovalExpiration { get; set; } = 365;
     }
 }
