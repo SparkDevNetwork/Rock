@@ -39,7 +39,7 @@
     <h3>Include Paths</h3>
 
     <p>
-        When Enforce Entity Security is enabled, all the navigation properties
+        When Enable Entity Security is turned on, all the navigation properties
         become lazy loaded. This means that when your Select statement pulls
         in <code>GroupType.Name</code> it must be loaded from the database in
         a second query. That is fine if you only have one result, but if you
@@ -60,6 +60,24 @@
         then it would eager load the <code>GroupType</code> property as well
         as the <code>Person</code> property of the <code>Members</code> array.
     </p>
+
+    <h3>Personalization</h3>
+
+    <p>
+        One of the amazing things about these searches is that you can customize
+        them to the current person making the request. A variable called
+        <code>@CurrentPersonId</code> can be used to filter items based on
+        the currently logged in person. The value will be NULL if there is not
+        a currently logged in person.
+    </p>
+
+    <p>
+        An example use case might be a query that returns the groups the
+        current person is a leader of. If the query is using the Groups entity
+        type then the Where clause might look like this.
+    </p>
+
+    <pre><code>Members.Any( gm => gm.GroupRole.IsLeader == true && gm.PersonId == @CurrentPersonId)</code></pre>
 </template>
 
 <script setup lang="ts">

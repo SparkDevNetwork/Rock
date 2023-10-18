@@ -36,6 +36,6 @@ export type EntitySearchBagAdditions = {
     /** Determines if the select many expression has been enabled in the editor. */
     isSelectManyEnabled?: boolean;
 
-    /** Determines if the order by expression has been enabled in the editor. */
-    isOrderByEnabled?: boolean;
+    /** Determines if the sort expression has been enabled in the editor. */
+    isSortEnabled?: boolean;
 };

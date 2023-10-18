@@ -54,11 +54,11 @@ export type EntitySearchBag = {
     isActive: boolean;
 
     /**
-     * Gets or sets a value indicating whether this search will entity
+     * Gets or sets a value indicating whether this search will
      * enforce entity security. Entity security has a pretty heafty
      * performance hit and should only be used when it is actually needed.
      */
-    isEntitySecurityEnforced: boolean;
+    isEntitySecurityEnabled: boolean;
 
     /**
      * Gets or sets a value indicating whether search query will allow
@@ -84,12 +84,6 @@ export type EntitySearchBag = {
     name?: string | null;
 
     /**
-     * Gets or sets the expression that will be used to order the results.
-     * This is processed after Rock.Model.EntitySearch.SelectExpression.
-     */
-    orderByExpression?: string | null;
-
-    /**
      * Gets or sets the expression that will be used to define the structure
      * of the resulting items. This is processed after Rock.Model.EntitySearch.GroupByExpression.
      */
@@ -100,6 +94,12 @@ export type EntitySearchBag = {
      * of the resulting items. This is processed after Rock.Model.EntitySearch.GroupByExpression.
      */
     selectManyExpression?: string | null;
+
+    /**
+     * Gets or sets the expression that will be used to sort the results.
+     * This is processed after Rock.Model.EntitySearch.SelectExpression.
+     */
+    sortExpression?: string | null;
 
     /** Gets or sets the expression that will be used to filter the query. */
     whereExpression?: string | null;

@@ -79,7 +79,7 @@ namespace Rock.Core.EntitySearch
                     queryable = queryable.Where( config, systemQuery.WhereExpression, queryParameters );
                 }
 
-                if ( systemQuery.IsEntitySecurityEnforced )
+                if ( systemQuery.IsEntitySecurityEnabled )
                 {
                     if ( !typeof( ISecured ).IsAssignableFrom( typeof( TEntity ) ) )
                     {
@@ -119,9 +119,9 @@ namespace Rock.Core.EntitySearch
                     resultQry = resultQry.Select( config, systemQuery.SelectExpression, queryParameters );
                 }
 
-                if ( systemQuery.OrderByExpression.IsNotNullOrWhiteSpace() )
+                if ( systemQuery.SortExpression.IsNotNullOrWhiteSpace() )
                 {
-                    resultQry = resultQry.OrderBy( config, systemQuery.OrderByExpression, queryParameters );
+                    resultQry = resultQry.OrderBy( config, systemQuery.SortExpression, queryParameters );
                 }
             }
             else
@@ -154,20 +154,20 @@ namespace Rock.Core.EntitySearch
                     resultQry = resultQry.Select( config, userQuery.Select, queryParameters );
                 }
 
-                if ( isRefinementAllowed && userQuery.OrderBy.IsNotNullOrWhiteSpace() )
+                if ( isRefinementAllowed && userQuery.Sort.IsNotNullOrWhiteSpace() )
                 {
-                    resultQry = resultQry.OrderBy( config, userQuery.OrderBy, queryParameters );
+                    resultQry = resultQry.OrderBy( config, userQuery.Sort, queryParameters );
                 }
 
                 // Skip and Take are always allowed.
-                if ( userQuery.Skip.HasValue )
+                if ( userQuery.Offset.HasValue )
                 {
-                    resultQry = resultQry.Skip( userQuery.Skip.Value );
+                    resultQry = resultQry.Skip( userQuery.Offset.Value );
                 }
 
-                if ( userQuery.Take.HasValue )
+                if ( userQuery.Limit.HasValue )
                 {
-                    takeCount = Math.Min( userQuery.Take.Value, takeCount ?? int.MaxValue );
+                    takeCount = Math.Min( userQuery.Limit.Value, takeCount ?? int.MaxValue );
                 }
             }
 

@@ -52,25 +52,25 @@ namespace Rock.ViewModels.Core
         public string SelectMany { get; set; }
 
         /// <summary>
-        /// Gets or sets the expression that will be used to order the results.
+        /// Gets or sets the expression that will be used to sort the results.
         /// This is processed after the <see cref="Select"/> expression.
         /// </summary>
         /// <value>A <see cref="string"/> containing the dynamic LINQ <c>OrderBy()</c> expression.</value>
-        public string OrderBy { get; set; }
+        public string Sort { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of items to skip in the result set. This
-        /// is processed after <see cref="OrderBy"/> performs sorting.
+        /// Gets or sets the number of items to skip before the first item the result set. This
+        /// is processed after <see cref="Sort"/> performs sorting.
         /// </summary>
         /// <value>An optional <see cref="int"/> that specifies the number of results to skip.</value>
-        public int? Skip { get; set; }
+        public int? Offset { get; set; }
 
         /// <summary>
         /// Gets or sets the number of items to include in the result set.
-        /// This is processed after <see cref="Skip"/> is processed.
+        /// This is processed after <see cref="Offset"/> is processed.
         /// </summary>
         /// <value>An optional <see cref="int"/> that specifies the number of results to include.</value>
-        public int? Take { get; set; }
+        public int? Limit { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether only the number of matching

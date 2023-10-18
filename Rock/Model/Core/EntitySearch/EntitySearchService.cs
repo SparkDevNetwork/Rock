@@ -53,9 +53,9 @@ namespace Rock.Model
                     GroupByExpression = entitySearch.GroupByExpression,
                     SelectExpression = entitySearch.SelectExpression,
                     SelectManyExpression = entitySearch.SelectManyExpression,
-                    OrderByExpression = entitySearch.OrderByExpression,
+                    SortExpression = entitySearch.SortExpression,
                     MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery,
-                    IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced,
+                    IsEntitySecurityEnabled = entitySearch.IsEntitySecurityEnabled,
                     IncludePaths = entitySearch.IncludePaths,
                     IsRefinementAllowed = entitySearch.IsRefinementAllowed,
                     CurrentPerson = currentPerson
@@ -103,9 +103,9 @@ namespace Rock.Model
                 GroupByExpression = entitySearch.GroupByExpression,
                 SelectExpression = entitySearch.SelectExpression,
                 SelectManyExpression = entitySearch.SelectManyExpression,
-                OrderByExpression = entitySearch.OrderByExpression,
+                SortExpression = entitySearch.SortExpression,
                 MaximumResultsPerQuery = entitySearch.MaximumResultsPerQuery,
-                IsEntitySecurityEnforced = entitySearch.IsEntitySecurityEnforced,
+                IsEntitySecurityEnabled = entitySearch.IsEntitySecurityEnabled,
                 IncludePaths = entitySearch.IncludePaths,
                 IsRefinementAllowed = entitySearch.IsRefinementAllowed,
                 CurrentPerson = currentPerson

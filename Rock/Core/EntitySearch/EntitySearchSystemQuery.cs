@@ -54,11 +54,11 @@ namespace Rock.Core.EntitySearch
         public string SelectManyExpression { get; set; }
 
         /// <summary>
-        /// Gets or sets the expression that will be used to order the results.
+        /// Gets or sets the expression that will be used to sort the results.
         /// This is processed after <see cref="SelectExpression"/>.
         /// </summary>
         /// <value>A <see cref="string"/> containing the dynamic LINQ <c>OrderBy()</c> expression.</value>
-        public string OrderByExpression { get; set; }
+        public string SortExpression { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of results per query. More data can
@@ -68,17 +68,17 @@ namespace Rock.Core.EntitySearch
         public int? MaximumResultsPerQuery { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this search will entity
+        /// Gets or sets a value indicating whether this search will
         /// enforce entity security. Entity security has a pretty heafty
         /// performance hit and should only be used when it is actually needed.
         /// </summary>
         /// <value><c>true</c> if this search will enforce entity security; otherwise, <c>false</c>.</value>
-        public bool IsEntitySecurityEnforced { get; set; }
+        public bool IsEntitySecurityEnabled { get; set; }
 
         /// <summary>
         /// <para>
         /// Gets or sets the property paths to be included by Entity Framework.
-        /// This is only valid when <see cref="IsEntitySecurityEnforced"/> is <c>true</c>.
+        /// This is only valid when <see cref="IsEntitySecurityEnabled"/> is <c>true</c>.
         /// </para>
         /// <para>
         /// Example: <c>GroupType,Members.Person</c>

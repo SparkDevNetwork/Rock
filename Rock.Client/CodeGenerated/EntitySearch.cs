@@ -50,10 +50,13 @@ namespace Rock.Client
         public string GroupByExpression { get; set; }
 
         /// <summary />
+        public string IncludePaths { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; } = true;
 
         /// <summary />
-        public bool IsEntitySecurityEnforced { get; set; }
+        public bool IsEntitySecurityEnabled { get; set; }
 
         /// <summary />
         public bool IsRefinementAllowed { get; set; }
@@ -73,10 +76,13 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public string OrderExpression { get; set; }
+        public string SelectExpression { get; set; }
 
         /// <summary />
-        public string SelectExpression { get; set; }
+        public string SelectManyExpression { get; set; }
+
+        /// <summary />
+        public string SortExpression { get; set; }
 
         /// <summary />
         public string WhereExpression { get; set; }
@@ -119,15 +125,17 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupByExpression = source.GroupByExpression;
+            this.IncludePaths = source.IncludePaths;
             this.IsActive = source.IsActive;
-            this.IsEntitySecurityEnforced = source.IsEntitySecurityEnforced;
+            this.IsEntitySecurityEnabled = source.IsEntitySecurityEnabled;
             this.IsRefinementAllowed = source.IsRefinementAllowed;
             this.Key = source.Key;
             this.MaximumResultsPerQuery = source.MaximumResultsPerQuery;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.OrderExpression = source.OrderExpression;
             this.SelectExpression = source.SelectExpression;
+            this.SelectManyExpression = source.SelectManyExpression;
+            this.SortExpression = source.SortExpression;
             this.WhereExpression = source.WhereExpression;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

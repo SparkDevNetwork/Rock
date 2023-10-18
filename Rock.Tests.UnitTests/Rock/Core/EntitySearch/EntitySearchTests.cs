@@ -158,7 +158,7 @@ namespace Rock.Tests.UnitTests.Rock.Core.EntitySearch
                 WhereExpression = "GroupTypeId == 1 || GroupTypeId == 2",
                 GroupByExpression = "GroupTypeId",
                 SelectExpression = "new { Key as GroupTypeId, Count() as Count }",
-                OrderByExpression = "GroupTypeId"
+                SortExpression = "GroupTypeId"
             };
 
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null );

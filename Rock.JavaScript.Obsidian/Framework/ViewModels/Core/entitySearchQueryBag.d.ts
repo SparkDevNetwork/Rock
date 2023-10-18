@@ -39,10 +39,16 @@ export type EntitySearchQueryBag = {
     isCountOnly: boolean;
 
     /**
-     * Gets or sets the expression that will be used to order the results.
-     * This is processed after the Rock.ViewModels.Core.EntitySearchQueryBag.Select expression.
+     * Gets or sets the number of items to include in the result set.
+     * This is processed after Rock.ViewModels.Core.EntitySearchQueryBag.Offset is processed.
      */
-    orderBy?: string | null;
+    limit?: number | null;
+
+    /**
+     * Gets or sets the number of items to skip before the first item the result set. This
+     * is processed after Rock.ViewModels.Core.EntitySearchQueryBag.Sort performs sorting.
+     */
+    offset?: number | null;
 
     /**
      * Gets or sets the expression that will be used to define the structure
@@ -59,16 +65,10 @@ export type EntitySearchQueryBag = {
     selectMany?: string | null;
 
     /**
-     * Gets or sets the number of items to skip in the result set. This
-     * is processed after Rock.ViewModels.Core.EntitySearchQueryBag.OrderBy performs sorting.
+     * Gets or sets the expression that will be used to sort the results.
+     * This is processed after the Rock.ViewModels.Core.EntitySearchQueryBag.Select expression.
      */
-    skip?: number | null;
-
-    /**
-     * Gets or sets the number of items to include in the result set.
-     * This is processed after Rock.ViewModels.Core.EntitySearchQueryBag.Skip is processed.
-     */
-    take?: number | null;
+    sort?: string | null;
 
     /** Gets or sets the expression that will be used to filter the query. */
     where?: string | null;

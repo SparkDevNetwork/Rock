@@ -805,9 +805,9 @@ namespace Rock.Lava.Blocks
             userQuery.GroupBy = parms.GetValueOrNull( "groupby" );
             userQuery.Select = parms.GetValueOrNull( "select" );
             userQuery.SelectMany = parms.GetValueOrNull( "selectmany" );
-            userQuery.OrderBy = parms.GetValueOrNull( "sort" );
-            userQuery.Skip = parms.GetValueOrNull( "offset" ).AsIntegerOrNull();
-            userQuery.Take = parms.GetValueOrNull( "limit" ).AsIntegerOrNull() ?? 1_000;
+            userQuery.Sort = parms.GetValueOrNull( "sort" );
+            userQuery.Offset = parms.GetValueOrNull( "offset" ).AsIntegerOrNull();
+            userQuery.Limit = parms.GetValueOrNull( "limit" ).AsIntegerOrNull() ?? 1_000;
 
             // TODO: "selectmany" ??
 

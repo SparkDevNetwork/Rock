@@ -46,11 +46,11 @@ namespace Rock.ViewModels.Blocks.Core.EntitySearchDetail
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this search will entity
+        /// Gets or sets a value indicating whether this search will
         /// enforce entity security. Entity security has a pretty heafty
         /// performance hit and should only be used when it is actually needed.
         /// </summary>
-        public bool IsEntitySecurityEnforced { get; set; }
+        public bool IsEntitySecurityEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets the property paths to be included by Entity Framework.
@@ -83,10 +83,10 @@ namespace Rock.ViewModels.Blocks.Core.EntitySearchDetail
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the expression that will be used to order the results.
+        /// Gets or sets the expression that will be used to sort the results.
         /// This is processed after Rock.Model.EntitySearch.SelectExpression.
         /// </summary>
-        public string OrderByExpression { get; set; }
+        public string SortExpression { get; set; }
 
         /// <summary>
         /// Gets or sets the expression that will be used to define the structure

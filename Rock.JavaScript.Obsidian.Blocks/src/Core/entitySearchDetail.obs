@@ -58,6 +58,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { EntitySearchBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchBag";
     import { EntitySearchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntitySearchDetail/entitySearchDetailOptionsBag";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
 
     const config = useConfigurationValues<DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -84,12 +85,12 @@
         "groupByExpression",
         "includePaths",
         "isActive",
-        "isEntitySecurityEnforced",
+        "isEntitySecurityEnabled",
         "isRefinementAllowed",
         "key",
         "maximumResultsPerQuery",
         "name",
-        "orderByExpression",
+        "sortExpression",
         "selectExpression",
         "selectManyExpression",
         "whereExpression"
@@ -150,12 +151,19 @@
     });
 
     const footerSecondaryActions = computed((): PanelAction[] => {
-        if (panelMode.value === DetailPanelMode.View || !entitySearchEditBag.value) {
-            return [];
+        const actions: PanelAction[] = [];
+
+        if (panelMode.value === DetailPanelMode.View) {
+            actions.push({
+                type: "default",
+                title: "Copy API link",
+                iconCssClass: "fa fa-copy",
+                handler: onCopyLink
+            });
         }
 
-        return [
-            {
+        if (panelMode.value !== DetailPanelMode.View && entitySearchEditBag.value) {
+            actions.push({
                 type: "default",
                 title: "Preview",
                 iconCssClass: "fa fa-search",
@@ -163,9 +171,12 @@
                 disabled: !entitySearchEditBag.value.whereExpression
                     && !entitySearchEditBag.value.groupByExpression
                     && !entitySearchEditBag.value.selectExpression
-                    && !entitySearchEditBag.value.orderByExpression
-            }
-        ];
+                    && !entitySearchEditBag.value.selectManyExpression
+                    && !entitySearchEditBag.value.sortExpression
+            });
+        }
+
+        return actions;
     });
 
     // #endregion
@@ -198,15 +209,15 @@
             newBag.selectManyExpression = "";
         }
 
-        if (newBag.isOrderByEnabled === false) {
-            newBag.orderByExpression = "";
+        if (newBag.isSortEnabled === false) {
+            newBag.sortExpression = "";
         }
 
         delete newBag.isWhereEnabled;
         delete newBag.isGroupByEnabled;
         delete newBag.isSelectEnabled;
         delete newBag.isSelectManyEnabled;
-        delete newBag.isOrderByEnabled;
+        delete newBag.isSortEnabled;
 
         return newBag;
     }
@@ -315,6 +326,20 @@
         return false;
     }
 
+    /**
+     * Copies the link to the API for this request to the clipboard.
+     */
+    function onCopyLink(): void {
+        let entityTypeName = entitySearchViewBag.value?.entityType?.text ?? "unknown";
+
+        entityTypeName = entityTypeName.toLowerCase().replace(/ /g, "");
+
+        navigator.clipboard.writeText(`${window.location.origin}/api/v2/models/${pluralize(entityTypeName)}/data/search/${entitySearchViewBag.value?.key}`);
+    }
+
+    /**
+     * Shows the preview modal for the current values in the edit panel.
+     */
     async function onShowPreview(): Promise<void> {
         // Remove our custom properties from the bag before sending it.
         const entityBag = getCleanEditBag(entitySearchEditBag.value);

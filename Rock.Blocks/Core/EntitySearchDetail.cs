@@ -207,7 +207,7 @@ namespace Rock.Blocks.Core
                 Description = entity.Description,
                 EntityType = entity.EntityType.ToListItemBag(),
                 IsActive = entity.IsActive,
-                IsEntitySecurityEnforced = entity.IsEntitySecurityEnforced,
+                IsEntitySecurityEnabled = entity.IsEntitySecurityEnabled,
                 IsRefinementAllowed = entity.IsRefinementAllowed,
                 Key = entity.Key,
                 MaximumResultsPerQuery = entity.MaximumResultsPerQuery,
@@ -248,7 +248,7 @@ namespace Rock.Blocks.Core
 
             bag.IncludePaths = entity.IncludePaths;
             bag.GroupByExpression = entity.GroupByExpression;
-            bag.OrderByExpression = entity.OrderByExpression;
+            bag.SortExpression = entity.SortExpression;
             bag.SelectExpression = entity.SelectExpression;
             bag.SelectManyExpression = entity.SelectManyExpression;
             bag.WhereExpression = entity.WhereExpression;
@@ -282,11 +282,22 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.IsEntitySecurityEnforced ),
-                () => entity.IsEntitySecurityEnforced = box.Entity.IsEntitySecurityEnforced );
+            box.IfValidProperty( nameof( box.Entity.IsEntitySecurityEnabled ),
+                () => entity.IsEntitySecurityEnabled = box.Entity.IsEntitySecurityEnabled );
 
-            box.IfValidProperty( nameof(box.Entity.IncludePaths ),
-                () => entity.IncludePaths = box.Entity.IncludePaths );
+            box.IfValidProperty( nameof(box.Entity.IncludePaths ), () =>
+            {
+                var paths = ( box.Entity.IncludePaths ?? string.Empty ).Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+                if ( paths.Any() )
+                {
+                    entity.IncludePaths = string.Join( ",", paths );
+                }
+                else
+                {
+                    entity.IncludePaths = null;
+                }
+            } );
 
             box.IfValidProperty( nameof( box.Entity.IsRefinementAllowed ),
                 () => entity.IsRefinementAllowed = box.Entity.IsRefinementAllowed );
@@ -300,8 +311,8 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
 
-            box.IfValidProperty( nameof( box.Entity.OrderByExpression ),
-                () => entity.OrderByExpression = box.Entity.OrderByExpression );
+            box.IfValidProperty( nameof( box.Entity.SortExpression ),
+                () => entity.SortExpression = box.Entity.SortExpression );
 
             box.IfValidProperty( nameof( box.Entity.SelectExpression ),
                 () => entity.SelectExpression = box.Entity.SelectExpression );
