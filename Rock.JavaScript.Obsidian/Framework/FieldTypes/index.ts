@@ -104,6 +104,9 @@ registerFieldType(FieldTypeGuids.ContentChannelTypes, new ContentChannelTypesFie
 import { ContentChannelsFieldType } from "./contentChannelsField.partial";
 registerFieldType(FieldTypeGuids.ContentChannels, new ContentChannelsFieldType());
 
+import { ConnectionActivityTypeField } from "./connectionActivityTypeField.partial";
+registerFieldType(FieldTypeGuids.ConnectionActivityType, new ConnectionActivityTypeField());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
@@ -215,8 +218,17 @@ registerFieldType(FieldTypeGuids.Integer, new IntegerFieldType());
 import { IntegerRangeFieldType } from "./integerRangeField.partial";
 registerFieldType(FieldTypeGuids.IntegerRange, new IntegerRangeFieldType());
 
+import { InteractionChannelFieldType } from "./interactionChannelField.partial";
+registerFieldType(FieldTypeGuids.InteractionChannel, new InteractionChannelFieldType());
+
+import { InteractionChannelsFieldType } from "./interactionChannelsField.partial";
+registerFieldType(FieldTypeGuids.InteractionChannels, new InteractionChannelsFieldType());
+
 import { KeyValueListFieldType } from "./keyValueListField.partial";
 registerFieldType(FieldTypeGuids.KeyValueList, new KeyValueListFieldType());
+
+import { LabelFieldType } from "./labelField.partial";
+registerFieldType(FieldTypeGuids.Label, new LabelFieldType());
 
 import { LavaFieldType } from "./lavaField.partial";
 registerFieldType(FieldTypeGuids.Lava, new LavaFieldType());
@@ -289,6 +301,9 @@ registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
 
 import { StreakTypeFieldType } from "./streakTypeField.partial";
 registerFieldType(FieldTypeGuids.StreakType, new StreakTypeFieldType());
+
+import { StructureContentEditorFieldType } from "./structureContentEditorField.partial";
+registerFieldType(FieldTypeGuids.StructureContentEditor, new StructureContentEditorFieldType());
 
 import { TextFieldType } from "./textField.partial";
 registerFieldType(FieldTypeGuids.Text, new TextFieldType());

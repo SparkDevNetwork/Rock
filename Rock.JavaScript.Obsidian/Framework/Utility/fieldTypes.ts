@@ -24,6 +24,9 @@ const fieldTypeTable: Record<Guid, IFieldType> = {};
 const fieldTypeAttributeGuidSymbol = Symbol();
 
 
+/** Determines how the field type component is being used so it can adapt to different */
+export type DataEntryMode = "defaultValue" | undefined;
+
 /**
  * Register a new field type in the system. This must be called for all field
  * types a plugin registers.

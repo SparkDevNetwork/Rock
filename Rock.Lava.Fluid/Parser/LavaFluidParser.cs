@@ -66,22 +66,35 @@ namespace Rock.Lava.Fluid
 
         private static readonly Parser<char> SpaceParser = Terms.Char( ' ' );
 
-        private static readonly Parser<LavaDocumentToken> LavaOutputTokenParser = OutputStart
+        private static readonly Parser<LavaDocumentToken> LavaOutputTokenParser =
+            OutputStart
             .SkipAnd( AnyCharBefore( OutputEnd, canBeEmpty: true ) )
             .AndSkip( OutputEnd )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Output, x.ToString() ) );
 
-        private static readonly Parser<LavaDocumentToken> LavaTagTokenParser = LavaTokenStartParser.SkipAnd( AnyCharBefore( LavaTokenEndParser, canBeEmpty: true ) )
+        private static readonly Parser<LavaDocumentToken> LavaTagTokenParser =
+            LavaTokenStartParser.SkipAnd( AnyCharBefore( LavaTokenEndParser, canBeEmpty: true ) )
             .AndSkip( LavaTokenEndParser )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Tag, x.ToString() ) );
 
-        private static readonly Parser<LavaDocumentToken> LavaTextTokenParser = AnyCharBefore( OutputStart.Or( LavaTokenStartParser.AsFluidTagResultParser() ) )
+        private static readonly Parser<LavaDocumentToken> LavaInlineCommentTokenParser =
+            LavaTagParsers.LavaInlineCommentStart.SkipAnd( AnyCharBefore( LavaTagParsers.LavaInlineCommentEnd, canBeEmpty: true ) )
+            .AndSkip( LavaTagParsers.LavaInlineCommentEnd )
+            .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.InlineComment, x.ToString() ) );
+        private static readonly Parser<LavaDocumentToken> LavaBlockCommentTokenParser =
+            LavaTagParsers.LavaBlockCommentStart.SkipAnd( AnyCharBefore( LavaTagParsers.LavaBlockCommentEnd, canBeEmpty: true ) )
+            .AndSkip( LavaTagParsers.LavaBlockCommentEnd )
+            .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.BlockComment, x.ToString() ) );
+
+        private static readonly Parser<LavaDocumentToken> LavaTextTokenParser =
+            AnyCharBefore( OutputStart.Or( LavaTokenStartParser.AsFluidTagResultParser() ).Or( LavaCommentTokenStartParser.AsFluidTagResultParser() ) )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Literal, x.ToString() ) );
 
         private static Parser<LavaTagResult> ShortcodeTagStartParser = LavaTagParsers.LavaShortcodeStart;
         private static Parser<LavaTagResult> ShortcodeTagEndParser = LavaTagParsers.LavaShortcodeEnd;
 
-        private static readonly Parser<LavaDocumentToken> LavaShortcodeTokenParser = ShortcodeTagStartParser.SkipAnd( AnyCharBefore( ShortcodeTagEndParser, canBeEmpty: true ) )
+        private static readonly Parser<LavaDocumentToken> LavaShortcodeTokenParser =
+            ShortcodeTagStartParser.SkipAnd( AnyCharBefore( ShortcodeTagEndParser, canBeEmpty: true ) )
             .AndSkip( ShortcodeTagEndParser )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Shortcode, x.ToString() ) );
 
@@ -90,17 +103,29 @@ namespace Rock.Lava.Fluid
 
         #endregion
 
-        public static Parser<LavaTagResult> LavaTokenStartParser => OneOf( LavaTagParsers.LavaTagStart,
-            LavaTagParsers.LavaShortcodeStart,
-            LavaTagParsers.LavaBlockCommentStart,
-            LavaTagParsers.LavaInlineCommentStart );
-        public static Parser<LavaTagResult> LavaTokenEndParser => OneOf( LavaTagParsers.LavaTagEnd,
-            LavaTagParsers.LavaShortcodeEnd,
-            LavaTagParsers.LavaBlockCommentEnd,
-            LavaTagParsers.LavaInlineCommentEnd );
+        public static Parser<LavaTagResult> LavaCommentTokenStartParser =>
+            OneOf( LavaTagParsers.LavaBlockCommentStart,
+                LavaTagParsers.LavaInlineCommentStart );
+        public static Parser<LavaTagResult> LavaCommentTokenEndParser =>
+            OneOf( LavaTagParsers.LavaBlockCommentEnd,
+                LavaTagParsers.LavaInlineCommentEnd );
+
+        public static Parser<LavaTagResult> LavaTokenStartParser =>
+            OneOf( LavaTagParsers.LavaTagStart,
+                LavaTagParsers.LavaShortcodeStart );
+        public static Parser<LavaTagResult> LavaTokenEndParser =>
+            OneOf( LavaTagParsers.LavaTagEnd,
+                LavaTagParsers.LavaShortcodeEnd );
 
         // The complete list of valid tokens in a Lava document.
-        public static readonly Parser<List<LavaDocumentToken>> LavaTokensListParser = ZeroOrMany( LavaOutputTokenParser.Or( LavaShortcodeTokenParser ).Or( LavaTagTokenParser ).Or( LavaTextTokenParser ) );
+        public static readonly Parser<List<LavaDocumentToken>> LavaTokensListParser =
+            ZeroOrMany(
+                LavaInlineCommentTokenParser
+                .Or( LavaBlockCommentTokenParser )
+                .Or( LavaOutputTokenParser )
+                .Or( LavaShortcodeTokenParser )
+                .Or( LavaTagTokenParser )
+                .Or( LavaTextTokenParser ) );
 
         public Parser<List<FilterArgument>> ArgumentsListParser => ArgumentsList;
         public Parser<List<FilterArgument>> LavaArgumentsListParser;
@@ -525,21 +550,40 @@ namespace Rock.Lava.Fluid
         /// <returns></returns>
         public static List<string> ParseToTokens( string template )
         {
+            return ParseToTokens( template, includeComments: false );
+        }
+
+        /// <summary>
+        /// Parse the supplied template into a collection of tokens that are recognized by the Fluid parser.
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="includeComments">If set to true, comment tokens are included in the output.</param>
+        /// <returns></returns>
+        public static List<string> ParseToTokens( string template, bool includeComments )
+        {
             var tokens = new List<string>();
 
             var context = new FluidParseContext( template );
 
-            var lavaTokens = LavaTokensListParser.Parse( context ).Select( x => x.ToString() ).ToList();
+            var lavaTokens = LavaTokensListParser.Parse( context );
 
-            // If the template contains only literal text, add the entire content as a single text token.
-            if ( !lavaTokens.Any()
-                 && !string.IsNullOrEmpty( template ) )
+            if ( !includeComments )
             {
-                lavaTokens.Add( template );
+                lavaTokens = lavaTokens.Where( t => t.ElementType != LavaDocumentTokenTypeSpecifier.InlineComment && t.ElementType != LavaDocumentTokenTypeSpecifier.BlockComment ).ToList();
             }
 
-            return lavaTokens;
+            var lavaTokenStrings = lavaTokens.Select( x => x.ToString() ).ToList();
+
+            // If the template contains only literal text, add the entire content as a single text token.
+            if ( !lavaTokenStrings.Any()
+                 && !string.IsNullOrEmpty( template ) )
+            {
+                lavaTokenStrings.Add( template );
+            }
+
+            return lavaTokenStrings;
         }
+
     }
 
     #region Support Classes
@@ -556,7 +600,12 @@ namespace Rock.Lava.Fluid
         // literal_text
         Literal,
         // {[ shortcode ]}
-        Shortcode
+        Shortcode,
+        // Comment in the form: //- comment<eol>
+        InlineComment,
+        // Comment in the form: /- comment -/
+        BlockComment
+
     }
 
     /// <summary>
@@ -577,15 +626,23 @@ namespace Rock.Lava.Fluid
         {
             if ( ElementType == LavaDocumentTokenTypeSpecifier.Output )
             {
-                return "{{ " + Content + " }}";
+                return "{{" + Content + "}}";
             }
             else if ( ElementType == LavaDocumentTokenTypeSpecifier.Tag )
             {
-                return "{% " + Content + " %}";
+                return "{%" + Content + "%}";
             }
             else if ( ElementType == LavaDocumentTokenTypeSpecifier.Shortcode )
             {
-                return "{[ " + Content + " ]}";
+                return "{[" + Content + "]}";
+            }
+            else if ( ElementType == LavaDocumentTokenTypeSpecifier.InlineComment )
+            {
+                return "//-" + Content;
+            }
+            else if ( ElementType == LavaDocumentTokenTypeSpecifier.BlockComment )
+            {
+                return "/-" + Content + "-/";
             }
 
             return Content;

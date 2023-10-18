@@ -69,6 +69,7 @@
     <Compile Include="Core\EntitySearchDetail.cs" />
     <Compile Include="Core\EntitySearchList.cs" />
     <Compile Include="Core\Notes.cs" />
+    <Compile Include="Core\NoteWatchDetail.cs" />
     <Compile Include="Core\NotificationMessageList.cs" />
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />

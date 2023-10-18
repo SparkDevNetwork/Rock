@@ -34,7 +34,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  */
 export class PhoneNumberFieldType extends FieldTypeBase {
     public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
-        return formatPhoneNumber(value || "");
+        return value;
     }
 
     public override getEditComponent(): Component {

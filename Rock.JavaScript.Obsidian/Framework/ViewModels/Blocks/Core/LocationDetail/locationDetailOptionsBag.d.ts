@@ -21,9 +21,26 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** Contains extra configuration details for the block. */
 export type LocationDetailOptionsBag = {
+    /** Gets or sets a value indicating whether current user has Administrate authorizartion */
+    canAdministrate: boolean;
+
+    /** Gets or sets a value indicating whether a parent Id was passed in the URL indicating the block is in TreeView. */
+    hasParentLocationId: boolean;
+
+    /** Gets or sets a value indicating whether the a PersonId was passed as a URL parameter */
+    hasPersonId: boolean;
+
+    /** Gets or sets the map style unique identifier. */
+    mapStyleGuid?: Guid | null;
+
+    /** Gets or sets the panel title. */
+    panelTitle?: string | null;
+
     /** Gets or sets the printer device options. */
     printerDeviceOptions?: ListItemBag[] | null;
 };

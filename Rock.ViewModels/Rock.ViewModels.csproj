@@ -63,6 +63,8 @@
     <Compile Include="Blocks\Core\EntitySearchDetail\EntitySearchDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\EntitySearchDetail\PreviewResultsBag.cs" />
     <Compile Include="Blocks\Core\EntitySearchList\EntitySearchListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\NoteWatchDetail\NoteWatchBag.cs" />
+    <Compile Include="Blocks\Core\NoteWatchDetail\NoteWatchDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />

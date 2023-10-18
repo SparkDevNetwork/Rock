@@ -15,10 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
-using Rock.Media;
 using Rock.Model;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
@@ -58,13 +58,23 @@ namespace Rock
                 var messagingEnabled = existingMobilePhone?.IsMessagingEnabled ?? true;
                 if ( bag.IsValidProperty( nameof( bag.IsMessagingEnabled ) ) )
                 {
-                    messagingEnabled = bag.IsMessagingEnabled;
+                    messagingEnabled = bag.IsMessagingEnabled ?? false;
                 }
 
                 person.UpdatePhoneNumber( numberTypeMobile.Id, bag.MobilePhoneCountryCode, bag.MobilePhoneNumber, messagingEnabled, isUnlisted, rockContext );
             } );
 
-            bag.IfValidProperty( nameof( bag.PersonBirthDate ), () => person.SetBirthDate( new DateTime( bag.PersonBirthDate.Year, bag.PersonBirthDate.Month, bag.PersonBirthDate.Day ) ) );
+            bag.IfValidProperty( nameof( bag.PersonBirthDate ), () =>
+            {
+                if ( bag.PersonBirthDate != null )
+                {
+                    person.SetBirthDate( new DateTime( bag.PersonBirthDate.Year, bag.PersonBirthDate.Month, bag.PersonBirthDate.Day ) );
+                }
+                else
+                {
+                    person.SetBirthDate( null );
+                }
+            } );
 
             bag.IfValidProperty( nameof( bag.PersonConnectionStatus ), () =>
             {
@@ -94,7 +104,7 @@ namespace Rock
                 }
             } );
 
-            bag.IfValidProperty( nameof( bag.PersonGender ), () => person.Gender = bag.PersonGender );
+            bag.IfValidProperty( nameof( bag.PersonGender ), () => person.Gender = bag.PersonGender ?? Gender.Unknown );
 
             bag.IfValidProperty( nameof( bag.PersonGradeOffset ), () =>
             {
@@ -236,7 +246,36 @@ namespace Rock
                 MobilePhoneNumber = existingMobilePhone != null ? existingMobilePhone.NumberFormatted : null,
                 MobilePhoneCountryCode = existingMobilePhone != null ? existingMobilePhone.CountryCode : null,
                 IsMessagingEnabled = existingMobilePhone != null ? existingMobilePhone.IsMessagingEnabled : false,
+                ValidProperties = new List<string>
+                {
+                    ToCamelCase( nameof( PersonBasicEditorBag.FirstName ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.LastName ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.PersonTitle ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.PersonSuffix ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.PersonMaritalStatus ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.PersonGradeOffset ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.PersonGroupRole ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.PersonConnectionStatus ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.PersonGender ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.PersonRace ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.PersonEthnicity ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.PersonBirthDate ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.Email ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.MobilePhoneNumber ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.MobilePhoneCountryCode ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.IsMessagingEnabled ) )
+                }
             };
+        }
+
+        private static string ToCamelCase( string str )
+        {
+            if ( str.IsNullOrWhiteSpace() )
+            {
+                return str;
+            }
+
+            return str.Substring( 0, 1 ).ToLower() + str.Substring( 1 );
         }
     }
 }

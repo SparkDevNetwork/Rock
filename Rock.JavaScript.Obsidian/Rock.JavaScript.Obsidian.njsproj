@@ -87,7 +87,7 @@
     <Content Include="Framework\Controls\following.obs" />
     <Content Include="Framework\Controls\fullscreen.obs" />
     <Content Include="Framework\Controls\gatewayControl.obs" />
-    <Content Include="Framework\Controls\genderDropDownList.obs" />
+    <Content Include="Framework\Controls\genderPicker.obs" />
     <Content Include="Framework\Controls\gradePicker.obs" />
     <Content Include="Framework\Controls\groupAndRolePicker.obs" />
     <Content Include="Framework\Controls\groupMemberPicker.obs" />
@@ -327,6 +327,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\EntitySearchDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\EntitySearchList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\Notes\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\NoteWatchDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CategoryDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\FollowingEventTypeDetail\" />
@@ -802,6 +803,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\noteTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\saveNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\watchNoteRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteWatchDetail\noteWatchBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteWatchDetail\noteWatchDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteWatchDetail\noteWatchValidationResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\getMessageActionRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\getMessageActionResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\getMessagesRequestBag.d.ts" />

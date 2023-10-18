@@ -25,6 +25,7 @@ import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlB
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** Contains details of the location. */
 export type LocationBag = {
     /** Gets or sets the address fields. */
     addressFields?: AddressControlBag | null;
@@ -57,7 +58,7 @@ export type LocationBag = {
     idKey?: string | null;
 
     /** Gets or sets the image identifier. */
-    imageId?: number | null;
+    image?: ListItemBag | null;
 
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;

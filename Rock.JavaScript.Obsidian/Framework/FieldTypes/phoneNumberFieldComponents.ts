@@ -14,9 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from "vue";
+import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+
+type PhoneNumberFieldValue = {
+    number: string,
+    countryCode: string
+};
 
 export const EditComponent = defineComponent({
     name: "PhoneNumberField.Edit",
@@ -27,33 +32,35 @@ export const EditComponent = defineComponent({
 
     props: getFieldEditorProps(),
 
-    data() {
+    setup(props, { emit }) {
+        const phoneNumber = ref("");
+        const countryCode = ref("");
+
+        watch(() => props.modelValue, () => {
+            try {
+                const fieldValue = JSON.parse(props.modelValue) as PhoneNumberFieldValue;
+
+                phoneNumber.value = fieldValue?.number ?? "";
+                countryCode.value = fieldValue?.countryCode ?? "";
+            }
+            catch(e) {
+                phoneNumber.value = "";
+                countryCode.value = "";
+            }
+        }, {immediate:true});
+
+        watch([phoneNumber, countryCode], () => {
+            emit("update:modelValue", JSON.stringify({number:phoneNumber.value, countryCode:countryCode.value}));
+        });
+
         return {
-            internalValue: ""
+            phoneNumber,
+            countryCode
         };
     },
 
-    computed: {
-        configAttributes(): Record<string, number | boolean> {
-            const attributes: Record<string, number | boolean> = {};
-            return attributes;
-        }
-    },
-
-    watch: {
-        internalValue(): void {
-            this.$emit("update:modelValue", this.internalValue);
-        },
-        modelValue: {
-            immediate: true,
-            handler(): void {
-                this.internalValue = this.modelValue || "";
-            }
-        }
-    },
-
     template: `
-<PhoneNumberBox v-model="internalValue" v-bind="configAttributes" />
+<PhoneNumberBox v-model="phoneNumber" v-model:countryCode="countryCode" />
 `
 });
 
