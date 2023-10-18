@@ -9,7 +9,7 @@
                 </div>
 
                 <div :class="codeEditorClass" :style="codeEditorStyle">
-                    <pre :id="codeEditorId" class="position-absolute inset-0 m-0 ace_editor">{{ internalValue }}</pre>
+                    <pre v-once :id="codeEditorId" class="position-absolute inset-0 m-0 ace_editor">{{ internalValue }}</pre>
                 </div>
             </div>
         </template>
