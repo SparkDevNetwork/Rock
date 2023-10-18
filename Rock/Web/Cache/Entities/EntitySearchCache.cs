@@ -189,16 +189,17 @@ namespace Rock.Web.Cache
 
         /// <summary>
         /// Gets the entity search cache object that matches the entity type
-        /// and search key.
+        /// and search key. This will only return a cached item that is active.
         /// </summary>
         /// <param name="entityTypeCache">The <see cref="EntityTypeCache"/> object that identifies the type of entity search.</param>
         /// <param name="searchKey">The key that identifies the entity search within the entity type.</param>
-        /// <returns>A reference to the <see cref="EntitySearchCache"/> or <c>null</c> if not found.</returns>
+        /// <returns>A reference to the <see cref="EntitySearchCache"/> or <c>null</c> if not found or inactive.</returns>
         public static EntitySearchCache GetByEntityTypeAndKey( EntityTypeCache entityTypeCache, string searchKey )
         {
             return All()
                 .Where( es => es.EntityTypeId == entityTypeCache.Id
-                    && es.Key.Equals( searchKey, StringComparison.OrdinalIgnoreCase ) )
+                    && es.Key.Equals( searchKey, StringComparison.OrdinalIgnoreCase )
+                    && es.IsActive )
                 .FirstOrDefault();
         }
 
