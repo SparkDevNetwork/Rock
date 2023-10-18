@@ -16,7 +16,6 @@
 //
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Reporting;
 using Rock.Web.UI.Controls;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,18 +50,26 @@ namespace Rock.Field.Types
                     numberPart = formattedNumber;
                 }
 
-                return ( new
+                return new PhoneNumberFieldValue
                 {
                     CountryCode = countryCodePart,
                     Number = numberPart
-                } ).ToCamelCaseJson( false, true );
+                }.ToCamelCaseJson( false, true );
             }
 
-            return ( new
+            return new PhoneNumberFieldValue
             {
                 CountryCode = GetDefaultCountryCode(),
                 Number = numberPart
-            } ).ToCamelCaseJson( false, true );
+            }.ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var number = publicValue.FromJsonOrNull<PhoneNumberFieldValue>();
+            // Store the value as a formatted phone number.
+            return GetFormattedPhoneNumber( number );
         }
 
         /// <inheritdoc/>
@@ -71,16 +78,24 @@ namespace Rock.Field.Types
             return base.GetPublicValue( privateValue, privateConfigurationValues );
         }
 
-        /// <inheritdoc/>
-        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        /// <summary>
+        /// Convert a phone number object to a formatted phone number string
+        /// </summary>
+        /// <param name="phone">A PhoneNumberFieldValue.</param>
+        /// <returns>A formatted string of the given phone number</returns>
+        private string GetFormattedPhoneNumber( PhoneNumberFieldValue phone )
         {
-            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
-        }
+            if ( phone == null )
+            {
+                return null;
+            }
 
-        /// <inheritdoc/>
-        public override string GetPrivateFilterValue( ComparisonValue publicValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            return base.GetPrivateFilterValue( publicValue, privateConfigurationValues );
+            // Include the country code only if it is not the default value.
+            var countryCode = phone.CountryCode;
+            var includeCountryCode = ( countryCode != GetDefaultCountryCode() );
+
+            var value = PhoneNumber.FormattedNumber( countryCode, phone.Number, includeCountryCode );
+            return value;
         }
 
 
@@ -116,12 +131,7 @@ namespace Rock.Field.Types
             }
 
             // Store the value as a formatted phone number.
-            // Include the country code only if it is not the default value.
-            var countryCode = phoneControl.CountryCode;
-            var includeCountryCode = ( countryCode != GetDefaultCountryCode() );
-
-            var value = PhoneNumber.FormattedNumber( countryCode, phoneControl.Number, includeCountryCode );
-            return value;
+            return GetFormattedPhoneNumber( new PhoneNumberFieldValue { Number = phoneControl.Number, CountryCode = phoneControl.CountryCode } );
         }
 
         /// <inheritdoc/>
@@ -168,5 +178,11 @@ namespace Rock.Field.Types
         }
 #endif
         #endregion
+
+        private class PhoneNumberFieldValue
+        {
+            public string Number { get; set; }
+            public string CountryCode { get; set; }
+        }
     }
 }
