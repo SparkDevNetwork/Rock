@@ -15,10 +15,15 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -27,10 +32,81 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of label files
     /// Stored as BinaryFile's Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LABEL )]
     public class LabelFieldType : BinaryFileFieldType
     {
+        #region Configuration
+
+        private const string FILE_PATH = "filePath";
+        private const string ENCODED_FILENAME = "encodedFileName";
+
+        #endregion
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guidValue = privateValue.AsGuidOrNull();
+            if ( guidValue.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var binaryFileInfo = new BinaryFileService( rockContext ).GetSelect( guidValue.Value, f => new ListItemBag()
+                    {
+                        Text = f.FileName,
+                        Value = f.Guid.ToString(),
+                    } );
+
+                    if ( binaryFileInfo == null )
+                    {
+                        return string.Empty;
+                    }
+
+                    return binaryFileInfo.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return base.GetPublicValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            var binaryFileGuid = value.AsGuidOrNull();
+            if ( binaryFileGuid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    var fileName = binaryFileService.GetSelect( binaryFileGuid.Value, s => s.FileName );
+
+                    if ( !string.IsNullOrWhiteSpace( fileName ) )
+                    {
+                        configurationValues[FILE_PATH] = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                        configurationValues[ENCODED_FILENAME] = System.Web.HttpUtility.HtmlEncode( fileName );
+                    }
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            configurationValues.Remove( FILE_PATH );
+            configurationValues.Remove( ENCODED_FILENAME );
+
+            return configurationValues;
+        }
+
+        #endregion Edit Control
 
         #region WebForms
 #if WEBFORMS

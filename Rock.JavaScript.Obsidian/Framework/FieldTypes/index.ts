@@ -224,6 +224,9 @@ registerFieldType(FieldTypeGuids.InteractionChannel, new InteractionChannelField
 import { KeyValueListFieldType } from "./keyValueListField.partial";
 registerFieldType(FieldTypeGuids.KeyValueList, new KeyValueListFieldType());
 
+import { LabelFieldType } from "./labelField.partial";
+registerFieldType(FieldTypeGuids.Label, new LabelFieldType());
+
 import { LavaFieldType } from "./lavaField.partial";
 registerFieldType(FieldTypeGuids.Lava, new LavaFieldType());
 
