@@ -1583,7 +1583,6 @@ namespace Rock.Blocks.Security
         {
             var validationResults = new PasswordlessLoginConfigurationValidation
             {
-                IsValid = true,
                 IsPasswordlessLoginInactive = false,
                 IsPasswordlessLoginConfirmationCommunicationMissing = false,
                 IsPasswordlessLoginConfirmationCommunicationInactive = false,
