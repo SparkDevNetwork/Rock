@@ -279,7 +279,7 @@ namespace RockWeb.Blocks.Cms
 
                 phAttributes.Controls.Clear();
                 Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup, 2 );
-
+                ShowApproval( item , true );
                 BindSlugs( item );
 
                 ShowDialog();
@@ -1313,13 +1313,21 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
-        private void ShowApproval( ContentChannelItem contentItem )
+        private void ShowApproval( ContentChannelItem contentItem, bool usingHiddenStatusField = false )
         {
             if ( contentItem != null && contentItem.ContentChannel != null && contentItem.ContentChannel.RequiresApproval )
             {
                 if ( contentItem.IsAuthorized( Authorization.APPROVE, CurrentPerson ) )
                 {
                     pnlStatus.Visible = true;
+
+                    // If the flag is set, use the status from the hidden field since it may have just been set but
+                    // now we're in a non-save postback situation (due to another control, attribute, etc.)
+                    // and we do not want to loose the correct value.
+                    if ( usingHiddenStatusField )
+                    {
+                        contentItem.Status = hfStatus.Value.ConvertToEnum<ContentChannelItemStatus>( contentItem.Status );
+                    }
 
                     PendingCss = contentItem.Status == ContentChannelItemStatus.PendingApproval ? "btn-warning active" : "btn-default";
                     ApprovedCss = contentItem.Status == ContentChannelItemStatus.Approved ? "btn-success active" : "btn-default";
