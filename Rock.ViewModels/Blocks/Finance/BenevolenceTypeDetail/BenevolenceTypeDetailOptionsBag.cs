@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Finance.BenevolenceTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class BenevolenceTypeDetailOptionsBag
     {
         /// <summary>

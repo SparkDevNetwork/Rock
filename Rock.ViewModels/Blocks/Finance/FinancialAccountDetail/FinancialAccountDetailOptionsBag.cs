@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialAccountDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FinancialAccountDetailOptionsBag
     {
         /// <summary>
