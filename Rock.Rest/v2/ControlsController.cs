@@ -601,6 +601,68 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Attribute Matrix Editor
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the asset storage providers.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AttributeMatrixEditorGetAttributes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "99B4FDB8-128C-4A8C-AFDB-C8F9BCE0A666" )]
+        public IHttpActionResult AttributeMatrixEditorGetAttributes( [FromBody] AttributeMatrixEditorGetAttributesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                Guid attributeMatrixTemplateGuid = new Guid( "1d24694e-445c-4852-b5bc-64cdea6f7175" );
+                AttributeMatrixItem tempAttributeMatrixItem = null;
+
+                if ( this.AttributeMatrixTemplateId.HasValue )
+                {
+                    AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
+                    var template = attributeMatrixTemplateService.Get( attributeMatrixTemplateGuid );
+
+
+                    tempAttributeMatrixItem = new AttributeMatrixItem();
+                    tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = template.Id };
+                    tempAttributeMatrixItem.LoadAttributes();
+
+                    foreach ( var attribute in tempAttributeMatrixItem.Attributes.Select( a => a.Value ) )
+                    {
+                        _gMatrixItems.Columns.Add( new AttributeField { DataField = attribute.Key, HeaderText = attribute.Name } );
+                    }
+
+                    //AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
+                    var attributeMatrixTemplateRanges = attributeMatrixTemplateService.GetSelect( attributeMatrixTemplateGuid, s => new { s.MinimumRows, s.MaximumRows } );
+
+                    // If a value is required, make sure we have a minumum row count of at least 1.
+                    var minRowCount = attributeMatrixTemplateRanges.MinimumRows.GetValueOrDefault( 0 );
+                    if ( this.Required
+                         && minRowCount < 1 )
+                    {
+                        minRowCount = 1;
+                    }
+                    _requiredRowCountRangeValidator.MinimumValue = minRowCount.ToString();
+
+                    _requiredRowCountRangeValidator.Enabled = minRowCount > 0;
+                    if ( minRowCount == 1 )
+                    {
+                        _requiredRowCountRangeValidator.ErrorMessage = "At least 1 row is required.";
+                    }
+                    else
+                    {
+                        _requiredRowCountRangeValidator.ErrorMessage = $"At least {minRowCount} rows are required";
+                    }
+                }
+
+                return Ok();
+            }
+        }
+
+        #endregion
+
         #region Audit Detail
 
         /// <summary>

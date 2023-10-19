@@ -1,0 +1,31 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="x-field">
+
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+</script>

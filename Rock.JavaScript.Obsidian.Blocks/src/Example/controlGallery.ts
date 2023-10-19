@@ -244,6 +244,7 @@ import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
 import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
 import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
 import PersonBasicEditorGallery from "./ControlGallery/personBasicEditorGallery.partial.obs";
+import AttributeMatrixEditorGallery from "./ControlGallery/attributeMatrixEditorGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -385,7 +386,8 @@ const attributeValuesContainerGallery = defineComponent({
         :displayAsTabs="displayAsTabs"
         :showCategoryLabel="showCategoryLabel"
         :numberOfColumns="numberOfColumns"
-        :entityTypeName="entityName" />
+        :entityTypeName="entityName"
+        :showPrePostHtml="showPrePost" />
 
     <template #settings>
         <div class="row">
@@ -8192,6 +8194,7 @@ const controlGalleryComponents: Record<string, Component> = [
     ChartGallery,
     EntityPickerGallery,
     PersonBasicEditorGallery,
+    AttributeMatrixEditorGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
