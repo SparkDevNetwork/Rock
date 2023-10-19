@@ -2899,6 +2899,15 @@ namespace Rock.Blocks.Event
                         FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels ) : new Dictionary<Guid, object>()
                     } );
                 }
+
+                // Populate all the default registration attribute values.
+                session.FieldValues = session.FieldValues ?? new Dictionary<Guid, object>();
+                foreach ( var registrationAttribute in registrationAttributes )
+                {
+                    var defaultEditValue = PublicAttributeHelper.GetPublicEditValue( registrationAttribute, registrationAttribute.DefaultValue );
+
+                    session.FieldValues[registrationAttribute.Guid] = defaultEditValue;
+                }
             }
 
             // Determine the starting point. External registration updates are
@@ -3686,6 +3695,8 @@ namespace Rock.Blocks.Event
             foreach ( var attribute in registrationAttributes )
             {
                 var value = registration.GetAttributeValue( attribute.Key );
+                value = PublicAttributeHelper.GetPublicEditValue( attribute, value );
+
                 session.FieldValues[attribute.Guid] = value;
             }
 
