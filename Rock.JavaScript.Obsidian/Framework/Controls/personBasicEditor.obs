@@ -13,7 +13,7 @@
         <div :class="{ 'col-sm-4': !showInOneColumn }">
             <DefinedValuePicker v-if="!hideConnectionStatus" v-model="personConnectionStatus" :definedTypeGuid="DefinedType.PersonConnectionStatus" :label="fullPrefix + 'Connection Status'" formGroupClasses="field-connectionstatus" showBlankItem rules="required" />
             <GroupRolePicker v-if="!hidePersonRole" v-model="personGroupRole" :label="fullPrefix + 'Role'" rules="required" displayStyle="list" horizontal formGroupClasses="field-role" :groupTypeGuid="GroupType.GrouptypeFamily" />
-            <RadioButtonList v-if="!hideGender" v-model="personGender" :label="fullPrefix + 'Gender'" :items="genders" horizontal formGroupClasses="field-gender" :rules="requireGender ? 'required' : ''" />
+            <GenderPicker v-if="!hideGender" v-model="personGender" :label="fullPrefix + 'Gender'" displayStyle="list" hideUnknown formGroupClasses="field-gender" :rules="requireGender ? 'required' : ''" />
         </div>
         <div :class="{ 'col-sm-4': !showInOneColumn }">
             <BirthdayPicker v-if="!hideBirthdate" v-model="personBirthDate" :label="fullPrefix + 'Birthdate'" formGroupClasses="field-birthdate" :rules="requireBirthdate ? 'required' : ''" />
@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, watchEffect } from "vue";
+    import { computed, PropType, ref, watchEffect } from "vue";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { GroupType } from "@Obsidian/SystemGuids/groupType";
     import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag.d";
@@ -35,14 +35,13 @@
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
+    import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import GradePicker from "@Obsidian/Controls/gradePicker.obs";
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import { Guid } from "@Obsidian/Types";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
 
     const props = defineProps({
@@ -52,7 +51,7 @@
          * and to save the bag data to a Person call `bag.UpdatePersonFromBag(person)` on the bag on the server.
          */
         modelValue: {
-            type: Object as PropType<Partial<PersonBasicEditorBag>>,
+            type: Object as PropType<PersonBasicEditorBag>,
             required: true
         },
 
@@ -156,172 +155,83 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: Required<PersonBasicEditorBag>): void
+        (e: "update:model-value", value: PersonBasicEditorBag): void
     }>();
-
-    const internalValue = useVModelPassthrough(props, "modelValue", emit, { deep: true });
-
-    const genders = [{ text: "Male", value: "1" }, { text: "Female", value: "2" }];
 
     /**
      * Separate each Bag property into a separate writeable computed so they can be
      * transformed to match the exact types that each form control expects.
      */
-    const firstName = computed({
-        get() {
-            return internalValue.value.firstName ?? "";
-        },
-        set(val) {
-            internalValue.value.firstName = val;
-        }
-    });
-    const lastName = computed({
-        get() {
-            return internalValue.value.lastName ?? "";
-        },
-        set(val) {
-            internalValue.value.lastName = val;
-        }
-    });
-    const personTitle = computed({
-        get() {
-            return internalValue.value.personTitle;
-        },
-        set(val) {
-            internalValue.value.personTitle = val;
-        }
-    });
-    const personSuffix = computed({
-        get() {
-            return internalValue.value.personSuffix;
-        },
-        set(val) {
-            internalValue.value.personSuffix = val;
-        }
-    });
-    const personMaritalStatus = computed({
-        get() {
-            return internalValue.value.personMaritalStatus;
-        },
-        set(val) {
-            internalValue.value.personMaritalStatus = val;
-        }
-    });
-    const personGradeOffset = computed({
-        get() {
-            return internalValue.value.personGradeOffset;
-        },
-        set(val) {
-            internalValue.value.personGradeOffset = val;
-        }
-    });
-    const personGroupRole = computed({
-        get() {
-            return internalValue.value.personGroupRole ?? null;
-        },
-        set(val) {
-            internalValue.value.personGroupRole = val;
-        }
-    });
-    const personConnectionStatus = computed({
-        get() {
-            return internalValue.value.personConnectionStatus;
-        },
-        set(val) {
-            internalValue.value.personConnectionStatus = val;
-        }
-    });
-    const personGender = computed({
-        get() {
-            return internalValue.value.personGender?.toString() ?? undefined;
-        },
-        set(val) {
-            internalValue.value.personGender = parseInt(val ?? "", 10) as Gender ?? null;
-        }
-    });
-    const personRace = computed({
-        get() {
-            return internalValue.value.personRace;
-        },
-        set(val) {
-            internalValue.value.personRace = val;
-        }
-    });
-    const personEthnicity = computed({
-        get() {
-            return internalValue.value.personEthnicity;
-        },
-        set(val) {
-            internalValue.value.personEthnicity = val;
-        }
-    });
-    const personBirthDate = computed({
-        get() {
-            return internalValue.value.personBirthDate;
-        },
-        set(val) {
-            internalValue.value.personBirthDate = val;
-        }
-    });
-    const email = computed({
-        get() {
-            return internalValue.value.email ?? "";
-        },
-        set(val) {
-            internalValue.value.email = val;
-        }
-    });
-    const mobilePhoneNumber = computed({
-        get() {
-            return internalValue.value.mobilePhoneNumber ?? "";
-        },
-        set(val) {
-            internalValue.value.mobilePhoneNumber = val;
-        }
-    });
-    const mobilePhoneCountryCode = computed({
-        get() {
-            return internalValue.value.mobilePhoneCountryCode ?? "";
-        },
-        set(val) {
-            internalValue.value.mobilePhoneCountryCode = val;
-        }
-    });
-    const isMessagingEnabled = computed({
-        get() {
-            return internalValue.value.isMessagingEnabled ?? false;
-        },
-        set(val) {
-            internalValue.value.isMessagingEnabled = val;
-        }
-    });
+    const personTitle = ref(props.modelValue.personTitle);
+    const firstName = ref(props.modelValue.firstName ?? "");
+    const lastName = ref(props.modelValue.lastName ?? "");
+    const personSuffix = ref(props.modelValue.personSuffix);
+    const email = ref(props.modelValue.email ?? "");
+    const mobilePhoneNumber = ref(props.modelValue.mobilePhoneNumber ?? "");
+    const mobilePhoneCountryCode = ref(props.modelValue.mobilePhoneCountryCode ?? "");
+    const isMessagingEnabled = ref(props.modelValue.isMessagingEnabled ?? false);
+    const personConnectionStatus = ref(props.modelValue.personConnectionStatus);
+    const personGroupRole = ref(props.modelValue.personGroupRole ?? null);
+    const personGender = ref(props.modelValue.personGender?.toString() ?? undefined);
+    const personBirthDate = ref(props.modelValue.personBirthDate);
+    const personGradeOffset = ref(props.modelValue.personGradeOffset);
+    const personMaritalStatus = ref(props.modelValue.personMaritalStatus);
+    const personRace = ref(props.modelValue.personRace);
+    const personEthnicity = ref(props.modelValue.personEthnicity);
 
     /**
      * Mark each field that is visible as "valid" so the server knows whether or not to save
      * those values to the database.
      */
     const validProperties = computed(() => {
-        const validKeys = new Set<keyof PersonBasicEditorBag>(["firstName", "lastName"]);
+        const validKeys: Array<keyof PersonBasicEditorBag> = ["firstName", "lastName"];
 
-        /* eslint-disable no-prototype-builtins */
-        props.showEmail && internalValue.value.hasOwnProperty("email") && validKeys.add("email");
-        props.showMobilePhone && internalValue.value.hasOwnProperty("mobilePhoneNumber") && validKeys.add("mobilePhoneNumber").add("mobilePhoneCountryCode");
-        props.showSmsOptIn && internalValue.value.hasOwnProperty("isMessagingEnabled") && validKeys.add("isMessagingEnabled");
+        if (props.showEmail) {
+            validKeys.push("email");
+        }
+        if (props.showMobilePhone) {
+            validKeys.push("mobilePhoneNumber");
+            validKeys.push("mobilePhoneCountryCode");
+        }
+        if (props.showSmsOptIn) {
+            validKeys.push("isMessagingEnabled");
+        }
 
-        !props.hideBirthdate && internalValue.value.hasOwnProperty("personBirthDate") && validKeys.add("personBirthDate");
-        !props.hideConnectionStatus && internalValue.value.hasOwnProperty("personConnectionStatus") && validKeys.add("personConnectionStatus");
-        !props.hideEthnicity && internalValue.value.hasOwnProperty("personEthnicity") && validKeys.add("personEthnicity");
-        !props.hideGender && internalValue.value.hasOwnProperty("personGender") && validKeys.add("personGender");
-        !props.hideGrade && internalValue.value.hasOwnProperty("personGradeOffset") && validKeys.add("personGradeOffset");
-        !props.hideMaritalStatus && internalValue.value.hasOwnProperty("personMaritalStatus") && validKeys.add("personMaritalStatus");
-        !props.hidePersonRole && internalValue.value.hasOwnProperty("personGroupRole") && validKeys.add("personGroupRole");
-        !props.hideRace && internalValue.value.hasOwnProperty("personRace") && validKeys.add("personRace");
-        !props.hideSuffix && internalValue.value.hasOwnProperty("personSuffix") && validKeys.add("personSuffix");
-        !props.hideTitle && internalValue.value.hasOwnProperty("personTitle") && validKeys.add("personTitle");
+        if (!props.hideBirthdate) {
+            validKeys.push("personBirthDate");
+        }
+        if (!props.hideConnectionStatus) {
+            validKeys.push("personConnectionStatus");
+        }
+        if (!props.hideEthnicity) {
+            validKeys.push("personEthnicity");
+        }
+        if (!props.hideGender) {
+            validKeys.push("personGender");
+        }
+        if (!props.hideGrade) {
+            validKeys.push("personGradeOffset");
+        }
+        if (!props.hideMaritalStatus) {
+            validKeys.push("personMaritalStatus");
+        }
+        if (!props.hidePersonRole) {
+            validKeys.push("personGroupRole");
+        }
+        if (!props.hideRace) {
+            validKeys.push("personRace");
+        }
+        if (!props.hideSuffix) {
+            validKeys.push("personSuffix");
+        }
+        if (!props.hideTitle) {
+            validKeys.push("personTitle");
+        }
 
         return validKeys;
     });
 
+    // Prefix in front of control labels
     const fullPrefix = computed(() => {
         if (props.personLabelPrefix) {
             return props.personLabelPrefix + " ";
@@ -330,9 +240,28 @@
         return "";
     });
 
+    // Watch the individual properties and update the modelvalue when one changes
     watchEffect(() => {
-        if (internalValue.value && validProperties.value) {
-            internalValue.value.validProperties = [...validProperties.value];
-        }
+        const newValue: PersonBasicEditorBag = {
+            personTitle: personTitle.value,
+            firstName: firstName.value,
+            lastName: lastName.value,
+            personSuffix: personSuffix.value,
+            email: email.value,
+            mobilePhoneNumber: mobilePhoneNumber.value,
+            mobilePhoneCountryCode: mobilePhoneCountryCode.value,
+            isMessagingEnabled: isMessagingEnabled.value,
+            personConnectionStatus: personConnectionStatus.value,
+            personGroupRole: personGroupRole.value,
+            personGender: parseInt(personGender.value ?? "", 10) as Gender ?? null,
+            personBirthDate: personBirthDate.value,
+            personGradeOffset: personGradeOffset.value,
+            personMaritalStatus: personMaritalStatus.value,
+            personRace: personRace.value,
+            personEthnicity: personEthnicity.value,
+            validProperties: validProperties.value
+        };
+
+        emit("update:model-value", newValue);
     });
 </script>

@@ -57,6 +57,10 @@
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\DeviceDetail\DeviceBag.cs" />
+    <Compile Include="Blocks\Core\DeviceDetail\DeviceDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\NoteWatchDetail\NoteWatchBag.cs" />
+    <Compile Include="Blocks\Core\NoteWatchDetail\NoteWatchDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
@@ -69,6 +73,12 @@
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceWorkflowBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountParticipantBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusResponseBag.cs" />
@@ -88,6 +98,8 @@
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Security\Login\PasswordlessLoginMfaBag.cs" />
+    <Compile Include="Blocks\Security\Login\CredentialLoginMfaBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\AppleTvPageBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\AppleTvPageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StepTypeDetail\StepAttributeBag.cs" />

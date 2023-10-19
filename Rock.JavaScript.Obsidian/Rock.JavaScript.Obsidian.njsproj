@@ -87,7 +87,7 @@
     <Content Include="Framework\Controls\following.obs" />
     <Content Include="Framework\Controls\fullscreen.obs" />
     <Content Include="Framework\Controls\gatewayControl.obs" />
-    <Content Include="Framework\Controls\genderDropDownList.obs" />
+    <Content Include="Framework\Controls\genderPicker.obs" />
     <Content Include="Framework\Controls\gradePicker.obs" />
     <Content Include="Framework\Controls\groupAndRolePicker.obs" />
     <Content Include="Framework\Controls\groupMemberPicker.obs" />
@@ -323,7 +323,9 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\DeviceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\Notes\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\NoteWatchDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CategoryDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\FollowingEventTypeDetail\" />
@@ -367,7 +369,9 @@
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperience\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\BenevolenceTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialAccountDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\" />
@@ -569,7 +573,7 @@
     <TypeScriptCompile Include="Framework\Enums\Finance\batchStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Finance\benevolenceWorkflowTriggerType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Finance\financialScheduledTransactionStatus.ts" />
-    <TypeScriptCompile Include="Framework\Enums\Finance\mICRStatus.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Finance\micrStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Finance\transactionGraphBy.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\appliesToAgeClassification.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\attendanceRecordRequiredForCheckIn.ts" />
@@ -783,6 +787,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusList\campusListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\deleteNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\editNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\noteBag.d.ts" />
@@ -791,6 +797,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\noteTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\saveNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\watchNoteRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteWatchDetail\noteWatchBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteWatchDetail\noteWatchDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteWatchDetail\noteWatchValidationResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\getMessageActionRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\getMessageActionResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\getMessagesRequestBag.d.ts" />
@@ -892,9 +901,15 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceVisualizerTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\liveExperienceOccurrencesInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperience\liveExperienceInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BenevolenceTypeDetail\benevolenceTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BenevolenceTypeDetail\benevolenceTypeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BenevolenceTypeDetail\benevolenceWorkflowBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\businessDetailBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\businessDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\searchKeyBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialAccountDetail\financialAccountBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialAccountDetail\financialAccountDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialAccountDetail\financialAccountParticipantBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchAccountTotalsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\financialBatchCurrencyTotalsBag.d.ts" />
@@ -994,6 +1009,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ForgotUserName\forgotUserNameSendInstructionsResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\confirmAccountInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\confirmAccountViewBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\Login\credentialLoginMfaBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\Login\passwordlessLoginMfaBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\restKeyBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\restKeyDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\appleTvAppBag.d.ts" />

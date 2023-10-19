@@ -86,7 +86,7 @@ import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
 import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
-import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
+import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
 import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox.obs";
 import TimePicker from "@Obsidian/Controls/timePicker.obs";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
@@ -229,6 +229,7 @@ import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/int
 import WorkflowPicker from "@Obsidian/Controls/workflowPicker.obs";
 import ValueList from "@Obsidian/Controls/valueList.obs";
 import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
+import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
 import DropDownMenuGallery from "./ControlGallery/dropDownMenuGallery.partial.obs";
 import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.partial.obs";
 import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
@@ -1380,17 +1381,17 @@ const numberRangeBoxGallery = defineComponent({
 });
 
 /** Demonstrates a gender picker */
-const genderDropDownListGallery = defineComponent({
-    name: "GenderDropDownListGallery",
+const genderPickerGallery = defineComponent({
+    name: "GenderPickerGallery",
     components: {
         GalleryAndResult,
-        GenderDropDownList
+        GenderPicker
     },
     setup() {
         return {
             value: ref("1"),
-            importCode: getControlImportPath("genderDropDownList"),
-            exampleCode: `<GenderDropDownList label="Your Gender" v-model="value" />`
+            importCode: getControlImportPath("genderPicker"),
+            exampleCode: `<GenderPicker label="Your Gender" v-model="value" />`
         };
     },
     template: `
@@ -1399,7 +1400,7 @@ const genderDropDownListGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <GenderDropDownList label="Your Gender" v-model="value" />
+    <GenderPicker label="Your Gender" v-model="value" />
 
     <template #settings>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
@@ -1680,13 +1681,28 @@ const addressControlGallery = defineComponent({
         RockForm,
         RockButton,
         CheckBox,
-        AddressControl
+        AddressControl,
+        ButtonDropDownList
     },
     setup() {
+        const showCountrySelected = ref("default");
+        const showCountry = computed(() => {
+            return showCountrySelected.value == "true" ? true :
+                showCountrySelected.value == "false" ? false : null;
+        });
+
         return {
             value: ref({}),
             submit: ref(false),
             required: ref(false),
+            partial: ref(false),
+            showCountry,
+            showCountrySelected,
+            showCountryOptions: [
+                {text: "Default", value: "default"},
+                {text: "Yes", value: "true"},
+                {text: "No", value: "false"},
+            ],
             importCode: getSfcControlImportPath("addressControl"),
             exampleCode: `<AddressControl label="Address" v-model="value" />`
         };
@@ -1698,7 +1714,7 @@ const addressControlGallery = defineComponent({
     enableReflection >
 
     <RockForm v-model:submit="submit">
-    <AddressControl label="Address" v-model="value" :rules="required ? 'required' : ''" />
+    <AddressControl label="Address" v-model="value" :rules="required ? 'required' : ''" :partialAddressIsAllowed="partial" :showCountry="showCountry" />
 
     <RockButton @click="submit=true">Validate</RockButton>
     </RockForm>
@@ -1707,6 +1723,12 @@ const addressControlGallery = defineComponent({
         <div class="row">
             <div class="col-sm-4">
                 <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-sm-4">
+                <CheckBox label="Allow Partial Addresses" v-model="partial" />
+            </div>
+            <div class="col-sm-4">
+                <ButtonDropDownList label="Show Country" v-model="showCountrySelected" :items="showCountryOptions" help="If no value is passed in, the visibility of the Country field will depend on the 'Support International Addresses' Global Attribute setting." />
             </div>
         </div>
         <p>All props match that of a <code>Rock Form Field</code></p>
@@ -5441,14 +5463,11 @@ const tabbedBarGallery = defineComponent({
     setup() {
         return {
             list: ["Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians"],
+            selectedTab: ref(""),
             type: ref("tabs"),
             typeItems: [{ value: "tabs", text: "Tabs" }, { value: "pills", text: "Pills" }],
             importCode: getSfcControlImportPath("tabbedBar"),
-            exampleCode: `<TabbedBar :tabs="arrayOfItems">
-    <template #default="{item}">
-        {{ item }}
-    </template>
-</TabbedBar>`
+            exampleCode: `<TabbedBar v-model="selectedTab" :tabs="arrayOfItems" :type="type" />`
         };
     },
     template: `
@@ -5456,8 +5475,7 @@ const tabbedBarGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode" >
 
-    <TabbedBar :tabs="list" :type="type">
-    </TabbedBar>
+    <TabbedBar v-model="selectedTab" :tabs="list" :type="type" />
 
     <template #settings>
         <div class="row">
@@ -5483,9 +5501,6 @@ const tabbedContentGallery = defineComponent({
             list: ["Matthew", "Mark", "Luke", "John"],
             importCode: getSfcControlImportPath("tabbedContent"),
             exampleCode: `<TabbedContent :tabs="arrayOfItems">
-    <template #tab="{item}">
-        {{ item }}
-    </template>
     <template #tabpane="{item}">
         This is the content for {{item}}.
     </template>
@@ -5497,11 +5512,7 @@ const tabbedContentGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode" >
 
-
     <TabbedContent :tabs="list">
-        <template #tab="{item}">
-            {{ item }}
-        </template>
         <template #tabpane="{item}">
             This is the content for {{item}}.
         </template>
@@ -5981,6 +5992,7 @@ const schedulePickerGallery = defineComponent({
     setup() {
         return {
             multiple: ref(false),
+            showOnlyPublic: ref(false),
             value: ref(null),
             importCode: getControlImportPath("schedulePicker"),
             exampleCode: `<SchedulePicker label="Schedule" v-model="value" :multiple="false" />`
@@ -5995,11 +6007,18 @@ const schedulePickerGallery = defineComponent({
 
     <SchedulePicker label="Schedule"
         v-model="value"
-        :multiple="multiple" />
+        :multiple="multiple"
+        :showOnlyPublic="showOnlyPublic" />
 
     <template #settings>
-
-        <CheckBox label="Multiple" v-model="multiple" />
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Limit to Public Only" v-model="showOnlyPublic" />
+            </div>
+        </div>
 
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
@@ -8036,7 +8055,7 @@ const controlGalleryComponents: Record<string, Component> = [
     colorPickerGallery,
     numberBoxGallery,
     numberRangeBoxGallery,
-    genderDropDownListGallery,
+    genderPickerGallery,
     socialSecurityNumberBoxGallery,
     timePickerGallery,
     ratingGallery,

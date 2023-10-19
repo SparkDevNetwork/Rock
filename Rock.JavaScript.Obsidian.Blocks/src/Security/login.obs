@@ -25,10 +25,11 @@
                                    @login="onExternalLogin($event)" />
 
                     <LoginMethodPicker v-if="areBothInternalAuthProvidersVisible"
-                                       v-model="internalLoginMethod"
+                                       :modelValue="loginMethod"
                                        :disabled="isAuthenticating || isNavigating"
                                        :isCredentialLoginSupported="config.isInternalDatabaseLoginSupported"
-                                       :isPasswordlessLoginSupported="config.isPasswordlessLoginSupported" />
+                                       :isPasswordlessLoginSupported="config.isPasswordlessLoginSupported"
+                                       @update:modelValue="onLoginMethodPickerChanged" />
                 </div>
 
                 <Divider v-if="areSecondaryAndPrimaryAuthVisible"
@@ -37,7 +38,10 @@
                          :isVertical="!isMobile" />
 
                 <div class="login-entry col">
-                    <CredentialLogin v-if="config.isInternalDatabaseLoginSupported && loginMethodWrapper.isCredential"
+                    <div v-if="mfaMessage" v-html="mfaMessage"></div>
+
+                    <CredentialLogin v-if="loginMethod === LoginMethod.InternalDatabase
+                                           && ((config.isInternalDatabaseLoginSupported && !mfa?.credentialLogin) || mfa?.credentialLogin?.isError === false)"
                                      :config="config"
                                      :disabled="isAuthenticating || isNavigating"
                                      :isMobileForced="isMobileForced"
@@ -45,7 +49,8 @@
                                      @login="onCredentialLogin($event)"
                                      @register="onRegister()" />
 
-                    <PasswordlessLogin v-else-if="config.isPasswordlessLoginSupported && loginMethodWrapper.isPasswordless"
+                    <PasswordlessLogin v-else-if="loginMethod === LoginMethod.Passwordless
+                                                  && ((config.isPasswordlessLoginSupported && !mfa?.passwordless) || mfa?.passwordless?.isError === false)"
                                        v-model="passwordlessLoginOptions"
                                        :config="config"
                                        :disabled="isAuthenticating || isNavigating"
@@ -77,10 +82,12 @@
     import { LoginMethod } from "@Obsidian/Enums/Blocks/Security/Login/loginMethod";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
+    import { CredentialLoginMfaBag } from "@Obsidian/ViewModels/Blocks/Security/Login/credentialLoginMfaBag";
     import { CredentialLoginRequestBag } from "@Obsidian/ViewModels/Blocks/Security/Login/credentialLoginRequestBag";
     import { CredentialLoginResponseBag } from "@Obsidian/ViewModels/Blocks/Security/Login/credentialLoginResponseBag";
     import { ExternalAuthenticationButtonBag } from "@Obsidian/ViewModels/Blocks/Security/Login/externalAuthenticationButtonBag";
     import { LoginInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/Login/loginInitializationBox";
+    import { PasswordlessLoginMfaBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginMfaBag";
     import { PasswordlessLoginOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginOptionsBag";
     import { PasswordlessLoginStartRequestBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginStartRequestBag";
     import { PasswordlessLoginStartResponseBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginStartResponseBag";
@@ -92,6 +99,17 @@
 
     const config = useConfigurationValues<LoginInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Types
+
+    type Mfa = {
+        passwordless?: Omit<PasswordlessLoginMfaBag, "ticket"> | null | undefined;
+        credentialLogin?: Omit<CredentialLoginMfaBag, "ticket"> | null | undefined;
+        ticket: string | null;
+        is2FANotSupportedForAuthenticationFactor?: boolean | undefined;
+    };
+
+    // #endregion
 
     // #region Values
 
@@ -114,6 +132,13 @@
 
     const isCompleted = ref<boolean>(false);
 
+    const mfa = ref<Mfa | null | undefined>();
+    const twoFactorEmailPhoneNotAvailableMessage = ref<string>(config.twoFactorEmailPhoneNotAvailableMessage ?? "");
+    const twoFactorEmailPhoneRequiredMessage = ref<string>(config.twoFactorEmailPhoneRequiredMessage ?? "");
+    const twoFactorLoginNotAvailableMessage = ref<string>(config.twoFactorLoginNotAvailableMessage ?? "");
+    const twoFactorLoginRequiredMessage = ref<string>(config.twoFactorLoginRequiredMessage ?? "");
+    const twoFactorNotSupportedByAuthenticationMethodMessage = ref<string>(config.twoFactorNotSupportedByAuthenticationMethodMessage ?? "");
+
     // #endregion
 
     // #region Computed Values
@@ -131,21 +156,33 @@
         return (isAnyExternalAuthProviderVisible.value && isAnyInternalAuthProviderVisible) || areBothInternalAuthProvidersVisible.value;
     });
 
-    const loginMethod = ref(getInitialLoginMethod());
-    const internalLoginMethod = computed<LoginMethod>({
-        get() {
-            return passwordlessLoginOptions.value.isAutomaticVerificationRequired ? LoginMethod.Passwordless : loginMethod.value;
-        },
-        set(newValue) {
-            loginMethod.value = newValue;
-        }
-    });
-    const loginMethodWrapper = computed(() => ({
-        isCredential: internalLoginMethod.value === LoginMethod.InternalDatabase,
-        isPasswordless: internalLoginMethod.value === LoginMethod.Passwordless
-    }));
+    const loginMethod = ref<LoginMethod | undefined>();
 
     const isMobile = computed<boolean>(() => isMobileForced || breakpoint.value === "xs");
+
+    const mfaMessage = computed<string | null>(() => {
+        if (!mfa.value) {
+            return null;
+        }
+        else if (mfa.value.passwordless && !mfa.value.passwordless.isError) {
+            return twoFactorEmailPhoneRequiredMessage.value;
+        }
+        else if (mfa.value.passwordless?.isEmailAndMobilePhoneMissing) {
+            return twoFactorEmailPhoneNotAvailableMessage.value;
+        }
+        else if (mfa.value.credentialLogin && !mfa.value.credentialLogin.isError) {
+            return twoFactorLoginRequiredMessage.value;
+        }
+        else if (mfa.value.credentialLogin?.isUsernameAndPasswordMissing) {
+            return twoFactorLoginNotAvailableMessage.value;
+        }
+        else if (mfa.value.is2FANotSupportedForAuthenticationFactor) {
+            return twoFactorNotSupportedByAuthenticationMethodMessage.value;
+        }
+        else {
+            return null;
+        }
+    });
 
     // #endregion
 
@@ -159,24 +196,45 @@
         isAuthenticating.value = true;
 
         try {
+            // Attach the MFA state to the request.
+            bag.mfaTicket = mfa.value?.ticket;
             const response = await invokeBlockAction<CredentialLoginResponseBag>("CredentialLogin", { bag });
+            const responseBag = response?.data;
 
-            if (!response?.isSuccess || !response.data) {
-                showError(response?.errorMessage || "Something went wrong. Please try again.");
+            if (!response?.isSuccess || !responseBag) {
+                uiState.error({
+                    errorMessage: response?.errorMessage || "Something went wrong. Please try again."
+                });
                 return;
             }
 
-            if (response.data.isAuthenticated) {
-                await navigate(response.data.redirectUrl || "/");
+            if (responseBag.isAuthenticated) {
+                uiState.valid();
+                await navigate(responseBag.redirectUrl || "/");
                 return;
             }
 
-            if (response.data.isConfirmationRequired) {
-                showCompleted(response.data.errorMessage || response.errorMessage);
+            if (responseBag.isConfirmationRequired) {
+                uiState.confirmationRequired({
+                    caption: responseBag.errorMessage || response.errorMessage
+                });
                 return;
             }
 
-            showError(response.data.errorMessage || "Authentication failed. Please try again.");
+            if (responseBag.mfa) {
+                uiState.initMfaFactor({
+                    mfa: {
+                        passwordless: responseBag.mfa,
+                        ticket: responseBag.mfa.ticket ?? null
+                    },
+                    loginMethod: LoginMethod.Passwordless,
+                });
+                return;
+            }
+
+            uiState.error({
+                errorMessage: responseBag.errorMessage || "Authentication failed. Please try again."
+            });
         }
         finally {
             // Reset isAuthenticating in the event there is an error so the user can resubmit.
@@ -201,7 +259,9 @@
                 return;
             }
 
-            showError(response?.errorMessage);
+            uiState.error({
+                errorMessage: response?.errorMessage
+            });
             return;
         }
         finally {
@@ -217,18 +277,33 @@
     }
 
     /**
+     * Event handler for the login method picker being changed.
+     */
+    function onLoginMethodPickerChanged(value: LoginMethod | undefined): void {
+        if (typeof value !== "undefined") {
+            uiState.init({
+                loginMethod: value
+            });
+        }
+    }
+
+    /**
      * Event handler for the Passwordless Login being started.
      */
     async function onPasswordlessLoginStart(bag: PasswordlessLoginStartRequestBag): Promise<void> {
         isAuthenticating.value = true;
 
-        clearError();
+        uiState.valid();
 
         try {
+            // Attach the MFA state to the request.
+            bag.mfaTicket = mfa.value?.ticket;
             const response = await invokeBlockAction<PasswordlessLoginStartResponseBag>("PasswordlessLoginStart", { bag });
 
             if (!response?.isSuccess || !response.data) {
-                showError(response?.errorMessage || "Something went wrong. Please try again.");
+                uiState.error({
+                    errorMessage: response?.errorMessage || "Something went wrong. Please try again."
+                });
                 return;
             }
 
@@ -238,6 +313,7 @@
                     state: response.data.state || "",
                     step: PasswordlessLoginStep.Verify
                 };
+                loginMethod.value = LoginMethod.Passwordless;
                 return;
             }
 
@@ -245,7 +321,11 @@
                 ...passwordlessLoginOptions.value,
                 step: PasswordlessLoginStep.Start
             };
-            showError(response?.data?.errorMessage || response?.errorMessage || "An unknown error occurred. Please submit email or phone number again.");
+            loginMethod.value = LoginMethod.Passwordless;
+
+            uiState.error({
+                errorMessage: response?.data?.errorMessage || response?.errorMessage || "An unknown error occurred. Please submit email or phone number again."
+            });
             return;
         }
         finally {
@@ -259,24 +339,40 @@
      */
     async function onPasswordlessLoginVerify(bag: PasswordlessLoginVerifyRequestBag): Promise<void> {
         isAuthenticating.value = true;
-        clearError();
+        uiState.valid();
 
         try {
+            // Attach the MFA state to the request.
+            bag.mfaTicket = mfa.value?.ticket;
             var response = await invokeBlockAction<PasswordlessLoginVerifyResponseBag>("PasswordlessLoginVerify", { bag });
 
             if (!response || !response.isSuccess || !response.data) {
-                showError("Something went wrong. Please try again.");
+                uiState.error({
+                    errorMessage: "Something went wrong. Please try again.",
+                });
                 return;
             }
 
             if (response.data.isAuthenticated) {
+                uiState.valid();
                 await navigate(config.redirectUrl || "/");
+                return;
+            }
+
+            if (response.data.mfa) {
+                uiState.initMfaFactor({
+                    mfa: {
+                        credentialLogin: response.data.mfa,
+                        ticket: response.data.mfa.ticket ?? null,
+                    },
+                    loginMethod: LoginMethod.InternalDatabase,
+                });
                 return;
             }
 
             if (response.data.isRegistrationRequired) {
                 if (!response.data.registrationUrl) {
-                    showError("Redirecting to default registration page");
+                    uiState.error({ errorMessage: "Redirecting to default registration page" });
                 }
                 await navigate(response.data.registrationUrl || "/NewAccount");
                 return;
@@ -288,10 +384,13 @@
                     isPersonSelectionRequired: true,
                     matchingPeople: response.data.matchingPeople || []
                 };
+                loginMethod.value = LoginMethod.Passwordless;
                 return;
             }
 
-            showError(response.data.errorMessage ?? "Authentication failed. Please try again.");
+            uiState.error({
+                errorMessage: response.data.errorMessage ?? "Authentication failed. Please try again."
+            });
         }
         finally {
             // Reset isAuthenticating in the event there is an error so the user can resubmit.
@@ -311,17 +410,16 @@
     //#region Functions
 
     /**
-     * Clears the error message.
-     */
-    function clearError(): void {
-        errorMessage.value = null;
-    }
-
-    /**
      * Gets the initial login method to display.
      */
     function getInitialLoginMethod(): LoginMethod {
         const configuredDefaultLoginMethod = config.defaultLoginMethod;
+
+        // If the block loaded as a response to a passwordless verification,
+        // then the initial login method should be passwordless.
+        if (config.passwordlessAutoVerifyOptions) {
+            return LoginMethod.Passwordless;
+        }
 
         switch (configuredDefaultLoginMethod) {
             case LoginMethod.InternalDatabase: {
@@ -376,15 +474,64 @@
         isCompleted.value = true;
     }
 
-    /**
-     * Displays an error message.
-     * If no error message is provided, then a generic error is displayed.
-     *
-     * @param error The optional error message.
-     */
-    function showError(error?: string | null | undefined): void {
-        errorMessage.value = error || "An unknown error occurred";
+    function getErrorOrDefault(error?: string | null | undefined): string {
+        return error || "An unknown error occurred";
     }
+
+    const uiState = {
+        init(state: { loginMethod: LoginMethod }): void {
+            // Clear the error, switch the login method, and set the MFA state.
+            errorMessage.value = null;
+            loginMethod.value = state.loginMethod;
+            mfa.value = null;
+        },
+
+        initMfaFactor(state: { loginMethod: LoginMethod, mfa: Mfa }): void {
+            // Clear the error, switch the login method, and set the MFA state.
+            errorMessage.value = null;
+            loginMethod.value = state.loginMethod;
+            mfa.value = state.mfa;
+        },
+
+        error(state: { errorMessage: string | null }): void {
+            // Set the error but do not modify the login method or MFA state.
+            errorMessage.value = getErrorOrDefault(state.errorMessage);
+        },
+
+        valid(): void {
+            // Clear the error but do not modify the login method or MFA state.
+            errorMessage.value = null;
+        },
+
+        confirmationRequired(state: { caption: string | null }): void {
+            // Clear the error and MFA state even though
+            // this will transition to the completed state
+            // where those fields are hidden.
+            errorMessage.value = null;
+            mfa.value = null;
+            showCompleted(state.caption);
+        },
+
+        passwordlessCodeSent(): void {
+            // Clear the error but do not modify the MFA state.
+            errorMessage.value = null;
+        },
+
+        passwordlessResendCode(): void {
+            // Clear the error but do not modify the MFA state.
+            errorMessage.value = null;
+        },
+
+        unsupportedMfaFactor(): void {
+            errorMessage.value = null;
+            mfa.value = {
+                is2FANotSupportedForAuthenticationFactor: true,
+                ticket: null,
+                credentialLogin: null,
+                passwordless: null
+            };
+        }
+    };
 
     //#endregion
 
@@ -393,10 +540,33 @@
         if (config.shouldRedirect) {
             // If the redirect URL is not set, then redirect to the default route.
             navigate(config.redirectUrl ? config.redirectUrl : "/");
+            return;
+        }
+
+        if (mfaParameter) {
+            uiState.initMfaFactor({
+                mfa: {
+                    credentialLogin: null,
+                    passwordless: {
+                        isEmailAndMobilePhoneMissing: false,
+                        isError: false
+                    },
+                    ticket: mfaParameter,
+                },
+                loginMethod: LoginMethod.Passwordless
+            });
+        }
+        else if (config.is2FANotSupportedForAuthenticationFactor) {
+            uiState.unsupportedMfaFactor();
+        }
+        else {
+            uiState.init({
+                loginMethod: getInitialLoginMethod()
+            });
         }
     });
 
-    removeCurrentUrlQueryParams("State", "Code", "IsPasswordless", "state", "code", "scope", "authuser", "prompt");
+    const [ mfaParameter, ..._ ] = removeCurrentUrlQueryParams("Mfa", "State", "Code", "IsPasswordless", "state", "code", "scope", "authuser", "prompt");
 
     onConfigurationValuesChanged(useReloadBlock());
 </script>

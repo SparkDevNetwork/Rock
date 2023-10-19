@@ -1,6 +1,6 @@
 
 /********************************************************************************************************************
- Short Term Serving Projects - View Opportunities and supporting entities.
+ Sign-Ups - View Opportunities and supporting entities.
 *********************************************************************************************************************/
 
 DECLARE @GroupTypeId_SignUpGroup [int] = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '499B1367-06B3-4538-9D56-56D53F55DCB1');

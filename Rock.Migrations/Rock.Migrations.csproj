@@ -72,6 +72,18 @@
     <Compile Include="Migrations\202310052028000_CodeGenerated_20231005.designer.cs">
       <DependentUpon>202310052028000_CodeGenerated_20231005.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202310140012542_AddAuthClientScopeApprovalExpiration.cs" />
+    <Compile Include="Migrations\202310140012542_AddAuthClientScopeApprovalExpiration.designer.cs">
+      <DependentUpon>202310140012542_AddAuthClientScopeApprovalExpiration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202310191717043_Rollup_20231019.cs" />
+    <Compile Include="Migrations\202310191717043_Rollup_20231019.designer.cs">
+      <DependentUpon>202310191717043_Rollup_20231019.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202310191751018_CodeGenerated_20231019.cs" />
+    <Compile Include="Migrations\202310191751018_CodeGenerated_20231019.designer.cs">
+      <DependentUpon>202310191751018_CodeGenerated_20231019.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.designer.cs">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>
@@ -1843,6 +1855,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202310052028000_CodeGenerated_20231005.resx">
       <DependentUpon>202310052028000_CodeGenerated_20231005.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202310140012542_AddAuthClientScopeApprovalExpiration.resx">
+      <DependentUpon>202310140012542_AddAuthClientScopeApprovalExpiration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202310191717043_Rollup_20231019.resx">
+      <DependentUpon>202310191717043_Rollup_20231019.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202310191751018_CodeGenerated_20231019.resx">
+      <DependentUpon>202310191751018_CodeGenerated_20231019.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.resx">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,7 +30,6 @@ namespace Rock.Model
     [Table( "AnalyticsSourceFamilyHistorical" )]
     [DataContract]
     [HideFromReporting]
-    [CodeGenExclude( CodeGenFeature.ViewModelFile )]
     [Rock.SystemGuid.EntityTypeGuid( "C9941E89-EC9D-41FF-A892-5016730F22C1")]
     public class AnalyticsSourceFamilyHistorical : AnalyticsSourceFamilyBase<AnalyticsSourceFamilyHistorical>
     {

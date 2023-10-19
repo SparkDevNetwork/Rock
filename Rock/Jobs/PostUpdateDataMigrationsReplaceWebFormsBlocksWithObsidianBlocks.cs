@@ -146,6 +146,11 @@ namespace Rock.Jobs
 
             if ( ErrorMessage.Any() )
             {
+                // If there were errors, fail the job and make it non-system so that the admins may choose to run it again or delete it based on their discretion
+                RockContext rockContext = new RockContext();
+                var serviceJob = ( new ServiceJobService( rockContext ) ).Get( this.ServiceJobId );
+                serviceJob.IsSystem = false;
+                rockContext.SaveChanges();
                 throw new RockJobWarningException( string.Join( ",\n", ErrorMessage ) );
             }
 
@@ -192,9 +197,11 @@ namespace Rock.Jobs
         private void ReplaceBlocksOfOneBlockTypeWithBlocksOfAnotherBlockType( Guid oldBlockTypeGuid, Guid newBlockTypeGuid, RockContext rockContext, MigrationHelper migrationHelper )
         {
             var oldBlockTypeId = BlockTypeCache.GetId( oldBlockTypeGuid );
+            // If the old block is not found in the Cache, it mostly likely was deleted in a previous migration in a previous version.
+            // So we merely log it to the exception table and continue
             if ( !oldBlockTypeId.HasValue )
             {
-                ErrorMessage.Add( $"BlockType could not be found for guid '{oldBlockTypeGuid}' for the current block" );
+                ExceptionLogService.LogException( $"BlockType could not be found for guid '{oldBlockTypeGuid}' for the current block" );
                 return;
             }
 

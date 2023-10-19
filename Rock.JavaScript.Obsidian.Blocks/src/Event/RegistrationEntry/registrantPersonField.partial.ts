@@ -21,7 +21,7 @@ import AddressControl from "@Obsidian/Controls/addressControl.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import EmailBox from "@Obsidian/Controls/emailBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
+import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
 import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
@@ -69,7 +69,7 @@ export default defineComponent({
                     return EmailBox;
 
                 case RegistrationPersonFieldType.Gender:
-                    return GenderDropDownList;
+                    return GenderPicker;
 
                 case RegistrationPersonFieldType.Birthdate:
                     return BirthdayPicker;

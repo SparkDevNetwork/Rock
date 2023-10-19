@@ -211,5 +211,16 @@ namespace Rock.Security
                 return ServiceType == AuthenticationServiceType.Internal;
             }
         }
+
+        /// <summary>
+        /// Determines whether two-factor authentication is handled by this authentication component.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if two-factor authentication is handled by this authentication component; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsConfiguredForTwoFactorAuthentication()
+        {
+            return false;
+        }
     }
 }

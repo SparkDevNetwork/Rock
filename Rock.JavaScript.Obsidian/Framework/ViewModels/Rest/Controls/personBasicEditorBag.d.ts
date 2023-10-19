@@ -25,38 +25,54 @@ import { Gender } from "@Obsidian/Enums/Crm/gender";
 import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** The options that can be passed to the GetChildren API action of the AccountPicker control. */
+/** The set of data that represents a Person for the Person Basic Editor control to use. */
 export type PersonBasicEditorBag = {
+    /** Person's email address */
     email?: string | null;
 
+    /** Person's first name */
     firstName?: string | null;
 
-    isMessagingEnabled: boolean;
+    /** Whether SMS messaging is permitted to the person's mobile phone */
+    isMessagingEnabled?: boolean | null;
 
+    /** Person's last name */
     lastName?: string | null;
 
+    /** Person's mobile phone's country code */
     mobilePhoneCountryCode?: string | null;
 
+    /** Person's mobile phone number */
     mobilePhoneNumber?: string | null;
 
+    /** Person's date of birth */
     personBirthDate?: DatePartsPickerValueBag | null;
 
+    /** Person's connectedness to the organization/church */
     personConnectionStatus?: ListItemBag | null;
 
+    /** Person's ethnicity */
     personEthnicity?: ListItemBag | null;
 
-    personGender: Gender;
+    /** Person's gender */
+    personGender?: Gender | null;
 
+    /** Person's grade offset */
     personGradeOffset?: ListItemBag | null;
 
+    /** Person's family group role */
     personGroupRole?: ListItemBag | null;
 
+    /** Person's relationship status */
     personMaritalStatus?: ListItemBag | null;
 
+    /** Person's race */
     personRace?: ListItemBag | null;
 
+    /** Person's suffix */
     personSuffix?: ListItemBag | null;
 
+    /** Person's title */
     personTitle?: ListItemBag | null;
 
     validProperties?: string[] | null;

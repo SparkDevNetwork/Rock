@@ -415,7 +415,7 @@ namespace RockWeb.Blocks.Groups
         private bool LoadPhoneNumbers()
         {
             // First load up all of the available numbers
-            var smsNumbers = SystemPhoneNumberCache.All()
+            var smsNumbers = SystemPhoneNumberCache.All( false )
                 .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
@@ -555,9 +555,6 @@ namespace RockWeb.Blocks.Groups
                 cbIsNotified.Visible = false;
             }
 
-            // render UI based on Authorized and IsSystem
-            bool readOnly = false;
-
             var group = groupMember.Group;
             var groupType = GroupTypeCache.Get( groupMember.Group.GroupTypeId );
             if ( !string.IsNullOrWhiteSpace( groupType.IconCssClass ) )
@@ -593,12 +590,16 @@ namespace RockWeb.Blocks.Groups
 
             hlArchived.Visible = groupMember.IsArchived;
 
-            // user has to have EDIT Auth to the Block OR the group
-            nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) && !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) && !group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
+            bool readOnly = true;
+            nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
+
+            if ( IsUserAuthorized( Authorization.EDIT )
+                || group.IsAuthorized( Authorization.EDIT, this.CurrentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson )
+                || ( IsSignUpMode && group.IsAuthorized( Authorization.SCHEDULE, this.CurrentPerson ) ) )
+                {
+                readOnly = false;
+                nbEditModeMessage.Text = string.Empty;
             }
 
             if ( groupMember.IsSystem )
@@ -608,6 +609,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             btnSave.Visible = !readOnly;
+            btnSaveThenAdd.Visible = !readOnly;
 
             if ( readOnly || groupMember.Id == 0 )
             {
@@ -646,6 +648,7 @@ namespace RockWeb.Blocks.Groups
             rblStatus.Label = string.Format( "{0} Status", group.GroupType.GroupMemberTerm );
 
             rblCommunicationPreference.SetValue( ( ( int ) groupMember.CommunicationPreference ).ToString() );
+            rblCommunicationPreference.Enabled = !readOnly;
 
             var registrations = new RegistrationRegistrantService( rockContext )
                 .Queryable().AsNoTracking()
@@ -2355,7 +2358,7 @@ namespace RockWeb.Blocks.Groups
             else if ( communicationType == CommunicationType.SMS && hfToSMSNumber.Value.IsNotNullOrWhiteSpace() )
             {
                 hfFromSMSNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
-                var smsPhoneNumbers = SystemPhoneNumberCache.All()
+                var smsPhoneNumbers = SystemPhoneNumberCache.All( false )
                     .Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson )
                         && v.Id == hfFromSMSNumber.Value.AsInteger() )
                     .ToList();

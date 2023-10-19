@@ -28,7 +28,7 @@ import { useStore } from "@Obsidian/PageState";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { List } from "@Obsidian/Utility/linq";
-import Page from "@Obsidian/Utility/page";
+import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import RegistrationEntryIntro from "./RegistrationEntry/intro.partial";
@@ -438,7 +438,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPreAttributes ? Step.RegistrationStartForm : Step.PerRegistrantForms;
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrationStartPrevious(): Promise<void> {
@@ -446,7 +448,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Intro;
                 this.registrationEntryState.navBack = true;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrationStartNext(): Promise<void> {
@@ -454,7 +458,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.PerRegistrantForms;
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrantPrevious(): Promise<void> {
@@ -462,7 +468,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPreAttributes ? Step.RegistrationStartForm : Step.Intro;
                 this.registrationEntryState.navBack = true;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrantNext(): Promise<void> {
@@ -470,7 +478,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPostAttributes ? Step.RegistrationEndForm : Step.Review;
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrationEndPrevious(): Promise<void> {
@@ -478,7 +488,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.PerRegistrantForms;
                 this.registrationEntryState.navBack = true;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrationEndNext(): Promise<void> {
@@ -486,7 +498,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Review;
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onSummaryPrevious(): Promise<void> {
@@ -503,7 +517,9 @@ export default defineComponent({
                     this.registrationEntryState.currentStep = Step.PerRegistrantForms;
                 }
                 this.registrationEntryState.navBack = true;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onSummaryNext(): Promise<void> {
@@ -515,7 +531,9 @@ export default defineComponent({
                     this.registrationEntryState.currentStep = Step.Success;
                 }
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onPaymentPrevious(): Promise<void> {
@@ -523,14 +541,18 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Review;
                 this.registrationEntryState.navBack = true;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onPaymentNext(): Promise<void> {
             if (this.persistSession && this.registrationEntryState) {
                 this.registrationEntryState.currentStep = Step.Success;
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         }
     },

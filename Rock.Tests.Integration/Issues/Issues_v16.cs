@@ -36,7 +36,7 @@ namespace Rock.Tests.Integration.BugFixes
     [RockObsolete( "1.16" )]
     public class BugFixVerificationTests_v16
     {
-        private LavaIntegrationTestHelper LavaTestHelper = LavaIntegrationTestHelper.CurrentInstance;
+        private LavaIntegrationTestHelper _TestHelper = LavaIntegrationTestHelper.CurrentInstance;
 
         /// <summary>
         /// Verifies the resolution of Issue #5389.
@@ -72,7 +72,7 @@ Property Filter: 1
             {
                 EnabledCommands = "RockEntity"
             };
-            LavaTestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            _TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         public void Issue3760_PhoneNumberFieldTypeWithCountryCode_PreservesCountryCode()
@@ -201,7 +201,69 @@ Did you see those comments ^^^
 
             var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate" };
 
-            LavaTestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            _TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+		}
+
+        /// <summary>
+        /// Verifies the resolution of a specific Issue.
+        /// </summary>
+        [TestMethod]
+        public void Issue5632_ScheduleStartTimeReturnsUtc()
+        {
+            /* The Fluid Lava Engine incorrectly renders the Schedule.StartTimeOfDay property as a UTC DateTime rather than a TimeSpan.
+             * For details, see https://github.com/SparkDevNetwork/Rock/issues/5632.
+             * 
+             * Resolution: This issue is caused because the Fluid Engine converts and stores the TimeSpan as a DateTime value.
+             * This issue has been fixed by adding a specific Fluid value converter for the TimeSpan type.
+             */
+
+            var engineOptions = new LavaEngineConfigurationOptions
+            {
+                InitializeDynamicShortcodes = false
+            };
+            var engine = LavaService.NewEngineInstance( typeof( FluidEngine ), engineOptions );
+
+            LavaIntegrationTestHelper.SetEngineInstance( engine );
+
+            var template = @"
+<h3>Testing issue 5632</h3>
+
+Standard Date Format: {{ '2023-10-01 15:30:00' | Date:'hh:mm tt' }}
+<br/>
+{% schedule where:'Name == ""Sunday 10:30am""' %}
+Schedule Name: {{ schedule.Name }}<br/>
+StartTimeOfDay (Raw): {{ schedule.StartTimeOfDay }}<br/>
+StartTimeOfDay (Formatted): {{ schedule.StartTimeOfDay | Date:'hh:mm tt K' }}<br/>
+<pre>{{ schedule.iCalendarContent }}</pre>
+{% endschedule %}
+";
+            var expectedOutput = @"
+<h3>Testing issue 5632</h3>
+Standard Date Format: 03:30 PM
+<br/>
+Schedule Name: Sunday 10:30am
+<br/>
+StartTimeOfDay (Raw): 10:30:00
+<br/>
+StartTimeOfDay (Formatted): 10:30 AM +11:00
+<br/>
+<pre>
+    BEGIN:VCALENDAR
+    BEGIN:VEVENT
+    DTEND:20130501T113000
+    DTSTART:20130501T103000
+    RRULE:FREQ=WEEKLY;BYDAY=SU
+    END:VEVENT
+    END:VCALENDAR
+</pre>
+";
+            var options = new LavaTestRenderOptions
+            {
+                EnabledCommands = "RockEntity",
+                IgnoreWhiteSpace = true
+            };
+
+            _TestHelper.AssertTemplateOutput( expectedOutput, template, options );
         }
     }
 }

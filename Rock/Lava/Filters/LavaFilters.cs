@@ -2880,7 +2880,7 @@ namespace Rock.Lava
             DateTime? startDate = null;
 
             // Quick out if we have no data
-            if ( source == null || currentPerson == null )
+            if ( source == null )
             {
                 return source;
             }

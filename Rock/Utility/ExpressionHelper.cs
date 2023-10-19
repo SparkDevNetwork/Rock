@@ -224,12 +224,6 @@ namespace Rock.Utility
                     case ComparisonType.IsBlank:
                         evaluatedComparisonType = ComparisonType.IsNotBlank;
                         break;
-                    case ComparisonType.LessThan:
-                        evaluatedComparisonType = ComparisonType.GreaterThanOrEqualTo;
-                        break;
-                    case ComparisonType.LessThanOrEqualTo:
-                        evaluatedComparisonType = ComparisonType.GreaterThan;
-                        break;
                     case ComparisonType.NotEqualTo:
                         evaluatedComparisonType = ComparisonType.EqualTo;
                         break;

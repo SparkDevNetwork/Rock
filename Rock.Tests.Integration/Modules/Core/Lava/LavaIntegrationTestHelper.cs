@@ -21,7 +21,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.DotLiquid;
 using Rock.Lava.Fluid;
@@ -899,6 +898,41 @@ namespace Rock.Tests.Integration.Core.Lava
                 // Specify the engine identifer in the top-level exception.
                 throw new Exception( $"[{engine.EngineName}] Template render failed.", ex );
             }
+        }
+
+        /// <summary>
+        /// Verify that the specified template is valid.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public void AssertTemplateIsValid( string inputTemplate, LavaTestRenderOptions options = null )
+        {
+            ExecuteForActiveEngines( ( engine ) =>
+            {
+                AssertTemplateIsValid( engine, inputTemplate, options );
+            } );
+        }
+
+        /// <summary>
+        /// Verify that the specified template is valid.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public void AssertTemplateIsValid( ILavaEngine engine, string inputTemplate, LavaTestRenderOptions options = null )
+        {
+            inputTemplate = inputTemplate ?? string.Empty;
+
+            options = options ?? new LavaTestRenderOptions();
+
+            var renderOptions = new LavaRenderParameters
+            {
+                Context = engine.NewRenderContext( options.MergeFields ),
+                ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw
+            };
+
+            var result = engine.RenderTemplate( inputTemplate.Trim(), renderOptions );
+
+            Assert.IsFalse( result.HasErrors );
         }
 
         /// <summary>
