@@ -488,7 +488,7 @@ namespace Rock.Lava.Blocks
                             if ( parms.GetValueOrNull( "count" ).AsBoolean() )
                             {
                                 int countResult = resultsQry.Count();
-                                context.SetMergeField( "count", countResult, LavaContextRelativeScopeSpecifier.Root );
+                                context.SetMergeField( "count", countResult );
 
                                 base.OnRender( context, result );
 
@@ -505,7 +505,7 @@ namespace Rock.Lava.Blocks
                             if ( parms.GetValueOrNull( "count" ).AsBoolean() )
                             {
                                 int countResult = queryResult.Count();
-                                context.SetMergeField( "count", countResult, LavaContextRelativeScopeSpecifier.Root );
+                                context.SetMergeField( "count", countResult );
 
                                 base.OnRender( context, result );
 
@@ -540,12 +540,12 @@ namespace Rock.Lava.Blocks
                         }
 
                         // Add the result to the current context.
-                        context.SetMergeField( parms["iterator"], returnValues, LavaContextRelativeScopeSpecifier.Default );
+                        context.SetMergeField( parms["iterator"], returnValues );
 
                         if ( returnCount == 1 )
                         {
                             // If there is only one item, set a singleton variable in addition to the result list.
-                            context.SetMergeField( EntityName, firstItem, LavaContextRelativeScopeSpecifier.Default );
+                            context.SetMergeField( EntityName, firstItem );
                         }
                     }
                 }

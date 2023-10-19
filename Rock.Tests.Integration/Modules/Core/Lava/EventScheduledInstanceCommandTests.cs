@@ -211,21 +211,28 @@ namespace Rock.Tests.Integration.Core.Lava
         public void EventScheduledInstanceCommand_WithDateRangeInDays_ReturnsExpectedEvents()
         {
             const string NewEventGuid = "F7CE040E-CD1C-41E0-81D7-9F88BCDAF6A7";
+            const string testScheduleGuid = "E31C0108-3F3A-4101-B135-A7B8482A226C";
 
             var rockContext = new RockContext();
 
             // Create a new Event that occurs daily.
-            var startDateTime = RockDateTime.New( 2020, 1, 1 ).Value.AddHours(19).AddMinutes(30);
+            var startDateTime = RockDateTime.New( 2020, 1, 1 ).Value.AddHours( 19 ).AddMinutes( 30 );
             var endDate = startDateTime.AddMonths( 3 );
 
-            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime, endDate, new TimeSpan(1,0,0) );
+            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime, endDate, new TimeSpan( 1, 0, 0 ) );
 
+            var addScheduleArgs = new EventsDataManager.AddScheduleDailyRecurrenceActionArgs
+            {
+                Guid = testScheduleGuid.AsGuid(),
+                StartDateTime = startDateTime,
+                EndDateTime = endDate,
+                EventDuration = new TimeSpan( 1, 0, 0 )
+            };
             var createEventInfo = new CreateEventItemActionArgs
             {
                 Guid = NewEventGuid.AsGuid(),
                 Properties = new EventItemInfo
                 {
-                    Schedule = schedule,
                     EventName = "Test Daily Event"
                 }
             };
@@ -234,16 +241,19 @@ namespace Rock.Tests.Integration.Core.Lava
                 Properties = new EventItemOccurrenceInfo
                 {
                     EventIdentifier = NewEventGuid,
-                    MeetingLocationDescription = "Test Location"
+                    MeetingLocationDescription = "Test Location",
+                    ScheduleIdentifier = testScheduleGuid,
+                    CampusIdentifier = "Main Campus"
                 }
             };
 
             var eventsManager = EventsDataManager.Instance;
+            eventsManager.AddScheduleWithDailyRecurrence( addScheduleArgs );
+
             eventsManager.DeleteEventItem( NewEventGuid, rockContext );
             rockContext.SaveChanges();
 
             eventsManager.AddEventItem( createEventInfo );
-            rockContext.SaveChanges();
             eventsManager.AddEventItemOccurrence( createOccurrenceInfo );
 
             try
