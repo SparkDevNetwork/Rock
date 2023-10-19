@@ -610,7 +610,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 if ( RequiresApproval( communication.Recipients.Count(), communicationBag.MaxRecipients ) && !BlockCache.IsAuthorized( Authorization.APPROVE, RequestContext.CurrentPerson ) )
                 {
                     communication.Status = CommunicationStatus.PendingApproval;
-                    successMessage = $"Your message to {communication.Recipients.Count} recipients has been submitted for approval.";
+                    successMessage = $"Your message to {communication.Recipients.Count} {"recipient".PluralizeIf( communication.Recipients.Count > 0 )} has been submitted for approval.";
                 }
                 else
                 {
@@ -626,7 +626,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     }
                     else
                     {
-                        successMessage = $"Your message to {communication.Recipients.Count} recipients has been queued for sending and should be delivered in the next few minutes.";
+                        successMessage = $"Your message to {communication.Recipients.Count} {"recipient".PluralizeIf( communication.Recipients.Count > 0 )} has been queued for sending and should be delivered in the next few minutes.";
                     }
                 }
 
