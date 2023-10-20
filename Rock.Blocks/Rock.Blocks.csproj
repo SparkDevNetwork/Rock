@@ -85,6 +85,7 @@
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
+    <Compile Include="Finance\FinancialPledgeList.cs" />
     <Compile Include="Finance\FinancialStatementTemplateDetail.cs" />
     <Compile Include="Mobile\MobileLayoutDetail.cs" />
     <Compile Include="Group\GroupMemberScheduleTemplateDetail.cs" />
