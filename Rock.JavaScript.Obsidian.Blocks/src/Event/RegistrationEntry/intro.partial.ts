@@ -179,7 +179,7 @@ export default defineComponent({
     </NotificationBox>
     <div class="text-left" v-html="viewModel.instructionsHtml">
     </div>
-    <div v-if="viewModel.maxRegistrants > 1" class="registrationentry-intro">
+    <div v-if="viewModel.maxRegistrants > 1" class="registrationentry-intro mb-3">
         <h1>How many {{viewModel.pluralRegistrantTerm}} will you be registering?</h1>
         <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" :max="viewModel.maxRegistrants" />
     </div>
