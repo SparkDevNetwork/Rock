@@ -154,7 +154,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
                 .ThenBy( spn => spn.Id )
-                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) );
+                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) && spn.IsSmsEnabled );
 
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
             if ( selectedNumberGuids.Any() )
