@@ -1,15 +1,40 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="x-field">
+        <Grid :data="gridData" keyField="key" liveUpdates light @addItem="onAddItem" @selectItem="console.log">
+            <ReorderColumn />
+            <TextColumn name="name"
+                        title="nameTitle"
+                        field="name" />
 
+            <DateColumn name="date"
+                        title="dateTitle"
+                        field="date"
+                        visiblePriority="md" />
+
+            <NumberColumn name="index"
+                          title="numberTitle"
+                          field="index"
+                          visiblePriority="lg" />
+
+            <BooleanColumn name="isActive"
+                           title="activeTitle"
+                           field="isActive"
+                           visiblePriority="sm" />
+
+            <DeleteColumn @click="onDelete" disableConfirmation />
+        </Grid>
     </RockFormField>
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { PropType, reactive } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import Grid, { BooleanColumn, DateColumn, DeleteColumn, EditColumn, NumberColumn, TextColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -27,5 +52,44 @@
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
     const fieldProps = useStandardRockFormFieldProps(props);
+
+
+
+
+
+
+
+    const gridData: GridDataBag = reactive<GridDataBag>({
+        rows: [1, 2, 3, 4, 5].map(idx => generateItem(idx))
+    });
+
+
+    function generateItem(index: number): Record<string, unknown> {
+        return {
+            key: newGuid(),
+            name: `Item ${index}`,
+            date: RockDateTime.now().date.addDays(-index).toISOString(),
+            index: index,
+            isActive: (index % 3) === 0
+        };
+    }
+
+    function onAddItem(): void {
+        console.log("TODO! SHOW POPUP");
+        if (gridData.rows) {
+            gridData.rows.push(generateItem(gridData.rows.length + 1));
+        }
+    }
+
+    function onDelete(key: string): void {
+        if (gridData.rows) {
+            const index = gridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                gridData.rows.splice(index, 1);
+            }
+        }
+    }
+
 
 </script>

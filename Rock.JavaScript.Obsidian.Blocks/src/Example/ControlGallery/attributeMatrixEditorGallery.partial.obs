@@ -1,5 +1,5 @@
 <template>
-    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
         <AttributeMatrixEditor v-model="value" />
 

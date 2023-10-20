@@ -612,14 +612,15 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "AttributeMatrixEditorGetAttributes" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "99B4FDB8-128C-4A8C-AFDB-C8F9BCE0A666" )]
-        public IHttpActionResult AttributeMatrixEditorGetAttributes( [FromBody] AttributeMatrixEditorGetAttributesOptionsBag options )
+        public IHttpActionResult AttributeMatrixEditorGetAttributes( /*[FromBody] AttributeMatrixEditorGetAttributesOptionsBag options*/ )
         {
             using ( var rockContext = new RockContext() )
             {
+                var items = new List<string>();
                 Guid attributeMatrixTemplateGuid = new Guid( "1d24694e-445c-4852-b5bc-64cdea6f7175" );
                 AttributeMatrixItem tempAttributeMatrixItem = null;
 
-                if ( this.AttributeMatrixTemplateId.HasValue )
+                if ( attributeMatrixTemplateGuid != null && !attributeMatrixTemplateGuid.IsEmpty() )
                 {
                     AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
                     var template = attributeMatrixTemplateService.Get( attributeMatrixTemplateGuid );
@@ -631,33 +632,20 @@ namespace Rock.Rest.v2
 
                     foreach ( var attribute in tempAttributeMatrixItem.Attributes.Select( a => a.Value ) )
                     {
-                        _gMatrixItems.Columns.Add( new AttributeField { DataField = attribute.Key, HeaderText = attribute.Name } );
+                        items.Add( new AttributeField { DataField = attribute.Key, HeaderText = attribute.Name }.ToCamelCaseJson( false, true ) );
                     }
 
                     //AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
                     var attributeMatrixTemplateRanges = attributeMatrixTemplateService.GetSelect( attributeMatrixTemplateGuid, s => new { s.MinimumRows, s.MaximumRows } );
 
-                    // If a value is required, make sure we have a minumum row count of at least 1.
-                    var minRowCount = attributeMatrixTemplateRanges.MinimumRows.GetValueOrDefault( 0 );
-                    if ( this.Required
-                         && minRowCount < 1 )
-                    {
-                        minRowCount = 1;
-                    }
-                    _requiredRowCountRangeValidator.MinimumValue = minRowCount.ToString();
-
-                    _requiredRowCountRangeValidator.Enabled = minRowCount > 0;
-                    if ( minRowCount == 1 )
-                    {
-                        _requiredRowCountRangeValidator.ErrorMessage = "At least 1 row is required.";
-                    }
-                    else
-                    {
-                        _requiredRowCountRangeValidator.ErrorMessage = $"At least {minRowCount} rows are required";
-                    }
+                    // Configure Validation (minRows & maxRows & required)
                 }
 
-                return Ok();
+                return Ok( new
+                {
+                    tempAttributeMatrixItem,
+                    items
+                } );
             }
         }
 
