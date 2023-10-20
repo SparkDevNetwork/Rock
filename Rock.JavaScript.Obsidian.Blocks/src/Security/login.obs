@@ -42,9 +42,13 @@
 
                     <CredentialLogin v-if="loginMethod === LoginMethod.InternalDatabase
                                            && ((config.isInternalDatabaseLoginSupported && !mfa?.credentialLogin) || mfa?.credentialLogin?.isError === false)"
-                                     :config="config"
                                      :disabled="isAuthenticating || isNavigating"
                                      :isMobileForced="isMobileForced"
+                                     :isNewAccountHidden="currentMfaFactor === LoginMethod.InternalDatabase || config.hideNewAccountOption"
+                                     :isRememberMeHidden="currentMfaFactor === LoginMethod.InternalDatabase"
+                                     :newAccountButtonText="config.newAccountButtonText"
+                                     :promptMessage="config.promptMessage"
+                                     :usernameFieldLabel="config.usernameFieldLabel"
                                      @forgotAccount="onForgotAccount()"
                                      @login="onCredentialLogin($event)"
                                      @register="onRegister()" />
@@ -182,6 +186,26 @@
         else {
             return null;
         }
+    });
+
+    const currentMfaFactor = computed<LoginMethod | null>(() => {
+        const mfaDetails = mfa.value;
+
+        if (!mfaDetails) {
+            return null;
+        }
+
+        if (mfaDetails.credentialLogin) {
+            return LoginMethod.InternalDatabase;
+        }
+
+        if (mfaDetails.passwordless) {
+            return LoginMethod.Passwordless;
+        }
+
+        // This would only occur if a new auth factor if block is not added here.
+        console.error("Unknown MFA factor");
+        return null;
     });
 
     // #endregion
