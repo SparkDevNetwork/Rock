@@ -299,6 +299,9 @@
     <Folder Include="Framework\ViewModels\Blocks\Bus\" />
     <Folder Include="Framework\ViewModels\Blocks\Bus\QueueDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\" />
@@ -712,6 +715,11 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\adaptiveMessageAdaptationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\adaptiveMessageAdaptationDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageDetail\adaptiveMessageBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageDetail\adaptiveMessageDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageList\adaptiveMessageListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\blockTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\blockTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\attributeFilterBag.d.ts" />

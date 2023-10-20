@@ -26,6 +26,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Address field type
         /// </summary>
+        public const string ACHIEVEMENT_TYPE = "593132CF-BA5D-462F-97F6-94DCC0BFFE6F";
+
+        /// <summary>
+        /// Address field type
+        /// </summary>
         public const string ADDRESS = "0A495222-23B7-41D3-82C8-D484CDB75D17";
 
         /// <summary>
@@ -632,6 +637,16 @@ namespace Rock.SystemGuid
         /// Social Security Number
         /// </summary>
         public const string SSN = "4722C99A-C078-464A-968F-13AB5E8E318F";
+
+        /// <summary>
+        /// Streak Type field type
+        /// </summary>
+        public const string STREAK_TYPE = "F1411F4A-BD4B-4F80-9A83-94026C009F4D";
+
+        /// <summary>
+        /// Streak Type field type
+        /// </summary>
+        public const string STRUCTURE_CONTENT_EDITOR = "92C88D02-CE12-4217-80FB-19422B758437";
 
         /// <summary>
         /// System Email field type

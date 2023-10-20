@@ -1035,8 +1035,14 @@
     <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
+    <Compile Include="Lava\Blocks\AdaptiveMessageBlock.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
     <Compile Include="Lava\Helpers\LavaAppendWatchesHelper.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessageAdaptationSegment\AdaptiveMessageAdaptationSegment.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessageAdaptation\AdaptiveMessageAdaptation.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessageAdaptation\AdaptiveMessageAdaptation.Logic.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessage\AdaptiveMessage.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessage\AdaptiveMessage.Logic.cs" />
     <Compile Include="Model\CMS\BlockType\BlockType.WebForms.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\AddToContentLibraryException.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\AddFromContentLibraryException.cs" />
@@ -1058,6 +1064,9 @@
     <Compile Include="Model\CMS\ContentCollection\ContentCollection.cs" />
     <Compile Include="Model\CMS\ContentCollection\ContentCollection.Logic.cs" />
     <Compile Include="Model\CMS\ContentCollection\ContentCollectionService.cs" />
+    <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationSegmentService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AdaptiveMessageService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionSourceService.CodeGenerated.cs" />
     <Compile Include="Jobs\UpdatePersonalizationData.cs" />
@@ -2106,6 +2115,8 @@
     <Compile Include="Blocks\BreadCrumbResult.cs" />
     <Compile Include="Web\BreadCrumbLink.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
+    <Compile Include="Web\Cache\Entities\AdaptiveMessageAdaptationCache.cs" />
+    <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
     <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentTopicDomainCache.cs" />

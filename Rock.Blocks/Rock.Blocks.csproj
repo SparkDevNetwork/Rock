@@ -60,6 +60,9 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
+    <Compile Include="Cms\AdaptiveMessageDetail.cs" />
+    <Compile Include="Cms\AdaptiveMessageList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
     <Compile Include="Core\CampusList.cs" />
