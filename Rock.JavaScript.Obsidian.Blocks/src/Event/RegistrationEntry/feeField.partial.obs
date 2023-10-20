@@ -1,0 +1,257 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="!isHidden">
+        <CheckBox v-if="isCheckbox" :label="label" :validationTitle="props.fee.name" v-model="checkboxValue" :rules="rules" :disabled="isCheckboxDisabled" />
+        <NumberUpDown v-else-if="isNumberUpDown" :validationTitle="props.fee.name" :label="label" :min="0" :max="maxValue" v-model="quantityValue" :rules="rules" />
+        <DropDownList v-else-if="isDropDown" :label="label" :items="dropDownListOptions" v-model="dropDownValue" :rules="rules" formControlClasses="input-width-md" />
+        <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="numberGroupValue" :rules="rules" />
+        <NotificationBox v-else alertType="danger">This fee configuration is not supported</NotificationBox>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown";
+    import NumberUpDownGroup, { NumberUpDownGroupOption } from "@Obsidian/Controls/numberUpDownGroup";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types.partial";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<Record<string, number>>,
+            required: true
+        },
+
+        fee: {
+            type: Object as PropType<RegistrationEntryBlockFeeViewModel>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, number>): void;
+    }>();
+
+    const internalValue = ref({ ...props.modelValue });
+
+    function getItemLabel(item: RegistrationEntryBlockFeeItemViewModel): string {
+        const formattedCost = asFormattedString(item.cost, 2);
+
+        if (item.countRemaining !== null && item.countRemaining !== undefined) {
+            const formattedRemaining = asFormattedString(item.countRemaining, 0);
+            return `${item.name} ($${formattedCost}) (${formattedRemaining} remaining)`;
+        }
+
+        return `${item.name} ($${formattedCost})`;
+    }
+
+    const maxValue = computed((): number => {
+        if (!singleItem.value || singleItem.value.countRemaining === null) {
+            return 100;
+        }
+
+        return singleItem.value.countRemaining + quantityValue.value;
+    });
+
+    const checkboxValue = computed({
+        get(): boolean {
+            if (singleItem.value) {
+                return internalValue.value[singleItem.value.guid] === 1 ? true : false;
+            }
+            else {
+                return false;
+            }
+        },
+        set(value: boolean) {
+            if (singleItem.value) {
+                internalValue.value = {
+                    [singleItem.value.guid]: value ? 1 : 0
+                };
+            }
+        }
+    });
+
+    const quantityValue = computed({
+        get(): number {
+            if (singleItem.value) {
+                return internalValue.value[singleItem.value.guid] ?? 0;
+            }
+            else {
+                return 0;
+            }
+        },
+        set(value: number) {
+            if (singleItem.value) {
+                internalValue.value = {
+                    [singleItem.value.guid]: value
+                };
+            }
+        }
+    });
+
+    const dropDownValue = computed({
+        get(): string {
+            for (const item of props.fee.items) {
+                if (internalValue.value[item.guid]) {
+                    return item.guid;
+                }
+            }
+
+            return "";
+        },
+        set(value: string) {
+            const newValue = {};
+
+            for (const item of props.fee.items) {
+                if (areEqual(value, item.guid)) {
+                    newValue[item.guid] = 1;
+                }
+                else {
+                    newValue[item.guid] = 0;
+                }
+            }
+
+            updateRefValue(internalValue, newValue);
+        }
+    });
+
+    const numberGroupValue = computed({
+        get(): Record<string, number> {
+            const values: Record<string, number> = {};
+
+            for (const option of numberUpDownGroupOptions.value) {
+                values[option.key] = internalValue.value[option.key] ?? 0;
+            }
+
+            return values;
+        },
+        set(value: Record<string, number>) {
+            updateRefValue(internalValue, value);
+        }
+    });
+
+    const label = computed((): string => {
+        if (singleItem.value) {
+            return getItemLabel(singleItem.value);
+        }
+
+        return props.fee.name;
+    });
+
+    const singleItem = computed((): RegistrationEntryBlockFeeItemViewModel | null => {
+        if (props.fee.items.length !== 1) {
+            return null;
+        }
+
+        return props.fee.items[0];
+    });
+
+    const isHidden = computed((): boolean => {
+        if (!props.fee.items.length) {
+            return true;
+        }
+
+        if (props.fee.hideWhenNoneRemaining) {
+            if (singleItem.value && props.fee.items[0].countRemaining !== null) {
+                if (props.fee.items[0].countRemaining + (internalValue.value[props.fee.items[0].guid] ?? 0) === 0) {
+                    return true;
+                }
+            }
+
+            if (!singleItem.value) {
+                if (props.fee.items.every(i => i.countRemaining !== null && i.countRemaining + (internalValue.value[i.guid] ?? 0) === 0)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    });
+
+    const isCheckbox = computed((): boolean => {
+        return !!singleItem.value && !props.fee.allowMultiple;
+    });
+
+    const isNumberUpDown = computed((): boolean => {
+        return !!singleItem.value && props.fee.allowMultiple;
+    });
+
+    const isNumberUpDownGroup = computed((): boolean => {
+        return props.fee.items.length > 1 && props.fee.allowMultiple;
+    });
+
+    const isDropDown = computed((): boolean => {
+        return props.fee.items.length > 1 && !props.fee.allowMultiple;
+    });
+
+    const dropDownListOptions = computed((): ListItemBag[] => {
+        return props.fee.items
+            .filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || (i.countRemaining + internalValue.value[i.guid] ?? 0) > 0)
+            .map(i => ({
+                text: getItemLabel(i),
+                value: i.guid,
+                disabled: i.countRemaining !== null && (i.countRemaining + internalValue.value[i.guid] ?? 0) === 0
+            }));
+    });
+
+    const numberUpDownGroupOptions = computed((): NumberUpDownGroupOption[] => {
+        return props.fee.items
+            .filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || (i.countRemaining + internalValue.value[i.guid] ?? 0) > 0)
+            .map(i => ({
+                key: i.guid,
+                label: getItemLabel(i),
+                max: i.countRemaining !== null
+                    ? i.countRemaining + (internalValue.value[i.guid] ?? 0)
+                    : 100,
+                min: 0
+            }));
+    });
+
+    const rules = computed((): string => {
+        return props.fee.isRequired ? "required" : "";
+    });
+
+    const isCheckboxDisabled = computed((): string | undefined => {
+        if (props.fee.isRequired && checkboxValue.value) {
+            return "disabled";
+        }
+
+        if (!checkboxValue.value && props.fee.items[0].countRemaining === 0) {
+            return "disabled";
+        }
+
+        return undefined;
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(internalValue, { ...props.modelValue });
+    });
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+
+    // If the fee is required see if we need to auto-select it.
+    if (singleItem.value && props.fee.isRequired) {
+        // If the fee is available then select it.
+        if (props.fee.items[0].countRemaining === null || props.fee.items[0].countRemaining > 0) {
+            if (isCheckbox.value && !checkboxValue.value) {
+                checkboxValue.value = true;
+            }
+            else if (isNumberUpDown.value && !quantityValue.value) {
+                quantityValue.value = 1;
+            }
+
+            // Force the emit so the count remaining decreases for other registrants.
+            // This causes the registrant component to recalculate immediately
+            // before the next registrant component begins to load.
+            emit("update:modelValue", internalValue.value);
+        }
+    }
+</script>

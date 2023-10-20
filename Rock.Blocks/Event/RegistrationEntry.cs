@@ -2313,14 +2313,14 @@ namespace Rock.Blocks.Event
                                     f.RegistrationTemplateFeeId == feeModel.Id &&
                                     f.RegistrationTemplateFeeItemId == feeItemModel.Id );
 
-                        // If this fee is required and this is the last item, then make sure at least 1 is selected
-                        if ( isLastFeeItemModel && totalFeeQuantity < 1 && quantity < 1 && feeModel.IsRequired )
-                        {
-                            quantity = 1;
-                        }
-
                         // If there is a limited supply, ensure that more are not ordered than available
                         var countRemaining = context.FeeItemsCountRemaining.GetValueOrNull( feeItemModel.Guid );
+
+                        // Adjust for any existing quantity usage. Meaning, if countRemaining
+                        // is 0 but we have 1 quantity used on file (in the database) then we
+                        // add that back in. Otherwise the logic below would automatically unselect
+                        // it because it thinks no value is available.
+                        countRemaining += registrantFee?.Quantity ?? 0;
 
                         // Don't allow quantity to be more than supply
                         if ( countRemaining.HasValue && countRemaining < quantity )
@@ -2678,10 +2678,6 @@ namespace Rock.Blocks.Event
                     HideWhenNoneRemaining = feeModel.HideWhenNoneRemaining,
                     Items = feeModel.FeeItems
                         .Where( fi => fi.IsActive )
-                        .Where( fi => !feeModel.HideWhenNoneRemaining
-                            || (feeModel.HideWhenNoneRemaining
-                                && context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ) != null
-                                && context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ) > 0 ) )
                         .Select( fi => new RegistrationEntryBlockFeeItemViewModel
                         {
                             Cost = fi.Cost,
@@ -2690,6 +2686,7 @@ namespace Rock.Blocks.Event
                             OriginalCountRemaining = context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ),
                             CountRemaining = context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid )
                         } )
+                        .ToList()
                 };
 
                 fees.Add( feeViewModel );
@@ -2921,6 +2918,19 @@ namespace Rock.Blocks.Event
             var adjustedSpotsRemaining = isExistingRegistration && session != null
                 ? context.SpotsRemaining + session.Registrants.Where( r => r.IsOnWaitList == false ).Count()
                 : context.SpotsRemaining;
+
+            // Adjust the original fee remaining counts to account for any existing
+            // registrants that already have a fee item selected. In other words,
+            // if the database says we have 2 fees remaining, but we are returning
+            // to an existing registration that has 1 of that fee, then we should
+            // tell the client that there were 3 original fees remaining.
+            foreach ( var fee in fees )
+            {
+                foreach ( var feeItem in fee.Items )
+                {
+                    feeItem.OriginalCountRemaining += session.Registrants.Select( r => r.FeeItemQuantities.GetValueOrNull( feeItem.Guid ) ?? 0 ).Sum();
+                }
+            }
 
             var viewModel = new RegistrationEntryBlockViewModel
             {

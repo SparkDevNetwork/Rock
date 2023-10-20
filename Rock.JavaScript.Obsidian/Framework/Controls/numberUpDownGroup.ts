@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType, ref, watch } from "vue";
 import { NumberUpDownInternal } from "./numberUpDown";
 import RockFormField from "./rockFormField";
+import { updateRefValue } from "@Obsidian/Utility/component";
 
 export type NumberUpDownGroupOption = {
     key: string,
@@ -41,12 +42,40 @@ export default defineComponent({
             required: true
         }
     },
+    setup(props, { emit }) {
+        const internalValue = ref({...props.modelValue});
+
+        function setValue(key: string, value: number): void {
+            const newValue: Record<string, number> = {};
+
+            for (const option of props.options) {
+                newValue[option.key] = key === option.key
+                    ? value
+                    : internalValue.value[option.key] ?? 0;
+            }
+
+            internalValue.value = newValue;
+        }
+
+        watch(() => props.modelValue, () => {
+            updateRefValue(internalValue, props.modelValue);
+        });
+
+        watch(internalValue, () => {
+            emit("update:modelValue", internalValue.value);
+        });
+
+        return {
+            internalValue,
+            setValue
+        };
+    },
     computed: {
         total(): number {
             let total = 0;
 
             for (const option of this.options) {
-                total += (this.modelValue[option.key] || 0);
+                total += (this.internalValue[option.key] || 0);
             }
 
             return total;
@@ -63,7 +92,7 @@ export default defineComponent({
                 <div v-if="option.label" class="margin-b-sm">
                     {{option.label}}
                 </div>
-                <NumberUpDownInternal v-model="modelValue[option.key]" :min="option.min" :max="option.max" class="margin-t-sm" />
+                <NumberUpDownInternal :modelValue="internalValue[option.key] ?? 0" @update:modelValue="setValue(option.key, $event)" :min="option.min" :max="option.max" class="margin-t-sm" />
             </div>
         </div>
     </template>
