@@ -393,7 +393,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
                 .ThenBy( spn => spn.Id )
-                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) );
+                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) && spn.IsSmsEnabled );
 
             // Filter to the numbers that are specifically configured for use with this block.
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSmsNumbers ).SplitDelimitedValues( true ).AsGuidList();
