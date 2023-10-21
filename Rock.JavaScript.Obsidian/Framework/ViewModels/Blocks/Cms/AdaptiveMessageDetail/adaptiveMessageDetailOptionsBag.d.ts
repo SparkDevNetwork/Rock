@@ -22,4 +22,6 @@
 //
 
 export type AdaptiveMessageDetailOptionsBag = {
+    /** Gets or sets the reserved key names. */
+    reservedKeyNames?: string[] | null;
 };

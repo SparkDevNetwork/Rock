@@ -134,7 +134,7 @@ namespace Rock.Lava.Blocks
                         ComponentName = adaptiveMessage.Name,
                         InteractionOperation = "Viewed",
                         InteractionSummary = adaptation.Name,
-                        InteractionEntityId = adaptation.Id
+                        InteractionEntityId = adaptation.Id,
                     };
 
                     var interactionTransaction = new InteractionTransaction( info );
