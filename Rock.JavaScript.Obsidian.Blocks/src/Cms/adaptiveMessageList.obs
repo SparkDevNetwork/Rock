@@ -26,7 +26,7 @@
                 :quickFilterValue="getRowCategoriesFilterValue"
                 visiblePriority="lg">
             <template #format="{ row }">
-                <span class='label label-default' v-for="category in row.categories">
+                <span class='label label-default margin-l-sm' v-for="category in row.categories">
                     {{ category }}
                 </span>
             </template>

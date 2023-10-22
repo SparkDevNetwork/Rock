@@ -37,7 +37,7 @@
                         title="Segments"
                         visiblePriority="lg">
                     <template #format="{ row }">
-                        <span class='label label-info' v-for="segment in row.segments">
+                        <span class='label label-info margin-r-sm' v-for="segment in row.segments">
                         {{ segment }}
                         </span>
                     </template>
@@ -145,7 +145,7 @@ import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
         if (props.modelValue.categories && props.modelValue.categories.length > 0) {
             let categoryStr = "";
             for (const category of props.modelValue.categories) {
-                categoryStr += `<span class='label label-default'>${category.text}</span>`;
+                categoryStr += `<span class='label label-default margin-r-sm'>${category.text}</span>`;
             }
 
             valueBuilder.addHtmlValue("Categories", `${categoryStr}`);

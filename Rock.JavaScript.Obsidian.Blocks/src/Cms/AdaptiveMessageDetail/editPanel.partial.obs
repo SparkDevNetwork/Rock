@@ -43,13 +43,21 @@
                     <Grid :data="gridSharedData" keyField="key" itemTerm="Shared Adaptation Attribute" liveUpdates light>
                         <TextColumn name="name" field="name" title="Attribute" />
                         <TextColumn name="description" field="description" title="Description" />
-                        <BooleanColumn name="isRequired" field="isRequired" title="Required" />
+                        <Column title="Inherited" name="key">
+                            <template #format="{ row }">
+                                (Inherited from Adaptive Message)
+                            </template>
+
+                            <template #skeleton>
+                                <div class="skeleton skeleton-text skeleton-rounded" />
+                            </template>
+                        </Column>
                     </Grid>
                 </div>
 
                 <h5>Adaptation Attributes</h5>
                 <div class="grid grid-panel">
-                    <Grid :data="gridData" keyField="key" itemTerm="Shared Adaptation Attribute" liveUpdates light @addItem="onAddItem">
+                    <Grid :data="gridData" keyField="key" itemTerm="Attribute" liveUpdates light @addItem="onAddItem">
                         <TextColumn name="name" field="name" title="Attribute" />
                         <TextColumn name="description" field="description" title="Description" />
                         <BooleanColumn name="isRequired" field="isRequired" title="Required" />
@@ -89,7 +97,7 @@
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import Grid, { EditColumn, DeleteColumn, TextColumn, BooleanColumn } from "@Obsidian/Controls/grid";
+    import Grid, { Column, EditColumn, DeleteColumn, TextColumn, BooleanColumn } from "@Obsidian/Controls/grid";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AdaptiveMessageBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageDetail/adaptiveMessageBag";
@@ -193,7 +201,7 @@
 
         // Update the grid.
         if (gridData.rows) {
-            const index = gridData.rows.findIndex(r => r["idKey"] === key);
+            const index = gridData.rows.findIndex(r => r["key"] === key);
 
             if (index !== -1) {
                 gridData.rows?.splice(index, 1);
@@ -264,7 +272,7 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, ...propRefs], () => {
+    watch([attributeValues,adaptationAttributes, ...propRefs], () => {
         const newValue: AdaptiveMessageBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -272,7 +280,8 @@
             isActive: isActive.value,
             name: name.value,
             key: key.value,
-            categories: categories.value
+            categories: categories.value,
+            adaptationAttributes: adaptationAttributes.value,
         };
 
         emit("update:modelValue", newValue);
