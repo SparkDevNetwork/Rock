@@ -58,7 +58,7 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AdaptiveMessageAdaptationBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationBag";
     import { AdaptiveMessageAdaptationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationDetailOptionsBag";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -84,12 +84,12 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const viewSaturationCount = propertyRef(props.modelValue.viewSaturationCount ?? null, "viewSaturationCount");
-    const viewSaturationInDays = propertyRef(props.modelValue.viewSaturationInDays ?? null, "viewSaturationInDays");
+    const viewSaturationCount = propertyRef(props.modelValue.viewSaturationCount ?? null, "ViewSaturationCount");
+    const viewSaturationInDays = propertyRef(props.modelValue.viewSaturationInDays ?? null, "ViewSaturationInDays");
     const segments = propertyRef(props.modelValue.segments ?? [], "Segments");
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, segments];
+    const propRefs = [description, isActive, name, segments, viewSaturationCount, viewSaturationInDays];
 
     // #endregion
 
@@ -116,6 +116,8 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(viewSaturationCount, props.modelValue.viewSaturationCount ?? null);
+        updateRefValue(viewSaturationInDays, props.modelValue.viewSaturationInDays ?? null);
         updateRefValue(segments, props.modelValue.segments ?? []);
     });
 
@@ -126,6 +128,8 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
             ...props.modelValue,
             attributeValues: attributeValues.value,
             description: description.value,
+            viewSaturationInDays: viewSaturationInDays.value,
+            viewSaturationCount: viewSaturationCount.value,
             isActive: isActive.value,
             name: name.value,
             segments: segments.value

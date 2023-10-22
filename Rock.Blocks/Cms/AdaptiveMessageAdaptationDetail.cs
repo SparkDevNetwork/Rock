@@ -141,8 +141,17 @@ namespace Rock.Blocks.Cms
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+
+            if ( entity.Id == 0 )
+            {
+                var adaptiveMessageKey = RequestContext.GetPageParameter( PageParameterKey.AdaptiveMessageId );
+                var adaptiveMessage = new AdaptiveMessageService( rockContext ).Get( adaptiveMessageKey );
+                if ( adaptiveMessage != null )
+                {
+                    entity.AdaptiveMessageId = adaptiveMessage.Id;
+                }
+            }
 
             entity.LoadAttributes( rockContext );
 
@@ -422,6 +431,13 @@ namespace Rock.Blocks.Cms
                     return actionError;
                 }
 
+                var isNew = entity.Id == 0;
+                if ( isNew )
+                {
+                    var adaptiveMessageKey = RequestContext.GetPageParameter( PageParameterKey.AdaptiveMessageId );
+                    entity.AdaptiveMessageId = new AdaptiveMessageService( rockContext ).Get( adaptiveMessageKey ).Id;
+                }
+
                 // Update the entity instance from the information in the bag.
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
@@ -432,13 +448,6 @@ namespace Rock.Blocks.Cms
                 if ( !ValidateAdaptiveMessageAdaptation( entity, rockContext, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-                if ( isNew )
-                {
-                    var adaptiveMessageKey = RequestContext.GetPageParameter( PageParameterKey.AdaptiveMessageId );
-                    entity.AdaptiveMessageId = new AdaptiveMessageService( rockContext ).Get( adaptiveMessageKey ).Id;
                 }
 
                 var segmentIds = box.Entity.Segments.AsGuidList().Select( a => PersonalizationSegmentCache.GetId( a ) ).Where( a => a.HasValue ).ToList();

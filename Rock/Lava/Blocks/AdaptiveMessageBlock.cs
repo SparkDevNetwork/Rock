@@ -115,30 +115,40 @@ namespace Rock.Lava.Blocks
                     person = LavaHelper.GetCurrentPerson( context );
                 }
 
+                if ( person == null )
+                {
+                    person = LavaHelper.GetCurrentVisitorInContext( context )?.Person;
+                }
+
                 var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPerson( person, rockContext );
                 var adaptiveMessage = AdaptiveMessageCache.All().Where( a => a.Key == key ).FirstOrDefault();
                 var adaptations = adaptiveMessage.Adaptations
                     .Where( a => !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) )
-                    .Take( count.Value );
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .Take( count.Value )
+                    .ToList();
                 
-                AddLavaMergeFieldsToContext( context, adaptations.ToList() );
+                AddLavaMergeFieldsToContext( context, adaptations );
 
                 if ( isTrackViews && adaptations.Any() && adaptiveMessage != null )
                 {
-                    var adaptation = adaptations.First();
-                    var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
-                    var info = new InteractionTransactionInfo
+                    foreach ( var adaptation in adaptations )
                     {
-                        InteractionChannelId = interactionChannelId.Value,
-                        ComponentEntityId = adaptiveMessage.Id,
-                        ComponentName = adaptiveMessage.Name,
-                        InteractionOperation = "Viewed",
-                        InteractionSummary = adaptation.Name,
-                        InteractionEntityId = adaptation.Id,
-                    };
+                        var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
+                        var info = new InteractionTransactionInfo
+                        {
+                            InteractionChannelId = interactionChannelId.Value,
+                            ComponentEntityId = adaptiveMessage.Id,
+                            ComponentName = adaptiveMessage.Name,
+                            InteractionOperation = "Viewed",
+                            InteractionSummary = adaptation.Name,
+                            InteractionEntityId = adaptation.Id,
+                        };
 
-                    var interactionTransaction = new InteractionTransaction( info );
-                    interactionTransaction.Enqueue();
+                        var interactionTransaction = new InteractionTransaction( info );
+                        interactionTransaction.Enqueue();
+                    }
                 }
             }
             catch ( Exception ex )
