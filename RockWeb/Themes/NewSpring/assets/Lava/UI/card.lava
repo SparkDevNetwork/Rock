@@ -1,0 +1,118 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' ]}
+
+{%- assign modalid = uniqueid -%}
+{% if linkurl != empty or linkedpageid != empty %}
+    {% capture cardlinkurl %}
+        {% if linkedpageroute != empty and linkedpageroute != '' and linkedpageroute != null %}
+            /{{ linkedpageroute }}
+        {% elseif linkedpageid != empty and linkedpageid != '' and linkedpageid != null %}
+            /page/{{ linkedpageid }}
+        {% else %}
+            {{ linkurl }}
+        {% endif %}
+    {% endcapture %}
+{% endif %}
+
+{% assign cardlinkurl = cardlinkurl | Trim %}
+
+<div data-column="{{ blockwidth }}" {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default overflow-hidden {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded-lg">
+
+    {% if video and video != empty %}
+        <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+        <div class="position-relative ratio ratio-{{ ratio }}">
+            <span class="position-absolute ratio-item wistia_embed wistia_async_{{ video }} popover=true popoverAnimateThumbnail=true" style="display:inline-block;position:relative;width:100%;height:100%;">&nbsp;</span>
+        </div>
+    {% elseif imageurl != null and imageurl != '' %}
+        {% if cardlinkurl != empty %}<a href="{{ cardlinkurl }}" class="panel-image" {% if target and target != empty %}target="{{ target }}"{% endif %}>{% else %}<div class="panel-image">{% endif %}
+
+            {% if count != null and count != '' %}
+                <span class="card-count sans-serif strong rounded bg-gray-lighter text-gray-darker text-center">{{ count }}</span>
+            {% endif %}
+
+            <div class="position-relative ratio-{{ ratio }}">
+                <div class="full-screen background-center background-cover {% if grayscale == 'y' %}grayscale{% endif %}" style="background-image:url('{{ imageurl }}'); {% if imageopacity %}opacity: {{ imageopacity }};{% endif %} {% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %}"></div>
+            </div>
+
+            {% if type != null and type != '' %}
+                <div class="label bg-gray-light text-white position-absolute bottom-zero left-zero push-left bring-forward sans-serif stronger circular" style="border: 3px solid #fff;"><small>{{ type }}</small></div>
+            {% endif %}
+
+        {% if cardlinkurl != empty %}</a>{% else %}</div>{% endif %}
+    {% endif %}
+
+    <div class="panel-body hard-bottom xs-soft xs-hard-bottom bg-white">
+
+        {% if label and label != empty %}
+            <p class="push-half-bottom"><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
+        {% endif %}
+
+        {% if title != null and title != empty %}
+        <h2 class="{% if titlesize != null and titlesize != '' %}{{ titlesize }}{% endif %} push-half-bottom">
+            {% if cardlinkurl != empty %}<a href="{{ cardlinkurl }}" {% if target and target != empty %}target="{{ target }}"{% endif %}>{% endif %}
+                {{ title }}
+            {% if cardlinkurl != empty %}</a>{% endif %}
+        </h2>
+        {% endif %}
+
+        {% if collectiontext != null and collectiontext != empty %}
+            <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-half-bottom">From {% if collectionurl != empty %}<a href="{{ collectionurl }}">{% endif %}{{ collectiontext }}{% if collectionurl != empty %}</a>{% endif %}</small>
+        {% endif %}
+
+        {% assign subtitle = subtitle | Trim %}
+        {% if subtitle and subtitle != empty %}
+            <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
+        {% endif %}
+
+        {% if showtags != 'false' %}
+            {[ tags dataset:'{{ dataset }}' cciid:'{{ cciid }}' ]}
+        {% endif %}
+
+        {% if content != null and content != '' %}
+            {% if trimcopy != null and trimcopy != '' %}
+                {% assign length = content | Size %}
+                {{ content | HtmlDecode | Truncate:140,'...' }}{% if length > 140 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">read more</a>{% endif %}
+            {% else %}
+                {{ content | HtmlDecode }}
+            {% endif %}
+        {% endif %}
+
+        {% if lava != empty %}
+            {{ lava | HtmlDecode }}
+        {% endif %}
+
+        {% if cardlinkurl and cardlinkurl != empty %}
+            <p>
+                {[ button linkurl:'{{ cardlinkurl }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'sm' linktarget:'{{ target }}' ]}
+            </p>
+        {% endif %}
+
+    </div>
+</div>
+
+{% if trimcopy != null and trimcopy != '' %}
+    {% if length > 140 %}
+    <div class="modal fade" id="{{ modalid }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="text-gray-darker pull-right" data-dismiss="modal" aria-label="Close">
+                        <i class="fa fa-lg fa-times"></i>
+                    </a>
+                    {% if title != null and title != '' %}
+                        <h3 class="flush">{{ title }}</h3>
+                    {% endif %}
+                </div>
+                <div class="modal-body soft hard-bottom">
+                    {{ content }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+{[ endscripturize ]}

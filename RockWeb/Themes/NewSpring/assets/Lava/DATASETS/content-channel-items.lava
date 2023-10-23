@@ -1,0 +1,20 @@
+{% sql return:'items' %}
+    SELECT
+        cci.[Id]
+        , cci.[ContentChannelId]
+        , cc.[Name] 'ContentChannelName'
+        , pd.[AccessKey]
+    FROM [ContentChannelItem] cci
+    JOIN [ContentChannel] cc ON cc.[Id] = cci.[ContentChannelId]
+    JOIN [AttributeValue] av ON av.[EntityId] = cc.[Id] AND av.[AttributeId] = 107096
+    JOIN [PersistedDataset] pd ON av.[Value] = pd.[Id]
+    WHERE cci.[ContentChannelTypeId] = 11
+{% endsql %}
+[
+    {% for item in items %}{
+        Id: {{ item.Id }},
+        ContentChannelId: {{ item.ContentChannelId }},
+        ContentChannelName: {{ item.ContentChannelName | ToJSON }},
+        PersistedDataset: {{ item.AccessKey | ToJSON }}
+    }{% unless forloop.last %},{% endunless %}{% endfor %}
+]

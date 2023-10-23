@@ -1,0 +1,90 @@
+{%- assign swiperid = uniqueid -%}
+
+<!-- Slider main container -->
+<div id="{{ swiperid }}" class="swiper-container">
+    <!-- Additional required wrapper -->
+    <div class="swiper-wrapper" data-locations>
+        <!-- Slides -->
+        {%- for item in items -%}
+            <div class="swiper-slide" {{ item.data }}>
+                {{ item.content }}
+            </div>
+        {%- endfor -%}
+    </div>
+
+    {% if navigation != 'false' %}
+      <!-- Add Arrows -->
+      <div class="hidden-sm hidden-xs">
+          <div class="swiper-next"><i class="fal fa-fw fa-2x fa-angle-right"></i></div>
+          <div class="swiper-prev"><i class="fal fa-fw fa-2x fa-angle-left"></i></div>
+      </div>
+    {% endif %}
+
+    <!-- If we need pagination -->
+    <div class="swiper-pagination"></div>
+</div>
+
+<script>
+  let isMobile = false;
+
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    isMobile = true;
+  }
+
+  var swiper = new Swiper('#{{ swiperid }}', {
+      slidesPerView: 4.3,
+      spaceBetween: 15,
+      touchAngle: 80,
+      breakpoints: {
+        667: {
+          slidesPerView: 1.15,
+          spaceBetween: 15
+        },
+        768: {
+          slidesPerView: 1.7,
+          spaceBetween: 15
+        },
+        1024: {
+          slidesPerView: 2.3,
+          spaceBetween: 15
+        },
+        1400: {
+          slidesPerView: 2.9,
+          spaceBetween: 15
+        },
+        2300: {
+          slidesPerView: 3.7,
+          spaceBetween: 15
+        }
+      },
+      speed: 100,
+      loop: {{ loop | Default:'false' }},
+      cssMode: isMobile,
+      centeredSlides: true,
+      roundLengths: true,
+      grabCursor: true,
+      resistanceRatio: 0.15,
+      keyboard: {
+        enabled: true,
+        onlyInViewport: false,
+      },
+      pagination: {
+        el: '.swiper-pagination',
+        dynamicBullets: true
+      },
+      preventClicks: true,
+      touchMoveStopPropagation: false,
+      {% if navigation != 'false' %}
+      navigation: {
+        nextEl: '.swiper-next',
+        prevEl: '.swiper-prev',
+      }
+      {% endif %}{% if initialslide and initialslide != empty %},
+        initialSlide: {{ initialslide }}
+      {% endif %}
+  });
+
+  $(document).ready(function(){
+    swiper.update();
+  });
+</script>

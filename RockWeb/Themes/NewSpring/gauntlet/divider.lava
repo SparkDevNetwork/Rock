@@ -1,0 +1,2 @@
+<img src="/Themes/NewSpring/gauntlet/section-divider-mobile.svg" alt="" class="hidden section-divider w-100 {% if flip == 'true' %}flip{% endif %} hidden-md hidden-lg">
+<img src="/Themes/NewSpring/gauntlet/section-divider-desktop.svg" alt="" class="hidden section-divider w-100 {% if flip == 'true' %}flip{% endif %} hidden-xs hidden-sm">

@@ -1,0 +1,46 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "7TM8C6252Z.com.subsplashstudio31.NewSpring-Church",
+        "components": [
+          {
+            "/": "/articles/*"
+          },
+          {
+            "/": "/devotionals/*"
+          },
+          {
+            "/": "/devotionals/*/*"
+          },
+          {
+            "/": "/stories/*"
+          },
+          {
+            "/": "/sermons/*"
+          },
+          {
+            "/": "/sermons/*/*"
+          },
+          {
+            "/": "/news/*"
+          },
+          {
+            "/": "/staff/news/*"
+          }
+        ],
+        "paths": [
+          "/articles/*",
+          "/devotionals/*",
+          "/devotionals/*/*",
+          "/stories/*",
+          "/sermons/*",
+          "/sermons/*/*",
+          "/news/*",
+          "/staff/news/*"
+        ]
+      }
+    ]
+  }
+}

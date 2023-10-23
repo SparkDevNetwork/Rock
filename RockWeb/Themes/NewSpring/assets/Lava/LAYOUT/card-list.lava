@@ -1,0 +1,144 @@
+{% comment %}
+    This loops through the items from the dataset and strips out anything that is future-dated or expired.
+{% endcomment %}
+{%- assign now = 'Now' | Date:'yyyyMMddHHmmss' -%}
+{%- for item in Items -%}
+	{%- assign status = item.Status %}
+	{%- assign publishDateTime = item.PublishDateTime | Date:'yyyyMMddHHmmss' -%}
+	{%- assign expireDateTime = item.ExpireDateTime | Date:'yyyyMMddHHmmss' -%}
+	{% comment %} {%- if status == 2 and publishDateTime <= now and expireDateTime == null or status == 2 and publishDateTime <= now and expireDateTime > now  -%}
+		{{ item | ToJSON }},
+	{%- endif -%} {% endcomment %}
+	{% if publishDateTime > now or expireDateTime < now or status != 2 %}
+		{% assign Items = Items | RemoveFromArray:item %}
+	{% endif %}
+{%- endfor -%}
+
+{% comment %}
+    Overwrite itemcount with count of items that aren't future dated or expired.
+{% endcomment %}
+{% assign itemcount = Items | Size %}
+{% assign pagesize = pagesize | AsInteger %}
+{% assign currentpage = 'Global' | PageParameter:'Page' %}
+{% assign offset = currentpage | Times:pagesize | Minus:pagesize %}
+
+<section class="container-fluid bg-gray-lighter soft xs-soft-half hard-bottom">
+    <div class="row">
+		{% if itemcount > 0 %}
+			{% for item in Items limit:pagesize offset:offset %}<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+					{% assign dataset = item.Dataset %}
+					{% assign showDate = item.IsDateVisible %}
+					{% assign id = item.Id %}
+					{% assign cciid = item.Id %}
+					{% assign guid = item.Guid %}
+
+					{% assign type = item.ContentType %}
+					{% assign title = item.Title | Replace:"'","’" %}
+					{% assign titlesize = "h4" %}
+
+					{% capture startDateTime -%}
+						{% if item.ActualDate != empty %}
+							{{ item.ActualDate }}
+						{%- elseif item.StartDateTime != empty -%}
+							{{ item.StartDateTime }}
+						{%- else -%}
+							{{ item.PublishDateTime }}
+						{%- endif -%}
+					{%- endcapture %}
+					{% assign startDateTime = startDateTime | Trim %}
+
+					{% capture endDateTime -%}
+						{%- if item.EndDateTime != empty -%}
+							{{ item.EndDateTime }}
+						{%- else -%}
+							{{ item.ExpireDateTime }}
+						{%- endif -%}
+					{%- endcapture %}
+					{% assign endDateTime = endDateTime | Trim %}
+
+					{% capture subtitle -%}
+						{%- comment -%}
+							Check this item's channel to see if dates should be visible.
+						{%- endcomment -%}
+						{% if showdates != 'false' and showDate == 'Yes' %}
+							{%- comment -%}
+								If the end date differs from the start date, display the range, otherwise just show the startdate.
+							{%- endcomment -%}
+							{[ formatDate date:'{{ startDateTime }}' ]}{% if endDateTime != empty and endDateTime != startDateTime %} - {[ formatDate date:'{{ endDateTime }}' ]}{% endif %}
+						{% endif %}
+					{%- endcapture %}
+
+					{% comment %}
+						The `ratio` shortcode parameter for the cardlist shortcode enables us to designate a specific ratio of image to use in each card. If a ratio is not designated, the landscape (2:1) image will be used.
+					{% endcomment %}
+					{% if ratio != empty %}
+						{% if ratio == 'square' %}
+							{% assign imageurl = item.ImageSquare %}
+						{% elseif ratio == 'portrait' %}
+							{% assign imageurl = item.ImagePortrait %}
+						{% else %}
+							{% assign imageurl = item.ImageLandscape %}
+						{% endif %}
+					{% else %}
+						{% assign imageurl = item.ImageLandscape %}
+					{% endif %}
+
+					{% assign summary = item.Summary %}
+
+					{% capture content -%}
+
+						{% if item.Campuses != '' and disablecampuses != 'true' %}
+							{% assign campuses = item.Campuses | Split:',' %}
+							{% assign campusesCount = campuses | Size %}
+
+							<p class="push-half-bottom">
+								{% for campus in campuses %}
+									{% assign campusEntity = 'All' |  FromCache:'Campus' | Where:'Name',campus | First %}
+									{% assign campusSlug = campusEntity.Name | Downcase | Replace:' ','-' %}
+									<a href="{{ 'Global' | Page:'Path' | Append:'/campus/' | Append:campusSlug }}" class="text-decoration-none sans-serif stronger small">{{ campusEntity.ShortCode }}</a>
+								{% endfor %}
+							</p>
+						{% endif %}
+
+						<p class="push-half-bottom">
+							{%- if summary and summary != empty -%}
+								{{ summary | HtmlDecode | StripHtml | Replace:"'","’" | Truncate:140,'...' }}
+							{%- else -%}
+								{{ item.Content | HtmlDecode | StripHtml | Replace:"'","’" | Truncate:140,'...' }}
+							{%- endif -%}
+						</p>
+					{%- endcapture %}
+
+					{% capture linkurl %}{% if item.LinkUrl and item.LinkUrl != empty %}{{ item.LinkUrl }}{% else %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ item.Id }}' ]}{% endif %}{% endcapture %}
+					{% capture linktext %}{% if cardlinktext and cardlinktext != empty %}{{ cardlinktext }}{% else %}{{ type | Prepend:' ' | Prepend:item.ChannelVerb }}{% endif %}{% endcapture %}
+
+					{% assign parentChannelId = item.ParentChannelId | AsInteger %}
+					{% assign parent = item.Parents | Where:'ChannelId', parentChannelId | First %}
+					{% if parent and parent != empty %}
+						{% assign parentItem = parent.Dataset | PersistedDataset | Where:'Id', parent.Id | First %}
+						{% if parentItem and parentItem != empty %}
+							{% assign collectiontext = parentItem.Title %}
+							{% assign collectionurl = parentItem.Permalink %}
+							{% assign imageurl = parentItem.ImageLandscape %}
+						{% endif %}
+					{% else %}
+						{% assign collectiontext = '' %}
+						{% assign collectionurl = '' %}
+					{% endif %}
+
+					{% if disableimages == 'true' %}
+						{% assign imageurl = null %}
+					{% endif %}
+
+					{[ card guid:'{{ guid }}' dataset:'{{ dataset }}' cciid:'{{ cciid }}' id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' showtags:'{{ showtags }}' ]}
+
+			</div>{% endfor -%}
+		{% else %}<div class="col-md-12 col-xs-12">
+			<p class="col-xs-12">No current items exist.</p>
+		</div>{% endif %}
+
+    </div>
+
+{[ pagination itemcount:'{{ itemcount }}' pagesize:'{{ pagesize }}' ]}
+
+</section>

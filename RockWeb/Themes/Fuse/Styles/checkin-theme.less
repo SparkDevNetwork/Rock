@@ -1,0 +1,171 @@
+/*
+     
+     Fuse Check-in Theme
+     Crafted by: @briankalwat
+     � NewSpring
+
+ */
+
+//
+// Imports
+// --------------------------------------------------
+
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less"; 
+@import "../../../Styles/_checkin-core.less";
+@import "../../../Styles/_modal.less";
+@import "../../../Styles/_helpers.less";
+
+//
+// Variables
+// --------------------------------------------------
+
+// Font Variables
+@font-family-base:     'colfax-web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+@font-weight-light:     300;
+@font-weight-bold:      600;
+@font-weight-semibold:  500;
+
+@bg-color:      #404040; 
+@fg-color:      #6bac43; // NewSpring Green   
+@neg-color:     #B83833;
+@text-color:    #fff;
+
+@modal-body-bg: @bg-color;
+@modal-body-text-color: @text-color;
+@modal-header-bg: @bg-color;
+@modal-header-text-color: @text-color;
+@modal-footer-bg: @bg-color;
+@modal-footer-text-color: @text-color;
+
+@header-text-color:     #fff;
+@header-font-weight:    @font-weight-bold;
+
+@subheader-text-color:      #bde2ef;
+@subheader-font-weight:     @font-weight-light;
+
+// Button Styles
+@btn-default-bg: darken(@bg-color, 5);
+@btn-default-color:     #fff;
+@btn-default-border:   darken(@bg-color, 5);
+@checkin-button-text-weight:    @font-weight-bold;
+@checkin-button-alttext-weight: @font-weight-light;
+
+@btn-primary-color:    #fff;
+@btn-primary-border:   lighten(@bg-color, 20);
+@btn-primary-bg:    lighten(@bg-color, 20);
+
+@btn-disabled-color: @btn-primary-border;
+@btn-disabled-bg: darken(@btn-primary-bg, 20%);
+
+// scroll bar
+@scrollbar-bg: #000;
+@scrollbar-border: #adaeaf;
+
+// colors
+@accent-color: @fg-color;
+@accent-text-color: @btn-primary-color;
+
+@accent-light-color: @btn-default-bg;
+@accent-light-text-color: @btn-primary-color;
+
+@accent-semibold-color: @btn-default-bg;
+@accent-semibold-text-color: @btn-primary-color;
+
+// override accent bold to use an offset color
+@accent-bold-color: @neg-color;
+@accent-bold-text-color: @btn-primary-color;
+
+// Fonts
+// -------------------------
+
+// regular (weight 'normal' aka 400)
+@font-face{
+    font-family:'colfax-web';
+    src:url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/medium.eot');
+    src:url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/medium.eot?#iefix') format('embedded-opentype'),
+        url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/medium.woff') format('woff');
+    font-style:normal;
+    font-weight:500;
+}
+
+// light (weight 300)
+@font-face{
+    font-family:'colfax-web';
+    src:url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular.eot');
+    src:url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular.eot?#iefix') format('embedded-opentype'),
+        url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/regular.woff') format('woff');
+    font-style:normal;
+    font-weight:400;
+}
+
+// semi-bold (weight 600)
+@font-face{
+    font-family:'colfax-web';
+    src:url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold.eot');
+    src:url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold.eot?#iefix') format('embedded-opentype'),
+        url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/bold.woff') format('woff');
+    font-style:normal;
+    font-weight:700;
+}
+
+// bold (weight 700)
+@font-face{
+    font-family:'colfax-web';
+    src:url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/black.eot');
+    src:url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/black.eot?#iefix') format('embedded-opentype'),
+        url('//d3n6tjerleuu41.cloudfront.net/fonts/colfax/black.woff') format('woff');
+    font-style:normal;
+    font-weight:900;
+}
+
+
+//
+// Mix-ins
+// --------------------------------------------------
+.checkinBackground () {
+    background-color: @bg-color;
+    background-image: url('../Assets/Images/newspring-logo.png');
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    background-size: 20%;
+}
+
+.checkinBackgroundRetina()
+{
+    //background-image: url('../Assets/Images/background@2x.jpg');
+    background-size: 1348px 1024px; // should be 1/2 of the actual
+}
+
+//
+// Custom Overrides
+// --------------------------------------------------
+body {
+    background-image: none;
+}
+
+body:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    background-image: url('../Assets/Images/newspring-logo.png');
+    background-size: cover;
+    z-index: -1;
+}
+
+.btn-primary.active {
+    background-color: @accent-color;
+    border-color: @accent-color;
+}
+
+@media (min-width: 768px) {
+  
+  .modal .modal-dialog {
+    margin: 0;
+    width: 100%;
+  }
+  
+}

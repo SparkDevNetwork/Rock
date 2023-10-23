@@ -1,0 +1,178 @@
+#overflow-logo {
+  max-width: 100px;
+}
+.bg-brand {
+  background-color: #3a64af;
+}
+.bg-brand-dark {
+  background-color: #1d3362;
+}
+.bg-brand-light {
+  background-color: #a9c2e6;
+}
+.bg-brand-bright {
+  background-color: #0c41bf;
+}
+.text-brand {
+  color: #3a64af;
+}
+.text-brand-dark {
+  color: #1d3362;
+}
+.text-brand-light {
+  color: #a9c2e6;
+}
+.text-brand-bright {
+  color: #0c41bf;
+}
+.display-1,
+.display-2 {
+  letter-spacing: -2px !important;
+}
+.wave-top {
+  position: absolute;
+  bottom: -2px;
+  left: -1px;
+  width: 100.5%;
+}
+.wave-bottom {
+  position: absolute;
+  top: -2px;
+  left: -1px;
+  width: 100.5%;
+}
+.give-input {
+  border: 0;
+  padding: 9px 12px;
+  letter-spacing: -0.5px;
+  color: #1c1c1c;
+  font-size: 22px;
+  outline: none;
+}
+.give-input::placeholder {
+  color: #bbb;
+}
+.js-give-btn {
+  padding-top: 10px;
+  padding-bottom: 9px;
+}
+.form-control:focus {
+  box-shadow: none;
+}
+.overflow-progress .progress {
+  height: 50px;
+  border-radius: 5px;
+  line-height: 3;
+}
+.overflow-progress .progress-bar.active {
+  animation: progress-bar-stripes 1.5s linear infinite;
+}
+.chart-bar {
+  width: 100%;
+  height: 320px;
+  gap: 10px;
+}
+.chart-bar > div {
+  flex-basis: 0;
+  flex: 1 1 0px;
+  height: 100%;
+}
+.chart-bar .bar {
+  position: relative;
+  height: 0;
+  overflow: hidden;
+}
+.chart-bar .bar h3 {
+  position: absolute;
+  transform: rotate(-90deg);
+  letter-spacing: 0;
+}
+.labels {
+  width: 100%;
+  gap: 10px;
+}
+.labels > div {
+  flex: 1 1 0px;
+}
+.col-xs-1,
+.col-sm-1,
+.col-md-1,
+.col-lg-1,
+.col-xs-2,
+.col-sm-2,
+.col-md-2,
+.col-lg-2,
+.col-xs-3,
+.col-sm-3,
+.col-md-3,
+.col-lg-3,
+.col-xs-4,
+.col-sm-4,
+.col-md-4,
+.col-lg-4,
+.col-xs-5,
+.col-sm-5,
+.col-md-5,
+.col-lg-5,
+.col-xs-6,
+.col-sm-6,
+.col-md-6,
+.col-lg-6,
+.col-xs-7,
+.col-sm-7,
+.col-md-7,
+.col-lg-7,
+.col-xs-8,
+.col-sm-8,
+.col-md-8,
+.col-lg-8,
+.col-xs-9,
+.col-sm-9,
+.col-md-9,
+.col-lg-9,
+.col-xs-10,
+.col-sm-10,
+.col-md-10,
+.col-lg-10,
+.col-xs-11,
+.col-sm-11,
+.col-md-11,
+.col-lg-11,
+.col-xs-12,
+.col-sm-12,
+.col-md-12,
+.col-lg-12 {
+  float: left !important;
+}
+.badge {
+  font-family: "colfax-web", sans-serif;
+}
+@media screen and (min-width: 669px) {
+  .display-1,
+  .display-2 {
+    line-height: 0.95;
+  }
+}
+@media screen and (min-width: 1200px) {
+  .display-1,
+  .display-2 {
+    letter-spacing: -3px !important;
+    line-height: 1;
+  }
+  .give-input {
+    font-size: 32px;
+    letter-spacing: -1.5px;
+  }
+  .js-give-btn {
+    padding-top: 16px;
+    padding-bottom: 15px;
+    font-size: 20px;
+  }
+  .chart-bar {
+    height: 450px;
+    gap: 15px;
+  }
+  .labels {
+    gap: 15px;
+  }
+}
