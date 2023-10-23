@@ -573,7 +573,14 @@ namespace Rock.Blocks.Security
 
                 if ( !CanUserLogInWithInternalAuthentication( userLogin, out var authenticationComponent, out var errorMessage, out var isLockedOut ) )
                 {
-                    return ActionOk( ResponseHelper.CredentialLogin.Error( errorMessage ) );
+                    if ( isLockedOut )
+                    {
+                        return ActionOk( ResponseHelper.CredentialLogin.LockedOut( errorMessage ) );
+                    }
+                    else
+                    {
+                        return ActionOk( ResponseHelper.CredentialLogin.Error( errorMessage ) );
+                    }
                 }
 
                 // Check if the credentials are valid (does not authenticate in Rock).
@@ -588,7 +595,7 @@ namespace Rock.Blocks.Security
                 else if ( IsUserLockedOut( userLogin, out errorMessage ) )
                 {
                     // If the credentials are valid and the user is locked out then show an error.
-                    return ActionOk( ResponseHelper.CredentialLogin.Error( errorMessage ) );
+                    return ActionOk( ResponseHelper.CredentialLogin.LockedOut( errorMessage ) );
                 }
                 else if ( IsUserConfirmationRequired( userLogin, out errorMessage ) )
                 {
