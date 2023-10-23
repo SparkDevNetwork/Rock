@@ -36,16 +36,17 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="entityItemGuids">The entity item guids.</param>
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="timeToExpire">The amount of time in minutes before the entity set expires.</param>
         /// <returns>IHttpActionResult.</returns>
         [System.Web.Http.Route( "api/EntitySets/CreateFromItems/{entityTypeGuid:guid}" )]
         [HttpPost]
         [Authenticate, Secured]
         [Rock.SystemGuid.RestActionGuid( "50B248D7-C52A-4698-B4AF-C9DE305394EC" )]
-        public IHttpActionResult PostEntitySetFromGuid( [FromBody] List<Guid> entityItemGuids, Guid entityTypeGuid )
+        public IHttpActionResult PostEntitySetFromGuid( [FromBody] List<Guid> entityItemGuids, Guid entityTypeGuid, int timeToExpire = 15 )
         {
             using ( var rockContext = new RockContext() )
             {
-                var entitySetGuid = EntitySetService.CreateEntitySetFromItems( entityItemGuids, entityTypeGuid, rockContext );
+                var entitySetGuid = EntitySetService.CreateEntitySetFromItems( entityItemGuids, entityTypeGuid, timeToExpire, rockContext );
                 if ( !entitySetGuid.HasValue )
                 {
                     return InternalServerError();
@@ -60,16 +61,17 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="entityItemIds">The entity item ids.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="timeToExpire">The amount of time in minutes before the entity set expires.</param>
         /// <returns>System.Web.Http.IHttpActionResult.</returns>
         [System.Web.Http.Route( "api/EntitySets/CreateFromItems/{entityTypeId:int}" )]
         [HttpPost]
         [Authenticate, Secured]
         [Rock.SystemGuid.RestActionGuid( "32374DFE-6478-41A5-AE7D-43DD58DC6176" )]
-        public IHttpActionResult PostEntitySetFromInt( [FromBody] List<int> entityItemIds, int entityTypeId )
+        public IHttpActionResult PostEntitySetFromInt( [FromBody] List<int> entityItemIds, int entityTypeId, int timeToExpire = 15 )
         {
             using ( var rockContext = new RockContext() )
             {
-                var entitySetId = EntitySetService.CreateEntitySetFromItems( entityItemIds, entityTypeId, rockContext );
+                var entitySetId = EntitySetService.CreateEntitySetFromItems( entityItemIds, entityTypeId, timeToExpire, rockContext );
                 if ( !entitySetId.HasValue )
                 {
                     return InternalServerError();
