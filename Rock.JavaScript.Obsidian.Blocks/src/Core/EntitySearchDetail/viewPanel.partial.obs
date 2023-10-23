@@ -86,7 +86,7 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addTextValue("Enforce Entity Security", props.modelValue.isEntitySecurityEnforced ? "Yes" : "No");
+        valueBuilder.addTextValue("Enable Entity Security", props.modelValue.isEntitySecurityEnabled ? "Yes" : "No");
 
         valueBuilder.addTextValue("Allow Query Refinement", props.modelValue.isRefinementAllowed ? "Yes" : "No");
 
