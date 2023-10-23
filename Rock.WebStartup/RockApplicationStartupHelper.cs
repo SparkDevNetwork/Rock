@@ -792,54 +792,48 @@ namespace Rock.WebStartup
             // Register the RockLiquid Engine (pre-v13).
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
             {
-                var engineOptions = new LavaEngineConfigurationOptions();
-
                 var rockLiquidEngine = new RockLiquidEngine();
 
-                rockLiquidEngine.Initialize( engineOptions );
+                InitializeLavaEngineInstance( rockLiquidEngine, options as LavaEngineConfigurationOptions );
 
                 return rockLiquidEngine;
             } );
 
-            // Register the DotLiquid Engine.
+            // Register the DotLiquid Engine factory.
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
             {
-                var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
-
-                var engineOptions = new LavaEngineConfigurationOptions
-                {
-                    FileSystem = new WebsiteLavaFileSystem(),
-                    HostService = new WebsiteLavaHost(),
-                    CacheService = new WebsiteLavaTemplateCacheService(),
-                    DefaultEnabledCommands = defaultEnabledLavaCommands
-                };
-
                 var dotLiquidEngine = new DotLiquidEngine();
 
-                dotLiquidEngine.Initialize( engineOptions );
+                InitializeLavaEngineInstance( dotLiquidEngine, options as LavaEngineConfigurationOptions );
 
                 return dotLiquidEngine;
             } );
 
-            // Register the Fluid Engine.
+            // Register the Fluid Engine factory.
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
             {
-                var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
-
-                var engineOptions = new LavaEngineConfigurationOptions
-                {
-                    FileSystem = new WebsiteLavaFileSystem(),
-                    HostService = new WebsiteLavaHost(),
-                    CacheService = new WebsiteLavaTemplateCacheService(),
-                    DefaultEnabledCommands = defaultEnabledLavaCommands
-                };
-
                 var fluidEngine = new FluidEngine();
 
-                fluidEngine.Initialize( engineOptions );
+                InitializeLavaEngineInstance( fluidEngine, options as LavaEngineConfigurationOptions );
 
                 return fluidEngine;
             } );
+        }
+
+        private static LavaEngineConfigurationOptions GetDefaultEngineConfiguration()
+        {
+            var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
+
+            var engineOptions = new LavaEngineConfigurationOptions
+            {
+                FileSystem = new WebsiteLavaFileSystem(),
+                HostService = new WebsiteLavaHost(),
+                CacheService = new WebsiteLavaTemplateCacheService(),
+                DefaultEnabledCommands = defaultEnabledLavaCommands,
+                InitializeDynamicShortcodes = true
+            };
+
+            return engineOptions;
         }
 
         private static void InitializeRockLiquidLibrary()
@@ -855,19 +849,14 @@ namespace Rock.WebStartup
             Template.FileSystem = new LavaFileSystem();
         }
 
+        /// <summary>
+        /// Initialize the global Lava Engine instance.
+        /// </summary>
+        /// <param name="engineType"></param>
         private static void InitializeGlobalLavaEngineInstance( Type engineType )
         {
             // Initialize the Lava engine.
-            var options = new LavaEngineConfigurationOptions();
-
-            if ( engineType != typeof( RockLiquidEngine ) )
-            {
-                var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
-
-                options.FileSystem = new WebsiteLavaFileSystem();
-                options.CacheService = new WebsiteLavaTemplateCacheService();
-                options.DefaultEnabledCommands = defaultEnabledLavaCommands;
-            }
+            var options = GetDefaultEngineConfiguration();
 
             LavaService.SetCurrentEngine( engineType, options );
 
@@ -876,12 +865,36 @@ namespace Rock.WebStartup
 
             engine.ExceptionEncountered += Engine_ExceptionEncountered;
 
-            // Initialize Lava extensions.
+            InitializeLavaEngineInstance( engine, options );
+        }
+
+        /// <summary>
+        /// Initialize a specific Lava Engine instance.
+        /// </summary>
+        /// <param name="engine"></param>
+        /// <param name="options"></param>
+        private static void InitializeLavaEngineInstance( ILavaEngine engine, LavaEngineConfigurationOptions options )
+        {
+            options = options ?? GetDefaultEngineConfiguration();
+
+            if ( engine.GetType() == typeof( RockLiquidEngine ) )
+            {
+                engine.Initialize( options );
+                return;
+            }
+
             InitializeLavaFilters( engine );
             InitializeLavaTags( engine );
             InitializeLavaBlocks( engine );
-            InitializeLavaShortcodes( engine );
+
+            if ( options.InitializeDynamicShortcodes )
+            {
+                InitializeLavaShortcodes( engine );
+            }
+
             InitializeLavaSafeTypes( engine );
+
+            engine.Initialize( options );
         }
 
         private static void Engine_ExceptionEncountered( object sender, LavaEngineExceptionEventArgs e )

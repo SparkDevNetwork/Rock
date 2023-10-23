@@ -21,6 +21,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.DeviceDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DeviceBag : EntityBagBase
     {
         /// <summary>

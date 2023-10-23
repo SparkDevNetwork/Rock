@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Event
 				<ul>
 				{% for fee in registrant.Fees %}
 					<li>
-						{{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+                        {{ fee.RegistrationTemplateFee.Name }} {% if fee.RegistrationTemplateFee.FeeType == 'Multiple' %} - {{ fee.Option }} {% endif %}
 						{% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ fee.Cost | FormatAsCurrency }}){% endif %}: {{ fee.TotalCost | FormatAsCurrency }}
 					</li>
 				{% endfor %}
@@ -218,7 +218,7 @@ namespace RockWeb.Blocks.Event
                 <ul class='list-unstyled'>
                 {% for fee in registrant.Fees %}
                     <li>
-                        {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+                        {{ fee.RegistrationTemplateFee.Name }} {% if fee.RegistrationTemplateFee.FeeType == 'Multiple' %} - {{ fee.Option }} {% endif %}
                         {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ fee.Cost | FormatAsCurrency }}){% endif %}: {{ fee.TotalCost | FormatAsCurrency }}
                     </li>
                 {% endfor %}
@@ -3230,7 +3230,7 @@ The logged-in person's information will be used to complete the registrar inform
                     // Check if this attribute already exists on any form and
                     // is not the same field we are editing.
                     var existingItem = groupAttributeFields
-                        .Where( paf => paf.Guid != formFieldGuid && paf.AttributeId == attr.Id )
+                        .Where( gaf => gaf.Guid != formFieldGuid && gaf.AttributeId == attr.Id )
                         .FirstOrDefault();
 
                     if ( existingItem != null )

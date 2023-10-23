@@ -328,7 +328,7 @@ namespace Rock.Financial
 
                 var recipientResult = new FinancialStatementGeneratorRecipientResult( financialStatementGeneratorRecipientRequest.FinancialStatementGeneratorRecipient );
 
-                prepActivity.Dispose();
+                prepActivity?.Dispose();
                 // END PREP
 
                 using ( var rockContext = new RockContext() )
@@ -477,7 +477,7 @@ namespace Rock.Financial
 
                         salutation = givingSalutation;
 
-                        salutationActivity.Dispose();
+                        salutationActivity?.Dispose();
                         // END SALUTATION
                     }
 
@@ -525,7 +525,7 @@ namespace Rock.Financial
                         mergeFields.Add( MergeFieldKey.Country, string.Empty );
                     }
 
-                    addressActivity.Dispose();
+                    addressActivity?.Dispose();
                     // END DETERMINE MAILING ADDRESS
 
 
@@ -617,7 +617,7 @@ namespace Rock.Financial
                             && currencyTypesForNotCashGiftIds.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ).ToList();
                     }
 
-                    groomActivity.Dispose();
+                    groomActivity?.Dispose();
                     // END GROOM TRANSACTIONS
 
                     // Add Merge Fields for Transactions for custom Statements that might want to organize the output by Transaction instead of TransactionDetail
@@ -677,7 +677,7 @@ namespace Rock.Financial
                         mergeFields.Add( MergeFieldKey.Pledges, pledgeSummaryList );
                     }
 
-                    pledgeActivity.Dispose();
+                    pledgeActivity?.Dispose();
                     // END PLEDGES
 
                     mergeFields.Add( MergeFieldKey.Options, financialStatementGeneratorOptions );

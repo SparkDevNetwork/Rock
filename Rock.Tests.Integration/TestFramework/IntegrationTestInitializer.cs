@@ -98,7 +98,7 @@ namespace Rock.Tests.Integration
             AddTestContextSettingsFromConfigurationFile( context );
 
             LogHelper.SetTestContext( context );
-            LogHelper.Log( $"Initializing test environment..." );
+            LogHelper.Log( $"Initialize Test Environment: started..." );
 
             // Initialize the Lava Engine first, because it may be needed by the sample data loader when the database is initialized.
             LogHelper.Log( $"Initializing Lava Engine (Pass 1)..." );
@@ -128,7 +128,7 @@ namespace Rock.Tests.Integration
             // the database in our own way.
             Rock.AssemblyInitializer.Initialize();
 
-            LogHelper.Log( $"Initialization completed." );
+            LogHelper.Log( $"Initialize Test Environment: completed." );
         }
 
         private static bool _databaseIsInitialized = false;
@@ -149,7 +149,7 @@ namespace Rock.Tests.Integration
 
                 _databaseIsInitialized = true;
 
-                LogHelper.Log( $"Initializing test database..." );
+                LogHelper.Log( $"Initialize Test Database: started..." );
 
                 TestDatabaseHelper.InitializeTestDatabase();
 
@@ -179,7 +179,7 @@ namespace Rock.Tests.Integration
                 }
                 RockMessageBus.IsRockStarted = true;
 
-                LogHelper.Log( $"Initialization completed." );
+                LogHelper.Log( $"Initializing Test Database: completed." );
             }
         }
 

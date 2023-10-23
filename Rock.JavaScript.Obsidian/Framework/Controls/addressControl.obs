@@ -90,10 +90,10 @@
             default: false
         },
 
-        /** If true, set automatically fill state and country fields with default values */
-        setDefaultValues: {
+        /** If false, set automatically fill state and country fields with default values if not provided in model value */
+        omitDefaultValues: {
             type: Boolean,
-            default: true
+            default: false
         },
 
         /**
@@ -298,12 +298,12 @@
             const stateValue = data.defaultState ?? "";
 
             // If we don't have a country set yet, and we have a good countryValue, set to that
-            if (!internalValue.country && countryValue && props.setDefaultValues) {
+            if (!internalValue.country && countryValue && !props.omitDefaultValues) {
                 internalValue.country = countryValue;
             }
 
             // If we don't have a state set yet, and we have a good stateValue, set to that
-            if (!internalValue.state && stateValue && props.setDefaultValues) {
+            if (!internalValue.state && stateValue && !props.omitDefaultValues) {
                 internalValue.state = stateValue;
             }
         }

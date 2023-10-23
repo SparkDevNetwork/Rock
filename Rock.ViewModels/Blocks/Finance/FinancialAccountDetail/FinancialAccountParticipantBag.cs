@@ -19,6 +19,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialAccountDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FinancialAccountParticipantBag
     {
         /// <summary>

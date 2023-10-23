@@ -1,0 +1,274 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <!-- Financial Pledge List Grid -->
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Financial Pledge"
+          :entityTypeGuid="EntityType.FinancialPledge"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+        <SelectColumn />
+
+        <PersonColumn name="person"
+                      title="Person"
+                      field="person"
+                      :filter="pickExistingValueFilter"
+                      visiblePriority="xs" />
+
+        <TextColumn name="account"
+                    title="Account"
+                    field="account"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <CurrencyColumn name="totalAmount"
+                        title="Total Amount"
+                        field="totalAmount"
+                        :filter="numberValueFilter"
+                        visiblePriority="xs" />
+
+        <TextColumn name="pledgeFrequency"
+                    title="Payment Schedule"
+                    field="pledgeFrequency"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn name="startDate"
+                    title="Starts"
+                    field="startDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn name="endDate"
+                    title="Ends"
+                    field="endDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn name="modifiedDate"
+                    title="Last Modified"
+                    field="modifiedDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+
+        <!-- Totals Section -->
+        <template #gridFooterAppend>
+            <div v-if="accountSummaries.length > 0 || total || pledgeCount" class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+                <div class="flex-grow-1"></div>
+                <div>
+                    <SectionHeader title="Totals">
+                        <template #actions>
+                            <RockButton btnType="link"
+                                        btnSize="xs"
+                                        @click="showAllSummaryAccounts = !showAllSummaryAccounts">
+                                {{ showAllSummaryAccounts ? "Show Top 5" : "Show All" }}
+                            </RockButton>
+                        </template>
+                    </SectionHeader>
+                    <table>
+                        <!-- Visible Account Summaries -->
+                        <tr v-for="account in visibleAccountSummaries">
+                            <td :class="{ 'font-italic': account.isOtherAccount }">{{ account.name }}</td>
+                            <td class="text-right" style="padding-left:52px;">{{ toCurrencyOrNull(account.amount) }}</td>
+                        </tr>
+                        <!-- Total -->
+                        <tr v-if="total">
+                            <td class="text-bold">Total</td>
+                            <td class="text-bold text-right" style="padding-left:52px;">{{ toCurrencyOrNull(total) }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </template>
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import Grid, { dateValueFilter, AttributeColumns, numberValueFilter, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { FinancialPledgeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeList/financialPledgeListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./FinancialPledgeList/types.partial";
+    import { computed, reactive, ref } from "vue";
+    import { AccountSummary } from "./FinancialBatchList/types.partial";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+
+    const config = useConfigurationValues<ListBlockBox<FinancialPledgeListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const showAllSummaryAccounts = ref(false);
+    const accountSummaries = ref<AccountSummary[]>([]);
+
+    const pledgeCount = ref<number>(0);
+
+    const accountTotals = ref<{ [accountName: string]: number }>({});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+    * The summary accounts that should be visible in the grid footer. This
+    * handles limiting the summary list to 5 accounts and appending the
+    * "Other" account if so configured.
+    */
+
+    const visibleAccountSummaries = computed((): AccountSummary[] => {
+        if (showAllSummaryAccounts.value) {
+            return accountSummaries.value;
+        }
+
+        const summaries: AccountSummary[] = [];
+        let otherAccountTotal = 0;
+
+        for (let i = 0; i < accountSummaries.value.length; i++) {
+            // Show the top 5 accounts
+            if (i < 5) {
+                summaries.push(accountSummaries.value[i]);
+            }
+            else {
+                otherAccountTotal += accountSummaries.value[i].amount;
+            }
+        }
+
+        if (otherAccountTotal > 0) {
+            summaries.push({
+                idKey: "",
+                name: "Other",
+                amount: otherAccountTotal,
+                isOtherAccount: true
+            });
+        }
+
+        return summaries;
+    });
+
+
+    const total = computed(() => {
+        let total = 0;
+        for (const accountName in accountTotals.value) {
+            total += accountTotals.value[accountName];
+        }
+        return total;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+
+            // Calculate the account totals
+            gridData.rows?.forEach(row => {
+                if (row["account"]) {
+                    const accountName = row["account"] as string;
+                    const amount = row["totalAmount"] as number;
+
+                    if (accountTotals.value[accountName]) {
+                        accountTotals.value[accountName] += amount;
+                    }
+                    else {
+                        accountTotals.value[accountName] = amount;
+                    }
+                }
+            });
+
+            // Convert the account totals into summaries
+            const summaries: AccountSummary[] = [];
+            for (const accountName in accountTotals.value) {
+                summaries.push({
+                    idKey: "",
+                    name: accountName,
+                    amount: accountTotals.value[accountName],
+                    isOtherAccount: false
+                });
+            }
+            // Sort summaries by amount in descending order
+            summaries.sort((a, b) => b.amount - a.amount);
+            accountSummaries.value = summaries;
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+
+
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete financial pledge.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

@@ -221,8 +221,14 @@ registerFieldType(FieldTypeGuids.IntegerRange, new IntegerRangeFieldType());
 import { InteractionChannelFieldType } from "./interactionChannelField.partial";
 registerFieldType(FieldTypeGuids.InteractionChannel, new InteractionChannelFieldType());
 
+import { InteractionChannelsFieldType } from "./interactionChannelsField.partial";
+registerFieldType(FieldTypeGuids.InteractionChannels, new InteractionChannelsFieldType());
+
 import { KeyValueListFieldType } from "./keyValueListField.partial";
 registerFieldType(FieldTypeGuids.KeyValueList, new KeyValueListFieldType());
+
+import { LabelFieldType } from "./labelField.partial";
+registerFieldType(FieldTypeGuids.Label, new LabelFieldType());
 
 import { LavaFieldType } from "./lavaField.partial";
 registerFieldType(FieldTypeGuids.Lava, new LavaFieldType());
@@ -241,6 +247,9 @@ registerFieldType(FieldTypeGuids.MonthDay, new MonthDayFieldType());
 
 import { MediaSelectorFieldType } from "./mediaSelectorField.partial";
 registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
+
+import { MergeTemplateFieldType } from "./mergeTemplateField.partial";
+registerFieldType(FieldTypeGuids.MergeTemplate, new MergeTemplateFieldType());
 
 import { MultiSelectFieldType } from "./multiSelectField.partial";
 registerFieldType(FieldTypeGuids.MultiSelect, new MultiSelectFieldType());

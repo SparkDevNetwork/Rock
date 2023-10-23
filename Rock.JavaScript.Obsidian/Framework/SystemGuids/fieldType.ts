@@ -275,7 +275,7 @@ export const FieldType = {
     Ssn: "4722C99A-C078-464A-968F-13AB5E8E318F",
     /** Streak Type field type */
     StreakType: "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
-    /** Structured Content field type */
+    /** Structure Content Editor field type */
     StructureContentEditor: "92C88D02-CE12-4217-80FB-19422B758437",
     /** System Communication field type */
     SystemCommunication: "72ED40C7-4D64-4D60-9411-4FFB2B9E833E",

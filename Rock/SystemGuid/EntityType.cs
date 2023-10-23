@@ -1844,5 +1844,20 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Web.HttpModules.Observability"/> 
         /// </summary>
         public const string HTTP_MODULE_OBSERVABILITY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessage"/> 
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE = "63D98F58-DA81-46AE-AE0C-662A7BFAA7D0";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessageAdaptation"/> 
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE_ADAPTATION = "39753CCE-184A-4F14-AE80-08241DE8FC2E";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessageAdaptationSegment"/> 
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE_ADAPTATION_SEGMENT = "40EDF82B-EFF5-4253-A129-965F7BC90033";
     }
 }

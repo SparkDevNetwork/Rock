@@ -46,7 +46,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-    <FinancialGatewayPicker v-model="internalValue" :multiple="false" />
+    <FinancialGatewayPicker v-model="internalValue" :multiple="false" showBlankItem />
 `
 });
 

@@ -1,3 +1,5 @@
+import { DOMWrapper } from "@vue/test-utils";
+
 export type WaitForOptions = {
     /** The number of milliseconds at most to wait. Default is 1000ms. */
     timeout?: number;
@@ -17,7 +19,7 @@ export type WaitForOptions = {
  *
  * @returns The result of the callback.
  */
-export function waitFor<T>(callback: () => T, options?: WaitForOptions): Promise<T> {
+export function waitFor<T>(callback: () => (T | Promise<T>), options?: WaitForOptions): Promise<T> {
     // Justification: This is a special case where we need to return instantly
     // so that the promise works as a promise, but we then need to internally
     // wait for the callback to not throw an error.
@@ -62,4 +64,18 @@ export function waitFor<T>(callback: () => T, options?: WaitForOptions): Promise
             }
         }
     });
+}
+
+export function findAllMatching<T extends Element = Element>(parent: Omit<DOMWrapper<Element>, "exists">, selector: string, filter: (node: DOMWrapper<T>) => boolean): DOMWrapper<T>[] {
+    return parent.findAll(selector).filter(n => filter(n as DOMWrapper<T>)) as DOMWrapper<T>[];
+}
+
+export function getMatching<T extends Element = Element>(parent: Omit<DOMWrapper<Element>, "exists">, selector: string, filter: (node: DOMWrapper<T>) => boolean): DOMWrapper<T> {
+    const matching = findAllMatching(parent, selector, filter);
+
+    if (matching.length === 0) {
+        throw new Error(`No element matched filter.`);
+    }
+
+    return matching[0] as DOMWrapper<T>;
 }

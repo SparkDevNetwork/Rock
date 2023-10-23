@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.DeviceDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DeviceDetailOptionsBag
     {
         /// <summary>
