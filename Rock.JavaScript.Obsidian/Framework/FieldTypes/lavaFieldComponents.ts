@@ -155,8 +155,8 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            editorMode.value = props.modelValue[ConfigurationValueKey.EditorMode] ?? 0;
-            editorTheme.value = props.modelValue[ConfigurationValueKey.EditorTheme] ?? 0;
+            editorMode.value = props.modelValue[ConfigurationValueKey.EditorMode] ?? "";
+            editorTheme.value = props.modelValue[ConfigurationValueKey.EditorTheme] ?? "";
             editorHeight.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.EditorHeight]);
         }, {
             immediate: true
