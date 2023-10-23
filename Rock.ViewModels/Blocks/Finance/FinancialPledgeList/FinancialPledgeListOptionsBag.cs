@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,29 +22,5 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeList
     /// </summary>
     public class FinancialPledgeListOptionsBag
     {
-        /// <summary>
-        /// Determines if the accounts column should be displayed.
-        /// </summary>
-        public bool ShowAccountsColumn { get; set; }
-
-        /// <summary>
-        /// Determines if the last modified date column should be displayed.
-        /// </summary>
-        public bool ShowLastModifiedDateColumn { get; set; }
-
-        /// <summary>
-        /// Determines if the group column should be displayed.
-        /// </summary>
-        public bool ShowGroupColumn { get; set; }
-
-        /// <summary>
-        /// Determines if the results should be limited to pledges for the current person.
-        /// </summary>
-        public bool LimitPledgesToCurrentPerson { get; set; }
-
-        /// <summary>
-        /// Determines if the account summary should be displayed at the bottom of the list.
-        /// </summary>
-        public bool ShowAccountSummary { get; set; }
     }
 }
