@@ -3,13 +3,16 @@
     <!-- Financial Pledge List Grid -->
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="idKey"
+          keyField="id"
           itemTerm="Financial Pledge"
           :entityTypeGuid="EntityType.FinancialPledge"
+          :showLaunchWorkflow="false"
           stickyHeader
           liveUpdates
+          gridSettings
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
+
         <SelectColumn />
 
         <PersonColumn name="person"
@@ -18,10 +21,18 @@
                       :filter="pickExistingValueFilter"
                       visiblePriority="xs" />
 
-        <TextColumn name="account"
-                    title="Account"
+        <Column name="group"
+                    title="For"
+                    field="group"
+                    :filter="textValueFilter"
+                    :hideOnScreen="!config.options?.showGroupColumn"
+                    visiblePriority="xs" />
+
+        <Column name="account"
+                    title="Accounts"
                     field="account"
                     :filter="textValueFilter"
+                    :hideOnScreen="!config.options?.showAccountsColumn"
                     visiblePriority="xs" />
 
         <CurrencyColumn name="totalAmount"
@@ -52,15 +63,16 @@
                     title="Last Modified"
                     field="modifiedDate"
                     :filter="dateValueFilter"
+                    :hideOnScreen="!config.options?.showLastModifiedDateColumn"
                     visiblePriority="xs" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
 
-        <!-- Totals Section -->
+        <!-- Total Amount Footer Section -->
         <template #gridFooterAppend>
-            <div v-if="accountSummaries.length > 0 || total || pledgeCount" class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+            <div v-if="(accountSummaries.length > 0 || total || pledgeCount) && config.options?.showAccountSummary" class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
                 <div class="flex-grow-1"></div>
                 <div>
                     <SectionHeader title="Totals">
@@ -73,7 +85,7 @@
                         </template>
                     </SectionHeader>
                     <table>
-                        <!-- Visible Account Summaries -->
+                        <!-- Visible Account Summaries Toggle -->
                         <tr v-for="account in visibleAccountSummaries">
                             <td :class="{ 'font-italic': account.isOtherAccount }">{{ account.name }}</td>
                             <td class="text-right" style="padding-left:52px;">{{ toCurrencyOrNull(account.amount) }}</td>
@@ -94,7 +106,7 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
-    import Grid, { dateValueFilter, AttributeColumns, numberValueFilter, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
+    import Grid, { dateValueFilter, AttributeColumns, numberValueFilter, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, CurrencyColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FinancialPledgeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeList/financialPledgeListOptionsBag";
@@ -231,7 +243,18 @@
      */
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+            const templateURL = config.navigationUrls[NavigationUrlKey.DetailPage];
+
+            if (templateURL.includes("((Key))")) {
+                const newURL = templateURL.replace("((Key))", key);
+                window.location.href = newURL;
+            }
+            else {
+                alert("Navigation URL template does not contain the expected placeholder ((Key)). Please ensure the configuration is correct.");
+            }
+        }
+        else {
+            alert("Navigation URL for DetailPage was not found in block configuration. Please update your configuration and try again.");
         }
     }
 
