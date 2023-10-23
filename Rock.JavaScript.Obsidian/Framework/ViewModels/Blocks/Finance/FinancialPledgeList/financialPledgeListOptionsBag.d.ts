@@ -23,4 +23,18 @@
 
 /** The additional configuration options for the Financial Pledge List block. */
 export type FinancialPledgeListOptionsBag = {
+    /** Determines if the accounts column should be displayed. */
+    showAccountsColumn: boolean;
+
+    /** Determines if the group ("For") column should be displayed. */
+    showGroupColumn: boolean;
+
+    /** Determines if the last modified date column should be displayed. */
+    showLastModifiedDateColumn: boolean;
+
+    /** Determines if the results should be limited to pledges for the current person. */
+    limitPledgesToCurrentPerson: boolean;
+
+    /** Determines if the account summary should be displayed at the bottom of the list. */
+    showAccountSummary: boolean;
 };
