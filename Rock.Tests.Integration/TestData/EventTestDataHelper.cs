@@ -65,9 +65,7 @@ namespace Rock.Tests.Integration.Events
             public bool? IsActive;
             public bool? IsApproved;
 
-            public Schedule Schedule;
             public List<string> CalendarIdentifiers = new List<string>();
-
         }
 
         public class CreateEventItemActionArgs : CreateEntityActionArgsBase<EventItemInfo>
@@ -165,25 +163,6 @@ namespace Rock.Tests.Integration.Events
                 rockContext.SaveChanges();
             } );
         }
-
-        /// <summary>
-        /// Creates a new Event Item - a template from which actual event occurrences can be created.
-        /// </summary>
-        //public EventItem CreateEventItem( CreateEventItemActionArgs actionInfo, RockContext rockContext )
-        //{
-        //    rockContext = rockContext ?? new RockContext();
-
-        //    var eventItemService = new EventItemService( rockContext );
-
-        //    var newEvent = new EventItem();
-        //    eventItemService.Add( newEvent );
-
-        //    newEvent.Guid = actionInfo.Guid ?? Guid.NewGuid();
-
-        //    UpdateEventItemPropertiesFromInfo( newEvent, actionInfo.Properties, rockContext );
-
-        //    return newEvent;
-        //}
 
         private void UpdateEventItemPropertiesFromInfo( EventItem newEvent, EventItemInfo actionInfo, RockContext rockContext )
         {
@@ -409,41 +388,48 @@ namespace Rock.Tests.Integration.Events
 
         #region Schedules
 
-        public class CreateScheduleDailyRecurrenceActionArgs : CreateEntityActionArgsBase
+        public class AddScheduleDailyRecurrenceActionArgs : CreateEntityActionArgsBase
         {
-            public DateTime? startDateTime;
-            public DateTime? endDateTime;
-            public TimeSpan? eventDuration;
-            public int? occurrenceCount;
+            public DateTime? StartDateTime;
+            public DateTime? EndDateTime;
+            public TimeSpan? EventDuration;
+            public int? OccurrenceCount;
         }
 
-        public Schedule CreateScheduleWithDailyRecurrence( CreateScheduleDailyRecurrenceActionArgs args, RockContext rockContext = null )
+        public Schedule AddScheduleWithDailyRecurrence( AddScheduleDailyRecurrenceActionArgs args )
         {
-            var startDateTime = args.startDateTime ?? new DateTime( RockDateTime.Today.Ticks, DateTimeKind.Unspecified );
-            var calendarEvent = GetICalCalendarEvent( startDateTime, args.eventDuration );
+            var rockContext = new RockContext();
 
-            var recurrence = GetICalDailyRecurrencePattern( args.endDateTime, args.occurrenceCount );
+            var startDateTime = args.StartDateTime ?? new DateTime( RockDateTime.Today.Ticks, DateTimeKind.Unspecified );
+            var calendarEvent = GetICalCalendarEvent( startDateTime, args.EventDuration );
 
+            var recurrence = GetICalDailyRecurrencePattern( args.EndDateTime, args.OccurrenceCount );
             var calendar = GetICalCalendar( calendarEvent, recurrence );
-
             var schedule = CreateSchedule( calendar );
+
+            if ( args.Guid != null )
+            {
+                schedule.Guid = args.Guid.Value;
+            }
 
             rockContext = rockContext ?? new RockContext();
 
             var scheduleService = new ScheduleService( rockContext );
             scheduleService.Add( schedule );
 
+            rockContext.SaveChanges();
+
             return schedule;
         }
 
-        public class CreateScheduleSpecificDatesActionArgs : CreateEntityActionArgsBase
+        public class AddScheduleSpecificDatesActionArgs : CreateEntityActionArgsBase
         {
             public List<DateTime> dates;
             public TimeSpan? startTime;
             public TimeSpan? eventDuration;
         }
 
-        public Schedule CreateScheduleWithSpecificDates( CreateScheduleSpecificDatesActionArgs args, RockContext rockContext = null )
+        public Schedule AddScheduleWithSpecificDates( AddScheduleSpecificDatesActionArgs args )
         {
             if ( args.dates == null || !args.dates.Any() )
             {
@@ -467,10 +453,12 @@ namespace Rock.Tests.Integration.Events
             var calendar = GetICalCalendar( calendarEvent );
             var schedule = CreateSchedule( calendar );
 
-            rockContext = rockContext ?? new RockContext();
+            var rockContext = new RockContext();
 
             var scheduleService = new ScheduleService( rockContext );
             scheduleService.Add( schedule );
+
+            rockContext.SaveChanges();
 
             return schedule;
         }

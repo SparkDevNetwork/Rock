@@ -4987,35 +4987,6 @@ AND GroupTypeId = ${familyGroupType.Id}
             return mergeRequestQry;
         }
 
-        /// <summary>
-        /// This function will take a person, and if they're a child return a queryable of all
-        /// of the adults in their primary family. The term 'Parents' is iffy, we know.
-        /// </summary>
-        /// <param name="people">The people.</param>
-        /// <param name="filterByGender">The filter by gender.</param>
-        /// <returns>IQueryable&lt;Person&gt;.</returns>
-        [RockInternal( "1.15" )]
-        internal IQueryable<Person> GetParentsForChildren( List<Person> people, Gender? filterByGender = null )
-        {
-            var personFamilyIds = people.Where( p => p.AgeClassification == AgeClassification.Child )
-                .Select( p => p.PrimaryFamilyId );
-
-            var groupMemberService = new GroupMemberService( Context as RockContext );
-
-            var parentsQry = groupMemberService
-                .Queryable()
-                .Where( gm => personFamilyIds.Contains( gm.GroupId )
-                    && gm.Person.AgeClassification == AgeClassification.Adult
-                    && gm.GroupMemberStatus == GroupMemberStatus.Active );
-
-            if ( filterByGender != null )
-            {
-                parentsQry = parentsQry.Where( x => x.Person.Gender == filterByGender );
-            }
-
-            return parentsQry.Select( gm => gm.Person );
-        }
-
         #region Configuration Settings
 
         /// <summary>

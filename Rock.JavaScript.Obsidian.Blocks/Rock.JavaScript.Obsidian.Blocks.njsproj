@@ -35,6 +35,10 @@
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
     <Content Include="src\Bus\queueDetail.vue" />
+    <Content Include="src\Cms\adaptiveMessageAdaptationDetail.obs" />
+    <Content Include="src\Cms\AdaptiveMessageAdaptationDetail\editPanel.partial.obs" />
+    <Content Include="src\Cms\AdaptiveMessageAdaptationDetail\viewPanel.partial.obs" />
+    <Content Include="src\Cms\adaptiveMessageList.obs" />
     <Content Include="src\Cms\lavaShortcodeDetail.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\viewPanel.partial.obs" />
@@ -261,6 +265,9 @@
     <Folder Include="src\" />
     <Folder Include="src\Bus\QueueDetail\" />
     <Folder Include="src\Cms\" />
+    <Folder Include="src\Cms\AdaptiveMessageAdaptationDetail\" />
+    <Folder Include="src\Cms\AdaptiveMessageDetail\" />
+    <Folder Include="src\Cms\AdaptiveMessageList\" />
     <Folder Include="src\Cms\BlockTypeDetail\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
     <Folder Include="src\Cms\ContentCollectionView\" />
@@ -365,6 +372,9 @@
     <Folder Include="src\WorkFlow\FormBuilder\Shared\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\Cms\AdaptiveMessageAdaptationDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\AdaptiveMessageDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\AdaptiveMessageList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\blockTypeDetail.ts" />
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\types.partial.ts" />
@@ -559,6 +569,11 @@
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\personEntrySettings.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\segmentedPicker.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\types.partial.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="src\Cms\adaptiveMessageDetail.obs" />
+    <Compile Include="src\Cms\AdaptiveMessageDetail\editPanel.partial.obs" />
+    <Compile Include="src\Cms\AdaptiveMessageDetail\viewPanel.partial.obs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean" Inputs="package.json" Outputs="node_modules/.install-stamp">

@@ -22,6 +22,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Enums.Blocks.Security.Login;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 using Rock.Security.Authentication;
@@ -599,19 +600,48 @@ namespace Rock.Blocks.Security
                 else if ( !IsTwoFactorAuthenticationRequired( userLogin.Person ) )
                 {
                     // Authenticate the user in Rock if credentials were valid and 2FA is not required.
-                    Authenticate( userLogin.UserName, bag.RememberMe, isImpersonated: false );
+                    Authenticate(
+                        userLogin.UserName,
+                        bag.RememberMe,
+                        isTwoFactorAuthenticated: false );
                     return ActionOk( ResponseHelper.CredentialLogin.Authenticated( GetRedirectUrlAfterLogin() ) );
+                }
+                else
+                {
+                    var passwordlessValidation = ValidatePasswordlessLoginConfiguration();
+
+                    if ( !passwordlessValidation.IsValid )
+                    {
+                        // 2FA is required but passwordless login is misconfigured.
+                        // Authenticate the user in Rock as if 2FA occurred while logging
+                        // an error so administrators can fix the issue without inhibiting a successful login.
+                        var errors = passwordlessValidation.GetErrorMessages();
+                        RockLogger.Log.Error( RockLogDomains.Core, "Two-Factor Authentication is required but Passwordless authentication is not configured {Errors}.", errors.JoinStrings( " " ) );
+
+                        Authenticate(
+                            userLogin.UserName,
+                            bag.RememberMe,
+                            isTwoFactorAuthenticated: true );                        
+                        return ActionOk( ResponseHelper.CredentialLogin.Authenticated( GetRedirectUrlAfterLogin() ) );
+                    }
                 }
 
                 // Otherwise, handle the two-factor authentication.
-
+                
                 var personAliasId = userLogin.Person.PrimaryAliasId;
                 var mfaTicket = MultiFactorAuthenticationTicket.Decrypt( bag.MfaTicket );
 
                 if ( mfaTicket == null )
                 {
                     // Issue a new MFA ticket for the credential-authenticated person.
-                    mfaTicket = new MultiFactorAuthenticationTicket( personAliasId, TwoFactorAuthenticationFactorCount );
+                    // The settings used for the auth cookie should be based on this authentication factor.
+                    var authCookieSettings = new AuthCookieSettings
+                    {
+                        // Set ExpiresIn = null to use forms authentication expiration.
+                        ExpiresIn = null,
+                        IsPersisted = bag.RememberMe
+                    };
+                    mfaTicket = new MultiFactorAuthenticationTicket( personAliasId, TwoFactorAuthenticationFactorCount, authCookieSettings );
                 }
                 else if ( mfaTicket.PersonAliasId != personAliasId )
                 {
@@ -630,7 +660,11 @@ namespace Rock.Blocks.Security
                 // Authenticate the user if the ticket has the minimum required factors.
                 if ( mfaTicket.HasMinimumRequiredFactors )
                 {
-                    Authenticate( userLogin.UserName, isPersisted: bag.RememberMe, isImpersonated: false );
+                    Authenticate(
+                        userLogin.UserName,
+                        mfaTicket.AuthCookieSettings.IsPersisted,
+                        isTwoFactorAuthenticated: true,
+                        mfaTicket.AuthCookieSettings.ExpiresIn );
                     return ActionOk( ResponseHelper.CredentialLogin.Authenticated( GetRedirectUrlAfterLogin() ) );
                 }
 
@@ -803,7 +837,7 @@ namespace Rock.Blocks.Security
                     Authenticate(
                         passwordlessAuthenticationResult.AuthenticatedUser.UserName,
                         isPersisted: true,
-                        isImpersonated: false,
+                        isTwoFactorAuthenticated: false,
                         expiresIn: TimeSpan.FromMinutes( new SecuritySettingsService().SecuritySettings.PasswordlessSignInSessionDuration ) );
 
                     return ActionOk( ResponseHelper.PasswordlessLogin.Authenticated() );
@@ -816,7 +850,13 @@ namespace Rock.Blocks.Security
                 if ( mfaTicket == null )
                 {
                     // Issue a new MFA ticket for the passwordless-authenticated person.
-                    mfaTicket = new MultiFactorAuthenticationTicket( personAliasId, TwoFactorAuthenticationFactorCount );
+                    // The settings used for the auth cookie should be based on this authentication factor.
+                    var authCookieSettings = new AuthCookieSettings
+                    {
+                        ExpiresIn = TimeSpan.FromMinutes( new SecuritySettingsService().SecuritySettings.PasswordlessSignInSessionDuration ),
+                        IsPersisted = true,
+                    };
+                    mfaTicket = new MultiFactorAuthenticationTicket( personAliasId, TwoFactorAuthenticationFactorCount, authCookieSettings );
                 }
                 else if ( mfaTicket.PersonAliasId != personAliasId )
                 {
@@ -837,9 +877,9 @@ namespace Rock.Blocks.Security
                 {
                     Authenticate(
                         passwordlessAuthenticationResult.AuthenticatedUser.UserName,
-                        isPersisted: true,
-                        isImpersonated: false,
-                        expiresIn: TimeSpan.FromMinutes( new SecuritySettingsService().SecuritySettings.PasswordlessSignInSessionDuration ) );
+                        mfaTicket.AuthCookieSettings.IsPersisted,
+                        isTwoFactorAuthenticated: true,
+                        mfaTicket.AuthCookieSettings.ExpiresIn );
                     return ActionOk( ResponseHelper.PasswordlessLogin.Authenticated() );
                 }
 
@@ -902,19 +942,19 @@ namespace Rock.Blocks.Security
         /// </summary>
         /// <param name="userName">The username of the account to authenticate.</param>
         /// <param name="isPersisted">Whether the individual should be authenticated across browsing sessions.</param>
-        /// <param name="isImpersonated">Whether this is an impersonated authentication.</param>
+        /// <param name="isTwoFactorAuthenticated">Whether the individual is two-factor authenticated.</param>
         /// <param name="expiresIn">The duration that the authentication is valid.</param>
-        private void Authenticate( string userName, bool isPersisted, bool isImpersonated, TimeSpan? expiresIn = null )
+        private void Authenticate( string userName, bool isPersisted, bool isTwoFactorAuthenticated, TimeSpan? expiresIn = null )
         {
             UserLoginService.UpdateLastLogin( userName );
 
             if ( expiresIn.HasValue )
             {
-                Authorization.SetAuthCookie( userName, isPersisted, isImpersonated, expiresIn.Value );
+                Authorization.SetAuthCookie( userName, isPersisted, isImpersonated: false, isTwoFactorAuthenticated, expiresIn.Value );
             }
             else
             {
-                Authorization.SetAuthCookie( userName, isPersisted, isImpersonated );
+                Authorization.SetAuthCookie( userName, isPersisted, isImpersonated: false, isTwoFactorAuthenticated );
             }
         }
 
@@ -1386,15 +1426,24 @@ namespace Rock.Blocks.Security
 
                 // If two factor authentication is required but has not been completed by the external auth provider, then show an error.
                 // External auth providers handle their own two-factor authentication.
-                if ( IsTwoFactorAuthenticationRequired( userLogin.Person )
-                     && !authProvider.IsConfiguredForTwoFactorAuthentication() )
+                var isTwoFactorAuthenticated = false;
+
+                if ( IsTwoFactorAuthenticationRequired( userLogin.Person ) )
                 {
-                    box.Is2FANotSupportedForAuthenticationFactor = true;
-                    return;
+                    isTwoFactorAuthenticated = authProvider.IsConfiguredForTwoFactorAuthentication();
+
+                    if ( !isTwoFactorAuthenticated )
+                    {
+                        box.Is2FANotSupportedForAuthenticationFactor = true;
+                        return;
+                    }
                 }
 
                 // Authenticate the end-user in Rock and redirect.
-                Authenticate( userLogin.UserName, isPersisted: true, isImpersonated: false );
+                Authenticate(
+                    userLogin.UserName,
+                    isPersisted: true,
+                    isTwoFactorAuthenticated );
 
                 box.ShouldRedirect = true;
                 box.RedirectUrl = GetRedirectUrlAfterLogin( result.ReturnUrl );
@@ -1518,21 +1567,11 @@ namespace Rock.Blocks.Security
                 }
             }
 
-            var passwordlessFeatures = new List<string>();
+            var isTwoFactorAuthenticationEnabled = new SecuritySettingsService().SecuritySettings.RequireTwoFactorAuthenticationForAccountProtectionProfiles?.Any() == true;
 
-            if (box.IsPasswordlessLoginSupported)
+            if ( box.IsPasswordlessLoginSupported || isTwoFactorAuthenticationEnabled )
             {
-                passwordlessFeatures.Add( "passwordless login" );
-            }
-
-            if ( new SecuritySettingsService().SecuritySettings.RequireTwoFactorAuthenticationForAccountProtectionProfiles?.Any() == true )
-            {
-                passwordlessFeatures.Add( "two-factor authentication" );
-            }
-
-            if ( passwordlessFeatures.Any() )
-            {
-                ValidatePasswordlessLoginConfiguration( box, configurationErrors, passwordlessFeatures );
+                ValidatePasswordlessLoginConfiguration( box, configurationErrors, box.IsPasswordlessLoginSupported, isTwoFactorAuthenticationEnabled );
             }
 
             // Inform the admin if there are selected authentication components that are not supported.
@@ -1548,10 +1587,8 @@ namespace Rock.Blocks.Security
         }
 
         /// <summary>
-        /// Validates the passwordless authentication configuration and adds configuration errors to <paramref name="configurationErrors"/>.
+        /// Validates the passwordless authentication configuration.
         /// </summary>
-        /// <param name="box">The login initialization box to validate.</param>
-        /// <param name="configurationErrors">The configuration errors.</param>
         private PasswordlessLoginConfigurationValidation ValidatePasswordlessLoginConfiguration()
         {
             var validationResults = new PasswordlessLoginConfigurationValidation
@@ -1598,40 +1635,33 @@ namespace Rock.Blocks.Security
         /// </summary>
         /// <param name="box">The login initialization box to validate.</param>
         /// <param name="configurationErrors">The configuration errors.</param>
-        private void ValidatePasswordlessLoginConfiguration( LoginInitializationBox box, List<string> configurationErrors, List<string> passwordlessFeatures )
+        private void ValidatePasswordlessLoginConfiguration( LoginInitializationBox box, List<string> configurationErrors, bool isPasswordlessLoginEnabled, bool isTwoFactorAuthenticationEnabled )
         {
-            var featuresText = string.Join( " or ", passwordlessFeatures );
-
             var validationResults = ValidatePasswordlessLoginConfiguration();
 
-            if ( validationResults.IsPasswordlessLoginInactive )
+            var features = new List<string>();
+
+            if ( isPasswordlessLoginEnabled )
             {
-                configurationErrors.Add( $"The Passwordless Authentication service needs to be active to use {featuresText}." );
-                box.IsPasswordlessLoginSupported = false;
+                features.Add( "passwordless login" );
             }
 
-            if ( validationResults.IsPasswordlessLoginConfirmationCommunicationMissing )
+            if ( isTwoFactorAuthenticationEnabled )
             {
-                configurationErrors.Add( $"The Passwordless Login Confirmation system communication needs to be configured in your security settings to use {featuresText}." );
-                box.IsPasswordlessLoginSupported = false;
+                features.Add( "two-factor authentication" );
             }
-            else
+
+            var errorMessageSuffix = string.Empty;
+
+            if ( features.Any() )
             {
-                if ( validationResults.IsPasswordlessLoginConfirmationCommunicationInactive )
-                {
-                    configurationErrors.Add( $"The {validationResults.PasswordlessLoginSystemCommunication.Title} system communication needs to be active to use {featuresText}." );
+                errorMessageSuffix = $" to use {features.JoinStrings(" or ")}";
+            }
 
-                    // Disable passwordless authentication because the passwordless system communication is inactive.
-                    box.IsPasswordlessLoginSupported = false;
-                }
-
-                if ( validationResults.IsPasswordlessLoginConfirmationCommunicationSmsMissing )
-                {
-                    configurationErrors.Add( $"The { validationResults.PasswordlessLoginSystemCommunication.Title } system communication needs an SMS From value to use {featuresText}." );
-
-                    // Disable passwordless authentication because the passwordless system communication doesn't have an SMS From value.
-                    box.IsPasswordlessLoginSupported = false;
-                }
+            if ( !validationResults.IsValid )
+            {
+                configurationErrors.AddRange( validationResults.GetErrorMessages( errorMessageSuffix ) );
+                box.IsPasswordlessLoginSupported = false;
             }
         }
 
@@ -1656,10 +1686,35 @@ namespace Rock.Blocks.Security
         }
 
         /// <summary>
+        /// The settings used when creating the auth cookie.
+        /// </summary>
+        private class AuthCookieSettings
+        {
+            /// <summary>
+            /// Gets or sets a value indicating whether the auth cookie will be persisted across browser sessions.
+            /// </summary>
+            public bool IsPersisted { get; set; }
+
+            /// <summary>
+            /// Gets or sets the expiration time for the auth cookie.
+            /// </summary>
+            /// <remarks>Set to <c>null</c> to use the forms authentication expiration.</remarks>
+            public TimeSpan? ExpiresIn { get; set; }
+        }
+
+        /// <summary>
         /// Represents a MFA ticket.
         /// </summary>
         private class MultiFactorAuthenticationTicket
         {
+            /// <summary>
+            /// Gets or sets the auth cookie settings.
+            /// </summary>
+            /// <value>
+            /// The auth cookie settings.
+            /// </value>
+            public AuthCookieSettings AuthCookieSettings { get; set; }
+
             /// <summary>
             /// Gets the expiration date and time for the ticket.
             /// </summary>
@@ -1679,7 +1734,7 @@ namespace Rock.Blocks.Security
             /// <value>
             ///   <c>true</c> if this ticket is valid; otherwise, <c>false</c>.
             /// </value>
-            public bool IsExpired => RockDateTime.Now >= ExpiresOn;
+            public bool IsExpired => RockDateTime.Now >= this.ExpiresOn;
 
             /// <summary>
             /// The identifier of the person alias authenticating.
@@ -1729,10 +1784,12 @@ namespace Rock.Blocks.Security
             /// </summary>
             /// <param name="personAliasId">The person for whom the ticket is assigned.</param>
             /// <param name="minimumRequiredFactors">The minimum number of authentication factors this ticket needs.</param>
-            public MultiFactorAuthenticationTicket( int? personAliasId, int minimumRequiredFactors )
+            /// <param name="authCookieSettings">The settings that will be used to create the auth cookie.</param>
+            public MultiFactorAuthenticationTicket( int? personAliasId, int minimumRequiredFactors, AuthCookieSettings authCookieSettings )
             {
                 this.PersonAliasId = personAliasId;
                 this.MinimumRequiredFactors = minimumRequiredFactors;
+                this.AuthCookieSettings = authCookieSettings;
             }
 
             /// <summary>
@@ -1782,6 +1839,12 @@ namespace Rock.Blocks.Security
 
         private class PasswordlessLoginConfigurationValidation
         {
+            public bool IsValid =>
+                !this.IsPasswordlessLoginInactive
+                && !this.IsPasswordlessLoginConfirmationCommunicationMissing
+                && !this.IsPasswordlessLoginConfirmationCommunicationInactive
+                && !this.IsPasswordlessLoginConfirmationCommunicationSmsMissing;
+
             public bool IsPasswordlessLoginInactive { get; internal set; }
 
             public bool IsPasswordlessLoginConfirmationCommunicationMissing { get; internal set; }
@@ -1791,6 +1854,40 @@ namespace Rock.Blocks.Security
             public bool IsPasswordlessLoginConfirmationCommunicationSmsMissing { get; internal set; }
 
             public SystemCommunication PasswordlessLoginSystemCommunication { get; internal set; }
+
+            /// <summary>
+            /// Gets the error messages.
+            /// </summary>
+            /// <param name="errorMessageSuffix">The suffix appended to each error message.</param>
+            public List<string> GetErrorMessages( string errorMessageSuffix = null )
+            {
+                var errorMessages = new List<string>();
+             
+                if ( this.IsPasswordlessLoginInactive )
+                {
+                    errorMessages.Add( $"The Passwordless Authentication service needs to be active{errorMessageSuffix}." );
+                }
+
+                if ( this.IsPasswordlessLoginConfirmationCommunicationMissing )
+                {
+                    errorMessages.Add( $"The Passwordless Login Confirmation system communication needs to be configured in your security settings{errorMessageSuffix}." );
+                }
+
+                if ( this.PasswordlessLoginSystemCommunication != null )
+                {
+                    if ( this.IsPasswordlessLoginConfirmationCommunicationInactive )
+                    {
+                        errorMessages.Add( $"The {this.PasswordlessLoginSystemCommunication.Title} system communication needs to be active{errorMessageSuffix}." );
+                    }
+
+                    if ( this.IsPasswordlessLoginConfirmationCommunicationSmsMissing )
+                    {
+                        errorMessages.Add( $"The { this.PasswordlessLoginSystemCommunication.Title } system communication needs an SMS From value{errorMessageSuffix}." );
+                    }
+                }
+
+                return errorMessages;
+            }
         }
 
         /// <summary>

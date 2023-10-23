@@ -23,16 +23,23 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** Contains information required to configure the NoteWatchDetail edit view. */
 export type NoteWatchDetailOptionsBag = {
+    /** Gets or sets a value indicating whether [disable group picker] based on the current context Group.. */
     disableGroupPicker: boolean;
 
+    /** Gets or sets a value indicating whether [disable person picker] based on the current context Person. */
     disablePersonPicker: boolean;
 
+    /** Gets or sets a value indicating whether [hide group picker] based on the current context Person. */
     hideGroupPicker: boolean;
 
+    /** Gets or sets a value indicating whether [hide panel]. */
     hidePanel: boolean;
 
+    /** Gets or sets a value indicating whether [hide person picker] based on the current context Group. */
     hidePersonPicker: boolean;
 
+    /** Gets or sets the available note type options. */
     noteTypeOptions?: ListItemBag[] | null;
 };

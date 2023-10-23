@@ -1035,7 +1035,8 @@ WHERE [A].[EntityTypeId] = {entityTypeId}
                 FileSystem = new WebsiteLavaFileSystem(),
                 HostService = new WebsiteLavaHost(),
                 CacheService = new WebsiteLavaTemplateCacheService(),
-                DefaultEnabledCommands = defaultEnabledLavaCommands
+                DefaultEnabledCommands = defaultEnabledLavaCommands,
+                InitializeDynamicShortcodes = true
             };
 
             return engineOptions;
@@ -1061,16 +1062,7 @@ WHERE [A].[EntityTypeId] = {entityTypeId}
         private static void InitializeGlobalLavaEngineInstance( Type engineType )
         {
             // Initialize the Lava engine.
-            var options = new LavaEngineConfigurationOptions();
-
-            if ( engineType != typeof( RockLiquidEngine ) )
-            {
-                var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
-
-                options.FileSystem = new WebsiteLavaFileSystem();
-                options.CacheService = new WebsiteLavaTemplateCacheService();
-                options.DefaultEnabledCommands = defaultEnabledLavaCommands;
-            }
+            var options = GetDefaultEngineConfiguration();
 
             LavaService.SetCurrentEngine( engineType, options );
 

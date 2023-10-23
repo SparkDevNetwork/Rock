@@ -321,7 +321,7 @@ namespace RockWeb.Blocks.CheckIn
             var groupTypeService = new GroupTypeService( rockContext );
             if ( _groupTypeId.HasValue )
             {
-                var areas = GetAreas( rockContext, _groupTypeId.Value );
+                var areas = groupTypeService.GetCheckinAreaDescendants( _groupTypeId.Value ).Where( a => a.GroupTypePurposeValue == null || !a.GroupTypePurposeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER.AsGuid() ) );
                 ddlArea.SetGroupTypes( areas );
             }
             else
@@ -329,7 +329,7 @@ namespace RockWeb.Blocks.CheckIn
                 List<GroupTypeCache> allAreas = new List<GroupTypeCache>();
                 foreach ( var groupType in groupTypes )
                 {
-                    var areas = GetAreas( rockContext, groupType.Id );
+                    var areas = groupTypeService.GetCheckinAreaDescendants( groupType.Id ).Where( a => a.GroupTypePurposeValue == null || !a.GroupTypePurposeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER.AsGuid() ) );
                     allAreas.AddRange( areas );
                 }
 

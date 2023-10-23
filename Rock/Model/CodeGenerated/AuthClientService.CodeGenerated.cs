@@ -134,6 +134,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.PostLogoutRedirectUri = source.PostLogoutRedirectUri;
             target.RedirectUri = source.RedirectUri;
+            target.ScopeApprovalExpiration = source.ScopeApprovalExpiration;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

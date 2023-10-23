@@ -150,7 +150,8 @@ namespace Rock.Model
                     return null;
                 }
 
-                // Validate the date range
+                // Validate the date range. The StartDate and EndDate values are inclusive.
+                // Meaning, if the discount starts today or ends today, it is still valid.
                 var today = RockDateTime.Today;
 
                 if ( discount.StartDate.HasValue && today < discount.StartDate.Value )
@@ -159,7 +160,7 @@ namespace Rock.Model
                     return null;
                 }
 
-                if ( discount.EndDate.HasValue && today.AddDays( 1 ) > discount.EndDate.Value )
+                if ( discount.EndDate.HasValue && today > discount.EndDate.Value )
                 {
                     // Discount has expired
                     return null;
