@@ -225,6 +225,8 @@
 	<table name="AppSearch">
 		<col key="yes" def="s72">Property</col>
 		<col key="yes" def="s72">Signature_</col>
+		<row><td>CommonFilesArmFolder</td><td>NewSignature1</td></row>
+		<row><td>ProgramFilesArmFolder</td><td>NewSignature2</td></row>
 	</table>
 
 	<table name="BBControl">
@@ -1077,6 +1079,7 @@
 		<row><td>ShowMsiLog</td><td>226</td><td>SystemFolder</td><td>[SystemFolder]notepad.exe "[MsiLogFileLocation]"</td><td/><td>Shows Property-driven MSI Log</td></row>
 		<row><td>setAllUsersProfile2K</td><td>51</td><td>ALLUSERSPROFILE</td><td>[%ALLUSERSPROFILE]</td><td/><td/></row>
 		<row><td>setPublicProfileVista</td><td>51</td><td>PUBLIC</td><td>[%PUBLIC]</td><td/><td/></row>
+		<row><td>setSysArmProfileVista</td><td>51</td><td>SystemArmFolder</td><td>[%systemroot]\SysArm32</td><td/><td/></row>
 		<row><td>setUserProfileNT</td><td>51</td><td>USERPROFILE</td><td>[%USERPROFILE]</td><td/><td/></row>
 	</table>
 
@@ -1140,6 +1143,7 @@
 		<row><td>AppDataFolder</td><td>TARGETDIR</td><td>.:APPLIC~1|Application Data</td><td/><td>0</td><td/></row>
 		<row><td>CommonAppDataFolder</td><td>TARGETDIR</td><td>.:Common~1|CommonAppData</td><td/><td>0</td><td/></row>
 		<row><td>CommonFiles64Folder</td><td>TARGETDIR</td><td>.:Common64</td><td/><td>0</td><td/></row>
+		<row><td>CommonFilesArmFolder</td><td>TARGETDIR</td><td>.:COMMON~3|Common Files (Arm)</td><td/><td>0</td><td/></row>
 		<row><td>CommonFilesFolder</td><td>TARGETDIR</td><td>.:Common</td><td/><td>0</td><td/></row>
 		<row><td>DATABASEDIR</td><td>ISYourDataBaseDir</td><td>.</td><td/><td>0</td><td/></row>
 		<row><td>DesktopFolder</td><td>TARGETDIR</td><td>.:Desktop</td><td/><td>3</td><td/></row>
@@ -1160,6 +1164,7 @@
 		<row><td>PrimaryVolumePath</td><td>TARGETDIR</td><td>.:Primar~1|PrimaryVolumePath</td><td/><td>0</td><td/></row>
 		<row><td>PrintHoodFolder</td><td>TARGETDIR</td><td>.:PRINTH~1|PrintHood</td><td/><td>0</td><td/></row>
 		<row><td>ProgramFiles64Folder</td><td>TARGETDIR</td><td>.:Prog64~1|Program Files 64</td><td/><td>0</td><td/></row>
+		<row><td>ProgramFilesArmFolder</td><td>TARGETDIR</td><td>.:PROGRA~3|Program Files (Arm)</td><td/><td>0</td><td/></row>
 		<row><td>ProgramFilesFolder</td><td>TARGETDIR</td><td>.:PROGRA~1|program files</td><td/><td>0</td><td/></row>
 		<row><td>ProgramMenuFolder</td><td>TARGETDIR</td><td>.:Programs</td><td/><td>3</td><td/></row>
 		<row><td>ROCK_RMS_CHECKIN_CLIENT</td><td>SPARK_DEVELOPMENT_NETWORK</td><td>ROCKRM~1|Rock RMS Checkin Client</td><td/><td>0</td><td/></row>
@@ -1171,6 +1176,7 @@
 		<row><td>StartupFolder</td><td>TARGETDIR</td><td>.:StartUp</td><td/><td>3</td><td/></row>
 		<row><td>System16Folder</td><td>TARGETDIR</td><td>.:System</td><td/><td>0</td><td/></row>
 		<row><td>System64Folder</td><td>TARGETDIR</td><td>.:System64</td><td/><td>0</td><td/></row>
+		<row><td>SystemArmFolder</td><td>TARGETDIR</td><td>.:SYSARM~1|SysArm32</td><td/><td>0</td><td/></row>
 		<row><td>SystemFolder</td><td>TARGETDIR</td><td>.:System32</td><td/><td>0</td><td/></row>
 		<row><td>TARGETDIR</td><td/><td>SourceDir</td><td/><td>0</td><td/></row>
 		<row><td>TempFolder</td><td>TARGETDIR</td><td>.:Temp</td><td/><td>0</td><td/></row>
@@ -3897,6 +3903,7 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I2">ISIconIndex</col>
 		<row><td>ARPPRODUCTICON.exe</td><td/><td>C:\Github\SparkDevNetwork\Rock-WindowsCheckin\app.ico</td><td>0</td></row>
+		<row><td>_4356B6F85BE648B1BAA1BB4F85BE2063.exe</td><td/><td>C:\GitHub\SparkDevNetwork\Rock-WindowsCheckin\bin\Release\CheckinClient.exe</td><td>0</td></row>
 		<row><td>_DD80C53B7D8A4D779D1DCBEE87913230.exe</td><td/><td>C:\Github\SparkDevNetwork\Rock-WindowsCheckin\bin\Debug\CheckinClient.exe</td><td>0</td></row>
 	</table>
 
@@ -4006,6 +4013,7 @@
 		<row><td>WriteRegistryValues</td><td/><td>5000</td><td>WriteRegistryValues</td><td/></row>
 		<row><td>setAllUsersProfile2K</td><td>VersionNT &gt;= 500</td><td>980</td><td/><td/></row>
 		<row><td>setPublicProfileVista</td><td>VersionNT &gt;= 600</td><td>985</td><td/><td/></row>
+		<row><td>setSysArmProfileVista</td><td>VersionNT &gt;= 600</td><td>986</td><td/><td/></row>
 		<row><td>setUserProfileNT</td><td>VersionNT</td><td>960</td><td/><td/></row>
 	</table>
 
@@ -4033,7 +4041,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISUSLock</td><td>{EEFF672D-BFAB-4FF4-9573-6BD177F4519F}</td></row>
 		<row><td>ISUSSignature</td><td>{2B077B3C-AA70-463D-BD16-59EADA09871A}</td></row>
 		<row><td>ISUpdateNotifications</td><td>0</td></row>
-		<row><td>ISVisitedViews</td><td>viewAssistant,viewUI,viewRelease,viewAppFiles,viewFeatureFiles,viewProject,viewISToday,viewHelpContent,viewUpgradePaths</td></row>
+		<row><td>ISVisitedViews</td><td>viewAssistant,viewUI,viewRelease,viewAppFiles,viewFeatureFiles,viewProject,viewISToday,viewHelpContent,viewUpgradePaths,viewSetupTypes,viewSetupDesign</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
 		<row><td>MsiLogFile</td><td/></row>
@@ -4044,7 +4052,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>SaveAsSchema</td><td/></row>
 		<row><td>SccEnabled</td><td>0</td></row>
 		<row><td>SccPath</td><td/></row>
-		<row><td>SchemaVersion</td><td>784</td></row>
+		<row><td>SchemaVersion</td><td>786</td></row>
 		<row><td>Type</td><td>MSIE</td></row>
 	</table>
 
@@ -4081,6 +4089,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ValidateProductID</td><td/><td>700</td><td>ValidateProductID</td><td/></row>
 		<row><td>setAllUsersProfile2K</td><td>VersionNT &gt;= 500</td><td>980</td><td/><td/></row>
 		<row><td>setPublicProfileVista</td><td>VersionNT &gt;= 600</td><td>985</td><td/><td/></row>
+		<row><td>setSysArmProfileVista</td><td>VersionNT &gt;= 600</td><td>986</td><td/><td/></row>
 		<row><td>setUserProfileNT</td><td>VersionNT</td><td>960</td><td/><td/></row>
 	</table>
 
@@ -4409,9 +4418,9 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGMSG_IIS_ROLLBACKVROOTS</td><td>##IDS_PROGMSG_IIS_ROLLBACKVROOTS##</td><td/></row>
 		<row><td>PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS</td><td>##IDS_PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS##</td><td/></row>
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]CheckinClient.Primary output</td><td/></row>
-		<row><td>ProductCode</td><td>{6AAB50D5-A63C-43F5-B3A4-A0573395B8FF}</td><td/></row>
+		<row><td>ProductCode</td><td>{3EEB7BC8-9862-4571-8E35-D59E4361D4E9}</td><td/></row>
 		<row><td>ProductName</td><td>Rock RMS Check-in Client</td><td/></row>
-		<row><td>ProductVersion</td><td>1.13.5.0</td><td/></row>
+		<row><td>ProductVersion</td><td>1.13.8.0</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>
@@ -4469,6 +4478,8 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="s255">Key</col>
 		<col def="S255">Name</col>
 		<col def="I2">Type</col>
+		<row><td>NewSignature1</td><td>2</td><td>SOFTWARE\Microsoft\Windows\CurrentVersion</td><td>CommonFilesDir (Arm)</td><td>18</td></row>
+		<row><td>NewSignature2</td><td>2</td><td>SOFTWARE\Microsoft\Windows\CurrentVersion</td><td>ProgramFilesDir (Arm)</td><td>18</td></row>
 	</table>
 
 	<table name="Registry">
@@ -4697,7 +4708,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="S255">Remove</col>
 		<col def="s72">ActionProperty</col>
 		<col def="S72">ISDisplayName</col>
-		<row><td>{D30DAA14-C26B-4BFC-A1C9-8CFD4126BE40}</td><td></td><td>1.13.5.0</td><td></td><td>0</td><td/><td>ISACTIONPROP1</td><td>UpgradeFromPrevious</td></row>
+		<row><td>{D30DAA14-C26B-4BFC-A1C9-8CFD4126BE40}</td><td></td><td>1.13.8.0</td><td></td><td>0</td><td/><td>ISACTIONPROP1</td><td>UpgradeFromPrevious</td></row>
 	</table>
 
 	<table name="Verb">

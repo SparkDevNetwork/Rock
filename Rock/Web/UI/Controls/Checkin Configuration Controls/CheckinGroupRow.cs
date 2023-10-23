@@ -208,7 +208,7 @@ $('.checkin-group a.checkin-group-add-group').on('click', function (event) {
 
             _lblGroupRowName.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right checkin-item-actions rollover-item" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "ml-auto checkin-item-actions rollover-item" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( _lbAddGroup != null )

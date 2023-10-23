@@ -14,7 +14,7 @@
     import { computed, PropType, ref } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
 
     const props = defineProps({
         modelValue: {

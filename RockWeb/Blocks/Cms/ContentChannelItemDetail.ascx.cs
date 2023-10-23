@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -28,6 +27,7 @@ using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
@@ -405,6 +405,12 @@ namespace RockWeb.Blocks.Cms
                         contentItem.ApprovedByPersonAliasId = null;
                         contentItem.Status = ContentChannelItemStatus.PendingApproval;
                     }
+                }
+
+                if (contentItem.ContentChannel.IsContentLibraryEnabled)
+                {
+                    contentItem.ExperienceLevel = rblExperienceLevel.SelectedValueAsEnumOrNull<ContentLibraryItemExperienceLevel>();
+                    contentItem.ContentLibraryContentTopicId = ddlTopic.SelectedValueAsInt();
                 }
 
                 contentItem.LoadAttributes( rockContext );
@@ -939,6 +945,7 @@ namespace RockWeb.Blocks.Cms
             hfChannelId.Value = contentChannelId.HasValue ? contentChannelId.Value.ToString() : string.Empty;
 
             ContentChannelItem contentItem = GetContentItem();
+            ContentChannelCache contentChannel = null;
 
             if ( contentItem == null )
             {
@@ -947,6 +954,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
+            hfContentLibraryItemGuid.Value = contentItem.ContentLibrarySourceIdentifier.ToStringSafe();
             hfContentChannelItemUrl.Value = GetSlugPrefix( contentItem.ContentChannel );
 
             if ( contentItem.ContentChannel.IsTaggingEnabled )
@@ -1122,7 +1130,7 @@ namespace RockWeb.Blocks.Cms
                 var enablePersonalization = contentItem.Id > 0 && contentItem.ContentChannel.EnablePersonalization;
                 if ( contentItem.Id == 0 && contentChannelId.HasValue )
                 {
-                    var contentChannel = ContentChannelCache.Get( contentChannelId.Value );
+                    contentChannel = ContentChannelCache.Get( contentChannelId.Value );
                     if ( contentChannel != null )
                     {
                         enablePersonalization = contentChannel.EnablePersonalization;
@@ -1157,6 +1165,101 @@ namespace RockWeb.Blocks.Cms
                 if ( canHaveParents )
                 {
                     BindParentItemsGrid( contentItem );
+                }
+
+                // Content Library
+                if ( contentItem.ContentChannel.IsContentLibraryEnabled )
+                {
+                    var license = contentItem.ContentLibraryLicenseTypeValueId.HasValue ? DefinedValueCache.Get( contentItem.ContentLibraryLicenseTypeValueId.Value ) : null;
+
+                    if ( contentItem.IsUploadedToContentLibrary )
+                    {
+                        pwContentLibraryUploaded.Visible = true;
+                        pwContentLibraryUploaded.LabelControls = new Control[]
+                        {
+                            new HighlightLabel
+                            {
+                                ClientIDMode = ClientIDMode.AutoID,
+                                LabelType = LabelType.Info,
+                                Text = $"{license.Value} License"
+                            }
+                        };
+
+                        var uploadedByPersonName = contentItem.ContentLibraryUploadedByPersonName;
+
+                        lContentLibraryUploadedOn.Text = uploadedByPersonName.IsNotNullOrWhiteSpace() ? $" by { uploadedByPersonName }" : string.Empty;
+                        lContentLibraryUploadedBy.Text = contentItem.ContentLibraryUploadedDateTime.HasValue ? $" on { contentItem.ContentLibraryUploadedDateTime.Value.ToShortDateString() }" : string.Empty;
+                        ;
+                    }
+                    else if ( contentItem.IsDownloadedFromContentLibrary )
+                    {
+                        pwContentLibraryDownloaded.Visible = true;
+                        pwContentLibraryDownloaded.LabelControls = new Control[]
+                        {
+                            new HighlightLabel
+                            {
+                                ClientIDMode = ClientIDMode.AutoID,
+                                LabelType = LabelType.Info,
+                                Text = $"{license.Value} License"
+                            }
+                        };
+                         
+                        var downloadedOn = contentItem.CreatedDateTime.HasValue ? $" on {contentItem.CreatedDateTime.ToShortDateString()}" : string.Empty;
+                        var downloadedBy = contentItem.CreatedByPersonAlias != null ? $" by {contentItem.CreatedByPersonName}" : string.Empty;
+
+                        lContentLibraryDownloadedOn.Text = downloadedOn;
+                        lContentLibraryDownloadedBy.Text = downloadedBy;
+                        aContentLibraryDownloadedLicense.HRef = $"https://rockrms.com/library/licenses?utm_source=rock-item-uploaded";
+                        aContentLibraryDownloadedLicense.InnerText = $"{license?.Value} License";
+                    }
+
+                    rblExperienceLevel.Visible = true;
+                    rblExperienceLevel.BindToEnum<ContentLibraryItemExperienceLevel>();
+                    rblExperienceLevel.SelectedValue = contentItem.ExperienceLevel.HasValue ? contentItem.ExperienceLevel.ConvertToInt().ToString() : null;
+
+                    ddlTopic.Visible = true;
+                    using ( var rockContext = new RockContext() )
+                    {
+                        // Topics
+                        var contentTopics = new ContentTopicService( rockContext )
+                            .Queryable()
+                            .Select( c => new
+                            {
+                                DomainName = c.ContentTopicDomain.Name,
+                                DomainOrder = c.ContentTopicDomain.Order,
+                                TopicName = c.Name,
+                                TopicDescription = c.Description,
+                                TopicId = c.Id,
+                                TopicOrder = c.Order
+                            } )
+                            .OrderBy( c => c.DomainOrder )
+                            .ThenBy( c => c.DomainName ) // Use ContentTopicDomain.Name as a secondary sort in case multiple domains share the same ContentTopicDomain.Order value.
+                            .ThenBy( c => c.TopicOrder )
+                            .ThenBy( c => c.TopicName ) // Use ContentTopic.Name as a secondary sort in case multiple domain topics share the same ContentTopic.Order value.
+                            .ToList();
+
+                        // Add blank item.
+                        ddlTopic.Items.Add( new ListItem() );
+
+                        foreach ( var contentTopic in contentTopics )
+                        {
+                            var li = new ListItem( contentTopic.TopicName, contentTopic.TopicId.ToString() );
+
+                            if ( contentTopic.DomainName.IsNotNullOrWhiteSpace() )
+                            {
+                                li.Attributes.Add( "optiongroup", contentTopic.DomainName );
+                            }
+
+                            if ( contentTopic.TopicDescription.IsNotNullOrWhiteSpace() )
+                            {
+                                li.Attributes.Add( "title", contentTopic.TopicDescription );
+                            }
+
+                            ddlTopic.Items.Add( li );
+                        }
+
+                        ddlTopic.SelectedValue = contentItem.ContentLibraryContentTopicId.ToString();
+                    }
                 }
             }
             else
@@ -1218,7 +1321,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     pnlStatus.Visible = true;
 
-                    PendingCss = contentItem.Status == ContentChannelItemStatus.PendingApproval ? "btn-default active" : "btn-default";
+                    PendingCss = contentItem.Status == ContentChannelItemStatus.PendingApproval ? "btn-warning active" : "btn-default";
                     ApprovedCss = contentItem.Status == ContentChannelItemStatus.Approved ? "btn-success active" : "btn-default";
                     DeniedCss = contentItem.Status == ContentChannelItemStatus.Denied ? "btn-danger active" : "btn-default";
                 }
@@ -1514,5 +1617,28 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
+
+        protected void bRedownloadAndRefresh_Click( object sender, EventArgs e )
+        {
+            mdRedownload.Show();
+        }
+
+        protected void mdRedownload_SaveClick( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelItemService = new ContentChannelItemService( rockContext );
+                var contentChannelGuid = ContentChannelCache.Get( hfChannelId.Value.AsInteger() ).Guid;
+                contentChannelItemService.AddFromContentLibrary( new Rock.Model.CMS.ContentChannelItem.Options.ContentLibraryItemDownloadOptions
+                {
+                    ContentLibraryItemGuidToDownload = hfContentLibraryItemGuid.Value.AsGuid(),
+                    DownloadIntoContentChannelGuid = contentChannelGuid,
+                    CurrentPersonPerformingDownload = CurrentPerson
+                } );
+            }
+            mdRedownload.Hide();
+
+            NavigateToCurrentPageReference();
+        }
     }
 }

@@ -123,6 +123,15 @@ var Rock;
             }
             initializePlayer(mediaElement, plyrOptions) {
                 this.player = new Plyr(mediaElement, plyrOptions);
+                if (this.isYouTubeEmbed(this.options.mediaUrl)) {
+                    let listenrsready = false;
+                    this.player.on("statechange", () => {
+                        if (!listenrsready) {
+                            listenrsready = true;
+                            this.player.listeners.media();
+                        }
+                    });
+                }
                 this.writeDebugMessage(`Setting media URL to ${this.options.mediaUrl}`);
                 let sourceInfo = {
                     type: this.options.type === "audio" ? "audio" : "video",
@@ -367,6 +376,11 @@ var Rock;
                     OriginalUrl: window.location.href,
                     PageId: Rock.settings.get("pageId")
                 };
+                if (typeof navigator.sendBeacon !== "undefined" && !async) {
+                    var beaconData = new Blob([JSON.stringify(data)], { type: 'application/json; charset=UTF-8' });
+                    navigator.sendBeacon("/api/MediaElements/WatchInteraction", beaconData);
+                    return;
+                }
                 const xmlRequest = new XMLHttpRequest();
                 const self = this;
                 xmlRequest.open("POST", "/api/MediaElements/WatchInteraction", async);

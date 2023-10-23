@@ -181,7 +181,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
                     if ( string.IsNullOrWhiteSpace( CurrentNavPath ) )
                     {
-                        CurrentNavPath = GetUserPreference( "CurrentNavPath" );
+                        var globalPreferences = GetGlobalPersonPreferences();
+                        CurrentNavPath = globalPreferences.GetValue( "checkin-manager-current-nav-path" );
                     }
 
                     SetChartOptions();
@@ -1287,7 +1288,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 string itemType = itemKey.Left( 1 );
                 int? itemId = itemKey.Length > 1 ? itemKey.Substring( 1 ).AsIntegerOrNull() : null;
 
-                SetUserPreference( "CurrentNavPath", CurrentNavPath );
+                var globalPreferences = GetGlobalPersonPreferences();
+                globalPreferences.SetValue( "checkin-manager-current-nav-path", CurrentNavPath );
+                globalPreferences.Save();
 
                 var navItems = new List<NavigationItem>();
 

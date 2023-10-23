@@ -69,6 +69,8 @@ namespace RockWeb.Blocks.Store
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink(  "~/Styles/Blocks/Store/Store.css", true );
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -130,7 +132,7 @@ namespace RockWeb.Blocks.Store
                 RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                 RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
             }
-            
+
             PackageService packageService = new PackageService();
             var packages = packageService.GetAllPackages( categoryId );
 

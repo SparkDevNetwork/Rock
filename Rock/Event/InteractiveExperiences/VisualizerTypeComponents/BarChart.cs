@@ -14,12 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 using Rock.Attribute;
 using Rock.Model;
 using Rock.ViewModels.Event.InteractiveExperiences;
+using Rock.Web.Cache;
 
 namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
 {
@@ -87,6 +90,20 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
             if ( action.Attributes == null )
             {
                 LoadAttributes( action );
+            }
+
+            // This is a bit of a hack, but don't currently have a better way
+            // to do this. The Bar Chart needs to pre-populate ansers with
+            // zeros and be in the correct order when using a Poll question.
+            // So sneek into the raw data to get the original question list
+            // if it is a Poll question.
+            if ( action.ActionEntityTypeId == EntityTypeCache.GetId<Poll>() )
+            {
+                var rawAnswers = GetAttributeValue( action, Poll.AttributeKey.Answers );
+                var values = rawAnswers?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
+                values = values.Select( s => System.Net.WebUtility.UrlDecode( s ) ).ToArray();
+
+                bag.ConfigurationValues.Add( "answerOrder", values.ToJson() );
             }
 
             bag.ConfigurationValues.AddOrReplace( "orientation", GetAttributeValue( action, AttributeKey.Orientation ) );

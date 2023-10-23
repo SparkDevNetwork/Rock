@@ -1,0 +1,189 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :title="panelName"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="entityTypeGuid"
+                 entityTypeName="Following Suggestion Type"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="true"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 @cancelEdit="onCancelEdit"
+                 @save="onSave">
+
+        <template #view>
+            <ViewPanel :modelValue="suggestionDetailViewBag" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="suggestionDetailEditBag" @propertyChanged="onPropertyChanged" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import EditPanel from "./SuggestionDetail/editPanel.partial.obs";
+    import ViewPanel from "./SuggestionDetail/viewPanel.partial.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { NavigationUrlKey } from "./SuggestionDetail/types.partial";
+    import { SuggestionDetailBag } from "@Obsidian/ViewModels/Blocks/Core/SuggestionDetail/suggestionDetailBag";
+    import { SuggestionDetailBox } from "@Obsidian/ViewModels/Blocks/Core/SuggestionDetail/suggestionDetailBox";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+
+    const config = useConfigurationValues<SuggestionDetailBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const suggestionDetailViewBag = ref(config.entity);
+    const suggestionDetailEditBag = ref<SuggestionDetailBag>(config.entity as SuggestionDetailBag);
+    const entityTypeGuid = EntityType.FollowingSuggestionType;
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Add);
+
+    const refreshAttributesDebounce = debounce(async () => {
+
+        const data: SuggestionDetailBox = {
+            entity: suggestionDetailEditBag.value,
+            isEditable: true,
+        };
+
+        const result = await invokeBlockAction<SuggestionDetailBox>("RefreshAttributes", {
+            box: data
+        });
+
+        if (result.isSuccess) {
+            if (result.statusCode === 200 && result.data && suggestionDetailEditBag.value) {
+                const newBag: SuggestionDetailBag = {
+                    ...suggestionDetailEditBag.value,
+                    attributes: result.data.entity?.attributes,
+                    attributeValues: result.data.entity?.attributeValues
+                };
+
+                suggestionDetailEditBag.value = newBag;
+            }
+        }
+    }, undefined, true);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return suggestionDetailEditBag.value?.name ?? "Add Following Suggestion Type";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return suggestionDetailEditBag.value?.idKey ?? "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
+        }
+
+        return false;
+    }
+
+    /**
+     * Event handler for when a value has changed that has an associated
+     * C# property name. This is used to detect changes to values that
+     * might cause qualified attributes to either show up or not show up.
+     *
+     * @param propertyName The name of the C# property that was changed.
+     */
+    function onPropertyChanged(propertyName: string): void {
+        // If we don't have any qualified attribute properties or this property
+        // is not one of them then do nothing.
+        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+            return;
+        }
+
+        refreshAttributesDebounce();
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const data: SuggestionDetailBox = {
+            entity: suggestionDetailEditBag.value,
+            isEditable: true
+        };
+
+        const result = await invokeBlockAction<string>("Save", {
+            box: data
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save following suggestion type.";
+            return false;
+        }
+
+    }
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified following suggestion type could not be viewed.";
+    }
+    else if (!config.isEditable) {
+        panelMode.value = DetailPanelMode.View;
+    }
+    else if (!config.entity.idKey) {
+        suggestionDetailEditBag.value = config.entity;
+        panelMode.value = DetailPanelMode.Add;
+    }
+    else {
+        panelMode.value = DetailPanelMode.Edit;
+    }
+</script>

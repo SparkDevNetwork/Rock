@@ -359,6 +359,21 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MOBILE_REMINDERS_REMINDER_EDIT = "BA26C29E-660C-470D-9FEA-5830DB15E935";
 
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Crm.PersonProfile"/>.
+        /// </summary>
+        public const string MOBILE_CRM_PERSON_PROFILE = "F97E2359-BB2D-4534-821D-870F853CA5CC";
+
+        /// <summary>
+        /// The mobile attribute values &gt; <see cref="Rock.Blocks.Types.Mobile.Core.AttributeValues">Attribute Values</see> block type.
+        /// </summary>
+        public const string MOBILE_CORE_ATTRIBUTE_VALUES = "DF110543-C295-4DD9-B06E-82640AC63610";
+
+        /// <summary>
+        /// The mobile group members &gt; <see cref="Rock.Blocks.Types.Mobile.Crm.GroupMembers">Group Members</see> block type.
+        /// </summary>
+        public const string MOBILE_CRM_GROUP_MEMBERS  = "1F1E7598-8D51-4750-8D61-E5791A226FDB";
+
         #endregion
 
         #region Obsidian Block Types

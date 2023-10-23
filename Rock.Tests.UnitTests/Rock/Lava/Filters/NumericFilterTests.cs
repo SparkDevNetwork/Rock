@@ -16,6 +16,7 @@
 //
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
 
@@ -24,6 +25,23 @@ namespace Rock.Tests.UnitTests.Lava
     [TestClass]
     public class NumericFilterTests : LavaUnitTestBase
     {
+        /// <summary>
+        /// Input integer "1" should produce formatted output "1st".
+        /// </summary>
+        [TestMethod]
+        public void Abs_NumericInput_ProducesAbsoluteValue()
+        {
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "17", "{{ -17 | Abs }}" );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "4", "{{ 4 | Abs }}" );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "19.86", @"{{ ""-19.86"" | Abs }}" );
+        }
+
+        [TestMethod]
+        public void Abs_NonnumericInput_ProducesZero()
+        {
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "0", "{{ 'abc' | Abs }}" );
+        }
+
         #region Filter Tests: Format
 
         /*
@@ -94,8 +112,8 @@ namespace Rock.Tests.UnitTests.Lava
         public void Format_UsingValidDotNetStandardFormatString_ProducesValidNumber( string input, string format, string expectedOutput )
         {
             var inputTemplate = @"{% assign number = $1 %}{{ number | Format:'$2' }}"
-                .Replace("$1", input)
-                .Replace("$2", format);
+                .Replace( "$1", input )
+                .Replace( "$2", format );
 
             TestHelper.AssertTemplateOutput( expectedOutput,
                 inputTemplate,
@@ -119,7 +137,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// <summary>
         /// Numeric input formatted with an invalid format string should return the format string.
         /// </summary>
-        [TestMethod]  
+        [TestMethod]
         public void Format_InvalidFormatStringAppliedToNumericInput_ProducesFormatString()
         {
             TestHelper.AssertTemplateOutput( "<invalidFormatString>",
@@ -194,7 +212,7 @@ namespace Rock.Tests.UnitTests.Lava
         [DataRow( "1" )]
         public void AsBoolean_Theory_CanConvertCommonTextRepresentationsOfTrue( string input )
         {
-            TestHelper.AssertTemplateOutput( "true", "{{ '" +  input + "' | AsBoolean }}" );
+            TestHelper.AssertTemplateOutput( "true", "{{ '" + input + "' | AsBoolean }}" );
         }
 
         /// <summary>
@@ -291,7 +309,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// </summary>
         [DataTestMethod]
         [DataRow( "3", "2", "1" )]
-        [DataRow( "3.0", "2.0","1.0" )]
+        [DataRow( "3.0", "2.0", "1.0" )]
         [DataRow( "3.1", "2", "1.1" )]
         [DataRow( "3", "2.1", "0.9" )]
         public void Minus_ValidNumericOperands_ReturnsNumericResult( string input1, string input2, string expectedResult )

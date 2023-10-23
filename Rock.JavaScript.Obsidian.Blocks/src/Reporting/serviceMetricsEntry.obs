@@ -1,0 +1,397 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+        <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+        <Panel title="Metric Entry"
+               title-icon-css-class="fa fa-signal"
+               type="block">
+            <template #default>
+                <div v-if="hasNoCampuses">
+                    <NotificationBox alertType="warning" heading="No Campuses Available ">There are no campuses available based on the campus filter settings.</NotificationBox>
+                </div>
+                <MetricParametersStepper v-else-if="!areMetricParametersSet"
+                                         v-model:campusGuid="campusGuid"
+                                         v-model:scheduleGuid="scheduleGuid"
+                                         v-model:weekendDate="weekendDate"
+                                         :campuses="campuses"
+                                         :serviceTimes="serviceTimes"
+                                         :weekendDates="weekendDates"
+                                         @ready="onStepperReady"
+                                         @complete="onStepperComplete"
+                                         @loadCampuses="onLoadCampuses"
+                                         @loadServiceTimes="onLoadServiceTimes"
+                                         @loadWeekendDates="onLoadWeekendDates" />
+                <div v-else>
+                    <div class="panel-settings-group mb-3">
+                        <ButtonDropDownList v-model="campusGuidOrEmptyString"
+                                            :disabled="isLoadingCampuses"
+                                            :items="campuses"
+                                            label="Campus"
+                                            @update:modelValue="onCampusUpdated" />
+                        <ButtonDropDownList v-model="weekendDateOrEmptyString"
+                                            :disabled="isLoadingWeekendDates"
+                                            :items="weekendDates"
+                                            label="Week of"
+                                            @update:modelValue="onWeekendDateUpdated" />
+                        <div v-if="areNoServiceTimesLoaded" class="btn">No Services Available</div>
+                        <ButtonDropDownList v-else
+                                            v-model="scheduleGuidOrEmptyString"
+                                            :disabled="isLoadingServiceTimes"
+                                            :items="serviceTimes"
+                                            label="Service"
+                                            @update:modelValue="onScheduleUpdated" />
+                    </div>
+                    <RockForm @submit="onSubmit">
+                        <NotificationBox v-if="isSavedMessage" alertType="success">{{ isSavedMessage }}</NotificationBox>
+                        <NotificationBox v-if="areNoServiceTimesLoaded" alertType="warning">No services exist for the selected campus and date. Change the date or campus to find the desired service.</NotificationBox>
+                        <div v-else>
+                            <div class="form-horizontal label-xl">
+                                <MetricItemTree v-if="config.showMetricCategorySubtotals"
+                                                v-for="category of metricCategories"
+                                                :areDuplicateMetricsIncludedInCategorySubtotals="config.areDuplicateMetricsIncludedInCategorySubtotals"
+                                                :category="category"
+                                                :items="metricItems ?? []" />
+                                <MetricItem v-else
+                                            v-for="item of metricItems"
+                                            :disabled="isGettingServiceMetrics || isSaving"
+                                            :item="item" />
+                            </div>
+                            <TextBox v-model="notesOrEmptyString"
+                                     :disabled="isGettingServiceMetrics || isSaving"
+                                     label="Note"
+                                     :rows="4"
+                                     textMode="multiline" />
+                            <div class="actions">
+                                <RockButton :btnType="BtnType.Primary"
+                                            :disabled="isGettingServiceMetrics || isSaving"
+                                            type="submit">Save</RockButton>
+                            </div>
+                        </div>
+                    </RockForm>
+                </div>
+            </template>
+        </Panel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, ref } from "vue";
+    import MetricItem from "./ServiceMetricsEntry/metricItem.partial.obs";
+    import MetricItemTree from "./ServiceMetricsEntry/metricItemTree.obs";
+    import MetricParametersStepper from "./ServiceMetricsEntry/metricParametersStepper.partial.obs";
+    import { StepperController } from "./ServiceMetricsEntry/types.partial";
+    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { ServiceMetricsEntryGetMetricsRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryGetMetricsRequestBag";
+    import { ServiceMetricsEntryGetMetricsResponseBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryGetMetricsResponseBag";
+    import { ServiceMetricsEntryGetServiceTimesRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryGetServiceTimesRequestBag";
+    import { ServiceMetricsEntryGetWeekendDatesRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryGetWeekendDatesRequestBag";
+    import { ServiceMetricsEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryInitializationBox";
+    import { ServiceMetricsEntryMetricCategoryBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryMetricCategoryBag";
+    import { ServiceMetricsEntryMetricItemBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryMetricItemBag";
+    import { ServiceMetricsEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntrySaveRequestBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<ServiceMetricsEntryInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    //#region Values
+
+    const blockError = ref<string | null | undefined>(config.errorMessage);
+    const errorMessage = ref<string>("");
+    const campusGuid = ref<string | null | undefined>(config.campusGuid);
+    const weekendDate = ref<string | null | undefined>(config.weekendDate);
+    const scheduleGuid = ref<string | null | undefined>(config.scheduleGuid);
+    const stepperController = ref<StepperController>();
+    const areMetricParametersSet = ref<boolean>(false);
+    const campuses = ref<ListItemBag[]>([]);
+    const areCampusesLoaded = ref<boolean>(false);
+    const weekendDates = ref<ListItemBag[]>([]);
+    const serviceTimes = ref<ListItemBag[]>([]);
+    const areServiceTimesLoaded = ref<boolean>(false);
+    const isSaving = ref<boolean>(false);
+    const isSavedMessage = ref<string | null | undefined>();
+    const metricItems = ref<ServiceMetricsEntryMetricItemBag[] | undefined>();
+    const metricCategories = ref<ServiceMetricsEntryMetricCategoryBag[] | undefined>();
+    const areServiceMetricsLoaded = ref<boolean>(false);
+    const isGettingServiceMetrics = ref<boolean>(false);
+    const notes = ref<string | null | undefined>();
+    const isLoadingCampuses = ref<boolean | undefined>();
+    const isLoadingWeekendDates = ref<boolean | undefined>();
+    const isLoadingServiceTimes = ref<boolean | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    const campusGuidOrEmptyString = computed({
+        get(): string {
+            return campusGuid.value ?? "";
+        },
+        set(newValue: string) {
+            campusGuid.value = newValue;
+        }
+    });
+
+    const weekendDateOrEmptyString = computed({
+        get(): string {
+            return weekendDate.value ?? "";
+        },
+        set(newValue: string) {
+            weekendDate.value = newValue;
+        }
+    });
+
+    const scheduleGuidOrEmptyString = computed({
+        get(): string {
+            return scheduleGuid.value ?? "";
+        },
+        set(newValue: string) {
+            scheduleGuid.value = newValue;
+        }
+    });
+
+    const notesOrEmptyString = computed({
+        get(): string {
+            return notes.value ?? "";
+        },
+        set(newValue: string) {
+            notes.value = newValue;
+        }
+    });
+
+    const hasNoCampuses = computed<boolean>(() => {
+        // There are no campuses if campuses have been loaded
+        // and the campuses array is empty.
+        return areCampusesLoaded.value && !campuses.value?.length;
+    });
+
+    const areNoServiceTimesLoaded = computed<boolean>(() => {
+        // There are no service times if service times have been loaded
+        // and if the service times array is empty.
+        return areServiceTimesLoaded.value && !serviceTimes.value?.length;
+    });
+
+    //#region
+
+    //#region Events
+
+    /**
+     * Event handler for loading the campuses.
+     */
+    async function onLoadCampuses(): Promise<void> {
+        try {
+            isLoadingCampuses.value = true;
+
+            const result = await invokeBlockAction<ListItemBag[]>("GetCampuses");
+
+            if (result?.isSuccess) {
+                campuses.value = result.data ?? [];
+            }
+            else {
+                errorMessage.value = result?.errorMessage || "Unable to retrieve campuses.";
+                campuses.value = [];
+            }
+
+            areCampusesLoaded.value = true;
+        }
+        finally {
+            isLoadingCampuses.value = false;
+        }
+    }
+
+    /**
+     * Event handler for loading the weekend dates.
+     */
+    async function onLoadWeekendDates(): Promise<void> {
+        try {
+            isLoadingWeekendDates.value = true;
+
+            const bag: ServiceMetricsEntryGetWeekendDatesRequestBag = {
+                weeksAhead: config.weeksAhead,
+                weeksBack: config.weeksBack
+            };
+
+            const result = await invokeBlockAction<ListItemBag[]>("GetWeekendDates", {
+                bag
+            });
+
+            if (result?.isSuccess) {
+                weekendDates.value = result.data ?? [];
+            }
+            else {
+                errorMessage.value = result?.errorMessage || "Unable to retrieve weekend dates.";
+                weekendDates.value = [];
+            }
+        }
+        finally {
+            isLoadingWeekendDates.value = false;
+        }
+    }
+
+    /**
+     * Event handler for loading the service times.
+     */
+    async function onLoadServiceTimes(): Promise<void> {
+        try {
+            isLoadingServiceTimes.value = true;
+
+            const bag: ServiceMetricsEntryGetServiceTimesRequestBag = {
+                campusGuid: campusGuid.value,
+                weekendDate: weekendDate.value
+            };
+
+            const result = await invokeBlockAction<ListItemBag[]>("GetServiceTimes", {
+                bag
+            });
+
+            if (result?.isSuccess) {
+                serviceTimes.value = result.data ?? [];
+            }
+            else {
+                errorMessage.value = result?.errorMessage || "Unable to retrieve service times.";
+                serviceTimes.value = [];
+            }
+
+            areServiceTimesLoaded.value = true;
+        }
+        finally {
+            isLoadingServiceTimes.value = false;
+        }
+    }
+
+    /**
+     * Event handler for the stepper being ready.
+     * @param controller The stepper controller.
+     */
+    async function onStepperReady(controller: StepperController): Promise<void> {
+        stepperController.value = controller;
+    }
+
+    /**
+     * Event handler for the stepper being completed.
+     */
+    async function onStepperComplete(): Promise<void> {
+        areMetricParametersSet.value = true;
+        await getServiceMetrics();
+    }
+
+    /**
+     * Event handler for the form being submitted.
+     */
+    async function onSubmit(): Promise<void> {
+        try {
+            isSaving.value = true;
+            isSavedMessage.value = null;
+            errorMessage.value = "";
+
+            const bag: ServiceMetricsEntrySaveRequestBag = {
+                campusGuid: campusGuid.value,
+                note: notes.value,
+                scheduleGuid: scheduleGuid.value,
+                weekendDate: weekendDate.value,
+                items: metricItems.value
+            };
+
+            const result = await invokeBlockAction<void>("Save", { bag });
+
+            if (result?.isSuccess) {
+                const service = serviceTimes.value?.find(s => s.value === scheduleGuid.value)?.text;
+                const weekend = weekendDates.value?.find(w => w.value === weekendDate.value)?.text;
+                const campus = campuses.value?.find(c => c.value === campusGuid.value)?.text;
+                isSavedMessage.value = service && weekend && campus ? `Your metrics for the ${service} service on ${weekend} at the ${campus} Campus have been saved.` : "Metric Values Have Been Updated";
+            }
+            else {
+                errorMessage.value = result?.errorMessage || "An unexpected error occurred while saving.";
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    async function onCampusUpdated(): Promise<void> {
+        await getSchedules();
+        await getServiceMetrics();
+    }
+
+    async function onWeekendDateUpdated(): Promise<void> {
+        await getSchedules();
+        await getServiceMetrics();
+    }
+
+    async function onScheduleUpdated(): Promise<void> {
+        // Load the service metrics.
+        await getServiceMetrics();
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    async function getSchedules(): Promise<void> {
+        // Load the services times for the currently selected campus.
+        await onLoadServiceTimes();
+
+        const oldScheduleGuid = scheduleGuid.value;
+
+        // Clear the schedule guid value if it is no longer an option.
+        const currentServiceTimes = serviceTimes.value;
+        if (!currentServiceTimes || currentServiceTimes.every(s => s.value != oldScheduleGuid)) {
+            scheduleGuid.value = null;
+        }
+    }
+
+    async function getServiceMetrics(): Promise<void> {
+        try {
+            isSavedMessage.value = null;
+            isGettingServiceMetrics.value = true;
+            errorMessage.value = "";
+
+            const bag: ServiceMetricsEntryGetMetricsRequestBag = {
+                campusGuid: campusGuid.value,
+                scheduleGuid: scheduleGuid.value,
+                weekendDate: weekendDate.value
+            };
+
+            const result = await invokeBlockAction<ServiceMetricsEntryGetMetricsResponseBag>("GetMetrics", { bag });
+
+            if (result?.isSuccess && result.data) {
+                metricItems.value = result.data.metricItems ?? [];
+                metricCategories.value = result.data.metricCategories ?? [];
+                notes.value = result.data.notes;
+                areServiceMetricsLoaded.value = true;
+            }
+            else {
+                metricItems.value = undefined;
+                metricCategories.value = undefined;
+                notes.value = null;
+                errorMessage.value = result?.errorMessage || "An error occurred while getting service metrics.";
+            }
+        }
+        finally {
+            isGettingServiceMetrics.value = false;
+        }
+    }
+
+    //#endregion
+
+    onConfigurationValuesChanged(reloadBlock);
+
+    onMounted(() => {
+        const stepper = stepperController.value;
+
+        if (stepper) {
+            stepper.start();
+        }
+    });
+
+</script>

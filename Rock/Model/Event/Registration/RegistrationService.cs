@@ -454,6 +454,8 @@ namespace Rock.Model
             MaxRegistrants = ( template.AllowMultipleRegistrants ? template.MaxRegistrants : 1 ) ?? instance.MaxAttendees;
             IsLoginRequired = template.LoginRequired;
             AllowExternalRegistrationUpdates = template.AllowExternalRegistrationUpdates;
+            ShowSmsOptIn = template.ShowSmsOptIn;
+            SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
 
             // Workflow type ids
             WorkflowTypeIds = new List<int>();
@@ -622,6 +624,22 @@ namespace Rock.Model
         ///   <c>true</c> if this instance is wait list enabled; otherwise, <c>false</c>.
         /// </value>
         public bool IsWaitListEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the SMS opt-in checkbox should be displayed with a mobile phone number
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowSmsOptIn { get; private set; }
+
+        /// <summary>
+        /// Gets the SMS opt in text.
+        /// </summary>
+        /// <value>
+        /// The SMS opt in text.
+        /// </value>
+        public string SmsOptInText { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether [are current family members shown].

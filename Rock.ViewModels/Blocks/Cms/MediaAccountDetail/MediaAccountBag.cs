@@ -40,5 +40,21 @@ namespace Rock.ViewModels.Blocks.Cms.MediaAccountDetail
         /// Gets or sets the Name of the MediaAccount. This property is required.
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last refresh.
+        /// </summary>
+        /// <value>
+        /// The last refresh.
+        /// </value>
+        public string LastRefresh { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric data.
+        /// </summary>
+        /// <value>
+        /// The metric data.
+        /// </value>
+        public string MetricData { get; set; }
     }
 }

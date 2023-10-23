@@ -99,7 +99,8 @@ namespace RockWeb.Blocks.Finance
 
             if ( pnlConfigPanel.Visible )
             {
-                var hideInactiveAccounts = this.GetUserPreference( "HideInactiveAccounts" ).AsBooleanOrNull();
+                var typePreferences = GetBlockTypePersonPreferences();
+                var hideInactiveAccounts = typePreferences.GetValue( "hide-inactive-accounts" ).AsBooleanOrNull();
                 if ( !hideInactiveAccounts.HasValue )
                 {
                     hideInactiveAccounts = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
@@ -301,7 +302,10 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglHideInactiveAccounts_CheckedChanged( object sender, EventArgs e )
         {
-            this.SetUserPreference( "HideInactiveAccounts", tglHideInactiveAccounts.Checked.ToTrueFalse() );
+            var preferences = GetBlockTypePersonPreferences();
+
+            preferences.SetValue( "hide-inactive-accounts", tglHideInactiveAccounts.Checked.ToTrueFalse() );
+            preferences.Save();
 
             // reload the whole page
             NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );

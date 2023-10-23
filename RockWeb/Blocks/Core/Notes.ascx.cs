@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// Context aware block for adding notes to an entity.
     /// </summary>
-    [DisplayName( "Notes" )]
+    [DisplayName( "Notes (Legacy)" )]
     [Category( "Core" )]
     [Description( "Context aware block for adding notes to an entity." )]
 

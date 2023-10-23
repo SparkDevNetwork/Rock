@@ -11,8 +11,14 @@
                     throw 'id is required';
                 }
 
-                function updateListItemValues(e) {
-                    var $span = e.closest('span.list-items');
+                if (!options.clientId) {
+                    throw 'clientId is required';
+                }
+
+                const $listItemsControl = $('#' + options.clientId);
+
+                function updateListItemValues($e) {
+                    var $span = $e.closest('span.list-items');
                     var keyValuePairs = [];
                     $span.children('span.list-items-rows').first().children('div.controls-row').each(function (index) {
                         keyValuePairs.push({
@@ -27,7 +33,6 @@
 
                 }
 
-
                 var fixHelper = function (e, ui) {
                     ui.children().each(function () {
                         $(this).width($(this).width());
@@ -35,32 +40,45 @@
                     return ui;
                 };
 
-                $('a.list-items-add').on('click', function (e) {
+                $listItemsControl.find('a.list-items-add').on('click', function (e) {
                     e.preventDefault();
-                    var $ValueList = $(this).closest('.list-items');
-                    $ValueList.find('.list-items-rows').append($ValueList.find('.js-list-items-html').val());
+                    $listItemsControl.find('.list-items-rows').append($listItemsControl.find('.js-list-items-html').val());
                     updateListItemValues($(this));
                     Rock.controls.modal.updateSize($(this));
                 });
 
+                // Use add_load to fire with page load and postbacks
                 Sys.Application.add_load(function () {
-
-                    $(document).on('click', 'a.list-items-remove', function (e) {
-                        e.preventDefault();
+                    function onRemoveClick(event) {
+                        event.preventDefault();
                         var $rows = $(this).closest('span.list-items-rows');
                         $(this).closest('div.controls-row').remove();
                         updateListItemValues($rows);
                         Rock.controls.modal.updateSize($(this));
-                    });
+                    }
 
-                    $(document).on('focusout', '.js-list-items-input', function (e) {
-                        updateListItemValues($(this));
-                    });
+                    function onFocus(event) {
+                        var element = event.target;
+                        var $element = $(element);
+                        var valueOnFocus = element.value;
 
+                        function onBlur() {
+                            var valueOnBlur = element.value;
 
+                            if (valueOnFocus != valueOnBlur) {
+                                updateListItemValues($element);
+                            }
+                        }
+
+                        // Only handle the focus out event once and remove the handler.
+                        $element.one('blur', onBlur);
+                    }
+
+                    $listItemsControl.find('a.list-items-remove').off('click', onRemoveClick).on('click', onRemoveClick);
+                    $listItemsControl.find('.js-list-items-input').off('focus', onFocus).on('focus', onFocus);
                 });
 
-                $('.list-items .list-items-rows').sortable({
+                $listItemsControl.find('.list-items-rows').sortable({
                     helper: fixHelper,
                     handle: '.fa-bars',
                     start: function (event, ui) {

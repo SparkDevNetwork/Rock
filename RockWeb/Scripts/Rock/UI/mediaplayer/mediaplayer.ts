@@ -433,6 +433,25 @@ namespace Rock.UI {
         private initializePlayer(mediaElement: HTMLMediaElement, plyrOptions: Plyr.Options) {
             this.player = new Plyr(mediaElement, plyrOptions);
 
+            // This is a hack to get playback events for youtube videos. Plyr has a bug
+            // where it does not initialize the media event listers unless a custom UI
+            // is present.
+            // Issue: https://github.com/sampotts/plyr/issues/2378
+            if (this.isYouTubeEmbed(this.options.mediaUrl)) {
+                let listenrsready = false;
+                this.player.on("statechange", () => {
+                    if (!listenrsready) {
+                        listenrsready = true;
+
+                        (this.player as unknown as {
+                            listeners: {
+                                media: () => void
+                            }
+                        }).listeners.media();
+                    }
+                });
+            }
+
             this.writeDebugMessage(`Setting media URL to ${this.options.mediaUrl}`);
 
             let sourceInfo: Plyr.SourceInfo | null = {
@@ -818,9 +837,8 @@ namespace Rock.UI {
             // Define pause event
             this.player.on("pause", () => {
                 // Clear timer
-                if ( this.timerId )
-                {
-                    clearInterval( this.timerId );
+                if (this.timerId) {
+                    clearInterval(this.timerId);
                 }
 
                 // Check if we need to write a watch bit. Not checking here can
@@ -896,6 +914,13 @@ namespace Rock.UI {
                 SessionGuid: this.options.sessionGuid,
                 OriginalUrl: window.location.href,
                 PageId: (Rock as any).settings.get("pageId")
+            }
+
+            if (typeof navigator.sendBeacon !== "undefined" && !async) {
+                var beaconData = new Blob([JSON.stringify(data)], { type: 'application/json; charset=UTF-8' });
+
+                navigator.sendBeacon("/api/MediaElements/WatchInteraction", beaconData);
+                return;
             }
 
             // Initialize the API request.

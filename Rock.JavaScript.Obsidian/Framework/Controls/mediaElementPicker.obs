@@ -30,9 +30,9 @@
     import { HttpBodyData } from "@Obsidian/Types/Utility/http";
     import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
     import { useHttp } from "@Obsidian/Utility/http";
-    import BaseAsyncPicker from "./baseAsyncPicker";
-    import RockButton from "./rockButton";
-    import RockFormField from "./rockFormField";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import RockButton from "./rockButton.obs";
+    import RockFormField from "./rockFormField.obs";
 
     const props = defineProps({
         ...standardRockFormFieldProps,

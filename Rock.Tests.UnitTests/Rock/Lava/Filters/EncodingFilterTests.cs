@@ -15,12 +15,50 @@
 // </copyright>
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava.Fluid;
 
 namespace Rock.Tests.UnitTests.Lava
 {
     [TestClass]
     public class EncodingFilterTests : LavaUnitTestBase
     {
+        #region URL Encoding
+
+        /// <summary>
+        /// Ensure that a plain text string containing URL special characters is encoded in such a way that it can be trasmitted in a URL.
+        /// </summary>
+        [TestMethod]
+        public void Escape_WithInputContainingUrlReservedCharacter_IsEncoded()
+        {
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
+                "Have you read &#39;James &amp; the Giant Peach&#39;?",
+                @"{{ ""Have you read 'James & the Giant Peach'?"" | Escape }}" );
+        }
+
+        /// <summary>
+        /// Ensure that a plain text string containing URL special characters is encoded in such a way that it can be trasmitted in a URL.
+        /// </summary>
+        [TestMethod]
+        public void EscapeOnce_WithInputContainingReservedCharacter_IsEncoded()
+        {
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
+                "1 &lt; 2 &amp; 3",
+                "{{ '1 < 2 & 3' | EscapeOnce }}" );
+        }
+
+        /// <summary>
+        /// Ensure that a plain text string containing URL special characters is encoded in such a way that it can be trasmitted in a URL.
+        /// </summary>
+        [TestMethod]
+        public void EscapeOnce_WithInputContainingEscapeSequence_IsNotEncoded()
+        {
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
+                "1 &lt; 2 &amp; 3",
+                "{{ '1 &lt; 2 &amp; 3' | EscapeOnce }}" );
+        }
+
+        #endregion
+
         /// <summary>
         /// Ensure that a plain text string encoded using the Base64 scheme is encoded correctly.
         /// </summary>
@@ -45,7 +83,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void HmacSha1_EncodePlainText_IsEncoded()
         {
-            TestHelper.AssertTemplateOutput( "17dbf467d8f49e9f541c7af8adf26c8422bdb342", "{{ 'RockIsAwesome!' | HmacSha1:'secret_key' }}" );            
+            TestHelper.AssertTemplateOutput( "17dbf467d8f49e9f541c7af8adf26c8422bdb342", "{{ 'RockIsAwesome!' | HmacSha1:'secret_key' }}" );
         }
 
         /// <summary>
@@ -55,7 +93,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void HmacSha256_EncodePlainText_IsEncoded()
         {
             TestHelper.AssertTemplateOutput( "3518d7aa4ad81041e14033f2bbfa317e8f2f5aa26d6f48f719783aeaebe481ae", "{{ 'RockIsAwesome!' | HmacSha256:'secret_key' }}" );
-            
+
         }
 
         /// <summary>
@@ -84,6 +122,5 @@ namespace Rock.Tests.UnitTests.Lava
         {
             TestHelper.AssertTemplateOutput( "06530e8aabeb6becaabcd0c357134f3cd0a340d87500002b0a14929d92e0ac78", "{{ 'RockIsAwesome!' | Sha256 }}" );
         }
-
     }
 }

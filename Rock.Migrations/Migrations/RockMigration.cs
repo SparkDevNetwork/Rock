@@ -130,7 +130,7 @@ namespace Rock.Migrations
         /// <param name="sql">The SQL.</param>
         public object SqlScalar( string sql )
         {
-            return DbService.ExecuteScaler( sql );
+            return DbService.ExecuteScalar( sql );
         }
 
         /// <summary>

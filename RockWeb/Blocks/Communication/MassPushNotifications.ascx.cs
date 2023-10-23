@@ -444,7 +444,9 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void ShowTemplateSelection()
         {
-            cpCommunicationTemplate.SetValue( GetBlockUserPreference( UserPreference.CategoryCommunicationTemplate ).AsIntegerOrNull() );
+            var preferences = GetBlockPersonPreferences();
+
+            cpCommunicationTemplate.SetValue( preferences.GetValue( UserPreference.CategoryCommunicationTemplate ).AsIntegerOrNull() );
             pnlTemplateSelection.Visible = true;
 
             if ( !BindTemplatePicker() )
@@ -579,7 +581,11 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpCommunicationTemplate_SelectItem( object sender, EventArgs e )
         {
-            SetBlockUserPreference( UserPreference.CategoryCommunicationTemplate, cpCommunicationTemplate.SelectedValue );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( UserPreference.CategoryCommunicationTemplate, cpCommunicationTemplate.SelectedValue );
+            preferences.Save();
+
             BindTemplatePicker();
         }
 

@@ -166,8 +166,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfList_ApplyFilterClick( object sender, EventArgs e )
         {
-            gFilter.SaveUserPreference( UserPreferenceKey.RequestFilterName, tbNameFilter.Text );
-            gFilter.SaveUserPreference( UserPreferenceKey.IncludeInactive, cbShowInactive.Checked ? cbShowInactive.Checked.ToString() : string.Empty );
+            gFilter.SetFilterPreference( UserPreferenceKey.RequestFilterName, tbNameFilter.Text );
+            gFilter.SetFilterPreference( UserPreferenceKey.IncludeInactive, cbShowInactive.Checked ? cbShowInactive.Checked.ToString() : string.Empty );
             BindGrid();
         }
 
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfList_ClearFilterClick( object sender, EventArgs e )
         {
-            gFilter.DeleteUserPreferences();
+            gFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -230,8 +230,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindFilter()
         {
-            tbNameFilter.Text = gFilter.GetUserPreference( UserPreferenceKey.RequestFilterName );
-            cbShowInactive.Checked = gFilter.GetUserPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
+            tbNameFilter.Text = gFilter.GetFilterPreference( UserPreferenceKey.RequestFilterName );
+            cbShowInactive.Checked = gFilter.GetFilterPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
         }
 
         /// <summary>

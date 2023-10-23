@@ -75,22 +75,23 @@ namespace Rock.Model
                 registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Id == options.RegistrantId.Value );
             }
 
-            Block registrationInstanceGroupPlacementBlock = new BlockService( rockContext ).Get( options.BlockId );
+            var registrationInstanceGroupPlacementBlock = BlockCache.Get( options.BlockId );
             if ( registrationInstanceGroupPlacementBlock != null && currentPerson != null )
             {
                 const string RegistrantAttributeFilter_RegistrationInstanceId = "RegistrantAttributeFilter_RegistrationInstanceId_{0}";
                 const string RegistrantAttributeFilter_RegistrationTemplateId = "RegistrantAttributeFilter_RegistrationTemplateId_{0}";
+                var preferences = PersonPreferenceCache.GetPersonPreferenceCollection( currentPerson, registrationInstanceGroupPlacementBlock );
                 string userPreferenceKey;
                 if ( options.RegistrationInstanceId.HasValue )
                 {
-                    userPreferenceKey = PersonService.GetBlockUserPreferenceKeyPrefix( options.BlockId ) + string.Format( RegistrantAttributeFilter_RegistrationInstanceId, options.RegistrationInstanceId );
+                    userPreferenceKey = string.Format( RegistrantAttributeFilter_RegistrationInstanceId, options.RegistrationInstanceId );
                 }
                 else
                 {
-                    userPreferenceKey = PersonService.GetBlockUserPreferenceKeyPrefix( options.BlockId ) + string.Format( RegistrantAttributeFilter_RegistrationTemplateId, options.RegistrationTemplateId );
+                    userPreferenceKey = string.Format( RegistrantAttributeFilter_RegistrationTemplateId, options.RegistrationTemplateId );
                 }
 
-                var attributeFilters = PersonService.GetUserPreference( currentPerson, userPreferenceKey ).FromJsonOrNull<Dictionary<int, string>>() ?? new Dictionary<int, string>();
+                var attributeFilters = preferences.GetValue( userPreferenceKey ).FromJsonOrNull<Dictionary<int, string>>() ?? new Dictionary<int, string>();
                 var parameterExpression = registrationRegistrantService.ParameterExpression;
                 Expression registrantWhereExpression = null;
                 foreach ( var attributeFilter in attributeFilters )

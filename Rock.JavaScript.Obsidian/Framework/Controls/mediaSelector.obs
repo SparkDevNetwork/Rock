@@ -1,0 +1,98 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" name="media-selector" v-bind="formFieldProps">
+        <template #default="{uniqueId}">
+            <div class="d-flex flex-nowrap js-mediaselector">
+                <template v-for="item in mediaItems">
+                    <div v-if="item.key && item.value" style="display: grid;" :class="cssClasses(internalValue, item)">
+                        <img v-if="mode == MediaSelectorMode.Image" :src="valueForItem(item)" alt="#" class="img-fluid" :style="{ width: itemWidth }" />
+                        <audio v-else :src="valueForItem(item)" controls></audio>
+                        <div class="custom-control-label align-self-end" style="text-align: left;">
+                            <div class="checkbox">
+                                <label>
+                                    <input :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="item.key" v-model="internalValue" />
+                                    <span class="label-text">{{ item.key }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup="" lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { PropType, ref, watch } from "vue";
+    import RockFormField from "./rockFormField.obs";
+    import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<string[]>,
+            default: []
+        },
+        ...standardRockFormFieldProps,
+        mediaItems: {
+            type: Array as PropType<Array<KeyValueItem>>,
+            required: true,
+            default: []
+        },
+        itemWidth: {
+            type: String as PropType<string>,
+            required: false
+        },
+        compareValue: {
+            type: Function as PropType<((value: string, itemValue: string) => boolean)>,
+            default: defaultControlCompareValue
+        },
+        mode: {
+            type: Number as PropType<MediaSelectorMode>,
+            default: MediaSelectorMode.Image
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", _value: string[]): void
+    }>();
+
+    const internalValue = ref([...props.modelValue]);
+    const formFieldProps = useStandardRockFormFieldProps(props);
+    const uniqueIdForItem = (uniqueId: Guid, item: KeyValueItem): string => `${uniqueId}-${(item.key ?? "").replace(" ", "-")}`;
+
+    const valueForItem = (item: KeyValueItem): string => item.value ?? "";
+    const cssClasses = (value: string[], item: KeyValueItem): string => {
+        let classes = "well well-message mr-2 p-2 js-media-selector-item";
+        if (value.includes(item.key ?? "")) {
+            classes += " well-message-danger";
+        }
+
+        return classes;
+    };
+    const syncInternalValue = (): void => {
+        let value = [...props.modelValue];
+
+        // Ensure they are all valid values and make sure they are the
+        // correct matching value from the item rather than what was
+        // originally provided.
+        value = props.mediaItems
+            .filter(o => value.some(v => props.compareValue(v, o.key ?? "")))
+            .map(o => o.key ?? "");
+
+        updateRefValue(internalValue, value);
+    };
+
+    watch([() => props.modelValue, () => props.mediaItems], () => {
+        syncInternalValue();
+    });
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+
+    syncInternalValue();
+</script>

@@ -53,7 +53,7 @@ export type AssessmentTypeBag = {
     isSystem: boolean;
 
     /** Gets or sets the number of days given for the Rock.Model.AssessmentType. to be retaken. */
-    minimumDaysToRetake: number;
+    minimumDaysToRetake?: number | null;
 
     /** Gets or sets the RequiresRequest flag for the Rock.Model.AssessmentType. */
     requiresRequest: boolean;

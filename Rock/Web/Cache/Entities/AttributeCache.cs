@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -30,9 +29,8 @@ using Rock.Field;
 using Rock.Model;
 using Rock.Lava;
 using Rock.Security;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
 using Rock.Web.UI.Controls;
+using Rock.Attribute;
 
 namespace Rock.Web.Cache
 {
@@ -202,7 +200,19 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <value><c>true</c> if this attribute supports persisted values; otherwise, <c>false</c>.</value>
         [DataMember]
-        public bool IsPersistedValueSupported { get; private set; }
+        public bool IsPersistedValueSupported
+        {
+            get
+            {
+                if ( !_isPersistedValueSupported.HasValue )
+                {
+                    _isPersistedValueSupported = FieldType.Field?.IsPersistedValueSupported( ConfigurationValues ) == true;
+                }
+
+                return _isPersistedValueSupported.Value;
+            }
+        }
+        private bool? _isPersistedValueSupported;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is multi value.
@@ -344,7 +354,19 @@ namespace Rock.Web.Cache
         /// Gets a value indicating whether the <see cref="FieldType"/> is a referenced entity field type.
         /// </summary>
         /// <value><c>true</c> if this the <see cref="FieldType"/> is a referenced entity field type; otherwise, <c>false</c>.</value>
-        public bool IsReferencedEntityFieldType { get; private set; }
+        public bool IsReferencedEntityFieldType
+        {
+            get
+            {
+                if ( !_isReferencedEntityFieldType.HasValue )
+                {
+                    _isReferencedEntityFieldType = FieldType?.Field is IEntityReferenceFieldType;
+                }
+
+                return _isReferencedEntityFieldType.Value;
+            }
+        }
+        private bool? _isReferencedEntityFieldType;
 
         /// <summary>
         /// Gets the categories.
@@ -552,22 +574,6 @@ namespace Rock.Web.Cache
             }
 
             CategoryIds = attribute.Categories.Select( c => c.Id ).ToList();
-
-            IsPersistedValueSupported = FieldType.Field?.IsPersistedValueSupported( ConfigurationValues ) == true;
-            IsReferencedEntityFieldType = FieldType?.Field is IEntityReferenceFieldType;
-        }
-
-        /// <summary>
-        /// Converts to viewmodel.
-        /// </summary>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public AttributeBag ToViewModel( Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new AttributeCacheViewModelHelper();
-            var viewModel = helper.CreateViewModel( this, currentPerson, loadAttributes );
-            return viewModel;
         }
 
         /// <summary>
@@ -814,6 +820,22 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets an ordered list of attributes that match the <paramref name="entityQualifierColumn"/>
+        /// and <paramref name="entityQualifierValue"/> values for the <paramref name="entityTypeId"/>.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        [RockInternal( "1.16" )]
+        internal static List<AttributeCache> GetOrderedGridAttributes( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue )
+        {
+            return GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, false )
+                .Where( a => a.IsGridColumn )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ThenBy( a => a.Id )
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets the specified entity.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -915,6 +937,32 @@ namespace Rock.Web.Cache
             }
 
             return attributeIds.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Gets any non-empty EntityTypeQualifiedColumn values for the entity
+        /// specified by the generic type. If this entity type has no attributes
+        /// with qualified columns then an empty list will be returned.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity whose attributes will be inspected.</typeparam>
+        /// <returns>A list of distinct EntityTypeQualifiedColumn values for <typeparamref name="TEntity"/>.</returns>
+        public static List<string> GetAttributeQualifiedColumns<TEntity>()
+        {
+            var entityTypeId = EntityTypeCache.Get<TEntity>( false )?.Id;
+
+            if ( !entityTypeId.HasValue )
+            {
+                return new List<string>();
+            }
+
+            var attributes = GetByEntityType( entityTypeId );
+
+            var qualifiedColumns = attributes.Select( a => a.EntityTypeQualifierColumn )
+                .Distinct()
+                .Where( c => !c.IsNullOrWhiteSpace() )
+                .ToList();
+
+            return qualifiedColumns;
         }
 
         #endregion
@@ -1098,78 +1146,5 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [show pre post HTML]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowPrePostHtml { get; set; }
-    }
-
-    /// <summary>
-    /// AttributeValueCache View Model Helper
-    /// </summary>
-    public partial class AttributeCacheViewModelHelper : ViewModelHelper<AttributeCache, AttributeBag>
-    {
-        /// <summary>
-        /// Converts to viewmodel.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override AttributeBag CreateViewModel( AttributeCache model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new AttributeBag
-            {
-                IdKey = model.Id != 0 ? Utility.IdHasher.Instance.GetHash( model.Id ) : string.Empty,
-                AbbreviatedName = model.AbbreviatedName,
-                AllowSearch = model.AllowSearch,
-                ConfigurationValues = model.ConfigurationValues,
-                DefaultValue = model.DefaultValue,
-                Description = model.Description,
-                EnableHistory = model.EnableHistory,
-                EntityTypeId = model.EntityTypeId,
-                EntityTypeQualifierColumn = model.EntityTypeQualifierColumn,
-                EntityTypeQualifierValue = model.EntityTypeQualifierValue,
-                FieldTypeId = model.FieldTypeId,
-                IconCssClass = model.IconCssClass,
-                AttributeColor = model.AttributeColor,
-                IsActive = model.IsActive,
-                IsAnalytic = model.IsAnalytic,
-                IsAnalyticHistory = model.IsAnalyticHistory,
-                IsGridColumn = model.IsGridColumn,
-                IsIndexEnabled = model.IsIndexEnabled,
-                IsMultiValue = model.IsMultiValue,
-                IsPublic = model.IsPublic,
-                IsRequired = model.IsRequired,
-                IsSystem = model.IsSystem,
-                Key = model.Key,
-                Name = model.Name,
-                Order = model.Order,
-                PostHtml = model.PostHtml,
-                PreHtml = model.PreHtml,
-                ShowOnBulk = model.ShowOnBulk
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
-        /// <summary>
-        /// Applies the additional properties and security to view model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="viewModel">The view model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( AttributeCache model, AttributeBag viewModel, Person currentPerson = null, bool loadAttributes = true )
-        {
-            viewModel.FieldTypeGuid = FieldTypeCache.Get( model.FieldTypeId ).Guid;
-            viewModel.CategoryGuids = model.Categories.Select( c => c.Guid ).ToList();
-            viewModel.QualifierValues = model.QualifierValues.ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value.Value );
-        }
     }
 }

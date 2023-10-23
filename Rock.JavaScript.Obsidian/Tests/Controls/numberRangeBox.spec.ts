@@ -16,7 +16,7 @@
 //
 import { mount, config } from "@vue/test-utils";
 import assert = require("assert");
-import NumberRangeBox from "../../Framework/Controls/numberRangeBox";
+import NumberRangeBox from "../../Framework/Controls/numberRangeBox.obs";
 import { ref } from "vue";
 
 config.global.config.warnHandler = () => { /*empty*/ };

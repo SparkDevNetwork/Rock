@@ -16,13 +16,13 @@
 //
 
 import { defineComponent, inject, ref } from "vue";
-import GatewayControl from "@Obsidian/Controls/gatewayControl";
+import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
 import { provideSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
 import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
-import RockForm from "@Obsidian/Controls/rockForm";
-import RockValidation from "@Obsidian/Controls/rockValidation";
+import RockForm from "@Obsidian/Controls/rockForm.obs";
+import RockValidation from "@Obsidian/Controls/rockValidation.obs";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import RockButton from "@Obsidian/Controls/rockButton";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";

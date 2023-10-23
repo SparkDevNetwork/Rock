@@ -35,12 +35,13 @@ namespace Rock.Blocks.Communication
     /// <summary>
     /// Displays the details of a particular system phone number.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "System Phone Number Detail" )]
     [Category( "Communication" )]
     [Description( "Displays the details of a particular system phone number." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -48,7 +49,7 @@ namespace Rock.Blocks.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( "c6d57e79-b8b1-40e7-89b1-c0db133dd263" )]
     [Rock.SystemGuid.BlockTypeGuid( "d02bcbfb-b148-4073-8afc-8419b48a1b16" )]
-    public class SystemPhoneNumberDetail : RockObsidianDetailBlockType
+    public class SystemPhoneNumberDetail : RockDetailBlockType
     {
         #region Keys
 
@@ -64,8 +65,6 @@ namespace Rock.Blocks.Communication
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>
@@ -79,7 +78,7 @@ namespace Rock.Blocks.Communication
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<SystemPhoneNumber>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<SystemPhoneNumber>();
 
                 return box;
             }

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Blocks
 {
     /// <summary>
@@ -28,7 +30,20 @@ namespace Rock.Blocks
         /// <value>
         /// The required mobile application binary interface version.
         /// </value>
+        /// <remarks>
+        /// This can be removed with Mobile shell version 6 is the minimum supported version.
+        /// </remarks>
+        [Obsolete( "Use RequiredMobileVersion instead." )]
+        [RockObsolete( "1.16" )]
         int RequiredMobileAbiVersion { get; }
+
+        /// <summary>
+        /// Gets the required mobile version for this block to operate properly.
+        /// </summary>
+        /// <value>
+        /// The required mobile version for this block to operate properly.
+        /// </value>
+        Version RequiredMobileVersion { get; }
 
         /// <summary>
         /// Gets the class name of the mobile block to use during rendering on the device.
@@ -36,6 +51,21 @@ namespace Rock.Blocks
         /// <value>
         /// The class name of the mobile block to use during rendering on the device
         /// </value>
+        /// <remarks>
+        /// This can be removed with Mobile shell version 6 is the minimum supported version.
+        /// </remarks>
+        [Obsolete( "Use MobileBlockTypeGuid instead." )]
+        [RockObsolete( "1.16" )]
         string MobileBlockType { get; }
+
+        /// <summary>
+        /// Gets the mobile block type unique identifier used to identify this
+        /// block to the mobile shell. If not null then the value from the
+        /// <see cref="Rock.SystemGuid.BlockTypeGuidAttribute"/> will be used.
+        /// </summary>
+        /// <value>
+        /// The mobile block type unique identifier.
+        /// </value>
+        Guid? MobileBlockTypeGuid { get; }
     }
 }

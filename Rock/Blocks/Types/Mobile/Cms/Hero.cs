@@ -30,12 +30,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
     /// <summary>
     /// Displays an image with text overlay on the page.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Hero" )]
     [Category( "Mobile > Cms" )]
     [Description( "Displays an image with text overlay on the page." )]
     [IconCssClass( "fa fa-heading" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -109,7 +110,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CMS_HERO_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "A8597994-BD47-4A15-8BB1-4B508977665F")]
-    public class Hero : RockMobileBlockType
+    public class Hero : RockBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the Hero block.
@@ -253,21 +254,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Content";
+        /// <inheritdoc/>
+        public override Guid? MobileBlockTypeGuid => new Guid( "7258A210-E936-4260-B573-9FA1193AD9E2" ); // Content block.
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -277,7 +268,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            var additionalSettings = GetAdditionalSettings();
+            var additionalSettings = BlockCache?.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
 
             var config = new Rock.Common.Mobile.Blocks.Content.Configuration
             {
@@ -306,7 +297,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         protected virtual string GetContent()
         {
             var deviceData = RequestContext.GetHeader( "X-Rock-DeviceData" ).FirstOrDefault().FromJsonOrNull<DeviceData>() ?? new DeviceData();
-            var additionalSettings = GetAdditionalSettings();
+            var additionalSettings = BlockCache?.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
             var title = Title;
             var subtitle = Subtitle;
             var imageGuid = deviceData.DeviceType == DeviceType.Phone ? BackgroundImagePhone : BackgroundImageTablet;

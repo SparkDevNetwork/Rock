@@ -1,0 +1,30 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isShown" :class="['text-center', isSmall ? '' : 'fa-2x']">
+        <i class="fas fa-spinner fa-pulse"></i>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+
+    const props = defineProps({
+        /** The delay in milliseconds to wait before showing the loading indicator. */
+        delay: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        /** Whether or not to show a smaller version of the loading spinner */
+        isSmall: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const isShown = ref(!props.delay);
+
+    if (props.delay) {
+        setTimeout(() => isShown.value = true, props.delay);
+    }
+</script>

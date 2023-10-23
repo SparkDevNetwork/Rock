@@ -134,11 +134,11 @@ namespace RockWeb.Blocks.Cms
         {
             if ( ddlLayoutFilter.SelectedIndex > 0 )
             {
-                gPagesFilter.SaveUserPreference( "Layout", ddlLayoutFilter.SelectedValue );
+                gPagesFilter.SetFilterPreference( "Layout", ddlLayoutFilter.SelectedValue );
             }
             else
             {
-                gPagesFilter.SaveUserPreference( "Layout", "" );
+                gPagesFilter.SetFilterPreference( "Layout", "" );
             }
 
             BindPagesGrid();
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Cms
             ddlLayoutFilter.DataBind();
             ddlLayoutFilter.Items.Insert( 0, Rock.Constants.All.ListItem );
             ddlLayoutFilter.Visible = layouts.Any();
-            ddlLayoutFilter.SetValue( gPagesFilter.GetUserPreference( "Layout" ) );
+            ddlLayoutFilter.SetValue( gPagesFilter.GetFilterPreference( "Layout" ) );
         }
 
         /// <summary>
@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.Cms
                         t.Layout.SiteId == siteId ||
                         sitePages.Contains( t.Id ) );
 
-                string layoutFilter = gPagesFilter.GetUserPreference( "Layout" );
+                string layoutFilter = gPagesFilter.GetFilterPreference( "Layout" );
                 if ( !string.IsNullOrWhiteSpace( layoutFilter ) && layoutFilter != Rock.Constants.All.Text )
                 {
                     qry = qry.ToList().Where( a => a.Layout.ToString() == layoutFilter ).AsQueryable();

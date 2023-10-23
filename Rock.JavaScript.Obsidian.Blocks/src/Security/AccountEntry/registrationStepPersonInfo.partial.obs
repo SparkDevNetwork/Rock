@@ -60,17 +60,17 @@
     import PhoneNumberDetails from "./phoneNumberDetails.partial.obs";
     import Address from "@Obsidian/Controls/addressControl.obs";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
-    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
-    import EmailBox from "@Obsidian/Controls/emailBox";
-    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
     import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
     import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
     import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps({
         modelValue: {
@@ -128,21 +128,21 @@
         }
     });
 
-    const internalGender = computed<number>({
+    const internalGender = computed<string>({
         get() {
-            return props.modelValue?.gender ?? 0;
+            return (props.modelValue?.gender ?? 0).toString();
         },
-        set(newValue: number) {
-            emit("update:modelValue", { ...props.modelValue, gender: newValue });
+        set(newValue: string) {
+            emit("update:modelValue", { ...props.modelValue, gender: toNumber(newValue) });
         }
     });
 
-    const internalBirthday = computed<BirthdayPickerBag>({
+    const internalBirthday = computed<BirthdayPickerBag | undefined>({
         get() {
-            return props.modelValue?.birthday ?? getDefaultDatePartsPickerModel();
+            return props.modelValue?.birthday ?? undefined;
         },
-        set(newValue: BirthdayPickerBag) {
-            emit("update:modelValue", { ...props.modelValue, birthday: newValue });
+        set(newValue: BirthdayPickerBag | undefined) {
+            emit("update:modelValue", { ...props.modelValue, birthday: newValue ?? null });
         }
     });
 

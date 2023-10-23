@@ -27,6 +27,7 @@ using DotLiquid;
 using DotLiquid.Util;
 
 using Rock.Lava.Blocks;
+using Rock.Lava.DotLiquid;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.RockLiquid.Blocks
@@ -40,14 +41,10 @@ namespace Rock.Lava.RockLiquid.Blocks
     /// </summary>
     public class Cache : RockLavaBlockBase
     {
-        private static readonly Regex Syntax = new Regex( @"(\w+)" );
-
         string _markup = string.Empty;
         string _tagName = string.Empty;
 
         StringBuilder _blockMarkup = new StringBuilder();
-
-        const int _maxRecursionDepth = 10;
 
         /// <summary>
         /// Method that will be run at Rock startup
@@ -154,11 +151,12 @@ namespace Rock.Lava.RockLiquid.Blocks
                 return;
             }
 
-            var parms = ParseMarkup( _markup, context );
+            var settings = LavaElementAttributes.NewFromMarkup( _markup, new RockLiquidRenderContext( context ) );
 
-            var twoPassEnabled = parms["twopass"].AsBoolean();
+            var twoPassEnabled = settings.GetBoolean( "twopass", false );
 
-            var cacheKey = "lavacache-" + parms["key"];
+            // Make sure the cache key is unique to this Lava engine.
+            var cacheKey = "lavacache-dotliquid-" + settings.GetString( "key", string.Empty );
             if ( cacheKey == string.Empty )
             {
                 result.Write( "* No cache key provided. *" );
@@ -198,18 +196,21 @@ namespace Rock.Lava.RockLiquid.Blocks
             // Cached value not available so render the template and cache it
             var lavaResults = MergeLava( _blockMarkup.ToString(), context );
 
-            var cacheDuration = parms["duration"].AsInteger();
+            var cacheDuration = settings.GetInteger( "duration", 3600 );
 
             if ( cacheDuration > 0 )
             {
                 // Don't cache if it's too large
-                var maxCacheSize = parms["maxcachesize"].AsInteger();
+                var maxCacheSize = settings.GetInteger( "maxcachesize", 200000 );
 
                 if ( lavaResults.Length < maxCacheSize )
                 {
                     var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
                     var cachedHash = CalculateContentHash( _blockMarkup.ToString() );
-                    RockCache.AddOrUpdate( cacheKey, string.Empty, new CacheLavaTag { Hash = cachedHash, Content = lavaResults }, expiration, parms["tags"] );
+                    RockCache.AddOrUpdate( cacheKey, string.Empty,
+                        new CacheLavaTag { Hash = cachedHash, Content = lavaResults },
+                        expiration,
+                        settings.GetString( "tags", string.Empty ) );
                 }
             }
 
@@ -297,65 +298,5 @@ namespace Rock.Lava.RockLiquid.Blocks
 
             return lavaTemplate.ResolveMergeFields( lavaMergeFields, enabledCommands );
         }
-
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, Context context )
-        {
-            // first run lava across the inputted markup
-            var internalMergeFields = new Dictionary<string, object>();
-
-            // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
-            {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
-            {
-                foreach ( var item in context.Environments[0] )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            var parms = new Dictionary<string, string>();
-            parms.Add( "key", string.Empty );
-            parms.Add( "tags", string.Empty );
-            parms.Add( "twopass", "false" );
-            parms.Add( "duration", "3600" );
-            parms.Add( "maxcachesize", "200000" );
-
-            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    var value = itemParts[1];
-
-                    if ( value.IsLavaTemplate() )
-                    {
-                        value = value.ResolveMergeFields( internalMergeFields );
-                    }
-
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), value.Substring( 1, value.Length - 2 ).Trim() );
-                }
-            }
-            return parms;
-        }
-
     }
 }

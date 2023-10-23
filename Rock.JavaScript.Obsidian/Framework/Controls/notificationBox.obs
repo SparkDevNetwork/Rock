@@ -21,7 +21,7 @@
     import { PropType, computed, ref } from "vue";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { LiteralUnion } from "@Obsidian/Types/Utility/support";
-    import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
 
     const props = defineProps({
         dismissible: {

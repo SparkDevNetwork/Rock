@@ -1,0 +1,25 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span class="library-viewer-item-downloads-label text-muted"
+          :title="`${addThousandsSeparator(downloads)} ${(downloads === 1 ? 'download' : 'downloads')}`"
+        ><i class="fa fa-arrow-down"></i> {{ abbreviateNumber(downloads) }}</span>
+</template>
+
+<style scoped>
+    .library-viewer-item-downloads-label {
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { abbreviateNumber, addThousandsSeparator } from "./utils.partial";
+
+    defineProps({
+        downloads: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+</script>

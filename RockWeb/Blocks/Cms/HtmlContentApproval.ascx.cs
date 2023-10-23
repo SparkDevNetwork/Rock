@@ -93,11 +93,11 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gContentListFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gContentListFilter.SaveUserPreference( "Site", ddlSiteFilter.SelectedValue.ToLower() != "-1" ? ddlSiteFilter.SelectedValue : string.Empty );
-            gContentListFilter.SaveUserPreference( "Approval Status", ddlApprovedFilter.SelectedValue.ToLower() != "unapproved" ? ddlApprovedFilter.SelectedValue : string.Empty );
+            gContentListFilter.SetFilterPreference( "Site", ddlSiteFilter.SelectedValue.ToLower() != "-1" ? ddlSiteFilter.SelectedValue : string.Empty );
+            gContentListFilter.SetFilterPreference( "Approval Status", ddlApprovedFilter.SelectedValue.ToLower() != "unapproved" ? ddlApprovedFilter.SelectedValue : string.Empty );
             if ( _canApprove )
             {
-                gContentListFilter.SaveUserPreference( "Approved By", ppApprovedByFilter.PersonId.ToString() );
+                gContentListFilter.SetFilterPreference( "Approved By", ppApprovedByFilter.PersonId.ToString() );
             }
 
             BindGrid();
@@ -224,9 +224,9 @@ namespace RockWeb.Blocks.Cms
             ddlSiteFilter.DataBind();
             ddlSiteFilter.Items.Insert( 0, Rock.Constants.All.ListItem );
             ddlSiteFilter.Visible = sites.Any();
-            ddlSiteFilter.SetValue( gContentListFilter.GetUserPreference( "Site" ) );
+            ddlSiteFilter.SetValue( gContentListFilter.GetFilterPreference( "Site" ) );
 
-            var item = ddlApprovedFilter.Items.FindByValue( gContentListFilter.GetUserPreference( "Approval Status" ) );
+            var item = ddlApprovedFilter.Items.FindByValue( gContentListFilter.GetFilterPreference( "Approval Status" ) );
             if ( item != null )
             {
                 item.Selected = true;
@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Cms
                 ddlApprovedFilter.SelectedIndex = 2;
             }
 
-            int? personId = gContentListFilter.GetUserPreference( "Approved By" ).AsIntegerOrNull();
+            int? personId = gContentListFilter.GetFilterPreference( "Approved By" ).AsIntegerOrNull();
             if ( personId.HasValue )
             {
                 var personService = new PersonService( rockContext );
@@ -282,7 +282,7 @@ namespace RockWeb.Blocks.Cms
             // Filter by the person that approved the content
             if ( _canApprove )
             {
-                int? personId = gContentListFilter.GetUserPreference( "Approved By" ).AsIntegerOrNull();
+                int? personId = gContentListFilter.GetFilterPreference( "Approved By" ).AsIntegerOrNull();
                 if ( personId.HasValue )
                 {
                     qry = qry.Where( a => a.ApprovedByPersonAliasId.HasValue && a.ApprovedByPersonAlias.PersonId == personId );

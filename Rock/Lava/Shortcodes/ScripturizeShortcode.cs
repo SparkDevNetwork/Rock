@@ -14,12 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 using Rock.Utility;
 
@@ -107,55 +103,32 @@ shortcode you can easily convert those references to links to popular Bible webs
             {
                 base.OnRender( context, writer );
 
-                var parms = ParseMarkup( _markup, context );
+                var settings = LavaElementAttributes.NewFromMarkup( _markup, context );
 
-                LandingSite? landingSite = (LandingSite)Enum.Parse( typeof( LandingSite ), parms["landingsite"], true );
-
+                var landingSite = settings.GetEnumOrNull<LandingSite>( "landingsite" );
                 if ( landingSite == null )
                 {
-                    result.Write( "<!-- the landing site provided to the scripturize shortcode was not correct -->" + writer.ToString() );
-                    return;
+                    if ( settings.HasValue( "landingsite" ) )
+                    {
+                        // If the specified value cannot be mapped, return an error message.
+                        result.Write( "<!-- the landing site provided to the scripturize shortcode was not correct -->" + writer.ToString() );
+                        return;
+                    }
+                    else
+                    {
+                        // If not specified, set the default.
+                        landingSite = LandingSite.YouVersion;
+                    }
                 }
 
-                var output = Rock.Utility.Scripturize.Parse( writer.ToString(), parms["defaulttranslation"], landingSite.Value, parms["cssclass"], parms["openintab"].AsBoolean() );
+                var output = Rock.Utility.Scripturize.Parse( Rock.Utility.Scripturize.Parse( writer.ToString(),
+                    settings.GetString( "defaulttranslation", "NLT" ),
+                    landingSite.Value,
+                    settings.GetString( "cssclass" ),
+                    settings.GetBoolean( "openintab" ) ) );
 
                 result.Write( output );
             }
-        }
-
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
-        {
-            // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
-
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            var parms = new Dictionary<string, string>();
-            parms.Add( "defaulttranslation", "NLT" );
-            parms.Add( "cssclass", "" );
-            parms.Add( "landingsite", "YouVersion" );
-            parms.Add( "openintab", "false" );
-
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                }
-            }
-            return parms;
         }
     }
 }

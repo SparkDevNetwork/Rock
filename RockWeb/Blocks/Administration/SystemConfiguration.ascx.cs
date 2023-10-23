@@ -23,12 +23,15 @@ using System.Threading.Tasks;
 using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using CSScriptLibrary;
 using Microsoft.Web.XmlTransform;
 
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Observability;
 using Rock.SystemKey;
+using Rock.Web.Cache.NonEntities;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -124,6 +127,8 @@ namespace RockWeb.Blocks.Administration
 
             BindExperimentalSettings();
 
+            BindObservabilitySettings();
+
             BindSystemDiagnosticsSettings();
 
             BindUiSettings();
@@ -189,6 +194,7 @@ namespace RockWeb.Blocks.Administration
             rockWebConfig.AppSettings.Settings["RunJobsInIISContext"].Value = cbRunJobsInIISContext.Checked.ToString();
             rockWebConfig.AppSettings.Settings["AzureSignalREndpoint"].Value = rtbAzureSignalREndpoint.Text;
             rockWebConfig.AppSettings.Settings["AzureSignalRAccessKey"].Value = rtbAzureSignalRAccessKey.Text;
+            rockWebConfig.AppSettings.Settings["ObservabilityServiceName"].Value = tbObservabilityServiceName.Text;
 
             var section = ( System.Web.Configuration.SystemWebSectionGroup ) rockWebConfig.GetSectionGroup( "system.web" );
             section.HttpRuntime.MaxRequestLength = int.Parse( numbMaxSize.Text ) * 1024;
@@ -245,6 +251,8 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_SITE_KEY, rtbCaptchaSiteKey.Text );
             Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_SECRET_KEY, rtbCaptchaSecretKey.Text );
 
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL, rtbSmsOptInMessage.Text );
+
             nbUiSettings.NotificationBoxType = NotificationBoxType.Success;
             nbUiSettings.Title = string.Empty;
             nbUiSettings.Text = "Settings saved successfully.";
@@ -253,6 +261,23 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Binds the controls for the Observability settings
+        /// </summary>
+        private void BindObservabilitySettings()
+        {
+            ddlEndpointProtocol.BindToEnum<OpenTelemetry.Exporter.OtlpExportProtocol>();
+            ddlEndpointProtocol.SelectedValue = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL );
+
+            cbEnableObservaility.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
+
+            urlObservabilityEndpoint.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT );
+
+            kvlEndpointHeaders.Value = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS );
+
+            vlTargetedQueries.Value = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES );
+        }
 
         /// <summary>
         /// Bind thee general configuration
@@ -293,6 +318,7 @@ namespace RockWeb.Blocks.Administration
             }
             rtbAzureSignalREndpoint.Text = ConfigurationManager.AppSettings["AzureSignalREndpoint"];
             rtbAzureSignalRAccessKey.Text = ConfigurationManager.AppSettings["AzureSignalRAccessKey"];
+            tbObservabilityServiceName.Text = ConfigurationManager.AppSettings["ObservabilityServiceName"];
         }
 
         /// <summary>
@@ -446,11 +472,13 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindUiSettings()
         {
-            rtbPersonRaceLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_RACE_LABEL, "Race" );
-            rtbPersonEthnicityLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" );
+            rtbPersonRaceLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_RACE_LABEL );
+            rtbPersonEthnicityLabel.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_ETHNICITY_LABEL );
 
             rtbCaptchaSiteKey.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SITE_KEY );
             rtbCaptchaSecretKey.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SECRET_KEY );
+
+            rtbSmsOptInMessage.Text = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
         }
 
         #endregion
@@ -502,6 +530,39 @@ namespace RockWeb.Blocks.Administration
             nbSecurityGrantTokenDurationSaveMessage.Visible = true;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnObservabilitySave control
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnObservabilitySave_Click( object sender, EventArgs e )
+        {
+            if ( cbEnableObservaility.Checked &&  urlObservabilityEndpoint.Text.IsNullOrWhiteSpace() )
+            {
+                nbObservabilityMessages.NotificationBoxType = NotificationBoxType.Warning;
+                nbObservabilityMessages.Text = "To enable observability, please provide a valid service endpoint. (e.g. https://otlp.nr-data.net:4317)";
+                return;
+            }
+
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENABLED, cbEnableObservaility.Checked.ToString() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL, ddlEndpointProtocol.SelectedValue );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS, kvlEndpointHeaders.Value );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT, urlObservabilityEndpoint.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES, vlTargetedQueries.Value );
+
+            nbObservabilityMessages.NotificationBoxType = NotificationBoxType.Success;
+            nbObservabilityMessages.Title = string.Empty;
+            nbObservabilityMessages.Text = "Settings saved successfully.";
+
+            // Clear the targeted query hash cache
+            DbCommandObservabilityCache.ClearTargetedQueryHashes();
+
+            // Update the provider
+            ObservabilityHelper.ConfigureTraceProvider();
+        }
+
         #endregion
+
+
     }
 }

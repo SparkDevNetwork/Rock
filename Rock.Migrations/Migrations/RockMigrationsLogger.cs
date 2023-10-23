@@ -161,5 +161,15 @@ namespace Rock.Migrations
                 WriteToLog( "VERBOSE: " + message );
             }
         }
+
+        /// <summary>
+        /// Logs the system information message.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public void LogSystemInfo( string key, string value )
+        {
+            WriteToLog( $"{key}: {value}" );
+        }
     }
 }

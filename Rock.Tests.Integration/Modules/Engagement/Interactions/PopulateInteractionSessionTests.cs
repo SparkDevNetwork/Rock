@@ -64,6 +64,7 @@ namespace Rock.Tests.Integration.Engagement.Interactions
         /// Verifies that a request to check the account credit balance can be made without incurring any charges.
         /// </summary>
         [TestMethod]
+        [Ignore("This test should only be enabled for development purposes, as it requires access to a third-party service.")]
         public void IpRegistryComponent_ServiceStatusRequest_DoesNotExpendCredit()
         {
             IpRegistryMock registryComponent;
@@ -190,8 +191,8 @@ namespace Rock.Tests.Integration.Engagement.Interactions
                     var args = new TestDataHelper.Interactions.CreatePageViewInteractionActionArgs
                     {
                         ViewDateTime = interactionDateTime,
-                        SiteId = internalSite.Id,
-                        PageId = testPage.Id,
+                        SiteIdentifier = internalSite.Id.ToString(),
+                        PageIdentifier = testPage.Id.ToString(),
                         UserAgentString = agentList.GetRandomElement(),
                         BrowserIpAddress = ipAddress,
                         BrowserSessionGuid = browserSessionGuid,

@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
 
     const props = defineProps({

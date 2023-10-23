@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -112,70 +108,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// Location View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( Location ) )]
-    public partial class LocationViewModelHelper : ViewModelHelper<Location, LocationBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override LocationBag CreateViewModel( Location model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new LocationBag
-            {
-                IdKey = model.IdKey,
-                AssessorParcelId = model.AssessorParcelId,
-                Barcode = model.Barcode,
-                City = model.City,
-                Country = model.Country,
-                County = model.County,
-                FirmRoomThreshold = model.FirmRoomThreshold,
-                GeocodeAttemptedDateTime = model.GeocodeAttemptedDateTime,
-                GeocodeAttemptedResult = model.GeocodeAttemptedResult,
-                GeocodeAttemptedServiceType = model.GeocodeAttemptedServiceType,
-                GeocodedDateTime = model.GeocodedDateTime,
-                GeoFence = model.GeoFence,
-                GeoPoint = model.GeoPoint,
-                ImageId = model.ImageId,
-                IsActive = model.IsActive,
-                IsGeoPointLocked = model.IsGeoPointLocked,
-                LocationTypeValueId = model.LocationTypeValueId,
-                Name = model.Name,
-                ParentLocationId = model.ParentLocationId,
-                PostalCode = model.PostalCode,
-                PrinterDeviceId = model.PrinterDeviceId,
-                SoftRoomThreshold = model.SoftRoomThreshold,
-                StandardizeAttemptedDateTime = model.StandardizeAttemptedDateTime,
-                StandardizeAttemptedResult = model.StandardizeAttemptedResult,
-                StandardizeAttemptedServiceType = model.StandardizeAttemptedServiceType,
-                StandardizedDateTime = model.StandardizedDateTime,
-                State = model.State,
-                Street1 = model.Street1,
-                Street2 = model.Street2,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -271,20 +203,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static LocationBag ToViewModel( this Location model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new LocationViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

@@ -163,14 +163,14 @@ namespace RockWeb.Blocks.Core
         void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
             int? categoryId = cpCategory.SelectedValueAsInt();
-            gfSettings.SaveUserPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : "" );
+            gfSettings.SetFilterPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : "" );
 
-            gfSettings.SaveUserPreference( "Summary Contains", tbSummary.Text );
+            gfSettings.SetFilterPreference( "Summary Contains", tbSummary.Text );
 
             int? personId = ppWhoFilter.PersonId;
-            gfSettings.SaveUserPreference( "Who", personId.HasValue ? personId.ToString() : string.Empty );
+            gfSettings.SetFilterPreference( "Who", personId.HasValue ? personId.ToString() : string.Empty );
 
-            gfSettings.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+            gfSettings.SetFilterPreference( "Date Range", drpDates.DelimitedValues );
 
             BindGrid();
         }
@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                return gfSettings.GetUserPreference( "Category" ).AsIntegerOrNull();
+                return gfSettings.GetFilterPreference( "Category" ).AsIntegerOrNull();
             }
         }
 
@@ -286,9 +286,9 @@ namespace RockWeb.Blocks.Core
 
             cpCategory.SetValue( categoryId );
 
-            tbSummary.Text = gfSettings.GetUserPreference( "Summary Contains" );
+            tbSummary.Text = gfSettings.GetFilterPreference( "Summary Contains" );
             int personId = int.MinValue;
-            if ( int.TryParse( gfSettings.GetUserPreference( "Who" ), out personId ) )
+            if ( int.TryParse( gfSettings.GetFilterPreference( "Who" ), out personId ) )
             {
                 var person = new PersonService( new RockContext() ).Get( personId );
                 if ( person != null )
@@ -297,11 +297,11 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    gfSettings.SaveUserPreference( "Who", string.Empty );
+                    gfSettings.SetFilterPreference( "Who", string.Empty );
                 }
             }
 
-            drpDates.DelimitedValues = gfSettings.GetUserPreference( "Date Range" );
+            drpDates.DelimitedValues = gfSettings.GetFilterPreference( "Date Range" );
         }
 
         /// <summary>
@@ -360,14 +360,14 @@ namespace RockWeb.Blocks.Core
                 qry = qry.Where( a => a.CategoryId == categoryId.Value );
             }
 
-            int? personId = gfSettings.GetUserPreference( "Who" ).AsIntegerOrNull();
+            int? personId = gfSettings.GetFilterPreference( "Who" ).AsIntegerOrNull();
             if ( personId.HasValue )
             {
                 qry = qry.Where( h => h.CreatedByPersonAlias.PersonId == personId.Value );
             }
 
             var drp = new DateRangePicker();
-            drp.DelimitedValues = gfSettings.GetUserPreference( "Date Range" );
+            drp.DelimitedValues = gfSettings.GetFilterPreference( "Date Range" );
             if ( drp.LowerValue.HasValue )
             {
                 qry = qry.Where( h => h.CreatedDateTime >= drp.LowerValue.Value );
@@ -381,7 +381,7 @@ namespace RockWeb.Blocks.Core
             // Combine history records that were saved at the same time
             var historySummaryList = historyService.GetHistorySummary( qry );
 
-            string summary = gfSettings.GetUserPreference( "Summary Contains" );
+            string summary = gfSettings.GetFilterPreference( "Summary Contains" );
             if ( !string.IsNullOrWhiteSpace( summary ) )
             {
                 historySummaryList = historySummaryList.Where( h => h.HistoryList.Any( x => x.SummaryHtml.IndexOf( summary, StringComparison.OrdinalIgnoreCase ) >= 0 ) ).ToList();

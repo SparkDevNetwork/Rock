@@ -1,0 +1,56 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TreeItemPicker v-model="internalValue"
+                    formGroupClasses="category-picker"
+                    iconCssClass="fa fa-calendar"
+                    :provider="itemProvider"
+                    :multiple="multiple"
+                    disableFolderSelection />
+</template>
+
+<script setup lang="ts">
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, ref, watch } from "vue";
+    import { RegistrationTemplateTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import TreeItemPicker from "./treeItemPicker.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void;
+    }>();
+
+    // #region Values
+
+    const internalValue = ref(props.modelValue ?? null);
+    const securityGrantToken = useSecurityGrantToken();
+
+    const itemProvider = new RegistrationTemplateTreeItemProvider();
+    itemProvider.securityGrantToken = securityGrantToken.value;
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(internalValue, props.modelValue ?? null);
+    });
+
+    // #endregion
+</script>

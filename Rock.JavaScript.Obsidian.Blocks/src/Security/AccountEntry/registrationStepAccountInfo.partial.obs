@@ -37,8 +37,8 @@
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import EmailBox from "@Obsidian/Controls/emailBox";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
     import { AccountEntryAccountInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryAccountInfoBag";
     import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";

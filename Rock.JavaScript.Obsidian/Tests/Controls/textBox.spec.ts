@@ -16,7 +16,7 @@
 //
 import { mount } from "@vue/test-utils";
 import assert = require("assert");
-import TextBox from "../../Framework/Controls/textBox";
+import TextBox from "../../Framework/Controls/textBox.obs";
 import { formFieldTests } from "./rockFormFieldHelper";
 
 

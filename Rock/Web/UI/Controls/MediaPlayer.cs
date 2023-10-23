@@ -246,7 +246,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string PrimaryColor
         {
-            get => ViewState[nameof( PrimaryColor )] as string ?? "var(--brand-primary)";
+            get => ViewState[nameof( PrimaryColor )] as string ?? "var(--color-primary)";
             set => ViewState[nameof( PrimaryColor )] = value;
         }
 
@@ -732,6 +732,13 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
+            // add ace.js on demand only when there will be a codeeditor rendered
+            if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
+            {
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "plyr-include", ResolveUrl( "~/Scripts/Rock/plyr.js" ) );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "mediaplayer-include", ResolveUrl( "~/Scripts/Rock/UI/mediaplayer/mediaplayer.js" ) );
+            }
+
             // Render the container for everything.
             writer.AddAttribute( HtmlTextWriterAttribute.Id, ClientID );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-media-player" + CssClass );

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,12 +31,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
     /// <summary>
     /// Allows a person to register for a group.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Group Registration" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows a person to register for a group." )]
     [IconCssClass( "fa fa-user-plus" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -160,7 +161,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_REGISTRATION_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_REGISTRATION )]
-    public class GroupRegistration : RockMobileBlockType
+    public class GroupRegistration : RockBlockType
     {
         #region Block Attributes
 
@@ -373,21 +374,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 3;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Groups.GroupRegistration";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 3 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -681,7 +669,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 LastName = lastName,
                 Email = email,
                 IsEmailActive = true,
-                EmailPreference = EmailPreference.EmailAllowed,
+                EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
                 RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                 ConnectionStatusValueId = ConnectionStatus?.Id,
                 RecordStatusValueId = RecordStatus?.Id

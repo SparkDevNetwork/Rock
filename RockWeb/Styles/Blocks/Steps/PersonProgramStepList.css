@@ -1,0 +1,219 @@
+.add-step-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  /* Replace 18px with panel-body-padding if available */
+  padding: 8px 18px;
+  margin: -18px -18px 0;
+  background: #fcfcfc;
+  border-bottom: 1px solid var(--theme-light);
+}
+
+.add-step-buttons .add-step-label {
+  margin: 0 4px 0 0;
+  font-size: 14px;
+}
+
+.add-step-buttons .btn {
+  margin: 2px;
+}
+
+.col-steps {
+  position: relative;
+  float: left;
+  width: calc(100% / var(--stepsPerRowMobile, 4));
+  min-height: 1px;
+  padding-right: calc(var(--gutter-x) * .5);
+  padding-left: calc(var(--gutter-x) * .5);
+  margin-bottom: calc(var(--gutter-x) * .5);
+}
+
+@media (min-width: 1200px) {
+  .col-steps {
+    width: calc(100% / var(--stepsPerRow, 1));
+  }
+}
+
+.step-card {
+  position: relative;
+  height: 100%;
+  min-height: 260px;
+  overflow: hidden;
+  text-align: center;
+  border: 1px solid var(--theme-light);
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+
+.step-card .card-info {
+  position: relative;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -ms-flex-pack: center;
+  justify-content: center;
+  height: 100%;
+  padding: 12px;
+  text-align: center;
+  transition-duration: .25s;
+  will-change: transform;
+}
+
+.step-card .step-status {
+  margin: 0;
+}
+
+.step-card .step-name {
+  display: -webkit-box;
+  overflow: hidden;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (min-width: 1200px) {
+  .step-card .card-info {
+    padding: 0;
+  }
+
+  .step-card .card-top {
+    display: flex;
+    -ms-flex-align: center;
+    -ms-flex-pack: center;
+    align-items: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -webkit-box-pack: center;
+  }
+
+  .step-card .card-top,
+  .step-card .card-bottom {
+    -ms-flex: 1 1 50%;
+    flex: 1 1 50%;
+    margin: 16px 0;
+  }
+}
+
+.step-card.no-steps .card-info {
+  opacity: .75;
+}
+
+.step-card.has-prerequisite .step-card-hover {
+  background: var(--theme-white);
+}
+
+.step-card p:empty {
+  display: none;
+}
+
+.step-card .badge {
+  background-color: var(--color-info);
+}
+
+.step-card > .step-card-hover {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  opacity: 0;
+  transition-duration: .25s;
+  -webkit-transform: translateY(100%);
+  transform: translateY(100%);
+  will-change: opacity, transform;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+
+.step-card:hover > .step-card-hover {
+  opacity: 1;
+  -webkit-transform: translateY(0%);
+  transform: translateY(0%);
+}
+
+.step-card .btn-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 49px;
+  color: inherit;
+}
+
+.step-card .btn-actions:hover {
+  background-color: #e6e6e6;
+}
+
+.step-card .btn-delete:hover {
+  color: #fff;
+  background-color: var(--color-danger);
+}
+
+.has-overflow .step-records-table-container,
+.has-overflow .card-add-step-button {
+  position: relative;
+  display: block;
+}
+
+.has-overflow .card-add-step-button {
+  height: 50%;
+}
+
+.step-records-table-container {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+}
+
+.step-records-table {
+  width: 100%;
+}
+
+.step-records-table td {
+  width: 50px;
+  vertical-align: middle;
+  border: 1px solid var(--theme-light);
+}
+
+.step-records-table .steps-status {
+  width: auto;
+  height: 49px;
+  border-left: none;
+}
+
+.step-records-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.step-records-table td:last-of-type {
+  border-right: none;
+}
+
+.prereq-list-info {
+  padding: 20px 20px 0;
+}
+
+.card-add-step-button {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  font-size: 28px;
+  background: var(--theme-white);
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+
+.card-add-step-button > span {
+  position: relative;
+  top: 50%;
+  display: block;
+  transform: perspective(1px) translateY(-50%);
+}

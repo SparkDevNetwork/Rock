@@ -36,12 +36,13 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <summary>
     /// Displays the visuals of an experience.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Experience Visualizer" )]
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays the visuals of an experience." )]
     [IconCssClass( "fa fa-chart" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -70,7 +71,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
     [Rock.SystemGuid.EntityTypeGuid( "932a5219-0822-4d88-b8a7-e0f5c301348a" )]
     [Rock.SystemGuid.BlockTypeGuid( "b98abf9b-9345-48c6-a15d-4dd5ac73f0bc" )]
-    public class ExperienceVisualizer : RockObsidianBlockType
+    public class ExperienceVisualizer : RockBlockType
     {
         #region Keys
 
@@ -82,8 +83,6 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         }
 
         #endregion
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         #region Methods
 

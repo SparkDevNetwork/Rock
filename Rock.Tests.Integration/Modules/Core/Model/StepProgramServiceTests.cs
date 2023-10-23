@@ -350,7 +350,7 @@ namespace Rock.Tests.Integration.Engagement.Steps
         /// Tests GetPersonCompletingProgramQuery
         /// </summary>
         [TestMethod]
-        [Ignore( "Broken test. This test exposes a potential problem with the Step PreSave Hook. See comments in CreateTestStepProgram method for details." )]
+        [Ignore( "Fix required. This test exposes a potential problem with the Step PreSave Hook. See comments in CreateTestStepProgram method for details." )]
         public void GetPersonCompletingProgramQuery_ReturnsCorrectData()
         {
             var startDate = new DateTime( 2019, 1, 1 );

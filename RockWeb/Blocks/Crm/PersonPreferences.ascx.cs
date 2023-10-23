@@ -101,6 +101,7 @@ namespace RockWeb.Blocks.Crm
         private void ConfigurePreferences()
         {
             var pbxComponent = Rock.Pbx.PbxContainer.GetAllowedActiveComponentWithOriginationSupport( CurrentPerson );
+            var preferences = GetGlobalPersonPreferences();
 
             if ( pbxComponent == null )
             {
@@ -113,7 +114,7 @@ namespace RockWeb.Blocks.Crm
             var phoneTypeDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).Id;
             dvpOriginateCallSource.DefinedTypeId = phoneTypeDefinedTypeId;
 
-            var preferredOriginationPhoneTypeId = PersonService.GetUserPreference( CurrentPerson, UserPreference.ORIGINATE_CALL_SOURCE ).AsIntegerOrNull();
+            var preferredOriginationPhoneTypeId = preferences.GetValue( PersonPreferenceKey.ORIGINATE_CALL_SOURCE ).AsIntegerOrNull();
             if ( preferredOriginationPhoneTypeId.HasValue )
             {
                 dvpOriginateCallSource.SelectedValue = preferredOriginationPhoneTypeId.ToString();
@@ -131,6 +132,7 @@ namespace RockWeb.Blocks.Crm
         protected void btnSave_Click( object sender, EventArgs e )
         {
             var pbxComponent = Rock.Pbx.PbxContainer.GetAllowedActiveComponentWithOriginationSupport( CurrentPerson );
+            var preferences = GetGlobalPersonPreferences();
 
             var selectedOriginateCallSource = dvpOriginateCallSource.SelectedValue.AsIntegerOrNull();
             if ( selectedOriginateCallSource.HasValue )
@@ -141,18 +143,20 @@ namespace RockWeb.Blocks.Crm
 
                 if (selectedOriginateCallSource == defaultPhoneTypeId )
                 {
-                    PersonService.DeleteUserPreference( CurrentPerson, UserPreference.ORIGINATE_CALL_SOURCE );
+                    preferences.SetValue( PersonPreferenceKey.ORIGINATE_CALL_SOURCE, string.Empty );
                 }
                 else
                 {
-                    PersonService.SaveUserPreference( CurrentPerson, UserPreference.ORIGINATE_CALL_SOURCE, selectedOriginateCallSource.ToString() );
+                    preferences.SetValue( PersonPreferenceKey.ORIGINATE_CALL_SOURCE, selectedOriginateCallSource.ToString() );
                 }
             }
             else
             {
                 // delete any preference so the default value is used again
-                PersonService.DeleteUserPreference( CurrentPerson, UserPreference.ORIGINATE_CALL_SOURCE );
+                preferences.SetValue( PersonPreferenceKey.ORIGINATE_CALL_SOURCE, string.Empty );
             }
+
+            preferences.Save();
         }
     }
 }

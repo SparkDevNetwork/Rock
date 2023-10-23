@@ -87,7 +87,13 @@ namespace Rock.Drawing.Avatar
             if ( this.ForegroundColor.IsNullOrWhiteSpace() && this.BackgroundColor.IsNullOrWhiteSpace() )
             {
                 var randomIndex = _random.Next( 0, colorValues.Length );
-                this.ForegroundColor = colorValues[randomIndex];
+                var randomColor = colorValues[randomIndex];
+
+                // Get color pairing for the random color
+                var colorParing = RockColor.CalculateColorPair( new RockColor( randomColor ) );
+                this.ForegroundColor = colorParing.ForegroundColor.ToHex();
+                this.BackgroundColor = colorParing.BackgroundColor.ToHex();
+                return;
             }
 
             // At this point we only have one color so generate the missing one

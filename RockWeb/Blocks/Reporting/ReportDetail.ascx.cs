@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Reporting
         }
 
         private const string _ViewStateKeyShowResults = "ShowResults";
-        private string _settingKeyShowResults = "report-show-results-{blockId}";
+        private const string SHOW_RESULTS_PREFERENCE = "show-results";
 
         protected bool ShowResults
         {
@@ -133,7 +133,9 @@ namespace RockWeb.Blocks.Reporting
                 {
                     ViewState[_ViewStateKeyShowResults] = value;
 
-                    SetUserPreference( _settingKeyShowResults, value.ToString() );
+                    var preferences = GetBlockPersonPreferences();
+                    preferences.SetValue( SHOW_RESULTS_PREFERENCE, value.ToString() );
+                    preferences.Save();
                 }
 
                 pnlResultsGrid.Visible = this.ShowResults;
@@ -180,9 +182,6 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            // Create unique user setting keys for this block.
-            _settingKeyShowResults = _settingKeyShowResults.Replace( "{blockId}", this.BlockId.ToString() );
-
             gReport.GridRebind += gReport_GridRebind;
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Report.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Report ) ).Id;
@@ -207,7 +206,9 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                this.ShowResults = GetUserPreference( _settingKeyShowResults ).AsBoolean( true );
+                var preferences = GetBlockPersonPreferences();
+
+                ShowResults = preferences.GetValue( SHOW_RESULTS_PREFERENCE ).AsBoolean( true );
 
                 var reportId = GetReportId();
                 if ( reportId.HasValue )
@@ -1082,7 +1083,7 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 string quickReturnLava = "{{ Report.Name | AddQuickReturn:'Reports', 40 }}";
-                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                 quickReturnMergeFields.Add( "Report", report );
                 quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
             }

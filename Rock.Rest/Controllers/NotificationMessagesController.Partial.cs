@@ -134,6 +134,7 @@ namespace Rock.Rest.Controllers
             }
 
             var messageType = NotificationMessageTypeCache.Get( message.NotificationMessageTypeId );
+            var action = messageType.Component?.GetActionForNotificationMessage( message, site, RockRequestContext );
 
             if ( isRead == true )
             {
@@ -149,7 +150,7 @@ namespace Rock.Rest.Controllers
                 rockContext.SaveChanges();
             }
 
-            if ( messageType?.Component == null )
+            if ( action == null )
             {
                 return Ok( new NotificationMessageActionBag
                 {
@@ -157,7 +158,7 @@ namespace Rock.Rest.Controllers
                 } );
             }
 
-            return Ok( messageType.Component.GetActionForNotificationMessage( message, site, RockRequestContext ) );
+            return Ok( action );
         }
 
         /// <summary>

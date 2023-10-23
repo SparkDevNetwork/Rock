@@ -526,7 +526,7 @@ namespace Rock.Jobs
                 // Check for an existing attendance occurrence record.
                 var attendanceOccurrence = attendanceOccurrenceService.Queryable()
                     .Where(
-                        o => o.OccurrenceDate == occurrenceDate
+                        o => o.OccurrenceDate == occurrenceDate.Date
                         && o.GroupId == leader.GroupId
                         && o.ScheduleId == leader.Group.ScheduleId
                     ).FirstOrDefault();

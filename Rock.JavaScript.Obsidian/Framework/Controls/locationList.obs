@@ -44,13 +44,13 @@
     import { LocationListSaveNewLocationOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationListSaveNewLocationOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
-    import RockLabel from "./rockLabel";
-    import RockForm from "./rockForm";
-    import AttributeValuesContainer from "./attributeValuesContainer";
-    import TextBox from "./textBox";
-    import RockButton from "./rockButton";
-    import Loading from "./loading";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import RockLabel from "./rockLabel.obs";
+    import RockForm from "./rockForm.obs";
+    import AttributeValuesContainer from "./attributeValuesContainer.obs";
+    import TextBox from "./textBox.obs";
+    import RockButton from "./rockButton.obs";
+    import Loading from "./loading.obs";
     import NotificationBox from "./notificationBox.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -59,7 +59,7 @@
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { validateAddress } from "@Obsidian/Utility/address";
     import { FormError } from "@Obsidian/Utility/form";
-    import RockValidation from "./rockValidation";
+    import RockValidation from "./rockValidation.obs";
 
     const props = defineProps({
         modelValue: {

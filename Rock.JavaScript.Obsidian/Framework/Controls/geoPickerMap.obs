@@ -17,7 +17,7 @@
     import { DrawingMode, Coordinate } from "@Obsidian/Types/Controls/geo";
     import { toCoordinate, wellKnownToCoordinates, coordinatesToWellKnown, loadMapResources, createLatLng } from "@Obsidian/Utility/geo";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
-    import Loading from "@Obsidian/Controls/loading";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import { confirm } from "@Obsidian/Utility/dialogs";
 
     /**
@@ -418,7 +418,6 @@
      * Disables the drawing manager so they cannot add anything to the map.
      */
     function enableDrawing(): void {
-        // TODO
         if (!drawingManager) {
             return;
         }
@@ -486,7 +485,7 @@
         isMounted.value = true;
     });
 
-    // #endregion
+        // #endregion
 </script>
 
 <style>
@@ -505,12 +504,11 @@
     margin-top: 5px;
     line-height: 0;
     overflow: hidden;
-    text-align: center;
     color: #8c4b4b;
     background: white;
     padding: 4px;
     border-radius: 2px;
-    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0 1px 4px -1px;
     border: 0;
     text-align: left;
 }

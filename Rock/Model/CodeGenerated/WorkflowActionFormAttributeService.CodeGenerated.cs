@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,54 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// WorkflowActionFormAttribute View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( WorkflowActionFormAttribute ) )]
-    public partial class WorkflowActionFormAttributeViewModelHelper : ViewModelHelper<WorkflowActionFormAttribute, WorkflowActionFormAttributeBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override WorkflowActionFormAttributeBag CreateViewModel( WorkflowActionFormAttribute model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new WorkflowActionFormAttributeBag
-            {
-                IdKey = model.IdKey,
-                ActionFormSectionId = model.ActionFormSectionId,
-                AttributeId = model.AttributeId,
-                ColumnSize = model.ColumnSize,
-                FieldVisibilityRulesJSON = model.FieldVisibilityRulesJSON,
-                HideLabel = model.HideLabel,
-                IsReadOnly = model.IsReadOnly,
-                IsRequired = model.IsRequired,
-                IsVisible = model.IsVisible,
-                Order = model.Order,
-                PostHtml = model.PostHtml,
-                PreHtml = model.PreHtml,
-                WorkflowActionFormId = model.WorkflowActionFormId,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -185,20 +133,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static WorkflowActionFormAttributeBag ToViewModel( this WorkflowActionFormAttribute model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new WorkflowActionFormAttributeViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

@@ -1,26 +1,27 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-        v-model="internalModelValue"
-        name="codebox"
-        :rules="rules">
+    <RockFormField v-model="internalModelValue"
+                   name="codebox"
+                   :rules="rules">
         <template #default="{uniqueId, field}">
             <div :class="['form-group rock-code-box', isRequired ? 'required' : '']">
                 <div class="control-wrapper">
-                    <div class="d-flex" ref="codeContainer">
-                        <input
-                            v-for="(character, index) in characters"
-                            v-model="characters[index]"
-                            autocomplete="one-time-code"
-                            :autofocus="index === 0"
-                            :class="`form-control flex-grow-1 flex-sm-grow-0 flex-shrink-1 ${index > 0 ? 'ml-1' : ''}`"
-                            :disabled="disabled"
-                            :id="`${uniqueId}-${index}`"
-                            :key="index"
-                            :maxlength="maxLength"
-                            type="text"
-                            @input="onInput($event, index)"
-                            @focus="onFocus(index)" />
+                    <div class="d-flex">
+                        <CodeBoxCharacter v-for="(character, index) of characters"
+                                          :modelValue="character"
+                                          :allowedChars="allowedChars"
+                                          :boxIndex="index"
+                                          :disabled="disabled"
+                                          :key="index"
+                                          :maxLength="maxLength"
+                                          :modelModifiers="modelModifiers"
+                                          :uniqueId="uniqueId"
+                                          @clear="onClear"
+                                          @complete="onComplete"
+                                          @move="onMove"
+                                          @pasteValues="onPasteValues"
+                                          @ready="onReady"
+                                          @update:modelValue="value => onCodeBoxCharacterUpdated(value, index)" />
                     </div>
                 </div>
             </div>
@@ -38,10 +39,12 @@
 </style>
 
 <script setup lang="ts">
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import { computed, onMounted, PropType, ref } from "vue";
+    import CodeBoxCharacter from "./codeBoxCharacter.partial.obs";
+    import { CodeBoxCharacterController } from "./types.partial";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { normalizeRules, rulesPropType } from "@Obsidian/ValidationRules";
-    import { computed, nextTick, ref, reactive, PropType, VNodeRef, watch } from "vue";
 
     type CodeBoxModelModifiers = {
         capitalize?: unknown
@@ -77,13 +80,7 @@
             default: null
         },
 
-        rules: rulesPropType,
-
-        updateOnComplete: {
-            type: Boolean as PropType<boolean>,
-            required: false,
-            default: false
-        }
+        rules: rulesPropType
     });
 
     const emit = defineEmits<{
@@ -91,15 +88,13 @@
         (e: "complete", value: string): void
     }>();
 
+    /** Controllers for each codeBoxCharacter component. */
+    const codeBoxCharacterControllers: Record<number, CodeBoxCharacterController> = {};
+
     //#region Values
 
     const internalModelValue = useVModelPassthrough(props, "modelValue", emit);
-
-    const codeContainer = ref<VNodeRef | undefined>(undefined);
-
-    const characters = reactive<(string | null | undefined)[]>([]);
-
-    setCharactersFromModelValue();
+    const characters = ref<string[]>(getMaxLengthCharacters(props.modelValue.split("")));
 
     //#endregion
 
@@ -115,66 +110,60 @@
 
     //#region Event Handlers
 
-    /**
-     * Event handler for an input receiving input.
-     *
-     * @param event The input event.
-     * @param index The code character input index.
-     */
-    function onInput(event: Event, index: number): void {
-        if (!isInputEvent(event)) {
-            return;
+    /** Event handler for a codeBoxCharacter component being updated. */
+    function onCodeBoxCharacterUpdated(value: string, boxIndex: number): void {
+        // Modify the value if there are any modifiers present.
+        if (props.modelModifiers?.capitalize) {
+            value = value?.toLocaleUpperCase();
         }
 
-        const input = getCodeInputAt(index);
+        // Update the character associated with the codeBoxCharacter component.
+        characters.value[boxIndex] = value;
 
-        if (!input || input !== event.target) {
-            return;
+        // Update the model value (which is the code combined from all the characters).
+        internalModelValue.value = characters.value.join("");
+    }
+
+    /** Event handler for a codeBoxCharacter component being cleared. */
+    function onClear(boxIndex: number): void {
+        codeBoxCharacterControllers[boxIndex].clear();
+    }
+
+    /** Event handler for moving focus to a codeBoxCharacter component. */
+    function onMove(boxIndex: number): void {
+        codeBoxCharacterControllers[boxIndex].focus();
+    }
+
+    /** Event handler for a value being pasted into a codeBoxCharacter component. */
+    function onPasteValues(value: string): void {
+        // Modify the value if there are any modifiers present.
+        if (props.modelModifiers?.capitalize) {
+            value = value?.toLocaleUpperCase();
         }
 
-        const modifiedString = applyModifications(input.value);
-        const modifiedCharacters = modifiedString.split("");
-
-        let lastFilledIndex = -1;
-        for (let i = 0; i < modifiedCharacters.length; i++) {
-            if (index + i < props.maxLength) {
-                lastFilledIndex = index + i;
-                characters[lastFilledIndex] = modifiedCharacters[i];
-            }
-        }
-
-        // Emit first, then focus on the next tick.
-        tryEmitCode();
-
-        nextTick(() => {
-            if (lastFilledIndex !== -1) {
-                // Focus on the next input.
-                const nextInput = lastFilledIndex < props.maxLength - 2 ? getCodeInputAt(lastFilledIndex + 1) : getCodeInputAt(lastFilledIndex);
-                if (nextInput) {
-                    nextInput.focus();
-                }
-            }
-            else if (event.inputType === "deleteContentBackward") {
-                // Focus on the previous input.
-                const prevInput = index === 0 ? getCodeInputAt(index) : getCodeInputAt(index - 1);
-                if (prevInput) {
-                    prevInput.focus();
-                }
-            }
-        });
+        // Set all the characters to the pasted value after splitting it.
+        characters.value = getMaxLengthCharacters(value.split(""));
     }
 
     /**
-     * Event handler for an input being focused.
+     * Event handler for a codeBoxCharacter component completing.
      *
-     * @param index The input index.
+     * This can be sent from any of the codeBoxCharacter components if
+     * it recognizes that the entire code has been entered.
      */
-    function onFocus(index: number): void {
-        const input = getCodeInputAt(index);
+    function onComplete(): void {
+        const code = characters.value.join("");
+        internalModelValue.value = code;
+        emit("complete", code);
+    }
 
-        if (input) {
-            input.select();
-        }
+    /**
+     * Event handler for a codeBoxCharacter component being ready.
+     *
+     * The codeBoxCharacter component will provide an object that can be used to control it.
+     */
+    function onReady(event: CodeBoxCharacterController): void {
+        codeBoxCharacterControllers[event.boxIndex] = event;
     }
 
     //#endregion
@@ -182,102 +171,41 @@
     //#region Functions
 
     /**
-     * Applies model modifications to a single code character.
+     * Copies a source array and ensures the resulting array has `length === props.maxLength`.
      *
-     * @param codeCharacter The code character to which to apply modifications.
+     * If the `source.length < props.maxLength`, then `""` elements will be added.
+     *
+     * If the `source.length > props.maxLength`, then excess elements will be removed.
      */
-    function applyModifications(codeCharacter: string): string {
-        if (codeCharacter && props.modelModifiers?.capitalize) {
-            return codeCharacter.toUpperCase();
+    function getMaxLengthCharacters(source: string[]): string[] {
+        if (source.length > props.maxLength) {
+            // Truncate to match the max length of the code box.
+            return source.slice(0, props.maxLength);
         }
+        else if (source.length < props.maxLength) {
+            const result = [...source];
 
-        return codeCharacter;
-    }
-
-    /**
-     * Gets the code character input element at a given index.
-     *
-     * @param index The code character input index.
-     */
-    function getCodeInputAt(index: number): HTMLInputElement {
-        return (codeContainer.value.children)[index];
-    }
-
-    /**
-     * Determines whether every character in the code is complete.
-     */
-    function isCodeComplete(): boolean {
-        for (const character of characters) {
-            if (character == null || character == undefined) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Determines whether the event is an InputEvent.
-     *
-     * @param event The event to check.
-     */
-    function isInputEvent(event: unknown): event is InputEvent {
-        return !!event && typeof event === "object" && "inputType" in event;
-    }
-
-    /**
-     * Sets characters from props.modelValue if different than current value.
-     *
-     * If applying modifications to props.modelValue results in a different value,
-     * then this method will emit the new value.
-     */
-    function setCharactersFromModelValue(): void {
-        if (!characters.length || props.modelValue != characters.join("")) {
-            if (props.modelValue) {
-                for (let index = 0; index < props.maxLength; index++) {
-                    characters[index] = applyModifications(props.modelValue.charAt(index));
-                }
-
-                const newModelValue = characters.join("");
-                if (props.modelValue != newModelValue) {
-                    nextTick(() => {
-                        tryEmitCode();
-                    });
-                }
-            }
-            else {
-                for (let index = 0; index < props.maxLength; index++) {
-                    characters[index] = null;
-                }
-            }
-        }
-    }
-
-    /**
-     * Tries to emit "update:modelValue" and "complete" events if code is valid.
-     */
-    function tryEmitCode(): boolean {
-        const isComplete = isCodeComplete();
-        if (!props.updateOnComplete || isComplete) {
-            const code = characters.join("");
-            emit("update:modelValue", code);
-
-            if (isComplete) {
-                emit("complete", code);
+            // Pad the array to match the maxLength of the code box.
+            const charactersToInsert = props.maxLength - result.length;
+            for (let i = 0; i < charactersToInsert; i++) {
+                result.push("");
             }
 
-            return true;
+            return result;
         }
-
-        return false;
+        else {
+            return [...source];
+        }
     }
 
     //#endregion
 
     //#region Watchers
 
-    watch(() => props.modelValue, () => {
-        setCharactersFromModelValue();
-    });
-
     //#endregion
+
+    onMounted(() => {
+        // Try to focus on the first codeBoxCharacter component when this component is mounted.
+        codeBoxCharacterControllers[0]?.focus();
+    });
 </script>

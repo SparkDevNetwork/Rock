@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using Rock.Data;
@@ -240,6 +241,12 @@ namespace Rock.Model
                     {
                         groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                         groupMember.InactiveDateTime = newInactiveDateTime;
+
+                        if ( !groupMember.IsValidGroupMember( rockContext ) )
+                        {
+                            // Don't fail the entire operation for a single invalid member's reactivation attempt.
+                            rockContext.Entry( groupMember ).State = EntityState.Detached;
+                        }
                     }
                 }
             }

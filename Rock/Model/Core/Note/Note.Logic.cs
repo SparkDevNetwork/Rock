@@ -102,23 +102,9 @@ namespace Rock.Model
         /// The approval URL.
         /// </value>
         [LavaVisible]
-        public virtual string ApprovalUrl
-        {
-            get
-            {
-                string approvalUrlTemplate = NoteTypeCache.Get( this.NoteTypeId )?.ApprovalUrlTemplate;
-                if ( string.IsNullOrWhiteSpace( approvalUrlTemplate ) )
-                {
-                    approvalUrlTemplate = "{{ 'Global' | Attribute:'InternalApplicationRoot' }}{{ Note.NoteUrl }}#{{ Note.NoteAnchorId }}";
-                }
-
-                var mergeFields = new Dictionary<string, object> { { "Note", this } };
-
-                string approvalUrl = approvalUrlTemplate.ResolveMergeFields( mergeFields );
-
-                return approvalUrl;
-            }
-        }
+        [Obsolete( "This property is no longer used and will be removed in the future." )]
+        [RockObsolete( "1.16" )]
+        public virtual string ApprovalUrl => string.Empty;
 
         #endregion Virtual Properties
 
@@ -141,12 +127,6 @@ namespace Rock.Model
 
         /// <summary>
         /// Determines whether the specified action is authorized on this note.
-        /// Special note on the VIEW action: a person can view a note if they have normal VIEW access, but also have any of the following is true of the note:
-        ///  - Approved,
-        ///  - The current person is the one who created the note,
-        ///  - The current person is the one who last edited the note,
-        ///  - No Approval is required,
-        ///  - The current person is an approver
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
@@ -158,12 +138,7 @@ namespace Rock.Model
 
                 Private      - Private notes are ONLY viewable by the creator. No one else no matter what their permissions are can see them.
 
-                Approve      - This is a custom security verb for notes.
-
                 View         - You can view a note if you have View security to the note itself
-                               OR you have approval rights to the note
-                               OR you created or modified it in the past
-                               OR you have rights based off of the note type
 
                 Edit         - Edit access gives you rights to add a new note
                                AND edit notes that you have authored
@@ -174,6 +149,14 @@ namespace Rock.Model
 
             if ( this.IsPrivateNote )
             {
+                if ( Id == 0 )
+                {
+                    // If we have not been created yet, use the default security
+                    // from the parent authority since we don't have a created
+                    // by person yet.
+                    return base.IsAuthorized( action, person );
+                }
+
                 // If this is a private note, the creator has FULL access to it. Everybody else has NO access (including admins)
                 if ( this.CreatedByPersonAlias?.PersonId == person?.Id )
                 {
@@ -185,52 +168,9 @@ namespace Rock.Model
                 }
             }
 
-            if ( action.Equals( Rock.Security.Authorization.APPROVE, StringComparison.OrdinalIgnoreCase ) )
+            if ( action.Equals( Rock.Security.Authorization.VIEW, StringComparison.OrdinalIgnoreCase ) )
             {
-                // If checking the APPROVE action, let people Approve private notes that they created (see above), otherwise just use the normal IsAuthorized
-                return base.IsAuthorized( action, person );
-            }
-            else if ( action.Equals( Rock.Security.Authorization.VIEW, StringComparison.OrdinalIgnoreCase ) )
-            {
-                // View has special rules depending on the approval status and APPROVE verb
-
-                // first check if have normal VIEW access on the base
-                if ( !base.IsAuthorized( Authorization.VIEW, person ) )
-                {
-                    return false;
-                }
-
-                if ( this.ApprovalStatus == NoteApprovalStatus.Approved )
-                {
-                    return true;
-                }
-                else if ( this.CreatedByPersonAliasId == person?.PrimaryAliasId )
-                {
-                    return true;
-                }
-                else if ( this.EditedByPersonAliasId == person?.PrimaryAliasId )
-                {
-                    return true;
-                }
-                else if ( NoteTypeCache.Get( this.NoteTypeId )?.RequiresApprovals != true )
-                {
-                    /*
-                    1/21/2021 - Shaun
-                    If this Note does not have an assigned NoteType, it should be assumed that the NoteType does not
-                    require approvals.  This is likely because a new instance of a Note entity was created to check
-                    authorization for viewing Note entities in general, and in this case the first check (to
-                    base.IsAuthorized) is sufficient to permit access.
-
-                    Reason:  Notes should be available for DataViews.
-                    */
-                    return true;
-                }
-                else if ( this.IsAuthorized( Authorization.APPROVE, person ) )
-                {
-                    return true;
-                }
-
-                return false;
+                return base.IsAuthorized( Authorization.VIEW, person );
             }
             else if ( action.Equals( Rock.Security.Authorization.EDIT, StringComparison.OrdinalIgnoreCase ) )
             {
@@ -240,6 +180,12 @@ namespace Rock.Model
                 {
                     return true;
                 }
+                else if ( Id == 0 )
+                {
+                    // If this is a new note being created, use the default
+                    // EDIT permission which checks the NoteType.
+                    return base.IsAuthorized( Authorization.EDIT, person );
+                }
                 else 
                 {
                     return base.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person );
@@ -247,7 +193,7 @@ namespace Rock.Model
             }
             else
             {
-                // If this note was created by the logged person, they should be able to do any action (except for APPROVE)
+                // If this note was created by the logged person, they should be able to do any action.
                 if ( CreatedByPersonAlias?.PersonId == person?.Id )
                 {
                     return true;
@@ -275,9 +221,35 @@ namespace Rock.Model
             return base.IsPrivate( action, person );
         }
 
-#endregion Security Overrides
+        #endregion Security Overrides
 
         #region Public Methods
+
+        /// <summary>
+        /// Updates the caption of this note to be a value that matches the
+        /// state of <see cref="IsPrivateNote"/>. This will only update the
+        /// caption if it does not already have a custom value.
+        /// </summary>
+        public void UpdateCaption()
+        {
+            // Mark the note caption as either private or not unless it
+            // already has an unknown value.
+            var personalNoteCaption = "You - Personal Note";
+            if ( Caption.IsNullOrWhiteSpace() && IsPrivateNote )
+            {
+                // Note is private so mark the caption as such.
+                Caption = personalNoteCaption;
+            }
+            else if ( Caption == personalNoteCaption && !IsPrivateNote )
+            {
+                // Note was private but is no longer.
+                Caption = string.Empty;
+            }
+            else if ( Caption == null )
+            {
+                Caption = string.Empty;
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

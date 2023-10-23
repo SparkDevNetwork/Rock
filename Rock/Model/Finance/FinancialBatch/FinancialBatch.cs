@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -144,6 +144,34 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Note { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL to view the remote settlement information of
+        /// the batch. This is usually set by gateways to view the related
+        /// information on the back-end gateway's site.
+        /// </summary>
+        /// <value>
+        /// The URL to view the remote settlement information of the batch.
+        /// </value>
+        [MaxLength( 300 )]
+        [DataMember]
+        public string RemoteSettlementBatchUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Batch Key for tracking an external system's settlement batch id/key
+        /// </summary>
+        /// <value>
+        /// The Batch Key
+        /// </value>
+        public string RemoteSettlementBatchKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the external system's settlement batch amount.
+        /// </summary>
+        /// <value>
+        /// The Settlement Batch Amount.
+        /// </value>
+        public decimal? RemoteSettlementAmount { get; set; }
 
         #endregion Entity Properties
 

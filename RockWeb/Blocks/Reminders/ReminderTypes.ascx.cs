@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Reminders
             var securityField = gReminderTypes.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = EntityTypeCache.Get( typeof( ReminderType ) ).Id;
+                securityField.EntityTypeId = EntityTypeCache.GetId<ReminderType>().Value;
             }
 
             var isUserAuthorized = IsUserAuthorized( Authorization.EDIT );
@@ -209,13 +209,20 @@ namespace RockWeb.Blocks.Reminders
                 reminderType = reminderTypeService.Get( reminderTypeId );
             }
 
+            // If user selects Person, use PersonAlias.
+            var entityTypeId = etpEntityType.SelectedValueAsId().Value;
+            if ( entityTypeId == EntityTypeCache.GetId<Person>() )
+            {
+                entityTypeId = EntityTypeCache.GetId<PersonAlias>().Value;
+            }
+
             reminderType.Name = tbName.Text;
             reminderType.Description = tbDescription.Text;
             reminderType.IsActive = cbActive.Checked;
             reminderType.NotificationType = ddlNotificationType.SelectedValueAsEnum<ReminderNotificationType>();
             reminderType.NotificationWorkflowTypeId = wtpWorkflowType.SelectedValueAsId();
             reminderType.ShouldShowNote = cbShouldShowNote.Checked;
-            reminderType.EntityTypeId = etpEntityType.SelectedValueAsId().Value;
+            reminderType.EntityTypeId = entityTypeId;
             reminderType.ShouldAutoCompleteWhenNotified = cbShouldAutoComplete.Checked;
             reminderType.HighlightColor = cpHighlightColor.Text;
 

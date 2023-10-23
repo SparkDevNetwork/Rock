@@ -1635,7 +1635,7 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     string lava = "{{ Group.Name | AddQuickReturn:'Groups', 20 }}";
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                     mergeFields.Add( "Group", group );
                     lava.ResolveMergeFields( mergeFields );
                 }

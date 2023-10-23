@@ -55,4 +55,10 @@ export type PublicAttributeBag = {
 
     /** Gets or sets the order. */
     order: number;
+
+    /** Gets or sets the pre HTML. */
+    postHtml?: string | null;
+
+    /** Gets or sets the pre HTML. */
+    preHtml?: string | null;
 };

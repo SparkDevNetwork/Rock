@@ -762,7 +762,7 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var account in accountsList )
             {
-                var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions() );
                 mergeFields.Add( "Account", account );
                 var accountAmountLabel = accountHeaderTemplate.ResolveMergeFields( mergeFields );
                 _ddlAccountSingle.Items.Add( new ListItem( accountAmountLabel, account.Id.ToString() ) );
@@ -1028,7 +1028,7 @@ namespace Rock.Web.UI.Controls
                 accountHeaderTemplate = "{{ Account.PublicName }}";
             }
 
-            var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions() );
             mergeFields.Add( "Account", financialAccount );
             var accountAmountLabel = accountHeaderTemplate.ResolveMergeFields( mergeFields );
 

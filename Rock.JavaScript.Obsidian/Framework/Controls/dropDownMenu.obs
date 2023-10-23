@@ -1,0 +1,160 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="dropdownElement" class="dropdown" :class="additionalDropDownClasses">
+        <button class="btn btn-link btn-overflow" type="button" @click.prevent="onDropDownClick">
+            <slot>
+                <i class="fa fa-ellipsis-v"></i>
+            </slot>
+        </button>
+
+        <ul class="dropdown-menu" :class="additionalDropDownMenuClasses">
+            <li v-for="action in items" :class="getActionItemClasses(action)">
+                <button type="button" :class="getActionButtonClasses(action)" @click.prevent.stop="onActionClick(action, $event)">
+                    <i v-if="action.iconCssClass" :class="action.iconCssClass"></i>
+                    <i v-else-if="hasAnyIcons"></i>
+                    {{ action.title }}
+                </button>
+            </li>
+        </ul>
+    </div>
+</template>
+
+<style scoped>
+li > button > i {
+    display: inline-block;
+    width: 1.25em;
+    text-align: center;
+}
+
+li.disabled > button {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+</style>
+
+<script setup lang="ts">
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { computed, PropType, ref, watch } from "vue";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+
+    const props = defineProps({
+        /**
+         * The items that will be listed in the dropdown menu.
+         */
+        items: {
+            type: Array as PropType<MenuAction[]>,
+            required: true
+        },
+
+        /**
+         * Whether to align the dropdown to the left edge or the right
+         * edge of the anchor.
+         */
+        align: {
+            type: String as PropType<"left" | "right">,
+            default: "left"
+        }
+    });
+
+    // #region Values
+
+    const isDropDownOpen = ref(false);
+    const dropdownElement = ref<HTMLElement>();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const hasAnyIcons = computed((): boolean => {
+        return props.items.some(i => !!i.iconCssClass);
+    });
+
+    /** Additional classes to be applied to the drop down container. */
+    const additionalDropDownClasses = computed((): string => {
+        return isDropDownOpen.value ? "open" : "";
+    });
+
+    /** Additional classes to be applied to the drop down menu. */
+    const additionalDropDownMenuClasses = computed((): string => {
+        return `dropdown-menu-${props.align}`;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Gets the classes to be applied to the specified action. */
+    function getActionButtonClasses(action: MenuAction): string {
+        let classes = "btn-link";
+
+        if (action.type === "danger") {
+            classes += " dropdown-item-danger";
+        }
+
+        if (action.actionCssClass) {
+            classes += ` ${action.actionCssClass}`;
+        }
+
+        return classes;
+    }
+
+    /** Gets the classes to be applied to the action item. */
+    function getActionItemClasses(action: MenuAction): string {
+        return action.disabled ? "disabled" : "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the drop down anchor element has been clicked.
+     */
+    function onDropDownClick(): void {
+        isDropDownOpen.value = true;
+    }
+
+    /**
+     * Event handler for when an action is clicked.
+     */
+    async function onActionClick(action: MenuAction, event: Event): Promise<void> {
+        if (action.disabled) {
+            return;
+        }
+
+        if (action.handler) {
+            const result = action.handler(event);
+
+            if (isPromise(result)) {
+                await result;
+            }
+        }
+
+        isDropDownOpen.value = false;
+    }
+
+    /**
+     * Event handler for when the mouse is pressed down somewhere in the
+     * document.
+     *
+     * @param event The current event.
+     */
+    function onDocumentMouseDown(event: MouseEvent): void {
+        if (event.target instanceof HTMLElement && dropdownElement.value?.contains(event.target) !== true) {
+            isDropDownOpen.value = false;
+        }
+    }
+
+    // #endregion
+
+    // Watch for the drop down being opened or closed and add/remove the
+    // event handler for detecting clicks outside the dropdown.
+    watch(isDropDownOpen, () => {
+        if (isDropDownOpen.value) {
+            document.addEventListener("mousedown", onDocumentMouseDown);
+        }
+        else {
+            document.removeEventListener("mousedown", onDocumentMouseDown);
+        }
+    });
+</script>

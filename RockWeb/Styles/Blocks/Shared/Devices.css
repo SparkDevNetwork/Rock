@@ -1,0 +1,302 @@
+/*
+    Used to create devices using CSS.
+
+    1. Common
+    2. Mobile Phone
+    3. Tablet
+    4. Browser
+    5. SMS Sample
+
+*/
+
+.device {
+  position: relative;
+  margin: 0 auto;
+}
+
+.device-mobile {
+  width: 435px;
+  border: 12px solid #ddd;
+  border-top-width: 24px;
+  border-bottom-width: 48px;
+  border-radius: 12px;
+}
+
+.device-mobile::before {
+  position: absolute;
+  top: 12px;
+  left: -14px;
+  display: block;
+  width: 2px;
+  height: 12px;
+  content: "";
+  background-color: #bbb;
+  border-radius: 2px 0 0 2px;
+  box-shadow: 0 0 0 0 #bbb, 0 24px 0 0 #bbb;
+}
+
+.device-mobile::after {
+  position: absolute;
+  bottom: -36px;
+  left: 50%;
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin-left: -12px;
+  content: "";
+  background-color: #bbb;
+  border-radius: 12px;
+}
+
+.device-mobile .email-wrapper {
+  position: relative;
+  height: 525px;
+  padding-top: 10px;
+  border: 1px solid #ddd;
+  border-top: 0 none;
+  background: #fff;
+}
+
+@media all and (min-width: 768px) {
+  .device-mobile {
+    width: 435px;
+    border-width: 18px;
+    border-top-width: 36px;
+    border-bottom-width: 72px;
+    border-radius: 18px;
+  }
+
+  .device-mobile::before {
+    top: 18px;
+    left: -21px;
+    width: 3px;
+    height: 18px;
+    content: "";
+    background-color: #bbb;
+    border-radius: 3px 0 0 3px;
+    box-shadow: 0 0 0 0 #bbb, 0 36px 0 0 #bbb;
+  }
+
+  .device-mobile::after {
+    bottom: -54px;
+    width: 36px;
+    height: 36px;
+    margin-left: -18px;
+    content: "";
+    border-radius: 18px;
+  }
+}
+
+.device-tablet {
+  position: relative;
+  width: 264px;
+  border: 12px solid #ddd;
+  border-top-width: 48px;
+  border-bottom-width: 48px;
+  border-radius: 12px;
+}
+
+.device-tablet::before {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  display: block;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  content: "";
+  background-color: #bbb;
+  border-radius: 4px;
+}
+
+.device-tablet::after {
+  position: absolute;
+  bottom: -36px;
+  left: 50%;
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin-left: -12px;
+  content: "";
+  background-color: #bbb;
+  border-radius: 12px;
+}
+
+@media all and (min-width: 768px) {
+  .device--tablet {
+    width: 396px;
+    border: 18px solid #ddd;
+    border-top-width: 72px;
+    border-bottom-width: 72px;
+    border-radius: 18px;
+  }
+
+  .device--tablet::before {
+    top: -39px;
+    width: 6px;
+    height: 6px;
+    margin-left: -3px;
+    border-radius: 6px;
+  }
+
+  .device--tablet::after {
+    bottom: -54px;
+    width: 36px;
+    height: 36px;
+    margin-left: -18px;
+    content: "";
+    border-radius: 18px;
+  }
+}
+
+.device-browser {
+  width: 100%;
+
+  /* max-width: 100%; set max width here if you need to. */
+  border: 2px solid #dfdfdf;
+  border-top-width: 36px;
+  border-radius: 4px 4px 0 0;
+  background: #fff;
+}
+
+.device-browser::before {
+  position: absolute;
+  top: -24px;
+  left: 12px;
+  display: block;
+  width: 12px;
+  height: 12px;
+  content: "";
+  background-color: #f36;
+  border-radius: 12px;
+  box-shadow: 0 0 0 0 #f36, 16px 0 0 0 #fc9, 32px 0 0 0 #3f6;
+}
+
+@media all and (min-width: 480px) {
+  .device-browser {
+    border-top-width: 48px;
+  }
+
+  .device-browser::before {
+    top: -30px;
+    box-shadow: 0 0 0 0 #f36, 24px 0 0 0 #fc9, 48px 0 0 0 #3f6;
+  }
+
+  .device-browser::after {
+    top: -36px;
+    right: 12px;
+    width: 240px;
+    height: 24px;
+    padding: 0 8px;
+    line-height: 24px;
+  }
+}
+
+.sms {
+  position: relative;
+  width: 400px;
+  overflow-x: hidden;
+  background: none repeat scroll 0 0 #fff;
+}
+
+.sms .left {
+  position: absolute;
+  top: 0;
+  left: 20px;
+  font-size: 14px;
+}
+
+.sms .left::after {
+  position: absolute;
+  top: 22px;
+  left: -12px;
+  width: 14px;
+  height: 14px;
+  content: " ";
+  border: 3px solid #2095fe;
+  border-top: 3px solid transparent;
+  border-right: 3px solid transparent;
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+.sms .right {
+  position: absolute;
+  top: 0;
+  right: 15px;
+  font-size: 14px;
+}
+
+.sms header {
+  height: 60px;
+  font-size: 20px;
+  line-height: 58px;
+  color: #2095fe;
+  text-align: center;
+  white-space: nowrap;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-bottom: 1px solid #bbb;
+  box-shadow: 0 1px 2px rgba(1, 1, 1, .2);
+}
+
+.sms header h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+}
+
+.sms .messages-wrapper {
+  position: relative;
+  height: 525px;
+  padding-top: 10px;
+  border: 1px solid #ddd;
+  border-top: 0 none;
+}
+
+.sms .message {
+  position: relative;
+  padding: 15px 20px;
+  margin: 0 15px 10px;
+  font-size: 16px;
+  border-radius: 20px;
+}
+
+.sms .message.to {
+  margin-left: 80px;
+  color: #fff;
+  background-color: #2095fe;
+}
+
+.sms .message.from {
+  margin-right: 80px;
+  color: #363636;
+  background-color: #e5e4e9;
+}
+
+.sms .message.to + .message.to,
+.sms .message.from + .message.from {
+  margin-top: -7px;
+}
+
+.sms .message::before {
+  position: absolute;
+  right: -50px;
+  bottom: 0;
+  z-index: 1;
+  width: 70px;
+  height: 40px;
+  clip: rect(20px, 35px, 42px, 0);
+  content: " ";
+  border-color: #2095fe;
+  border-style: solid;
+  border-width: 0 20px;
+  border-radius: 50%;
+}
+
+.sms .message.from::before {
+  left: -50px;
+  border-color: #e5e4e9;
+  transform: rotateY(180deg);
+}

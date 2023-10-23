@@ -39,6 +39,8 @@ namespace Rock.Tests.Integration.Communications
         [ClassInitialize]
         public static void TestInitialize( TestContext context )
         {
+            TestDatabaseHelper.ResetDatabase();
+
             RemoveTestData();
 
             CreateCommunicationsTestData( _expirationDays, _delayMinutes );

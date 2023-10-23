@@ -1,0 +1,73 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <tr>
+        <td class="debug-timestamp">{{ asFormattedString(viewModel.timestampMs, 2) }} ms</td>
+        <td :style="indentStyle">
+            <strong v-if="viewModel.isTitleBold">
+                {{ viewModel.title }}
+            </strong>
+            <template v-else>
+                {{ viewModel.title }}
+            </template>
+            <small v-if="viewModel.subTitle" style="color:#A4A4A4; padding-left: 3px;">
+                {{ viewModel.subTitle }}
+            </small>
+        </td>
+        <td class="debug-timestamp">{{ asFormattedString(viewModel.durationMs, 2) }} ms</td>
+        <td class="debug-waterfall">
+            <span class="debug-chart-bar" :title="waterfallTitle" :style="waterfallStyle"></span>
+        </td>
+    </tr>
+</template>
+
+<script setup lang="ts">
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { computed, PropType } from "vue";
+    import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
+
+    const props = defineProps({
+        viewModel: {
+            type: Object as PropType<DebugTiming>,
+            required: true
+        },
+        startTimeMs: {
+            type: Number as PropType<number>,
+            required: true
+        },
+        totalMs: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const indentStyle = computed((): string => {
+        if (!props.viewModel.indentLevel) {
+            return "";
+        }
+
+        const pixels = props.viewModel.indentLevel * 24;
+        return `padding-left: ${pixels}px`;
+
+    });
+
+    const waterfallTitle = computed((): string => {
+        const timestampString = asFormattedString(props.viewModel.timestampMs, 2);
+        const durationString = asFormattedString(props.viewModel.durationMs, 2);
+        return `Started at ${timestampString} ms / Duration ${durationString} ms`;
+    });
+
+    const waterfallStyle = computed((): string => {
+        const leftPercent = getPercentFromMs(props.viewModel.timestampMs);
+        const widthPercent = getPercentFromMs(props.viewModel.durationMs);
+        return `left: ${leftPercent}%; width: ${widthPercent}%;`;
+    });
+
+    function getPercentFromMs(ms: number): number {
+        if (!props.totalMs) {
+            return 0;
+        }
+
+        const msFromStart = ms - props.startTimeMs;
+        return (msFromStart / props.totalMs) * 100;
+    }
+</script>

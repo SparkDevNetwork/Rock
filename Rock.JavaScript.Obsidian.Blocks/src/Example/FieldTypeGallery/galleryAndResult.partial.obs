@@ -1,0 +1,55 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="title" hasCollapse>
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Qualifier Values</h4>
+                <slot />
+                <hr />
+                <h4>Attribute Values Container (edit)</h4>
+                <AttributeValuesContainer v-model="values" :attributes="attributes" :isEditMode="true" :showCategoryLabel="false" />
+            </div>
+
+            <div class="col-md-6">
+                <h4>Attribute Values Container (view)</h4>
+                <AttributeValuesContainer v-model="values" :attributes="attributes" :isEditMode="false" :showCategoryLabel="false" />
+                <hr />
+                <h4>Values</h4>
+                <p>
+                    <strong>Value 1</strong>
+                <pre>{{ value1Json }}</pre>
+                </p>
+                <p>
+                    <strong>Value 2</strong>
+                <pre>{{ value2Json }}</pre>
+                </p>
+            </div>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const props = defineProps({
+        values: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+        attributes: {
+            type: Object as PropType<Record<string, PublicAttributeBag>>,
+            required: true
+        }
+    });
+
+    const values = ref(props.values);
+    const value1Json = computed((): string => values.value["value1"]);
+    const value2Json = computed((): string => values.value["value2"]);
+</script>

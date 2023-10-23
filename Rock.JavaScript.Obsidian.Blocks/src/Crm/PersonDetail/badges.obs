@@ -1,0 +1,107 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="containerRef" class="card card-badges">
+        <div class="card-badge-top">
+            <div class="rockbadge-container" v-html="topLeftBadges"></div>
+
+            <div class="rockbadge-container" v-html="topMiddleBadges"></div>
+
+            <div class="rockbadge-container" v-html="topRightBadges"></div>
+        </div>
+
+        <div class="card-badge-bottom">
+            <div class="rockbadge-container rockbadge-container-xs" v-html="bottomLeftBadges"></div>
+
+            <div class="rockbadge-container rockbadge-container-xs">
+                <EntityTagList :entityTypeGuid="EntityType.Person"
+                               :entityKey="entityKey"
+                               :lazyMode="ControlLazyMode.Eager" />
+            </div>
+
+            <div class="rockbadge-container rockbadge-container-xs" v-html="bottomRightBadges"></div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref } from "vue";
+    import EntityTagList from "@Obsidian/Controls/tagList.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { BadgesConfigurationBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Badges/badgesConfigurationBox";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { popover } from "@Obsidian/Utility/popover";
+
+    const config = useConfigurationValues<BadgesConfigurationBox>();
+
+    // #region Values
+
+    const containerRef = ref<HTMLElement | null>(null);
+    const entityKey = config.personKey ?? undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const topLeftBadges = computed((): string => {
+        return config.topLeftBadges?.map(b => b.html ?? "").join("") ?? "";
+    });
+
+    const topMiddleBadges = computed((): string => {
+        return config.topMiddleBadges?.map(b => b.html ?? "").join("") ?? "";
+    });
+
+    const topRightBadges = computed((): string => {
+        return config.topRightBadges?.map(b => b.html ?? "").join("") ?? "";
+    });
+
+    const bottomLeftBadges = computed((): string => {
+        return config.bottomLeftBadges?.map(b => b.html ?? "").join("") ?? "";
+    });
+
+    const bottomRightBadges = computed((): string => {
+        return config.bottomRightBadges?.map(b => b.html ?? "").join("") ?? "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    const script =
+        [
+            ...config.topLeftBadges ?? [],
+            ...config.topMiddleBadges ?? [],
+            ...config.topRightBadges ?? [],
+            ...config.bottomLeftBadges ?? [],
+            ...config.bottomRightBadges ?? []
+        ]
+            .map(b => b.javaScript ?? "").join("");
+
+    if (script !== "") {
+        // Add the script on the next tick to ensure the HTML has been rendered.
+        nextTick(() => {
+            const scriptNode = document.createElement("script");
+            scriptNode.type = "text/javascript";
+            scriptNode.appendChild(document.createTextNode(script));
+            document.body.appendChild(scriptNode);
+        });
+    }
+
+    nextTick(() => {
+        if (!containerRef.value) {
+            return;
+        }
+
+        tooltip(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"tooltip\"]")), { html: true, sanitize: false });
+        popover(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"popover\"]")));
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

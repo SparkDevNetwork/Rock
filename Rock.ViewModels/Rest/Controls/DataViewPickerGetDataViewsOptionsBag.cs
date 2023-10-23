@@ -89,6 +89,12 @@ namespace Rock.ViewModels.Rest.Controls
         /// </summary>
         /// <value>The security grant token.</value>
         public string SecurityGrantToken { get; set; }
+
+        /// <summary>
+        /// Gets if the dataView Picker should show only persisted data views
+        /// </summary>
+        /// <value>The flag value of whether to display just persisted data views or all data views in the picker</value>
+        public bool DisplayPersistedOnly { get; set; }
     }
 }
 

@@ -85,15 +85,15 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch, computed } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import TextBox from "@Obsidian/Controls/textBox";
-    import Toggle from "@Obsidian/Controls/toggle";
-    import PersonPicker from "@Obsidian/Controls/personPicker";
-    import CategoryPicker from "@Obsidian/Controls/categoryPicker";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
-    import RockLabel from "@Obsidian/Controls/rockLabel";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -133,8 +133,6 @@
     const category = propertyRef(props.modelValue.category ?? null, "Category");
     const entityTypeGuid = EntityType.Snippet;
 
-    console.log(ownerPersonAlias);
-
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, isActive, content, name, ownerPersonAlias, category];
@@ -170,7 +168,8 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, ...propRefs], () => {
+    watch([attributeValues, isShared, ...propRefs], () => {
+
         const newValue: SnippetBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -178,7 +177,7 @@
             isActive: isActive.value,
             content: content.value,
             name: name.value,
-            ownerPersonAlias: ownerPersonAlias.value,
+            ownerPersonAlias: isShared.value ? null : ownerPersonAlias.value,
             category: category.value
         };
 

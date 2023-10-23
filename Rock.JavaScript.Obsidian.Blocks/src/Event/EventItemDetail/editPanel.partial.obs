@@ -1,0 +1,388 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isApproved"
+                          label="Approved" />
+                <span v-if="isApproved" class="small">{{ approvalText }}</span>
+            </div>
+        </div>
+
+        <TextBox v-model="summary"
+                 label="Summary"
+                 textMode="multiline" />
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <div>
+
+                    <div class="table-responsive">
+                        <table class="grid-table table table-striped table-hover">
+                            <thead>
+                                <tr align="left">
+                                    <th data-priority="1" scope="col">Audiences</th>
+                                    <th class="grid-columncommand" data-priority="1" scope="col">&nbsp;</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr v-if="audiences.length > 0" v-for="audience in audiences" align="left">
+                                    <td data-priority="1">{{ audience.text }}</td>
+                                    <td class="grid-columncommand" data-priority="1" align="center">
+                                        <RockButton class="btn-add btn-sm"
+                                                    title="Delete"
+                                                    btnType="link"
+                                                    @click.prevent.stop="onDeleteAudience(audience)">
+                                            <i class="fa fa-times fa-fw"></i>
+                                        </RockButton>
+                                    </td>
+                                </tr>
+
+                                <div v-else>
+                                    <hr />
+                                    No Audiences Found
+                                    <hr />
+                                </div>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="grid-actions border-panel">
+                        <RockButton class="btn-add btn-grid-action" btnType="link" @click.prevent.stop="onAddAudience"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
+                    </div>
+                </div>
+
+                <CheckBoxList label="Calendars"
+                              v-model="calendars"
+                              rules="required"
+                              help="Calendars that this item should be added to (at least one is required)."
+                              :items="availableCalendars"
+                              horizontal
+                              :repeatColumns="0" />
+
+                <TextBox label="Details Url"
+                         v-model="detailsUrl"
+                         help="A custom URL to use for showing details of the calendar item (if the default item detail page should not be used)." />
+            </div>
+            <div class="col-md-6">
+                <ImageUploader v-model="photo"
+                               label="Photo"
+                               :uploadAsTemporary="true"
+                               uploadButtonText="Upload"
+                               :showDeleteButton="true" />
+            </div>
+        </div>
+
+        <Panel v-if="eventItemAttributes.length > 0" title="Event Attribute Values" hasCollapse>
+            <div v-for="eventItemAttribute in eventItemAttributes">
+                <h3>{{ eventItemAttribute.eventCalendarName }}</h3>
+                <AttributeValuesContainer v-if="eventItemAttribute.attributeValues && eventItemAttribute.attributes"
+                                          :showCategoryLabel="false"
+                                          v-model="eventItemAttribute.attributeValues"
+                                          :attributes="eventItemAttribute.attributes"
+                                          isEditMode
+                                          :numberOfColumns="2" />
+            </div>
+        </Panel>
+
+        <Panel title="Event Attributes" hasCollapse>
+            <div class="table-responsive">
+                <table class="grid-table table table-striped table-hover">
+                    <thead>
+                        <tr align="left">
+                            <th data-priority="1" scope="col">Attribute</th>
+                            <th data-priority="1" scope="col">Description</th>
+                            <th data-priority="1" scope="col">Field Type</th>
+                            <th data-priority="1" scope="col">Required</th>
+                            <th data-priority="1" scope="col">Show in Grid</th>
+                            <th data-priority="1" scope="col">Allow Search</th>
+                            <th class="grid-columncommand" data-priority="1" scope="col">&nbsp;</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr v-if="eventOccurenceAttributes.length > 0" v-for="eventAttribute in eventOccurenceAttributes" align="left">
+                            <td data-priority="1">{{ eventAttribute.attribute?.name }}</td>
+                            <td data-priority="1">{{ eventAttribute.attribute?.description }}</td>
+                            <td data-priority="1">{{ eventAttribute.fieldType }}</td>
+                            <td data-priority="1" v-html="getCheckMark(eventAttribute.attribute?.isRequired)"></td>
+                            <td data-priority="1" v-html="getCheckMark(eventAttribute.attribute?.isShowInGrid)"></td>
+                            <td data-priority="1" v-html="getCheckMark(eventAttribute.attribute?.isAllowSearch)"></td>
+                            <td class="grid-columncommand" data-priority="1" align="center">
+                                <RockButton class="btn-add btn-sm"
+                                            title="Edit"
+                                            btnType="link"
+                                            @click.prevent.stop="onAddEditAttribute(eventAttribute.attribute)">
+                                    <i class="fa fa-pencil fa-fw"></i>
+                                </RockButton>
+                            </td>
+                            <td class="grid-columncommand" data-priority="1" align="center">
+                                <RockButton class="btn-add btn-sm"
+                                            title="Delete"
+                                            btnType="link"
+                                            @click.prevent.stop="onDeleteAttribute(eventAttribute)">
+                                    <i class="fa fa-times fa-fw"></i>
+                                </RockButton>
+                            </td>
+                        </tr>
+
+                        <div v-else>
+                            <hr />
+                            No Attributes Found
+                            <hr />
+                        </div>
+                    </tbody>
+                </table>
+            </div>
+            <div class="grid-actions border-panel">
+                <RockButton class="btn-add btn-grid-action" btnType="link" @click.prevent.stop="onAddEditAttribute(null)"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
+            </div>
+
+            <Modal v-model="isAttributeModalOpen" title="Event Occurrence Attribute">
+
+                <RockForm v-model:submit="submitEditAttribute" @submit="onSaveEditAttribute">
+                    <AttributeEditor v-model="eventAttribute" :reservedKeyNames="reservedKeyNames" />
+                </RockForm>
+
+                <template #customButtons>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onStartSaveEditAttribute">Save</RockButton>
+                </template>
+
+            </Modal>
+        </Panel>
+
+        <Modal v-model="isAudienceModalOpen"
+               title="Select Audience"
+               @save="onSaveAudience"
+               saveText="Save">
+
+            <div>
+                <DefinedValuePicker label="Defined Value"
+                                    v-model="audience"
+                                    :definedTypeGuid="DefinedType.MarketingCampaignAudienceType"
+                                    :multiple="false"
+                                    :enhanceForLongLists="false" />
+            </div>
+
+        </Modal>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { EventItemBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemBag";
+    import { EventItemDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemDetailOptionsBag";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { EventItemOccurenceAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemOccurenceAttributeBag";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<EventItemBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<EventItemDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: EventItemBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const summary = propertyRef(props.modelValue.summary ?? "", "Summary");
+    const detailsUrl = propertyRef(props.modelValue.detailsUrl ?? "", "DetailsUrl");
+    const isApproved = propertyRef(props.modelValue.isApproved ?? false, "IsApproved");
+    const photo = propertyRef(props.modelValue.photo ?? {}, "PhotoId");
+    const eventOccurenceAttributes = ref(props.modelValue.eventOccurenceAttributes ?? []);
+    const isAttributeModalOpen = ref(false);
+    const submitEditAttribute = ref(false);
+    const eventAttribute = ref<PublicEditableAttributeBag | null>(null);
+    const reservedKeyNames = ref<[]>([]);
+    const isAudienceModalOpen = ref(false);
+    const audiences = ref(props.modelValue.audiences ?? []);
+    const audience = ref({} as ListItemBag);
+    const availableCalendars = ref(props.modelValue.availableCalendars ?? []);
+    const calendars = ref(props.modelValue.calendars ?? []);
+    const eventItemAttributes = ref(props.modelValue.eventCalendarItemAttributes ?? []);
+    const approvalText = ref(props.modelValue.approvalText ?? "");
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, summary, isApproved, detailsUrl, photo];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+    const getCheckMark = (booleanValue: boolean | undefined): string => {
+        return booleanValue ? "<i class='fa fa-check'></i>" : "";
+    };
+    // #endregion
+
+    // #region Event Handlers
+    const onSaveAudience = (): void => {
+        isAudienceModalOpen.value = false;
+
+        const audienceValue = audience.value?.value;
+        if (audienceValue && !audiences.value.some(x => x.value == audienceValue)) {
+            audiences.value.push(audience.value);
+        }
+
+        audience.value = {};
+    };
+
+    const onAddAudience = (): void => {
+        isAudienceModalOpen.value = true;
+    };
+
+    const onDeleteAudience = async (audience: ListItemBag): Promise<void> => {
+        isAudienceModalOpen.value = false;
+        audiences.value = audiences.value.filter(s => s.value !== audience.value);
+    };
+
+    const onAddEditAttribute = async (attribute: PublicEditableAttributeBag | null | undefined): Promise<void> => {
+
+        if (attribute && !attribute.guid) {
+            eventAttribute.value = attribute;
+            isAttributeModalOpen.value = true;
+        }
+        else {
+            const response = await invokeBlockAction<{ editableAttribute: PublicEditableAttributeBag, reservedKeyNames: [], modalTitle: string }>("GetAttribute", {
+                attributeGuid: attribute?.guid ?? null
+            });
+
+            if (response.isSuccess && response.data) {
+                eventAttribute.value = response.data.editableAttribute;
+                isAttributeModalOpen.value = true;
+                reservedKeyNames.value = response.data.reservedKeyNames;
+            }
+        }
+    };
+
+    const onDeleteAttribute = async (eventAttribute: EventItemOccurenceAttributeBag): Promise<void> => {
+        isAttributeModalOpen.value = false;
+        eventOccurenceAttributes.value = eventOccurenceAttributes.value.filter(s => s.attribute?.guid !== eventAttribute.attribute?.guid
+            || s.attribute?.key !== eventAttribute.attribute?.key);
+    };
+
+    const onSaveEditAttribute = (): void => {
+
+        if (eventAttribute.value && eventOccurenceAttributes.value) {
+            const index = eventOccurenceAttributes.value.findIndex(a => a.attribute?.guid === eventAttribute.value?.guid && a.attribute?.key === eventAttribute.value?.key);
+
+            if (index !== -1) {
+                let editedAttribute = eventOccurenceAttributes.value.find(a => a.attribute?.guid == eventAttribute.value?.guid);
+                if (editedAttribute) {
+                    editedAttribute.attribute = eventAttribute.value;
+                    eventOccurenceAttributes.value.splice(index, 1, editedAttribute);
+                }
+            }
+            else {
+                const newEventAttribute = {
+                    attribute: eventAttribute.value,
+                    fieldType: ""
+                };
+                eventOccurenceAttributes.value.push(newEventAttribute);
+            }
+
+            eventAttribute.value = null;
+            isAttributeModalOpen.value = false;
+        }
+    };
+
+    const onStartSaveEditAttribute = (): void => {
+        submitEditAttribute.value = true;
+    };
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(summary, props.modelValue.summary ?? "");
+        updateRefValue(isApproved, props.modelValue.isApproved ?? false);
+        updateRefValue(detailsUrl, props.modelValue.detailsUrl ?? "");
+        updateRefValue(photo, props.modelValue.photo ?? {});
+        updateRefValue(audiences, props.modelValue.audiences ?? []);
+        updateRefValue(calendars, props.modelValue.calendars ?? []);
+        updateRefValue(eventItemAttributes, props.modelValue.eventCalendarItemAttributes ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, eventOccurenceAttributes, audiences, calendars, eventItemAttributes, ...propRefs], () => {
+        const newValue: EventItemBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            summary: summary.value,
+            isApproved: isApproved.value,
+            eventOccurenceAttributes: eventOccurenceAttributes.value,
+            detailsUrl: detailsUrl.value,
+            photo: photo.value,
+            audiences: audiences.value,
+            calendars: calendars.value,
+            eventCalendarItemAttributes: eventItemAttributes.value
+        };
+
+        emit("update:modelValue", newValue);
+    }, { deep: true });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

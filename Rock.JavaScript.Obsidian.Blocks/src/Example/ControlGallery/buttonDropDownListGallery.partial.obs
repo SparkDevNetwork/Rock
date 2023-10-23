@@ -1,0 +1,52 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode"
+                      :value="{ value, items }" hasMultipleValues>
+
+        <ButtonDropDownList v-model="value"
+                            :items="items"
+                            :selectionStyle="selectionStyle"
+                            :title="title"
+                            label="Select a placement" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Use Checkmark Selection Style" v-model="useCheckmarks"
+                              help="When this is active, the <code>selectionStyle</code> prop is set to 'checkmark'. This means there's a checkmark next to the selected value, and the label inside the button is determined by the <code>title</code> prop rather than the selected value. " />
+                </div>
+                <div class="col-md-4" v-if="useCheckmarks">
+                    <TextBox label="Title" v-model="title"
+                             help="This is used as the text on the button when the selection style is 'checkmark'." />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { computed, ref } from "vue";
+
+    const items: ListItemBag[] = [
+        { text: "Top", value: "top" },
+        { text: "Right", value: "right" },
+        { text: "Bottom", value: "bottom" },
+        { text: "Left", value: "left" },
+        { text: "Center", value: "center" }
+    ];
+
+    const value = ref("center");
+    const useCheckmarks = ref(false);
+    const title = ref("Choose");
+    const selectionStyle = computed(() => useCheckmarks.value ? "checkmark" : "title");
+
+    const importCode = getSfcControlImportPath("buttonDropDownList");
+    const exampleCode = computed((): string => {
+        return `<ButtonDropDownList v-model="value" :items="items" selectionStyle="${selectionStyle.value}" ${useCheckmarks.value ? `title="${title.value}" ` : ""}label="Select a placement" />`;
+    });
+</script>

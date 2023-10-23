@@ -258,12 +258,7 @@ namespace Rock.Model
 
             // Get the batch
             var batchService = new FinancialBatchService( rockContext );
-            TimeSpan timespan = new TimeSpan();
-            if ( transaction.FinancialGateway != null )
-            {
-                timespan = transaction.FinancialGateway.GetBatchTimeOffset();
-            }
-            var batch = batchService.GetByNameAndDate( batchName, refundTransaction.TransactionDateTime.Value, timespan );
+            var batch = batchService.GetForNewTransaction( refundTransaction );
 
             // If this is a new Batch, SaveChanges so that we can get the Batch.Id
             if ( batch.Id == 0 )

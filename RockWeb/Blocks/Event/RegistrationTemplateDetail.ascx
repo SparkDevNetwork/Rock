@@ -97,6 +97,7 @@
                                             <asp:ListItem Value="2" Text="Use First Registrant" />
                                             <asp:ListItem Value="3" Text="Use Logged In Person" />
                                         </Rock:RockDropDownList>
+                                        <Rock:RockCheckBox ID="cbShowSmsOptIn" runat="server" Label="Show SMS Opt-In" Text="Yes" Help="When enabled a checkbox will be shown next to each mobile phone number for registrants allowing the registrar to enable SMS messaging for this number." />
                                     </div>
                                 </div>
                             </div>
@@ -465,6 +466,7 @@
             <Content>
                 <asp:HiddenField ID="hfFormGuid" runat="server" />
                 <asp:HiddenField ID="hfAttributeGuid" runat="server" />
+                <Rock:NotificationBox ID="nbFormField" runat="server" Visible="false" NotificationBoxType="Validation"></Rock:NotificationBox>
                 <asp:ValidationSummary ID="ValidationSummaryAttribute" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Field" />
                 <div class="row">
                     <div class="col-md-3">

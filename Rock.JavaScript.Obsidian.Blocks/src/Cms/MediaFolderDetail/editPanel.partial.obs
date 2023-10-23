@@ -1,0 +1,163 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+            <div class="col-md-12">
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+            </div>
+            <div class="col-md-4">
+                <WorkflowTypePicker v-model="workflowType"
+                                    label="Workflow Type"
+                                    help="The type of workflow to trigger when a new media element is added to this folder." />
+            </div>
+        </div>
+        <div class="mt-3">
+            <div class="mb-3 galleryContent-reflectionToggle">
+                <Switch v-model="isContentChannelSyncEnabled" text="Enable Content Channel Sync" />
+            </div>
+            <TransitionVerticalCollapse>
+                <div v-if="isContentChannelSyncEnabled">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList v-model="contentChannelValue"
+                                          label="Content Channel"
+                                          :items="contentChannelOptions"
+                                          help="The content channel that content channel items will be added to when new media files are created."
+                                          rules="required" />
+                            <DropDownList v-model="contentChannelAttributeValue"
+                                          label="Media File Attribute"
+                                          help="The attribute that the media will be assigned to. The attribute must be of type 'Media Element'."
+                                          :items="contentChannelItemAttributes"
+                                          rules="required" />
+                        </div>
+                        <div class="col-md-6">
+                            <RadioButtonList v-model="contentChannelItemStatus"
+                                             label="Content Channel Item Status"
+                                             help="The status to use for the new content channel items that are created."
+                                             :items="channelStatuses"
+                                             horizontal
+                                             rules="required" />
+                        </div>
+                    </div>
+                </div>
+            </TransitionVerticalCollapse>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { MediaFolderBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaFolderDetail/mediaFolderBag";
+    import { MediaFolderDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaFolderDetail/mediaFolderDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<MediaFolderBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<MediaFolderDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: MediaFolderBag): void;
+        (e: "propertyChanged", value: string): void;
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const isContentChannelSyncEnabled = propertyRef(props.modelValue.isContentChannelSyncEnabled ?? false, "IsContentChannelSyncEnabled");
+    const contentChannelValue = propertyRef(props.modelValue.contentChannel?.value ?? "", "ContentChannelId");
+    const contentChannelOptions = ref<ListItemBag[]>(props.options.contentChannels ?? []);
+    const contentChannelAttributes = ref<Record<string, ListItemBag[]>>(props.options.contentChannelAttributes ?? {});
+    const contentChannelAttributeValue = propertyRef(props.modelValue.contentChannelAttribute?.value ?? "", "ContentChannelAttributeId");
+    const contentChannelItemStatus = propertyRef(props.modelValue.contentChannelItemStatus ?? "", "ContentChannelItemStatus");
+    const workflowType = propertyRef(props.modelValue.workflowType ?? {}, "WorkflowTypeId");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name, isContentChannelSyncEnabled, contentChannelValue, contentChannelAttributeValue, contentChannelItemStatus, workflowType];
+
+    const channelStatuses: ListItemBag[] = [
+        { text: "Pending Approval", value: "Pending Approval" },
+        { text: "Approved", value: "Approved" },
+        { text: "Denied", value: "Denied" }
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const contentChannelItemAttributes = computed((): ListItemBag[] => contentChannelAttributes.value[contentChannelValue.value]);
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(isContentChannelSyncEnabled, props.modelValue.isContentChannelSyncEnabled ?? false);
+        updateRefValue(contentChannelValue, props.modelValue.contentChannel?.value ?? "");
+        updateRefValue(contentChannelAttributeValue, props.modelValue.contentChannelAttribute?.value ?? "");
+        updateRefValue(contentChannelItemStatus, props.modelValue.contentChannelItemStatus ?? "");
+        updateRefValue(workflowType, props.modelValue.workflowType ?? {});
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: MediaFolderBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            name: name.value,
+            isContentChannelSyncEnabled: isContentChannelSyncEnabled.value,
+            contentChannel: { value: contentChannelValue.value },
+            contentChannelItemStatus: contentChannelItemStatus.value,
+            contentChannelAttribute: { value: contentChannelAttributeValue.value },
+            workflowType: workflowType.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

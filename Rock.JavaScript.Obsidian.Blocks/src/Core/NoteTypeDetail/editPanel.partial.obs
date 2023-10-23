@@ -1,0 +1,236 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+
+                <EntityTypePicker v-if="showEntityTypePicker"
+                                  v-model="entityType"
+                                  label="Entity Type"
+                                  rules="required"
+                                  :multiple="false"
+                                  :includeGlobalOption="false" />
+
+                <div v-else class="form-group static-control ">
+                    <label class="control-label">Entity Type</label>
+                    <div class="control-wrapper">
+                        <div class="form-control-static">
+                            {{ entityType.text }}
+                        </div>
+                    </div>
+                </div>
+
+                <TextBox v-model="iconCssClass"
+                         label="Icon CSS Class" />
+
+                <ColorPicker v-model="color"
+                             label="Color"
+                             help="The base color to use for notes of this type. The background and foreground colors will be automatically calculated from this color." />
+
+                <DropDownList v-if="showContentFormatDropdown"
+                              v-model="formatType"
+                              label="Content Format"
+                              help="Structured format provides additional features and is the default for all new note types. Unstructured is a legacy format that is not checked for correctness and will be removed in the future."
+                              :items="formatTypeItems"
+                              :showBlankItem="true" />
+
+                <NotificationBox v-if="isChangingToStructuredFormat" alertType="warning">
+                    Once you change a note type to the Structured format, it cannot be changed back. Be sure this is what you want to do.
+                </NotificationBox>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <CheckBox v-model="userSelectable"
+                          label="User Selectable"
+                          text="Yes" />
+
+                <CheckBox v-model="allowsWatching"
+                          label="Allows Watching"
+                          text="Yes"
+                          help="If enabled, an option to watch individual notes will appear, and note watch notifications will be sent on watched notes." />
+
+                <CheckBox v-model="autoWatchAuthors"
+                          label="Auto Watch Authors"
+                          text="Yes"
+                          help="If enabled, the author of a note will get notifications for direct replies to the note. In other words, a 'watch' will be automatically enabled on the note." />
+
+                <CheckBox v-model="allowsReplies"
+                          label="Allow Replies"
+                          text="Yes" />
+
+                <TransitionVerticalCollapse>
+                    <div v-if="allowsReplies">
+                        <NumberBox label="Max Reply Depth"
+                                   class="input-width-sm"
+                                   v-model="maxReplyDepth" />
+                    </div>
+                </TransitionVerticalCollapse>
+
+                <CheckBox v-model="allowsAttachments"
+                          label="Allows Attachments"
+                          text="Yes"
+                          help="If enabled, then this note type will allow attachments. However, not all UI components will currently allow file uploads." />
+
+                <TransitionVerticalCollapse>
+                    <div v-if="allowsAttachments">
+                        <BinaryFileTypePicker v-model="binaryFileType"
+                                              label="Attachment File Type"
+                                              help="When a file is attached to a note, it will be stored using this file type."
+                                              rules="required" />
+                    </div>
+                </TransitionVerticalCollapse>
+
+                <TransitionVerticalCollapse v-if="showEnableMentions">
+                    <div v-if="showEnableMentions">
+                        <CheckBox v-model="isMentionEnabled"
+                                  label="Enable Mentions"
+                                  text="Yes"
+                                  help="Mentions allow a person to be mentioned in the text of a note. Once saved the mentioned person will be notified." />
+                    </div>
+                </TransitionVerticalCollapse>
+
+            </div>
+
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { NoteTypeBag } from "@Obsidian/ViewModels/Blocks/Core/NoteTypeDetail/noteTypeBag";
+    import { NoteTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteTypeDetail/noteTypeDetailOptionsBag";
+    import { NoteFormatType, NoteFormatTypeDescription } from "@Obsidian/Enums/Core/noteFormatType";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<NoteTypeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<NoteTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: NoteTypeBag): void;
+        (e: "propertyChanged", value: string): void;
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
+    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
+    const color = propertyRef(props.modelValue.color ?? "", "Color");
+    const userSelectable = propertyRef(props.modelValue.userSelectable, "UserSelectable");
+    const allowsWatching = propertyRef(props.modelValue.allowsWatching, "AllowsWatching");
+    const autoWatchAuthors = propertyRef(props.modelValue.autoWatchAuthors, "AutoWatchAuthors");
+    const allowsReplies = propertyRef(props.modelValue.allowsReplies, "AllowsReplies");
+    const maxReplyDepth = propertyRef(props.modelValue.maxReplyDepth, "MaxReplyDepth");
+    const allowsAttachments = propertyRef(props.modelValue.allowsAttachments, "AllowsAttachments");
+    const binaryFileType = propertyRef(props.modelValue.binaryFileType ?? {}, "BinaryFileTypeId");
+    const formatType = propertyRef(props.modelValue.formatType.toString(), "FormatType");
+    const isMentionEnabled = propertyRef(props.modelValue.isMentionEnabled, "IsMentionEnabled");
+    const showEntityTypePicker = ref(props.modelValue.showEntityTypePicker);
+    const showContentFormatDropdown = ref(props.modelValue.formatType !== NoteFormatType.Structured);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, entityType, iconCssClass, color, userSelectable,
+        allowsWatching, autoWatchAuthors, allowsReplies, maxReplyDepth, allowsAttachments,
+        binaryFileType, formatType, isMentionEnabled];
+
+    const formatTypeItems = enumToListItemBag(NoteFormatTypeDescription);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isChangingToStructuredFormat = computed((): boolean => {
+        return showContentFormatDropdown.value && formatType.value === NoteFormatType.Structured.toString();
+    });
+
+    const showEnableMentions = computed((): boolean => {
+        return showContentFormatDropdown.value && (formatType.value === NoteFormatType.Structured.toString() || formatType.value === NoteFormatType.Unknown.toString());
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(entityType, props.modelValue.entityType ?? {});
+        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
+        updateRefValue(color, props.modelValue.color ?? "");
+        updateRefValue(userSelectable, props.modelValue.userSelectable);
+        updateRefValue(allowsWatching, props.modelValue.allowsWatching);
+        updateRefValue(maxReplyDepth, props.modelValue.maxReplyDepth);
+        updateRefValue(allowsAttachments, props.modelValue.allowsAttachments);
+        updateRefValue(binaryFileType, props.modelValue.binaryFileType ?? {});
+        updateRefValue(formatType, props.modelValue.formatType.toString());
+        updateRefValue(isMentionEnabled, props.modelValue.isMentionEnabled);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: NoteTypeBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            name: name.value,
+            entityType: entityType.value,
+            iconCssClass: iconCssClass.value,
+            color: color.value,
+            userSelectable: userSelectable.value,
+            allowsWatching: allowsWatching.value,
+            autoWatchAuthors: autoWatchAuthors.value,
+            allowsReplies: allowsReplies.value,
+            maxReplyDepth: maxReplyDepth.value,
+            allowsAttachments: allowsAttachments.value,
+            binaryFileType: binaryFileType.value,
+            formatType: parseInt(formatType.value) as NoteFormatType,
+            isMentionEnabled: isMentionEnabled.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

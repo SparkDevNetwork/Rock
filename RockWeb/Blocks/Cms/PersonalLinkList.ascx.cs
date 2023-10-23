@@ -263,7 +263,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( UserPreferenceKey.Name, txtLinkName.Text );
+            gfFilter.SetFilterPreference( UserPreferenceKey.Name, txtLinkName.Text );
             BindGrid();
         }
 
@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            gfFilter.DeleteUserPreferences();
+            gfFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindFilter()
         {
-            txtLinkName.Text = gfFilter.GetUserPreference( UserPreferenceKey.Name );
+            txtLinkName.Text = gfFilter.GetFilterPreference( UserPreferenceKey.Name );
         }
 
         /// <summary>
@@ -423,7 +423,7 @@ namespace RockWeb.Blocks.Cms
             var qry = new PersonalLinkService( rockContext ).Queryable().Where( a => a.SectionId == _personalLinkSection.Id );
 
             // Filter by: Name
-            var name = gfFilter.GetUserPreference( UserPreferenceKey.Name ).ToStringSafe();
+            var name = gfFilter.GetFilterPreference( UserPreferenceKey.Name ).ToStringSafe();
 
             if ( !string.IsNullOrWhiteSpace( name ) )
             {

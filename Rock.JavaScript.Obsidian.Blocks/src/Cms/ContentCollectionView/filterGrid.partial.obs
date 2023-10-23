@@ -1,0 +1,71 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="grid">
+        <div class="table-no-border">
+            <table class="grid-table table table-condensed table-light">
+                <thead>
+                    <tr align="left">
+                        <th class="grid-columncommand"></th>
+                        <th>Show</th>
+                        <th>Filter</th>
+                        <th>Filter Header Markup</th>
+                        <th class="grid-columncommand"></th>
+                    </tr>
+                </thead>
+
+                <tbody v-drag-reorder="reorderDragOptions">
+                    <tr v-for="row in filters" :key="row.name!" align="left">
+                        <td class="grid-columnreorder" align="center">
+                            <a class="minimal reorder-handle" href="#">
+                                <i class="fa fa-bars"></i>
+                            </a>
+                        </td>
+
+                        <td class="grid-select-field" align="center">
+                            <InlineCheckBox v-model="row.show" label="" />
+                        </td>
+                        <td>{{ row.name }}</td>
+
+                        <td class="grid-bool-field" align="center">
+                            <i v-if="row.headerMarkup" class="fa fa-check"></i>
+                        </td>
+
+                        <td class="grid-columncommand" align="center">
+                            <a class="btn btn-default btn-sm" href="#" @click.prevent="onEditClick(row.name!)">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import { FilterOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/filterOptionsBag";
+    import { DragReorder as vDragReorder, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<FilterOptionsBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FilterOptionsBag[]): void;
+        (e: "edit", value: string): void;
+    }>();
+
+    const filters = useVModelPassthrough(props, "modelValue", emit);
+
+    const reorderDragOptions = useDragReorder(filters);
+
+    function onEditClick(rowName: string): void {
+        emit("edit", rowName);
+    }
+</script>

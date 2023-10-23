@@ -44,6 +44,12 @@ export type MediaAccountBag = {
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
+    /** Gets or sets the last refresh. */
+    lastRefresh?: string | null;
+
+    /** Gets or sets the metric data. */
+    metricData?: string | null;
+
     /** Gets or sets the Name of the MediaAccount. This property is required. */
     name?: string | null;
 };

@@ -153,7 +153,8 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( _allowCampusFilter )
                 {
-                    var campus = CampusCache.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
+                    var preferences = GetBlockPersonPreferences();
+                    var campus = CampusCache.Get( preferences.GetValue( "Campus" ).AsInteger() );
                     if ( campus != null )
                     {
                         bddlCampus.Title = campus.Name;
@@ -176,7 +177,11 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
         {
-            SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( "Campus", bddlCampus.SelectedValue );
+            preferences.Save();
+
             var campus = CampusCache.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
             bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
             BindGrid();
@@ -189,9 +194,9 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Date Range" ), "Date Range", drpDates.DelimitedValues );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Schedule" ), "Schedule", ddlSchedule.SelectedValue );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Location" ), "Location", ddlLocation.SelectedValue );
+            rFilter.SetFilterPreference( MakeKeyUniqueToGroup( "Date Range" ), "Date Range", drpDates.DelimitedValues );
+            rFilter.SetFilterPreference( MakeKeyUniqueToGroup( "Schedule" ), "Schedule", ddlSchedule.SelectedValue );
+            rFilter.SetFilterPreference( MakeKeyUniqueToGroup( "Location" ), "Location", ddlLocation.SelectedValue );
 
             BindGrid();
         }
@@ -203,7 +208,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -410,12 +415,12 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         protected void BindFilter()
         {
-            string dateRangePreference = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Date Range" ) );
+            string dateRangePreference = rFilter.GetFilterPreference( MakeKeyUniqueToGroup( "Date Range" ) );
             if ( string.IsNullOrWhiteSpace( dateRangePreference ) )
             {
                 // set the dateRangePreference to force rFilter_DisplayFilterValue to show our default three month limit
                 dateRangePreference = ",";
-                rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Date Range" ), "Date Range", dateRangePreference );
+                rFilter.SetFilterPreference( MakeKeyUniqueToGroup( "Date Range" ), "Date Range", dateRangePreference );
             }
 
             var dateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( dateRangePreference );
@@ -465,7 +470,7 @@ namespace RockWeb.Blocks.Groups
                     }
                     ddlLocation.DataSource = locations.OrderBy( l => l.Value );
                     ddlLocation.DataBind();
-                    ddlLocation.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Location" ) ) );
+                    ddlLocation.SetValue( rFilter.GetFilterPreference( MakeKeyUniqueToGroup( "Location" ) ) );
                 }
                 else
                 {
@@ -489,7 +494,7 @@ namespace RockWeb.Blocks.Groups
                     }
                     ddlSchedule.DataSource = schedules;
                     ddlSchedule.DataBind();
-                    ddlSchedule.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Schedule" ) ) );
+                    ddlSchedule.SetValue( rFilter.GetFilterPreference( MakeKeyUniqueToGroup( "Schedule" ) ) );
                 }
                 else
                 {

@@ -22,7 +22,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, nextTick, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import { Guid } from "@Obsidian/Types";
     import { GroupRolePickerGetGroupRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetGroupRolesOptionsBag";
     import { GroupRolePickerGetAllForGroupRoleOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleOptionsBag";

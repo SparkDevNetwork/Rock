@@ -44,19 +44,28 @@ namespace Rock.Client
         public bool AllowsWatching { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.16"
+        [Obsolete( "This property is no longer used and will be removed in the future.", false )]
         public string ApprovalUrlTemplate { get; set; }
 
         /// <summary />
         public bool AutoWatchAuthors { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.16"
+        [Obsolete( "This property is no longer used and will be removed in the future.", false )]
         public string BackgroundColor { get; set; }
 
         /// <summary />
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.16"
+        [Obsolete( "This property is no longer used and will be removed in the future.", false )]
         public string BorderColor { get; set; }
+
+        /// <summary />
+        public string Color { get; set; }
 
         /// <summary />
         public int EntityTypeId { get; set; }
@@ -68,6 +77,8 @@ namespace Rock.Client
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.16"
+        [Obsolete( "This property is no longer used and will be removed in the future.", false )]
         public string FontColor { get; set; }
 
         /// <summary />
@@ -77,7 +88,13 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.Core.NoteFormatType FormatType { get; set; }
+
+        /// <summary />
         public string IconCssClass { get; set; }
+
+        /// <summary />
+        public bool IsMentionEnabled { get; set; }
 
         /// <summary />
         public bool IsSystem { get; set; }
@@ -97,9 +114,13 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.16"
+        [Obsolete( "This property is no longer used and will be removed in the future.", false )]
         public bool RequiresApprovals { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.16"
+        [Obsolete( "This property is no longer used and will be removed in the future.", false )]
         public bool SendApprovalNotifications { get; set; }
 
         /// <summary />
@@ -141,25 +162,40 @@ namespace Rock.Client
             this.AllowsAttachments = source.AllowsAttachments;
             this.AllowsReplies = source.AllowsReplies;
             this.AllowsWatching = source.AllowsWatching;
+            #pragma warning disable 612, 618
             this.ApprovalUrlTemplate = source.ApprovalUrlTemplate;
+            #pragma warning restore 612, 618
             this.AutoWatchAuthors = source.AutoWatchAuthors;
+            #pragma warning disable 612, 618
             this.BackgroundColor = source.BackgroundColor;
+            #pragma warning restore 612, 618
             this.BinaryFileTypeId = source.BinaryFileTypeId;
+            #pragma warning disable 612, 618
             this.BorderColor = source.BorderColor;
+            #pragma warning restore 612, 618
+            this.Color = source.Color;
             this.EntityTypeId = source.EntityTypeId;
             this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            #pragma warning disable 612, 618
             this.FontColor = source.FontColor;
+            #pragma warning restore 612, 618
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.FormatType = source.FormatType;
             this.IconCssClass = source.IconCssClass;
+            this.IsMentionEnabled = source.IsMentionEnabled;
             this.IsSystem = source.IsSystem;
             this.MaxReplyDepth = source.MaxReplyDepth;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
+            #pragma warning disable 612, 618
             this.RequiresApprovals = source.RequiresApprovals;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
             this.SendApprovalNotifications = source.SendApprovalNotifications;
+            #pragma warning restore 612, 618
             this.UserSelectable = source.UserSelectable;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

@@ -512,6 +512,17 @@ namespace RockWeb.Blocks.Mobile
 
             ppEditInteractiveExperiencePage.SiteType = SiteType.Mobile;
 
+            int channelMediumWebsiteValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            var interactionChannelForSite = new InteractionChannelService( new RockContext() ).Queryable()
+                .Where( a => a.ChannelTypeMediumValueId == channelMediumWebsiteValueId && a.ChannelEntityId == site.Id ).FirstOrDefault();
+
+            if ( interactionChannelForSite != null )
+            {
+                nbPageViewRetentionPeriodDays.Text = interactionChannelForSite.RetentionDuration.ToString();
+            }
+
+            cbEnablePageViewGeoTracking.Checked = site.EnablePageViewGeoTracking;
+
             //
             // Set the API Key.
             //
@@ -929,7 +940,7 @@ namespace RockWeb.Blocks.Mobile
             site.IsActive = cbEditActive.Checked;
             site.Description = tbEditDescription.Text;
             site.LoginPageId = ppEditLoginPage.PageId;
-
+            
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
 
             // Save the deep link settings, if enabled.
@@ -1011,6 +1022,9 @@ namespace RockWeb.Blocks.Mobile
                 binaryFileService.Get( site.ThumbnailBinaryFileId.Value ).IsTemporary = false;
             }
 
+            site.EnablePageViewGeoTracking = cbEnablePageViewGeoTracking.Checked;
+
+            // This is a new site.
             if ( site.Id == 0 )
             {
                 rockContext.WrapTransaction( () =>
@@ -1027,6 +1041,7 @@ namespace RockWeb.Blocks.Mobile
                     var layoutService = new LayoutService( rockContext );
                     var pageName = string.Format( "{0} Homepage", site.Name );
 
+                    // Create the default layout for the homepage.
                     var layout = new Layout
                     {
                         Name = "Homepage",
@@ -1040,6 +1055,7 @@ namespace RockWeb.Blocks.Mobile
                     layoutService.Add( layout );
                     rockContext.SaveChanges();
 
+                    // Create the default homepage for this mobile application.
                     var page = new Page
                     {
                         InternalName = pageName,
@@ -1068,6 +1084,28 @@ namespace RockWeb.Blocks.Mobile
 
                 rockContext.SaveChanges();
             }
+
+            //
+            // Create the default interaction channel for this site, and set the Retention Duration.
+            //
+            var interactionChannelService = new InteractionChannelService( rockContext );
+            int channelMediumWebsiteValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            var interactionChannelForSite = interactionChannelService.Queryable()
+                .Where( a => a.ChannelTypeMediumValueId == channelMediumWebsiteValueId && a.ChannelEntityId == site.Id ).FirstOrDefault();
+
+            if ( interactionChannelForSite == null )
+            {
+                interactionChannelForSite = new InteractionChannel();
+                interactionChannelForSite.ChannelTypeMediumValueId = channelMediumWebsiteValueId;
+                interactionChannelForSite.ChannelEntityId = site.Id;
+                interactionChannelService.Add( interactionChannelForSite );
+            }
+
+            interactionChannelForSite.Name = site.Name;
+            interactionChannelForSite.RetentionDuration = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
+            interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Get<Rock.Model.Page>().Id;
+
+            rockContext.SaveChanges();
 
             NavigateToCurrentPage( new Dictionary<string, string>
             {

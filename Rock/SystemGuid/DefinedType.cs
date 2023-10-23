@@ -136,6 +136,11 @@ namespace Rock.SystemGuid
         public const string EXTERNAL_APPLICATION = "1FAC459C-5F62-4E7C-8933-61FF9FE2DFEF";
 
         /// <summary>
+        /// Guid for the types of External Links
+        /// </summary>
+        public const string EXTERNAL_LINK_TYPE = "D42C1A05-6504-4BDE-BBB7-0EC99A7FB632";
+
+        /// <summary>
         /// Guid for Financial Currency Type
         /// </summary>
         public const string FINANCIAL_ACCOUNT_TYPE = "752DA126-471F-4221-8503-5297593C99FF";
@@ -214,6 +219,16 @@ namespace Rock.SystemGuid
         /// Guid for Default link list
         /// </summary>
         public const string LAVA_SHORTCODES = "3B1AF656-7AEF-52A8-4E2C-5EFF75A1A23A";
+
+        /// <summary>
+        /// Guid for the types of Library Content
+        /// </summary>
+        public const string LIBRARY_CONTENT_TYPE = "C23B34D6-91D7-4FC5-AA80-E68A62288A05";
+
+        /// <summary>
+        /// Guid for the types of Library Licenses
+        /// </summary>
+        public const string LIBRARY_LICENSE_TYPE = "83FB89B4-205A-41D6-A798-A81F12E6CDB0";
 
         /// <summary>
         /// Guid for Default link list

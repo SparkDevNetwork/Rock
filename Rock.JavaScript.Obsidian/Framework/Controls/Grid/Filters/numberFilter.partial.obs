@@ -1,0 +1,133 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="grid-filter-popup-body">
+        <DropDownList v-model="searchMethod"
+                      inputClasses="mb-2"
+                      :showBlankItem="false"
+                      :items="searchTypeItems" />
+
+        <NumberBox v-if="isFirstValueVisible"
+                   inputClasses="mb-2"
+                   v-model="searchValue"
+                   :placeholder="firstValuePlaceholder" />
+
+        <NumberBox v-if="isSecondValueVisible"
+                   inputClasses="mb-2"
+                   v-model="secondSearchValue"
+                   placeholder="to" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { ref, watch, computed } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { NumberFilterMethod, NumberFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/numberFilterMethod";
+    import { standardFilterProps } from "@Obsidian/Core/Controls/grid";
+    import { NumberSearchBag } from "@Obsidian/Types/Controls/grid";
+
+    const props = defineProps(standardFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: NumberSearchBag | undefined): void
+    }>();
+
+    // #region Values
+
+    const searchMethod = ref(NumberFilterMethod.Equals.toString());
+    const searchValue = ref<number | null>(null);
+    const secondSearchValue = ref<number | null>(null);
+
+    const searchTypeItems: ListItemBag[] = Object.keys(NumberFilterMethodDescription).map(n => {
+        return {
+            value: n,
+            text: NumberFilterMethodDescription[n]
+        };
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Determines if the first user value should be visible for the current
+     * filtering method.
+     */
+    const isFirstValueVisible = computed((): boolean => {
+        return searchMethod.value === NumberFilterMethod.Equals.toString()
+            || searchMethod.value === NumberFilterMethod.DoesNotEqual.toString()
+            || searchMethod.value === NumberFilterMethod.GreaterThan.toString()
+            || searchMethod.value === NumberFilterMethod.GreaterThanOrEqual.toString()
+            || searchMethod.value === NumberFilterMethod.LessThan.toString()
+            || searchMethod.value === NumberFilterMethod.LessThanOrEqual.toString()
+            || searchMethod.value === NumberFilterMethod.Between.toString()
+            || searchMethod.value === NumberFilterMethod.TopN.toString();
+    });
+
+    /**
+     * Determines if the second user value should be visible for the current
+     * filtering method.
+     */
+    const isSecondValueVisible = computed((): boolean => {
+        return searchMethod.value === NumberFilterMethod.Between.toString();
+    });
+
+    /**
+     * The placeholder text to use for the first value.
+     */
+    const firstValuePlaceholder = computed((): string => {
+        return searchMethod.value === NumberFilterMethod.Between.toString()
+            ? "from"
+            : "value";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Constructs and emits the new modelValue for the component.
+     */
+    function updateModelValue(): void {
+        if (searchValue.value === null && isFirstValueVisible.value) {
+            emit("update:modelValue", undefined);
+            return;
+        }
+
+        const searchBag: NumberSearchBag = {
+            method: Number(searchMethod.value) as NumberFilterMethod,
+            value: searchValue.value ?? undefined,
+            secondValue: secondSearchValue.value ?? undefined
+        };
+
+        emit("update:modelValue", searchBag);
+    }
+
+    /**
+     * Updates our internal values based on the current modelValue property.
+     */
+    function updateSearchValues(): void {
+        if (props.modelValue && typeof props.modelValue === "object") {
+            const modelSearchBag = props.modelValue as Partial<NumberSearchBag>;
+
+            if (modelSearchBag.method !== undefined) {
+                searchMethod.value = modelSearchBag.method.toString();
+                searchValue.value = modelSearchBag.value ?? null;
+                secondSearchValue.value = modelSearchBag.secondValue ?? null;
+
+                return;
+            }
+        }
+
+        searchMethod.value = NumberFilterMethod.Equals.toString();
+        searchValue.value = null;
+    }
+
+    // #endregion
+
+    watch(() => props.modelValue, () => updateSearchValues());
+    watch([searchMethod, searchValue, secondSearchValue], () => updateModelValue());
+
+    updateSearchValues();
+</script>

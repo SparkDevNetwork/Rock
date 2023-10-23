@@ -1,0 +1,125 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="filterBodyElement" class="grid-filter-popup-body">
+        <DropDownList v-model="searchMethod"
+                      inputClasses="mb-2"
+                      :showBlankItem="false"
+                      :items="searchTypeItems" />
+
+        <div v-if="isFirstValueVisible" class="mb-2">
+            <DatePicker v-model="searchValue" :container="popupContainerElement" />
+        </div>
+
+        <div v-if="isSecondValueVisible" class="mb-2">
+            <DatePicker v-model="secondSearchValue" :container="popupContainerElement" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import { ref, watch, computed } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DateFilterMethod, DateFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/dateFilterMethod";
+    import { standardFilterProps } from "@Obsidian/Core/Controls/grid";
+    import { DateSearchBag } from "@Obsidian/Types/Controls/grid";
+
+    const props = defineProps(standardFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: DateSearchBag | undefined): void
+    }>();
+
+    // #region Values
+
+    const searchMethod = ref(DateFilterMethod.Equals.toString());
+    const searchValue = ref<string | null>(null);
+    const secondSearchValue = ref<string | null>(null);
+    const filterBodyElement = ref<HTMLElement | null>(null);
+
+    const searchTypeItems: ListItemBag[] = Object.keys(DateFilterMethodDescription).map(n => {
+        return {
+            value: n,
+            text: DateFilterMethodDescription[n]
+        };
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Contains the element to place the date picker popup into. */
+    const popupContainerElement = computed((): HTMLElement | null => {
+        return filterBodyElement.value?.closest(".grid-filter-popup") ?? null;
+    });
+
+    /**
+     * Determines if the first user value should be visible for the current
+     * filtering method.
+     */
+    const isFirstValueVisible = computed((): boolean => {
+        return searchMethod.value === DateFilterMethod.Equals.toString()
+            || searchMethod.value === DateFilterMethod.DoesNotEqual.toString()
+            || searchMethod.value === DateFilterMethod.Before.toString()
+            || searchMethod.value === DateFilterMethod.After.toString()
+            || searchMethod.value === DateFilterMethod.Between.toString();
+    });
+
+    /**
+     * Determines if the second user value should be visible for the current
+     * filtering method.
+     */
+    const isSecondValueVisible = computed((): boolean => {
+        return searchMethod.value === DateFilterMethod.Between.toString();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Constructs and emits the new modelValue for the component.
+     */
+    function updateModelValue(): void {
+        if (searchValue.value === null && isFirstValueVisible.value) {
+            emit("update:modelValue", undefined);
+            return;
+        }
+
+        const searchBag: DateSearchBag = {
+            method: Number(searchMethod.value) as DateFilterMethod,
+            value: searchValue.value ?? undefined,
+            secondValue: secondSearchValue.value ?? undefined
+        };
+
+        emit("update:modelValue", searchBag);
+    }
+
+    /**
+     * Updates our internal values based on the current modelValue property.
+     */
+    function updateSearchValues(): void {
+        if (props.modelValue && typeof props.modelValue === "object") {
+            const modelSearchBag = props.modelValue as Partial<DateSearchBag>;
+
+            if (modelSearchBag.method !== undefined) {
+                searchMethod.value = modelSearchBag.method.toString();
+                searchValue.value = modelSearchBag.value ?? null;
+                secondSearchValue.value = modelSearchBag.secondValue ?? null;
+
+                return;
+            }
+        }
+
+        searchMethod.value = DateFilterMethod.Equals.toString();
+        searchValue.value = null;
+    }
+
+    // #endregion
+
+    watch(() => props.modelValue, () => updateSearchValues());
+    watch([searchMethod, searchValue, secondSearchValue], () => updateModelValue());
+
+    updateSearchValues();
+</script>

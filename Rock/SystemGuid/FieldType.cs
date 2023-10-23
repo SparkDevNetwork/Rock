@@ -129,6 +129,11 @@ namespace Rock.SystemGuid
         public const string COLOR = "D747E6AE-C383-4E22-8846-71518E3DD06F";
 
         /// <summary>
+        /// Color selector field type
+        /// </summary>
+        public const string COLOR_SELECTOR = "B07070F6-B66E-4B83-8DA6-12CF3400A1EC";
+
+        /// <summary>
         /// Communication Template field type
         /// </summary>
         public const string COMMUNICATION_TEMPLATE = "C3B37465-DCAF-4C8C-930C-9A9B5D066CA9";
@@ -276,7 +281,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Categorized Defined Value field type
         /// </summary>
-        public const string DEFINED_VALUE_CATEGORIZED = "3D986B5C-A706-4C69-B0F2-7C81286194CF";
+        public const string DEFINED_VALUE_CATEGORIZED = "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D";
 
         /// <summary>
         /// Defined Value Range field type
@@ -444,6 +449,11 @@ namespace Rock.SystemGuid
         public const string LOCATION = "B0B9EFE3-F09F-4604-AD1B-76B298A85D83";
 
         /// <summary>
+        /// Location List field type
+        /// </summary>
+        public const string LOCATION_LIST = "A58A0CBF-C3E6-4054-85D7-05118035980B";
+
+        /// <summary>
         /// Markdown field type
         /// </summary>
         public const string MARKDOWN = "C2FBCF94-0FDF-4DFD-93A5-19FE6A409C84";
@@ -492,6 +502,11 @@ namespace Rock.SystemGuid
         /// Metrics field type
         /// </summary>
         public const string METRICS = "3AF9AD35-9F3E-4497-BFDE-60C6C1827653";
+
+        /// <summary>
+        /// Media Selector field type
+        /// </summary>
+        public const string MEDIA_SELECTOR = "243E40FC-04D0-48AD-B379-25A400CB0CAC";
 
         /// <summary>
         /// Month Day field type
@@ -552,6 +567,11 @@ namespace Rock.SystemGuid
         /// Registration Template field type
         /// </summary>
         public const string REGISTRATION_TEMPLATE = "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620";
+
+        /// <summary>
+        /// Registration Entry field type
+        /// </summary>
+        public const string REGISTRY_ENTRY = "D98E1D88-2240-4248-B93B-0512BD3BB61A";
 
         /// <summary>
         /// Registration Template field type

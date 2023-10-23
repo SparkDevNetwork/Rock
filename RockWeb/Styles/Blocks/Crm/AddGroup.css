@@ -1,0 +1,169 @@
+.table-groupmembers .radio:first-child {
+  margin-top: 0 !important;
+}
+
+@media (max-width: 992px) {
+  /* Force table to not be like tables anymore */
+  table.table-groupmembers,
+  .table-groupmembers thead,
+  .table-groupmembers tbody,
+  .table-groupmembers th,
+  .table-groupmembers td,
+  .table-groupmembers tr,
+  table.table-groupcontactinfo,
+  .table-groupcontactinfo thead,
+  .table-groupcontactinfo tbody,
+  .table-groupcontactinfo th,
+  .table-groupcontactinfo td,
+  .table-groupcontactinfo tr {
+    display: block;
+  }
+
+  .table-groupmembers thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  .table-groupmembers > thead > tr > th,
+  .table-groupmembers > tbody > tr > th,
+  .table-groupmembers > tfoot > tr > th,
+  .table-groupmembers > thead > tr > td,
+  .table-groupmembers > tbody > tr > td,
+  .table-groupmembers > tfoot > tr > td {
+    border: 0;
+  }
+
+  .table.table-groupmembers > tbody > tr > td {
+    position: relative;
+    padding-left: 35%;
+  }
+
+  .table-groupmembers td::before {
+    /* Now like a table header */
+    position: absolute;
+
+    /* Top/left values mimic padding */
+    top: 8px;
+    left: 6px;
+    width: 35%;
+    padding-right: 10px;
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+  }
+
+  .table-groupmembers > tbody > tr {
+    counter-increment: rowNumber;
+  }
+
+  .table-groupmembers > tbody > tr::before {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+    content: "Person #" counter(rowNumber);
+    background-color: var(--theme-white);
+    border-bottom: 2px solid var(--theme-light);
+  }
+
+  .table-groupmembers tbody td::before {
+    content: attr(data-label);
+  }
+
+  .table-groupmembers tbody td:empty {
+    display: none;
+  }
+
+  .table-groupmembers > tfoot,
+  .table-groupmembers > tfoot > tr > td {
+    display: block;
+    width: 100%;
+    padding: 0;
+  }
+
+  .table-groupmembers > tfoot > tr > td > .btn-action {
+    display: block;
+    width: 100%;
+    padding: 6px 16px;
+    margin: 8px 0 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    border-radius: 6px;
+  }
+
+  .table-groupmembers > tbody > tr > td > .form-group:last-of-type,
+  .table-groupmembers > tbody > tr > td > .form-group .radio:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .table-groupmembers .pull-right {
+    float: none !important;
+  }
+
+  .table-groupcontactinfo,
+  .table-groupmemberattributes {
+    margin-bottom: 12px;
+  }
+
+  .table-groupcontactinfo thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  .table-groupcontactinfo > thead > tr > th,
+  .table-groupcontactinfo > tbody > tr > th,
+  .table-groupcontactinfo > tfoot > tr > th,
+  .table-groupcontactinfo > thead > tr > td,
+  .table-groupcontactinfo > tbody > tr > td,
+  .table-groupcontactinfo > tfoot > tr > td {
+    border: 0;
+  }
+
+  .table.table-groupcontactinfo > tbody > tr > td {
+    position: relative;
+    border: 0;
+    border-bottom: 1px solid var(--theme-light);
+  }
+
+  .table-groupcontactinfo tbody .person-name {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+    background-color: #fff;
+    border-bottom: 2px solid var(--theme-light);
+  }
+
+  .table-groupcontactinfo tbody .person-name::before {
+    content: "Contact Info: ";
+  }
+
+  .table-groupcontactinfo tbody .person-sms {
+    position: relative;
+    padding-left: 35%;
+    border: 0;
+    border-bottom: 1px solid var(--theme-light);
+  }
+
+  .table-groupcontactinfo tbody .person-sms::before {
+    position: absolute;
+    top: 14px;
+    left: 6px;
+    width: 35%;
+    padding-right: 10px;
+    font-weight: 600;
+    content: "Enable SMS";
+  }
+
+  .table-groupcontactinfo tbody > tr > td > .form-group {
+    margin-bottom: 0;
+  }
+}

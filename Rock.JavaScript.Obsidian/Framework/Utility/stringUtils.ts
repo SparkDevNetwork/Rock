@@ -16,6 +16,7 @@
 //
 
 import { areEqual, toGuidOrNull } from "./guid";
+import { Pluralize } from "@Obsidian/Libs/pluralize";
 
 /**
  * Is the value an empty string?
@@ -106,6 +107,20 @@ export function upperCaseFirstCharacter(str: string | null): string {
 }
 
 /**
+ * Pluralizes the given word. If count is specified and is equal to 1 then
+ * the singular form of the word is returned. This will also de-pluralize a
+ * word if required.
+ *
+ * @param word The word to be pluralized or singularized.
+ * @param count An optional count to indicate when the word should be singularized.
+ *
+ * @returns The word in plural or singular form depending on the options.
+ */
+export function pluralize(word: string, count?: number): string {
+    return Pluralize(word, count);
+}
+
+/**
  * Returns a singular or plural phrase depending on if the number is 1.
  * (0, Cat, Cats) => Cats
  * (1, Cat, Cats) => Cat
@@ -134,7 +149,7 @@ export function padLeft(str: string | undefined | null, length: number, padChara
     }
 
     if (!str) {
-        return Array(length).join(padCharacter);
+        return Array(length + 1).join(padCharacter);
     }
 
     if (str.length >= length) {

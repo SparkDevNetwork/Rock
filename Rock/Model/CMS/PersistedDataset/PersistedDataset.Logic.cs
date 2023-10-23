@@ -69,13 +69,17 @@ namespace Rock.Model
                         // otherwise log the problem and throw an exception.
                         if ( this.ResultFormat == PersistedDatasetDataFormat.JSON )
                         {
-                            if ( output.FromJsonDynamicOrNull() == null )
+                            var outputAsDynamic = output.FromJsonDynamicOrNull();
+
+                            // If the 
+                            if ( outputAsDynamic == null )
                             {
                                 throw new InvalidDataContractException( $"PersistedDataset (Id: {this.Id}) build script created invalid result data: {output}" );
                             }
-                        }
 
-                        this.ResultData = output;
+                            // Save a nicely formatted version of the result
+                            this.ResultData = outputAsDynamic.ToJson( true );
+                        }
                         break;
                     }
 

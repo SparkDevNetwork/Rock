@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-bind="fieldProps" :modelValue="internalGroupValue" name="group-type-group-picker">
+    <RockFormField v-bind="fieldProps" :modelValue="internalGroupValue" name="group-type-group-picker" :disabled="disabled">
         <GroupTypePicker v-bind="standardProps"
                          v-model="internalTypeValue"
                          label="Group Type"
@@ -9,14 +9,16 @@
                          :multiple="false"
                          rules=""
                          onlyGroupListItems
-                         formGroupClasses="mt-0" />
+                         formGroupClasses="mt-0"
+                         :disabled="disabled" />
         <BaseAsyncPicker v-model="internalGroupValue"
                          v-bind="standardProps"
                          :label="groupLabel"
-                         :displayStyle="displayStyle"
+                         :displayStyle="PickerDisplayStyle.Condensed"
                          :items="actualGroupItems"
                          showBlankItem
-                         :multiple="false" />
+                         :multiple="false"
+                         :disabled="disabled" />
     </RockFormField>
 </template>
 
@@ -25,9 +27,9 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, nextTick, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import GroupTypePicker from "./groupTypePicker.obs";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { GroupTypeGroupPickerGetGroupsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupTypeGroupPickerGetGroupsOptionsBag";
     import { GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupTypeGroupPickerGetGroupTypeOfGroupOptionsBag";
@@ -48,6 +50,11 @@
         groupLabel: {
             type: String,
             default: "Group"
+        },
+
+        disabled: {
+            type: Boolean,
+            default: false
         },
 
         ...standardAsyncPickerProps

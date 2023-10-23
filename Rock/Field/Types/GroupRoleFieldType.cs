@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +35,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) group role filtered by a selected group type
     /// Stored as GroupTypeRole.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_ROLE )]
     public class GroupRoleFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
@@ -70,6 +71,89 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var groupRoleValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( groupRoleValue != null )
+            {
+                return groupRoleValue.Value;
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( Guid.TryParse( privateValue, out Guid guid ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var groupRole = new GroupTypeRoleService( rockContext ).GetNoTracking( guid );
+                    if ( groupRole != null )
+                    {
+                        return new ListItemBag()
+                        {
+                            Value = groupRole.Guid.ToString(),
+                            Text = groupRole.Name,
+                        }.ToCamelCaseJson( false, true );
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( privateConfigurationValues?.ContainsKey( GROUP_TYPE_KEY ) == true )
+            {
+                var groupTypeValue = privateConfigurationValues[GROUP_TYPE_KEY].FromJsonOrNull<ListItemBag>();
+                if ( groupTypeValue != null )
+                {
+                    var groupType = GroupTypeCache.Get( groupTypeValue.Value.AsGuid() );
+                    if ( groupType != null )
+                    {
+                        privateConfigurationValues[GROUP_TYPE_KEY] = groupType.Id.ToString();
+                    }
+                }
+            }
+
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( publicConfigurationValues?.ContainsKey( GROUP_TYPE_KEY ) == true && int.TryParse( publicConfigurationValues[GROUP_TYPE_KEY], out int groupTypeId ) )
+            {
+                var groupType = GroupTypeCache.Get( groupTypeId );
+                if ( groupType != null )
+                {
+                    publicConfigurationValues[GROUP_TYPE_KEY] = new ListItemBag()
+                    {
+                        Text = groupType.Name,
+                        Value = groupType.Guid.ToString(),
+                    }.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return publicConfigurationValues;
+        }
 
         #endregion
 

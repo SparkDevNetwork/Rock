@@ -21,6 +21,7 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="AccessKey" HeaderText="AccessKey" SortExpression="AccessKey" />
                             <Rock:RockBoundField DataField="TimeToBuildMS" HeaderText="Time to Build (ms)" NullDisplayText="-" DataFormatString="{0:F0}" SortExpression="TimeToBuildMS" />
+                            <Rock:RockBoundField DataField="Size" HeaderText="Result Size (KB)" NullDisplayText="-" DataFormatString="{0:N0}" SortExpression="TimeToBuildMS" />
                             <Rock:DateTimeField DataField="LastRefreshDateTime" HeaderText="Last Refresh" NullDisplayText="-" SortExpression="LastRefreshDateTime" />
                             <Rock:LinkButtonField HeaderText="Refresh" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-refresh'></i>" ToolTip="Rebuild the persisted dataset" OnClick="lbRefresh_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" OnDataBound="btnRefresh_DataBound" />
                             <Rock:LinkButtonField HeaderText="Preview" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-search'></i>" ToolTip="Preview the generated JSON " OnClick="lbPreview_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />

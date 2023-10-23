@@ -18,12 +18,13 @@ using System;
 
 namespace Rock.Attribute
 {
-
     /// <summary>
     /// 
     /// </summary>
     /// <seealso cref="System.Attribute" />
     [AttributeUsage( AttributeTargets.Class )]
+    [Obsolete( "Use CustomSettingsBlockType instead." )]
+    [RockObsolete( "1.16" )]
     public class TargetTypeAttribute : System.Attribute
     {
         /// <summary>

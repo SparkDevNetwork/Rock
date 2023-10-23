@@ -14,18 +14,8 @@
 // limitations under the License.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-
+using Fluid.Parser;
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -34,6 +24,16 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -215,7 +215,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     _canView = true;
 
-                    rFilter.UserPreferenceKeyPrefix = string.Format( "{0}-", groupId );
+                    rFilter.PreferenceKeyPrefix = string.Format( "{0}-", groupId );
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                     gGroupMembers.DataKeyNames = new string[] { "Id" };
                     gGroupMembers.PersonIdField = "PersonId";
@@ -246,13 +246,13 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
 
-                    // If all of the roles in a group are sync'd then don't show the add button
-                    gGroupMembers.Actions.ShowAdd = _groupTypeCache.Roles
+                    // If someone can edit group members and if all of the roles in a group are sync'd then don't show the add button
+                    gGroupMembers.Actions.ShowAdd = canEditBlock && _groupTypeCache.Roles
                         .Where( r => !_group.GroupSyncs.Select( s => s.GroupTypeRoleId )
                         .Contains( r.Id ) )
                         .Any();
 
-                    filterRequirements.UserPreferenceKeyPrefix = string.Format( "{0}-", groupId );
+                    filterRequirements.PreferenceKeyPrefix = string.Format( "req-{0}-", groupId );
                     filterRequirements.ApplyFilterClick += filterRequirements_ApplyFilterClick;
                     gGroupMemberRequirements.DataKeyNames = new string[] { "Id" };
                     gGroupMemberRequirements.PersonIdField = "PersonId";
@@ -670,15 +670,15 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "First Name", "First Name", tbFirstName.Text );
-            rFilter.SaveUserPreference( "Last Name", "Last Name", tbLastName.Text );
-            rFilter.SaveUserPreference( "Role", "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( "Status", "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( "Campus", "Campus", cpCampusFilter.SelectedCampusId.ToString() );
-            rFilter.SaveUserPreference( "Gender", "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( "Registration", "Registration", ddlRegistration.SelectedValue );
-            rFilter.SaveUserPreference( "Signed Document", "Signed Document", ddlSignedDocument.SelectedValue );
-            rFilter.SaveUserPreference( DATE_ADDED_FILTER_KEY, DATE_ADDED_FILTER_KEY, drpDateAdded.DelimitedValues );
+            rFilter.SetFilterPreference( "First Name", "First Name", tbFirstName.Text );
+            rFilter.SetFilterPreference( "Last Name", "Last Name", tbLastName.Text );
+            rFilter.SetFilterPreference( "Role", "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SetFilterPreference( "Status", "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SetFilterPreference( "Campus", "Campus", cpCampusFilter.SelectedCampusId.ToString() );
+            rFilter.SetFilterPreference( "Gender", "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SetFilterPreference( "Registration", "Registration", ddlRegistration.SelectedValue );
+            rFilter.SetFilterPreference( "Signed Document", "Signed Document", ddlSignedDocument.SelectedValue );
+            rFilter.SetFilterPreference( DATE_ADDED_FILTER_KEY, DATE_ADDED_FILTER_KEY, drpDateAdded.DelimitedValues );
 
             if ( AvailableAttributes != null )
             {
@@ -690,7 +690,7 @@ namespace RockWeb.Blocks.Groups
                         try
                         {
                             var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            rFilter.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                            rFilter.SetFilterPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                         }
                         catch
                         {
@@ -700,7 +700,7 @@ namespace RockWeb.Blocks.Groups
                     else
                     {
                         // no filter control, so clear out the user preference
-                        rFilter.SaveUserPreference( attribute.Key, attribute.Name, null );
+                        rFilter.SetFilterPreference( attribute.Key, attribute.Name, null );
                     }
                 }
             }
@@ -817,7 +817,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
             SetFilter();
         }
 
@@ -1000,9 +1000,9 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void filterRequirements_ApplyFilterClick( object sender, EventArgs e )
         {
-            filterRequirements.SaveUserPreference( "RequirementRole", "Requirement Role", cblRequirementsRole.SelectedValues.AsDelimited( ";" ) );
-            filterRequirements.SaveUserPreference( "RequirementType", "Requirement Type", ddlRequirementType.SelectedValue );
-            filterRequirements.SaveUserPreference( "RequirementState", "Requirement State", cblRequirementState.SelectedValues.AsDelimited( ";" ) );
+            filterRequirements.SetFilterPreference( "RequirementRole", "Requirement Role", cblRequirementsRole.SelectedValues.AsDelimited( ";" ) );
+            filterRequirements.SetFilterPreference( "RequirementType", "Requirement Type", ddlRequirementType.SelectedValue );
+            filterRequirements.SetFilterPreference( "RequirementState", "Requirement State", cblRequirementState.SelectedValues.AsDelimited( ";" ) );
 
             if ( AvailableAttributes != null )
             {
@@ -1014,7 +1014,7 @@ namespace RockWeb.Blocks.Groups
                         try
                         {
                             var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            filterRequirements.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                            filterRequirements.SetFilterPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                         }
                         catch
                         {
@@ -1024,7 +1024,7 @@ namespace RockWeb.Blocks.Groups
                     else
                     {
                         // no filter control, so clear out the user preference
-                        filterRequirements.SaveUserPreference( attribute.Key, attribute.Name, null );
+                        filterRequirements.SetFilterPreference( attribute.Key, attribute.Name, null );
                     }
                 }
             }
@@ -1090,7 +1090,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void filterRequirements_ClearFilterClick( object sender, EventArgs e )
         {
-            filterRequirements.DeleteUserPreferences();
+            filterRequirements.DeleteFilterPreferences();
             SetRequirementsFilter();
         }
 
@@ -1256,6 +1256,22 @@ namespace RockWeb.Blocks.Groups
                 gGroupMemberRequirements.Actions.InvokeCommunicateClick( sender, e );
             }
         }
+
+        protected void lbGroupSync_Click( object sender, EventArgs e )
+        {
+            var groupSyncService = new GroupSyncService( new RockContext() );
+            var task = Task.Run( () =>
+            {
+                var result = groupSyncService.SyncGroup( _group.Id );
+
+                if ( result.WarningExceptions.Any() )
+                {
+                    ExceptionLogService.LogException( new AggregateException( $"One or more exceptions occurred while syncing group with ID {_group.Id}.", result.WarningExceptions ) );
+                }
+            } );
+            mdGridWarning.Show( "The group is scheduled to be synchronized and it may take several minutes to complete.", ModalAlertType.Information );
+        }
+
         #endregion
 
         #region Internal Methods
@@ -1289,11 +1305,11 @@ namespace RockWeb.Blocks.Groups
             BindAttributes();
             AddDynamicControls();
 
-            tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
-            tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
-            cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( "Campus" ).AsIntegerOrNull();
+            tbFirstName.Text = rFilter.GetFilterPreference( "First Name" );
+            tbLastName.Text = rFilter.GetFilterPreference( "Last Name" );
+            cpCampusFilter.SelectedCampusId = rFilter.GetFilterPreference( "Campus" ).AsIntegerOrNull();
 
-            string genderValue = rFilter.GetUserPreference( "Gender" );
+            string genderValue = rFilter.GetFilterPreference( "Gender" );
             if ( !string.IsNullOrWhiteSpace( genderValue ) )
             {
                 cblGenderFilter.SetValues( genderValue.Split( ';' ).ToList() );
@@ -1303,25 +1319,25 @@ namespace RockWeb.Blocks.Groups
                 cblGenderFilter.ClearSelection();
             }
 
-            string roleValue = rFilter.GetUserPreference( "Role" );
+            string roleValue = rFilter.GetFilterPreference( "Role" );
             if ( !string.IsNullOrWhiteSpace( roleValue ) )
             {
                 cblRole.SetValues( roleValue.Split( ';' ).ToList() );
             }
 
-            string statusValue = rFilter.GetUserPreference( "Status" );
+            string statusValue = rFilter.GetFilterPreference( "Status" );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
             {
                 cblGroupMemberStatus.SetValues( statusValue.Split( ';' ).ToList() );
             }
 
-            ddlRegistration.SetValue( rFilter.GetUserPreference( "Registration" ) );
+            ddlRegistration.SetValue( rFilter.GetFilterPreference( "Registration" ) );
             ddlRegistration.Visible = ddlRegistration.Items.Count > 1;
 
-            ddlSignedDocument.SetValue( rFilter.GetUserPreference( "Signed Document" ) );
+            ddlSignedDocument.SetValue( rFilter.GetFilterPreference( "Signed Document" ) );
             ddlSignedDocument.Visible = _group.RequiredSignatureDocumentTemplateId.HasValue;
 
-            drpDateAdded.DelimitedValues = rFilter.GetUserPreference( DATE_ADDED_FILTER_KEY );
+            drpDateAdded.DelimitedValues = rFilter.GetFilterPreference( DATE_ADDED_FILTER_KEY );
             drpDateAdded.Visible = GetAttributeValue( SHOW_DATE_ADDED_KEY ).AsBoolean();
         }
 
@@ -1362,19 +1378,19 @@ namespace RockWeb.Blocks.Groups
 
             cblRequirementState.BindToEnum<MeetsGroupRequirement>();
 
-            string requirementRoleValue = filterRequirements.GetUserPreference( "RequirementRole" );
+            string requirementRoleValue = filterRequirements.GetFilterPreference( "RequirementRole" );
             if ( !string.IsNullOrWhiteSpace( requirementRoleValue ) )
             {
                 cblRequirementsRole.SetValues( requirementRoleValue.Split( ';' ).ToList() );
             }
 
-            string requirementTypeValue = filterRequirements.GetUserPreference( "RequirementType" );
+            string requirementTypeValue = filterRequirements.GetFilterPreference( "RequirementType" );
             if ( !string.IsNullOrWhiteSpace( requirementTypeValue ) )
             {
                 ddlRequirementType.SelectedValue = requirementTypeValue;
             }
 
-            string requirementStateValue = filterRequirements.GetUserPreference( "RequirementState" );
+            string requirementStateValue = filterRequirements.GetFilterPreference( "RequirementState" );
             if ( !string.IsNullOrWhiteSpace( requirementStateValue ) )
             {
                 cblRequirementState.SetValues( requirementStateValue.Split( ';' ).ToList() );
@@ -1450,7 +1466,7 @@ namespace RockWeb.Blocks.Groups
                             phAttributeFilters.Controls.Add( wrapper );
                         }
 
-                        string savedValue = rFilter.GetUserPreference( attribute.Key );
+                        string savedValue = rFilter.GetFilterPreference( attribute.Key );
                         if ( !string.IsNullOrWhiteSpace( savedValue ) )
                         {
                             try

@@ -397,7 +397,9 @@ var barChart = new Chart(barCtx, {{
                 return setting;
             }
 
-            return this.GetBlockUserPreference( key );
+            var preferences = GetBlockPersonPreferences();
+
+            return preferences.GetValue( key );
         }
 
         /// <summary>
@@ -406,19 +408,23 @@ var barChart = new Chart(barCtx, {{
         /// </summary>
         private List<Attendance> GetAttendanceData()
         {
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedDateRange, sdrpDateRange.DelimitedValues );
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedViewBy, hfTabs.Value );
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedGroupId, gpGroups.GroupId.ToString() );
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedLocationIds, cblLocations.SelectedValues.AsDelimited( "," ) );
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedScheduleIds, cblSchedules.SelectedValues.AsDelimited( "," ) );
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedDataViewId, dvDataViews.SelectedValue );
-            this.SetBlockUserPreference( UserPreferenceKey.SelectedPersonId, ppPerson.SelectedValue.ToString() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( UserPreferenceKey.SelectedDateRange, sdrpDateRange.DelimitedValues );
+            preferences.SetValue( UserPreferenceKey.SelectedViewBy, hfTabs.Value );
+            preferences.SetValue( UserPreferenceKey.SelectedGroupId, gpGroups.GroupId.ToString() );
+            preferences.SetValue( UserPreferenceKey.SelectedLocationIds, cblLocations.SelectedValues.AsDelimited( "," ) );
+            preferences.SetValue( UserPreferenceKey.SelectedScheduleIds, cblSchedules.SelectedValues.AsDelimited( "," ) );
+            preferences.SetValue( UserPreferenceKey.SelectedDataViewId, dvDataViews.SelectedValue );
+            preferences.SetValue( UserPreferenceKey.SelectedPersonId, ppPerson.SelectedValue.ToString() );
+
+            preferences.Save();
 
             // Create URL for selected settings
             var pageReference = CurrentPageReference;
-            foreach ( var setting in GetBlockUserPreferences() )
+            foreach ( var key in preferences.GetKeys() )
             {
-                pageReference.Parameters.AddOrReplace( setting.Key, setting.Value );
+                pageReference.Parameters.AddOrReplace( key, preferences.GetValue( key ) );
             }
 
             Uri uri = new Uri( Request.UrlProxySafe().ToString() );

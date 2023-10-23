@@ -1,0 +1,28 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-show="hasErrors" alertType="validation">
+        Please correct the following:
+        <ul>
+            <li v-for="error of errors">
+                <strong>{{ error.name }}</strong>
+                {{ error.text }}
+            </li>
+        </ul>
+    </NotificationBox>
+</template>
+
+<script setup lang="ts">
+    import NotificationBox from "./notificationBox.obs";
+    import { computed, PropType } from "vue";
+    import { FormError } from "@Obsidian/Utility/form";
+
+    const props = defineProps({
+        /** The errors that should be displayed. */
+        errors: {
+            type: Array as PropType<FormError[]>,
+            required: true
+        }
+    });
+
+    const hasErrors = computed((): boolean => props.errors.length > 0);
+</script>

@@ -17,10 +17,10 @@
                     <Rock:Grid ID="gShortLinkClicks" runat="server" DisplayType="Full">
                         <Columns>
                             <Rock:DateTimeField DataField="InteractionDateTime" HeaderText="Date / Time" SortExpression="InteractionDateTime" />
-                            <Rock:PersonField DataField="PersonAlias.Person" HeaderText="Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
-                            <Rock:RockBoundField DataField="InteractionSession.DeviceType.ClientType" HeaderText="Client Type" SortExpression="InteractionSession.DeviceType.ClientType" />
-                            <Rock:RockBoundField DataField="InteractionSession.DeviceType.OperatingSystem" HeaderText="Operating System" SortExpression="InteractionSession.DeviceType.OperatingSystem" />
-                            <Rock:RockBoundField DataField="InteractionSession.DeviceType.Application" HeaderText="Browser" SortExpression="InteractionSession.DeviceType.Application" />
+                            <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="Person.LastName,Person.NickName" />
+                            <Rock:RockBoundField DataField="ClientType" HeaderText="Client Type" SortExpression="ClientType" />
+                            <Rock:RockBoundField DataField="OperatingSystem" HeaderText="Operating System" SortExpression="OperatingSystem" />
+                            <Rock:RockBoundField DataField="Application" HeaderText="Browser" SortExpression="Application" />
                             <Rock:RockBoundField DataField="Source" HeaderText="UTM Source" SortExpression="Source" />
                         </Columns>
                     </Rock:Grid>

@@ -53,14 +53,14 @@ namespace Rock.Model
                 var customSlug = slug;
 
                 // If this isn't the first attempt, then append the attempt
-                // number to the slug while ensuring we stay under 75 characters.
+                // number to the slug while ensuring we stay under 200 characters.
                 if ( paddedNumber > 0 )
                 {
                     var paddedString = $"-{paddedNumber}";
 
-                    if ( intialSlugLength + paddedString.Length > 75 )
+                    if ( intialSlugLength + paddedString.Length > 200 )
                     {
-                        customSlug = slug.Left( intialSlugLength + paddedString.Length - 75 ) + paddedString;
+                        customSlug = slug.Left( intialSlugLength + paddedString.Length - 200 ) + paddedString;
                     }
                     else
                     {

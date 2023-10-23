@@ -4,6 +4,18 @@
     .progress-bar-link {
         background-color: #60BD68;
     }
+
+    .label-clicked {
+        background-color: #60bd68;
+    }
+
+    .label-opened {
+        background-color: #5da5da;
+    }
+
+    .label-unopened {
+        background-color: #ffb70f;
+    }
 </style>
 
 
@@ -20,7 +32,7 @@
         <asp:HiddenField ID="hfPieChartDataClientLabelsJSON" runat="server" />
         <asp:HiddenField ID="hfPieChartDataClientCountsJSON" runat="server" />
 
-        <div class="panel panel-block panel-analytics">
+        <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-line-chart"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" Text="Email Analytics" /></h1>
 
@@ -39,14 +51,10 @@
             <Rock:NotificationBox ID="nbWarningMessage" runat="server" CssClass="margin-all-md" NotificationBoxType="Warning" Visible="false" />
 
             <asp:Panel ID="pnlCharts" runat="server" class="panel-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        <%-- Main Opens/Clicks Line Chart --%>
-                        <div class="chart-container">
-                            <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" CssClass="my-4" NotificationBoxType="Info" Text="No Communication Activity" />
-                            <canvas id="openClicksLineChartCanvas" runat="server" style="height: 450px;" />
-                        </div>
-                    </div>
+                <%-- Main Opens/Clicks Line Chart --%>
+                <div class="chart-container">
+                    <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" CssClass="my-4" NotificationBoxType="Info" Text="No Communication Activity" />
+                    <canvas id="openClicksLineChartCanvas" runat="server" style="height: 450px;" />
                 </div>
 
                 <hr />

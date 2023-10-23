@@ -316,6 +316,10 @@ namespace Rock.Web.Cache
                 }
                 catch ( Exception ex )
                 {
+                    // Added some diagnostics to record where this code is being called from
+                    // since our current exceptions are missing this detail.
+                    var stackTrace = new System.Diagnostics.StackTrace( true );
+                    Logging.RockLogger.Log.Debug( Logging.RockLogDomains.Other, $"Path: {Path}" + System.Environment.NewLine + stackTrace.ToString() );
                     ExceptionLogService.LogException( ex );
                     return null;
                 }
@@ -330,7 +334,7 @@ namespace Rock.Web.Cache
                 catch ( Exception ex )
                 {
                     ExceptionLogService.LogException( ex );
-                    return null;;
+                    return null;
                 }
 
             }

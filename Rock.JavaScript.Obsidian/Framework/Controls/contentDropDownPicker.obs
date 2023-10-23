@@ -7,11 +7,13 @@
                 <div :class="{ 'input-group': $slots.inputGroupPrepend || $slots.inputGroupAppend }">
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                     <div class="picker picker-obsidian picker-select rollover-container" :class="additionalPickerClass">
-                        <a class="picker-label" href="#" @click.prevent.stop="togglePickerMenu" :class="{ 'has-ig-prepend': $slots.inputGroupPrepend }">
+                        <a class="picker-label form-control" href="#" @click.prevent.stop="togglePickerMenu" :class="{ 'has-ig-prepend': $slots.inputGroupPrepend, 'text-gray-400': disabled }" v-bind="disabledBinding">
                             <i :class="pickerIconClass"></i>
                             <slot name="innerLabel"><span class="selected-names">{{ innerLabel }}</span></slot>
-                            <b class="fa fa-caret-down pull-right"></b>
-                            <b v-if="showClear" class="fa fa-times pull-right" @click.prevent.stop="onAction('clear')"></b>
+                            <button type="button" role="button" aria-label="Clear selection" class="btn picker-select-none" v-if="showClear && !disabled" @click.prevent.stop="onAction('clear')">
+                                <i class="fa fa-times"></i>
+                            </button>
+                            <b class="fa fa-caret-down"></b>
                         </a>
 
                         <Fullscreen v-show="internalShowPopup" v-if="internalShowPopup || !forceContentReloadOnOpen" v-model="internalIsFullscreen" class="picker-menu" :class="internalIsFullscreen ? 'is-fullscreen' : 'dropdown-menu'" :style="pickerMenuStyles">
@@ -56,7 +58,7 @@
                                     </RockButton>
                                 </slot>
                                 <!-- Custom Action Buttons: `customPickerActions` slot allows you to add additional buttons to the right -->
-                                <div v-if="$slots.customPickerActions" class="pull-right">
+                                <div v-if="$slots.customPickerActions" class="ml-auto d-flex align-items-center">
                                     <slot name="customPickerActions" />
                                 </div>
                             </div>
@@ -107,6 +109,11 @@
     flex-direction: column;
 }
 
+.picker-header {
+    flex: 0;
+    width: 100%;
+}
+
 .picker-header,
 .picker-actions {
     flex: 0;
@@ -124,13 +131,13 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import RockButton from "./rockButton";
+    import RockButton from "./rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { newGuid } from "@Obsidian/Utility/guid";
-    import Fullscreen from "@Obsidian/Controls/fullscreen";
+    import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 
     const props = defineProps({
         /**
@@ -290,7 +297,15 @@
         fullWidth: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        /**
+         * Disable use of the picker
+         */
+        disabled: {
+            type: Boolean,
+            default: false
+        },
     });
 
     const emit = defineEmits<{
@@ -358,6 +373,15 @@
         return "";
     });
 
+    // Attributes to add to the picker label when this is disabled.
+    const disabledBinding = computed(() => {
+        return props.disabled ? {
+            disabled: true,
+            tabindex: -1,
+            onMousedown: e => e.preventDefault()
+        } : {};
+    });
+
     // #endregion
 
     // #region Watchers
@@ -374,6 +398,13 @@
 
     watch(internalShowPopup, () => emit("update:showPopup", internalShowPopup.value));
 
+    /** Hide the popup if this becomes disabled while it's open */
+    watch(() => props.disabled, () => {
+        if (props.disabled) {
+            internalShowPopup.value = false;
+        }
+    });
+
     // #endregion
 
     // #region Event Handlers
@@ -382,6 +413,10 @@
      * Event handler for when the user clicks on the picker. Show/hide the popup.
      */
     function togglePickerMenu(): void {
+        if (props.disabled) {
+            internalShowPopup.value = false;
+            return;
+        }
         internalShowPopup.value = !internalShowPopup.value;
     }
 
@@ -397,6 +432,6 @@
         emit(`${type}ButtonClicked`);
     }
 
-    // #endregion
+        // #endregion
 
 </script>

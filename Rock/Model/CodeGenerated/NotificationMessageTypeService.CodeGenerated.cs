@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,52 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// NotificationMessageType View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( NotificationMessageType ) )]
-    public partial class NotificationMessageTypeViewModelHelper : ViewModelHelper<NotificationMessageType, NotificationMessageTypeBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override NotificationMessageTypeBag CreateViewModel( NotificationMessageType model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new NotificationMessageTypeBag
-            {
-                IdKey = model.IdKey,
-                ComponentDataJson = model.ComponentDataJson,
-                EntityTypeId = model.EntityTypeId,
-                IsDeletedOnRead = model.IsDeletedOnRead,
-                IsMobileApplicationSupported = model.IsMobileApplicationSupported,
-                IsTvApplicationSupported = model.IsTvApplicationSupported,
-                IsWebSupported = model.IsWebSupported,
-                Key = model.Key,
-                RelatedMobileApplicationSiteId = model.RelatedMobileApplicationSiteId,
-                RelatedTvApplicationSiteId = model.RelatedTvApplicationSiteId,
-                RelatedWebSiteId = model.RelatedWebSiteId,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -181,20 +131,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static NotificationMessageTypeBag ToViewModel( this NotificationMessageType model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new NotificationMessageTypeViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

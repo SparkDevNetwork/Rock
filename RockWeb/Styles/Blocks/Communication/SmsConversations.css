@@ -1,0 +1,306 @@
+.sms-conversations-parent {
+  position: relative;
+  height: 100%;
+  min-height: var(--block-min-height, calc(100vh - 200px));
+  overflow: auto;
+}
+
+.sms-conversations-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+.sms-conversations-container > div {
+  position: relative;
+  flex-basis: 0;
+  flex-grow: 1;
+  width: 100%;
+  max-width: 100%;
+  -ms-flex-preferred-size: 0;
+  -ms-flex-positive: 1;
+}
+
+.sms-conversations-container .header {
+  min-height: 49px;
+  padding: 12px 16px;
+  font-weight: 700;
+  border-bottom: 1px solid #eee;
+}
+
+.sms-conversations-container .message-truncate {
+  overflow: hidden;
+  color: rgba(0, 0, 0, .5);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sms-conversations-container .conversation-list {
+  position: relative;
+  flex-grow: 0;
+  min-width: 100%;
+  height: 100%;
+  min-height: 300px;
+  border-right: 1px solid rgba(0, 0, 0, .2);
+}
+
+@media (min-width: 599px) {
+  .sms-conversations-container .conversation-list {
+    min-width: 320px;
+  }
+}
+
+@media (min-width: 992px) {
+  .sms-conversations-container .conversation-list {
+    min-width: 360px;
+  }
+}
+
+.sms-conversations-container .conversation-list .header {
+  padding: 7px 16px;
+  font-weight: 400;
+  background-color: #f5f5f5;
+}
+
+.sms-conversations-container .conversation-list .overflow-scroll {
+  flex: 1 1 0;
+  width: 100%;
+  overflow: hidden;
+  overflow-y: scroll;
+}
+
+.sms-conversations-container .conversation-list .sms-name {
+  font-weight: 600;
+  color: #000;
+}
+
+.sms-conversations-container .conversation-list .layout-row {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+}
+
+.sms-conversations-container .conversation-list .table {
+  table-layout: fixed;
+}
+
+.sms-conversations-container .conversation-list .table td {
+  padding: 14px 16px 16px;
+}
+
+.sms-conversations-container .conversation-list .table tr:first-child td {
+  border-top: 0;
+}
+
+.sms-conversations-container .conversation-list .date {
+  box-sizing: border-box;
+  -webkit-flex: 1 0 auto;
+  flex: 1 0 auto;
+  font-size: 13px;
+  line-height: 24px;
+  color: rgba(0, 0, 0, .5);
+  text-align: right;
+  text-transform: capitalize;
+  -webkit-box-flex: 1;
+}
+
+.sms-conversations-container .conversation-list .selected {
+  background: rgba(0, 0, 0, .02);
+}
+
+.sms-conversations-container .conversation-list .unread {
+  box-shadow: inset 4px 0 0 0 var(--color-primary);
+}
+
+.sms-conversations-container .messages-outer-container {
+  position: relative;
+  flex-grow: 1;
+  height: 100%;
+  overflow: hidden;
+  -webkit-box-flex: 1;
+  -ms-flex-positive: 1;
+}
+
+.sms-conversations-container .messages-scroll-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 15px;
+  overflow-y: scroll;
+}
+
+.sms-conversations-container .note-editor {
+  padding: 8px 12px;
+  border-top: 1px solid #eee;
+}
+
+.sms-conversations-container .footer {
+  position: relative;
+  flex-shrink: 0;
+  border-top: 1px solid #eee;
+  -ms-flex-negative: 0;
+}
+
+.sms-conversations-container .footer .form-control {
+  padding: 18px 162px 18px 12px;
+  resize: none;
+  border: 0;
+}
+
+.sms-conversations-container .footer .actions {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+}
+
+.sms-conversations-container .conversation-panel {
+  position: relative;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex: 1;
+  flex: 1;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+  height: 100%;
+  min-height: 300px;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+}
+
+@media (max-width: 599px) {
+  .sms-conversations-container .conversation-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 21;
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    -webkit-transition: transform .3s cubic-bezier(.4, 0, 1, 1);
+    transition: transform .3s cubic-bezier(.4, 0, 1, 1);
+    -webkit-transform: translateX(103%);
+    transform: translateX(103%);
+    will-change: transform;
+  }
+}
+
+.sms-conversations-container .conversation-panel .sms-image-uploader {
+  position: relative;
+  width: 106px;
+  margin: 0 auto;
+}
+
+.sms-conversations-container .conversation-panel .sms-image-uploader-container {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 220px;
+  max-width: 100%;
+  padding: 8px;
+  margin: 0;
+  background: #f5f5f5;
+  border: 1px solid #eee;
+}
+
+.sms-conversations-container .conversation-panel .sms-image-uploader-container .close {
+  font-size: 18px;
+}
+
+.sms-conversations-container .conversation-back {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  .sms-conversations-container .conversation-back {
+    display: block;
+  }
+
+  .sms-conversations-container .has-focus {
+    -webkit-transition: transform .3s cubic-bezier(0, 0, .2, 1);
+    transition: transform .3s cubic-bezier(0, 0, .2, 1);
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+  }
+}
+
+
+.conversation {
+  width: 100%;
+  max-width: 848px;
+  margin: 0 auto;
+}
+
+.conversation .message {
+  box-sizing: border-box;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-content: flex-start;
+  align-content: flex-start;
+  -webkit-align-items: flex-start;
+  align-items: flex-start;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: start;
+}
+
+.conversation .message.outbound {
+  -webkit-align-content: flex-end;
+  align-content: flex-end;
+  -webkit-align-items: flex-end;
+  align-items: flex-end;
+  -webkit-box-align: end;
+}
+
+.conversation .message .bubble {
+  display: inline-block;
+  max-width: 75%;
+  padding: 10px 14px;
+  color: #000;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-line;
+  background-color: #f3f3f3;
+  border-radius: 20px;
+}
+
+.conversation .message.outbound .bubble {
+  color: #fff;
+  background-color: #0084ff;
+}
+
+.conversation .message .message-meta {
+  padding: 4px 14px 8px;
+  font-size: 12px;
+  color: rgba(0,0,0,.5);
+}
+
+.conversation .message .message-meta .date {
+  text-transform: capitalize;
+}
+
+.conversation .message .sender-name::after {
+  content: " - ";
+}
+
+.conversation .message.inbound .sender-name {
+  display: none;
+}
+
+.conversation .message .sms-image {
+  min-height: 100px;
+  margin-top: 5px;
+  border-radius: 10px;
+}

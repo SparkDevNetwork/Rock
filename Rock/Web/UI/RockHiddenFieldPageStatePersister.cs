@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Logging;
 using System;
 using System.Collections;
 using System.IO;
@@ -110,10 +111,24 @@ namespace Rock.Web.UI
         public override void Load()
         {
             string viewState = Page.Request.Form["__CVIEWSTATE"];
+            if ( viewState == null )
+            {
+                return;
+            }
+
             byte[] bytes = Convert.FromBase64String( viewState );
 
             // decrypt viewstate
-            bytes = MachineKey.Unprotect( bytes );
+            try
+            {
+                bytes = MachineKey.Unprotect( bytes );
+            }
+            catch ( System.Security.Cryptography.CryptographicException cryptographicException )
+            {
+                RockLogger.Log.Error( RockLogDomains.Core, cryptographicException, "Failed decrypting the encrypted View state Props" +
+                    "" );
+                return;
+            }
 
             // uncompress viewstate
             if ( Page.Request.Form["__CVIEWSTATESIZE"] != "0" )

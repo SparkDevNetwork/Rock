@@ -1,0 +1,101 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span>
+        <table class="table table-bordered table-striped debug-timings" style="width:100%; margin-bottom: 48px;">
+            <thead>
+                <tr>
+                    <th class="debug-timestamp">Timestamp</th>
+                    <th>Event</th>
+                    <th class="debug-timestamp">Duration</th>
+                    <th class="debug-waterfall">Waterfall</th>
+                </tr>
+            </thead>
+            <tbody>
+                <PageDebugTimingRow v-for="(vm, i) in serverViewModels" :key="`s${i}-${vm.timestampMs}`" :viewModel="vm" :startTimeMs="serverStartTimeMs" :totalMs="totalMs" />
+                <PageDebugTimingRow :viewModel="clientHeader" :startTimeMs="serverStartTimeMs" :totalMs="totalMs" />
+                <PageDebugTimingRow v-for="(vm, i) in relativeClientViewModels" :key="`c${i}-${vm.timestampMs}`" :viewModel="vm" :startTimeMs="serverStartTimeMs" :totalMs="totalMs" />
+            </tbody>
+        </table>
+    </span>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import PageDebugTimingRow from "./pageDebugTimingRow.obs";
+    import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
+    import { useStore } from "@Obsidian/PageState";
+
+    const store = useStore();
+
+    const props = defineProps({
+        serverViewModels: {
+            type: Array as PropType<DebugTiming[]>,
+            required: true
+        }
+    });
+
+
+    const serverStartTimeMs = computed((): number => {
+        if (!props.serverViewModels.length) {
+            return 0;
+        }
+
+        return props.serverViewModels[0].timestampMs;
+    });
+
+    const serverEndTimeMs = computed((): number => {
+        if (!props.serverViewModels.length) {
+            return 0;
+        }
+
+        const lastIndex = props.serverViewModels.length - 1;
+        const lastViewModel = props.serverViewModels[lastIndex];
+        return lastViewModel.timestampMs + lastViewModel.durationMs;
+    });
+
+    const firstClientRelativeStartTimeMs = computed((): number => {
+        if (!relativeClientViewModels.value.length) {
+            return serverEndTimeMs.value;
+        }
+
+        const viewModel = relativeClientViewModels.value[0];
+        return viewModel.timestampMs;
+    });
+
+    const clientRelativeEndTimeMs = computed((): number => {
+        if (!relativeClientViewModels.value.length) {
+            return serverEndTimeMs.value;
+        }
+
+        const lastIndex = relativeClientViewModels.value.length - 1;
+        const lastViewModel = relativeClientViewModels.value[lastIndex];
+        return lastViewModel.timestampMs + lastViewModel.durationMs;
+    });
+
+    const totalMs = computed((): number => {
+        return clientRelativeEndTimeMs.value - serverStartTimeMs.value;
+    });
+
+    const clientViewModels = computed((): DebugTiming[] => {
+        return store.state.debugTimings;
+    });
+
+    const relativeClientViewModels = computed((): DebugTiming[] => {
+        // Add the server end time so they appear after the server
+        return clientViewModels.value.map(vm => ({
+            ...vm,
+            timestampMs: serverEndTimeMs.value + vm.timestampMs
+        } as DebugTiming));
+    });
+
+    const clientHeader = computed((): DebugTiming => {
+        return {
+            durationMs: firstClientRelativeStartTimeMs.value - serverEndTimeMs.value,
+            indentLevel: 0,
+            isTitleBold: true,
+            title: "Client Mount Blocks",
+            timestampMs: serverEndTimeMs.value,
+            subTitle: ""
+        };
+    });
+</script>

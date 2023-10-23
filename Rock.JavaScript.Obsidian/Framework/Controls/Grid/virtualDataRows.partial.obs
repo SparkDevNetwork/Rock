@@ -1,0 +1,243 @@
+<template>
+    <div class="grid-body" ref="element">
+        <div :style="beforePadStyle" />
+        <DataRow v-for="(row, index) of virtualRows"
+                 :key="props.grid.getRowKey(row)"
+                 :columns="props.columns"
+                 :row="row"
+                 :grid="props.grid"
+                 :tooltipField="props.tooltipField"
+                 :isSelectable="isSelectable"
+                 :isEven="(range.startIndex + index + 1) % 2 === 0"
+                 monitorHeight
+                 @resize="onRowResize"
+                 @click="onRowClick" />
+        <div :style="afterPadStyle" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DataRow from "./dataRow.partial.obs";
+    import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { PropType, computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+    import VirtualScroller, { Range } from "./virtualScroller.partial";
+
+    const props = defineProps({
+        /**
+         * The array of columns that should be displayed in the data rows.
+         * This may be different than the columns defined in the grid but
+         * must be a subset of them.
+         */
+        columns: {
+            type: Array as PropType<ReadonlyArray<ColumnDefinition>>,
+            required: true
+        },
+
+        /** The rows that contain the data to be displayed. */
+        rows: {
+            type: Array as PropType<Record<string, unknown>[]>,
+            required: true
+        },
+
+        /** The grid that contains all the state information. */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        },
+
+        /** The field that will be used to display per-row tooltips. */
+        tooltipField: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** True if any data row is selectable. */
+        isSelectable: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "click", key: string): void
+    }>();
+
+    // NOTE: Currently this only supports page scrolling. In the future
+    // we will probably need to find the nearest ancestor that is a scroll
+    // container and use it to determine scroll values. For example, a grid
+    // inside a modal.
+
+    // #region Values
+
+    const element = ref<HTMLElement>();
+    const range = ref<Range>({ startIndex: 0, endIndex: 0, padBefore: 0, padAfter: 0 });
+    let virtualScroller: VirtualScroller | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Contains the set of virtual rows to be rendered in the DOM.
+     */
+    const virtualRows = computed((): Record<string, unknown>[] => {
+        const isInvalidRange = !range.value
+            || range.value.startIndex >= props.rows.length
+            || range.value.endIndex >= props.rows.length;
+
+        if (isInvalidRange) {
+            return [];
+        }
+
+        return props.rows.slice(range.value.startIndex, range.value.endIndex + 1);
+    });
+
+    /**
+     * Contains the CSS styles for the padding item before the rows.
+     */
+    const beforePadStyle = computed((): Record<string, string> => {
+        return {
+            height: `${range.value.padBefore}px`
+        };
+    });
+
+    /**
+     * Contains the CSS styles for the padding item after the rows.
+     */
+    const afterPadStyle = computed((): Record<string, string> => {
+        return {
+            height: `${range.value.padAfter}px`
+        };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the current scroll offset.
+     */
+    function getScrollOffset(): number {
+        return document.documentElement.scrollTop || document.body.scrollTop;
+    }
+
+    /**
+     * Gets the height of the visible area in the scrollable element.
+     */
+    function getClientHeight(): number {
+        return document.documentElement.clientHeight || document.body.clientHeight;
+    }
+
+    /**
+     * Gets the total height of the scrollable content.
+     */
+    function getScrollHeight(): number {
+        return document.documentElement.scrollHeight || document.body.scrollHeight;
+    }
+
+    /**
+     * Create the virtual scroller we will use to calculate which items to
+     * display.
+     */
+    function createVirtualScroller(): VirtualScroller {
+        // In order to play it safe, use the maximum of either the screen width
+        // or screen height. This covers cases where the display gets rotated
+        // while we are on screen.
+        // Then take that number and divide by our estimated row height to get
+        // the number of rows we expect to be visible at one time.
+        const estimatedHeight = 58;
+        const largestEdge = Math.max(window.screen.width, window.screen.height);
+        const visibleCount = Math.floor(largestEdge / estimatedHeight);
+
+        return new VirtualScroller({
+            visibleCount,
+            bufferCount: Math.round(visibleCount / 3),
+            estimatedHeight,
+            uniqueIds: props.rows.map(r => props.grid.getRowKey(r)).filter(r => r !== undefined) as string[]
+        }, range => onRangeChanged(range));
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a single row has been clicked.
+     *
+     * @param key The key of the row that was clicked.
+     */
+    function onRowClick(key: string): void {
+        emit("click", key);
+    }
+
+    /**
+     * Called when the range of the virtual scroller has changed.
+     *
+     * @param r The new range value.
+     */
+    function onRangeChanged(r: Range): void {
+        range.value = r;
+    }
+
+    /**
+     * Called whenever the element we are monitoring has scrolled.
+     */
+    function onScroll(): void {
+        const offset = getScrollOffset();
+        const clientSize = getClientHeight();
+        const scrollSize = getScrollHeight();
+
+        // If the scroll is outside the scrollable area, it is probably an
+        // overscroll like iOS bounce back effect. Ignore it.
+        if (offset < 0 || (offset + clientSize > scrollSize + 1) || !scrollSize) {
+            return;
+        }
+
+        // Determine the offset inside the scrollable of our list. Meaning,
+        // the grid probably doesn't start at the top of the page. So if the
+        // grid starts 200 pixels down the page, our offset should be zero when
+        // they have scrolled down by 200 pixels. That is, the top edge of the
+        // grid is at the top edge of the scrollable.
+        const scrollableOffset = element.value
+            ? element.value.getBoundingClientRect().top + window.scrollY
+            : 0;
+
+        virtualScroller?.handleScroll(Math.floor(Math.max(0, offset - scrollableOffset)));
+    }
+
+    /**
+     * Called when the height of an item/row has changed, for example by the
+     * width being changed causing text to wrap.
+     *
+     * @param key The key of the item whose height changed.
+     * @param height The new height of the item.
+     */
+    function onRowResize(key: string, height: number): void {
+        virtualScroller?.updateHeight(key, height);
+    }
+
+    // #endregion
+
+    watch(() => props.rows, () => {
+        virtualScroller?.dataSourceChanged(props.rows.map(r => props.grid.getRowKey(r)).filter(r => r !== undefined) as string[]);
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("scroll", onScroll);
+
+        if (virtualScroller) {
+            virtualScroller.destroy();
+            virtualScroller = undefined;
+        }
+    });
+
+    onMounted(() => {
+        virtualScroller = createVirtualScroller();
+
+        if (getScrollOffset() > 0) {
+            onScroll();
+        }
+
+        document.addEventListener("scroll", onScroll, { passive: false });
+    });
+</script>

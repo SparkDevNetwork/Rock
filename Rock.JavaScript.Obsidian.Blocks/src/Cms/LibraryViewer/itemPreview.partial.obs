@@ -1,0 +1,527 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="library-viewer-item-preview">
+        <NotificationBox v-if="errorMessage" alertType="danger">
+            {{ errorMessage }}
+        </NotificationBox>
+        <NotificationBox v-if="warningMessage" alertType="warning">
+            {{ warningMessage }}
+        </NotificationBox>
+        <div class="library-viewer-item-preview-container">
+            <div class="library-viewer-item-preview-header">
+                <h1>{{ item.title }}</h1>
+                <div class="summary">{{ item.summary }}</div>
+                <div class="library-viewer-item-preview-author-and-stamps">
+                    <div class="author">{{ authorLabelAndName }}</div>
+                    <ItemStampList :item="item" :showLabelsForStamps="['downloaded', 'uploaded']" />
+                </div>
+            </div>
+            <div class="library-viewer-item-preview-meta-and-download">
+                <div class="library-viewer-item-preview-meta">
+                    <div>
+                        <span class="published-date" v-if="item.publishedDateTime">Published: {{ toDateString( item.publishedDateTime ) }}</span> <span class="published-by" v-if="item.sourcePublisherName">{{ item.sourcePublisherName }}</span>
+                    </div>
+                    <div class="library-viewer-item-preview-classification">
+                        <ItemBadgeList :items="badges" theme="medium" />
+                        <ItemDownloadsLabel :downloads="item.downloads" class="library-viewer-item-preview-downloads d-inline-block" />
+                    </div>
+                </div>
+                <template v-if="contentChannelIdKey && !item.isUploaded">
+                    <RockButton btnSize="sm"
+                                btnType="primary"
+                                :isLoading="isLoadingDetails"
+                                :disabled="disabled"
+                                @click="onDownloadArticleClicked">
+                        <i class="fa fa-arrow-down"></i> <span class="library-viewer-item-preview-download-button-label">{{ downloadArticleButtonText }}</span>
+                    </RockButton>
+                </template>
+            </div>
+            <div>
+                <img v-if="item.imageDownloadUrl"
+                    alt="Library Item Image"
+                    class="library-viewer-item-preview-image"
+                    :src="item.imageDownloadUrl"
+                    />
+            </div>
+            <div class="library-viewer-item-preview-content" v-html="item.htmlContent"></div>
+        </div>
+        <Modal v-model="isDownloadModalShown"
+               :isSaveButtonDisabled="!isDownloadTermsAndConditionsChecked"
+               saveText="Download"
+               title="Article Download"
+               @save="emitDownloadArticleEvent">
+            <div class="row">
+                <div class="col-sm-6">
+                    <StaticFormControl label="Article" :modelValue="item.title ?? ''" />
+                </div>
+                <div class="col-sm-6">
+                    <StaticFormControl label="Organization" :modelValue="item.sourcePublisherName ?? ''" />
+                </div>
+            </div>
+            <div v-if="isDownloadDateShown || isDownloadStatusShown"
+                 class="row">
+                <div class="col-xs-6 col-sm-3">
+                    <template v-if="isDownloadDateShown">
+                        <DateTimePicker v-if="isDownloadDateShownWithTime" :label="downloadStartDateLabel" v-model="downloadedItemStartDateTime" />
+                        <DatePicker v-else :label="downloadStartDateLabel" v-model="downloadedItemStartDateTime" />
+                    </template>
+                </div>
+                <div class="col-xs-6 col-sm-3">
+                    <template v-if="isDownloadDateShown && isDownloadDateShownAsDateRange">
+                        <DateTimePicker v-if="isDownloadDateShownWithTime" label="Expire" v-model="downloadedItemEndDateTime" />
+                        <DatePicker v-else label="Expire" v-model="downloadedItemEndDateTime" />
+                    </template>
+                </div>
+                <div class="col-xs-12 col-sm-6">
+                    <RockFormField v-if="isDownloadStatusShown" label="Status"
+                                   :modelValue="downloadedItemStatus"
+                                   name="statusButtonGroup">
+                        <div>
+                            <div name="statusButtonGroup" class="btn-group btn-toggle">
+                                <RockButton btnSize="xs"
+                                            :btnType="getButtonGroupButtonType(ContentChannelItemStatus.PendingApproval, downloadedItemStatus, BtnType.Warning)"
+                                            :class="getButtonGroupActiveClass(ContentChannelItemStatus.PendingApproval, downloadedItemStatus)"
+                                            @click="downloadedItemStatus = ContentChannelItemStatus.PendingApproval">Pending</RockButton>
+                                <RockButton btnSize="xs"
+                                            :btnType="getButtonGroupButtonType(ContentChannelItemStatus.Approved, downloadedItemStatus, BtnType.Success)"
+                                            :class="getButtonGroupActiveClass(ContentChannelItemStatus.Approved, downloadedItemStatus)"
+                                            @click="downloadedItemStatus = ContentChannelItemStatus.Approved">Approved</RockButton>
+                                <RockButton btnSize="xs"
+                                            :btnType="getButtonGroupButtonType(ContentChannelItemStatus.Denied, downloadedItemStatus, BtnType.Danger)"
+                                            :class="getButtonGroupActiveClass(ContentChannelItemStatus.Denied, downloadedItemStatus)"
+                                            @click="downloadedItemStatus = ContentChannelItemStatus.Denied">Denied</RockButton>
+                            </div>
+                        </div>
+                    </RockFormField>
+                </div>
+            </div>
+            <div v-if="downloadNotes.length" class="row">
+                <div class="col-xs-12">
+                    <NotificationBox v-for="downloadNote of downloadNotes" :alertType="downloadNote.alertType" heading="Note: ">{{ downloadNote.content }}</NotificationBox>
+                </div>
+            </div>
+            <div v-if="item.licenseType?.text && item.licenseType.value" class="row">
+                <div class="col-xs-12">
+                    <div class="checkbox">
+                        <label title="">
+                            <input type="checkbox" v-model="isDownloadTermsAndConditionsChecked" />
+                            <span class="label-text">By downloading this work, you agree to comply with the terms of the <a :href="`https://www.rockrms.com/library/licenses?utm_source=rock-item-download`" target="_blank" rel="noopener noreferrer">{{ item.licenseType.text }} License</a> for the Spark Development Network Content Library.</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </Modal>
+        <Modal v-model="isRedownloadModalShown"
+               saveText="Download"
+               title="Article Download"
+               @save="emitDownloadArticleEvent">
+            <NotificationBox alertType="warning">The action you are about to perform will overwrite the existing content of the item "{{ item.title }}". Any changes will be lost. Are you sure you want to proceed with the update?</NotificationBox>
+        </Modal>
+        <Modal v-model="isAttributionMisconfiguredModalShown"
+               title="Article Download">
+            <NotificationBox alertType="warning">To comply with the attribution requirements of this item's license, the author information must be included. Please update the configuration of this content channel to include an attribute for storing the author information.</NotificationBox>
+        </Modal>
+    </div>
+</template>
+
+<style scoped>
+    .library-viewer-item-preview {
+        min-width: 0;
+        padding: 24px;
+        width: 100%;
+        overflow-x: hidden;
+        /* display: flex;
+        flex-direction: column;
+        padding: 24px;
+        flex: 1 1 auto;
+        overflow: hidden;
+        gap: 24px;
+        min-width: 0; */
+    }
+
+    .library-viewer-item-preview-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 90ch;
+        margin: 0 auto;
+        gap: 24px;
+    }
+
+    .library-viewer-item-preview-header h1 {
+        margin: 0;
+    }
+
+    .library-viewer-item-preview-header > * + * {
+        margin-top: 8px;
+    }
+
+    .library-viewer-item-preview-author-and-stamps {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+    }
+
+    .library-viewer-item-preview-meta-and-download {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px 8px;
+    }
+
+    @media screen and (min-width: 992px) {
+        .library-viewer-item-preview-meta-and-download {
+            flex-direction: row;
+        }
+    }
+
+    .library-viewer-item-preview-image {
+        width: 100%;
+    }
+
+    .library-viewer-item-preview-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        font-size: 14px;
+    }
+
+    .library-viewer-item-preview-meta > div {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .library-viewer-item-badge-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .library-viewer-item-preview-download-button-label {
+        margin-left: 8px;
+    }
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import ItemBadgeList from "./itemBadgeList.partial.obs";
+    import ItemDownloadsLabel from "./itemDownloadsLabel.partial.obs";
+    import ItemStampList from "./itemStampList.partial.obs";
+    import { getItemCategories, toDateString } from "./utils.partial";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { ContentChannelItemStatus } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { LibraryViewerDownloadItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerDownloadItemBag";
+    import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";
+    import { LibraryViewerValidationResultsBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerValidationResultsBag";
+
+    const props = defineProps({
+        item: {
+            type: Object as PropType<LibraryViewerItemBag>,
+            required: true
+        },
+
+        contentChannelIdKey: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
+        errorMessage: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        isLoadingDetails: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
+        isDownloadDateShown: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
+        isDownloadDateShownAsDateRange: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
+        isDownloadDateShownWithTime: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
+        isDownloadStatusShown: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
+        validationResults: {
+            type: Object as PropType<LibraryViewerValidationResultsBag | null | undefined>,
+            required: false
+        },
+
+        warningMessage: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "loadDetails"): void,
+        (e: "downloadArticle", download: LibraryViewerDownloadItemBag): void
+    }>();
+
+    type NotificationBoxData = {
+        alertType: AlertType;
+        content: string;
+    };
+
+    //#region Values
+
+    const isDownloadModalShown = ref<boolean>(false);
+    const isRedownloadModalShown = ref<boolean>(false);
+    const isAttributionMisconfiguredModalShown = ref<boolean>(false);
+
+    // Download values.
+    const downloadedItemStartDateTime = ref<string | null | undefined>(getDefaultDownloadStartDate());
+    const downloadedItemEndDateTime = ref<string | null | undefined>();
+    const downloadedItemStatus = ref<ContentChannelItemStatus | null | undefined>(getDefaultDownloadStatus());
+    const isDownloadTermsAndConditionsChecked = ref<boolean>(false);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const authorLabelAndName = computed<string>(() => {
+        if (props.item.authorName) {
+            return `By ${props.item.authorName}`;
+        }
+        else {
+            return "";
+        }
+    });
+
+    const badges = computed<string[]>(() => {
+        return getItemCategories(props.item, props.item.topic ? [props.item.topic] : []);
+    });
+
+    const downloadArticleButtonText = computed<string>(() => {
+        if (props.item.isDownloaded) {
+            return "Re-download and Refresh";
+        }
+        else {
+            return "Download Article";
+        }
+    });
+
+    const downloadStartDateLabel = computed<string>(() => {
+        if (props.isDownloadDateShownAsDateRange) {
+            return "Start";
+        }
+        else {
+            return "Active";
+        }
+    });
+
+    const downloadNotes = computed<NotificationBoxData[]>(() => {
+        const validationResults = props.validationResults;
+
+        if (!validationResults) {
+            return [];
+        }
+
+        const notes: NotificationBoxData[] = [];
+
+        // Show a note if attributes are not mapped.
+        const missingConfigurations: string[] = [];
+
+        if (!validationResults.isAuthorAttributeMapped) {
+            missingConfigurations.push("author");
+        }
+
+        if (!validationResults.isImageAttributeMapped) {
+            missingConfigurations.push("image");
+        }
+
+        if (!validationResults.isSummaryAttributeMapped) {
+            missingConfigurations.push("summary");
+        }
+
+        if (missingConfigurations.length) {
+            let items: string = "";
+
+            if (missingConfigurations.length === 1) {
+                items = missingConfigurations[0];
+            }
+            else if (missingConfigurations.length === 2) {
+                items = `${missingConfigurations[0]} or ${missingConfigurations[1]}`;
+            }
+            else {
+                items = `${missingConfigurations.slice(0, -1).join(", ")}, or ${missingConfigurations[missingConfigurations.length - 1]}`;
+            }
+
+            notes.push({
+                alertType: AlertType.Info,
+                content: `Your content channel is currently not configured to download the ${items} of downloaded items. To include this data, please adjust the content channel configuration settings accordingly.`
+            });
+        }
+
+        return notes;
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    /** Emits the loadDetails event if the item details are not loaded. */
+    function ensureDetailsLoaded(): void {
+        if (!props.item?.htmlContent) {
+            emit("loadDetails");
+        }
+    }
+
+    /** Gets the button type. */
+    function getButtonGroupButtonType<T>(expectedValue: T, actualValue: T, successButtonType: BtnType): BtnType {
+        if (expectedValue === actualValue) {
+            return successButtonType;
+        }
+        else {
+            return BtnType.Default;
+        }
+    }
+
+    /** Gets the button active CSS class if selected. */
+    function getButtonGroupActiveClass<T>(expectedValue: T, actualValue: T): string {
+        if (expectedValue === actualValue) {
+            return "active";
+        }
+        else {
+            return "";
+        }
+    }
+
+    /** Gets the default status for the item download based on the current item. */
+    function getDefaultDownloadStatus(): ContentChannelItemStatus | null | undefined {
+        if (props.item.isDownloaded) {
+            return null;
+        }
+        else {
+            return ContentChannelItemStatus.Approved;
+        }
+    }
+
+    /** Gets the default start date for the item download based on the current item. */
+    function getDefaultDownloadStartDate(): string | null | undefined {
+        if (props.item.isDownloaded) {
+            return null;
+        }
+        else if (props.isDownloadDateShownWithTime) {
+            return RockDateTime.now().toISOString();
+        }
+        else {
+            return RockDateTime.now().date.toISOString();
+        }
+    }
+
+    /** Resets the download modal fields. */
+    function resetItemDownloadModal(): void {
+        downloadedItemStartDateTime.value = getDefaultDownloadStartDate();
+        downloadedItemEndDateTime.value = undefined;
+        downloadedItemStatus.value = getDefaultDownloadStatus();
+        isDownloadTermsAndConditionsChecked.value = false;
+    }
+
+    /** Emits the downloadArticle event and closes the download modal. */
+    function emitDownloadArticleEvent(): void {
+        emit("downloadArticle", {
+            contentLibraryItemGuid: props.item.guid,
+            startDate: downloadedItemStartDateTime.value,
+            endDate: downloadedItemEndDateTime.value,
+            status: downloadedItemStatus.value
+        });
+        isDownloadModalShown.value = false;
+        isRedownloadModalShown.value = false;
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Event handler for the download button being clicked. */
+    function onDownloadArticleClicked(): void {
+        // Validate if we can download (the only way we can't currently is if attribution isn't configured).
+        const validationResults = props.validationResults;
+        const itemLicenseTypeGuid = props.item.licenseType?.value;
+
+        // Show a warning if the item's license requires attribution and the author attribute is not mapped.
+        if (validationResults && !validationResults.isAuthorAttributeMapped && itemLicenseTypeGuid) {
+            const attributionLicenseTypeGuids = [
+                DefinedValue.LibraryLicenseTypeAuthorAttribution,
+                DefinedValue.LibraryLicenseTypeOrganizationAttribution
+            ];
+
+            if (attributionLicenseTypeGuids.some(licenseTypeGuid => licenseTypeGuid.toLowerCase() === itemLicenseTypeGuid.toLocaleLowerCase())) {
+                isAttributionMisconfiguredModalShown.value = true;
+                return;
+            }
+        }
+
+        if (props.item.isDownloaded) {
+            // Show the redownload modal.
+            isRedownloadModalShown.value = true;
+        }
+        else {
+            // Show the regular download modal.
+            isDownloadModalShown.value = true;
+        }
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(() => props.item, () => {
+        ensureDetailsLoaded();
+
+        // Reset the download modals whenever the item changes.
+        resetItemDownloadModal();
+    });
+
+    watch([isDownloadModalShown, isRedownloadModalShown], () => {
+        if (!isDownloadModalShown.value && !isRedownloadModalShown.value) {
+            // Reset the item download modal when it is closed.
+            resetItemDownloadModal();
+        }
+    });
+
+    //#endregion
+
+    onMounted(() => {
+        ensureDetailsLoaded();
+    });
+</script>

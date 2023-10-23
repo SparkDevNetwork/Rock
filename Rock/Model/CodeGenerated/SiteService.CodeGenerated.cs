@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -106,86 +102,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// Site View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( Site ) )]
-    public partial class SiteViewModelHelper : ViewModelHelper<Site, SiteBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override SiteBag CreateViewModel( Site model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new SiteBag
-            {
-                IdKey = model.IdKey,
-                AdditionalSettings = model.AdditionalSettings,
-                AllowedFrameDomains = model.AllowedFrameDomains,
-                AllowIndexing = model.AllowIndexing,
-                ChangePasswordPageId = model.ChangePasswordPageId,
-                ChangePasswordPageRouteId = model.ChangePasswordPageRouteId,
-                CommunicationPageId = model.CommunicationPageId,
-                CommunicationPageRouteId = model.CommunicationPageRouteId,
-                ConfigurationMobilePhoneBinaryFileId = model.ConfigurationMobilePhoneBinaryFileId,
-                ConfigurationMobileTabletBinaryFileId = model.ConfigurationMobileTabletBinaryFileId,
-                DefaultPageId = model.DefaultPageId,
-                DefaultPageRouteId = model.DefaultPageRouteId,
-                Description = model.Description,
-                DisablePredictableIds = model.DisablePredictableIds,
-                EnabledForShortening = model.EnabledForShortening,
-                EnableExclusiveRoutes = model.EnableExclusiveRoutes,
-                EnableMobileRedirect = model.EnableMobileRedirect,
-                EnablePageViewGeoTracking = model.EnablePageViewGeoTracking,
-                EnablePageViews = model.EnablePageViews,
-                EnablePersonalization = model.EnablePersonalization,
-                EnableVisitorTracking = model.EnableVisitorTracking,
-                ErrorPage = model.ErrorPage,
-                ExternalUrl = model.ExternalUrl,
-                FavIconBinaryFileId = model.FavIconBinaryFileId,
-                GoogleAnalyticsCode = model.GoogleAnalyticsCode,
-                IndexStartingLocation = model.IndexStartingLocation,
-                IsActive = model.IsActive,
-                IsIndexEnabled = model.IsIndexEnabled,
-                IsSystem = model.IsSystem,
-                LatestVersionDateTime = model.LatestVersionDateTime,
-                LoginPageId = model.LoginPageId,
-                LoginPageRouteId = model.LoginPageRouteId,
-                MobilePageId = model.MobilePageId,
-                Name = model.Name,
-                PageHeaderContent = model.PageHeaderContent,
-                PageNotFoundPageId = model.PageNotFoundPageId,
-                PageNotFoundPageRouteId = model.PageNotFoundPageRouteId,
-                RedirectTablets = model.RedirectTablets,
-                RegistrationPageId = model.RegistrationPageId,
-                RegistrationPageRouteId = model.RegistrationPageRouteId,
-                RequiresEncryption = model.RequiresEncryption,
-                SiteLogoBinaryFileId = model.SiteLogoBinaryFileId,
-                SiteType = ( int ) model.SiteType,
-                Theme = model.Theme,
-                ThumbnailBinaryFileId = model.ThumbnailBinaryFileId,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -297,20 +213,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static SiteBag ToViewModel( this Site model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new SiteViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

@@ -1,0 +1,53 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="grid-actions btn-group">
+        <button type="button"
+                class="btn btn-grid-action"
+                style="position: relative;"
+                data-toggle="dropdown">
+            <i class="fa fa-ellipsis-v fa-fw"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-right"
+            ref="secondaryActionMenu">
+            <PopupActionButton v-for="action in props.gridActions"
+                               :action="action"
+                               :grid="grid"
+                               @click="onActionClick" />
+        </ul>
+    </div>
+</template>
+
+<script lang="ts">
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    declare function $(element: any): any;
+</script>
+
+<script setup lang="ts">
+    import PopupActionButton from "./popupActionButton.partial.obs";
+    import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { PropType, ref } from "vue";
+
+    const props = defineProps({
+        gridActions: {
+            type: Array as PropType<GridAction[]>,
+            required: true
+        },
+
+        /**
+         * The grid state that this action belongs to.
+         */
+         grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        }
+    });
+
+    const secondaryActionMenu = ref<HTMLElement | undefined>();
+
+    function onActionClick(): void {
+        // Close the drop down since we are hijacking the click event.
+        if (secondaryActionMenu.value) {
+            $(secondaryActionMenu.value).dropdown("toggle");
+        }
+    }
+</script>

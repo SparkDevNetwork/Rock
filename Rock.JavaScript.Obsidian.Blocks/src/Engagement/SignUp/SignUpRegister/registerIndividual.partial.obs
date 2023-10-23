@@ -47,10 +47,10 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import EmailBox from "@Obsidian/Controls/emailBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
 
     const props = defineProps({

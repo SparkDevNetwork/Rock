@@ -1,0 +1,72 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField formGroupClasses="date-range-picker" #default="{ uniqueId }" name="daterangepicker" v-model.lazy="internalValue">
+        <div class="control-wrapper">
+            <div class="picker-daterange">
+                <div class="form-control-group">
+                    <DatePickerBase v-model="lowerValue" v-bind="basePickerProps" />
+                    <div class="input-group form-control-static"> to </div>
+                    <DatePickerBase v-model="upperValue" />
+                </div>
+            </div>
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import RockFormField from "./rockFormField.obs";
+    import DatePickerBase from "./datePickerBase.obs";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<DateRangeParts>,
+            required: false
+        },
+
+        /** Whether or not the user should be able to select dates in the past. NOT Reactive */
+        disallowPastDateSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: DateRangeParts | undefined);
+    }>();
+
+    const lowerValue = ref(props.modelValue?.lowerValue ?? "");
+    const upperValue = ref(props.modelValue?.upperValue ?? "");
+
+    const internalValue = computed(() => {
+        if (lowerValue.value === "" && upperValue.value === "") {
+            return "";
+        }
+
+        return `{lowerValue.value},{upperValue.value}`;
+    });
+
+    const basePickerProps = computed(() => {
+        return {
+            disallowPastDateSelection: props.disallowPastDateSelection
+        };
+    });
+
+    watch(() => props.modelValue, () => {
+        lowerValue.value = props.modelValue?.lowerValue ?? "";
+        upperValue.value = props.modelValue?.upperValue ?? "";
+    });
+
+    watch(() => [lowerValue.value, upperValue.value], () => {
+        if (!lowerValue.value && !upperValue.value) {
+            emit("update:modelValue", undefined);
+        }
+        else {
+            emit("update:modelValue", {
+                lowerValue: lowerValue.value,
+                upperValue: upperValue.value
+            } as DateRangeParts);
+        }
+    });
+</script>

@@ -17,6 +17,12 @@ namespace Rock.Tests.Integration.Core.Security
     [TestClass]
     public class OidcClientTests
     {
+        [ClassInitialize]
+        public static void TestInitialize( TestContext context )
+        {
+            TestDatabaseHelper.ResetDatabase();
+        }
+
         [TestMethod]
         public void HandleOidcUserAddUpdate_ExistingPersonShouldBeBoundToNewUser()
         {

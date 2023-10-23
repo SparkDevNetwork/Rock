@@ -17,7 +17,7 @@
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import NumberBox from "@Obsidian/Controls/numberBox";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
 
 export const EditComponent = defineComponent({
     name: "DecimalField.Edit",

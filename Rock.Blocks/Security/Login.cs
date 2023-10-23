@@ -37,11 +37,12 @@ namespace Rock.Blocks.Security
     /// <summary>
     /// Allows the user to authenticate.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Login" )]
-    [Category( "Obsidian > Security" )]
+    [Category( "Security" )]
     [Description( "Allows the user to authenticate." )]
     [IconCssClass( "fa fa-user-lock" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -230,7 +231,7 @@ namespace Rock.Blocks.Security
     [Rock.SystemGuid.EntityTypeGuid( "D9482EF9-F774-4E37-AC84-8B340CBCA364" )]
     [Rock.SystemGuid.BlockTypeGuid( "5437C991-536D-4D9C-BE58-CBDB59D1BBB3" )]
 
-    public class Login : RockObsidianBlockType
+    public class Login : RockBlockType
     {
         #region Categories
 
@@ -408,9 +409,6 @@ namespace Rock.Blocks.Security
         #endregion Page Parameter Keys
 
         #region IRockObsidianBlockType Implementation
-
-        /// <inheritdoc/>
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
@@ -626,7 +624,7 @@ namespace Rock.Blocks.Security
                 return ActionBadRequest( "Please try a different authentication method" );
             }
 
-            var loginUrl = externalRedirectAuthentication.GenerateExternalLoginUrl( GetCurrentPageUrl(), GetRedirectUrlAfterLogin() );
+            var loginUrl = externalRedirectAuthentication.GenerateExternalLoginUrl( GetRedirectUri(), GetRedirectUrlAfterLogin() );
 
             if ( loginUrl == null )
             {
@@ -733,13 +731,12 @@ namespace Rock.Blocks.Security
         }
 
         /// <summary>
-        /// Gets the current page URL.
+        /// Gets the redirect URI that can be used by external authentication components to complete authentication.
         /// </summary>
-        /// <returns>The current page URL.</returns>
-        private string GetCurrentPageUrl()
+        private string GetRedirectUri()
         {
-            var rootUrl = this.RequestContext.RootUrlPath?.TrimEnd( '/' );
-            return $"{rootUrl}/page/{PageCache.Id}";
+            var uri = this.RequestContext.RequestUri;
+            return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ).EnsureTrailingForwardslash() + $"page/{PageCache.Id}";
         }
 
         /// <summary>
@@ -868,7 +865,12 @@ namespace Rock.Blocks.Security
                 return returnUrl;
             }
 
-            return thirdPartyReturnUrl;
+            if ( thirdPartyReturnUrl.IsNotNullOrWhiteSpace() )
+            {
+                return thirdPartyReturnUrl;
+            }
+
+            return "/";
         }
 
         /// <summary>
@@ -1003,7 +1005,7 @@ namespace Rock.Blocks.Security
         /// <param name="externalAuthProviders">The external authentication providers.</param>
         private void LogInWithExternalAuthProviderIfNeeded( LoginInitializationBox box, List<NamedComponent<AuthenticationComponent>> externalAuthProviders )
         {
-            var redirectUrl = GetCurrentPageUrl();
+            var redirectUrl = GetRedirectUri();
 
             foreach ( var authProvider in externalAuthProviders.Select( c => c.Component ) )
             {
@@ -1087,7 +1089,7 @@ namespace Rock.Blocks.Security
                     return;
                 }
 
-                var authLoginUri = externalRedirectAuthentication.GenerateExternalLoginUrl( GetCurrentPageUrl(), GetRedirectUrlAfterLogin() ).AbsoluteUri;
+                var authLoginUri = externalRedirectAuthentication.GenerateExternalLoginUrl( GetRedirectUri(), GetRedirectUrlAfterLogin() ).AbsoluteUri;
 
                 if ( authLoginUri.IsNotNullOrWhiteSpace() )
                 {

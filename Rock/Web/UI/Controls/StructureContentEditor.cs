@@ -429,11 +429,13 @@ var editor = new Rock.UI.StructuredContentEditor.EditorJS({{
         new Rock.UI.StructuredContentEditor.EditorDragDrop(editor);
     }},
     onChange: function() {{
-        editor.save().then( function(savedData) {{
-            $('#{1}').val(encodeURIComponent(JSON.stringify(savedData)));
-        }}).catch((e) => {{
-            console.log('Saving failed: ', e)
-        }});
+        setTimeout(() => {{
+            editor.save().then( function(savedData) {{
+                $('#{1}').val(encodeURIComponent(JSON.stringify(savedData)));
+            }}).catch((e) => {{
+                console.log('Saving failed: ', e)
+            }});
+        }}, 0);
     }}
 }});
 }})();

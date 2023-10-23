@@ -1,0 +1,44 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockField :modelValue="defaultValue" :attribute="attribute" isEditMode />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import RockField from "@Obsidian/Controls/rockField.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { FormField } from "../Shared/types.partial";
+
+    function getAttributeFromField(field: FormField): PublicAttributeBag {
+        return {
+            attributeGuid: newGuid(),
+            fieldTypeGuid: field.fieldTypeGuid,
+            name: !(field.isHideLabel ?? false) ? field.name : "",
+            key: field.key,
+            configurationValues: field.configurationValues,
+            isRequired: field.isRequired ?? false,
+            description: field.description ?? "",
+            order: 0,
+            categories: []
+        };
+    }
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FormField>,
+            required: true
+        }
+    });
+
+    const attribute = ref<PublicAttributeBag>(getAttributeFromField(props.modelValue));
+
+    const defaultValue = ref(props.modelValue.defaultValue ?? "");
+
+    watch(() => props.modelValue, () => {
+        attribute.value = getAttributeFromField(props.modelValue);
+        defaultValue.value = props.modelValue.defaultValue ?? "";
+    }, {
+        deep: true
+    });
+</script>

@@ -114,6 +114,12 @@ namespace RockWeb.Blocks.Administration
 
             ShowHideEditForm( true, null );
         }
+
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            ShowHideEditForm( false, null );
+        }
+
         #endregion
 
         #region Internal Methods

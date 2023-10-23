@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -82,11 +78,13 @@ namespace Rock.Model
                 return false;
             }
 
+            #pragma warning disable 612, 618 // GroupLocationHistoricalSchedule is obsolete, but we still need this code generated
             if ( new Service<GroupLocationHistoricalSchedule>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, GroupLocationHistoricalSchedule.FriendlyTypeName );
                 return false;
             }
+            #pragma warning restore 612, 618
 
             if ( new Service<GroupMemberAssignment>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
@@ -114,56 +112,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// Schedule View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( Schedule ) )]
-    public partial class ScheduleViewModelHelper : ViewModelHelper<Schedule, ScheduleBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override ScheduleBag CreateViewModel( Schedule model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new ScheduleBag
-            {
-                IdKey = model.IdKey,
-                AbbreviatedName = model.AbbreviatedName,
-                AutoInactivateWhenComplete = model.AutoInactivateWhenComplete,
-                CategoryId = model.CategoryId,
-                CheckInEndOffsetMinutes = model.CheckInEndOffsetMinutes,
-                CheckInStartOffsetMinutes = model.CheckInStartOffsetMinutes,
-                Description = model.Description,
-                EffectiveEndDate = model.EffectiveEndDate,
-                EffectiveStartDate = model.EffectiveStartDate,
-                iCalendarContent = model.iCalendarContent,
-                IsActive = model.IsActive,
-                IsPublic = model.IsPublic,
-                Name = model.Name,
-                Order = model.Order,
-                WeeklyDayOfWeek = ( int? ) model.WeeklyDayOfWeek,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -246,20 +194,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static ScheduleBag ToViewModel( this Schedule model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new ScheduleViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

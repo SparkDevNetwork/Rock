@@ -21,6 +21,7 @@ using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Web
 {
@@ -36,7 +37,7 @@ namespace Rock.Web
         /// <summary>
         /// The cached providers found through reflection.
         /// </summary>
-        private static Dictionary<Type, List<Type>> _cachedProviders;
+        private static Dictionary<Type, List<ProviderCache>> _cachedProviders;
 
         #endregion
 
@@ -90,8 +91,9 @@ namespace Rock.Web
         /// Gets all the custom settings providers for the given type.
         /// </summary>
         /// <param name="type">The type whose custom settings providers we want to retrieve.</param>
+        /// <param name="siteType">The site type that the related block is assigned to.</param>
         /// <returns>An enumerable collection of providers.</returns>
-        public static IEnumerable<RockCustomSettingsProvider> GetProvidersForType( Type type )
+        public static IEnumerable<RockCustomSettingsProvider> GetProvidersForType( Type type, SiteType siteType )
         {
             if ( _cachedProviders == null )
             {
@@ -102,9 +104,12 @@ namespace Rock.Web
             {
                 if ( _cachedProviders.TryGetValue( type, out var providers ) )
                 {
-                    foreach ( var t in providers )
+                    foreach ( var p in providers )
                     {
-                        yield return ( RockCustomSettingsProvider ) Activator.CreateInstance( t );
+                        if ( !p.SiteType.HasValue || p.SiteType.Value == siteType )
+                        {
+                            yield return ( RockCustomSettingsProvider ) Activator.CreateInstance( p.Provider );
+                        }
                     }
                 }
 
@@ -113,27 +118,43 @@ namespace Rock.Web
         }
 
         /// <summary>
+        /// Gets all the custom settings providers for the given type.
+        /// </summary>
+        /// <param name="type">The type whose custom settings providers we want to retrieve.</param>
+        /// <returns>An enumerable collection of providers.</returns>
+        [Obsolete( "Use the method that takes a site type." )]
+        [RockObsolete( "1.16" )]
+        public static IEnumerable<RockCustomSettingsProvider> GetProvidersForType( Type type )
+        {
+            // The original version only worked with mobile blocks.
+            return GetProvidersForType( type, SiteType.Mobile );
+        }
+
+        /// <summary>
         /// Initializes the cached providers.
         /// </summary>
         private static void InitializeCachedProviders()
         {
-            var providers = new Dictionary<Type, List<Type>>();
+            var providers = new Dictionary<Type, List<ProviderCache>>();
 
             var types = Rock.Reflection.FindTypes( typeof( RockCustomSettingsProvider ) );
             foreach ( var kvp in types )
             {
-                var targetType = kvp.Value.GetCustomAttribute<TargetTypeAttribute>()?.TargetType;
+                var targetType = kvp.Value.GetCustomAttribute<CustomSettingsBlockTypeAttribute>()?.TargetType;
+                var siteType = kvp.Value.GetCustomAttribute<CustomSettingsBlockTypeAttribute>()?.SiteType;
 
-                if ( targetType != null )
+                if ( targetType == null )
                 {
-                    if ( providers.ContainsKey( targetType ) )
-                    {
-                        providers[targetType].Add( kvp.Value );
-                    }
-                    else
-                    {
-                        providers.Add( targetType, new List<Type> { kvp.Value } );
-                    }
+                    continue;
+                }
+
+                if ( providers.ContainsKey( targetType ) )
+                {
+                    providers[targetType].Add( new ProviderCache( kvp.Value, siteType ) );
+                }
+                else
+                {
+                    providers.Add( targetType, new List<ProviderCache> { new ProviderCache( kvp.Value, siteType ) } );
                 }
             }
 
@@ -141,5 +162,18 @@ namespace Rock.Web
         }
 
         #endregion
+
+        private class ProviderCache
+        {
+            public Type Provider { get; }
+
+            public SiteType? SiteType { get; }
+
+            public ProviderCache( Type provider, SiteType? siteType )
+            {
+                Provider = provider;
+                SiteType = siteType;
+            }
+        }
     }
 }

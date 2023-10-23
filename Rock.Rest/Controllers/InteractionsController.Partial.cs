@@ -19,13 +19,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
-
+using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Transactions;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
@@ -111,6 +116,129 @@ namespace Rock.Rest.Controllers
                     interactionTransaction.Enqueue();
                 }
             }
+        }
+
+        #endregion
+
+        #region Action: RegisterPageInteraction
+
+        /// <summary>
+        /// Describes a processing request to register a page interaction.
+        /// </summary>
+        public class RegisterPageInteractionActionInfo
+        {
+            /// <summary>
+            /// The unique identifier of the page.
+            /// </summary>
+            public int PageId { get; set; }
+
+            /// <summary>
+            /// The name of the action being registered.
+            /// </summary>
+            public string ActionName { get; set; } = "View";
+
+            /// <summary>
+            /// The unique identifier for the browser session.
+            /// </summary>
+            public Guid BrowserSessionGuid { get; set; }
+
+            /// <summary>
+            /// The server date and time on which the page was requested.
+            /// </summary>
+            public DateTime PageRequestDateTime { get; set; }
+
+            /// <summary>
+            /// The time in seconds required to serve the initial page request.
+            /// </summary>
+            public double? PageRequestTimeToServe { get; set; }
+
+            /// <summary>
+            /// Gets the raw user agent string of the client browser.
+            /// </summary>
+            public string UserAgent { get; set; }
+
+            /// <summary>
+            /// Gets the IP host address of the remote client.
+            /// </summary>
+            public string UserHostAddress { get; set; }
+
+            /// <summary>
+            /// Gets the DNS host name or IP address of the client's previous request that linked to the current URL.
+            /// </summary>
+            public string UrlReferrerHostAddress { get; set; }
+
+            /// <summary>
+            /// Gets the query search terms of the client's previous request that linked to the current URL.
+            /// </summary>
+            public string UrlReferrerSearchTerms { get; set; }
+        }
+
+        /// <summary>
+        /// Registers a page interaction.
+        /// </summary>
+        /// <param name="interactionInfo">A data object containing details about the interaction.</param>
+        /// <param name="immediate">A flag indicating if the action should be processed immediately. If false, the action will be added to the transaction queue.</param>
+        /// <returns>A status code that indicates if the request was successful.</returns>
+        [System.Web.Http.Route( "api/Interactions/RegisterPageInteraction" )]
+        [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "44781195-9125-4B51-9509-94B2F54C0AFE" )]
+        public IHttpActionResult RegisterPageInteraction( [FromBody] PageInteractionInfo interactionInfo, bool immediate = false )
+        {
+            var httpContext = System.Web.HttpContext.Current;
+            var request = httpContext?.Request;
+            if ( request != null )
+            {
+                // If the client details are not populated, set default values from the current request
+                // because we can assume this is a callback from the same client as the initial interaction.
+                if ( string.IsNullOrWhiteSpace( interactionInfo.UserAgent ) )
+                {
+                    interactionInfo.UserAgent = request.UserAgent;
+                }
+                if ( string.IsNullOrWhiteSpace( interactionInfo.UserHostAddress ) )
+                {
+                    interactionInfo.UserHostAddress = request.UserHostAddress;
+                }
+            }
+
+            var rockContext = new RockContext();
+
+            if ( string.IsNullOrWhiteSpace( interactionInfo.UserIdKey ) )
+            {
+                // This is a visitor who has not yet been assigned an identifier.
+                // If cookies are enabled in the client browser, the first-time visitor cookie will have been set in the initial page request
+                // and we can initiate session tracking for this user.
+                var firstTimeCookie = WebRequestHelper.GetCookieFromContext( httpContext, Rock.Personalization.RequestCookieKey.ROCK_FIRSTTIME_VISITOR );
+                if ( firstTimeCookie != null )
+                {
+                    // Create a new Anonymous Visitor alias and use it to record this and all subsequent interactions
+                    // by returning the new identifier in the visitor key cookie.
+                    var visitorPersonAlias = new PersonAliasService( rockContext ).CreateAnonymousVisitorAlias();
+                    rockContext.SaveChanges();
+
+                    // Assign this page interaction to the new Anonymous Visitor alias.
+                    interactionInfo.UserIdKey = visitorPersonAlias.IdKey;
+
+                    var visitorKeyCookie = new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY, interactionInfo.UserIdKey )
+                    {
+                        Expires = WebRequestHelper.GetPersistedCookieExpirationDateTime()
+                    };
+
+                    WebRequestHelper.AddOrUpdateCookie( httpContext, visitorKeyCookie );
+                }
+            }
+
+            var interactionService = new InteractionService( rockContext );
+            try
+            {
+                interactionService.RegisterPageInteraction( interactionInfo, immediate );
+            }
+            catch ( Exception ex )
+            {
+                // If there is a problem creating the interaction, record it but do not generate an error for the caller.
+                RockLogger.Log.Error( RockLogDomains.Interaction, ex );
+            }
+
+            return Ok();
         }
 
         #endregion 

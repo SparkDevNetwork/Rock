@@ -30,7 +30,7 @@
     import { computed, ref, watch } from "vue";
     import { toNumberOrNull, toNumber } from "@Obsidian/Utility/numberUtils";
     import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { normalizeRules, ValidationResult } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
@@ -57,27 +57,25 @@
     const page = ref("");
     const line = ref("");
 
-    watch(volume, () => console.log("volume changed", volume.value));
-    watch(page, () => console.log("page changed", page.value));
-    watch(line, () => console.log("line changed", line.value));
-
     // #endregion
 
     // #region Computed Values
 
     const internalValue = computed({
         get() {
-            console.log("get internal", internalValue);
             return volume.value + "," + page.value + "," + line.value;
         },
         set(value: string) {
-            console.log("set internal", value);
             const parts = value.split(",");
             volume.value = toNumberOrNull(parts[0])?.toString() ?? "";
             page.value = toNumberOrNull(parts[1])?.toString() ?? "";
             line.value = toNumberOrNull(parts[2])?.toString() ?? "";
         }
     });
+
+    if (props.modelValue != null) {
+        internalValue.value = props.modelValue;
+    }
 
     /** Convert the `required` rule to more accurately validate if this control is filled out */
     const fieldRules = computed(() => {
@@ -100,12 +98,10 @@
     // #region Watchers
 
     watch(() => props.modelValue, () => {
-        console.log("prop changed", props.modelValue);
         updateRefValue(internalValue, props.modelValue);
     });
 
     watch(internalValue, () => {
-        console.log("internalvalue changes", internalValue.value);
         emit("update:modelValue", internalValue.value);
     });
 
@@ -137,17 +133,14 @@
         const errs: string[] = [];
 
         // Each field should either be empty, or a number
-        console.log("validate volume numberic", !!volume.value.trim(), !toNumberOrNull(volume.value.trim()));
         if (volume.value.trim() && toNumber(volume.value.trim()) == 0) {
             errs.push("Volume");
         }
 
-        console.log("validate page numberic", !!page.value.trim(), !toNumberOrNull(page.value.trim()));
         if (page.value.trim() && toNumber(page.value.trim()) == 0) {
             errs.push("Page");
         }
 
-        console.log("validate line numberic", !!line.value.trim(), !toNumberOrNull(line.value.trim()));
         if (line.value.trim() && toNumber(line.value.trim()) == 0) {
             errs.push("Line");
         }
@@ -159,6 +152,6 @@
         return "is invalid. " + errs.join(" and ") + " should be " + (errs.length == 1 ? "a number" : "numbers") + " greater than zero.";
     }
 
-    // #endregion
+            // #endregion
 
 </script>

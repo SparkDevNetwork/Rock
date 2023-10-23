@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -64,77 +60,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// WorkflowActionForm View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( WorkflowActionForm ) )]
-    public partial class WorkflowActionFormViewModelHelper : ViewModelHelper<WorkflowActionForm, WorkflowActionFormBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override WorkflowActionFormBag CreateViewModel( WorkflowActionForm model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new WorkflowActionFormBag
-            {
-                IdKey = model.IdKey,
-                ActionAttributeGuid = model.ActionAttributeGuid,
-                Actions = model.Actions,
-                AllowNotes = model.AllowNotes,
-                AllowPersonEntry = model.AllowPersonEntry,
-                Footer = model.Footer,
-                Header = model.Header,
-                IncludeActionsInNotification = model.IncludeActionsInNotification,
-                NotificationSystemCommunicationId = model.NotificationSystemCommunicationId,
-                PersonEntryAddressEntryOption = ( int ) model.PersonEntryAddressEntryOption,
-                PersonEntryAutofillCurrentPerson = model.PersonEntryAutofillCurrentPerson,
-                PersonEntryBirthdateEntryOption = ( int ) model.PersonEntryBirthdateEntryOption,
-                PersonEntryCampusIsVisible = model.PersonEntryCampusIsVisible,
-                PersonEntryCampusStatusValueId = model.PersonEntryCampusStatusValueId,
-                PersonEntryCampusTypeValueId = model.PersonEntryCampusTypeValueId,
-                PersonEntryConnectionStatusValueId = model.PersonEntryConnectionStatusValueId,
-                PersonEntryDescription = model.PersonEntryDescription,
-                PersonEntryEmailEntryOption = ( int ) model.PersonEntryEmailEntryOption,
-                PersonEntryEthnicityEntryOption = ( int ) model.PersonEntryEthnicityEntryOption,
-                PersonEntryFamilyAttributeGuid = model.PersonEntryFamilyAttributeGuid,
-                PersonEntryGenderEntryOption = ( int ) model.PersonEntryGenderEntryOption,
-                PersonEntryGroupLocationTypeValueId = model.PersonEntryGroupLocationTypeValueId,
-                PersonEntryHideIfCurrentPersonKnown = model.PersonEntryHideIfCurrentPersonKnown,
-                PersonEntryMaritalStatusEntryOption = ( int ) model.PersonEntryMaritalStatusEntryOption,
-                PersonEntryMobilePhoneEntryOption = ( int ) model.PersonEntryMobilePhoneEntryOption,
-                PersonEntryPersonAttributeGuid = model.PersonEntryPersonAttributeGuid,
-                PersonEntryPostHtml = model.PersonEntryPostHtml,
-                PersonEntryPreHtml = model.PersonEntryPreHtml,
-                PersonEntryRaceEntryOption = ( int ) model.PersonEntryRaceEntryOption,
-                PersonEntryRecordStatusValueId = model.PersonEntryRecordStatusValueId,
-                PersonEntrySectionTypeValueId = model.PersonEntrySectionTypeValueId,
-                PersonEntryShowHeadingSeparator = model.PersonEntryShowHeadingSeparator,
-                PersonEntrySpouseAttributeGuid = model.PersonEntrySpouseAttributeGuid,
-                PersonEntrySpouseEntryOption = ( int ) model.PersonEntrySpouseEntryOption,
-                PersonEntrySpouseLabel = model.PersonEntrySpouseLabel,
-                PersonEntryTitle = model.PersonEntryTitle,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -225,6 +150,7 @@ namespace Rock.Model
             target.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
             target.PersonEntrySectionTypeValueId = source.PersonEntrySectionTypeValueId;
             target.PersonEntryShowHeadingSeparator = source.PersonEntryShowHeadingSeparator;
+            target.PersonEntrySmsOptInEntryOption = source.PersonEntrySmsOptInEntryOption;
             target.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
             target.PersonEntrySpouseEntryOption = source.PersonEntrySpouseEntryOption;
             target.PersonEntrySpouseLabel = source.PersonEntrySpouseLabel;
@@ -237,20 +163,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static WorkflowActionFormBag ToViewModel( this WorkflowActionForm model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new WorkflowActionFormViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

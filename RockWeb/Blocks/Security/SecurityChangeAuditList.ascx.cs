@@ -166,10 +166,10 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfFiler_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFiler.SaveUserPreference( UserPreferenceKey.EntityType, etpEntityType.SelectedValue );
-            gfFiler.SaveUserPreference( UserPreferenceKey.Date, drpDate.DelimitedValues );
-            gfFiler.SaveUserPreference( UserPreferenceKey.EntityId, nbEntityId.Text );
-            gfFiler.SaveUserPreference( UserPreferenceKey.ChangedBy, ppChangedBy.PersonId.ToStringSafe() );
+            gfFiler.SetFilterPreference( UserPreferenceKey.EntityType, etpEntityType.SelectedValue );
+            gfFiler.SetFilterPreference( UserPreferenceKey.Date, drpDate.DelimitedValues );
+            gfFiler.SetFilterPreference( UserPreferenceKey.EntityId, nbEntityId.Text );
+            gfFiler.SetFilterPreference( UserPreferenceKey.ChangedBy, ppChangedBy.PersonId.ToStringSafe() );
 
             BindGrid();
         }
@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfFiler_ClearFilterClick( object sender, EventArgs e )
         {
-            gfFiler.DeleteUserPreferences();
+            gfFiler.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -220,10 +220,10 @@ namespace RockWeb.Blocks.Security
                 .OrderBy( t => t.FriendlyName )
                 .ToList();
             etpEntityType.EntityTypes = entityTypes;
-            etpEntityType.SelectedValue = gfFiler.GetUserPreference( UserPreferenceKey.EntityType );
-            drpDate.DelimitedValues = gfFiler.GetUserPreference( UserPreferenceKey.Date );
-            nbEntityId.Text = gfFiler.GetUserPreference( UserPreferenceKey.EntityId );
-            int? personId = gfFiler.GetUserPreference( UserPreferenceKey.ChangedBy ).AsIntegerOrNull();
+            etpEntityType.SelectedValue = gfFiler.GetFilterPreference( UserPreferenceKey.EntityType );
+            drpDate.DelimitedValues = gfFiler.GetFilterPreference( UserPreferenceKey.Date );
+            nbEntityId.Text = gfFiler.GetFilterPreference( UserPreferenceKey.EntityId );
+            int? personId = gfFiler.GetFilterPreference( UserPreferenceKey.ChangedBy ).AsIntegerOrNull();
             if ( personId.HasValue )
             {
                 ppChangedBy.SetValue( new PersonService( rockContext ).Get( personId.Value ) );

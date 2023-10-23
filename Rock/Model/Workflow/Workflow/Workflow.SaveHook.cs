@@ -65,7 +65,9 @@ namespace Rock.Model
                             .OrderByDescending( x => x.Id )
                             .Select( x => x.WorkflowIdNumber )
                             .FirstOrDefault();
+
                         this.Entity.WorkflowIdNumber = maxNumber + 1;
+                        this.Entity.WorkflowId = $"{this.Entity.WorkflowTypeCache.WorkflowIdPrefix}{this.Entity.WorkflowIdNumber:00000}";
                     }
 
                     if ( State == EntityContextState.Deleted )

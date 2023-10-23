@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -48,6 +49,12 @@ namespace Rock.Net
         /// </summary>
         private PageCache _pageCache;
 
+        /// <summary>
+        /// The person preference collections. This is used as a cache so that
+        /// we return the same instance for the entire request.
+        /// </summary>
+        private ConcurrentDictionary<string, PersonPreferenceCollection> _personPreferenceCollections = new ConcurrentDictionary<string, PersonPreferenceCollection>();
+
         #endregion
 
         #region Properties
@@ -69,9 +76,10 @@ namespace Rock.Net
         public virtual Person CurrentPerson => CurrentUser?.Person;
 
         /// <summary>
-        /// Gets the current visitor <see cref="PersonAlias"/> identifier.
+        /// Gets the current visitor <see cref="PersonAlias"/> identifier. If
+        /// a person is logged in then this value will be <c>null</c>.
         /// </summary>
-        /// <value>The current visitor identifier.</value>
+        /// <value>The current visitor <see cref="PersonAlias"/> identifier.</value>
         internal virtual int? CurrentVisitorId { get; private set; }
 
         /// <summary>
@@ -350,7 +358,7 @@ namespace Rock.Net
                 {
                     IEntity entity = null;
 
-                    if ( int.TryParse( entityKey, out int entityId ) )
+                    if ( _siteCache?.DisablePredictableIds != true && int.TryParse( entityKey, out int entityId ) )
                     {
                         entity = Reflection.GetIEntityForEntityType( type, entityId );
                     }
@@ -383,12 +391,24 @@ namespace Rock.Net
                     continue;
                 }
 
-                int? contextId = GetPageParameter( pageContext.Value ).AsIntegerOrNull();
-                if ( contextId.HasValue )
+                var contextId = GetPageParameter( pageContext.Value );
+
+                if ( contextId.IsNullOrWhiteSpace() )
                 {
+                    continue;
+                }
+
+                if ( int.TryParse( contextId, out var id ) )
+                {
+                    // Load from plain integer Id, but only if not disabled by site.
                     ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
                     {
-                        var entity = Reflection.GetIEntityForEntityType( entityType, contextId.Value );
+                        if ( _siteCache?.DisablePredictableIds == true )
+                        {
+                            return null;
+                        }
+
+                        var entity = Reflection.GetIEntityForEntityType( entityType, id );
 
                         if ( entity != null && entity is IHasAttributes attributedEntity )
                         {
@@ -398,13 +418,27 @@ namespace Rock.Net
                         return entity;
                     } ) );
                 }
-
-                Guid? contextGuid = GetPageParameter( pageContext.Value ).AsGuidOrNull();
-                if ( contextGuid.HasValue )
+                else if ( Guid.TryParse( contextId, out var guid ) )
                 {
+                    // Load from Guid.
                     ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
                     {
-                        var entity = Reflection.GetIEntityForEntityType( entityType, contextGuid.Value );
+                        var entity = Reflection.GetIEntityForEntityType( entityType, guid );
+
+                        if ( entity != null && entity is IHasAttributes attributedEntity )
+                        {
+                            Helper.LoadAttributes( attributedEntity );
+                        }
+
+                        return entity;
+                    } ) );
+                }
+                else
+                {
+                    // Load from IdKey.
+                    ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
+                    {
+                        var entity = Reflection.GetIEntityForEntityType( entityType, contextId );
 
                         if ( entity != null && entity is IHasAttributes attributedEntity )
                         {
@@ -653,7 +687,7 @@ namespace Rock.Net
         {
             if ( CurrentPerson != null )
             {
-                return CurrentPerson.PrimaryAliasId;
+                return null;
             }
 
             var visitorKeyCookie = GetCookieValue( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
@@ -704,6 +738,83 @@ namespace Rock.Net
 
             // The input format is unrecognized so return it.
             return input;
+        }
+
+        #endregion
+
+        #region Person Preferences
+
+        /// <summary>
+        /// Gets the global person preferences. These are unique to the person
+        /// but global across the entire system. Global preferences should be
+        /// used with extreme caution and care.
+        /// </summary>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetGlobalPersonPreferences()
+        {
+            return _personPreferenceCollections.GetOrAdd( PersonPreferenceService.GetGlobalPreferencePrefix(), k =>
+            {
+                if ( CurrentVisitorId.HasValue )
+                {
+                    return PersonPreferenceCache.GetVisitorPreferenceCollection( CurrentVisitorId.Value );
+                }
+                else if ( CurrentPerson != null )
+                {
+                    return PersonPreferenceCache.GetPersonPreferenceCollection( CurrentPerson );
+                }
+                else
+                {
+                    return new PersonPreferenceCollection();
+                }
+            } );
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the specified entity.
+        /// </summary>
+        /// <param name="scopedEntity">The entity to use when scoping the preferences for a particular use.</param>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetScopedPersonPreferences( IEntity scopedEntity )
+        {
+            return _personPreferenceCollections.GetOrAdd( PersonPreferenceService.GetPreferencePrefix( scopedEntity ), k =>
+            {
+                if ( CurrentVisitorId.HasValue )
+                {
+                    return PersonPreferenceCache.GetVisitorPreferenceCollection( CurrentVisitorId.Value, scopedEntity );
+                }
+                else if ( CurrentPerson != null )
+                {
+                    return PersonPreferenceCache.GetPersonPreferenceCollection( CurrentPerson, scopedEntity );
+                }
+                else
+                {
+                    return new PersonPreferenceCollection();
+                }
+            } );
+        }
+
+        /// <summary>
+        /// Gets the person preferences scoped to the specified entity.
+        /// </summary>
+        /// <param name="scopedEntity">The entity to use when scoping the preferences for a particular use.</param>
+        /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that provides access to the preferences. This will never return <c>null</c>.</returns>
+        public PersonPreferenceCollection GetScopedPersonPreferences( IEntityCache scopedEntity )
+        {
+            return _personPreferenceCollections.GetOrAdd( PersonPreferenceService.GetPreferencePrefix( scopedEntity ), k =>
+            {
+                if ( CurrentVisitorId.HasValue )
+                {
+                    return PersonPreferenceCache.GetVisitorPreferenceCollection( CurrentVisitorId.Value, scopedEntity );
+                }
+                else if ( CurrentPerson != null )
+                {
+                    return PersonPreferenceCache.GetPersonPreferenceCollection( CurrentPerson, scopedEntity );
+                }
+                else
+                {
+                    return new PersonPreferenceCollection();
+                }
+            } );
         }
 
         #endregion

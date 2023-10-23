@@ -1,0 +1,128 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <NotificationBox v-if="options.errorCaption" alertType="danger" v-html="options.errorCaption"></NotificationBox>
+
+        <RockForm :hideErrors="true" @validationChanged="onFormValidationChanged">
+            <fieldset>
+                <legend>Enter Code</legend>
+
+                <TextBox v-model="internalCode"
+                    :disabled="disabled"
+                    label="Code"
+                    rules="required"></TextBox>
+            </fieldset>
+
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary"
+                    :disabled="disabled"
+                    type="submit"
+                    @click="onConfirmAccountClicked">Confirm Account</RockButton><!-- This "submit" button should be first so pressing [Enter] triggers this click event handler. -->
+                <RockButton :btnType="BtnType.Link"
+                    :disabled="disabled"
+                    type="submit"
+                    @click="onChangePasswordClicked">Change Password</RockButton><!-- The button type is "submit" to trigger form validation when it is clicked. -->
+                <RockButton :btnType="BtnType.Link"
+                    :disabled="disabled"
+                    type="submit"
+                    @click="onDeleteAccountClicked">Delete Account</RockButton><!-- The button type is "submit" to trigger form validation when it is clicked. -->
+            </div>
+        </RockForm>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import { ConfirmAccountEvent, ShowChangePasswordViewEvent, ShowDeleteConfirmationViewEvent } from "./events";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { FormError } from "@Obsidian/Utility/form";
+    import { ConfirmAccountAccountConfirmationViewOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/ConfirmAccount/confirmAccountAccountConfirmationViewOptionsBag";
+
+    const props = defineProps({
+        options: {
+            type: Object as PropType<ConfirmAccountAccountConfirmationViewOptionsBag>,
+            required: true
+        },
+        code: {
+            type: String as PropType<string>,
+            default: "",
+            required: false
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "confirmAccount", value: ConfirmAccountEvent): void,
+        (e: "showChangePasswordView", value: ShowChangePasswordViewEvent): void,
+        (e: "showDeleteConfirmationView", value: ShowDeleteConfirmationViewEvent): void,
+        (e: "update:code", value: string): void
+    }>();
+
+    //#region Values
+
+    const formErrors = ref<FormError[]>([]);
+
+    //#endregion
+
+    //#region Computed Values
+
+    /** The confirmation code. */
+    const internalCode = useVModelPassthrough(props, "code", emit);
+
+    const isFormValid = computed<boolean>(() => formErrors.value.length === 0);
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the confirm account form being submitted.
+     */
+    function onConfirmAccountClicked(): void {
+        if (isFormValid.value) {
+            emit("confirmAccount", {
+                code: internalCode.value
+            });
+        }
+    }
+
+    /**
+     * Event handler for the change password button being clicked.
+     */
+    function onChangePasswordClicked(): void {
+        if (isFormValid.value) {
+            emit("showChangePasswordView", {
+                code: internalCode.value
+            });
+        }
+    }
+
+    /**
+     * Event handler for the delete account button being clicked.
+     */
+    function onDeleteAccountClicked(): void {
+        if (isFormValid.value) {
+            emit("showDeleteConfirmationView", {
+                code: internalCode.value
+            });
+        }
+    }
+
+    /**
+     * Event handler for the form validation being changed.
+     */
+    function onFormValidationChanged(errors: FormError[]): void {
+        formErrors.value = errors;
+    }
+
+    //#endregion
+</script>

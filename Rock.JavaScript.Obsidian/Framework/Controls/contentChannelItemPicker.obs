@@ -27,8 +27,8 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, nextTick, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
-    import RockFormField from "./rockFormField";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import RockFormField from "./rockFormField.obs";
     import { Guid } from "@Obsidian/Types";
     import { ContentChannelItemPickerGetContentChannelItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetContentChannelItemsOptionsBag";
     import { ContentChannelItemPickerGetAllForContentChannelItemOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetAllForContentChannelItemOptionsBag";

@@ -1,0 +1,224 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="fieldProps" :rules="internalRules" :formGroupClasses="`structure-content-editor ${fieldProps.formGroupClasses}`" #default="{ uniqueId, field }" name="sceContent" :modelValue="modelValue">
+        <div class="control-wrapper">
+            <div class="structured-content-container" :id="uniqueId" ref="containerRef"></div>
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { ValidationResult, ValidationRule } from "@Obsidian/Types/validationRules";
+    import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { getStructuredContentEditorConfiguration } from "@Obsidian/Utility/structuredContentEditor";
+    import { normalizeRules } from "@Obsidian/Utility/validationRules";
+    import { StructuredContentEditorConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/structuredContentEditorConfigurationBag";
+
+    /* eslint-disable @typescript-eslint/naming-convention */
+    interface IEditorJsWindow {
+        Rock?: {
+            UI?: {
+                StructuredContentEditor?: {
+                    EditorJS: (args: unknown) => void,
+                    EditorDragDrop: (args: unknown) => void,
+                    EditorTools: unknown;
+                    [key: string]: unknown;
+                };
+                [key: string]: unknown;
+            };
+            [key: string]: unknown;
+        };
+    }
+    /* eslint-enable @typescript-eslint/naming-convention */
+
+    const editorJsWindow: IEditorJsWindow & Window = window;
+
+    // Load the JS dependencies first.
+    // We'll await them in the onMounted handler.
+    const editorjsPromise = loadJavaScriptAsync("/Scripts/Rock/UI/structuredcontenteditor/editor.js", () => !!editorJsWindow.Rock?.UI?.StructuredContentEditor?.EditorJS);
+    const editorToolsPromise = loadJavaScriptAsync("/Scripts/Rock/UI/structuredcontenteditor/editor-tools.js", () => !!editorJsWindow.Rock?.UI?.StructuredContentEditor?.EditorTools);
+
+    enum EditorJsLogLevel {
+        Verbose = "VERBOSE",
+        Info = "INFO",
+        Warn = "WARN",
+        Error = "ERROR"
+    }
+
+    const props = defineProps({
+        /** The JSON string representing the structured content editor state. NOT Reactive.
+         *  Although this is NOT Reactive, its initial value will be used to initialize the editor. */
+        modelValue: {
+            type: String as PropType<string>,
+            required: true,
+            default: "{}"
+        },
+
+        toolsGuid: {
+            type: String as PropType<Guid | null>,
+            required: false,
+            default: null
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void,
+    }>();
+
+    //#region Values
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+    const containerRef = ref<HTMLElement | null>(null);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const containerId = computed<string>(() => containerRef.value?.id ?? "");
+    const internalRules = computed<ValidationRule | ValidationRule[]>(() => {
+        const normalizedRules = normalizeRules(props.rules);
+
+        const isRequired = normalizedRules.includes("required");
+
+        if (isRequired) {
+            normalizedRules.push(requiredValidator);
+        }
+
+        return normalizedRules;
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Validates that the parsed JSON object representing the editor state has content.
+     * The parsed JSON object should have a non-empty array property named `blocks`.
+     */
+    function requiredValidator(value: unknown, _params?: unknown[] | undefined): ValidationResult {
+        const invalidMessage = "is required";
+
+        if (!value || typeof value !== "string") {
+            return invalidMessage;
+        }
+
+        if (!value.startsWith("{") || !value.endsWith("}")) {
+            return invalidMessage;
+        }
+
+        const obj = JSON.parse(value);
+
+        if (!obj || !Array.isArray(obj.blocks) || obj.blocks.length === 0) {
+            return invalidMessage;
+        }
+
+        return true;
+    }
+
+    /** Executes the JS `eval` utility function *more safely* to convert a string to JS. */
+    function saferEval(javaScriptValue: string): Record<string, unknown> {
+        return eval?.(`"use strict";(${javaScriptValue})`);
+    }
+
+    /** Retrieves the structured content editor configuration from the server */
+    async function getConfiguration(): Promise<StructuredContentEditorConfigurationBag | undefined> {
+        try {
+            const result = await getStructuredContentEditorConfiguration({
+                structuredContentToolsValueGuid: props.toolsGuid
+            });
+
+            if (result) {
+                return result;
+            }
+            else {
+                console.log("Unknown error while loading structured content editor configuration.");
+            }
+        }
+        catch (e) {
+            console.error(e ?? "Unknown error while loading structured content editor configuration.");
+        }
+    }
+
+    /** Initializes the child editor control. */
+    async function initialize(): Promise<void> {
+        // Ensure the editor container is empty before initializing the editor; otherwise, an additional editor would be initialized in the container.
+        if (containerRef.value) {
+            containerRef.value.innerHTML = "";
+        }
+
+        // Get the structured content editor config.
+        const config = await getConfiguration();
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const EditorJS = editorJsWindow.Rock?.UI?.StructuredContentEditor?.EditorJS;
+
+        if (!EditorJS) {
+            throw "EditorJS is not initialized";
+        }
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const EditorDragDrop = editorJsWindow.Rock?.UI?.StructuredContentEditor?.EditorDragDrop;
+
+        if (!EditorDragDrop) {
+            throw "EditorDragDrop is not initialized";
+        }
+
+        // Initialize the editor.js control.
+        const editor = new EditorJS({
+            holder: containerId.value,
+            tools: config?.toolsScript ? saferEval(config.toolsScript) : undefined,
+            defaultBlock: "paragraph",
+            data: JSON.parse(props.modelValue),
+            logLevel: EditorJsLogLevel.Error,
+            onReady: function() {
+                new EditorDragDrop(editor);
+            },
+            onChange: debounce(() => {
+                editor.save().then(function(savedData: unknown) {
+                    emit("update:modelValue", JSON.stringify(savedData));
+                }).catch((e: unknown): void => {
+                    console.log("Saving failed: ", e);
+                });
+            }, 100)
+        });
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(() => props.toolsGuid, async (newValue, oldValue) => {
+        if (!newValue && !oldValue) {
+            // Don't reinitialize the editor if the toolsGuid was and still is an invalid Guid.
+            return;
+        }
+
+        if (!newValue
+            || !oldValue
+            || newValue.toLocaleLowerCase() !== oldValue.toLocaleLowerCase()) {
+            // Reinitialize the editor...
+            // ...if the toolsGuid was changed to/from a valid Guid to/from an invalid Guid,
+            // OR
+            // ...if the toolsGuid was changed from a valid Guid to a different valid Guid.
+            await initialize();
+        }
+    });
+
+    //#endregion
+
+    onMounted(async (): Promise<void> => {
+        // Wait for the JS scripts to finish loading before initializing.
+        await editorjsPromise;
+        await editorToolsPromise;
+
+        // Initialize the editor.
+        await initialize();
+    });
+</script>

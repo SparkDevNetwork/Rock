@@ -67,10 +67,10 @@ export function parseRule(rule: string): ValidationRuleReference {
 export function normalizeRules(rules: ValidationRule | ValidationRule[]): ValidationRule[] {
     if (typeof rules === "string") {
         if (rules.indexOf("|") !== -1) {
-            return rules.split("|").filter(r => r !== "");
+            return rules.split("|").filter(r => r.trim() !== "");
         }
-        else if (rules !== "") {
-            return [rules];
+        else if (rules.trim() !== "") {
+            return [rules.trim()];
         }
     }
     else if (Array.isArray(rules)) {
@@ -110,7 +110,7 @@ export function containsRequiredRule(rules: ValidationRule | ValidationRule[]): 
  * Normalizes rules to callable functions. This is used to translate string
  * and reference rules to their final function that will be called.
  *
- * @param rules The ruels to be normalized to functions.
+ * @param rules The rules to be normalized to functions.
  *
  * @returns An array of rule functions that will perform validation checks.
  */

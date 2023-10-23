@@ -1,0 +1,132 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" name="step-program-step-type-picker">
+        <RegistrationTemplatePicker
+                                    v-if="!registrationTemplateGuid"
+                                    v-model="internalTemplateValue"
+                                    label="Registration Template"
+                                    :multiple="false"
+                                    :disabled="disabled"
+                                    showBlankItem
+                                    autoExpand
+                                    formGroupClasses="mt-0" />
+        <RegistrationInstanceBasePicker
+                                        v-if="internalTemplateGuid"
+                                        v-model="internalValue"
+                                        label="Registration Instance"
+                                        :registrationTemplateGuid="internalTemplateGuid"
+                                        :multiple="false"
+                                        :disabled="disabled"
+                                        showBlankItem
+                                        :displayStyle="PickerDisplayStyle.Condensed" />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import RegistrationTemplatePicker from "./registrationTemplatePicker.obs";
+    import RegistrationInstanceBasePicker from "./registrationInstanceBasePicker.obs";
+    import RockFormField from "./rockFormField.obs";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { Guid } from "@Obsidian/Types";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/registrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { deepEqual } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            required: true
+        },
+
+        /** Provided Registration Template: hides Registration Template picker if provided */
+        registrationTemplateGuid: {
+            type: Object as PropType<Guid | null>,
+            default: null
+        },
+
+        disabled: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = ref<ListItemBag | null>(props.modelValue);
+    const internalTemplateValue = ref<ListItemBag | null>(null);
+
+    const securityGrantToken = useSecurityGrantToken();
+    const http = useHttp();
+
+    const internalTemplateGuid = computed(() => {
+        return (props.registrationTemplateGuid || internalTemplateValue.value?.value) ?? "";
+    });
+
+    let skipWatcher = false;
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        if (!deepEqual(internalValue.value, props.modelValue, false)) {
+            internalValue.value = props.modelValue;
+            getTemplateFromInstance();
+        }
+    });
+
+    watch(internalValue, (val) => {
+        if (!deepEqual(val, props.modelValue, false)) {
+            emit("update:modelValue", val);
+        }
+    });
+
+    watch(() => props.registrationTemplateGuid, (newVal) => {
+        if (newVal) {
+            internalTemplateValue.value = null;
+        }
+    });
+
+    watch(internalTemplateValue, () => {
+        if (!skipWatcher) {
+            internalValue.value = null;
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    async function getTemplateFromInstance(): Promise<void> {
+        const options: RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag = {
+            registrationInstanceGuid: props.modelValue?.value,
+            securityGrantToken: securityGrantToken.value
+        };
+
+        const result = await http.post<ListItemBag>("/api/v2/Controls/RegistrationInstancePickerGetRegistrationTemplateForInstance", null, options);
+
+        if (result.isSuccess && result.data) {
+            // Set the template, but don't let the change reset the instance
+            skipWatcher = true;
+            internalTemplateValue.value = result.data;
+            await nextTick();
+            skipWatcher = false;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
+
+    // #endregion
+
+    if (props.modelValue && !internalTemplateGuid.value) {
+        getTemplateFromInstance();
+    }
+</script>

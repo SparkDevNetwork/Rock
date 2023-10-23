@@ -81,5 +81,13 @@ namespace Rock.ViewModels.Utility
         /// The child tree items of this item.
         /// </value>
         public List<TreeItemBag> Children { get; set; }
+
+        /// <summary>
+        /// Gets or sets the child count. Optional.
+        /// </summary>
+        /// <value>
+        /// The number of children this node has
+        /// </value>
+        public int? ChildCount { get; set; }
     }
 }

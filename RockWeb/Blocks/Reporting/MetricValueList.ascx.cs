@@ -115,18 +115,18 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindFilter()
         {
-            drpDates.DelimitedValues = gfMetricValues.GetUserPreference( "Date Range" );
+            drpDates.DelimitedValues = gfMetricValues.GetFilterPreference( "Date Range" );
 
             ddlGoalMeasure.Items.Clear();
             ddlGoalMeasure.Items.Add( new ListItem( string.Empty, string.Empty ) );
             ddlGoalMeasure.Items.Add( new ListItem( MetricValueType.Goal.ConvertToString(), MetricValueType.Goal.ConvertToInt().ToString() ) );
             ddlGoalMeasure.Items.Add( new ListItem( MetricValueType.Measure.ConvertToString(), MetricValueType.Measure.ConvertToInt().ToString() ) );
 
-            ddlGoalMeasure.SelectedValue = gfMetricValues.GetUserPreference( "Goal/Measure" );
+            ddlGoalMeasure.SelectedValue = gfMetricValues.GetFilterPreference( "Goal/Measure" );
 
             var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value.AsInteger() );
 
-            var entityTypeEntityUserPreference = gfMetricValues.GetUserPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
+            var entityTypeEntityUserPreference = gfMetricValues.GetFilterPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
 
             var entityTypeEntityList = entityTypeEntityUserPreference.Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a =>
                 new
@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Reporting
             }
             else if ( e.Key == this.EntityTypeEntityPreferenceKey )
             {
-                var entityTypeEntityUserPreference = gfMetricValues.GetUserPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
+                var entityTypeEntityUserPreference = gfMetricValues.GetFilterPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
 
                 var entityTypeEntityList = ( e.Value ?? string.Empty ).Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a =>
                     new MetricValuePartition
@@ -256,8 +256,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfMetricValues_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfMetricValues.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
-            gfMetricValues.SaveUserPreference( "Goal/Measure", ddlGoalMeasure.SelectedValue );
+            gfMetricValues.SetFilterPreference( "Date Range", drpDates.DelimitedValues );
+            gfMetricValues.SetFilterPreference( "Goal/Measure", ddlGoalMeasure.SelectedValue );
 
             var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value.AsInteger() );
 
@@ -278,7 +278,7 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
 
-            gfMetricValues.SaveUserPreference( this.EntityTypeEntityPreferenceKey, entityTypeEntityFilters.AsDelimited( "," ) );
+            gfMetricValues.SetFilterPreference( this.EntityTypeEntityPreferenceKey, entityTypeEntityFilters.AsDelimited( "," ) );
 
             BindGrid();
         }
@@ -447,7 +447,7 @@ namespace RockWeb.Blocks.Reporting
             metricValuePartitionsColumn.Visible = metric != null && metric.MetricPartitions.Any( a => a.EntityTypeId.HasValue );
 
             var drp = new DateRangePicker();
-            drp.DelimitedValues = gfMetricValues.GetUserPreference( "Date Range" );
+            drp.DelimitedValues = gfMetricValues.GetFilterPreference( "Date Range" );
             if ( drp.LowerValue.HasValue )
             {
                 qry = qry.Where( a => a.MetricValueDateTime >= drp.LowerValue.Value );
@@ -459,13 +459,13 @@ namespace RockWeb.Blocks.Reporting
                 qry = qry.Where( a => a.MetricValueDateTime < upperDate );
             }
 
-            var metricValueType = gfMetricValues.GetUserPreference( "Goal/Measure" ).ConvertToEnumOrNull<MetricValueType>();
+            var metricValueType = gfMetricValues.GetFilterPreference( "Goal/Measure" ).ConvertToEnumOrNull<MetricValueType>();
             if ( metricValueType.HasValue )
             {
                 qry = qry.Where( a => a.MetricValueType == metricValueType.Value );
             }
 
-            var entityTypeEntityUserPreference = gfMetricValues.GetUserPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
+            var entityTypeEntityUserPreference = gfMetricValues.GetFilterPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
 
             var entityTypeEntityList = entityTypeEntityUserPreference.Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a =>
                 new

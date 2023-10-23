@@ -65,6 +65,9 @@ export type MediaFolderBag = {
     /** Gets or sets the Media Account that this MediaFolder belongs to. */
     mediaAccount?: ListItemBag | null;
 
+    /** Gets or sets the metric data. */
+    metricData?: string | null;
+
     /** Gets or sets the Name of the MediaFolder. This property is required. */
     name?: string | null;
 

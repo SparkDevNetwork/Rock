@@ -79,6 +79,8 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Shared/Devices.css", true );
+
             var mediumControl = MediumControl.GetMediumControl(CommunicationType.PushNotification);
 
             mediumControl.ID = "mediumControl";

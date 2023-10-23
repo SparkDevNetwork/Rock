@@ -63,6 +63,17 @@ namespace Rock.Core
         #region Methods
 
         /// <summary>
+        /// Gets the notification message metadata. This provides additional
+        /// details about how the message should be displayed.
+        /// </summary>
+        /// <param name="message">The notification message that will be displayed.</param>
+        /// <returns>A new instance of <see cref="NotificationMessageActionBag"/> that describes the action.</returns>
+        public virtual NotificationMessageMetadataBag GetMetadata( NotificationMessage message )
+        {
+            return null;
+        }
+
+        /// <summary>
         /// Gets the action that should be performed when interacting with the
         /// notification message. This can and probably will result in different
         /// actions depending on the site.

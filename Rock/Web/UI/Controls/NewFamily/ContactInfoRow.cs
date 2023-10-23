@@ -48,7 +48,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( ViewState["PersonGuid"] != null )
                 {
-                    return (Guid)ViewState["PersonGuid"];
+                    return ( Guid ) ViewState["PersonGuid"];
                 }
                 else
                 {

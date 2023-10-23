@@ -1675,6 +1675,12 @@ namespace Rock.SystemGuid
         public const string REMINDER_LIST = "E1736347-1D4F-42A6-8EC4-7595286054A6";
 
         /// <summary>
+        /// Notification List page
+        /// ParentPage: My Dashboard
+        /// </summary>
+        public const string NOTIFICATION_LIST = "586A8827-5C22-4624-A5E3-1B1D6CD0E5B7";
+
+        /// <summary>
         /// Reminder List page.
         /// ParentPage: General Settings.
         /// </summary>
@@ -2209,5 +2215,10 @@ namespace Rock.SystemGuid
         /// The report search results page
         /// </summary>
         public const string REPORT_SEARCH_RESULTS = "7DA4B63B-4407-47B2-8984-A54A543D8A69";
+
+        /// <summary>
+        /// The library viewer page.
+        /// </summary>
+        public const string LIBRARY_VIEWER = "1264554E-C5B2-44E9-BD5E-08181B9348D4";
     }
 }

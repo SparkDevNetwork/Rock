@@ -165,7 +165,7 @@
                                         </td>
 
                                         <td class="w-1 text-right pr-0 py-4">
-                                            <span class="d-block"><asp:Literal ID="lSavedAccountInUseStatusHtml" runat="server" /></span>
+                                            <span class="d-block"><asp:Literal ID="lSavedAccountStatusHtml" runat="server" /></span>
                                             <div class="rollover-item">
                                             <asp:LinkButton runat="server" ID="btnSavedAccountDelete" OnCommand="rptSavedAccounts_Delete" CssClass="btn btn-sm btn-link text-muted py-0 px-1 js-delete-saved-account">
                                                 <i class="fa fa-times"></i>

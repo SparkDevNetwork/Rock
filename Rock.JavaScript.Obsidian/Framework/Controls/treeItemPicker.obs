@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ContentDropDownPicker
                            @primaryButtonClicked="onSelect"
@@ -8,7 +9,7 @@
                            :modelValue="internalValues"
                            :fullWidth="fullWidth">
 
-        <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" />
+        <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" />
 
         <template #innerLabel><span class="selected-names">{{ selectedNames }}</span></template>
 
@@ -50,7 +51,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
-    import TreeList from "./treeList";
+    import TreeList from "./treeList.obs";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import ContentDropDownPicker from "./contentDropDownPicker.obs";
 
@@ -88,6 +89,14 @@
          */
         autoExpand: {
             type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether to show the number of children a parent node has, if provided
+         */
+        showChildCount: {
+            type: Boolean,
             default: false
         },
 

@@ -35,15 +35,23 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.16"
+        [Obsolete( "This property is no longer used and will be removed in the future.", false )]
         public bool ApprovalsSent { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.16"
+        [Obsolete( "This property is no longer used and will be removed in the future.", false )]
         public Rock.Client.Enums.NoteApprovalStatus ApprovalStatus { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.16"
+        [Obsolete( "This property is no longer used and will be removed in the future.", false )]
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.16"
+        [Obsolete( "This property is no longer used and will be removed in the future.", false )]
         public DateTime? ApprovedDateTime { get; set; }
 
         /// <summary />
@@ -126,10 +134,18 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Note source )
         {
             this.Id = source.Id;
+            #pragma warning disable 612, 618
             this.ApprovalsSent = source.ApprovalsSent;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
             this.ApprovalStatus = source.ApprovalStatus;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
             this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
             this.ApprovedDateTime = source.ApprovedDateTime;
+            #pragma warning restore 612, 618
             this.Caption = source.Caption;
             this.EditedByPersonAliasId = source.EditedByPersonAliasId;
             this.EditedDateTime = source.EditedDateTime;

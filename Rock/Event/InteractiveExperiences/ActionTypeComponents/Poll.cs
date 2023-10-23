@@ -50,7 +50,7 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
     {
         #region Keys
 
-        private static class AttributeKey
+        internal static class AttributeKey
         {
             public const string Question = "actionQuestion";
 

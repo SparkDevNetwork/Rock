@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -37,7 +38,7 @@ namespace Rock.Field.Types
     /// Stored as either a single GroupMember.Guid or a comma-delimited list of GroupMember.Guids (if AllowMultiple)
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_MEMBER )]
     public class GroupMemberFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, IEntityReferenceFieldType
     {
@@ -106,6 +107,113 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateConfigurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && bool.TryParse( privateConfigurationValues[ALLOW_MULTIPLE_KEY], out bool allowMultiple ) && allowMultiple )
+            {
+                var groupMemberFieldValues = publicValue.FromJsonOrNull<List<ListItemBag>>();
+
+                if ( groupMemberFieldValues == null )
+                {
+                    return string.Empty;
+                }
+
+                return groupMemberFieldValues.ConvertAll( gm => gm.Value ).AsDelimited( "," );
+            }
+            else
+            {
+                var groupMemberFieldValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+                if ( groupMemberFieldValue == null )
+                {
+                    return string.Empty;
+                }
+
+                return groupMemberFieldValue.Value;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guids = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMembers = new GroupMemberService( rockContext ).GetByGuids( guids )
+                    .AsNoTracking()
+                    .AsEnumerable()
+                    .Select(gm => new ListItemBag()
+                    {
+                        Value = gm.Guid.ToString(),
+                        Text = gm.Person.FullName
+                    } ).ToList();
+
+                if ( !groupMembers.Any() )
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    return groupMembers.Count == 1 ? groupMembers.FirstOrDefault().ToCamelCaseJson( false, true ) : groupMembers.ToCamelCaseJson( false, true );
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( privateConfigurationValues?.ContainsKey( GROUP_KEY ) == true )
+            {
+                var groupValue = privateConfigurationValues[GROUP_KEY].FromJsonOrNull<ListItemBag>();
+                if ( groupValue != null )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var group = new GroupService( rockContext ).GetNoTracking( groupValue.Value.AsGuid() );
+                        if ( group != null )
+                        {
+                            privateConfigurationValues[GROUP_KEY] = group.Id.ToString();
+                        }
+                    }
+                }
+            }
+
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( publicConfigurationValues?.ContainsKey( GROUP_KEY ) == true && int.TryParse( publicConfigurationValues[GROUP_KEY], out int groupId ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var group = new GroupService( rockContext ).GetNoTracking( groupId );
+                    if ( group != null )
+                    {
+                        publicConfigurationValues[GROUP_KEY] = new ListItemBag()
+                        {
+                            Text = group.Name,
+                            Value = group.Guid.ToString(),
+                        }.ToCamelCaseJson( false, true );
+                    }
+                }
+            }
+
+            return publicConfigurationValues;
+        }
 
         #endregion
 

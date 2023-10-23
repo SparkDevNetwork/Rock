@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <TransitionVerticalCollapse>
         <div v-if="isReconnecting || isDisconnected">
@@ -31,7 +32,7 @@
 </style>
 
 <script setup lang="ts">
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { PropType } from "vue";
 
     defineProps({

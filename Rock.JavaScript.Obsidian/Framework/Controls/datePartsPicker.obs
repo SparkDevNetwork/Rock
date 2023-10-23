@@ -1,0 +1,217 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalDateKey"
+                   formGroupClasses="birthday-picker"
+                   name="birthday"
+                   :rules="computedRules">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="form-control-group">
+                    <select :id="uniqueId + '-month'" class="form-control input-width-sm" :disabled="disabled" v-model="internalMonth">
+                        <option value="0"></option>
+                        <option value="1">Jan</option>
+                        <option value="2">Feb</option>
+                        <option value="3">Mar</option>
+                        <option value="4">Apr</option>
+                        <option value="5">May</option>
+                        <option value="6">Jun</option>
+                        <option value="7">Jul</option>
+                        <option value="8">Aug</option>
+                        <option value="9">Sep</option>
+                        <option value="10">Oct</option>
+                        <option value="11">Nov</option>
+                        <option value="12">Dec</option>
+                    </select>
+                    <span v-if="!hideDay" class="separator">/</span>
+                    <select v-if="!hideDay" :id="uniqueId + '-day'" class="form-control input-width-sm" :disabled="disabled" v-model="internalDay">
+                        <option value="0"></option>
+                        <option v-for="day in days" :key="day" :value="day">{{ day }}</option>
+                    </select>
+                    <span v-if="showYear" class="separator">/</span>
+                    <select v-if="showYear" :id="uniqueId + '-year'" class="form-control input-width-sm" :disabled="disabled" v-model="internalYear">
+                        <option value="0"></option>
+                        <option v-for="year in years" :value="year">{{ year }}</option>
+                    </select>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
+    import DateKey from "@Obsidian/Utility/dateKey";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
+    import RockFormField from "./rockFormField.obs";
+
+
+    const props = defineProps({
+        rules: rulesPropType,
+        modelValue: {
+            type: Object as PropType<DatePartsPickerValue>,
+            required: false
+        },
+        requireYear: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+        showYear: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+        hideDay: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        allowFutureDates: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+        futureYearCount: {
+            type: Number as PropType<number>,
+            default: 50
+        },
+        startYear: {
+            type: Number as PropType<number>,
+            default: 1900
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: DatePartsPickerValue | undefined): void;
+    }>();
+
+    const internalDay = ref("0");
+    const internalMonth = ref("0");
+    const internalYear = ref("0");
+    const days = ref<string[]>([]);
+
+    function getValue(): DatePartsPickerValue | undefined {
+        const value: DatePartsPickerValue = {
+            day: toNumber(internalDay.value),
+            month: toNumber(internalMonth.value),
+            year: toNumber(internalYear.value)
+        };
+
+        if (value.day === 0 && value.month === 0 && value.year === 0) {
+            return undefined;
+        }
+
+        return value;
+    }
+
+    function updateDays(): void {
+        let dayCount = 31;
+
+        const year = toNumber(internalYear.value);
+        const month = toNumber(internalMonth.value);
+        if (props.showYear && year > 0 && month > 0) {
+            dayCount = RockDateTime.fromParts(year, month, 1)?.addMonths(1)?.addDays(-1)?.day ?? 31;
+        }
+        else if ([1, 3, 5, 7, 8, 10, 12].indexOf(month) !== -1) {
+            dayCount = 31;
+        }
+        else if ([4, 6, 9, 11].indexOf(month) !== -1) {
+            dayCount = 30;
+        }
+        else if (month === 2) {
+            dayCount = 29;
+        }
+
+        const dayOptions: string[] = [];
+        for (let day = 1; day <= dayCount; day++) {
+            dayOptions.push(day.toString());
+        }
+
+        days.value = dayOptions;
+    }
+
+    const computedRequireYear = computed((): boolean => {
+        return props.showYear && props.requireYear;
+    });
+
+    const internalDateKey = computed((): string => {
+        if ((!props.modelValue?.year ?? 0) && !computedRequireYear.value) {
+            const dateKey = DateKey.toNoYearDateKey(props.modelValue?.month ?? 0, props.modelValue?.day ?? 0);
+
+            return dateKey;
+        }
+
+        const dateKey = DateKey.toDateKey(props.modelValue?.year ?? 0, props.modelValue?.month ?? 0, props.modelValue?.day ?? 0);
+        return dateKey;
+    });
+
+    const computedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        if (rules.indexOf("required") !== -1 && rules.indexOf("datekey") === -1) {
+            rules.push("datekey");
+        }
+
+        return rules;
+    });
+
+    const years = computed((): string[] => {
+        const years: string[] = [];
+        let year = RockDateTime.now().year;
+
+        if (props.futureYearCount > 0 && props.allowFutureDates) {
+            year += props.futureYearCount;
+        }
+
+        while (year >= 1900) {
+            years.push(year.toString());
+            year--;
+        }
+
+        return years;
+    });
+
+    watch(() => props.modelValue, () => {
+        internalDay.value = props.modelValue?.day.toString() ?? "0";
+        internalMonth.value = props.modelValue?.month.toString() ?? "0";
+        internalYear.value = props.modelValue?.year.toString() ?? "0";
+        updateDays();
+    }, { immediate: true });
+
+    watch(() => props.showYear, () => {
+        updateDays();
+    }, { immediate: true });
+
+    watch(internalDay, () => {
+        emit("update:modelValue", getValue());
+    });
+
+    watch(internalMonth, () => {
+        const day = toNumberOrNull(internalDay.value);
+
+        updateDays();
+
+        if (day != null && day >= days.value.length + 1) {
+            internalDay.value = days.value.length.toString();
+        }
+        else {
+            emit("update:modelValue", getValue());
+        }
+    });
+
+    watch(internalYear, () => {
+        const day = toNumberOrNull(internalDay.value);
+
+        updateDays();
+
+        if (day != null && day >= days.value.length + 1) {
+            internalDay.value = days.value.length.toString();
+        }
+        else {
+            emit("update:modelValue", getValue());
+        }
+    });
+</script>

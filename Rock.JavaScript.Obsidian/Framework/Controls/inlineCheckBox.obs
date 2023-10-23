@@ -1,0 +1,40 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="checkbox">
+        <label title="">
+            <input type="checkbox" v-model="internalValue" v-bind="$attrs" />
+            <span class="label-text ">{{ label }}</span>
+        </label>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        // Explicitly define "update:modelValue" event; otherwise v-bind="$attrs" could attach a duplicate event handler to the underlying checkbox input.
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const internalValue = ref(props.modelValue);
+
+    watch(() => props.modelValue, () => {
+        internalValue.value = props.modelValue;
+    });
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+</script>

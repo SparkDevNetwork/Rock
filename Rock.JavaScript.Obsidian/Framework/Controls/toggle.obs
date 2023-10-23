@@ -1,0 +1,85 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="modelValue"
+                   formGroupClasses="toggle"
+                   name="toggle">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="toggle-container">
+                    <div :class="getButtonGroupClass">
+                        <JavaScriptAnchor :class="modelValue ? unselectedClasses : offButtonSelectedClasses" @click="onClick(false)">
+                            <slot name="off">{{ falseText }}</slot>
+                        </JavaScriptAnchor>
+                        <JavaScriptAnchor :class="modelValue ? onButtonSelectedClasses : unselectedClasses" @click="onClick(true)">
+                            <slot name="on">{{ trueText }}</slot>
+                        </JavaScriptAnchor>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import JavaScriptAnchor from "./javaScriptAnchor.obs";
+    import RockFormField from "./rockFormField.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        trueText: {
+            type: String as PropType<string>,
+            default: "On"
+        },
+
+        falseText: {
+            type: String as PropType<string>,
+            default: "Off"
+        },
+
+        btnSize: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        onButtonActiveCssClass: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        offButtonActiveCssClass: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const getButtonGroupClass = computed((): string[] => {
+        const classes = ["btn-group", "btn-toggle"];
+
+        if (props.btnSize) {
+            classes.push(`btn-group-${props.btnSize}`);
+        }
+
+        return classes;
+    });
+
+    const onClick = (isOn: boolean): void => {
+        if (isOn !== props.modelValue) {
+            emit("update:modelValue", isOn);
+        }
+    };
+
+    const selectedClasses = "active btn btn-primary";
+    const unselectedClasses = "btn btn-default";
+    const onButtonSelectedClasses = `${selectedClasses} ${props.onButtonActiveCssClass}`;
+    const offButtonSelectedClasses = `${selectedClasses} ${props.offButtonActiveCssClass}`;
+</script>

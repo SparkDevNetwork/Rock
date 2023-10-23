@@ -1,0 +1,259 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <NotificationBox v-if="isInMemoryTransport" alertType="warning">The Web Farm will not function correctly with the In-Memory bus transport. Please configure a different bus transport before using the Web Farm.</NotificationBox>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-8">
+                <h5>Nodes</h5>
+                <div class="row">
+
+                    <div v-for="node of nodes">
+                        <div class="col-sm-6 col-md-6 col-lg-4">
+                            <a :href="node.nodeDetailPageUrl ?? ''" style="color: inherit;">
+                                <div :class="getCardClass(node.isActive)">
+                                    <div :class="getIndicatorClass(node.isActive, node.isUnresponsive)"></div>
+                                    <div class="card-header" v-html="getHeaderHTML(node)">
+
+                                    </div>
+                                    <div class="card-body p-0" style="height:88px;">
+                                        <span v-if="node.isUnresponsive" class="label label-danger rounded-pill position-absolute m-2" style="bottom:0;right:0;">
+                                            {{ node.humanReadableLastSeen }}
+                                        </span>
+                                        <div v-html="node.chartHtml">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<style>
+.bg-disabled {
+    color: #aeaeae;
+    background: #f5f5f5;
+}
+
+.bg-disabled .indicator {
+    background: #a3a3a3;
+}
+
+.card-node {
+    margin-bottom: 24px;
+    border-top: 0;
+}
+
+.card-node .indicator {
+    height: 4px;
+}
+
+.card-node .card-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 8px;
+    background: transparent;
+    align-items: center;
+}
+
+.server-meta {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow: hidden;
+    font-size: 20px;
+    line-height: 36px;
+}
+
+.node-name {
+    margin-left: 4px;
+    font-weight: 700;
+}
+
+.node-type-icon {
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.card-node .card-body {
+    padding: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, onMounted } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { WebFarmSettingsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsBag";
+    import { WebFarmSettingsDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsDetailOptionsBag";
+    import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<WebFarmSettingsBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<WebFarmSettingsDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+    const isInMemoryTransport = ref(props.modelValue?.isInMemoryTransport);
+    const nodes = ref(props.modelValue?.nodes ?? []);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.webFarmKey) {
+            valueBuilder.addTextValue("Key", props.modelValue.webFarmKey);
+        }
+        else {
+            valueBuilder.addTextValue("Key", "None");
+        }
+
+        if (props.modelValue.lowerPollingLimit) {
+            valueBuilder.addTextValue("Min Polling Limit", `${props.modelValue.lowerPollingLimit} seconds`);
+        }
+
+        if (props.modelValue.upperPollingLimit) {
+            valueBuilder.addTextValue("Max Polling Limit", `${props.modelValue.upperPollingLimit} seconds`);
+        }
+
+        if (props.modelValue.minimumPollingDifference) {
+            valueBuilder.addTextValue("Min Polling Difference", `${props.modelValue.minimumPollingDifference} seconds`);
+        }
+
+        if (props.modelValue.maxPollingWaitSeconds) {
+            valueBuilder.addTextValue("Max Polling Limit", `${props.modelValue.maxPollingWaitSeconds} seconds`);
+        }
+
+        return valueBuilder.build();
+    });
+
+    const getCardClass = (isActive: boolean): string => {
+        return isActive ? "card card-node" : "card card-node bg-disabled";
+    };
+
+    const getIndicatorClass = (isActive: boolean, isUnresponsive: boolean): string => {
+        return `indicator ${isActive ? " bg-success" : ""} ${isUnresponsive ? " bg-danger" : ""}`;
+    };
+
+    const getLeaderIcon = (isLeader: boolean): string => {
+        return isLeader ? "<span class='node-type-icon' title='Leader'><i class='fa fa-user-tie'></i></span>" : "";
+    };
+
+    const getCurrentJobRunnerIcon = (isCurrentJobRunner: boolean): string => {
+        return isCurrentJobRunner ? "<span class='node-type-icon' title='Job Runner'><i class='fa fa-cog'></i></span>" : "";
+    };
+
+    const getHeaderHTML = (node: WebFarmNodeBag): string => {
+        return `<span class="server-meta" title='Polling Interval: ${node.currentLeadershipPollingIntervalSeconds}'>
+                            <i class="${node.isActive ? "fa fa-server" : "fa fa-exclamation-triangle"}"></i>
+                            <span class="node-name text-truncate">
+                                ${node.nodeName}
+                            </span>
+                        </span>
+                        ${getLeaderIcon(node.isLeader)}
+                        ${getCurrentJobRunnerIcon(node.isCurrentJobRunner)}`;
+    };
+
+    // #endregion
+
+    // #region Functions
+    onMounted(() => {
+        var $ = window["$"];
+        var options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+                display: false
+            },
+            scales: {
+                yAxes: [{
+                    display: false,
+                    ticks: {
+                        min: 0,
+                        max: 100
+                    }
+                }],
+                xAxes: [{
+                    display: false
+                }]
+            },
+            hover: {
+                mode: "nearest",
+                intersect: false
+            },
+            tooltips: {
+                hasIndicator: true,
+                intersect: false,
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        var label = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || "";
+                        if (label) {
+                            label = "CPU: " + label + "%";
+                        }
+
+                        return label;
+                    }
+                }
+            }
+        };
+
+        $(".js-chart").each(() =>  {
+            var el = $(this);
+            var data = el.attr("data-chart") ? JSON.parse(el.attr("data-chart")) : {};
+            //var chart = new Chart(el, { type: "line", data: data, options: options });
+        });
+    });
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

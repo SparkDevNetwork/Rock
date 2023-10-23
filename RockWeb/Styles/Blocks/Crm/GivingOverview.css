@@ -1,0 +1,48 @@
+.currency-span {
+  display: inline-block;
+}
+
+.currency-span > span {
+  font-size: .6em;
+  vertical-align: top;
+}
+
+.trend-bar {
+  height: 11px;
+  margin-top: 4px;
+}
+
+.trend-bar li {
+  float: left;
+  height: 100%;
+}
+
+.trend-bar li span {
+  display: flex;
+  height: 100%;
+  margin-right: 2px;
+  background: var(--theme-light);
+}
+
+@media (min-width: 768px){
+  .percentile-giving {
+    border-left: 1px solid #cde1f1;
+  }
+}
+
+.giving-overview .inactive-giving {
+  position: relative;
+  opacity: .85;
+}
+
+.giving-overview .inactive-giving::before {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  bottom: -8px;
+  left: -8px;
+  z-index: -10;
+  content: " ";
+  background: var(--theme-lightest);
+  border-radius: 4px;
+}

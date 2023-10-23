@@ -1,0 +1,204 @@
+<template>
+    <SectionHeader :title="componentName" :description="description" />
+    <div class="galleryContent-mainRow mb-5 row">
+        <div v-if="$slots.default" :class="value === void 0 ? 'col-sm-12' : 'col-sm-6'">
+            <h4 class="mt-0">Test Control</h4>
+            <slot name="default" />
+
+            <div v-if="enableReflection" class="mt-3">
+                <div class="mb-3 galleryContent-reflectionToggle">
+                    <Switch v-model="showReflection" text="Show Reflection" />
+                </div>
+                <TransitionVerticalCollapse>
+                    <div v-if="showReflection">
+                        <h4 class="mt-0">Control Reflection</h4>
+                        <slot name="default" />
+                    </div>
+                </TransitionVerticalCollapse>
+            </div>
+        </div>
+        <div v-if="value !== void 0" class="col-sm-6">
+            <div class="well">
+                <h4>Current Value<template v-if="hasMultipleValues">s</template></h4>
+                <template v-if="hasMultipleValues" v-for="value, key in formattedValue">
+                    <h5><code>{{ key }}</code></h5>
+                    <pre class="m-0 p-0 border-0 galleryContent-valueBox">{{ value }}</pre>
+                </template>
+                <pre v-else class="m-0 p-0 border-0 galleryContent-valueBox">{{ formattedValue }}</pre>
+            </div>
+        </div>
+    </div>
+    <div v-if="$slots.settings" class="mb-5">
+        <h4 class="mt-0">Settings</h4>
+        <slot name="settings" />
+    </div>
+    <div v-if="importCode || exampleCode || $slots.usage" class="mb-5">
+        <h4 class="mt-0 mb-3">Usage Notes</h4>
+        <slot name="usage">
+            <h5 v-if="importCode" class="mt-3 mb-2">Import</h5>
+            <slot name="importNotes" />
+            <div v-if="importCode" class="galleryContent-codeSampleWrapper">
+                <pre class="galleryContent-codeSample"><code v-html="styledImportCode"></code></pre>
+                <CopyButton :value="importCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
+            </div>
+            <h5 v-if="exampleCode" class="mt-3 mb-2">Template Syntax</h5>
+            <slot name="syntaxNotes" />
+            <div v-if="exampleCode" class="galleryContent-codeSampleWrapper">
+                <pre class="galleryContent-codeSample"><code v-html="styledExampleCode"></code></pre>
+                <CopyButton :value="exampleCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
+            </div>
+        </slot>
+    </div>
+
+    <div v-if="$slots.header">
+        <p class="text-semibold font-italic">The <code>header</code> slot is no longer supported.</p>
+    </div>
+
+    <div v-if="$attrs.splitWidth !== void 0">
+        <p class="text-semibold font-italic">The <code>splitWidth</code> prop is no longer supported.</p>
+    </div>
+
+    <div v-if="$slots.gallery">
+        <p class="text-semibold font-italic">The <code>gallery</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
+        <slot name="gallery" />
+    </div>
+    <div v-if="$slots.result">
+        <p class="text-semibold font-italic">The <code>result</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
+        <slot name="result" />
+    </div>
+</template>
+
+<style scoped>
+.galleryContent-mainRow > div.well {
+    overflow-x: auto;
+}
+
+.galleryContent-reflectionToggle {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.galleryContent-valueBox {
+    max-height: 300px;
+    overflow: auto;
+}
+
+.galleryContent-codeSampleWrapper {
+    position: relative;
+}
+
+.galleryContent-codeSample {
+    padding-right: 3rem;
+    overflow-x: auto;
+}
+
+.galleryContent-codeCopyButton {
+    position: absolute;
+    top: 1.4rem;
+    transform: translateY(-50%);
+    right: .5rem;
+    z-index: 1;
+}
+
+.galleryContent-codeCopyButton::before {
+    content: "";
+    position: absolute;
+    top: -0.3rem;
+    right: -0.5rem;
+    bottom: -0.3rem;
+    left: -0.5rem;
+    background: linear-gradient(to left, #f5f5f4, #f5f5f4 80%, #f5f5f500);
+    z-index: -1;
+}
+</style>
+
+<script setup lang="ts">
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import HighlightJs from "@Obsidian/Libs/highlightJs";
+    import * as ObjectUtils from "@Obsidian/Utility/objectUtils";
+    import { computed, getCurrentInstance, PropType, ref } from "vue";
+    import { convertComponentName } from "./utils.partial";
+
+    const props = defineProps({
+        // The value passed into/controlled by the component, if any
+        value: {
+            required: false
+        },
+        // If true, the provided value is a map of multiple values
+        hasMultipleValues: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        // Show another copy of the component so you can see that the value is reflected across them
+        enableReflection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        // Code snippet showing how to import the component
+        importCode: {
+            type: String as PropType<string>
+        },
+        // Code snippet of the component being used
+        exampleCode: {
+            type: String as PropType<string>
+        },
+        // Describe what this component is/does
+        description: {
+            type: String as PropType<string>,
+            default: ""
+        },
+        /** Display the value raw and unformatted inside the PRE element. */
+        displayAsRaw: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    // Calculate a header based on the name of the component, adding spaces and stripping out the "Gallery" suffix
+    const componentName = convertComponentName(getCurrentInstance()?.parent?.type?.name);
+
+    const formattedValue = computed(() => {
+        if (props.displayAsRaw) {
+            return props.value;
+        }
+        else if (!props.hasMultipleValues) {
+            return JSON.stringify(props.value, null, 4);
+        }
+        else {
+            // Convert each property's value to a JSON string.
+            return ObjectUtils.fromEntries(
+                Object.entries(props.value as Record<string, unknown>).map(([key, val]) => {
+                    return [
+                        key,
+                        JSON.stringify(val, null, 4)
+                    ];
+                })
+            );
+        }
+    });
+
+    const styledImportCode = computed((): string | undefined => {
+        if (!props.importCode) {
+            return undefined;
+        }
+
+        return HighlightJs.highlight(props.importCode, {
+            language: "typescript"
+        })?.value;
+    });
+
+    const styledExampleCode = computed((): string | undefined => {
+        if (!props.exampleCode) {
+            return undefined;
+        }
+
+        return HighlightJs.highlight(props.exampleCode, {
+            language: "html"
+        })?.value;
+    });
+
+    const showReflection = ref(false);
+</script>

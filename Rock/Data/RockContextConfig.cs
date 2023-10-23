@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Data.Entity;
+using EF6.TagWith;
 using Rock.Data.Interception;
 
 namespace Rock.Data
@@ -30,11 +31,14 @@ namespace Rock.Data
         /// </summary>
         public RockContextConfig()
         {
-            // default Initializer is CreateDatabaseIfNotExists, so set it to NULL so that nothing happens if there isn't a database yet
+            // Default Initializer is CreateDatabaseIfNotExists, so set it to NULL so that nothing happens if there isn't a database yet.
             this.SetDatabaseInitializer<RockContext>( null );
 
             // Enable Rock's command interceptor
             this.AddInterceptor( new RockEfInterceptor() );
+
+            // Enable the EF tagger interceptor. This allows adding comments into your queries.
+            this.AddInterceptor( new QueryTaggerInterceptor( new SqlServerTagger() ) );
         }
     }
 }

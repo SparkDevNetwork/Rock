@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Connection
 
             connectionRequests = connectionRequests.OrderBy( r => r.PersonAlias.Person.LastName ).ThenBy( r => r.PersonAlias.Person.NickName );
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "ConnectionRequests", connectionRequests.ToList() );
 
             var lastActivityNotes = connectionRequests.Select( r => new

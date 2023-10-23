@@ -122,8 +122,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e"></param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( MEDIUM_TYPE_FILTER, ddlMediumValue.SelectedValue );
-            gfFilter.SaveUserPreference( INCLUDE_INACTIVE_FILTER, cbIncludeInactive.Checked.ToString() );
+            gfFilter.SetFilterPreference( MEDIUM_TYPE_FILTER, ddlMediumValue.SelectedValue );
+            gfFilter.SetFilterPreference( INCLUDE_INACTIVE_FILTER, cbIncludeInactive.Checked.ToString() );
             ShowList();
         }
 
@@ -172,10 +172,10 @@ namespace RockWeb.Blocks.Reporting
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM.AsGuid() );
             ddlMediumValue.DefinedTypeId = definedType.Id;
 
-            var channelMediumValueId = gfFilter.GetUserPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();
+            var channelMediumValueId = gfFilter.GetFilterPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();
             ddlMediumValue.SetValue( channelMediumValueId );
 
-            var includeInactive = gfFilter.GetUserPreference( INCLUDE_INACTIVE_FILTER ).AsBooleanOrNull() ?? false;
+            var includeInactive = gfFilter.GetFilterPreference( INCLUDE_INACTIVE_FILTER ).AsBooleanOrNull() ?? false;
             cbIncludeInactive.Checked = includeInactive;
         }
 
@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.Reporting
                 var channelQry = new InteractionChannelService( rockContext )
                     .Queryable().AsNoTracking();
 
-                var channelMediumValueId = gfFilter.GetUserPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();
+                var channelMediumValueId = gfFilter.GetFilterPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();
                 if ( channelMediumValueId.HasValue )
                 {
                     channelQry = channelQry.Where( a => a.ChannelTypeMediumValueId == channelMediumValueId.Value );
@@ -232,8 +232,6 @@ namespace RockWeb.Blocks.Reporting
 
                 var options = new Rock.Lava.CommonMergeFieldsOptions();
                 options.GetPageContext = false;
-                options.GetLegacyGlobalMergeFields = false;
-
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, options );
                 mergeFields.Add( "ComponentListPage", LinkedPageRoute( "ComponentListPage" ) );
                 mergeFields.Add( "SessionListPage", LinkedPageRoute( "SessionListPage" ) );

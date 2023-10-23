@@ -1,0 +1,221 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <RadioButtonList label="Trigger Type"
+                                 help="Determines when the trigger should be fired. 'Pre' events allow the workflow to cancel the action and notify the user. They should be used when the entity's original and new values need to be compared. 'Post' events are more efficient because they prevent the user interface from being blocked. 'Immediate Post Save' events are used when the workflow should run immediately and the entity ID is required."
+                                 v-model="workflowTriggerType"
+                                 :items="workflowTriggerTypes"
+                                 :disabled="!isEditable"
+                                 horizontal
+                                 :repeatColumns="0" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          :disabled="!isEditable"
+                          label="Active" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <EntityTypePicker label="Entity Type"
+                                  v-model="entityType"
+                                  rules="required"
+                                  :disabled="!isEditable"
+                                  :multiple="false"
+                                  :includeGlobalOption="false" />
+                <WorkflowTypePicker label="Workflow Type"
+                                    v-model="workflowType"
+                                    :disabled="!isEditable"
+                                    rules="required"
+                                    help="The workflow type to run when a change occurs." />
+                <TextBox label="Workflow Name"
+                         v-model="workflowName"
+                         :disabled="!isEditable"
+                         help="The name to use for each workflow created." />
+            </div>
+
+            <div class="col-md-6">
+                <DropDownList label="Entity Type Qualifier Column"
+                              v-model="entityTypeQualifierColumn"
+                              help="Optional: Provide a specific column that you want to use as a filter for the trigger. You must also provide a qualifier value for this filter to work."
+                              :items="qualifierColumns"
+                              showBlankItem
+                              enhanceForLongLists
+                              :disabled="!isEditable"
+                              :multiple="false" />
+                <div class="well">
+                    <div class="row" v-if="showPreviousAndAltQualifierValueTextBoxes">
+                        <div class="col-md-6">
+                            <TextBox label="Changing From"
+                                     v-model="entityTypeQualifierValuePrevious"
+                                     :disabled="!isEditable"
+                                     help="Optional: Provide a specific previous value for the property to filter on. If left blank it means the new value must be different than its previous value (i.e. changed)." />
+                        </div>
+                        <div class="col-md-6">
+                            <TextBox label="To"
+                                     v-model="entityTypeQualifierValueAlt"
+                                     :disabled="!isEditable"
+                                     help="Optional: Provide a specific value for the property to filter on.  If left blank it means the previous value must be different than its new value (i.e. changed)." />
+                        </div>
+                    </div>
+                    <TextBox :label="qualifierValueLabel"
+                             v-model="entityTypeQualifierValue"
+                             :disabled="!isEditable"
+                             help="Optional: Provide a specific value for the property to filter on." />
+                </div>
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { WorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowTriggerDetail/workflowTriggerBag";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<WorkflowTriggerBag>,
+            required: true
+        },
+
+        isEditable: {
+            type: Object as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: WorkflowTriggerBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const workflowTriggerType = propertyRef(props.modelValue.workflowTriggerType ?? "", "WorkflowTriggerType");
+    const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
+    const workflowType = propertyRef(props.modelValue.workflowType ?? null, "WorkflowTypeId");
+    const workflowName = propertyRef(props.modelValue.workflowName ?? "", "WorkflowName");
+    const entityTypeQualifierColumn = propertyRef(props.modelValue.entityTypeQualifierColumn ?? "", "EntityTypeQualifierColumn");
+    const entityTypeQualifierValue = propertyRef(props.modelValue.entityTypeQualifierValue ?? "", "EntityTypeQualifierValue");
+    const entityTypeQualifierValuePrevious = propertyRef(props.modelValue.entityTypeQualifierValuePrevious ?? "", "EntityTypeQualifierValuePrevious");
+    const entityTypeQualifierValueAlt = ref(props.modelValue.entityTypeQualifierValueAlt ?? "");
+    const workflowTriggerTypes = ref(props.modelValue.workflowTriggerTypes ?? []);
+    const qualifierValueLabel = ref(props.modelValue.entityTypeQualifierValueLabel ?? "Or value is");
+    const showPreviousAndAltQualifierValueTextBoxes = ref(props.modelValue.showPreviousAndAltQualifierValueTextBoxes ?? true);
+    const qualifierColumns = ref(props.modelValue.qualifierColumns ?? []);
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [isActive, workflowTriggerType, entityType, workflowType, workflowName, entityTypeQualifierColumn, entityTypeQualifierValue, entityTypeQualifierValuePrevious];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch(() => entityTypeQualifierValue.value, () => {
+        entityTypeQualifierValuePrevious.value = "";
+        entityTypeQualifierValueAlt.value = "";
+    });
+
+    watch(() => [entityTypeQualifierValuePrevious.value, entityTypeQualifierValueAlt.value], () => {
+        entityTypeQualifierValue.value = "";
+    });
+
+    watch(() => entityType.value, async () => {
+        if (!entityType.value.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<ListItemBag[]>("GetQualifierColumns", {
+            entityTypeGuid: entityType.value.value
+        });
+
+        if (result.isSuccess && result.data) {
+            qualifierColumns.value = result.data ?? [];
+        }
+    }, { immediate: true });
+
+    watch(() => workflowTriggerType.value, () => {
+
+        if (!workflowTriggerType.value) {
+            return;
+        }
+
+        let showPreviousField = false;
+
+        if (workflowTriggerType.value == "PreSave" || workflowTriggerType.value == "PostSave" || workflowTriggerType.value == "ImmediatePostSave") {
+            showPreviousField = true;
+        }
+
+        if (showPreviousField) {
+            qualifierValueLabel.value = "Or value is";
+            showPreviousAndAltQualifierValueTextBoxes.value = true;
+        }
+        else {
+            qualifierValueLabel.value = "Value is";
+            showPreviousAndAltQualifierValueTextBoxes.value = false;
+        }
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(workflowTriggerType, props.modelValue.workflowTriggerType ?? "");
+        updateRefValue(entityType, props.modelValue.entityType ?? {});
+        updateRefValue(workflowType, props.modelValue.workflowType ?? {});
+        updateRefValue(workflowName, props.modelValue.workflowName ?? "");
+        updateRefValue(entityTypeQualifierColumn, props.modelValue.entityTypeQualifierColumn ?? "");
+        updateRefValue(entityTypeQualifierValue, props.modelValue.entityTypeQualifierValue ?? "");
+        updateRefValue(entityTypeQualifierValuePrevious, props.modelValue.entityTypeQualifierValuePrevious ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs, entityTypeQualifierValueAlt], () => {
+        const newValue: WorkflowTriggerBag = {
+            ...props.modelValue,
+            isActive: isActive.value,
+            workflowTriggerType: workflowTriggerType.value,
+            entityType: entityType.value,
+            workflowType: workflowType.value,
+            workflowName: workflowName.value,
+            entityTypeQualifierColumn: entityTypeQualifierColumn.value,
+            entityTypeQualifierValue: entityTypeQualifierValue.value,
+            entityTypeQualifierValuePrevious: entityTypeQualifierValuePrevious.value,
+            entityTypeQualifierValueAlt: entityTypeQualifierValueAlt.value,
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

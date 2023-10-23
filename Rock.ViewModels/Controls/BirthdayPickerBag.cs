@@ -17,14 +17,12 @@
 
 using System;
 
-using Rock.ViewModels.Utility;
-
 namespace Rock.ViewModels.Controls
 {
     /// <summary>
     /// Birthday Picker View Model
     /// </summary>
-    public sealed class BirthdayPickerBag : IViewModel
+    public sealed class BirthdayPickerBag
     {
         /// <summary>
         /// Gets or sets the year.

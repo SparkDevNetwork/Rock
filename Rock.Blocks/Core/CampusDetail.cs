@@ -36,12 +36,13 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular campus.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Campus Detail" )]
-    [Category( "Obsidian > Core" )]
+    [Category( "Core" )]
     [Description( "Displays the details of a particular campus." )]
     [IconCssClass( "fa fa-building" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -49,7 +50,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "A61EAF51-5DB4-451E-9F88-9D4C6ACCE73B")]
     [Rock.SystemGuid.BlockTypeGuid( "507F5108-FB55-48F0-A66E-CC3D5185D35D")]
-    public class CampusDetail : RockObsidianDetailBlockType
+    public class CampusDetail : RockDetailBlockType
     {
         #region Keys
 
@@ -78,7 +79,7 @@ namespace Rock.Blocks.Core
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<Campus>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Campus>();
 
                 return box;
             }
@@ -431,7 +432,7 @@ namespace Rock.Blocks.Core
                 //CampusTopics = entity.CampusTopics.ToListItemBagList(),
                 CampusTypeValue = entity.CampusTypeValue.ToListItemBag(),
                 Description = entity.Description,
-                IsActive = entity.IsActive,
+                IsActive = !entity.IsActive.HasValue || entity.IsActive.Value,
                 IsSystem = entity.IsSystem,
                 LeaderPersonAlias = entity.LeaderPersonAlias.ToListItemBag(),
                 Location = entity.Location.ToListItemBag(),

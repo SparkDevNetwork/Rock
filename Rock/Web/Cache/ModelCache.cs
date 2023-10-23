@@ -43,7 +43,7 @@ namespace Rock.Web.Cache
         where TT : Model<TT>, new()
     {
         /// <summary>
-        /// Set's the cached objects properties from the model/entities properties.
+        /// Sets the cached object's properties from the model/entity's properties.
         /// </summary>
         /// <param name="entity">The entity.</param>
         public override void SetFromEntity( IEntity entity )
@@ -456,7 +456,7 @@ namespace Rock.Web.Cache
 
                 if ( url && field is Field.ILinkableFieldType )
                 {
-                    return ( (Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                    return ( field as Field.ILinkableFieldType ).UrlLink( value, attribute.QualifierValues );
                 }
 
                 return field.FormatValue( null, attribute.EntityTypeId, Id, value, attribute.QualifierValues, false );

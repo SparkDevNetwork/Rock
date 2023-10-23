@@ -4,7 +4,7 @@
            title="Update Preference"
            saveText="Save"
            :subtitle="subtitle"
-           :saveButtonDisabled="isUpdatingDisabled"
+           :isSaveButtonDisabled="isUpdatingDisabled"
            @save="onSave">
 
         <NotificationBox v-if="loadPreferencesErrorMessage" :alertType="AlertType.Warning">
@@ -56,10 +56,10 @@
     import { computed, PropType, ref, watch } from "vue";
     import { ISchedulerResourceAttend } from "./types.partial";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import Modal from "@Obsidian/Controls/modal";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { UpdateSchedulePreferenceMode, UpdateSchedulePreferenceModeDescription } from "@Obsidian/Enums/Blocks/Group/Scheduling/updateSchedulePreferenceMode";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";

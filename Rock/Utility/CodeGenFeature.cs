@@ -35,6 +35,11 @@ namespace Rock.Utility
         ViewModelFile = 0x0001,
 
         /// <summary>
+        /// Excludes the default REST controller that would be generated for a model.
+        /// </summary>
+        DefaultRestController = 0x0002,
+
+        /// <summary>
         /// All features of the code generation tool.
         /// </summary>
         All = 0x7FFFFFFF

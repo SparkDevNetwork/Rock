@@ -1,0 +1,61 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="zoneClasses">
+        <div class="zone-content-container" @click.stop="onBodyActionClick">
+            <div class="zone-content">
+                <slot />
+            </div>
+        </div>
+
+        <div class="zone-actions">
+            <slot name="preActions" />
+            <div v-if="iconCssClass" class="zone-action" @click.stop="onActionClick"><i :class="iconCssClass + ' fa-fw'"></i></div>
+            <slot name="postActions" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        iconCssClass: {
+            type: String as PropType<string>,
+            default: "fa fa-gear"
+        },
+
+        clickBodyToConfigure: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "configure"): void;
+    }>();
+
+    const zoneClasses = computed((): string[] => {
+        const classes: string[] = ["configurable-zone"];
+
+        if (props.modelValue) {
+            classes.push("active");
+        }
+
+        return classes;
+    });
+
+    function onActionClick(): void {
+        emit("configure");
+    }
+
+    function onBodyActionClick(): void {
+        if (props.clickBodyToConfigure) {
+            emit("configure");
+        }
+    }
+</script>

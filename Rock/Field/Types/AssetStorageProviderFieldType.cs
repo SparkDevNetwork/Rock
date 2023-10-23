@@ -26,6 +26,7 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.Field.Types
 {
@@ -46,13 +47,10 @@ namespace Rock.Field.Types
             Guid? assetStorageProviderGuid = privateValue.AsGuidOrNull();
             if ( assetStorageProviderGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                var assetStorageProviderCache = AssetStorageProviderCache.Get( assetStorageProviderGuid.Value );
+                if ( assetStorageProviderCache != null )
                 {
-                    var assetStorageProvider = new AssetStorageProviderService( rockContext ).Get( assetStorageProviderGuid.Value );
-                    if ( assetStorageProvider != null )
-                    {
-                        return assetStorageProvider.Name;
-                    }
+                    return assetStorageProviderCache.Name;
                 }
             }
 
@@ -109,20 +107,17 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            var assetStorageProviderId = AssetStorageProviderCache.GetId( assetStorageProviderGuid.Value );
+
+            if ( !assetStorageProviderId.HasValue )
             {
-                var assetStorageProviderId = new AssetStorageProviderService( rockContext ).GetId( assetStorageProviderGuid.Value );
-
-                if ( !assetStorageProviderId.HasValue )
-                {
-                    return null;
-                }
-
-                return new List<ReferencedEntity>()
-                {
-                    new ReferencedEntity( EntityTypeCache.GetId<AssetStorageProvider>().Value, assetStorageProviderId.Value )
-                };
+                return null;
             }
+
+            return new List<ReferencedEntity>()
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<AssetStorageProvider>().Value, assetStorageProviderId.Value )
+            };
         }
 
         /// <summary>
@@ -187,10 +182,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = null;
                 if ( itemId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        itemGuid = new AssetStorageProviderService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
-                    }
+                    itemGuid = AssetStorageProviderCache.GetGuid( itemId.Value );
                 }
 
                 return itemGuid?.ToString();
@@ -214,10 +206,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = value.AsGuidOrNull();
                 if ( itemGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        itemId = new AssetStorageProviderService( rockContext ).Queryable().Where( a => a.Guid == itemGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
-                    }
+                    itemId = AssetStorageProviderCache.GetId( itemGuid.Value );
                 }
 
                 picker.SetValue( itemId );
@@ -233,8 +222,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new AssetStorageProviderService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : ( int? ) null;
+            return AssetStorageProviderCache.GetId( guid );
         }
 
         /// <summary>
@@ -245,8 +233,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new AssetStorageProviderService( new RockContext() ).Get( id ?? 0 );
-            var guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            var guidValue = AssetStorageProviderCache.GetGuid( id ?? 0 )?.ToString() ?? string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }
 

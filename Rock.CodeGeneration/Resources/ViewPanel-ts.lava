@@ -25,8 +25,8 @@
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";{% if UseIsSystem == true %}
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";{% endif %}{% if UseAttributeValues == true %}
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";{% endif %}
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";{% endif %}
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";

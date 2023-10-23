@@ -1,0 +1,37 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="rock-header">
+        <div class="d-flex flex-wrap justify-content-between">
+            <div>
+                <h3 v-if="props.title" class="title">{{ props.title }}</h3>
+                <p v-if="description" class="description">{{ description }}</p>
+            </div>
+            <div v-if="$slots.actions" class="section-header-actions align-self-end">
+                <slot name="actions" />
+            </div>
+        </div>
+
+        <hr v-if="!isSeparatorHidden" class="section-header-hr">
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        title: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        description: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        isSeparatorHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+</script>

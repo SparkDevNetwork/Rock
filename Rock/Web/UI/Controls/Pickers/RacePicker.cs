@@ -435,14 +435,14 @@ namespace Rock.Web.UI.Controls
             _ddlRace = new RockDropDownList()
             {
                 ID = "_ddlRace",
-                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL )
             };
 
             _rblRace = new RockRadioButtonList()
             {
                 ID = "_rblRace",
                 RepeatDirection = RepeatDirection.Horizontal,
-                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL )
             };
 
             switch ( CurrentPickerMode )

@@ -53,22 +53,24 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            var locationGuid = value?.AsGuidOrNull();
+            if ( locationGuid == null )
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    var service = new LocationService( rockContext );
-                    var location = service.GetNoTracking( new Guid( value ) );
-                    if ( location != null )
-                    {
-                        formattedValue = location.ToString();
-                    }
-                }
+                return string.Empty;
             }
 
-            return formattedValue;
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new LocationService( rockContext );
+                var location = service.GetNoTracking( locationGuid.Value );
+                if ( location == null )
+                {
+                    return string.Empty;
+                }
+
+                var formattedValue = location.ToString();
+                return formattedValue;
+            }
         }
 
         #endregion

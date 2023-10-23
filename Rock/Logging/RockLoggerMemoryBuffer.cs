@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Rock.Attribute;
 
 namespace Rock.Logging
@@ -114,7 +115,8 @@ namespace Rock.Logging
             // By default, log everything.
             var rockLogConfiguration = new RockLogConfiguration
             {
-                LogLevel = RockLogLevel.Debug
+                LogLevel = RockLogLevel.All,
+                DomainsToLog = new List<string>()
             };
             return rockLogConfiguration;
         }
@@ -187,6 +189,8 @@ namespace Rock.Logging
 
         #region WriteToLog Methods
 
+        private static Regex _regexPropertyPlaceholder = new Regex( @"\{.*?\}", RegexOptions.Compiled );
+
         /// <summary>
         /// Writes to log.
         /// </summary>
@@ -197,8 +201,6 @@ namespace Rock.Logging
         /// <param name="propertyValues">The property values.</param>
         private void WriteToLogInternal( RockLogLevel logLevel, Exception exception, string domain, string messageTemplate, params object[] propertyValues )
         {
-            //EnsureLoggerExistsAndUpdated();
-
             if ( !ShouldLogEntry( logLevel, domain ) )
             {
                 return;
@@ -206,7 +208,10 @@ namespace Rock.Logging
 
             if ( propertyValues != null )
             {
-                messageTemplate = string.Format( messageTemplate, propertyValues );
+                foreach ( var propertyValue in propertyValues )
+                {
+                    messageTemplate = _regexPropertyPlaceholder.Replace( messageTemplate, propertyValue.ToStringSafe(), 1 );
+                }
             }
 
             if ( exception != null )
@@ -215,8 +220,6 @@ namespace Rock.Logging
             }
 
             WriteToLogInternal( logLevel, domain, messageTemplate );
-            //var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
-            //_logger.Write( serilogLogLevel, exception, GetMessageTemplateWithDomain( messageTemplate ), AddDomainToObjectArray( propertyValues, domain.ToUpper() ) );
         }
 
         /// <summary>
@@ -233,8 +236,6 @@ namespace Rock.Logging
 
         private void WriteToLogInternal( RockLogLevel logLevel, string domain, string messageTemplate )
         {
-            //EnsureLoggerExistsAndUpdated();
-
             if ( !ShouldLogEntry( logLevel, domain ) )
             {
                 return;

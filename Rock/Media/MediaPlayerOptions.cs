@@ -160,10 +160,13 @@ namespace Rock.Media
         /// Gets or sets a value indicating whether to resume playback from
         /// the first gap in playback history.
         /// </summary>
+        /// <remarks>
+        /// This should never be null when encoded.
+        /// </remarks>
         /// <value>
         ///   <c>true</c> if playback should be resumed; otherwise, <c>false</c>.
         /// </value>
-        public bool ResumePlaying { get; set; }
+        public bool? ResumePlaying { get; set; }
 
         /// <summary>
         /// Gets or sets the number of seconds to seek forward or backward

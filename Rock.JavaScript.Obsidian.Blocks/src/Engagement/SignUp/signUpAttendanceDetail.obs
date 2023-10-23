@@ -26,10 +26,10 @@
 
 <script setup lang="ts">
     import { computed, onMounted, ref } from "vue";
-    import CheckboxList from "@Obsidian/Controls/checkBoxList";
+    import CheckboxList from "@Obsidian/Controls/checkBoxList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { HttpResult } from "@Obsidian/Types/Utility/http";

@@ -519,7 +519,7 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
             // Remove campus.
             var campusService = new CampusService( rockContext );
 
-            var campus2 = campusService.Get( TestDataHelper.SecondaryCampusGuidString.AsGuid() );
+            var campus2 = campusService.Get( TestGuids.Crm.CampusSteppingStone.AsGuid() );
             if ( campus2 != null )
             {
                 campusService.Delete( campus2 );

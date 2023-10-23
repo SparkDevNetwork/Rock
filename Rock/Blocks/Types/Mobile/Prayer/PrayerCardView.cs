@@ -31,12 +31,13 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     /// <summary>
     /// Provides an additional experience to pray using a card based view.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Prayer Card View" )]
     [Category( "Mobile > Prayer" )]
     [Description( "Provides an additional experience to pray using a card based view." )]
     [IconCssClass( "fa fa-th" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -161,7 +162,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_PRAYER_PRAYER_CARD_VIEW_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_PRAYER_PRAYER_CARD_VIEW )]
-    public class PrayerCardView : RockMobileBlockType
+    public class PrayerCardView : RockBlockType
     {
         #region Page Parameters
 
@@ -343,21 +344,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 3;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Prayer.PrayerCardView";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 3 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
