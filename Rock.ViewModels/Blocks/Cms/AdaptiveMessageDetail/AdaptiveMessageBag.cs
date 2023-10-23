@@ -66,5 +66,15 @@ namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail
         /// The adaptations grid definition.
         /// </value>
         public GridDefinitionBag AdaptationsGridDefinition { get; set; }
+
+        /// <summary>
+        /// The adaptation shared Attributes
+        /// </summary>
+        public List<PublicEditableAttributeBag> AdaptationSharedAttributes { get; set; }
+
+        /// <summary>
+        /// The adaptation Attributes
+        /// </summary>
+        public List<PublicEditableAttributeBag> AdaptationAttributes { get; set; }
     }
 }

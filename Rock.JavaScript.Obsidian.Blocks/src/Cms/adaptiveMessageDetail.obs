@@ -192,7 +192,8 @@
 
         if (result.isSuccess && result.data && result.data.entity) {
             adaptiveMessageEditBag.value = result.data.entity;
-
+            config.options = result.data.options;
+            panelMode.value = DetailPanelMode.Edit;
             return true;
         }
         else {

@@ -25,13 +25,20 @@ import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 
 export type AdaptiveMessageBag = {
+    /** The adaptation Attributes */
+    adaptationAttributes?: PublicEditableAttributeBag[] | null;
+
     /** Gets or sets the adaptations grid data. */
     adaptationsGridData?: GridDataBag | null;
 
     /** Gets or sets the step type adaptations grid definition. */
     adaptationsGridDefinition?: GridDefinitionBag | null;
+
+    /** The adaptation shared Attributes */
+    adaptationSharedAttributes?: PublicEditableAttributeBag[] | null;
 
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;

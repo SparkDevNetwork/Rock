@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,9 +15,18 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail
 {
     public class AdaptiveMessageDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the reserved key names.
+        /// </summary>
+        /// <value>
+        /// The reserved key names.
+        /// </value>
+        public List<string> ReservedKeyNames { get; set; }
     }
 }

@@ -32,6 +32,7 @@ using Rock.ViewModels.Blocks.Cms.AdaptiveMessageAdaptationDetail;
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail;
 using Rock.ViewModels.Blocks.Cms.LavaShortcodeDetail;
 using Rock.ViewModels.Blocks.Engagement.StepTypeDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -165,8 +166,11 @@ namespace Rock.Blocks.Cms
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity );
+                    box.Entity = GetEntityBagForEdit( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    var reservedKeyNames = box.Entity.AdaptationSharedAttributes.Select( a => a.Key ).ToList();
+                    reservedKeyNames.AddRange( box.Entity.AdaptationAttributes.Select( a => a.Key ).ToList() );
+                    box.Options.ReservedKeyNames = reservedKeyNames;
                 }
                 else
                 {
@@ -268,7 +272,7 @@ namespace Rock.Blocks.Cms
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="AdaptiveMessageBag"/> that represents the entity.</returns>
-        private AdaptiveMessageBag GetEntityBagForEdit( AdaptiveMessage entity )
+        private AdaptiveMessageBag GetEntityBagForEdit( AdaptiveMessage entity, RockContext rockContext )
         {
             if ( entity == null )
             {
@@ -276,10 +280,46 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
+            var inheritedAttributes = GetAdaptationAttributes( rockContext, null, null );
+            var attributes = GetAdaptationAttributes( rockContext, "AdaptiveMessageId", entity.Id.ToString() );
+
+            bag.AdaptationSharedAttributes = new List<PublicEditableAttributeBag>();
+            bag.AdaptationSharedAttributes.AddRange( inheritedAttributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
+
+            bag.AdaptationAttributes = new List<PublicEditableAttributeBag>();
+            bag.AdaptationAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
             return bag;
+        }
+
+        /// <summary>
+        /// Gets the adaptation attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="siteIdQualifierValue">The site identifier qualifier value.</param>
+        /// <returns></returns>
+        private static List<Model.Attribute> GetAdaptationAttributes( RockContext rockContext, string qualifierColumn, string qualifierValue )
+        {
+            var qry = new AttributeService( rockContext ).GetByEntityTypeId( new AdaptiveMessageAdaptation().TypeId, true ).AsQueryable();
+
+            if ( qualifierColumn.IsNullOrWhiteSpace() )
+            {
+                qry = qry.Where( t =>
+                      ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == string.Empty ) &&
+                    ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == string.Empty ) );
+            }
+            else
+            {
+                qry = qry.Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( qualifierColumn, StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( qualifierValue ) );
+            }
+
+            return qry.OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
         }
 
         /// <summary>
@@ -464,8 +504,12 @@ namespace Rock.Blocks.Cms
 
                 var box = new DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
+
+                var reservedKeyNames = box.Entity.AdaptationSharedAttributes.Select( a => a.Key ).ToList();
+                reservedKeyNames.AddRange( box.Entity.AdaptationAttributes.Select( a => a.Key ).ToList() );
+                box.Options.ReservedKeyNames = reservedKeyNames;
 
                 return ActionOk( box );
             }
@@ -505,6 +549,12 @@ namespace Rock.Blocks.Cms
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
+
+                    if ( box.Entity.AdaptationAttributes.Count > 0 )
+                    {
+                        SaveAttributes( new AdaptiveMessageAdaptation().TypeId, "AdaptiveMessageId", entity.Id.ToString(), box.Entity.AdaptationAttributes, rockContext );
+                    }
+
                     entity.SaveAttributeValues( rockContext );
                 } );
 
@@ -659,7 +709,7 @@ namespace Rock.Blocks.Cms
 
                 var refreshedBox = new DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
@@ -685,6 +735,37 @@ namespace Rock.Blocks.Cms
                 return ActionOk( refreshedBox );
             }
         }
+
+
+        /// <summary>
+        /// Save attributes associated with this message.
+        /// </summary>
+        /// <param name="entityTypeId"></param>
+        /// <param name="qualifierColumn"></param>
+        /// <param name="qualifierValue"></param>
+        /// <param name="viewStateAttributes"></param>
+        /// <param name="rockContext"></param>
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<PublicEditableAttributeBag> viewStateAttributes, RockContext rockContext )
+        {
+            // Get the existing attributes for this entity type and qualifier value
+            var attributeService = new AttributeService( rockContext );
+            var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
+
+            // Delete any of those attributes that were removed in the UI
+            var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
+            foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+            {
+                attributeService.Delete( attr );
+                rockContext.SaveChanges();
+            }
+
+            // Update the Attributes that were assigned in the UI
+            foreach ( var attributeState in viewStateAttributes )
+            {
+                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+            }
+        }
+
 
         #endregion
         #region Support Classes
