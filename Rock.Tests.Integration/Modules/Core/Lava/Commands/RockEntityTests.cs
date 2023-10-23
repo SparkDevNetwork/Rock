@@ -428,5 +428,24 @@ TedDecker<br/>
             input2 = input2.Replace( "$personId", tedPerson.Id.ToString() );
             TestHelper.AssertTemplateOutput( expectedOutput2, input2, options );
         }
+
+        [TestMethod]
+        public void EntityCommandBlock_WithCountParameterIsTrue_ReturnsCountVariableInContext()
+        {
+            var input = @"
+{% group count:'true' expression:'Id != 0' limit:'10' %}
+{{ count }}
+{% endgroup %}
+";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var context = engine.NewRenderContext( new List<string> { "RockEntity" } );
+                var result = engine.RenderTemplate( input, new LavaRenderParameters { Context = context } );
+                var count = result.Text.AsInteger();
+
+                Assert.IsTrue( count > 0, "Count variable is not set to a non-zero value." );
+            } );
+        }
     }
 }

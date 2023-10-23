@@ -139,6 +139,7 @@ export type RegistrationEntryBlockFeeViewModel = {
     isRequired: boolean;
     items: RegistrationEntryBlockFeeItemViewModel[];
     discountApplies: boolean;
+    hideWhenNoneRemaining?: boolean;
 };
 
 export type RegistrationEntryBlockFeeItemViewModel = {

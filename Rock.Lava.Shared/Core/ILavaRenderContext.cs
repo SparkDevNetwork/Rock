@@ -39,14 +39,12 @@ namespace Rock.Lava
         Parent = 1,
 
         /// <summary>
-        /// The root-level or template scope.
-        /// </summary>
-        Root = 2,
-
-        /// <summary>
         /// The current local scope.
         /// </summary>
-        Local = 3
+        Local = 3,
+
+        [Obsolete("The behavior of this setting is equivalent to Default. (v16.1).")]
+        Root = 2
     }
 
     /// <summary>

@@ -518,7 +518,16 @@ namespace Rock.Blocks.Security
         {
             UserLoginService.UpdateLastLogin( userLogin.UserName );
             var securitySettings = new SecuritySettingsService().SecuritySettings;
-            Authorization.SetAuthCookie( userLogin.UserName, true, false, TimeSpan.FromMinutes( securitySettings.PasswordlessSignInSessionDuration ) );
+
+            // 2FA: An individual is authenticated after registering for a new person
+            // or an existing person with a user confirmed account
+            // or a brand new account. Mark the auth ticket as two-factor authenticated.
+            Authorization.SetAuthCookie(
+                userLogin.UserName,
+                isPersisted: true,
+                isImpersonated: false,
+                isTwoFactorAuthenticated: true,
+                TimeSpan.FromMinutes( securitySettings.PasswordlessSignInSessionDuration ) );
         }
 
         /// <summary>
@@ -547,10 +556,20 @@ namespace Rock.Blocks.Security
         /// Creates a passwordless user login.
         /// </summary>
         /// <param name="person">The person.</param>
+        /// <param name="username">The user login username.</param>
         /// <param name="rockContext">The context.</param>
         /// <returns>The created user login.</returns>
-        private UserLogin CreatePasswordlessUserLogin( Person person, bool isConfirmed, string username, RockContext rockContext )
+        private UserLogin CreatePasswordlessUserLogin( Person person, string username, RockContext rockContext )
         {
+            /*
+                10/19/2023 - JMH
+
+                The individual is registering as a result of a passwordless login for a new email/mobile phone.
+                Since their email/mobile phone was already confirmed by using passwordless login,
+                the new UserLogin should be marked as confirmed.
+
+                Reason: Passwordless Login
+             */
             return UserLoginService.Create(
                 rockContext,
                 person,
@@ -558,7 +577,7 @@ namespace Rock.Blocks.Security
                 EntityTypeCache.Get( typeof( PasswordlessAuthentication ) ).Id,
                 username,
                 null,
-                isConfirmed );
+                isConfirmed: true );
         }
 
         /// <summary>
@@ -667,9 +686,12 @@ namespace Rock.Blocks.Security
         /// Creates a user login.
         /// </summary>
         /// <param name="person">The person.</param>
+        /// <param name="isConfirmed">Whether the user login is confirmed.</param>
+        /// <param name="username">The user login username.</param>
+        /// <param name="password">The user login password.</param>
         /// <param name="rockContext">The context.</param>
         /// <returns>The created user login.</returns>
-        private UserLogin CreateUserLogin( Person person, bool isConfirmed, string username, string password, RockContext rockContext )
+        private UserLogin CreateDatabaseUserLogin( Person person, bool isConfirmed, string username, string password, RockContext rockContext )
         {
             return UserLoginService.Create(
                 rockContext,
@@ -1028,7 +1050,8 @@ namespace Rock.Blocks.Security
         /// <returns><c>true</c> if valid; otherwise, <c>false</c>.</returns>
         private static bool IsFullNameValid( AccountEntryRegisterRequestBox box )
         {
-            /** 12/28/2022 - JMH
+            /*
+                12/28/2022 - JMH
              
                 See https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
 
@@ -1305,7 +1328,7 @@ namespace Rock.Blocks.Security
 
                      Now we are here.
 
-                     We need to send a new OTP to the existing Person's email
+                     We need to send a new one-time passcode (OTP) to the existing Person's email
                      to verify that the individual has access to it before we can authenticate them.
 
                      The Code field is what holds this second OTP value.
@@ -1363,7 +1386,7 @@ namespace Rock.Blocks.Security
                 if ( userLogin == null )
                 {
                     // Create new UserLogin for existing person.
-                    userLogin = CreatePasswordlessUserLogin( person, true, username, rockContext );
+                    userLogin = CreatePasswordlessUserLogin( person, username, rockContext );
 
                     // Add the phone number used for passwordless to the person.
                     if ( passwordlessAuthenticationState.PhoneNumber.IsNotNullOrWhiteSpace() )
@@ -1385,7 +1408,7 @@ namespace Rock.Blocks.Security
             }
             else
             {
-                userLogin = CreateUserLogin( person, false, box.AccountInfo.Username, box.AccountInfo.Password, rockContext );
+                userLogin = CreateDatabaseUserLogin( person, false, box.AccountInfo.Username, box.AccountInfo.Password, rockContext );
                 isAccountCreated = true;
             }
 
@@ -1445,17 +1468,26 @@ namespace Rock.Blocks.Security
                     return ActionBadRequest( "Code invalid or expired" );
                 }
 
-                userLogin = CreatePasswordlessUserLogin( person, true, PasswordlessAuthentication.GetUsername( passwordlessAuthenticationState.UniqueIdentifier ), rockContext );
+                userLogin = CreatePasswordlessUserLogin( person, PasswordlessAuthentication.GetUsername( passwordlessAuthenticationState.UniqueIdentifier ), rockContext );
 
-                // 2FA: Also create a Database login if the username and password were provided.
+                /*  
+                    10/19/2023 - JMH
+
+                    Also create a Database login if the username and password were provided.
+                    This will happen when the individual uses passwordless login for a new email/mobile phone,
+                    and if 2FA is enabled in Security Settings for the individual's protection profile,
+                    requiring that Rock also gather username & password for their next 2FA login.
+
+                    Reason: Two-Factor Authentication
+                 */
                 if ( box.AccountInfo?.Username?.IsNotNullOrWhiteSpace() == true && box.AccountInfo.Password.IsNotNullOrWhiteSpace() )
                 {
-                    CreateUserLogin( person, true, box.AccountInfo.Username, box.AccountInfo.Password, rockContext );
+                    CreateDatabaseUserLogin( person, true, box.AccountInfo.Username, box.AccountInfo.Password, rockContext );
                 }
             }
             else
             {
-                userLogin = CreateUserLogin( person, true, box.AccountInfo.Username, box.AccountInfo.Password, rockContext );
+                userLogin = CreateDatabaseUserLogin( person, true, box.AccountInfo.Username, box.AccountInfo.Password, rockContext );
             }
 
             AuthenticateUser( userLogin );

@@ -72,6 +72,9 @@ namespace Rock.Client
         /// <summary />
         public string RedirectUri { get; set; }
 
+        /// <summary />
+        public int ScopeApprovalExpiration { get; set; } = 365;
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -117,6 +120,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.PostLogoutRedirectUri = source.PostLogoutRedirectUri;
             this.RedirectUri = source.RedirectUri;
+            this.ScopeApprovalExpiration = source.ScopeApprovalExpiration;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

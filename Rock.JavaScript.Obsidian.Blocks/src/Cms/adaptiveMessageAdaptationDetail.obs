@@ -1,0 +1,211 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="entityTypeGuid"
+                 entityTypeName="AdaptiveMessageAdaptation"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="true"
+                 :isDeleteVisible="isEditable"
+                 :isEditVisible="true"
+                 :isFollowVisible="true"
+                 :isSecurityHidden="false"
+                 @cancelEdit="onCancelEdit"
+                 @save="onSave">
+        <template #edit>
+            <EditPanel v-model="adaptiveMessageAdaptationEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./AdaptiveMessageAdaptationDetail/editPanel.partial.obs";
+    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { NavigationUrlKey } from "./AdaptiveMessageAdaptationDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { AdaptiveMessageAdaptationBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationBag";
+    import { AdaptiveMessageAdaptationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationDetailOptionsBag";
+
+    const config = useConfigurationValues<DetailBlockBox<AdaptiveMessageAdaptationBag, AdaptiveMessageAdaptationDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const adaptiveMessageAdaptationEditBag = ref(config.entity ?? {} as AdaptiveMessageAdaptationBag);
+
+    const entityTypeGuid = EntityType.AdaptiveMessageAdaptation;
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+
+    // The properties that are being edited in the UI. This is used to
+    // inform the server which incoming values have valid data in them.
+    const validProperties = [
+        "attributeValues",
+        "description",
+        "isActive",
+        "name",
+        "viewSaturationCount",
+        "viewSaturationInDays",
+        "segments"
+    ];
+
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(adaptiveMessageAdaptationEditBag, validProperties, invokeBlockAction), undefined, true);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return adaptiveMessageAdaptationEditBag.value?.name ?? "";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return adaptiveMessageAdaptationEditBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        if (adaptiveMessageAdaptationEditBag.value?.isActive === true) {
+            labels.push({
+                iconCssClass: "fa fa-lightbulb",
+                title: "Active",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "far fa-lightbulb",
+                title: "Inactive",
+                type: "danger"
+            });
+        }
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): AdaptiveMessageAdaptationDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!adaptiveMessageAdaptationEditBag.value?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for when a value has changed that has an associated
+     * C# property name. This is used to detect changes to values that
+     * might cause qualified attributes to either show up or not show up.
+     *
+     * @param propertyName The name of the C# property that was changed.
+     */
+    function onPropertyChanged(propertyName: string): void {
+        // If we don't have any qualified attribute properties or this property
+        // is not one of them then do nothing.
+        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+            return;
+        }
+
+        refreshAttributesDebounce();
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const data: DetailBlockBox<AdaptiveMessageAdaptationBag, AdaptiveMessageAdaptationDetailOptionsBag> = {
+            entity: adaptiveMessageAdaptationEditBag.value,
+            isEditable: true,
+            validProperties: validProperties
+        };
+
+        const result = await invokeBlockAction<string>("Save", {
+            box: data
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save following suggestion type.";
+            return false;
+        }
+    }
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified adaptive message adaptation could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        adaptiveMessageAdaptationEditBag.value = config.entity;
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

@@ -89,6 +89,8 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
         #endregion
 
+        #region Constants
+
         /// <summary>
         /// Keys for Block Attributes.
         /// </summary>
@@ -114,6 +116,10 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             /// </summary>
             public const string CompletionDisplayDelay = "CompletionDisplayDelay";
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Gets a number of reminder bags based on the start index and count.
@@ -152,7 +158,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 }
 
                 // Filter our reminders based on the Filter Bag provided.
-                var filteredReminders = FilterRemindersFromFilterBagValues( filter, reminders )
+                var filteredReminders = FilterReminders( filter, reminders )
                     .ToList();
 
 
@@ -196,7 +202,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
                 // We need some more data post query (such as a specific photo url generated based on the entity)
                 // so let's loop over our bags and populate those properties.
-                reminderBagList.ForEach( ( bag ) => PopulateAdditionalPropertiesForReminderInfoBag( bag, personAliasService ) );
+                reminderBagList.ForEach( ( bag ) => LoadAdditionalReminderData( bag, personAliasService ) );
 
                 return reminderBagList;
             }
@@ -207,7 +213,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// </summary>
         /// <param name="bag">The bag.</param>
         /// <param name="personAliasService">The person service.</param>
-        private void PopulateAdditionalPropertiesForReminderInfoBag( ReminderInfoBag bag, PersonAliasService personAliasService )
+        private void LoadAdditionalReminderData( ReminderInfoBag bag, PersonAliasService personAliasService )
         {
             var entityType = EntityTypeCache.Get( bag.EntityTypeGuid );
 
@@ -241,7 +247,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <param name="filter">The filter.</param>
         /// <param name="reminders">The reminders.</param>
         /// <returns>IQueryable&lt;Reminder&gt;.</returns>
-        private IQueryable<Reminder> FilterRemindersFromFilterBagValues( FilterBag filter, IQueryable<Reminder> reminders )
+        private IQueryable<Reminder> FilterReminders( FilterBag filter, IQueryable<Reminder> reminders )
         {
             if ( filter == null )
             {
@@ -327,6 +333,23 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             return reminders;
         }
 
+        /// <summary>
+        /// Delete a reminder.
+        /// </summary>
+        /// <param name="reminderGuid">The reminder GUID.</param>
+        private static void DeleteReminderInternal( Guid reminderGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var reminderService = new ReminderService( rockContext );
+                var reminder = reminderService.Get( reminderGuid );
+                reminderService.Delete( reminder );
+                rockContext.SaveChanges();
+            }
+        }
+
+        #endregion
+
         #region Block Actions
 
         /// <summary>
@@ -372,6 +395,19 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
                 rockContext.SaveChanges();
             }
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Deletes a specific reminder.
+        /// </summary>
+        /// <param name="reminderGuid"></param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult DeleteReminder( Guid reminderGuid )
+        {
+            DeleteReminderInternal( reminderGuid );
 
             return ActionOk();
         }

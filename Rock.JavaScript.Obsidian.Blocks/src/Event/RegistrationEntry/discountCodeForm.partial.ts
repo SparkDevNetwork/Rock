@@ -60,32 +60,12 @@ export default defineComponent({
 
             /** A warning message about the discount code that is a result of a failed AJAX call */
             discountCodeWarningMessage: "",
+
+        /** The success message displayed once a discount code has been applied */
+        discountCodeSuccessMessage: ""
         };
     },
     computed: {
-        /** The success message displayed once a discount code has been applied */
-        discountCodeSuccessMessage(): string {
-            const discountAmount = this.registrationEntryState.discountAmount;
-            const discountPercent = this.registrationEntryState.discountPercentage;
-            const discountMaxRegistrants = this.registrationEntryState.discountMaxRegistrants ?? 0;
-            const registrantCount = this.registrationEntryState.registrants.length;
-
-            if (!discountPercent && !discountAmount) {
-                return "";
-            }
-
-            const discountText = discountPercent ?
-                `${asFormattedString(discountPercent * 100, 0)}%` :
-                `$${asFormattedString(discountAmount, 2)}`;
-
-            if(discountMaxRegistrants != 0 && registrantCount > discountMaxRegistrants) {
-                const registrantTerm = discountMaxRegistrants == 1 ? "registrant" : "registrants";
-                return `Your ${discountText} discount code was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
-            }
-
-            return `Your ${discountText} discount code for all registrants was successfully applied.`;
-        },
-
         /** Should the discount panel be shown? */
         isDiscountPanelVisible(): boolean {
             return this.viewModel.hasDiscountsAvailable;
@@ -136,11 +116,40 @@ export default defineComponent({
                     this.registrationEntryState.discountPercentage = result.data.discountPercentage;
                     this.registrationEntryState.discountCode = result.data.discountCode;
                     this.registrationEntryState.discountMaxRegistrants = result.data.discountMaxRegistrants;
+
+                    if (!isAutoApply || this.registrationEntryState.registrants.some(r => !r.isOnWaitList)) {
+                        this.discountCodeSuccessMessage = this.getDiscountCodeSuccessMessage();
+                    }
+                    else {
+                        this.discountCodeSuccessMessage = "";
+                    }
                 }
             }
             finally {
                 this.loading = false;
             }
+        },
+
+        getDiscountCodeSuccessMessage(): string {
+            const discountAmount = this.registrationEntryState.discountAmount;
+            const discountPercent = this.registrationEntryState.discountPercentage;
+            const discountMaxRegistrants = this.registrationEntryState.discountMaxRegistrants ?? 0;
+            const registrantCount = this.registrationEntryState.registrants.length;
+
+            if (!discountPercent && !discountAmount) {
+                return "";
+            }
+
+            const discountText = discountPercent ?
+                `${asFormattedString(discountPercent * 100, 0)}%` :
+                `$${asFormattedString(discountAmount, 2)}`;
+
+            if(discountMaxRegistrants != 0 && registrantCount > discountMaxRegistrants) {
+                const registrantTerm = discountMaxRegistrants == 1 ? "registrant" : "registrants";
+                return `Your ${discountText} discount code was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
+            }
+
+            return `Your ${discountText} discount code for all registrants was successfully applied.`;
         }
     },
     watch: {
