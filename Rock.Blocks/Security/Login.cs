@@ -1470,7 +1470,7 @@ namespace Rock.Blocks.Security
         private void RedirectToSingleExternalAuthProviderIfNeeded( LoginInitializationBox box, List<NamedComponent<AuthenticationComponent>> externalAuthProviders )
         {
             // Short-circuit if we are already planning to redirect the client somewhere else.
-            if ( box.ShouldRedirect )
+            if ( box.ShouldRedirect || box.Is2FANotSupportedForAuthenticationFactor == true )
             {
                 return;
             }
@@ -1482,7 +1482,7 @@ namespace Rock.Blocks.Security
             {
                 var singleAuthProvider = externalAuthProviders.First();
 
-                if ( !(singleAuthProvider is IExternalRedirectAuthentication externalRedirectAuthentication) )
+                if ( !(singleAuthProvider.Component is IExternalRedirectAuthentication externalRedirectAuthentication) )
                 {
                     box.ErrorMessage = "Please try a different authentication method.";
                     return;
