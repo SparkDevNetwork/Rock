@@ -1,0 +1,156 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <NotificationBox v-if="isAtNearCapacity" :dismissable="false" alertType="warning">This group is near its capacity. Only one individual can register.</NotificationBox>
+        <div v-html="lavaOverview"></div>
+
+        <div v-if="isFullWithSpouse">
+            <div class="row">
+                <div class="col-md-6">
+
+                    <TextBox v-model="firstName" label="First Name" rules="required" />
+                    <TextBox v-model="lastName" label="Last Name" rules="required" />
+                    <PhoneNumberBox :label="mobilePhoneLabel" v-model="mobilePhone" :rules="mobilePhoneValidationRule" />
+                    <CheckBox v-if="options.smsIsShowFirstAdult" label="" v-model="isMessagingEnabled" :text="options.smsOptInDisplayText ?? ''" />
+                    <EmailBox label="Email" v-model="email" :rules="emailValidationRule" />
+                    <PhoneNumberBox label="Home Phone" v-model="homePhone" />
+                    <AddressControl label="Address" v-model="address" />
+
+                </div>
+
+                <div class=col-md-6>
+
+                    <TextBox v-model="spouseFirstName" :disabled="isAtNearCapacity" label="Spouse First Name" />
+                    <TextBox v-model="spouseLastName" :disabled="isAtNearCapacity" label="Spouse Last Name" />
+                    <PhoneNumberBox :label="spouseMobilePhoneLabel" :disabled="isAtNearCapacity" v-model="spouseMobilePhone" />
+                    <CheckBox v-if="options.smsIsShowAllAdults" label="" :disabled="isAtNearCapacity" v-model="spouseIsMessagingEnabled" :text="options.smsOptInDisplayText ?? ''" />
+                    <EmailBox label="Spouse Email" :disabled="isAtNearCapacity" v-model="spouseEmail" />
+
+                </div>
+            </div>
+        </div>
+
+        <div v-else>
+
+            <TextBox v-model="firstName" label="First Name" rules="required" />
+            <TextBox v-model="lastName" label="Last Name" rules="required" />
+
+            <PhoneNumberBox v-if="isFullMode" :label="mobilePhoneLabel" v-model="mobilePhone" :rules="mobilePhoneValidationRule" />
+            <CheckBox v-if="isFullMode && !options.smsIsHidden" label="" v-model="isMessagingEnabled" :text="options.smsOptInDisplayText ?? ''" />
+            <EmailBox label="Email" v-model="email" :rules="emailValidationRule" />
+
+            <PhoneNumberBox v-if="isFullMode" label="Home Phone" v-model="homePhone" />
+            <AddressControl v-if="isFullMode" label="Address" v-model="address" />
+
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+import { PropType, computed, ref, watch } from "vue";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import TextBox from "@Obsidian/Controls/textBox.obs";
+import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+import AddressControl from "@Obsidian/Controls/addressControl.obs";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import EmailBox from "@Obsidian/Controls/emailBox.obs";
+import { updateRefValue } from "@Obsidian/Utility/component";
+import { GroupRegistrationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupRegistration/groupRegistrationBag";
+import { GroupRegistrationBlockBox } from "@Obsidian/ViewModels/Blocks/Group/GroupRegistration/groupRegistrationBlockBox";
+
+const props = defineProps({
+    modelValue: {
+        type: Object as PropType<GroupRegistrationBag>,
+        required: true
+    },
+
+    options: {
+        type: Object as PropType<GroupRegistrationBlockBox>,
+        required: true
+    }
+});
+
+const emit = defineEmits<{
+    (e: "update:modelValue", value: GroupRegistrationBag): void,
+    (e: "propertyChanged", value: string): void
+}>();
+
+// #region Values
+
+const firstName = ref(props.modelValue.firstName ?? "");
+const lastName = ref(props.modelValue.lastName ?? "");
+const email = ref(props.modelValue.email ?? "");
+const homePhone = ref(props.modelValue.homePhone ?? "");
+const mobilePhone = ref(props.modelValue.mobilePhone ?? "");
+const mobilePhoneLabel = ref(props.options.phoneLabel ?? "");
+const isMessagingEnabled = ref(props.modelValue.isMessagingEnabled);
+const address = ref(props.modelValue.address ?? {});
+const spouseFirstName = ref(props.modelValue.spouseFirstName ?? "");
+const spouseLastName = ref(props.modelValue.spouseLastName ?? "");
+const spouseMobilePhone = ref(props.modelValue.spouseMobilePhone ?? "");
+const spouseIsMessagingEnabled = ref(props.modelValue.spouseIsMessagingEnabled);
+const spouseEmail = ref(props.modelValue.spouseEmail ?? "");
+const lavaOverview = ref(props.options.lavaOverview ?? "");
+
+// #endregion
+
+// #region Computed Values
+const spouseMobilePhoneLabel = computed((): string => `Spouse ${mobilePhoneLabel.value}`);
+const isFullMode = computed((): boolean => props.options.mode === "Full");
+const isFullWithSpouse = computed((): boolean => props.options.mode === "FullSpouse");
+const isAtNearCapacity = computed((): boolean => props.options.openSpots === 1);
+const emailValidationRule = computed((): string => props.options.isEmailRequired ? "required" : "");
+const mobilePhoneValidationRule = computed((): string => props.options.isMobilePhoneRequired ? "required" : "");
+
+// #endregion
+
+// #region Functions
+
+// #endregion
+
+// #region Event Handlers
+
+// #endregion
+
+// Watch for parental changes in our model value and update all our values.
+watch(() => props.modelValue, () => {
+    updateRefValue(firstName, props.modelValue.firstName ?? "");
+    updateRefValue(lastName, props.modelValue.lastName ?? "");
+    updateRefValue(homePhone, props.modelValue.homePhone ?? "");
+    updateRefValue(mobilePhone, props.modelValue.mobilePhone ?? "");
+    updateRefValue(isMessagingEnabled, props.modelValue.isMessagingEnabled);
+    updateRefValue(email, props.modelValue.email ?? "");
+    updateRefValue(address, props.modelValue.address ?? {});
+    updateRefValue(spouseFirstName, props.modelValue.spouseFirstName ?? "");
+    updateRefValue(spouseLastName, props.modelValue.spouseLastName ?? "");
+    updateRefValue(spouseMobilePhone, props.modelValue.spouseMobilePhone ?? "");
+    updateRefValue(spouseIsMessagingEnabled, props.modelValue.spouseIsMessagingEnabled);
+    updateRefValue(spouseEmail, props.modelValue.spouseEmail ?? "");
+    updateRefValue(lavaOverview, props.options.lavaOverview ?? "");
+});
+
+// Determines which values we want to track changes on (defined in the
+// array) and then emit a new object defined as newValue.
+watch([firstName, lastName, homePhone, mobilePhone, isMessagingEnabled, email, address, spouseFirstName, spouseLastName, spouseMobilePhone, spouseIsMessagingEnabled, spouseEmail], () => {
+    const newValue: GroupRegistrationBag = {
+        ...props.modelValue,
+        firstName: firstName.value,
+        lastName: lastName.value,
+        homePhone: homePhone.value,
+        mobilePhone: mobilePhone.value,
+        isMessagingEnabled: isMessagingEnabled.value,
+        email: email.value,
+        address: address.value,
+        spouseFirstName: spouseFirstName.value,
+        spouseLastName: spouseLastName.value,
+        spouseMobilePhone: spouseMobilePhone.value,
+        spouseIsMessagingEnabled: spouseIsMessagingEnabled.value,
+        spouseEmail: spouseEmail.value
+    };
+
+    emit("update:modelValue", newValue);
+});
+
+</script>

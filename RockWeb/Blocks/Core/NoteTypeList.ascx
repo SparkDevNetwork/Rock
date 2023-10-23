@@ -24,7 +24,6 @@
                                 <Rock:RockBoundField DataField="NoteType.Name" HeaderText="Note Type" />
                                 <Rock:RockBoundField DataField="NoteType.IconCssClass" HeaderText="Icon CSS Class" ColumnPriority="DesktopSmall" />
                                 <Rock:BoolField DataField="NoteType.UserSelectable" HeaderText="User Selectable" ColumnPriority="Desktop" />
-                                <Rock:BoolField DataField="NoteType.RequiresApprovals" HeaderText="Requires Approvals" ColumnPriority="Desktop" />
                                 <Rock:BoolField DataField="NoteType.AllowsWatching" HeaderText="Allows Watching" ColumnPriority="DesktopLarge" />
                                 <Rock:BoolField DataField="NoteType.AllowsReplies" HeaderText="Allows Replies" ColumnPriority="DesktopLarge" />
                                 <Rock:BoolField DataField="NoteType.AllowsAttachments" HeaderText="Allows Attachments" ColumnPriority="DesktopLarge" />

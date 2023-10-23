@@ -1,0 +1,125 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="title" label="Title" rules="required" />
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="isActive" label="Active" text="Yes" />
+            </div>
+        </div>
+
+        <TextBox v-model="description" label="Description" textMode="multiline" />
+
+        <TextBox v-model="assessmentPath" label="Assessment Path" rules="required" />
+
+        <TextBox v-model="assessmentResultsPath" label="Assessment Results Path" />
+
+        <div class="row">
+            <div class="col-md-3">
+                <NumberBox v-model="minimumDaysToRetake" label="Minimum Days To Retake" help="The minimum number of days after the test has been taken before it can be taken again.">
+                    <template v-slot:inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
+            <div class="col-md-6 col-md-offset-3">
+                <CheckBox v-model="requiresRequest" label="Requires Request" text="Yes" help="Is a person required to receive a request before this test can be taken?" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AssessmentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentTypeDetail/assessmentTypeBag";
+    import { AssessmentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentTypeDetail/assessmentTypeDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AssessmentTypeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AssessmentTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AssessmentTypeBag): void;
+        (e: "propertyChanged", value: string): void;
+    }>();
+
+    // #region Values
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const title = propertyRef(props.modelValue.title ?? "", "Title");
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const assessmentPath = propertyRef(props.modelValue.assessmentPath ?? "", "AssessmentPath");
+    const assessmentResultsPath = propertyRef(props.modelValue.assessmentResultsPath ?? "", "AssessmentResultsPath");
+    const minimumDaysToRetake = propertyRef(props.modelValue.minimumDaysToRetake ?? null, "MinimumDaysToRetake");
+    const requiresRequest = propertyRef(props.modelValue.requiresRequest ?? false, "RequiresRequest");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [title, description, isActive, assessmentPath, assessmentResultsPath, minimumDaysToRetake, requiresRequest];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(title, props.modelValue.title ?? "");
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(assessmentPath, props.modelValue.assessmentPath ?? "");
+        updateRefValue(assessmentResultsPath, props.modelValue.assessmentResultsPath ?? "");
+        updateRefValue(minimumDaysToRetake, props.modelValue.minimumDaysToRetake ?? null);
+        updateRefValue(requiresRequest, props.modelValue.requiresRequest ?? false);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: AssessmentTypeBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            title: title.value,
+            description: description.value,
+            isActive: isActive.value,
+            assessmentPath: assessmentPath.value,
+            assessmentResultsPath: assessmentResultsPath.value,
+            minimumDaysToRetake: minimumDaysToRetake.value,
+            requiresRequest: requiresRequest.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    watchPropertyChanges(propRefs, emit);
+</script>

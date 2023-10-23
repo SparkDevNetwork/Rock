@@ -42,34 +42,6 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {% endif %}
 
 {%- assign noteText = note.Text | Escape | Linkify | FromMarkdown | NewlineToBr -%}
-{% comment %}If this note requires approval and is not yet approved, we might see it if the current person created the note or is an approver, so render its approval status and approval actions{% endcomment %}
-{%- assign approvalStatusHtml = '' -%}
-{%- assign approvalActionsHtml = '' -%}
-{%- if note.NoteType.RequiresApprovals and note.ApprovalStatus != 'Approved' -%}
-    {%- assign canApprove = note | HasRightsTo:'Approve' -%}
-
-    {% capture approvalStatusHtml %}
-        {% if note.ApprovalStatus == 'Denied' %}
-            {% assign approver = note.ApprovedByPersonAliasId | PersonByAliasId %}
-            Approval denied By <a href="/person/{{ approver.Id }}">{{ approver.FullName }}</a> on {{ note.ApprovedDateTime }}
-        {% elseif note.ApprovalStatus == 'PendingApproval' %}
-            Pending Approval
-        {% endif %}
-    {% endcapture %}
-
-    {% capture approvalActionsHtml %}
-        {% if canApprove %}
-        <div class="pull-right">
-            <a class="approve-note btn btn-xs btn-success" href="#" style="{{ fontStyle }}" onclick="{{ note.Id | Postback:'ApproveNote' }}">
-                Approve
-            </a>
-            <a class="approve-note btn btn-xs btn-danger" href="#" style="{{ fontStyle }}" onclick="{{ note.Id | Postback:'DenyApproveNote' }}">
-                Deny
-            </a>
-        </div>
-        {% endif %}
-    {% endcapture %}
-{% endif %}
 
 {% if noteReplyDepth == 0 %}
      {% assign avatarSize = "lg" %}
@@ -85,12 +57,6 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
         <hgroup class="flag">
             Alert: {{ note.NoteType.Name }}
         </hgroup>
-        {% endif %}
-        {% if approvalStatusHtml != '' %}
-            <hgroup class="flag clearfix {% if note.ApprovalStatus == 'PendingApproval' %}warning{%- endif %}">
-                {{ approvalStatusHtml }}
-                {{ approvalActionsHtml }}
-            </hgroup>
         {% endif %}
 
         <header class="meta">
@@ -123,16 +89,9 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                         <span class="tag-flair"><span class="tag-color" {% if note.NoteType.BorderColor != null %}style="background-color:{{ note.NoteType.BorderColor }}"{% endif %}></span><span class="tag-label">{{ note.NoteType.Name }}</span></span> &nbsp;·&nbsp;
                     {% endif %}
 
-                    {% if note.NoteType.RequiresApprovals and note.ApprovalStatus == 'Approved' %}
-                        {% assign approver = note.ApprovedByPersonAliasId | PersonByAliasId %}
-                    <a href="#{{ note.NoteAnchorId }}" class="timestamp"{% if note.ApprovedByPersonAliasId %} data-toggle="tooltip" data-placement="top" title="Approved By {{ approver.FullName }} on {{ note.ApprovedDateTime }}"{% endif %}>
-                        <time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</time>
+                    <a href="#{{ note.NoteAnchorId }}" class="timestamp" data-toggle="tooltip" title="{{ noteDateTime | Date:'MMMM d, yyyy - h:mm tt' }}">
+                        <time datetime="{{ noteDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}">{{ noteDateTimeText }}</time>
                     </a>
-                    {% else %}
-                        <a href="#{{ note.NoteAnchorId }}" class="timestamp" data-toggle="tooltip" title="{{ noteDateTime | Date:'MMMM d, yyyy - h:mm tt' }}">
-                            <time datetime="{{ noteDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}">{{ noteDateTimeText }}</time>
-                        </a>
-                    {% endif %}
                 </span>
             </div>
 
@@ -141,9 +100,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                 <div class="dropdown">
                     <button id="{{ note.Id }}-options" class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
                     <ul class="dropdown-menu dropdown-menu-right" id="{{ note.Id }}-optionsmenu" aria-labelledby="{{ note.Id }}-options">
-                        {% if canReply and note.ApprovalStatus != "Denied" %}
-                            <li><button type="button" class="dropdown-item btn-link js-replynote">Reply</button></li>
-                        {% endif %}
+                        <li><button type="button" class="dropdown-item btn-link js-replynote">Reply</button></li>
                         {% if canEdit %}
                         {% assign isPrivateVisible = 0  %}
                         {% if CurrentPerson.Id == note.CreatedByPersonId %}
@@ -151,7 +108,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                         {% endif %}
                         <li><button type="button" class="dropdown-item btn-link js-editnote" data-isprivatevisible="{{ isPrivateVisible }}">Edit</button></li>
                         {% endif %}
-                        {% if allowsWatching and note.ApprovalStatus != "Denied" %}
+                        {% if allowsWatching %}
                             <li>
                                 {% if note.IsCurrentPersonWatching %}
                                 <button type="button" class="btn-link unwatch-note" onclick="{{ note.Id | Postback:'UnwatchNote' }}">Unwatch</button>

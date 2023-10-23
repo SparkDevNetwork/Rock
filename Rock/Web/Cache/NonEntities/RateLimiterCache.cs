@@ -85,7 +85,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Determines whether this instance [can process page] the specified page identifier.
+        /// Determines whether the RateLimiter can process a page, or if it should be blocked due to exceeding the rate limit.
         /// </summary>
         /// <param name="pageId">The page identifier.</param>
         /// <param name="clientIpAddress">The client ip address.</param>
@@ -93,7 +93,7 @@ namespace Rock.Web.Cache
         /// <param name="maxActionsInPeriod">The maximum actions in period.</param>
         /// <param name="minTimeBetweenActions">The minimum time between actions.</param>
         /// <returns>
-        ///   <c>true</c> if this instance [can process page] the specified page identifier; otherwise, <c>false</c>.
+        ///   <c>true</c> if the RateLimiter can process the page; otherwise, <c>false</c>.
         /// </returns>
         public static bool CanProcessPage( int pageId, string clientIpAddress, TimeSpan period, int maxActionsInPeriod, TimeSpan? minTimeBetweenActions = null )
         {
@@ -116,10 +116,11 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Determines whether this instance [can perform action].
+        /// Determines whether the RateLimiter can perform an action, or whether it exceeds the maximum actions
+        /// for a given time period or the minimum time between actions.
         /// </summary>
         /// <returns>
-        ///   <c>true</c> if this instance [can perform action]; otherwise, <c>false</c>.
+        ///   <c>true</c> if the RateLimiter can perform the action; otherwise, <c>false</c>.
         /// </returns>
         private bool CanPerformAction()
         {

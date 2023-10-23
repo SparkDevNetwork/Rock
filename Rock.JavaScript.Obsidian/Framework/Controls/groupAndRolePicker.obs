@@ -1,0 +1,154 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="fieldProps" :modelValue="formFieldValue" name="group-and-role-picker" :disabled="disabled">
+        <GroupTypeGroupPicker v-bind="standardProps"
+                              v-model="internalGroupValue"
+                              v-model:groupType="internalTypeValue"
+                              :label="undefined"
+                              :groupLabel="groupLabel"
+                              rules=""
+                              :disabled="disabled" />
+        <BaseAsyncPicker v-model="internalRoleValue"
+                         v-bind="standardProps"
+                         rules=""
+                         label="Role"
+                         :displayStyle="PickerDisplayStyle.Condensed"
+                         :items="actualRoleItems"
+                         showBlankItem
+                         :multiple="false"
+                         :disabled="disabled" />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { standardAsyncPickerProps, useStandardAsyncPickerProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, computed, ref, watch } from "vue";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import GroupTypeGroupPicker from "./groupTypeGroupPicker.obs";
+    import RockFormField from "./rockFormField.obs";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { GroupAndRolePickerGetRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupAndRolePickerGetRolesOptionsBag";
+    import { normalizeRules } from "@Obsidian/ValidationRules";
+
+    const props = defineProps({
+        /** V-model for the role */
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            required: true
+        },
+
+        /** V-model for the group type so you can get/set it */
+        groupType: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        /** V-model for the group */
+        group: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        /** Label for the group picker */
+        groupLabel: {
+            type: String,
+            default: "Group"
+        },
+
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:groupType", value: ListItemBag | null): void
+        (e: "update:group", value: ListItemBag | null): void
+        (e: "update:modelValue", value: ListItemBag | null): void
+    }>();
+
+    // #region Values
+
+    const standardProps = useStandardAsyncPickerProps(props);
+    const fieldProps = useStandardRockFormFieldProps(props);
+    const http = useHttp();
+
+    const internalTypeValue = useVModelPassthrough(props, "groupType", emit);
+    const internalGroupValue = useVModelPassthrough(props, "group", emit);
+    const internalRoleValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const formFieldValue = computed(() => {
+        if (internalTypeValue.value && internalGroupValue.value && internalRoleValue.value) {
+            return internalRoleValue.value;
+        }
+
+        return null;
+    });
+
+    const loadedRoleItems = ref<ListItemBag[] | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const actualRoleItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedRoleItems.value || loadRoleItems;
+    });
+
+    /** Rules pass to the GroupTypeGroup Picker */
+    const typeGroupPickerRules = computed(() => {
+        const rules = normalizeRules(props.rules);
+        if (rules.includes("required")) {
+            return "required";
+        }
+        return "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Loads the group items from the server. */
+    async function loadRoleItems(): Promise<ListItemBag[]> {
+        if (!internalTypeValue.value) {
+            return [];
+        }
+
+        const options: GroupAndRolePickerGetRolesOptionsBag = {
+            groupTypeGuid: internalTypeValue.value?.value
+        };
+
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupAndRolePickerGetRoles", null, options);
+
+        if (result.isSuccess && result.data) {
+            loadedRoleItems.value = result.data ?? null;
+
+            return loadedRoleItems.value ?? [];
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedRoleItems.value = [];
+            return [];
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    /** Reload Roles if the type changes */
+    watch(internalTypeValue, () => {
+        loadedRoleItems.value = null;
+        loadRoleItems();
+    });
+
+    // #endregion
+</script>

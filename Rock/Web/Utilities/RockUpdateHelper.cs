@@ -46,7 +46,7 @@ namespace Rock.Web.Utilities
             envData.Add( "ServerOs", Environment.OSVersion.ToString() );
 
             try
-            { envData.Add( "SqlVersion", Rock.Data.DbService.ExecuteScaler( "SELECT SERVERPROPERTY('productversion')" ).ToString() ); }
+            { envData.Add( "SqlVersion", Rock.Data.DbService.ExecuteScalar( "SELECT SERVERPROPERTY('productversion')" ).ToString() ); }
             catch { }
 
             try

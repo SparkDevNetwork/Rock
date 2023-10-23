@@ -27,6 +27,12 @@ namespace Rock.Tests.Integration.Core.Storage
     [TestClass]
     public class BinaryFileTests
     {
+        [ClassInitialize]
+        public static void TestInitialize( TestContext context )
+        {
+            TestDatabaseHelper.ResetDatabase();
+        }
+
         #region Setup
         private Dictionary<string, Guid> _fileGuids;
 

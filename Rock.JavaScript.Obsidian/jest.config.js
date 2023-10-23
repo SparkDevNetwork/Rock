@@ -1,4 +1,3 @@
-const { pathsToModuleNameMapper } = require("ts-jest");
 const { compilerOptions } = require("./Tests/tsconfig.json");
 
 /** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
@@ -9,11 +8,13 @@ module.exports = {
             isolatedModules: true,
         }
     },
-    preset: 'ts-jest',
-    testEnvironment: 'jsdom',
+    preset: "ts-jest",
+    testEnvironment: "jsdom",
     testMatch: [
         "**/?(*.)+(spec|test).ts"
     ],
     moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts"],
-    moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: "../" })
+    moduleNameMapper: {
+        "^@Obsidian/(.*)$": `${__dirname}/Framework/$1`
+    }
 };

@@ -1,0 +1,48 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <button class="btn btn-default btn-sm"
+            title="Edit"
+            :disabled="isDisabled"
+            @click.prevent="onClick">
+        <i class="fa fa-pencil"></i>
+    </button>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { ref } from "vue";
+
+    const props = defineProps(standardCellProps);
+    const isDisabled = ref(false);
+
+    async function onClick(event: Event): Promise<void> {
+        const key = props.grid.getRowKey(props.row);
+
+        // Remove focus from the button.
+        if (event.target instanceof HTMLElement) {
+            event.target.blur();
+        }
+
+        // Make sure we have valid data to work with.
+        if (!key || typeof props.column.props.onClick !== "function") {
+            return;
+        }
+
+        // Disable the button until we have finished processing.
+        isDisabled.value = true;
+
+        try {
+            const result = props.column.props.onClick(key);
+
+            // If the onClick function is asynchronous, wait for it to complete.
+            if (isPromise(result)) {
+                await result;
+            }
+        }
+        finally {
+            // Re-enable the button once we are all done.
+            isDisabled.value = false;
+        }
+    }
+</script>

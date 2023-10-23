@@ -155,8 +155,8 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( UserPreferenceKey.IncludeInactive, cbShowInactive.Checked.ToString() );
-            rFilter.SaveUserPreference( UserPreferenceKey.Name, txtAccountName.Text );
+            rFilter.SetFilterPreference( UserPreferenceKey.IncludeInactive, cbShowInactive.Checked.ToString() );
+            rFilter.SetFilterPreference( UserPreferenceKey.Name, txtAccountName.Text );
 
             BindGrid();
         }
@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -247,8 +247,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindFilter()
         {
-            txtAccountName.Text = rFilter.GetUserPreference( UserPreferenceKey.Name );
-            cbShowInactive.Checked = rFilter.GetUserPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
+            txtAccountName.Text = rFilter.GetFilterPreference( UserPreferenceKey.Name );
+            cbShowInactive.Checked = rFilter.GetFilterPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
         }
 
         /// <summary>
@@ -263,13 +263,13 @@ namespace RockWeb.Blocks.Finance
             var qry = financialStatementTemplateService.Queryable().AsNoTracking();
 
             // name filter
-            string nameFilter = rFilter.GetUserPreference( UserPreferenceKey.Name );
+            string nameFilter = rFilter.GetFilterPreference( UserPreferenceKey.Name );
             if ( !string.IsNullOrEmpty( nameFilter ) )
             {
                 qry = qry.Where( a => a.Name.Contains( nameFilter ) );
             }
 
-            bool showInactiveAccounts = rFilter.GetUserPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
+            bool showInactiveAccounts = rFilter.GetFilterPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
 
             if ( !showInactiveAccounts )
             {

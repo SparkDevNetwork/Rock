@@ -99,7 +99,7 @@
                                             Orientation="Horizontal"
                                             Margin="4, 0, 0, 0">
                                     <fa:IconBlock Icon="ExclamationTriangle"
-                                                  Foreground="Red"
+                                                  Foreground="Orange"
                                                   Visibility="{Binding IsInvalid, Converter={StaticResource BoolToVis}}"
                                                   ToolTip="{Binding InvalidReason}"
                                                   Margin="0,0,4,0"/>
@@ -131,6 +131,10 @@
                         Grid.Row="1"
                         Grid.Column="0">
                     <StackPanel>
+                        <controls:Alert x:Name="RockOutOfDateAlert"
+                                        Margin="0, 0, 0, 8"
+                                        Text="The Rock.dll is older than the source code files, you might need to recompile it and the code generation tool." />
+
                         <CheckBox Name="UseAttributeValuesCheckBox"
                                   IsChecked="True"
                                   Content="Use Attribute Values" />
@@ -147,10 +151,6 @@
                                          GroupName="SecurityFrom"
                                          Content="Security from CMS" />
                         </StackPanel>
-
-                        <controls:Alert x:Name="RockOutOfDateAlert"
-                                        Margin="0, 8, 0, 0"
-                                        Text="The Rock.dll is older than the source code files, you might need to recompile it and the code generation tool." />
                     </StackPanel>
                 </Border>
             </Grid>

@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -76,51 +72,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// FinancialPaymentDetail View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( FinancialPaymentDetail ) )]
-    public partial class FinancialPaymentDetailViewModelHelper : ViewModelHelper<FinancialPaymentDetail, FinancialPaymentDetailBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override FinancialPaymentDetailBag CreateViewModel( FinancialPaymentDetail model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new FinancialPaymentDetailBag
-            {
-                IdKey = model.IdKey,
-                AccountNumberMasked = model.AccountNumberMasked,
-                BillingLocationId = model.BillingLocationId,
-                CreditCardTypeValueId = model.CreditCardTypeValueId,
-                CurrencyTypeValueId = model.CurrencyTypeValueId,
-                ExpirationMonth = model.ExpirationMonth,
-                ExpirationYear = model.ExpirationYear,
-                FinancialPersonSavedAccountId = model.FinancialPersonSavedAccountId,
-                GatewayPersonIdentifier = model.GatewayPersonIdentifier,
-                NameOnCard = model.NameOnCard,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -206,20 +157,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static FinancialPaymentDetailBag ToViewModel( this FinancialPaymentDetail model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new FinancialPaymentDetailViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

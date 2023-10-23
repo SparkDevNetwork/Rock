@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -31,11 +32,12 @@ namespace Rock.Blocks.Types.Mobile.Events
     /// <summary>
     /// Block that takes an audience and displays calendar item occurrences for it using Lava.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Event Item Occurrence List By Audience Lava" )]
     [Category( "Mobile > Events" )]
     [Description( "Block that takes an audience and displays calendar item occurrences for it using Lava." )]
     [IconCssClass( "fa fa-list-alt" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -108,7 +110,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_EVENTITEMOCCURRENCELISTBYAUDIENCELAVA_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "FC2879AC-5967-43E7-8759-6888BF21CE21")]
-    public class EventItemOccurrenceListByAudienceLava : RockMobileBlockType
+    public class EventItemOccurrenceListByAudienceLava : RockBlockType
     {
         #region Block Attributes
 
@@ -252,21 +254,11 @@ namespace Rock.Blocks.Types.Mobile.Events
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Content";
+        /// <inheritdoc/>
+        public override Guid? MobileBlockTypeGuid => new Guid( "7258A210-E936-4260-B573-9FA1193AD9E2" ); // Content block.
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -276,7 +268,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            var additionalSettings = GetAdditionalSettings();
+            var additionalSettings = BlockCache?.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
 
             return new Rock.Common.Mobile.Blocks.Content.Configuration
             {

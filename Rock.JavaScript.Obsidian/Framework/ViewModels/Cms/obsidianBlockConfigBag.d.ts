@@ -23,6 +23,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { BlockCustomActionBag } from "@Obsidian/ViewModels/Cms/blockCustomActionBag";
+import { ObsidianBlockPreferencesBag } from "@Obsidian/ViewModels/Cms/obsidianBlockPreferencesBag";
 
 /**
  * Contains the configuration required to initialize an Obsidian block in
@@ -49,6 +50,9 @@ export type ObsidianBlockConfigBag = {
      * to the block's configuration bar.
      */
     customConfigurationActions?: BlockCustomActionBag[] | null;
+
+    /** Gets or sets the person preferences associated with this block. */
+    preferences?: ObsidianBlockPreferencesBag | null;
 
     /**
      * Gets or sets the HTML element identifier that the block will be

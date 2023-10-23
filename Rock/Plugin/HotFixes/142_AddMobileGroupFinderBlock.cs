@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -237,10 +237,8 @@ WHERE [Guid] = '{Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_REGISTRATION}'
                 "standard-template.svg",
                 "image/svg+xml" );
 
-            // Configure the new REST API.
-            var prayedApiId = "PrayerRequests^IHttpActionResult Prayed(Guid, Nullable`1[Guid], Boolean)";
-            RockMigrationHelper.AddRestAction( "PrayerRequests", "Rock.Rest.Controllers.PrayerRequestsController", "PUT", prayedApiId );
-            RockMigrationHelper.AddSecurityAuthForRestAction( "PUT", prayedApiId,
+            RockMigrationHelper.AddRestAction( "81913c24-8c7c-4308-bc2d-12759e5f26ee", "PrayerRequests", "Rock.Rest.Controllers.PrayerRequestsController" );
+            RockMigrationHelper.AddSecurityAuthForRestAction( "81913c24-8c7c-4308-bc2d-12759e5f26ee",
                 0,
                 Rock.Security.Authorization.EDIT,
                 true,

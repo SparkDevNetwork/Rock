@@ -4,12 +4,12 @@
         <template #activator="props">
             <a v-bind="props" :href="'/Person/' + personId"><i v-if="photoId != 0" class="fa fa-circle"></i> <strong>{{ personName }}</strong></a>
         </template>
-        <template #popOverContent>
-            <Loading :isLoading="!popOverContent" isSmall>
-                <div v-html="popOverContent"></div>
-            </Loading>
-        </template>
+
+        <Loading :isLoading="!popOverContent" isSmall>
+            <div v-html="popOverContent"></div>
+        </Loading>
     </PopOver>
+
     <small v-if="role"> ({{ role }})</small>
 </template>
 
@@ -19,7 +19,7 @@
     import PopOver from "./popOver.obs";
     import { PersonLinkGetPopupHtmlOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/personLinkGetPopupHtmlOptionsBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
-    import Loading from "./loading";
+    import Loading from "./loading.obs";
 
     const props = defineProps({
         /** ID is used to create the link and fetch person data */

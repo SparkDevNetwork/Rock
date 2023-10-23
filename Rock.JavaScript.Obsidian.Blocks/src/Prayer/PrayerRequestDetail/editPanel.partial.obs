@@ -1,0 +1,244 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <PersonPicker v-model="requestedByPersonAlias"
+                          label="Requested By"
+                          @update:modelValue="updatePersonName($event)" />
+                <TextBox v-model="firstName"
+                          label="First Name"
+                          rules="required" />
+                <TextBox v-model="lastName"
+                          label="Last Name"
+                          :rules="isLastNameRequired" />
+                <EmailBox v-model="email"
+                          label="Email" />
+                <DatePicker v-model="expirationDate"
+                          label="Expiration Date" />
+                <CampusPicker label="Campus" v-model="campus"
+                          :rules="isCampusRequired" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+                <div v-if="props.modelValue?.flagCount">
+                    <span ref="flagCountRef" class="label label-warning" tabindex="-1" data-toggle="tooltip"
+                        data-placement="auto" data-container="body" data-html="true"
+                        data-original-title="re-approve the request to clear the flags">
+                        <i class="fa fa-flag"></i> flagged {{ props.modelValue?.flagCount }} times
+                    </span>
+                </div>
+                <CheckBoxList label="Options"
+                          v-model="optionsListValue"
+                          :items="optionsList" />
+            </div>
+
+            <div class="col-md-3">
+                <Toggle v-model="isApproved"
+                          trueText="Approved"
+                          falseText="Pending"
+                          onButtonActiveCssClass="btn-success"
+                          offButtonActiveCssClass="btn-warning"
+                          label="Status" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <CategoryPicker v-model="category"
+                        label="Category"
+                        :entityTypeGuid="prayerRequestEntityTypeGuid"
+                        rules="required" />
+                <TextBox v-model="request"
+                          label="Request"
+                          textMode="multiline"
+                          rules="required" />
+                <TextBox v-model="answer"
+                          textMode="multiline"
+                          label="Answer" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" :showEmptyValues="false" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch, onMounted } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { PrayerRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestBag";
+    import { PrayerRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestDetailOptionsBag";
+    import { PrayerRequestDetailAddPersonResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestDetailAddPersonResponseBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<PrayerRequestBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<PrayerRequestDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: PrayerRequestBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const isActive = propertyRef(props.modelValue.isActive ?? true, "IsActive");
+    const requestedByPersonAlias = propertyRef(props.modelValue.requestedByPersonAlias ?? undefined, "RequestedByPersonAliasId");
+    const isApproved = propertyRef(props.modelValue.isApproved ?? false, "IsApproved");
+    const firstName = propertyRef(props.modelValue.firstName ?? "", "FirstName");
+    const lastName = propertyRef(props.modelValue.lastName ?? "", "LastName");
+    const email = propertyRef(props.modelValue.email ?? "", "Email");
+    const expirationDate = propertyRef(props.modelValue.expirationDate ?? "", "ExpirationDate");
+    const campus = propertyRef(props.modelValue?.campus, "CampusId");
+    const category = propertyRef(props.modelValue.category, "Category");
+    const request = propertyRef(props.modelValue.text ?? "", "Text");
+    const answer = propertyRef(props.modelValue.answer ?? "", "Answer");
+    const isPublic = propertyRef(props.modelValue.isPublic, "IsPublic");
+    const isUrgent = propertyRef(props.modelValue.isUrgent, "IsUrgent");
+    const allowComments = propertyRef(props.modelValue.allowComments, "AllowComments");
+
+    const optionsList: ListItemBag[] = [
+                { text: "Public", value: "isPublic" },
+                { text: "Urgent", value: "isUrgent" },
+                { text: "Allow Comments", value: "allowComments" }
+            ];
+
+    const prayerRequestEntityTypeGuid = EntityType.PrayerRequest;
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [isActive, requestedByPersonAlias, isApproved, firstName, lastName, email, expirationDate, campus, category, request, answer, isPublic, isUrgent, allowComments];
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #endregion
+
+    // #region Computed Values
+
+    // Handles the checkbox list selection for the options.
+    // Dynamically constructs the selected values from the individual values
+    // and automatically sets those individual values on update.
+    const optionsListValue = computed({
+        get(): string[] {
+            const values: string[] = [];
+            if (isPublic.value) {
+                values.push("isPublic");
+            }
+            if (isUrgent.value) {
+                values.push("isUrgent");
+            }
+            if (allowComments.value) {
+                values.push("allowComments");
+            }
+            return values;
+        },
+        set(values: string[]) {
+            isPublic.value = values.includes("isPublic");
+            isUrgent.value = values.includes("isUrgent");
+            allowComments.value = values.includes("allowComments");
+        }
+    });
+
+    const isLastNameRequired = computed(() => props.options.isLastNameRequired ? "required": "");
+    const isCampusRequired = computed(() => props.options.isCampusRequired ? "required": "");
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the "Add Person As" person being selected.
+     */
+     async function updatePersonName(personPickerSelection: ListItemBag | undefined): Promise<void> {
+        var result = await invokeBlockAction<PrayerRequestDetailAddPersonResponseBag>("GetPersonName", { personAliasGuid: (personPickerSelection as ListItemBag)?.value});
+        firstName.value = result?.data?.nickName ?? "";
+        lastName.value = result?.data?.lastName ?? "";
+        email.value = result?.data?.email ?? "";
+     }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(requestedByPersonAlias, props.modelValue.requestedByPersonAlias ?? undefined);
+        updateRefValue(isApproved, props.modelValue.isApproved?? false);
+        updateRefValue(firstName, props.modelValue.firstName ?? "");
+        updateRefValue(lastName, props.modelValue.lastName ?? "");
+        updateRefValue(email, props.modelValue.email ?? "");
+        updateRefValue(expirationDate, props.modelValue.expirationDate ?? "");
+        updateRefValue(campus, props.modelValue?.campus);
+        updateRefValue(category, props.modelValue?.category);
+        updateRefValue(request, props.modelValue.text ?? "");
+        updateRefValue(answer, props.modelValue.answer ?? "");
+        updateRefValue(isPublic, props.modelValue.isPublic);
+        updateRefValue(isUrgent, props.modelValue.isUrgent);
+        updateRefValue(allowComments, props.modelValue.allowComments);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: PrayerRequestBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            isActive: isActive.value,
+            requestedByPersonAlias: requestedByPersonAlias.value,
+            isApproved: isApproved.value,
+            firstName: firstName.value,
+            lastName: lastName.value,
+            email: email.value,
+            expirationDate: expirationDate.value,
+            category: category.value,
+            text: request.value,
+            answer: answer.value,
+            isPublic: isPublic.value,
+            isUrgent: isUrgent.value,
+            allowComments: allowComments.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+
+    // enable the tooltips for the badges
+    const flagCountRef = ref<HTMLElement | null>(null);
+    onMounted(() => {
+        if(flagCountRef?.value) {
+            tooltip(flagCountRef.value);
+        }
+    });
+</script>

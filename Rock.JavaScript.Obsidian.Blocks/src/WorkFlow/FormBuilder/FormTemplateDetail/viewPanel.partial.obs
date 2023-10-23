@@ -1,0 +1,46 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <dl>
+            <dt>Name</dt>
+            <dd>{{ name }}</dd>
+
+            <template v-if="description">
+                <dt>Description</dt>
+                <dd>{{ description }}</dd>
+            </template>
+
+            <dt>Used By</dt>
+            <dd>
+                <ul>
+                    <li v-for="workflowType in usedByWorkflowTypes" :key="workflowType.value ?? undefined">{{ workflowType.text }}</li>
+                </ul>
+            </dd>
+        </dl>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { TemplateDetail } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<TemplateDetail | null>,
+            required: false
+        }
+    });
+
+    // Setup all the standard values that we will be displaying.
+    const name = ref(props.modelValue?.name ?? "");
+    const description = ref(props.modelValue?.description ?? "");
+    const usedByWorkflowTypes = ref(props.modelValue?.usedBy ?? []);
+
+    // Watch for changes in our model value and update.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue?.name ?? "");
+        updateRefValue(description, props.modelValue?.description ?? "");
+        updateRefValue(usedByWorkflowTypes, props.modelValue?.usedBy ?? []);
+    });
+</script>

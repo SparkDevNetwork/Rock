@@ -1,0 +1,123 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="hasMultiplePages" class="grid-page-picker">
+        <button :class="prevButtonCssClass" @click.prevent="onPrevButtonClick">
+            <i class="fa fa-chevron-left"></i>
+        </button>
+
+        <button v-for="pageButton in pageButtons" :class="getPageButtonCssClass(pageButton)" @click.prevent="onPageButtonClick(pageButton)">
+            {{ pageButton }}
+        </button>
+
+        <button :class="nextButtonCssClass" @click.prevent="onNextButtonClick">
+            <i class="fa fa-chevron-right"></i>
+        </button>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { computed, PropType } from "vue";
+
+    const props = defineProps({
+        /** The currently selected/visible page number. */
+        modelValue: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        /** The total number of pages that are available to pick from. */
+        pageCount: {
+            type: Number as PropType<number>,
+            default: 1
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:modelValue", value: number): void,
+    }>();
+
+    // #region Values
+
+    const currentPage = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Contains an array with the page numbers that correlate to the buttons
+     * that should be displayed. This gives us a rolling subset of the
+     * available pages centered aroudn the currently selected page.
+     */
+    const pageButtons = computed((): number[] => {
+        const firstNumber = Math.max(1, currentPage.value - 3);
+        const lastNumber = Math.min(props.pageCount, currentPage.value + 3);
+        const values: number[] = [];
+
+        for (let i = firstNumber; i <= lastNumber; i++) {
+            values.push(i);
+        }
+
+        return values;
+    });
+
+    /** The CSS classes to apply to the previous page button. */
+    const prevButtonCssClass = computed((): string => {
+        return currentPage.value > 1 ? "prev" : "prev disabled";
+    });
+
+    /** The CSS classes to apply to the next page button. */
+    const nextButtonCssClass = computed((): string => {
+        return currentPage.value < props.pageCount ? "next" : "next disabled";
+    });
+
+    /** Contains `true` if we have more than 1 page available. */
+    const hasMultiplePages = computed((): boolean => {
+        return props.pageCount > 1;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the CSS class to apply to a specific page button.
+     *
+     * @param pageButton The page number of the button.
+     */
+    function getPageButtonCssClass(pageButton: number): string | undefined {
+        return pageButton === currentPage.value ? "page-num active" : "page-num";
+    }
+
+    // #endregion
+
+    // #region
+
+    /**
+     * Called when the individual clicks one of the page number buttons.
+     *
+     * @param pageButton The page number of the button that was clicked.
+     */
+    function onPageButtonClick(pageButton: number): void {
+        currentPage.value = pageButton;
+    }
+
+    /**
+     * Called when the individual clicks the previous page button.
+     */
+    function onPrevButtonClick(): void {
+        // Move to the previous page, but don't move past the first page.
+        currentPage.value = Math.max(1, currentPage.value - 1);
+    }
+
+    /**
+     * Called when the individual clicks the next page button.
+     */
+    function onNextButtonClick(): void {
+        // Move to the next page, but don't move past the last page.
+        currentPage.value = Math.min(props.pageCount, currentPage.value + 1);
+    }
+
+    // #endregion
+</script>

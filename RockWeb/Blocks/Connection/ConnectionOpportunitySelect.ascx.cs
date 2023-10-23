@@ -108,8 +108,8 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private static class UserPreferenceKey
         {
-            public const string MyActiveOpportunitiesChecked = "MyActiveOpportunitiesChecked";
-            public const string ConnectionOpportunitiesSelectedCampus = "ConnectionOpportunitiesSelectedCampus";
+            public const string MyActiveOpportunitiesChecked = "my-active-opportunities";
+            public const string ConnectionOpportunitiesSelectedCampus = "selected-campus";
         }
 
         /// <summary>
@@ -196,11 +196,13 @@ namespace RockWeb.Blocks.Connection
 
             if ( !Page.IsPostBack )
             {
+                var preferences = GetBlockPersonPreferences();
+
                 // NOTE: Don't include Inactive Campuses for the "Campus Filter for Page"
                 cpCampusFilter.Campuses = CampusCache.All( false );
                 cpCampusFilter.Items[0].Text = "All";
-                tglMyActiveOpportunities.Checked = GetUserPreference( UserPreferenceKey.MyActiveOpportunitiesChecked ).AsBoolean();
-                cpCampusFilter.SelectedCampusId = GetUserPreference( UserPreferenceKey.ConnectionOpportunitiesSelectedCampus ).AsIntegerOrNull();
+                tglMyActiveOpportunities.Checked = preferences.GetValue( UserPreferenceKey.MyActiveOpportunitiesChecked ).AsBoolean();
+                cpCampusFilter.SelectedCampusId = preferences.GetValue( UserPreferenceKey.ConnectionOpportunitiesSelectedCampus ).AsIntegerOrNull();
                 GetSummaryData();
             }
         }
@@ -238,7 +240,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglMyActiveOpportunities_CheckedChanged( object sender, EventArgs e )
         {
-            SetUserPreference( UserPreferenceKey.MyActiveOpportunitiesChecked, tglMyActiveOpportunities.Checked.ToString() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( UserPreferenceKey.MyActiveOpportunitiesChecked, tglMyActiveOpportunities.Checked.ToString() );
+            preferences.Save();
+
             BindSummaryData();
         }
 
@@ -249,7 +255,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpCampusPicker_SelectedIndexChanged( object sender, EventArgs e )
         {
-            SetUserPreference( UserPreferenceKey.ConnectionOpportunitiesSelectedCampus, cpCampusFilter.SelectedCampusId.ToString() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( UserPreferenceKey.ConnectionOpportunitiesSelectedCampus, cpCampusFilter.SelectedCampusId.ToString() );
+            preferences.Save();
+
             GetSummaryData();
         }
 
@@ -297,7 +307,7 @@ namespace RockWeb.Blocks.Connection
         {
             var template = GetAttributeValue( AttributeKey.OpportunitySummaryTemplate );
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
 
             mergeFields.Add( "OpportunitySummary", opportunitySummary );
 

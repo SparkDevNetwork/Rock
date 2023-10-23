@@ -1,0 +1,36 @@
+.transaction-matching .progress {
+  flex: 0 0 30%;
+  float: left;
+  width: 30%;
+  margin-bottom: 0;
+}
+
+.transaction-matching .transaction-matching-details {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+}
+
+.transaction-matching .transaction-matching-details .header {
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+}
+
+.transaction-matching .transaction-matching-details .body {
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+}
+
+.transaction-matching .transaction-matching-details .picker .picker-menu {
+  margin-top: -149px;
+}
+
+.transaction-matching.is-fullscreen .transaction-matching-details {
+  max-height: calc(100vh - 145px);
+  overflow-y: auto;
+}
+
+.transaction-matching.is-fullscreen .actions {
+  margin-top: 15px;
+}

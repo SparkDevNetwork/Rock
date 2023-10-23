@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Finder" )]
     [Category( "Groups" )]
     [Description( "Block for people to find a group that matches their search parameters." )]
+    [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
     // Linked Pages

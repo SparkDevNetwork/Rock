@@ -33,6 +33,9 @@ export type ContentCollectionListItemBag = {
     /** Gets or sets the category for this item. */
     category?: string | null;
 
+    /** Gets or sets disabled for this item. */
+    disabled?: boolean | null;
+
     /** Gets or sets the filters that are available to this content collection. */
     filters?: ListItemBag[] | null;
 

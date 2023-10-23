@@ -1062,6 +1062,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum WorkflowActionFormShowHideOption
+    {
+        Hide = 0x0,
+        Show = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum WorkflowLoggingLevel
     {
         None = 0x0,
@@ -1160,6 +1168,111 @@ namespace Rock.Client.Enums.Event
 
 }
 
+namespace Rock.Client.Enums.Core.Grid
+{
+    /// <summary>
+    /// </summary>
+    public enum BooleanFilterMethod
+    {
+        All = 0x0,
+        No = 0x1,
+        Yes = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ColumnPositionAnchor
+    {
+        FirstColumn = 0x0,
+        LastColumn = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum DateFilterMethod
+    {
+        Equals = 0x0,
+        DoesNotEqual = 0x1,
+        Before = 0x2,
+        After = 0x3,
+        Between = 0x4,
+        ThisWeek = 0x5,
+        LastWeek = 0x6,
+        NextWeek = 0x7,
+        ThisMonth = 0x8,
+        LastMonth = 0x9,
+        NextMonth = 0xa,
+        ThisYear = 0xb,
+        LastYear = 0xc,
+        NextYear = 0xd,
+        YearToDate = 0xe,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum NumberFilterMethod
+    {
+        Equals = 0x0,
+        DoesNotEqual = 0x1,
+        GreaterThan = 0x2,
+        GreaterThanOrEqual = 0x3,
+        LessThan = 0x4,
+        LessThanOrEqual = 0x5,
+        Between = 0x6,
+        TopN = 0x7,
+        AboveAverage = 0x8,
+        BelowAverage = 0x9,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PickExistingFilterMethod
+    {
+        Any = 0x0,
+        Exclude = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum TextFilterMethod
+    {
+        StartsWith = 0x0,
+        Contains = 0x1,
+        DoesNotContain = 0x2,
+        EndsWith = 0x3,
+        Equals = 0x4,
+        DoesNotEqual = 0x5,
+    }
+
+}
+
+namespace Rock.Client.Enums.AI
+{
+    /// <summary>
+    /// </summary>
+    public enum ChatMessageRole
+    {
+        User = 0x0,
+        System = 0x1,
+        Assistant = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    [Flags]
+    public enum ModerationFlags
+    {
+        None = 0x0,
+        Hate = 0x1,
+        Threat = 0x2,
+        SelfHarm = 0x4,
+        Sexual = 0x8,
+        SexualMinor = 0x10,
+        Violent = 0x20,
+    }
+
+}
+
 namespace Rock.Client.Enums.Core
 {
     /// <summary>
@@ -1180,6 +1293,15 @@ namespace Rock.Client.Enums.Core
     {
         Light = 0x0,
         Dark = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum NoteFormatType
+    {
+        Unknown = 0x0,
+        Unstructured = 0x1,
+        Structured = 0x2,
     }
 
     /// <summary>
@@ -1206,6 +1328,35 @@ namespace Rock.Client.Enums.Communication
 
 }
 
+namespace Rock.Client.Enums.Blocks.Crm.FamilyPreRegistration
+{
+    /// <summary>
+    /// </summary>
+    public enum CommunicationPreference
+    {
+        None = 0x0,
+        Email = 0x1,
+        SMS = 0x2,
+        PushNotification = 0x3,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Security.ConfirmAccount
+{
+    /// <summary>
+    /// </summary>
+    public enum ConfirmAccountViewType
+    {
+        AccountConfirmation = 0x0,
+        Alert = 0x1,
+        DeleteConfirmation = 0x2,
+        ChangePassword = 0x3,
+        Content = 0x4,
+    }
+
+}
+
 namespace Rock.Client.Enums.Cms
 {
     /// <summary>
@@ -1215,6 +1366,15 @@ namespace Rock.Client.Enums.Cms
         Pills = 0x0,
         Dropdown = 0x1,
         Boolean = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ContentLibraryItemExperienceLevel
+    {
+        Foundational = 0x1,
+        Intermediate = 0x2,
+        Advanced = 0x3,
     }
 
 }
@@ -1232,6 +1392,14 @@ namespace Rock.Client.Enums.Controls
         Thursday = 0x4,
         Friday = 0x5,
         Saturday = 0x6,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MediaSelectorMode
+    {
+        Image = 0x0,
+        Audio = 0x1,
     }
 
     /// <summary>
@@ -1403,6 +1571,19 @@ namespace Rock.Client.Enums.Blocks.Cms.ContentCollectionView
         Oldest = 0x2,
         Trending = 0x3,
         Alphabetical = 0x4,
+    }
+
+}
+
+namespace Rock.Client.Enums.Blocks.Security.ForgotUserName
+{
+    /// <summary>
+    /// </summary>
+    public enum SendInstructionsResultType
+    {
+        InstructionsSent = 0x0,
+        EmailInvalid = 0x1,
+        ChangePasswordNotSupported = 0x2,
     }
 
 }

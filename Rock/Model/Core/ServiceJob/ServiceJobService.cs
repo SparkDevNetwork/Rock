@@ -29,6 +29,8 @@ using Rock.Data;
 using Rock.Jobs;
 using CronExpressionDescriptor;
 using Rock.Attribute;
+using System.Collections.Generic;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Model
 {
@@ -197,16 +199,7 @@ namespace Rock.Model
                 rockContext.SaveChanges();
 
                 var jobHistoryService = new ServiceJobHistoryService( rockContext );
-                var jobHistory = new ServiceJobHistory
-                {
-                    ServiceJobId = job.Id,
-                    StartDateTime = RockDateTime.Now,
-                    StopDateTime = RockDateTime.Now,
-                    Status = job.LastStatus,
-                    StatusMessage = job.LastStatusMessage
-                };
-
-                jobHistoryService.Add( jobHistory );
+                jobHistoryService.AddErrorServiceJobHistory( job );
                 rockContext.SaveChanges();
 
                 return await Task.FromResult( false );
@@ -328,6 +321,55 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Get the job types
+        /// </summary>
+        internal static List<ListItemBag> GetJobTypes()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values
+                .Union( Rock.Reflection.FindTypes( typeof( RockJob ) ).Values )
+                .Distinct();
+#pragma warning restore CS0618 // Type or member is obsolete
+            var jobsList = jobs.ToList();
+            foreach ( var job in jobs )
+            {
+                try
+                {
+                    ServiceJobService.UpdateAttributesIfNeeded( job );
+                }
+                catch
+                {
+                    jobsList.Remove( job );
+                }
+            }
+
+            var jobTypes = new List<ListItemBag>();
+            foreach ( var job in jobsList.OrderBy( a => a.FullName ) )
+            {
+                jobTypes.Add( new ListItemBag { Text = GetJobTypeFriendlyName( job.FullName ), Value = job.FullName } );
+            }
+
+            return jobTypes;
+        }
+
+        /// <summary>
+        /// Get Job Type Friendly Name
+        /// </summary>
+        private static string GetJobTypeFriendlyName( string jobType )
+        {
+            string friendlyName;
+            if ( jobType.Contains( "Rock.Jobs." ) )
+            {
+                friendlyName = jobType.Replace( "Rock.Jobs.", string.Empty ).SplitCase();
+            }
+            else
+            {
+                friendlyName = string.Format( "{0} (Plugin)", jobType.Split( '.' ).Last().SplitCase() );
+            }
+            return friendlyName;
+        }
+
+        /// <summary>
         /// Deletes the job.
         /// </summary>
         /// <param name="jobId">The job identifier.</param>
@@ -443,16 +485,7 @@ namespace Rock.Model
                         rockContext.SaveChanges();
 
                         var jobHistoryService = new ServiceJobHistoryService( rockContext );
-                        var jobHistory = new ServiceJobHistory()
-                        {
-                            ServiceJobId = job.Id,
-                            StartDateTime = RockDateTime.Now,
-                            StopDateTime = RockDateTime.Now,
-                            Status = job.LastStatus,
-                            StatusMessage = job.LastStatusMessage
-                        };
-
-                        jobHistoryService.Add( jobHistory );
+                        jobHistoryService.AddErrorServiceJobHistory( job );
                         rockContext.SaveChanges();
                     }
                 }

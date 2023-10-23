@@ -144,21 +144,7 @@ namespace Rock.Model
                     {
                         // Merge Field is reference to an Entity record. So, get the Entity from the database and use that as a merge object
                         var entityTypeType = entityTypeInfo.EntityType.GetEntityType();
-                        var entityIdString = mergeField.Value.ToString();
-                        IEntity mergeEntity = null;
-                        var entityId = entityIdString.AsIntegerOrNull();
-                        if ( entityId.HasValue )
-                        {
-                            mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityId.Value );
-                        }
-                        else
-                        {
-                            var entityGuid = entityIdString.AsGuidOrNull();
-                            if ( entityGuid.HasValue )
-                            {
-                                mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityGuid.Value );
-                            }
-                        }
+                        var mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, mergeField.Value.ToString() );
 
                         // Add Entity as Merge field. For example ("GroupMember", groupMember)
                         mergeValues.Add( entityTypeType.Name, mergeEntity );

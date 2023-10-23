@@ -3,6 +3,8 @@
 !/bin/roslyn/*.dll
 !/bin/Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
 !/bin/Rock.Common.Mobile.dll
+!/bin/grpc_csharp_ext.x64.dll
+!/bin/grpc_csharp_ext.x86.dll
 
 /bin/*.pdb
 /bin/*.xml

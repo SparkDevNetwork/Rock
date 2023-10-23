@@ -21,6 +21,12 @@ using System.Linq;
 using Rock.Enums.Core;
 using Rock.Utilities;
 
+/**
+ * This file has a TypeScript counterpart in the Obsidian project. If changes
+ * are made to any of these tests then those changes must be made to the
+ * Obsidian version as well.
+ */
+
 namespace Rock.Utility
 {
     /// <summary>
@@ -32,9 +38,10 @@ namespace Rock.Utility
     /// between HSL and RGB. Because of that it is a bit of frankencode, but it is
     /// working and I did put in quite a bit of effort to clean up the code to our
     /// standards and document it as best as possible.
-    public class RockColor 
+    public class RockColor
     {
         #region Private Members
+
         private static readonly Dictionary<string, int> Html4Colors = new Dictionary<string, int>
     {
         {"aliceblue", 0xf0f8ff},
@@ -190,9 +197,249 @@ namespace Rock.Utility
             Html4Colors.GroupBy( kvp => kvp.Value ).ToDictionary( g => g.Key, g => g.First().Key );
 
         private string _text;
+
+        /// <summary>
+        /// The RGB values, each component value is between 0 and 255.
+        /// </summary>
+        public readonly double[] RGB = new double[3];
+
+        /// <summary>
+        /// The alpha value, between 0 and 1.
+        /// </summary>
+        private double _alpha = 1;
+
+        /// <summary>
+        /// The hue in degrees, between 0 and 360.
+        /// </summary>
+        private double _hue;
+
+        /// <summary>
+        /// The saturation value, between 0 and 1.
+        /// </summary>
+        private double _saturation;
+
+        /// <summary>
+        /// The luminosity value, between 0 and 1.
+        /// </summary>
+        private double _luminosity;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the alpha level.
+        /// </summary>
+        /// <value>
+        /// The alpha level as a number between 0 and 1.
+        /// </value>
+        public double Alpha
+        {
+            get
+            {
+                return _alpha;
+            }
+            set
+            {
+                _alpha = Normalize( value, 1 );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Red value.
+        /// </summary>
+        /// <value>
+        /// The red value as number between 0 and 255.
+        /// </value>
+        public double R
+        {
+            get
+            {
+                return RGB[0];
+            }
+            set
+            {
+                RGB[0] = Normalize( value, 255 );
+                UpdateHslFromRgb();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Green value.
+        /// </summary>
+        /// <value>
+        /// The green value as a number between 0 and 255.
+        /// </value>
+        public double G
+        {
+            get
+            {
+                return RGB[1];
+            }
+            set
+            {
+                RGB[1] = Normalize( value, 255 );
+                UpdateHslFromRgb();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Blue value.
+        /// </summary>
+        /// <value>
+        /// The blue value as a number between 0 and 255.
+        /// </value>
+        public double B
+        {
+            get
+            {
+                return RGB[2];
+            }
+            set
+            {
+                RGB[2] = Normalize( value, 255 );
+                UpdateHslFromRgb();
+            }
+        }
+
+        /// <summary>
+        /// Calculates the luma value based on the <a href="http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef">W3 Standard</a>
+        /// </summary>
+        /// <value>
+        /// The luma value for the current color as a number between 0 and 1.
+        /// </value>
+        public double Luma
+        {
+            get
+            {
+                var linearR = R / 255;
+                var linearG = G / 255;
+                var linearB = B / 255;
+
+                var red = ( linearR <= 0.03928 ) ? linearR / 12.92 : Math.Pow( ( linearR + 0.055 ) / 1.055, 2.4 );
+                var green = ( linearG <= 0.03928 ) ? linearG / 12.92 : Math.Pow( ( linearG + 0.055 ) / 1.055, 2.4 );
+                var blue = ( linearB <= 0.03928 ) ? linearB / 12.92 : Math.Pow( ( linearB + 0.055 ) / 1.055, 2.4 );
+
+                return ( 0.2126 * red ) + ( 0.7152 * green ) + ( 0.0722 * blue );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the hue.
+        /// </summary>
+        /// <value>
+        /// The hue of the color in degrees as a number between 0 and 360.
+        /// </value>
+        public double Hue
+        {
+            get
+            {
+                return _hue;
+            }
+            set
+            {
+                var newValue = value;
+
+                while ( newValue > 360 )
+                {
+                    newValue -= 360;
+                }
+
+                while ( newValue < 0 )
+                {
+                    newValue += 360;
+                }
+
+                _hue = newValue;
+
+                UpdateRgbFromHsl();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the saturation.
+        /// </summary>
+        /// <value>
+        /// The saturation of the color as a number between 0 and 1.
+        /// </value>
+        public double Saturation
+        {
+            get
+            {
+                return _saturation;
+            }
+            set
+            {
+                _saturation = Normalize( value, 1 );
+
+                UpdateRgbFromHsl();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the luminosity.
+        /// </summary>
+        /// <value>
+        /// The luminosity of the color as a number between 0 and 1.
+        /// </value>
+        public double Luminosity
+        {
+            get
+            {
+                return _luminosity;
+            }
+            set
+            {
+                _luminosity = Normalize( value, 1 );
+
+                UpdateRgbFromHsl();
+            }
+        }
+
+        /// <summary>
+        /// Gets the color as a hex string.
+        /// </summary>
+        public string Hex
+        {
+            get
+            {
+                return this.ToHex();
+            }
+        }
+
+        /// <summary>
+        /// Determines if the color is a light color.
+        /// </summary>
+        public bool IsLight
+        {
+            get
+            {
+                if ( Luminosity > .5 )
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines if the color is a dark color.
+        /// </summary>
+        public bool IsDark
+        {
+            get
+            {
+                return !IsLight;
+            }
+        }
+
         #endregion
 
         #region Static Methods
+
         /// <summary>
         /// Gets a color from the specified keyword or hexadecimal.
         /// </summary>
@@ -286,8 +533,8 @@ namespace Rock.Utility
             // L1 = Lighter color
             // L2 = Darker color
 
-            RockColor l1 = null;
-            RockColor l2 = null;
+            RockColor l1;
+            RockColor l2;
 
             // Determine the lighter and darker color
             if ( color1.Luminosity > color2.Luminosity )
@@ -314,39 +561,12 @@ namespace Rock.Utility
         public static ColorPair CalculateColorPair( RockColor color, ColorScheme colorScheme = ColorScheme.Light )
         {
             var colorPair = new ColorPair();
-            RockColor matchedColor = null;
 
             // Create dark contrast using the Practical UI darkest recipe
-            var darkestColor =  RockColor.CalculateColorRecipe( color , ColorRecipe.Darkest);
+            colorPair.ForegroundColor = RockColor.CalculateColorRecipe( color, ColorRecipe.Darkest );
 
             // Create light contrast using the Practical UI lightest recipe
-            var lightestColor = RockColor.CalculateColorRecipe( color, ColorRecipe.Lightest );
-
-            // Find the color with the greatest contrast
-            var darkContrast = RockColor.CalculateContrastRatio( color, darkestColor );
-            var lightContrast = RockColor.CalculateContrastRatio( color, lightestColor );
-                        
-            if (lightContrast > darkContrast )
-            {
-                matchedColor = lightestColor;
-            }
-            else
-            {
-                matchedColor = darkestColor;
-            }
-
-            // We'll create the pairing for light mode. This means we want the lightest
-            // color of the pair to be the background color. Higher luminosity is a lighter color
-            if ( color.Luminosity > matchedColor.Luminosity )
-            {
-                colorPair.BackgroundColor = color;
-                colorPair.ForegroundColor = matchedColor;
-            }
-            else
-            {
-                colorPair.BackgroundColor = matchedColor;
-                colorPair.ForegroundColor = color;
-            }
+            colorPair.BackgroundColor = RockColor.CalculateColorRecipe( color, ColorRecipe.Lightest );
 
             // If dark theme then flip the foreground and background making the darker color is the background.
             if ( colorScheme == ColorScheme.Dark )
@@ -407,13 +627,13 @@ namespace Rock.Utility
                         recipeLuminosity = .80;
                         break;
                     }
-            }          
+            }
 
             // If the saturation of the original color is very low then we'll use a different recipe so the color looks
             // more like the original (which would be gray).
             if ( color.Saturation <= .15 )
             {
-                recipeSaturation = .15;                
+                recipeSaturation = color.Saturation;
             }
 
             recipeColor.Saturation = recipeSaturation;
@@ -425,6 +645,7 @@ namespace Rock.Utility
         #endregion 
 
         #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RockColor"/> class.
         /// </summary>
@@ -506,7 +727,6 @@ namespace Rock.Utility
         /// <param name="b">The Blue value.</param>
         public RockColor( double r, double g, double b ) : this( r, g, b, 1 )
         {
-
         }
 
         /// <summary>
@@ -518,7 +738,6 @@ namespace Rock.Utility
         /// <param name="alpha">The Alpha channel value.</param>
         public RockColor( double r, double g, double b, double alpha ) : this( new[] { r, g, b }, alpha )
         {
-
         }
 
         /// <summary>
@@ -527,7 +746,6 @@ namespace Rock.Utility
         /// <param name="rgb">The RGB components as an array.</param>
         public RockColor( double[] rgb ) : this( rgb, 1 )
         {
-
         }
 
         /// <summary>
@@ -537,7 +755,6 @@ namespace Rock.Utility
         /// <param name="alpha">The Alpha channel value.</param>
         public RockColor( double[] rgb, double alpha ) : this( rgb, alpha, null )
         {
-
         }
 
         /// <summary>
@@ -570,223 +787,15 @@ namespace Rock.Utility
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// The RGB value
-        /// </summary>
-        public readonly double[] RGB = new double[3];
-
-        private double _alpha = 1;
-
-        private double _hue;
-        private double _saturation;
-        private double _luminosity;
-
-        /// <summary>
-        /// Gets or sets the alpha level.
-        /// </summary>
-        /// <value>
-        /// The alpha level.
-        /// </value>
-        public double Alpha
-        {
-            get
-            {
-                return Normalize( _alpha, 1 );
-            }
-            set
-            {
-                if ( value > 100 )
-                {
-                    _alpha = 100;
-                    return;
-                }
-
-                if ( value < 0 )
-                {
-                    _alpha = 0;
-                    return;
-                }
-
-                _alpha = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the Red value.
-        /// </summary>
-        /// <value>
-        /// The r.
-        /// </value>
-        public double R
-        {
-            get { return RGB[0]; }
-            set
-            {
-                RGB[0] = value;
-                UpdateHslFromRgb();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the Green value.
-        /// </summary>
-        /// <value>
-        /// The g.
-        /// </value>
-        public double G
-        {
-            get { return RGB[1]; }
-            set
-            {
-                RGB[1] = value;
-                UpdateHslFromRgb();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the Blue value.
-        /// </summary>
-        /// <value>
-        /// The b.
-        /// </value>
-        public double B
-        {
-            get { return RGB[2]; }
-            set
-            {
-                RGB[2] = value;
-                UpdateHslFromRgb();
-            }
-        }
-
-        /// <summary>
-        /// Calculates the luma value based on the <a href="http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef">W3 Standard</a>
-        /// </summary>
-        /// <value>
-        /// The luma value for the current color
-        /// </value>
-        public double Luma
-        {
-            get
-            {
-                var linearR = R / 255;
-                var linearG = G / 255;
-                var linearB = B / 255;
-
-                var red = ( linearR <= 0.03928 ) ? linearR / 12.92 : Math.Pow( ( linearR + 0.055 ) / 1.055, 2.4 );
-                var green = ( linearG <= 0.03928 ) ? linearG / 12.92 : Math.Pow( ( linearG + 0.055 ) / 1.055, 2.4 );
-                var blue = ( linearB <= 0.03928 ) ? linearB / 12.92 : Math.Pow( ( linearB + 0.055 ) / 1.055, 2.4 );
-
-                return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the hue.
-        /// </summary>
-        /// <value>
-        /// The hue of the color.
-        /// </value>
-        public double Hue
-        {
-            get { return _hue; }
-            set
-            {
-                _hue = value;
-
-                NormalizeHslValues();
-                UpdateRgbFromHsl();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the saturation.
-        /// </summary>
-        /// <value>
-        /// The saturation of the color.
-        /// </value>
-        public double Saturation
-        {
-            get { return _saturation; }
-            set
-            {
-                _saturation = value;
-
-                NormalizeHslValues();
-                UpdateRgbFromHsl();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the luminosity.
-        /// </summary>
-        /// <value>
-        /// The luminosity of the color.
-        /// </value>
-        public double Luminosity
-        {
-            get { return _luminosity; }
-            set
-            {
-                _luminosity = value;
-
-                NormalizeHslValues();
-                UpdateRgbFromHsl();
-            }
-        }
-
-        /// <summary>
-        /// Gets the color as a hex string.
-        /// </summary>
-        public string Hex
-        {
-            get
-            {
-                return this.ToHex();
-            }
-        }
-
-        /// <summary>
-        /// Determines if the color is a light color.
-        /// </summary>
-        public bool IsLight
-        {
-            get
-            {
-                if (Luminosity > .5 )
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Determines if the color is a dark color.
-        /// </summary>
-        public bool IsDark
-        {
-            get
-            {
-                return !IsLight;
-            }
-        }
-
-        #endregion
-
         #region Public Methods
+
         /// <summary>
         /// Lightens the color by the provided percentage.
         /// </summary>
         /// <param name="percentage">The percentage.</param>
         public void Lighten( int percentage )
         {
-            Luminosity = Luminosity + ( ( double ) percentage / ( double ) 100 );
+            Luminosity += percentage / 100.0;
         }
 
         /// <summary>
@@ -795,7 +804,7 @@ namespace Rock.Utility
         /// <param name="percentage">The percentage.</param>
         public void Darken( int percentage )
         {
-            Luminosity = Luminosity - ( ( double ) percentage / ( double ) 100 );
+            Luminosity -= percentage / 100.0;
         }
 
         /// <summary>
@@ -804,7 +813,7 @@ namespace Rock.Utility
         /// <param name="percentage">The percentage.</param>
         public void Saturate( int percentage )
         {
-            Saturation = Saturation + ( ( double ) percentage / ( double ) 100 );
+            Saturation += percentage / 100.0;
         }
 
         /// <summary>
@@ -813,7 +822,7 @@ namespace Rock.Utility
         /// <param name="percentage">The percentage.</param>
         public void Desaturate( int percentage )
         {
-            Saturation = Saturation - ( ( double ) percentage / ( double ) 100 );
+            Saturation -= percentage / 100.0;
         }
 
         /// <summary>
@@ -822,7 +831,7 @@ namespace Rock.Utility
         /// <param name="percentage">The percentage.</param>
         public void FadeIn( int percentage )
         {
-            Alpha = _alpha + ( ( double ) percentage / ( double ) 100 );
+            Alpha += percentage / 100.0;
         }
 
         /// <summary>
@@ -831,7 +840,7 @@ namespace Rock.Utility
         /// <param name="percentage">The percentage.</param>
         public void FadeOut( int percentage )
         {
-            Alpha = _alpha - ( ( double ) percentage / ( double ) 100 );
+            Alpha -= percentage / 100.0;
         }
 
         /// <summary>
@@ -840,7 +849,7 @@ namespace Rock.Utility
         /// <param name="percentage">The percentage.</param>
         public void AdjustHueByPercent( int percentage )
         {
-            Hue = _hue + ( 360 * ( ( double ) percentage / ( double ) 100 ) );
+            Hue += 360 * percentage / 100.0;
         }
 
         /// <summary>
@@ -849,7 +858,7 @@ namespace Rock.Utility
         /// <param name="degrees">The degrees.</param>
         public void AdjustHueByDegrees( int degrees )
         {
-            Hue = Hue + degrees;
+            Hue += degrees;
         }
 
         /// <summary>
@@ -877,7 +886,7 @@ namespace Rock.Utility
         /// <param name="percentageAmount">The percentage amount.</param>
         public void Mix( RockColor mixColor, int percentageAmount = 50 )
         {
-            var amount = ( double ) percentageAmount / ( double ) 100;
+            var amount = percentageAmount / 100.0;
 
             R = ( double ) ( ( mixColor.R * amount ) + this.R * ( 1 - amount ) );
             G = ( double ) ( ( mixColor.G * amount ) + this.G * ( 1 - amount ) );
@@ -898,7 +907,7 @@ namespace Rock.Utility
         /// <returns></returns>
         public RockColor Clone()
         {
-            return new RockColor(R, G, B);
+            return new RockColor( R, G, B, Alpha );
         }
 
         /// <summary>
@@ -929,16 +938,26 @@ namespace Rock.Utility
 
             if ( hex.Length == 8 )
             {
-                rgb = ParseRgb( hex.Substring( 2 ) );
-                alpha = Parse( hex.Substring( 0, 2 ) ) / 255.0;
+                rgb = ParseRgb( hex.Substring( 0, 6 ) );
+                alpha = Parse( hex.Substring( 6, 2 ) ) / 255.0;
             }
             else if ( hex.Length == 6 )
             {
                 rgb = ParseRgb( hex );
             }
-            else
+            else if ( hex.Length == 4 )
+            {
+                rgb = hex.Substring( 0, 3 ).ToCharArray().Select( c => Parse( "" + c + c ) ).ToArray();
+                alpha = hex.Substring( 3, 1 ).ToCharArray().Select( c => Parse( "" + c + c ) ).First() / 255.0;
+            }
+            else if ( hex.Length == 3 )
             {
                 rgb = hex.ToCharArray().Select( c => Parse( "" + c + c ) ).ToArray();
+                alpha = 1;
+            }
+            else
+            {
+                rgb = new[] { 0.0, 0.0, 0.0 };
             }
 
             R = rgb[0];
@@ -1070,9 +1089,9 @@ namespace Rock.Utility
             }
 
             // Convert RGB to the 0 to 255 range.
-            RGB[0] = ( int ) ( double_r * 255.0 );
-            RGB[1] = ( int ) ( double_g * 255.0 );
-            RGB[2] = ( int ) ( double_b * 255.0 );
+            RGB[0] = Normalize( Math.Round( double_r * 255.0 ), 255 );
+            RGB[1] = Normalize( Math.Round( double_g * 255.0 ), 255 );
+            RGB[2] = Normalize( Math.Round( double_b * 255.0 ), 255 );
         }
 
         /// <summary>
@@ -1106,19 +1125,6 @@ namespace Rock.Utility
                 return q1 + ( q2 - q1 ) * ( 240 - hue ) / 60;
             }
             return q1;
-        }
-
-        /// <summary>
-        /// Transforms the linear to SRBG. Formula derivation decscribed <a href="http://en.wikipedia.org/wiki/SRGB#Theory_of_the_transformation">here</a>
-        /// </summary>
-        /// <param name="linearChannel">The linear channel, for example R/255</param>
-        /// <returns>The sRBG value for the given channel</returns>
-        private double TransformLinearToSrbg( double linearChannel )
-        {
-            const double decodingGamma = 2.4;
-            const double phi = 12.92;
-            const double alpha = .055;
-            return ( linearChannel <= 0.03928 ) ? linearChannel / phi : Math.Pow( ( ( linearChannel + alpha ) / ( 1 + alpha ) ), decodingGamma );
         }
 
         /// <summary>
@@ -1175,10 +1181,13 @@ namespace Rock.Utility
         #endregion
 
         #region Helper Methods
+
         /// <summary>
         ///  Returns in the IE ARGB format e.g ##FF001122 = rgba(0x00, 0x11, 0x22, 1)
         /// </summary>
         /// <returns></returns>
+        [Obsolete]
+        [RockObsolete( "1.16" )]
         public string ToArgb()
         {
             var values = new[] { Alpha * 255 }.Concat( RGB );
@@ -1192,7 +1201,7 @@ namespace Rock.Utility
         /// <returns></returns>
         public string ToRGBA()
         {
-            return $"rgba( {RGB[0]}, {RGB[1]}, {RGB[2]}, {Alpha} )";
+            return $"rgba({Math.Round( RGB[0] )}, {Math.Round( RGB[1] )}, {Math.Round( RGB[2] )}, {Alpha})";
         }
 
         /// <summary>
@@ -1201,15 +1210,16 @@ namespace Rock.Utility
         /// <returns>Hexadecimal version of the color.</returns>
         public string ToHex()
         {
-            var argb = ConvertToInt( RGB );
-            return GetHexString( argb );
+            var rgb = ConvertToInt( Alpha == 1 ? RGB : RGB.Concat( new[] { Alpha * 255 } ) );
+
+            return GetHexString( rgb );
         }
 
         /// <summary>
         /// Compares two RockColors.
         /// </summary>
         /// <param name="obj">The object.</param>
-        /// <returns></returns>
+        /// <returns><c>1</c> if this instance's total RGBA levels are greater than <paramref name="obj"/>; <c>-1</c> if it is less than; or <c>0</c> if they are equal.</returns>
         public int CompareTo( object obj )
         {
             var col = obj as RockColor;
@@ -1224,7 +1234,10 @@ namespace Rock.Utility
                 return 0;
             }
 
-            return ( ( ( 256 * 3 ) - ( col.R + col.G + col.B ) ) * col.Alpha ) < ( ( ( 256 * 3 ) - ( R + G + B ) ) * Alpha ) ? 1 : -1;
+            var thisColorValue = ( R + G + B ) * Alpha;
+            var otherColorValue = ( col.R + col.G + col.B ) * col.Alpha;
+
+            return thisColorValue > otherColorValue ? 1 : -1;
         }
 
         /// <summary>
@@ -1247,5 +1260,4 @@ namespace Rock.Utility
 
         #endregion
     }
-
 }

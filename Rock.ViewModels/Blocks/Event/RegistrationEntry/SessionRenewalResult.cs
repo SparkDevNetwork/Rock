@@ -17,14 +17,12 @@
 
 using System;
 
-using Rock.ViewModels.Utility;
-
 namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
 {
     /// <summary>
     /// SessionRenewalResult
     /// </summary>
-    public sealed class SessionRenewalResult : IViewModel
+    public sealed class SessionRenewalResult
     {
         /// <summary>
         /// Gets or sets the spots secured.

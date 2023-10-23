@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -107,8 +107,75 @@ namespace Rock.MergeTemplates
         /// <returns></returns>
         public override BinaryFile CreateDocument( MergeTemplate mergeTemplate, List<object> mergeObjectList, Dictionary<string, object> globalMergeFields )
         {
+            var outputDocStream = GetMergedDocumentOutputStream( mergeTemplate, mergeObjectList, globalMergeFields );
+
+            try
+            {
+                // Save the Word document stream to a new persisted binary file object.
+                var rockContext = new RockContext();
+                var binaryFileService = new BinaryFileService( rockContext );
+
+                var templateBinaryFile = binaryFileService.Get( mergeTemplate.TemplateBinaryFileId );
+                if ( templateBinaryFile == null )
+                {
+                    return null;
+                }
+
+                var outputBinaryFile = new BinaryFile
+                {
+                    IsTemporary = true,
+                    ContentStream = outputDocStream,
+                    FileName = "MergeTemplateOutput" + Path.GetExtension( templateBinaryFile.FileName ),
+                    MimeType = templateBinaryFile.MimeType,
+                    BinaryFileTypeId = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() ).Id
+                };
+
+                binaryFileService.Add( outputBinaryFile );
+                rockContext.SaveChanges();
+
+                return outputBinaryFile;
+            }
+            finally
+            {
+                outputDocStream.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Creates an Xml Document object containing the merged output.
+        /// </summary>
+        /// <param name="mergeTemplate">The merge template.</param>
+        /// <param name="mergeObjectList">The merge object list.</param>
+        /// <param name="globalMergeFields">The global merge fields.</param>
+        /// <returns></returns>
+        internal XDocument CreateDocumentAsXml( MergeTemplate mergeTemplate, List<object> mergeObjectList, Dictionary<string, object> globalMergeFields )
+        {
+            XDocument xdoc = null;
+
+            // Get the merged document as an Xml Document in Flat OPC format, a single
+            // document containing all of the Word Document parts that is compliant with Open Packaging Conventions.
+            var stream = GetMergedDocumentOutputStream( mergeTemplate, mergeObjectList, globalMergeFields );
+            if ( stream != null )
+            {
+                try
+                {
+                    using ( WordprocessingDocument outputDoc = WordprocessingDocument.Open( stream, false ) )
+                    {
+                        xdoc = outputDoc.ToFlatOpcDocument();
+                    }
+                }
+                finally
+                {
+                    stream.Dispose();
+                }
+            }
+
+            return xdoc;
+        }
+
+        private MemoryStream GetMergedDocumentOutputStream( MergeTemplate mergeTemplate, List<object> mergeObjectList, Dictionary<string, object> globalMergeFields )
+        {
             this.Exceptions = new List<Exception>();
-            BinaryFile outputBinaryFile = null;
 
             var rockContext = new RockContext();
             var binaryFileService = new BinaryFileService( rockContext );
@@ -121,9 +188,9 @@ namespace Rock.MergeTemplates
 
             // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
             XDocument sourceTemplateDocX;
+            var outputDocStream = new MemoryStream();
 
-            // NOTE: On using multiple IDisposable, see https://stackoverflow.com/a/12603126/1755417 and https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using-statement
-            using ( MemoryStream sourceTemplateStream = new MemoryStream(), outputDocStream = new MemoryStream() )
+            using ( MemoryStream sourceTemplateStream = new MemoryStream() )
             {
                 templateBinaryFile.ContentStream.CopyTo( outputDocStream );
                 outputDocStream.Seek( 0, SeekOrigin.Begin );
@@ -158,7 +225,7 @@ namespace Rock.MergeTemplates
                 XElement lastLavaNode = sourceTemplateDocX.DescendantNodes().OfType<XElement>().LastOrDefault( a => lavaRegEx.IsMatch( a.Value ) );
 
                 // ensure there is a { Next } indicator after the last lava node in the template
-                if (lastLavaNode != null)
+                if ( lastLavaNode != null )
                 {
                     var nextRecordMatch = nextRecordRegEx.Match( lastLavaNode.Value );
                     if ( nextRecordMatch == null || !nextRecordMatch.Success )
@@ -275,7 +342,7 @@ namespace Rock.MergeTemplates
                                     foreach ( var xml in xmlChunks )
                                     {
                                         bool incRecordIndex = true;
-                                        if ( lavaRegEx.IsMatch(xml) )
+                                        if ( lavaRegEx.IsMatch( xml ) )
                                         {
                                             if ( recordIndex < recordCount )
                                             {
@@ -291,7 +358,7 @@ namespace Rock.MergeTemplates
 
                                                     var resolvedXml = xml.ResolveMergeFields( wordMergeObjects, true, true );
                                                     mergedXml += resolvedXml;
-                                                    if (resolvedXml == xml)
+                                                    if ( resolvedXml == xml )
                                                     {
                                                         // there weren't any MergeFields after all, so don't move to the next record
                                                         incRecordIndex = false;
@@ -377,21 +444,21 @@ namespace Rock.MergeTemplates
                         ( xx, mm ) =>
                         {
                             var afterSiblings = xx.ElementsAfterSelf().ToList();
-                            
+
                             // get all the paragraph elements after the 'next_empty' node and clear out the content
                             var nodesToClean = afterSiblings.Where( a => a.Name.LocalName == "p" ).ToList();
-                            
+
                             // if the next_empty node has lava, clean that up too
                             var xxContent = xx.ToString();
-                            if ( lavaRegEx.IsMatch(xxContent) )
+                            if ( lavaRegEx.IsMatch( xxContent ) )
                             {
                                 nodesToClean.Add( xx );
                             }
-                            
-                            foreach (var node in nodesToClean)
+
+                            foreach ( var node in nodesToClean )
                             {
                                 // remove all child nodes from each paragraph node
-                                if (node.HasElements)
+                                if ( node.HasElements )
                                 {
                                     node.RemoveNodes();
                                 }
@@ -429,10 +496,11 @@ namespace Rock.MergeTemplates
                     // sweep thru any remaining un-merged body parts for any Lava having to do with Global merge fields
                     foreach ( var bodyTextPart in outputDoc.MainDocumentPart.Document.Body.Descendants<Text>() )
                     {
-                        string nodeText = bodyTextPart.Text.ReplaceWordChars();
+                        var nodeText = bodyTextPart.Text.ReplaceWordChars();
                         if ( lavaRegEx.IsMatch( nodeText ) )
                         {
-                            bodyTextPart.Text = nodeText.ResolveMergeFields( globalMergeHash, true, true );
+                            nodeText = nodeText.ResolveMergeFields( globalMergeHash, encodeStrings: false, throwExceptionOnErrors: true );
+                            bodyTextPart.Text = nodeText;
                         }
                     }
 
@@ -445,19 +513,9 @@ namespace Rock.MergeTemplates
                     var errors = validator.Validate( outputDoc ).ToList();
                     */
                 }
-
-                outputBinaryFile = new BinaryFile();
-                outputBinaryFile.IsTemporary = true;
-                outputBinaryFile.ContentStream = outputDocStream;
-                outputBinaryFile.FileName = "MergeTemplateOutput" + Path.GetExtension( templateBinaryFile.FileName );
-                outputBinaryFile.MimeType = templateBinaryFile.MimeType;
-                outputBinaryFile.BinaryFileTypeId = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() ).Id;
-
-                binaryFileService.Add( outputBinaryFile );
-                rockContext.SaveChanges();
             }
 
-            return outputBinaryFile;
+            return outputDocStream;
         }
 
         /// <summary>
@@ -480,10 +538,11 @@ namespace Rock.MergeTemplates
                     {
                         foreach ( var currentText in currentRun.Descendants<DocumentFormat.OpenXml.Wordprocessing.Text>() )
                         {
-                            string nodeText = currentText.Text.ReplaceWordChars();
+                            var nodeText = currentText.Text.ReplaceWordChars();
                             if ( lavaRegEx.IsMatch( nodeText ) )
                             {
-                                currentText.Text = nodeText.ResolveMergeFields( globalMergeHash, true, true );
+                                nodeText = nodeText.ResolveMergeFields( globalMergeHash, encodeStrings: false, throwExceptionOnErrors: true );
+                                currentText.Text = nodeText;
                             }
                         }
                     }

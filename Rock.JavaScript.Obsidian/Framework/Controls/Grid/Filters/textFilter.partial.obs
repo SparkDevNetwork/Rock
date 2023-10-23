@@ -1,0 +1,86 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="grid-filter-popup-body">
+        <DropDownList v-model="searchMethod"
+                      inputClasses="mb-2"
+                      :showBlankItem="false"
+                      :items="searchTypeItems" />
+
+        <TextBox v-model="searchValue" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { standardFilterProps } from "@Obsidian/Core/Controls/grid";
+    import { TextFilterMethod, TextFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/textFilterMethod";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+    import { TextSearchBag } from "@Obsidian/Types/Controls/grid";
+
+    const props = defineProps(standardFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: TextSearchBag | unknown): void
+    }>();
+
+    // #region Values
+
+    const searchMethod = ref(TextFilterMethod.Equals.toString());
+    const searchValue = ref(typeof (props.modelValue) === "string" ? props.modelValue : "");
+
+    const searchTypeItems: ListItemBag[] = Object.keys(TextFilterMethodDescription).map(n => {
+        return {
+            value: n,
+            text: TextFilterMethodDescription[n]
+        };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Constructs and emits the new modelValue for the component.
+     */
+     function updateModelValue(): void {
+        if (!searchValue.value === null) {
+            emit("update:modelValue", undefined);
+            return;
+        }
+
+        const searchBag: TextSearchBag = {
+            method: Number(searchMethod.value) as TextFilterMethod,
+            value: searchValue.value
+        };
+
+        emit("update:modelValue", searchBag);
+    }
+
+    /**
+     * Updates our internal values based on the current modelValue property.
+     */
+     function updateSearchValues(): void {
+        if (props.modelValue && typeof props.modelValue === "object") {
+            const modelSearchBag = props.modelValue as Partial<TextSearchBag>;
+
+            if (modelSearchBag.method !== undefined) {
+                searchMethod.value = modelSearchBag.method.toString();
+                searchValue.value = modelSearchBag.value ?? "";
+
+                return;
+            }
+        }
+
+        searchMethod.value = TextFilterMethod.Equals.toString();
+        searchValue.value = "";
+    }
+
+    // #endregion
+
+    watch(() => props.modelValue, () => updateSearchValues());
+    watch([searchMethod, searchValue], () => updateModelValue());
+
+    updateSearchValues();
+</script>

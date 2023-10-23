@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,7 +44,7 @@ namespace Rock.Workflow.Action
         Description = "The attribute containing the group to get the leader for.",
         IsRequired = true,
         Order = 0,
-        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupFieldType" },
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType" },
         Key = AttributeKey.Group )]
 
     [WorkflowAttribute(

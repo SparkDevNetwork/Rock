@@ -1,0 +1,159 @@
+/* Used to manage styles related to Rock's store */
+/* Promo Rotator */
+
+.promotionrotator {
+  margin-bottom: 48px;
+}
+
+.promotionrotator .carousel-inner img {
+  width: 100%;
+}
+
+.promotionrotator .carousel-indicators {
+  bottom: -35px;
+}
+
+.promotionrotator .carousel-indicators li {
+  border-color: #6a6a6a;
+}
+
+.promotionrotator .carousel-indicators .active {
+  background-color: #6a6a6a;
+}
+
+.promotionrotator .carousel-control .fa-chevron-right {
+  right: 20px;
+}
+
+.promotionrotator .carousel-control .fa-chevron-left {
+  left: 20px;
+}
+
+/* Package Summary */
+.packagesummary {
+  position: relative;
+  max-width: 282px;
+  height: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  cursor: pointer;
+  background-color: #fff;
+  border: 1px solid #ccc;
+}
+
+.packagesummary .packagesummary-body {
+  padding: 16px;
+}
+
+.packagesummary .packagesummary-body h2 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.packagesummary .packagesummary-body .vendor {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.packagesummary-footer {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background-color: #fcfcfc;
+  border-top: 1px solid rgba(0, 0, 0, .125);
+}
+
+/* Package Detail */
+.packagedetail-image {
+  width: 100%;
+}
+
+.packagedetail-additionalversions {
+  display: none;
+}
+
+.btn-install {
+  width: 100%;
+}
+
+/* Components */
+.rating-bg {
+  position: absolute;
+  right: 0;
+  left: 0;
+  margin: 0 auto;
+  opacity: .08;
+}
+
+.pricelabel {
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.pricelabel.cost {
+  color: #108043;
+  background-color: #eaf6ef;
+  border-color: #16c98d;
+}
+
+.pricelabel.free {
+  color: #31708f;
+  background-color: #ecf9fd;
+  border-color: #009ce3;
+}
+
+.pricelabel h4 {
+  font-size: 24px;
+  font-weight: 700;
+  color: inherit;
+}
+
+.store-categories h4 {
+  margin-top: 0;
+  font-weight: 700;
+}
+
+/* Purchased Package */
+.purchasedpackage h1 {
+  margin-top: 0;
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.purchasedpackage .purchasedpackage-install a {
+  width: 100%;
+}
+
+.store-category-list > li {
+  margin: 0 12px 6px 0;
+}
+
+@media (max-width: 1199px) {
+  .store-category-list > li {
+    margin-right: 8px;
+  }
+
+  .store-category-list > li a {
+    padding: 5px 8px;
+    font-size: 14px;
+  }
+}
+
+.store-category-list > li + li {
+  margin-left: 0 !important;
+}

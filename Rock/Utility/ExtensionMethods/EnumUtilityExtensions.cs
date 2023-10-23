@@ -14,11 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Utility;
+using Rock.ViewModels.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Rock.Utility;
 
 namespace Rock
 {
@@ -58,6 +59,24 @@ namespace Rock
         public static bool ContainsOrEmpty<T>( this IEnumerable<T> enumerable, T value )
         {
             return enumerable == null || enumerable.Any() == false || enumerable.Contains( value );
+        }
+
+        /// <summary>
+        /// An extension function to get a ListItemBag array from an enum.
+        /// </summary>
+        /// <param name="enumType">The type of the enum to be converted to ListItemBag</param>
+        /// <returns>An array of ListItemBag</returns>
+        internal static List<ListItemBag> ToEnumListItemBag( this Type enumType )
+        {
+            var listItemBag = new List<ListItemBag>();
+            foreach ( Enum enumValue in Enum.GetValues(enumType))
+            {
+                var text = enumValue.GetDescription() ?? enumValue.ToString().SplitCase();
+                var value = enumValue.ConvertToInt().ToString();
+                listItemBag.Add( new ListItemBag { Text = text, Value = value } );
+            }
+
+            return listItemBag.ToList();
         }
     }
 }

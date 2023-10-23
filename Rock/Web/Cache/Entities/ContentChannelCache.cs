@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Rock.Cms;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -332,6 +332,34 @@ namespace Rock.Web.Cache
         /// </value>
         public ContentChannelTypeCache ContentChannelType => ContentChannelTypeCache.Get( ContentChannelTypeId );
 
+        /// <summary>
+        /// Gets the content library configuration json.
+        /// </summary>
+        /// <value>
+        /// The content library configuration json.
+        /// </value>
+        [DataMember]
+        public string ContentLibraryConfigurationJson
+        {
+            get
+            {
+                return ContentLibraryConfiguration?.ToJson();
+            }
+
+            set
+            {
+                ContentLibraryConfiguration = value.FromJsonOrNull<ContentLibraryConfiguration>() ?? new ContentLibraryConfiguration();
+            }
+        }
+
+        /// <summary>
+        /// Gets the content library configuration.
+        /// </summary>
+        /// <value>
+        /// The content library configuration.
+        /// </value>
+        public ContentLibraryConfiguration ContentLibraryConfiguration { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -363,6 +391,7 @@ namespace Rock.Web.Cache
             IsIndexEnabled = contentChannel.IsIndexEnabled;
             EnablePersonalization = contentChannel.EnablePersonalization;
             CategoryIds = contentChannel.Categories.Select( c => c.Id ).ToList();
+            ContentLibraryConfigurationJson = contentChannel.ContentLibraryConfigurationJson;
         }
 
         /// <summary>

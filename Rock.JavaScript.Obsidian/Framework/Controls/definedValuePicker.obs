@@ -19,7 +19,7 @@
     </template>
 
     <template v-else>
-        <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource">
+        <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource" :disabled="disabled">
             <template #inputGroupAppend v-if="allowAdd">
                 <span class="input-group-btn">
                     <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
@@ -42,13 +42,13 @@
     import { DefinedValuePickerGetAttributesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetAttributesOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
-    import RockLabel from "./rockLabel";
-    import RockForm from "./rockForm";
-    import AttributeValuesContainer from "./attributeValuesContainer";
-    import TextBox from "./textBox";
-    import RockButton from "./rockButton";
-    import Loading from "./loading";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import RockLabel from "./rockLabel.obs";
+    import RockForm from "./rockForm.obs";
+    import AttributeValuesContainer from "./attributeValuesContainer.obs";
+    import TextBox from "./textBox.obs";
+    import RockButton from "./rockButton.obs";
+    import Loading from "./loading.obs";
     import NotificationBox from "./notificationBox.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -58,6 +58,12 @@
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[] | null>,
             required: false
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
         },
 
         definedTypeGuid: {

@@ -1,0 +1,437 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" :formGroupClasses="'person-picker ' + formGroupClasses" name="personpicker">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="picker picker-select person-picker">
+                    <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
+                        <i class="fa fa-user fa-fw"></i>
+                        <span class="selected-name">{{ selectedName }}</span>
+                        <button role="button" type="button" aria-label="Clear selection" v-if="showClear" class="btn picker-select-none" @click.prevent.stop="onClear">
+                            <i class="fa fa-times"></i>
+                        </button>
+                        <b class="fa fa-caret-down"></b>
+                    </a>
+
+                    <Panel v-if="showPopup" isFullscreen isFullscreenPageOnly title="Person Search" @keydown.esc.stop="onCancel">
+                        <template #headerActions>
+                            <RockButton class="btn-square mr-2" v-if="isSelfSelectionEnabled" @click.prevent="selectSelf" :btnSize="BtnSize.ExtraSmall" aria-label="Select Self" title="Select Self">
+                                <i class="fa fa-user" aria-hidden></i>
+                            </RockButton>
+                            <RockButton class="btn-square mr-2" @click.prevent="isAdvancedSearch = !isAdvancedSearch" :btnSize="BtnSize.ExtraSmall" aria-label="Advanced Search" title="Advanced Search">
+                                <i class="fa fa-search-plus" aria-hidden></i>
+                            </RockButton>
+                            <button class="action btn-link" @click.prevent.stop="onCancel" type="button" aria-label="Close" title="Close">
+                                <i class="fa fa-times" aria-hidden></i>
+                            </button>
+                        </template>
+
+                        <div tabindex="0">
+                            <div ref="nameSearchTextBox" class="personpicker-search-panel" :class="{ 'row': isAdvancedSearch }">
+                                <TextBox v-model="nameSearchText" :formGroupClasses="isAdvancedSearch ? 'col-sm-6' : ''" disableLabel>
+                                    <template #inputGroupPrepend>
+                                        <span class="input-group-addon">Name</span>
+                                    </template>
+                                </TextBox>
+                                <TextBox v-if="isAdvancedSearch" v-model="phoneSearchText" formGroupClasses="col-sm-6" disableLabel>
+                                    <template #inputGroupPrepend>
+                                        <span class="input-group-addon">Phone</span>
+                                    </template>
+                                </TextBox>
+                                <TextBox v-if="isAdvancedSearch" v-model="addressSearchText" formGroupClasses="col-sm-6" disableLabel>
+                                    <template #inputGroupPrepend>
+                                        <span class="input-group-addon">Address</span>
+                                    </template>
+                                </TextBox>
+                                <TextBox v-if="isAdvancedSearch" v-model="emailSearchText" formGroupClasses="col-sm-6" disableLabel>
+                                    <template #inputGroupPrepend>
+                                        <span class="input-group-addon">Email</span>
+                                    </template>
+                                </TextBox>
+                            </div>
+
+                            <div>
+                                <div v-for="result in searchResults"
+                                     :key="result.primaryAliasGuid!"
+                                     class="well cursor-pointer mb-2 p-2"
+                                     :style="{ borderColor: internalValue?.value == result.primaryAliasGuid ? 'var(--color-primary)' : undefined }"
+                                     tabindex="0"
+                                     @click="selectPerson(result)"
+                                     @keypress.enter="selectPerson(result)"
+                                     role="button">
+                                    <div class="d-flex text-xs flex-wrap gap" :class="{ 'o-60': !result.isActive }">
+                                        <div class="person-image flex-shrink-0" :style="getPersonImageStyle(result)" :alt="'Profile image for ' + result.name"></div>
+                                        <div style="width:200px;" class="flex-shrink-0">
+                                            <div class="leading-snug"><span class="text-md font-weight-semibold">{{ result.name }}</span> <i class="fa fa-child text-primary" v-if="result.ageClassification == AgeClassification.Child" aria-label="Child" title="Child"></i> <span v-if="result.formattedAge" class="text-muted">{{ result.formattedAge }}</span></div>
+                                            <div v-if="getSubInformation(result)" class="text-muted"><small v-html="getSubInformation(result)" /></div>
+                                            <a :href="`/Person/${result.guid}`" @click.stop target="_blank" rel="noreferrer noopener">Profile</a>
+                                        </div>
+                                        <div style="width:275px;" class="flex-shrink-0">
+                                            <div>{{ result.address }}</div>
+                                            <div>{{ result.email }}</div>
+                                        </div>
+                                        <ul style="width:150px;" class="list-unstyled flex-shrink-0">
+                                            <li v-for="phone in result.phoneNumbers" :key="phone.type ?? '' + phone.number ?? ''">{{ phone.isUnlisted ? 'Unlisted' : phone.number }} <small v-if="phone.type" class="text-muted">{{ phone.type }}</small></li>
+                                        </ul>
+                                        <div class="ml-auto flex-shrink-0">
+                                            <div class="taglist">
+                                                <Tag v-for="tag in getTags(result)" :key="tag.name ?? undefined" :modelValue="tag" disabled />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Panel>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, Ref, ref, watch } from "vue";
+    import { PersonPickerSearchOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/personPickerSearchOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import RockFormField from "./rockFormField.obs";
+    import Panel from "./panel.obs";
+    import TextBox from "./textBox.obs";
+    import RockButton from "./rockButton.obs";
+    import Tag from "./Internal/tag.obs";
+    import { nextTick } from "vue";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { useStore } from "@Obsidian/PageState";
+    import { sleep } from "@Obsidian/Utility/promiseUtils";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { EntityTagListTagBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListTagBag";
+
+    const enum AgeClassification {
+        Unknown = 0,
+        Adult = 1,
+        Child = 2
+    }
+
+    type PersonSearchResult = {
+        guid?: string | null;
+        primaryAliasGuid?: string | null;
+        name?: string | null;
+        isActive?: boolean;
+        isDeceased?: boolean;
+        isBusiness?: boolean;
+        imageUrl?: string | null;
+        age?: number | null;
+        formattedAge?: string | null;
+        ageClassification?: AgeClassification;
+        gender?: string | null;
+        connectionStatus?: string | null;
+        connectionStatusColor?: string | null;
+        recordStatus?: string | null;
+        email?: string | null;
+        spouseName?: string | null;
+        spouseNickName?: string | null;
+        address?: string | null;
+        phoneNumbers?: PersonSearchPhoneNumber[] | null;
+        campusShortCode?: string | null;
+    };
+
+    type PersonSearchPhoneNumber = {
+        type?: string | null;
+        number?: string | null;
+        isUnlisted?: boolean;
+    };
+
+    const props = defineProps({
+        /** VModel: The selected value of this picker */
+        modelValue: {
+            type: Object as PropType<ListItemBag>,
+            required: false
+        },
+
+        /** Classes forwarded to the underlying RockFormField */
+        formGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** Include businesses in search results */
+        includeBusinesses: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Show a button that will select yourself */
+        enableSelfSelection: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Exclude deceased people from results */
+        excludeDeceased: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Have the advanced search fields visible by default */
+        expandSearchOptions: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | undefined): void;
+    }>();
+
+    const http = useHttp();
+    const internalValue = ref(props.modelValue);
+
+    /** Determines if the clear button should be shown. */
+    const showClear = computed(() => props.modelValue?.value);
+
+    /** True if the popup person picker should be visible. */
+    const showPopup = ref(false);
+
+    /** A reference to the container element for the search box. */
+    const nameSearchTextBox = ref<HTMLElement | null>(null);
+
+    /** The current text typed in the search boxes. */
+    const nameSearchText = ref("");
+    const addressSearchText = ref("");
+    const phoneSearchText = ref("");
+    const emailSearchText = ref("");
+
+    /** The currently displayed search results. */
+    const searchResults = ref<PersonSearchResult[]>([]);
+
+    /** The cancellation token used to cancel a previous search API call. */
+    let searchCancelToken: Ref<boolean> | null = null;
+
+    /** The currently selected name to display in the picker. */
+    const selectedName = computed((): string => internalValue.value?.text ?? "");
+
+    /** Whether we're using additional search filters or not */
+    const isAdvancedSearch = ref(false);
+
+    /** Current user */
+    const currentPerson = useStore().state.currentPerson;
+
+    /** Whether or not to show the self-selection button */
+    const isSelfSelectionEnabled = computed(() => {
+        return props.enableSelfSelection && (currentPerson?.idKey ?? false);
+    });
+
+    /**
+     * Updates the search results. This is called as soon as the search text
+     * value changes.
+     *
+     * @param name The name text to be searched for.
+     * @param cancellationToken The token that indicates if we should abort our search.
+     */
+    async function updateSearchResults(name: string, address: string, phone: string, email: string, cancellationToken: Ref<boolean>): Promise<void> {
+        // Only search if we have 3 or more characters.
+        if (name.length < 3 && address.length < 3 && phone.length < 3 && email.length < 3) {
+            // If we have search results, but no longer have good search criteria, clear results
+            if (searchResults.value) {
+                // Wait 200ms to see if the user has continued to type.
+                await sleep(200);
+
+                // This is set if the user kept typing.
+                if (cancellationToken.value) {
+                    return;
+                }
+
+                // Not cancelled and we don't have the data necessary to do a search, so clear current search results
+                searchResults.value = [];
+            }
+            return;
+        }
+
+        // Wait 200ms to see if the user has continued to type.
+        await sleep(200);
+
+        // This is set if the user kept typing.
+        if (cancellationToken.value) {
+            return;
+        }
+
+        const options: Partial<PersonPickerSearchOptionsBag> = {
+            name: name,
+            address: address || undefined,
+            email: email || undefined,
+            phone: phone || undefined,
+            includeDetails: true,
+            includeBusinesses: props.includeBusinesses,
+            includeDeceased: !props.excludeDeceased
+        };
+
+        // Make the API call to get the search results.
+        const result = await http.post<PersonSearchResult[]>("/api/v2/Controls/PersonPickerSearch", undefined, options);
+
+        // Check again if we have been cancelled before we do the update.
+        if (cancellationToken.value) {
+            return;
+        }
+
+        // Update the search results if we didn't get back an error.
+        if (result.isSuccess && result.data) {
+            searchResults.value = result.data;
+        }
+        else {
+            console.error("Error fetching person picker search results: ", result.errorMessage);
+        }
+    }
+
+    /**
+     * Gets the additional text to display next to the name.
+     *
+     * @param result The details of the person.
+     */
+    function getSubInformation(result: PersonSearchResult): string {
+        const text: string[] = [];
+        if (result.spouseName) {
+            text.push(`Spouse: ${result.spouseName}`);
+        }
+
+        if (result.isBusiness) {
+            text.push("Business");
+        }
+
+        if (!result.isActive && result.recordStatus) {
+            text.push("(" + result.recordStatus + ")");
+        }
+
+        if (result.isDeceased) {
+            text.push(`<span class="text-danger">(Deceased)</span>`);
+        }
+
+        return text.join(" ");
+    }
+
+    /**
+     * Gets the style attribute values for the person image tag.
+     *
+     * @param result The details of the person.
+     */
+    function getPersonImageStyle(result: PersonSearchResult): Record<string, string> {
+        if (result.imageUrl) {
+            return {
+                backgroundImage: `url(${result.imageUrl})`,
+                width: "48px",
+                height: "48px",
+                backgroundSize: "cover",
+                borderRadius: "48px"
+            };
+        }
+        else {
+            return {};
+        }
+    }
+
+    /**
+     * Gets a list of tags to show for the person.
+     */
+    function getTags(result: PersonSearchResult): EntityTagListTagBag[] {
+        const tags: EntityTagListTagBag[] = [];
+
+        if (result.connectionStatus) {
+            tags.push({
+                isPersonal: false,
+                name: result.connectionStatus,
+                backgroundColor: result.connectionStatusColor || "#fff"
+            });
+        }
+
+        if (result.campusShortCode) {
+            tags.push({
+                isPersonal: false,
+                name: result.campusShortCode,
+                backgroundColor: "#fff"
+            });
+        }
+
+        return tags;
+    }
+
+    /**
+     * Event handler for when the clear button is clicked by the user.
+     */
+    function onClear(): void {
+        emit("update:modelValue", undefined);
+    }
+
+    /**
+     * Event handler for when the user clicks on the picker. Show/hide the
+     * popup.
+     */
+    function onPickerClick(): void {
+        showPopup.value = !showPopup.value;
+
+        if (showPopup.value) {
+            // After popup is shown, focus on the first search input
+            nextTick(() => {
+                if (nameSearchTextBox.value) {
+                    const input = nameSearchTextBox.value.querySelector("input");
+
+                    input?.focus();
+                }
+            });
+        }
+    }
+
+    /** Hide the popup. */
+    function onCancel(): void {
+        showPopup.value = false;
+    }
+
+    function selectSelf(): void {
+        selectPerson({ primaryAliasGuid: currentPerson?.idKey, name: currentPerson?.fullName });
+    }
+
+    /** Set a given search result as the selected person */
+    function selectPerson(person: PersonSearchResult): void {
+        if (!person.primaryAliasGuid || !person.name) {
+            return;
+        }
+
+        internalValue.value = {
+            value: person.primaryAliasGuid,
+            text: person.name
+        };
+
+        // Emit the new value and close the popup.
+        emit("update:modelValue", internalValue.value);
+        showPopup.value = false;
+    }
+
+    // When leaving advanced search, clear the advanced search fields
+    watch(isAdvancedSearch, () => {
+        if (!isAdvancedSearch.value) {
+            addressSearchText.value = "";
+            phoneSearchText.value = "";
+            emailSearchText.value = "";
+        }
+    });
+
+    // Watch for changes to what the user has typed and update the search results.
+    watch([nameSearchText, addressSearchText, phoneSearchText, emailSearchText], () => {
+        // If a search is in progress, cancel it.
+        if (searchCancelToken) {
+            searchCancelToken.value = true;
+        }
+
+        // Create a new cancellation token that we can use if the user
+        // continues to type in the search box.
+        searchCancelToken = ref(false);
+
+        updateSearchResults(nameSearchText.value, addressSearchText.value, phoneSearchText.value, emailSearchText.value, searchCancelToken);
+    });
+
+    watch(() => props.expandSearchOptions, () => {
+        if (props.expandSearchOptions) {
+            isAdvancedSearch.value = true;
+        }
+    }, { immediate: true });
+
+    // Watch for changes in our provided value and update the UI.
+    watch(() => props.modelValue, () => internalValue.value = props.modelValue);
+</script>

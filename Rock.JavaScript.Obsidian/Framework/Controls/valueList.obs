@@ -1,0 +1,153 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="internalValues"
+                   formGroupClasses="value-list"
+                   name="value-list">
+        <template #default="{ uniqueId }">
+            <div class="control-wrapper">
+                <span :id="uniqueId">
+                    <span class="key-value-rows">
+                        <div v-for="(value, valueIndex) in internalValues" :class="rowClasses">
+                            <select v-if="hasValues" v-model="value.value" :class="valueInputClasses">
+                                <option v-for="option in options" :value="option.value" :key="option.value ?? 0">{{ option.text }}</option>
+                            </select>
+                            <input v-else v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePrompt">
+                            <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
+                        </div>
+                    </span>
+                    <div class="control-actions">
+                        <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="fa fa-plus-circle"></i></a>
+                    </div>
+                </span>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import RockFormField from "./rockFormField.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+    import { DefinedValuePickerGetDefinedValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetDefinedValuesOptionsBag";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+
+    export type ValueItem = {
+        value: string;
+    };
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<string[]>,
+            required: false
+        },
+
+        customValues: {
+            type: Array as PropType<ListItemBag[]>,
+            required: false
+        },
+
+        valuePrompt: {
+            type: String,
+            default: "Value"
+        },
+
+        fullWidth: {
+            type: Boolean,
+            default: false
+        },
+
+        definedTypeGuid: {
+            type: String as PropType<Guid>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", v: string[]): void
+    }>();
+
+    // convert the string[] of the modelValue to ValueItem[] so it can be edited correctly
+    const internalValues = ref<ValueItem[]>((props.modelValue ?? []).map(v => ({ value: v })));
+    const definedValues = ref<ListItemBag[]>([]);
+    const securityGrantToken = useSecurityGrantToken();
+    const http = useHttp();
+
+    /**
+     * The options to choose from in the drop down list. Uses the definedValues based on the definedTypeGuid if present,
+     * or uses the provided customValues if present, otherwise
+     */
+    const options = computed((): ListItemBag[] => definedValues.value.length ? definedValues.value : props.customValues ?? []);
+
+    const hasValues = computed((): boolean => options.value.length > 0);
+
+    const rowClasses = computed((): string => {
+        let classes = "controls controls-row form-control-group";
+
+        if (props.fullWidth) {
+            classes += " controls-row-full-width";
+        }
+
+        return classes;
+    });
+
+    const valueInputClasses = computed((): string => {
+        let classes = "key-value-value form-control";
+
+        if (!props.fullWidth) {
+            classes += " input-width-lg";
+        }
+
+        return classes;
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(internalValues, (props.modelValue ?? []).map(v => ({ value: v })));
+    });
+
+    watch(internalValues, () => {
+        emit("update:modelValue", internalValues.value.map(v => v.value));
+    }, { deep: true });
+
+    watch(() => props.definedTypeGuid, () => {
+        if (props.definedTypeGuid) {
+            loadDefinedValues();
+        }
+        else {
+            definedValues.value = [];
+        }
+    }, { immediate: true });
+
+    const onAddClick = (): void => {
+        let defaultValue = "";
+
+        if (hasValues.value) {
+            defaultValue = options.value[0].value ?? "";
+        }
+
+        internalValues.value.push({ value: defaultValue });
+    };
+
+    async function loadDefinedValues(): Promise<void> {
+        const options: Partial<DefinedValuePickerGetDefinedValuesOptionsBag> = {
+            definedTypeGuid: props.definedTypeGuid,
+            securityGrantToken: securityGrantToken.value
+        };
+        const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
+        const result = await http.post<ListItemBag[]>(url, undefined, options);
+
+        if (result.isSuccess && result.data) {
+            definedValues.value = result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
+
+    const onRemoveClick = (index: number): void => {
+        internalValues.value.splice(index, 1);
+    };
+</script>

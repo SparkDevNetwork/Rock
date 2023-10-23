@@ -324,7 +324,7 @@ namespace RockWeb.Blocks.Steps
             {
                 if ( _program != null )
                 {
-                    rFilter.UserPreferenceKeyPrefix = string.Format( "{0}-", _program.Id );
+                    rFilter.PreferenceKeyPrefix = string.Format( "{0}-", _program.Id );
                 }
 
                 this.BindFilter();
@@ -526,7 +526,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void ClearGridFilter()
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
 
             BindFilter();
         }
@@ -569,10 +569,10 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void BindFilter()
         {
-            txbNameFilter.Text = rFilter.GetUserPreference( FilterSettingName.Name );
-            ddlAllowMultipleFilter.SetValue( rFilter.GetUserPreference( FilterSettingName.AllowMultiple ) );
-            ddlHasDurationFilter.SetValue( rFilter.GetUserPreference( FilterSettingName.SpansTime ) );
-            ddlActiveFilter.SetValue( rFilter.GetUserPreference( FilterSettingName.ActiveStatus ) );
+            txbNameFilter.Text = rFilter.GetFilterPreference( FilterSettingName.Name );
+            ddlAllowMultipleFilter.SetValue( rFilter.GetFilterPreference( FilterSettingName.AllowMultiple ) );
+            ddlHasDurationFilter.SetValue( rFilter.GetFilterPreference( FilterSettingName.SpansTime ) );
+            ddlActiveFilter.SetValue( rFilter.GetFilterPreference( FilterSettingName.ActiveStatus ) );
         }
 
         /// <summary>
@@ -580,10 +580,10 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void SaveFilterSettings()
         {
-            rFilter.SaveUserPreference( FilterSettingName.Name, txbNameFilter.Text );
-            rFilter.SaveUserPreference( FilterSettingName.AllowMultiple, ddlAllowMultipleFilter.SelectedValue );
-            rFilter.SaveUserPreference( FilterSettingName.SpansTime, ddlHasDurationFilter.SelectedValue );
-            rFilter.SaveUserPreference( FilterSettingName.ActiveStatus, ddlActiveFilter.SelectedValue );
+            rFilter.SetFilterPreference( FilterSettingName.Name, txbNameFilter.Text );
+            rFilter.SetFilterPreference( FilterSettingName.AllowMultiple, ddlAllowMultipleFilter.SelectedValue );
+            rFilter.SetFilterPreference( FilterSettingName.SpansTime, ddlHasDurationFilter.SelectedValue );
+            rFilter.SetFilterPreference( FilterSettingName.ActiveStatus, ddlActiveFilter.SelectedValue );
         }
 
         /// <summary>
@@ -637,7 +637,7 @@ namespace RockWeb.Blocks.Steps
             stepTypesQry = stepTypesQry.Where( x => x.StepProgramId == _program.Id );
 
             // Filter by: Name
-            var name = rFilter.GetUserPreference( FilterSettingName.Name ).ToStringSafe();
+            var name = rFilter.GetFilterPreference( FilterSettingName.Name ).ToStringSafe();
 
             if ( !string.IsNullOrWhiteSpace( name ) )
             {
@@ -645,7 +645,7 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Filter by: Allow Multiple
-            var allowMultiple = rFilter.GetUserPreference( FilterSettingName.AllowMultiple ).AsBooleanOrNull();
+            var allowMultiple = rFilter.GetFilterPreference( FilterSettingName.AllowMultiple ).AsBooleanOrNull();
 
             if ( allowMultiple.HasValue )
             {
@@ -653,7 +653,7 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Filter by: Has Duration
-            var hasDuration = rFilter.GetUserPreference( FilterSettingName.SpansTime ).AsBooleanOrNull();
+            var hasDuration = rFilter.GetFilterPreference( FilterSettingName.SpansTime ).AsBooleanOrNull();
 
             if ( hasDuration.HasValue )
             {
@@ -661,7 +661,7 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Filter by: Active
-            var activeFilter = rFilter.GetUserPreference( FilterSettingName.ActiveStatus ).ToUpperInvariant();
+            var activeFilter = rFilter.GetFilterPreference( FilterSettingName.ActiveStatus ).ToUpperInvariant();
 
             switch ( activeFilter )
             {

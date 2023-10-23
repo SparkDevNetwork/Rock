@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -32,8 +33,8 @@ namespace Rock.Field.Types
     /// Class that represents the LocationList field type.
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "A58A0CBF-C3E6-4054-85D7-05118035980B" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LOCATION_LIST )]
     public class LocationListFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
@@ -68,9 +69,107 @@ namespace Rock.Field.Types
             public const string AddressRequired = "AddressRequired";
         }
 
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+                if ( publicConfigurationValues[ConfigurationKey.LocationType].IsNotNullOrWhiteSpace() )
+                {
+                    var locationTypeValue = DefinedValueCache.Get( publicConfigurationValues[ConfigurationKey.LocationType].ToIntSafe() );
+                    var locationTypeItemBag = new ListItemBag { Text = locationTypeValue.Value, Value = locationTypeValue.Guid.ToString() };
+
+                    publicConfigurationValues[ConfigurationKey.LocationType] = locationTypeItemBag.ToCamelCaseJson( false, true );
+                }
+
+                if ( publicConfigurationValues[ConfigurationKey.ParentLocation].IsNotNullOrWhiteSpace() )
+                {
+                    var locationService = new LocationService(rockContext);
+                    var parentLocation = locationService.Get( publicConfigurationValues[ConfigurationKey.ParentLocation].ToIntSafe() );
+                    var parentLocationItemBag = new ListItemBag { Text = parentLocation.Name, Value = parentLocation.Guid.ToString() };    
+
+                    publicConfigurationValues[ConfigurationKey.ParentLocation] = parentLocationItemBag.ToCamelCaseJson( false, true );
+                }
+
+                return publicConfigurationValues;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+                if ( privateConfigurationValues[ConfigurationKey.LocationType].IsNotNullOrWhiteSpace() )
+                {
+                    var guidString = privateConfigurationValues[ConfigurationKey.LocationType].FromJsonOrNull<ListItemBag>().Value;
+                    var locationTypeValue = DefinedValueCache.Get( new Guid( guidString ) );
+
+                    privateConfigurationValues[ConfigurationKey.LocationType] = locationTypeValue.Id.ToString();
+                }
+
+                if ( privateConfigurationValues[ConfigurationKey.ParentLocation].IsNotNullOrWhiteSpace() )
+                {
+                    var locationService = new LocationService( rockContext );
+                    var guidString = privateConfigurationValues[ConfigurationKey.ParentLocation].FromJsonOrNull<ListItemBag>().Value;
+                    var parentLocation = locationService.Get( new Guid( guidString ) );
+
+                    privateConfigurationValues[ConfigurationKey.ParentLocation] = parentLocation.Id.ToString();
+                }
+
+                return privateConfigurationValues;
+            }
+        }
+
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+            else {
+                using ( var rockContext = new RockContext() )
+                {
+                    var locationService = new LocationService( rockContext );
+                    var location = locationService.Get( new Guid( privateValue ) );
+
+                    if (location != null)
+                    {
+                        var showCityState = privateConfigurationValues[ConfigurationKey.ShowCityState] == "True";
+                        var nameSuffix = showCityState ? $" ({ location.City}, { location.State})" : "";
+                        var publicValue = new ListItemBag { Text = location.Name + nameSuffix, Value = privateValue };
+
+                        return publicValue.ToCamelCaseJson( false, true );
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var parsedValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( parsedValue != null )
+            {
+                return parsedValue.Value;
+            }
+
+            return null;
+        }
 
         #endregion
 
@@ -133,6 +232,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuid();
             return GetLocationByGuid( guid, rockContext );
         }
+
         #endregion
 
         private Location GetLocationByGuid( Guid guid )

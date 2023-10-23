@@ -428,14 +428,14 @@ namespace Rock.Web.UI.Controls
             _ddlEthnicity = new RockDropDownList()
             {
                 ID = "_ddlEthnicity",
-                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL )
             };
 
             _rblEthnicity = new RockRadioButtonList()
             {
                 ID = "_rblEthnicity",
                 RepeatDirection = RepeatDirection.Horizontal,
-                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL )
             };
 
             switch ( CurrentPickerMode )

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -30,12 +31,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
     /// <summary>
     /// Displays custom XAML content on the page.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Content Channel Item View" )]
     [Category( "Mobile > Cms" )]
     [Description( "Displays a content channel item by formatting it with XAML." )]
     [IconCssClass( "fa fa-chalkboard" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -68,7 +70,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONTENT_CHANNEL_ITEM_VIEW_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "B76B5F10-D2D6-4C60-B6FB-F913A62442E0")]
-    public class ContentChannelItemView : RockMobileBlockType
+    public class ContentChannelItemView : RockBlockType
     {
         /// <summary>
         /// The block settings attribute keys for the MobileContentChannelItemView block.
@@ -98,21 +100,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Content";
+        /// <inheritdoc/>
+        public override Guid? MobileBlockTypeGuid => new Guid( "7258A210-E936-4260-B573-9FA1193AD9E2" ); // Content block.
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -122,7 +114,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            var additionalSettings = GetAdditionalSettings();
+            var additionalSettings = BlockCache?.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
 
             //
             // The client shell ignores this value and always requests the current config from

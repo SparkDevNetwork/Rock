@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
     import { PropType, computed, watch } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import { toNumber } from "@Obsidian/Utility/numberUtils";

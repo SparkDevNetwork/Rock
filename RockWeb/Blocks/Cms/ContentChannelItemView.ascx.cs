@@ -661,7 +661,7 @@ Guid - ContentChannelItem Guid";
                     }
                 }
 
-                var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
 
                 // Merge content and attribute fields if block is configured to do so.
                 if ( isMergeContentEnabled )
@@ -980,14 +980,16 @@ Guid - ContentChannelItem Guid";
 
             if ( alreadyLaunchedKey != null )
             {
-                var alreadyLaunched = this.GetBlockUserPreference( alreadyLaunchedKey ).AsBooleanOrNull();
+                var preferences = GetBlockPersonPreferences();
+                var alreadyLaunched = preferences.GetValue( alreadyLaunchedKey ).AsBooleanOrNull();
                 if ( alreadyLaunched == true )
                 {
                     return;
                 }
                 else
                 {
-                    this.SetBlockUserPreference( alreadyLaunchedKey, true.ToString(), true );
+                    preferences.SetValue( alreadyLaunchedKey, true.ToString() );
+                    preferences.Save();
                 }
             }
 

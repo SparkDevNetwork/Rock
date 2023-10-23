@@ -65,6 +65,8 @@ export const FieldType = {
     CodeEditor: "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5",
     /** Color field type */
     Color: "D747E6AE-C383-4E22-8846-71518E3DD06F",
+    /** Color selector field type */
+    ColorSelector: "B07070F6-B66E-4B83-8DA6-12CF3400A1EC",
     /** Communication Preference field type */
     CommunicationPreferenceType: "507C28F2-8BC0-4909-A4FE-9C2B1149E2B2",
     /** Communication Template field type */
@@ -124,7 +126,7 @@ export const FieldType = {
     /** Defined Value field type */
     DefinedValue: "59D5A94C-94A0-4630-B80A-BB25697D74C7",
     /** Categorized Defined Value field type */
-    DefinedValueCategorized: "3D986B5C-A706-4C69-B0F2-7C81286194CF",
+    DefinedValueCategorized: "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D",
     /** Defined Value Range field type */
     DefinedValueRange: "B5C07B16-844D-4620-82E3-4CCA8F5FC350",
     /** Email field type */
@@ -191,12 +193,16 @@ export const FieldType = {
     LavaCommands: "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D",
     /** Location field type */
     Location: "B0B9EFE3-F09F-4604-AD1B-76B298A85D83",
+    /** Location List field type */
+    LocationList: "A58A0CBF-C3E6-4054-85D7-05118035980B",
     /** Markdown field type */
     Markdown: "C2FBCF94-0FDF-4DFD-93A5-19FE6A409C84",
     /** Matrix field type */
     Matrix: "F16FC460-DC1E-4821-9012-5F21F974C677",
     /** Media Element field type */
     MediaElement: "A17D5AAC-B7AE-4587-B703-A0FC3625F0F8",
+    /** Media Selector field type */
+    MediaSelector: "243E40FC-04D0-48AD-B379-25A400CB0CAC",
     /** Media Watch field type */
     MediaWatch: "98180C6F-5167-45E1-8ADE-E1A31EC4930D",
     /** Memo field type */
@@ -235,6 +241,8 @@ export const FieldType = {
     RegistrationInstance: "5F0F6D6A-DEB7-47AD-93C7-4CCC88EF932D",
     /** Registration Template field type */
     RegistrationTemplate: "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620",
+    /** Registration Entry field type */
+    RegistryEntry: "D98E1D88-2240-4248-B93B-0512BD3BB61A",
     /** Registration Template field type */
     ReminderType: "94A5DF3C-A7E0-451E-9DBA-86A6CFD5DF70",
     /** Registration Template field type */

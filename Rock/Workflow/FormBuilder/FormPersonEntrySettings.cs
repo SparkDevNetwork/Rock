@@ -110,6 +110,11 @@ namespace Rock.Workflow.FormBuilder
         public WorkflowActionFormPersonEntryOption MobilePhone { get; set; }
 
         /// <summary>
+        /// Determines if the SMS Opt-In contol shold be hidden, optional or required when displaying the person entry form.
+        /// </summary>
+        public WorkflowActionFormShowHideOption SmsOptIn { get; set; }
+
+        /// <summary>
         /// Determines if the birthdate control should be hidden, optional or
         /// required when displaying the person entry form.
         /// </summary>

@@ -243,7 +243,12 @@ namespace RockWeb.Blocks.Connection
         protected void mdOptions_SaveClick( object sender, EventArgs e )
         {
             SetConnectionStatesPreference();
-            SetBlockUserPreference( UserPreferenceKey.OnlyShowMyConnections, swOnlyShowMyConnections.Checked.ToString(), true );
+
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( UserPreferenceKey.OnlyShowMyConnections, swOnlyShowMyConnections.Checked.ToString() );
+            preferences.Save();
+
             _onlyShowMyConnections = swOnlyShowMyConnections.Checked;
             // Assume changes happened, therefore reset the SetConnectionStates() and clear the GetRequestsViewModel so we start over.
             SetConnectionStates();
@@ -285,6 +290,7 @@ namespace RockWeb.Blocks.Connection
         }
         private void SetConnectionStatesPreference()
         {
+            var preferences = GetBlockPersonPreferences();
             var selectedItems = new List<ListItem>();
             foreach ( ListItem item in cblStates.Items )
             {
@@ -298,12 +304,12 @@ namespace RockWeb.Blocks.Connection
             {
                 var selectedItemsEnumerable = selectedItems?.Select( v => $"{v.Value}^" );
                 var selectedItemsString = string.Join( "^", selectedItemsEnumerable.ToArray() );
-                SetBlockUserPreference( UserPreferenceKey.ConnectionStates, selectedItemsString );
+                preferences.SetValue( UserPreferenceKey.ConnectionStates, selectedItemsString );
                 LoadConnectionStates();
             }
             else
             {
-                DeleteBlockUserPreference( UserPreferenceKey.ConnectionStates );
+                preferences.SetValue( UserPreferenceKey.ConnectionStates, string.Empty );
             }
         }
 
@@ -465,8 +471,9 @@ namespace RockWeb.Blocks.Connection
             }
 
             // Get the OnlyShowMyConnections user preference on load
+            var preferences = GetBlockPersonPreferences();
             bool onlyShowMyConnections;
-            bool.TryParse( GetBlockUserPreference( UserPreferenceKey.OnlyShowMyConnections ), out onlyShowMyConnections );
+            bool.TryParse( preferences.GetValue( UserPreferenceKey.OnlyShowMyConnections ), out onlyShowMyConnections );
             swOnlyShowMyConnections.Checked = onlyShowMyConnections;
             _onlyShowMyConnections = onlyShowMyConnections;
 
@@ -476,7 +483,8 @@ namespace RockWeb.Blocks.Connection
 
         private void SetConnectionStates()
         {
-            var connectionStateString = GetBlockUserPreference( UserPreferenceKey.ConnectionStates );
+            var preferences = GetBlockPersonPreferences();
+            var connectionStateString = preferences.GetValue( UserPreferenceKey.ConnectionStates );
             if ( !string.IsNullOrEmpty( connectionStateString ) )
             {
                 _connectionStates = connectionStateString

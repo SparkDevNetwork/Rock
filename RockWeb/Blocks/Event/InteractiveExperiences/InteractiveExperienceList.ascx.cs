@@ -151,8 +151,8 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gfExperiences_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfExperiences.SaveUserPreference( UserPreferenceKey.Campus, cpCampus.SelectedValue );
-            gfExperiences.SaveUserPreference( UserPreferenceKey.IncludeInactive, cbShowInactive.Checked ? cbShowInactive.Checked.ToString() : string.Empty );
+            gfExperiences.SetFilterPreference( UserPreferenceKey.Campus, cpCampus.SelectedValue );
+            gfExperiences.SetFilterPreference( UserPreferenceKey.IncludeInactive, cbShowInactive.Checked ? cbShowInactive.Checked.ToString() : string.Empty );
 
             BindGrid();
         }
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfExperiences_ClearFilterClick( object sender, EventArgs e )
         {
-            gfExperiences.DeleteUserPreferences();
+            gfExperiences.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -307,8 +307,8 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
         /// </summary>
         private void BindFilter()
         {
-            cpCampus.SetValue( gfExperiences.GetUserPreference( UserPreferenceKey.Campus ) );
-            cbShowInactive.Checked = gfExperiences.GetUserPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
+            cpCampus.SetValue( gfExperiences.GetFilterPreference( UserPreferenceKey.Campus ) );
+            cbShowInactive.Checked = gfExperiences.GetFilterPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
         }
 
         /// <summary>
@@ -323,13 +323,13 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
             // therefore don't need to be tracked by the EF change tracker.
             var qry = interactiveExperienceService.Queryable().AsNoTracking();
 
-            Guid? campusGuid = gfExperiences.GetUserPreference( UserPreferenceKey.Campus ).AsGuidOrNull();
+            Guid? campusGuid = gfExperiences.GetFilterPreference( UserPreferenceKey.Campus ).AsGuidOrNull();
             if ( campusGuid.HasValue )
             {
                 qry = qry.Where( ie => ie.InteractiveExperienceSchedules.Any( ies => ies.InteractiveExperienceScheduleCampuses.Any( iesc => iesc.Campus != null && iesc.Campus.Guid == campusGuid.Value ) ) );
             }
 
-            bool includeInactive = gfExperiences.GetUserPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
+            bool includeInactive = gfExperiences.GetFilterPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
 
             if ( !includeInactive )
             {

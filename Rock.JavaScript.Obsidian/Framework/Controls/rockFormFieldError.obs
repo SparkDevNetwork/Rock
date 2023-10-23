@@ -1,0 +1,49 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template></template>
+
+<script setup lang="ts">
+    import { useFormState } from "@Obsidian/Utility/form";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { onBeforeUnmount, PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        label: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        error: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    /** The reactive state of the form. */
+    const formState = useFormState();
+
+    /** The unique identifier used to identify this form field. */
+    const uniqueId = `rock-error-${newGuid()}`;
+
+    /** Holds the current error message for this form field. */
+    const currentError = ref(props.error);
+
+    // Watch for changes to the modelValue and update our internalValue.
+    watch(() => props.error, () => {
+        currentError.value = props.error;
+
+        if (currentError.value) {
+            formState?.setError(uniqueId, props.label, currentError.value);
+        }
+        else {
+            formState?.setError(uniqueId, props.label, "");
+        }
+    }, {
+        immediate: true
+    });
+
+    // If we are removed from the DOM completely, clear the error before we go.
+    onBeforeUnmount(() => {
+        currentError.value = "";
+        formState?.setError(uniqueId, props.label, "");
+    });
+</script>

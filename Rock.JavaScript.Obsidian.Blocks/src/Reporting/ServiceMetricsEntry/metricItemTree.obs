@@ -1,0 +1,223 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel class="metric-category"
+           :hasCollapse="true"
+           :modelValue="true"
+           :title="category.name ?? ''">
+        <template #headerActions>
+            <span class="label label-default"
+                  data-toggle="tooltip"
+                  ref="metricCategoryCountLabel"
+                  :title="metricCategoryCountLabelTooltip">{{ descendantMetricItemValuesSum }}</span>
+        </template>
+        <MetricItem v-for="item of categorizedMetricItems"
+                    class="metric-item"
+                    :disabled="disabled"
+                    :item="item" />
+        <metricItemTree v-for="childCategory of category.childMetricCategories"
+                        :areDuplicateMetricsIncludedInCategorySubtotals="areDuplicateMetricsIncludedInCategorySubtotals"
+                        :category="childCategory"
+                        :disabled="disabled"
+                        :items="items" />
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.metric-category) {
+    border: none;
+    box-shadow: none;
+    margin-bottom: 0;
+}
+
+:deep(.metric-category > .panel-body) {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+}
+
+:deep(.metric-category .panel-title) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+:deep(.metric-category .metric-category) {
+    margin-left: 8%;
+}
+
+.metric-item {
+    margin: 0;
+}
+
+.metric-item + div:not(.metric-item) {
+    margin-top: 18px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref } from "vue";
+    import MetricItem from "./metricItem.partial.obs";
+    import { flattenBreadthFirst } from "./utils.partial";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { ServiceMetricsEntryMetricCategoryBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryMetricCategoryBag";
+    import { ServiceMetricsEntryMetricItemBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryMetricItemBag";
+
+    const props = defineProps({
+        items: {
+            type: Object as PropType<ServiceMetricsEntryMetricItemBag[]>,
+            required: true
+        },
+        category: {
+            type: Object as PropType<ServiceMetricsEntryMetricCategoryBag>,
+            required: true
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+        areDuplicateMetricsIncludedInCategorySubtotals: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: true
+        }
+    });
+
+    //#region Values
+
+    const metricCategoryCountLabel = ref<HTMLElement>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    /** The metric items for this component's category. */
+    const categorizedMetricItems = computed<ServiceMetricsEntryMetricItemBag[]>(() => {
+        return filterMetricItemsInCategory(props.items, props.category);
+    });
+
+    /** A flattened array of descendant metric categories of this component's category. */
+    const descendantMetricCategories = computed<ServiceMetricsEntryMetricCategoryBag[]>(() => {
+        if (!props.category.childMetricCategories?.length) {
+            return [];
+        }
+
+        return flattenBreadthFirst(
+            props.category,
+            c => c.categoryId,
+            c => c.childMetricCategories,
+            { excludeRootItems: true });
+    });
+
+    /** A flattened array of descendant categories of (and including) this component's category. */
+    const allMetricCategories = computed<ServiceMetricsEntryMetricCategoryBag[]>(() => {
+        const descendants = descendantMetricCategories.value;
+
+        if (descendants.some(c => c.categoryId === props.category.categoryId)) {
+            // Do not add this component's category if it is already
+            // included in the descendants array.
+            return descendants;
+        }
+        else {
+            // Combine this component's category and all its descendants.
+            return [props.category, ...descendants];
+        }
+    });
+
+    /** A flattened array of descendant metric items of this component's category. */
+    const descendantMetricItems = computed<ServiceMetricsEntryMetricItemBag[]>(() => {
+        if (props.areDuplicateMetricsIncludedInCategorySubtotals) {
+            const metricItems: ServiceMetricsEntryMetricItemBag[] = [];
+
+            for (const metricCategory of allMetricCategories.value) {
+                const metricItemsInCategory = filterMetricItemsInCategory(props.items, metricCategory);
+
+                for (const metricItem of metricItemsInCategory) {
+                    // Store the metric item for the metric item ID.
+                    metricItems.push(metricItem);
+                }
+            }
+
+            // Return the metric items.
+            return metricItems;
+        }
+        else {
+            // Create a map of metric item IDs to metric items to prevent duplicates.
+            // This is necessary because a metric item can appear in multiple categories.
+            const metricIdsToMetricItems: Map<number, ServiceMetricsEntryMetricItemBag> = new Map<number, ServiceMetricsEntryMetricItemBag>();
+
+            for (const metricCategory of allMetricCategories.value) {
+                const metricItems = filterMetricItemsInCategory(props.items, metricCategory);
+
+                for (const metricItem of metricItems) {
+                    // Store the metric item for the metric item ID.
+                    metricIdsToMetricItems.set(metricItem.id, metricItem);
+                }
+            }
+
+            // Return the metric items.
+            return [...metricIdsToMetricItems.values()];
+        }
+    });
+
+    /** The sum of all metric values that are descendants of this component's category. */
+    const descendantMetricItemValuesSum = computed<number>(() => {
+        return descendantMetricItems.value.map(i => i.value ?? 0).reduce((sum, value) => sum + value, 0);
+    });
+
+    /** The tooltip text describing the count in the category header. */
+    const metricCategoryCountLabelTooltip = computed<string>(() => {
+        const categoryNames: string[] = [];
+
+        const itemsInThisCategory = categorizedMetricItems.value;
+        for (const item of itemsInThisCategory) {
+            if (item.name) {
+                categoryNames.push(item.name);
+            }
+        }
+
+        // Get descendant category names that contain metric items.
+        for (const descendantCategory of descendantMetricCategories.value) {
+            if (descendantCategory.name && areAnyMetricItemsInCategory(props.items, descendantCategory)) {
+                categoryNames.push(descendantCategory.name);
+            }
+        }
+
+        return categoryNames.length ? `Sum of ${categoryNames.join(", ")}` : "";
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Determines if there are any metric items for a category.
+     *
+     * @param metricItems The metric items.
+     * @param metricCategory The metric category to test.
+     */
+    function areAnyMetricItemsInCategory(metricItems: ServiceMetricsEntryMetricItemBag[], metricCategory: ServiceMetricsEntryMetricCategoryBag): boolean {
+        const categoryId = metricCategory.categoryId;
+        return metricItems.some(i => i.categoryIds && i.categoryIds.some(c => c === categoryId));
+    }
+
+    /**
+     * Gets the metrics items that are direct descendants of a category.
+     *
+     * @param metricItems The metric items.
+     * @param metricCategory The metric category for which to retrieve metric items.
+     */
+    function filterMetricItemsInCategory(metricItems: ServiceMetricsEntryMetricItemBag[], metricCategory: ServiceMetricsEntryMetricCategoryBag): ServiceMetricsEntryMetricItemBag[] {
+        const categoryId = metricCategory.categoryId;
+        return metricItems.filter(i => i.categoryIds && i.categoryIds.some(c => c === categoryId));
+    }
+
+    //#endregion
+
+    onMounted(() => {
+        if (metricCategoryCountLabel.value) {
+            tooltip(metricCategoryCountLabel.value);
+        }
+    });
+</script>

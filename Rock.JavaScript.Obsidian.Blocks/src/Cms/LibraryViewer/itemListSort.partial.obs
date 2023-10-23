@@ -1,0 +1,180 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="library-viewer-item-list-sort">
+        <ToolbarMenu :getTitle="getSortTitle"
+                     iconCssClass="fa fa-sort"
+                     menuButtonCssClass="library-viewer-toolbar-button">
+            <ToolbarMenuButtons v-model="appliedSortOption"
+                                dropDownMenuAlignment="right"
+                                itemClass="library-viewer-item-list-sort-button"
+                                :items="sortOptions" />
+        </ToolbarMenu>
+    </div>
+</template>
+
+<style scoped>
+    .library-viewer-item-list-sort-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .library-viewer-item-list-sort-button {
+        text-align: left;
+        border: none;
+    }
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import ToolbarMenu from "./toolbarMenu.partial.obs";
+    import ToolbarMenuButtons from "./toolbarMenuButtons.partial.obs";
+    import { PersonPreferenceKey, MenuButton } from "./types.partial";
+    import { compareDateStrings, compareNumbers, compareStrings } from "./utils.partial";
+    import { usePersonPreferences } from "@Obsidian/Utility/block";
+    import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";
+
+    type SortKey = "default" | "publish-date-descending" | "downloads-descending" | "organization-ascending";
+
+    type SortOption = MenuButton & {
+        key: SortKey;
+        sortButtonText: string;
+        sort: (item1: LibraryViewerItemBag, item2: LibraryViewerItemBag) => number;
+    };
+
+    const props = defineProps({
+        items: {
+            type: Object as PropType<LibraryViewerItemBag[]>,
+            required: true
+        },
+        contentChannelIdKey: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "sortedItems", value: LibraryViewerItemBag[]): void
+    }>();
+
+    const preferences = usePersonPreferences().blockPreferences;
+
+    const defaultSortOption: SortOption = {
+        key: "default",
+        sortButtonText: "Sort",
+        sort(item1, item2) {
+            // Multiply by -1 to sort Newest to Oldest.
+            return compareDateStrings(item1?.publishedDateTime, item2?.publishedDateTime) * -1;
+        }
+    };
+
+    const sortOptions: SortOption[] = [
+        {
+            key: "publish-date-descending",
+            title: "Publish Date - Newest to Oldest",
+            sortButtonText: "Sort: Publish Date",
+            sort(item1, item2) {
+                // Multiply by -1 to sort Newest to Oldest.
+                return compareDateStrings(item1?.publishedDateTime, item2?.publishedDateTime) * -1;
+            }
+        },
+        {
+            key: "downloads-descending",
+            title: "Downloads - Most to Fewest",
+            sortButtonText: "Sort: Downloads",
+            sort(item1, item2) {
+                // Multiply by -1 to sort Most to Fewest.
+                return compareNumbers(item1?.downloads, item2?.downloads) * -1;
+            }
+        },
+        {
+            key: "organization-ascending",
+            title: "Organization",
+            sortButtonText: "Sort: Organization",
+            sort(item1, item2) {
+                return compareStrings(item1?.sourcePublisherName, item2?.sourcePublisherName);
+            }
+        }
+    ];
+
+    //#region Values
+
+    const appliedSortOption = ref<SortOption>(defaultSortOption);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const personPreferenceKeyResolver = computed<(key: PersonPreferenceKey) => string>(() => {
+        if (props.contentChannelIdKey) {
+            return (key: PersonPreferenceKey) => `${props.contentChannelIdKey}-${key}`;
+        }
+        else {
+            return (key: PersonPreferenceKey) => key;
+        }
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    /** Emits the `sortedItems` event. */
+    function applySort(): void {
+        const sortedItems = [...props.items].sort(appliedSortOption.value.sort);
+        emit("sortedItems", sortedItems);
+    }
+
+    /** Gets the sort person preference. */
+    function getSortPersonPreference(): SortOption {
+        const keyResolver = personPreferenceKeyResolver.value;
+
+        const sortKey = preferences.getValue(keyResolver(PersonPreferenceKey.Sort));
+        return sortOptions.find(sortOption => sortOption.key === sortKey) ?? defaultSortOption;
+    }
+
+    /** Sets the sort person preference. */
+    function saveSortPersonPreference(sort: SortOption): void {
+        const keyResolver = personPreferenceKeyResolver.value;
+
+        preferences.setValue(keyResolver(PersonPreferenceKey.Sort), sort.key);
+
+        // There is no need to wait for the preferences to save,
+        // so just fire and forget.
+        preferences.save();
+    }
+
+    function getSortTitle(): string {
+        if (appliedSortOption.value) {
+            return appliedSortOption.value.sortButtonText;
+        }
+
+        return "Sort";
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(() => props.items, () => {
+        // Whenever the items are changed
+        // they should be sorted with the current sort.
+        applySort();
+    });
+
+    watch(() => appliedSortOption.value, () => {
+        // Whenever the sort selection is changed
+        // the person preference should be updated
+        // and the items should be re-sorted.
+
+        // Save the sort person preference.
+        // No need to wait for it to succeed.
+        saveSortPersonPreference(appliedSortOption.value);
+
+        applySort();
+    });
+
+    //#endregion
+
+    onMounted(() => {
+        appliedSortOption.value = getSortPersonPreference();
+    });
+</script>

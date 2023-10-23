@@ -1,0 +1,103 @@
+<template>
+    <ul class="note-list list-unstyled" :class="additionalListClasses">
+        <component v-for="note in notes"
+                   :key="note.idKey!"
+                   :is="noteComponent"
+                   :note="note"
+                   :depth="depth"
+                   @delete="onDeleteNote"
+                   @edited="onEditedNote">
+        </component>
+    </ul>
+</template>
+
+<script setup lang="ts">
+    import type Note from "./note.partial.obs";
+    import { computed, inject, PropType } from "vue";
+    import { ExpandedNoteBag, NoteOptions } from "./types.partial";
+    import { noteOptionsSymbol } from "./utils.partial";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { DeleteNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/deleteNoteRequestBag";
+
+    const props = defineProps({
+        notes: {
+            type: Array as PropType<ExpandedNoteBag[]>,
+            required: true
+        },
+
+        depth: {
+            type: Number as PropType<number>,
+            default: 0
+        }
+    });
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const noteOptions = inject<NoteOptions>(noteOptionsSymbol)!;
+    const noteComponent = noteOptions.noteComponent as typeof Note;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Contains the additional CSS classes that will be applied to the `ul`
+     * element.
+     */
+    const additionalListClasses = computed((): string => {
+        return props.depth > 0 ? "note-list-nested" : "note-view-list";
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when it has been requsted that a direct child note
+     * be deleted from the server.
+     *
+     * @param note The note that has been deleted.
+     */
+    async function onDeleteNote(note: ExpandedNoteBag): Promise<void> {
+        if (!await confirmDelete("Note")) {
+            return;
+        }
+
+        const request: DeleteNoteRequestBag = {
+            idKey: note.idKey
+        };
+
+        const result = await invokeBlockAction("DeleteNote", { request });
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to delete note.");
+            return;
+        }
+
+        const index = props.notes.findIndex(n => n.idKey === note.idKey);
+
+        if (index >= 0) {
+            props.notes.splice(index, 1);
+        }
+    }
+
+    /**
+     * Event handler for when a direct child note has been edited. The passed
+     * note is the new object data that should replace the old data.
+     *
+     * @param note The new note that was edited.
+     */
+    function onEditedNote(note: ExpandedNoteBag): void {
+        const index = props.notes.findIndex(n => n.idKey === note.idKey);
+
+        if (index >= 0) {
+            props.notes.splice(index, 1, note);
+        }
+    }
+
+    // #endregion
+</script>

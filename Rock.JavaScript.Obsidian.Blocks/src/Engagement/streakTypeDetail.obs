@@ -1,0 +1,349 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="entityTypeGuid"
+                 entityTypeName="StreakType"
+                 :footerSecondaryActions="footerActions"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="true"
+                 :isDeleteVisible="isEditable"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="false"
+                 additionalDeleteMessage="All associated Enrollments and Exclusions will also be deleted!"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="streakTypeViewBag" :options="options" :rebuildActionSuccessMessage="rebuildActionSuccessMessage" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="streakTypeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./StreakTypeDetail/editPanel.partial.obs";
+    import ViewPanel from "./StreakTypeDetail/viewPanel.partial.obs";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { NavigationUrlKey } from "./StreakTypeDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
+    import { StreakTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeDetailOptionsBag";
+
+    const config = useConfigurationValues<DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+    const rebuildActionSuccessMessage = ref("");
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const streakTypeViewBag = ref(config.entity);
+    const streakTypeEditBag = ref<StreakTypeBag>({} as StreakTypeBag);
+
+    const entityTypeGuid = EntityType.StreakType;
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    // The properties that are being edited in the UI. This is used to
+    // inform the server which incoming values have valid data in them.
+    const validProperties = [
+        "attributeValues",
+        "description",
+        "enableAttendance",
+        "isActive",
+        "name",
+        "occurrenceFrequency",
+        "requiresEnrollment",
+        "startDate",
+        "streaks",
+        "firstDayOfWeek",
+        "streakTypeExclusions",
+        "structureType",
+        "structureEntity",
+        "includeChildAccounts"
+    ];
+
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(streakTypeEditBag, validProperties, invokeBlockAction), undefined, true);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return streakTypeViewBag.value?.name ?? "";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return streakTypeViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        if (streakTypeViewBag.value?.isActive === true) {
+            labels.push({
+                iconCssClass: "fa fa-lightbulb",
+                title: "Active",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "far fa-lightbulb",
+                title: "Inactive",
+                type: "danger"
+            });
+        }
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): StreakTypeDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    const footerActions = computed((): PanelAction[] => {
+        if(panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
+        return [
+        {
+            iconCssClass: "fa fa-medal",
+            title: "Achievements",
+            type: "default",
+            handler: () => {
+                window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.AchievementsPage] ?? "");
+            }
+        },
+        {
+            iconCssClass: "fa fa-calendar-check",
+            title: "Map Editor",
+            type: "default",
+            handler: () => {
+                window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.MapEditorPage] ?? "");
+            }
+        },
+        {
+            iconCssClass: "fa fa-calendar-times",
+            title: "Exclusions",
+            type: "default",
+            handler: () => {
+                window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.ExclusionsPage] ?? "");
+            }
+        },
+        {
+            iconCssClass: "fa fa-redo-alt",
+            title: "Rebuild",
+            type: "danger",
+            handler: () => {
+                onRebuild();
+            }
+        }];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Event handler for the Rebuild button being clicked. Sends the
+     * rebuild request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+     async function onRebuild(): Promise<boolean> {
+        errorMessage.value = "";
+        rebuildActionSuccessMessage.value = "";
+        if (!await confirm("Are you sure you want to delete this data? Occurrence and enrollment map data belonging to this streak type will be deleted and rebuilt from attendance records! This process runs in separate process and may take several minutes to complete.")) {
+            return false;
+        }
+
+        const result = await invokeBlockAction<string>("Rebuild", {
+            key: streakTypeViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            rebuildActionSuccessMessage.value = result.data;
+            return true;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to rebuild streak.";
+            return false;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!streakTypeEditBag.value?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: streakTypeViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete streak type.";
+
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag>>("Edit", {
+            key: streakTypeViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.entity) {
+            streakTypeEditBag.value = result.data.entity;
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for when a value has changed that has an associated
+     * C# property name. This is used to detect changes to values that
+     * might cause qualified attributes to either show up or not show up.
+     *
+     * @param propertyName The name of the C# property that was changed.
+     */
+    function onPropertyChanged(propertyName: string): void {
+        // If we don't have any qualified attribute properties or this property
+        // is not one of them then do nothing.
+        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+            return;
+        }
+
+        refreshAttributesDebounce();
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const data: DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag> = {
+            entity: streakTypeEditBag.value,
+            isEditable: true,
+            validProperties: validProperties
+        };
+
+        const result = await invokeBlockAction<StreakTypeBag | string>("Save", {
+            box: data
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                streakTypeViewBag.value = result.data;
+
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save streak type.";
+
+        return false;
+    }
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified streak type could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        streakTypeEditBag.value = config.entity;
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

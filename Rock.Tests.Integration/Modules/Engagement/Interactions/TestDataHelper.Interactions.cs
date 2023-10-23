@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -30,8 +31,8 @@ namespace Rock.Tests.Integration
                 public Guid? Guid;
                 public string ForeignKey;
                 public DateTime ViewDateTime;
-                public int SiteId;
-                public int PageId;
+                public string SiteIdentifier;
+                public string PageIdentifier;
                 public string UserAgentString;
                 public string BrowserIpAddress;
                 public Guid? BrowserSessionGuid;
@@ -77,21 +78,33 @@ namespace Rock.Tests.Integration
 
                 var interactionService = new InteractionService( rockContext );
 
-                // Get the Interaction Channel: Internal Site
+                // Get the Page.
+                var page = PageCache.Get( actionInfo.PageIdentifier, allowIntegerIdentifier: true );
+                Assert.IsNotNull( page, "Invalid page." );
+
+                // Get the Site.
+                if ( string.IsNullOrWhiteSpace( actionInfo.SiteIdentifier ) )
+                {
+                    actionInfo.SiteIdentifier = page.SiteId.ToString();
+                }
+                var site = SiteCache.Get( actionInfo.SiteIdentifier, allowIntegerIdentifier: true );
+                Assert.IsNotNull( site, "Invalid site." );
+
+                // Get the Interaction Channel.
                 var dvWebsiteChannelType = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
                 var interactionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( dvWebsiteChannelType.Id,
-                    actionInfo.SiteId,
+                    site.Id,
                     channelName: null,
                     componentEntityTypeId: null,
                     interactionEntityTypeId: null );
 
-                // Get the Interaction Component: Page
+                // Get the Interaction Component.
                 var interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId,
-                    actionInfo.PageId,
+                    page.Id,
                     componentName: null );
 
                 var interaction = interactionService.CreateInteraction( interactionComponentId,
-                    actionInfo.PageId,
+                    page.Id,
                     operation: "View",
                     $"Browser Session {actionInfo.BrowserSessionGuid}",
                     actionInfo.RequestUrl,

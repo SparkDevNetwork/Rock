@@ -1,0 +1,60 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TreeItemPicker v-model="internalValue"
+                    formGroupClasses="location-item-picker"
+                    iconCssClass="fa fa-bar-chart-o"
+                    :provider="itemProvider"
+                    :multiple="multiple"
+                    disableFolderSelection />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { MetricItemTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+    import TreeItemPicker from "./treeItemPicker.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        securityGrantToken: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        includeCategoryGuids: {
+            type: Array as PropType<Guid[] | null>,
+            default: null
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void;
+    }>();
+
+    const internalValue = ref(props.modelValue ?? null);
+
+    // Configure the item provider with our settings. These are not reactive
+    // since we don't do lazy loading so there is no point.
+    const itemProvider = new MetricItemTreeItemProvider();
+    itemProvider.securityGrantToken = props.securityGrantToken;
+    itemProvider.includeCategoryGuids = props.includeCategoryGuids;
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(internalValue, props.modelValue ?? null);
+    });
+</script>

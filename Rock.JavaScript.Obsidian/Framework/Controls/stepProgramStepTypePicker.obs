@@ -1,0 +1,89 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" name="step-program-step-type-picker">
+        <StepProgramPicker
+                           v-if="!defaultStepProgramGuid"
+                           v-model="internalProgramValue"
+                           label="Step Program"
+                           :multiple="false"
+                           :disabled="disabled"
+                           showBlankItem
+                           formGroupClasses="mt-0"
+                           :displayStyle="PickerDisplayStyle.Condensed" />
+        <StepTypePicker
+                        v-if="stepProgramGuid"
+                        v-model="internalValue"
+                        label="Step Type"
+                        :stepProgramGuid="stepProgramGuid"
+                        :multiple="false"
+                        :disabled="disabled"
+                        showBlankItem
+                        :displayStyle="PickerDisplayStyle.Condensed" />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, PropType, watch } from "vue";
+    import StepProgramPicker from "./stepProgramPicker.obs";
+    import StepTypePicker from "./stepTypePicker.obs";
+    import RockFormField from "./rockFormField.obs";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            required: false
+        },
+
+        /** V-Model of the Step Program */
+        stepProgram: {
+            type: Object as PropType<ListItemBag | null>,
+            required: false
+        },
+
+        defaultStepProgramGuid: {
+            type: String as PropType<Guid | null>,
+            default: null
+        },
+
+        disabled: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void
+        (e: "update:stepProgram", value: ListItemBag | ListItemBag[] | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalProgramValue = useVModelPassthrough(props, "stepProgram", emit);
+
+    const stepProgramGuid = computed(() => {
+        return (props.defaultStepProgramGuid || internalProgramValue.value?.value) ?? "";
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.defaultStepProgramGuid, (newVal) => {
+        if (newVal) {
+            internalProgramValue.value = { value: newVal };
+        }
+    });
+
+    watch(internalProgramValue, (newVal) => {
+        if (!newVal) {
+            internalValue.value = null;
+        }
+    });
+
+        // #endregion
+</script>

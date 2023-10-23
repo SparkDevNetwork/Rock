@@ -4,7 +4,7 @@
            title="Select Individuals"
            saveText="Assign"
            :subtitle="occurrenceTitle"
-           :saveButtonDisabled="saveButtonDisabled"
+           :isSaveButtonDisabled="isSaveButtonDisabled"
            @save="onSave">
 
         <NotificationBox v-if="loadResourceSettingsErrorMessage" :alertType="AlertType.Warning">
@@ -118,11 +118,11 @@
     import AvailableResources from "./availableResources.partial.obs";
     import { IRemainingResourceSpots, ISchedulerResource, ISchedulerResourceParameters, OccurrenceDateTitle } from "./types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
-    import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import GroupPicker from "@Obsidian/Controls/groupPicker";
-    import Loading from "@Obsidian/Controls/loading";
-    import Modal from "@Obsidian/Controls/modal";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { ResourceListSourceType, ResourceListSourceTypeDescription } from "@Obsidian/Enums/Blocks/Group/Scheduling/resourceListSourceType";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -369,7 +369,7 @@
         return isLoadingResourceSettings.value || isLoadingResources.value || isAssigningResources.value;
     });
 
-    const saveButtonDisabled = computed((): boolean => {
+    const isSaveButtonDisabled = computed((): boolean => {
         return isBusy.value
             || selectedSourceType.value === undefined
             || !selectedPersonIds.value?.length;
@@ -408,33 +408,22 @@
      * Updates settings-related values based on the currently-applied resource settings.
      */
     function updateSettingsValues(): void {
-        // TODO (JPH): Uncomment the following once person preferences are implemented.
-        // const sourceType = resourceSettings.value?.resourceListSourceType;
-        // // A "falsy" check won't work here, as sourceType might be 0.
-        // if (sourceType !== undefined) {
-        //     if (secondarySourceTypes.some((secondary: ResourceListSourceType) => secondary === sourceType)) {
-        //         selectedPrimarySourceType.value = primarySourceTypeGroupValue;
-        //         selectedSecondarySourceType.value = sourceType.toString();
-        //     }
-        //     else {
-        //         selectedPrimarySourceType.value = sourceType.toString();
-        //     }
-        // }
-
-        // selectedAlternateGroup.value = resourceSettings.value?.resourceAlternateGroup ?? null;
-        // selectedDataView.value = resourceSettings.value?.resourceDataView ?? null;
-
-        // getResources();
-
-        // TODO (JPH): Remove the following once person preferences are implemented.
-        if (primarySourceTypeItems.value.length === 1 && primarySourceTypeItems.value[0].value === primarySourceTypeGroupValue) {
-            selectedPrimarySourceType.value = primarySourceTypeGroupValue;
+        const sourceType = resourceSettings.value?.resourceListSourceType;
+        // A "falsy" check won't work here, as sourceType might be 0.
+        if (sourceType !== undefined) {
+            if (secondarySourceTypes.some((secondary: ResourceListSourceType) => secondary === sourceType)) {
+                selectedPrimarySourceType.value = primarySourceTypeGroupValue;
+                selectedSecondarySourceType.value = sourceType.toString();
+            }
+            else {
+                selectedPrimarySourceType.value = sourceType.toString();
+            }
         }
 
-        nextTick(() => {
-            // TODO (JPH): Remove `nextTick` wrapper (but leave the following line) once person preferences are implemented.
-            getResources();
-        });
+        selectedAlternateGroup.value = resourceSettings.value?.resourceAlternateGroup ?? null;
+        selectedDataView.value = resourceSettings.value?.resourceDataView ?? null;
+
+        getResources();
     }
 
     /**

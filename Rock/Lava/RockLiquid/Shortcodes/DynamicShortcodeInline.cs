@@ -39,8 +39,6 @@ namespace Rock.Lava.Shortcodes
         string _tagName = string.Empty;
         LavaShortcodeCache _shortcode;
 
-        Dictionary<string, object> _internalMergeFields;
-
         const int _maxRecursionDepth = 10;
 
         /// <summary>
@@ -131,14 +129,14 @@ namespace Rock.Lava.Shortcodes
             var parms = new Dictionary<string, object>();
 
             // first run lava across the inputted markup
-            _internalMergeFields = new Dictionary<string, object>();
+            var internalMergeFields = new Dictionary<string, object>();
 
             // get merge fields loaded by the block or container
             if ( context.Environments.Count > 0 )
             {
                 foreach ( var item in context.Environments[0] )
                 {
-                    _internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
                     parms.AddOrReplace( item.Key, item.Value );
                 }
             }
@@ -148,12 +146,12 @@ namespace Rock.Lava.Shortcodes
             {
                 foreach ( var item in scope )
                 {
-                    _internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
                     parms.AddOrReplace( item.Key, item.Value );
                 }
             }
 
-            var resolvedMarkup = markup.ResolveMergeFields( _internalMergeFields );
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             // create all the parameters from the shortcode with their default values
             var shortcodeParms = RockSerializableDictionary.FromUriEncodedString( _shortcode.Parameters );

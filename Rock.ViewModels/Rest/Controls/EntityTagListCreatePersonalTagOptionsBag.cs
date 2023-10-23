@@ -38,6 +38,22 @@ namespace Rock.ViewModels.Rest.Controls
         public Guid? CategoryGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the entity qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity qualifier column.
+        /// </value>
+        public string EntityQualifierColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity qualifier value.
+        /// </summary>
+        /// <value>
+        /// The entity qualifier value.
+        /// </value>
+        public string EntityQualifierValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the tag to be created.
         /// </summary>
         /// <value>The name of the tag to be created.</value>

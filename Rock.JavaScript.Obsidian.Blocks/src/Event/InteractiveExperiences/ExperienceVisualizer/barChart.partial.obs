@@ -79,6 +79,25 @@
         return Math.min(1.0, Math.max(0, value));
     });
 
+    const answerOrder = computed((): string[] => {
+        if (typeof props.renderConfiguration.configurationValues?.answerOrder !== "string") {
+            return [];
+        }
+
+        try {
+            const value = JSON.parse(props.renderConfiguration.configurationValues.answerOrder);
+
+            if (!Array.isArray(value)) {
+                return [];
+            }
+
+            return value as string[];
+        }
+        catch {
+            return [];
+        }
+    });
+
     // #endregion
 
     // #region Functions
@@ -208,6 +227,12 @@
     function getResponseData(): { text: string, count: number }[] {
         const words: Record<string, number> = {};
 
+        if (answerOrder.value.length > 0) {
+            for (const word of answerOrder.value) {
+                words[word] = 0;
+            }
+        }
+
         for (const response of props.responses) {
             if (!response.response) {
                 continue;
@@ -221,9 +246,15 @@
             }
         }
 
-        return Object.keys(words)
-            .map(k => ({ text: k, count: words[k] }))
-            .sort((a, b) => a.text.localeCompare(b.text));
+        if (answerOrder.value.length > 0) {
+            return Object.keys(words)
+                .map(k => ({ text: k, count: words[k] }));
+        }
+        else {
+            return Object.keys(words)
+                .map(k => ({ text: k, count: words[k] }))
+                .sort((a, b) => a.text.localeCompare(b.text));
+        }
     }
 
     /**

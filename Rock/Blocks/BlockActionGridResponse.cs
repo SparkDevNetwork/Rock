@@ -15,13 +15,15 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
+using System;
 
 namespace Rock.Blocks
 {
     /// <summary>
     /// Describes the response for a server-side data sourced grid.
     /// </summary>
+    [Obsolete( "This is unused and will be removed in a future version of Rock.")]
+    [RockObsolete( "1.16" )]
     public class BlockActionGridResponse
     {
         /// <summary>

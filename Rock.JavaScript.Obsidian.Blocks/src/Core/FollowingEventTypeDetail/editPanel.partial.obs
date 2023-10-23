@@ -1,0 +1,165 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <TextBox v-model="description"
+                        label="Description"
+                        textMode="multiline" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <ComponentPicker label="Event Type"
+                    rules="required"
+                    v-model="entityType"
+                    :containerType="containerType" />
+                <CheckBox v-model="isNoticeRequired"
+                    label="Notice Required"
+                    help="Select this option to force user to get notified of this event for people they follow. Unselect this option if users should be able to decide whether to get notified or not." />
+                <CheckBox v-model="sendOnFriday"
+                    label="Send Weekend Notices on Friday"
+                    help="Should any notices that would normally be sent on a weekend be sent on preceding Friday instead?" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-if="entityType?.value?.toUpperCase() == EntityType.PersonPrayerRequest"
+                    v-model="includeNonPublicRequests"
+                    label="Include Non-Public Requests" />
+
+                <AttributeValuesContainer v-model="attributeValues" showCategoryLabel :attributes="attributes" isEditMode />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <CodeEditor v-model="entityNotificationFormatLava" label="Notification Format" theme="rock" mode="lava" :editorHeight="200"
+                    help="How the entity should be formatted in the following event notification email when this event occurs for the entity. The entity is available to Lava as an 'Entity' object." />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch, computed } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import { FollowingEventTypeBag } from "@Obsidian/ViewModels/Blocks/Core/FollowingEventTypeDetail/followingEventTypeBag";
+    import { FollowingEventTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/FollowingEventTypeDetail/followingEventTypeDetailOptionsBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FollowingEventTypeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<FollowingEventTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FollowingEventTypeBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = computed(() => {
+        if(!props.modelValue.attributes) {
+            return {};
+        }
+        const attributes = props.modelValue.attributes;
+        delete attributes["Active"];
+        delete attributes["Order"];
+        return attributes;
+    });
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const attributeValues = propertyRef(props.modelValue.attributeValues ?? {}, "AttributeValues");
+    const isNoticeRequired = propertyRef(props.modelValue.isNoticeRequired, "IsNoticeRequired");
+    const sendOnFriday = propertyRef(!props.modelValue.sendOnWeekends, "SendOnWeekends");
+    const entityType = propertyRef(props.modelValue.entityType, "EntityTypeId");
+    const includeNonPublicRequests = propertyRef(props.modelValue?.includeNonPublicRequests, "IncludeNonPublicRequests");
+    const entityNotificationFormatLava = propertyRef(props.modelValue?.entityNotificationFormatLava ?? "", "EntityNotificationFormatLava");
+
+    const containerType = ref("Rock.Follow.EventContainer");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, isNoticeRequired, sendOnFriday, entityType, entityNotificationFormatLava, includeNonPublicRequests];
+
+    // #endregion
+
+    // #region Computed Values
+
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(isNoticeRequired, props.modelValue.isNoticeRequired);
+        updateRefValue(sendOnFriday, !props.modelValue.sendOnWeekends);
+        updateRefValue(entityType, props.modelValue.entityType);
+        updateRefValue(entityNotificationFormatLava, props.modelValue?.entityNotificationFormatLava ?? "");
+        updateRefValue(includeNonPublicRequests, props.modelValue?.includeNonPublicRequests);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: FollowingEventTypeBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            isNoticeRequired: isNoticeRequired.value,
+            sendOnWeekends: !sendOnFriday.value,
+            entityType: entityType.value,
+            entityNotificationFormatLava: entityNotificationFormatLava.value,
+            includeNonPublicRequests: includeNonPublicRequests.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

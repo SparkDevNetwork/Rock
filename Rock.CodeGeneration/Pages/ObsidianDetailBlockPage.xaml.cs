@@ -419,7 +419,7 @@ namespace Rock.CodeGeneration.Pages
         /// the IsChecked state.
         /// </summary>
         /// <seealso cref="INotifyPropertyChanged" />
-        private class PropertyItem : INotifyPropertyChanged
+        internal class PropertyItem : INotifyPropertyChanged
         {
             #region Events
 

@@ -14,6 +14,12 @@
 // limitations under the License.
 // </copyright>
 
+using Rock;
+using Rock.Attribute;
+using Rock.Data;
+using Rock.Logging;
+using Rock.Model;
+using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -26,13 +32,6 @@ using System.Text;
 using System.Web;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
-
-using Rock;
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Logging;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Utility
 {
@@ -2034,6 +2033,7 @@ namespace Rock.Utility
                     ConnectionRequest connectionRequest = new ConnectionRequest()
                     {
                         ConnectionOpportunityId = connectionOpportunity.Id,
+                        ConnectionTypeId = connectionOpportunity.ConnectionTypeId,
                         PersonAliasId = _peopleAliasDictionary[personGuid],
                         Comments = comment,
                         ConnectionStatus = noContact,
@@ -2876,7 +2876,7 @@ namespace Rock.Utility
                     if ( personElem.Attribute( "age" ) != null )
                     {
                         int age = int.Parse( personElem.Attribute( "age" ).Value.Trim() );
-                        int ageDiff = person.Age - age ?? 0;
+                        int ageDiff = Person.GetAge( person.BirthDate, null ) - age ?? 0;
                         person.SetBirthDate( person.BirthDate.Value.AddYears( ageDiff ) );
                     }
 

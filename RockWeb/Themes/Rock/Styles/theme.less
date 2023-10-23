@@ -16,6 +16,7 @@
 @import "_new-group-scheduler.less";
 
 @import "_navbar.less";
+@import "_legacy-profile.less";
 /*
   Rock Theme Styles
   1. HTML Overrides
@@ -665,8 +666,7 @@ textarea,
 }
 
 .rating-input i {
-  color: @brand-primary;
-  color: var(--brand-primary);
+  color: var(--color-primary);
 }
 
 .wizard {
@@ -926,8 +926,8 @@ td.grid-actions {
 .rock-top-header {
   display: flex;
   margin-bottom: 0;
-  color: var(--navbar-top-color, @navbar-top-color);
-  background-color: var(--brand-primary, @brand-primary);
+  color: var(--navbar-top-color);
+  background-color: var(--color-primary);
   border: 0;
   min-height: 52px;
 
@@ -1025,7 +1025,7 @@ td.grid-actions {
     height: @navbar-top-height;
     padding: 6px;
     color: @white;
-    background-color: var(--brand-primary);
+    background-color: var(--color-primary);
     background-size: 45px;
 
     .nav-open & {
@@ -1170,7 +1170,7 @@ td.grid-actions {
           top: var(--top-header-height);
           left: 0;
           z-index: 1000;
-          background-color: var(--brand-primary);
+          background-color: var(--color-primary);
 
           & > li > a {
             color: var(--navbar-top-color);
@@ -1182,28 +1182,6 @@ td.grid-actions {
 
   .dropdown-menu {
     border: 0;
-
-    a {
-      &:hover {
-        color: @white;
-        background-color: var(--brand-primary);
-        opacity: 1;
-      }
-    }
-
-    @media (min-width: @screen-sm-min) {
-      &::after {
-        position: absolute;
-        top: -8px;
-        left: 75px;
-        display: inline-block;
-        margin-left: -6px;
-        content: "";
-        border-right: 8px solid transparent;
-        border-bottom: 8px solid @white;
-        border-left: 8px solid transparent;
-      }
-    }
   }
 
   .header-content {
@@ -1266,7 +1244,6 @@ td.grid-actions {
     padding: 20px 15px;
     margin: -5px -15px 5px;
     color: @pagetitle-text-color;
-    background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
     border-bottom: 1px solid @gray-lighter;
 
@@ -1331,13 +1308,6 @@ td.grid-actions {
   }
 }
 
-.personprofilebar-bio,
-.personprofilebar-family {
-  small {
-    // lighten up small elements a bit
-    opacity: .7;
-  }
-}
 
 .person-content {
   .panel {
@@ -1366,8 +1336,7 @@ td.grid-actions {
     width: 120px;
     height: 120px;
     margin: 0 auto 40px;
-    fill: @brand-primary;
-    fill: var(--brand-primary, @brand-primary);
+    fill: var(--color-primary);
   }
 
   .login-block {
@@ -1431,20 +1400,6 @@ td.grid-actions {
 /* #region
 // 5. Specific Page Styling        */
 // -------------------------
-.personprofilebar-bio {
-  .name {
-    font-weight: 700;
-  }
-
-  .name .firstname {
-    font-size: .488em;
-    font-weight: @font-weight-light;
-  }
-
-  .previous-names {
-    font-weight: @font-weight-light;
-  }
-}
 
 // Entity Attributes Picker
 .entity-type-picker .control-wrapper {
@@ -1564,7 +1519,7 @@ td.grid-actions {
     text-align: right;
     font-size: ~"calc(var(--size) * 0.3)";
     font-weight: 700;
-    text-shadow: -1px -1px 0 mix(@white, @brand-primary, 75%),  
+    text-shadow: -1px -1px 0 mix(@white, @brand-primary, 75%),
     1px -1px 0 mix(@white, @brand-primary, 75%),
     -1px 1px 0 mix(@white, @brand-primary, 75%),
      1px 1px 0 mix(@white, @brand-primary, 75%);
@@ -1572,12 +1527,22 @@ td.grid-actions {
     margin-bottom: 2px;
   }
 
+  .indicator-bottom {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background-color: var(--color-primary);
+    width: ~"calc(var(--size) * 0.2)";
+    height: ~"calc(var(--size) * 0.2)";
+    border-radius: ~"calc(var(--size) * 0.1)";
+  }
+
   &:hover,
   &:active {
     color: fade(@white, 50%);
 
     .count-bottom {
-      text-shadow: -1px -1px 0 mix(@white, @brand-primary, 50%),  
+      text-shadow: -1px -1px 0 mix(@white, @brand-primary, 50%),
       1px -1px 0 mix(@white, @brand-primary, 50%),
       -1px 1px 0 mix(@white, @brand-primary, 50%),
        1px 1px 0 mix(@white, @brand-primary, 50%);
@@ -1585,7 +1550,7 @@ td.grid-actions {
   }
 
   &.active {
-    color: var(--brand-primary);
+    color: var(--color-primary);
     background-color: fade(@white, 75%);
 
     &:hover,
@@ -1596,6 +1561,19 @@ td.grid-actions {
 
   @media (min-width: @grid-float-breakpoint) {
     --size: @navbar-element-height;
+  }
+}
+
+.dropdown-menu-reminders {
+  > li > a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .badge {
+    font-size: 10px;
+    margin-left: 4px;
   }
 }
 
@@ -1724,10 +1702,10 @@ td.grid-actions {
       margin-right: 0;
     }
   }
-  
+
 
   #page-content {
-    overflow-x: hidden;
+    // Don't add overflow hidden because it breaks sticky positioning
     > .row {
       margin-left: 0;
       margin-right: 0;

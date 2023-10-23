@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,72 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// InteractiveExperience View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( InteractiveExperience ) )]
-    public partial class InteractiveExperienceViewModelHelper : ViewModelHelper<InteractiveExperience, InteractiveExperienceBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override InteractiveExperienceBag CreateViewModel( InteractiveExperience model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new InteractiveExperienceBag
-            {
-                IdKey = model.IdKey,
-                ActionBackgroundColor = model.ActionBackgroundColor,
-                ActionBackgroundImageBinaryFileId = model.ActionBackgroundImageBinaryFileId,
-                ActionCustomCss = model.ActionCustomCss,
-                ActionPrimaryButtonColor = model.ActionPrimaryButtonColor,
-                ActionPrimaryButtonTextColor = model.ActionPrimaryButtonTextColor,
-                ActionSecondaryButtonColor = model.ActionSecondaryButtonColor,
-                ActionSecondaryButtonTextColor = model.ActionSecondaryButtonTextColor,
-                ActionTextColor = model.ActionTextColor,
-                AudienceAccentColor = model.AudienceAccentColor,
-                AudienceBackgroundColor = model.AudienceBackgroundColor,
-                AudienceBackgroundImageBinaryFileId = model.AudienceBackgroundImageBinaryFileId,
-                AudienceCustomCss = model.AudienceCustomCss,
-                AudiencePrimaryColor = model.AudiencePrimaryColor,
-                AudienceSecondaryColor = model.AudienceSecondaryColor,
-                AudienceTextColor = model.AudienceTextColor,
-                Description = model.Description,
-                ExperienceSettingsJson = model.ExperienceSettingsJson,
-                IsActive = model.IsActive,
-                Name = model.Name,
-                NoActionHeaderImageBinaryFileId = model.NoActionHeaderImageBinaryFileId,
-                NoActionMessage = model.NoActionMessage,
-                NoActionTitle = model.NoActionTitle,
-                PhotoBinaryFileId = model.PhotoBinaryFileId,
-                PublicLabel = model.PublicLabel,
-                PushNotificationDetail = model.PushNotificationDetail,
-                PushNotificationTitle = model.PushNotificationTitle,
-                PushNotificationType = ( int ) model.PushNotificationType,
-                WelcomeHeaderImageBinaryFileId = model.WelcomeHeaderImageBinaryFileId,
-                WelcomeMessage = model.WelcomeMessage,
-                WelcomeTitle = model.WelcomeTitle,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -221,20 +151,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static InteractiveExperienceBag ToViewModel( this InteractiveExperience model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new InteractiveExperienceViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

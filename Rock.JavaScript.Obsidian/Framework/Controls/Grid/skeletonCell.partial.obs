@@ -1,0 +1,57 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="grid-cell" :class="additionalItemClass" :style="additionalCellStyles">
+        <Skeleton v-if="props.column.skeletonComponent">
+            <component :is="props.column.skeletonComponent"
+                       :column="props.column"
+                       :grid="props.grid" />
+        </Skeleton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import Skeleton from "@Obsidian/Controls/skeleton.obs";
+    import { PropType, computed } from "vue";
+    import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { getColumnStyles } from "@Obsidian/Core/Controls/grid";
+
+    const props = defineProps({
+        /** The column definition of this cell. */
+        column: {
+            type: Object as PropType<ColumnDefinition>,
+            required: true
+        },
+
+        /** This grid this cell belongs to. */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        }
+    });
+
+    /** Contains any additional CSS classes for the cell. */
+    const additionalItemClass = computed((): string => {
+        let classes = props.column.itemClass ?? "";
+
+        if (["sm", "md", "lg", "xl"].includes(props.column.visiblePriority)) {
+            // We don't have support for lg just yet, but it's coming.
+            if (props.column.visiblePriority === "xl") {
+                classes += ` d-none d-lg-flex`;
+            }
+            else {
+                classes += ` d-none d-${props.column.visiblePriority}-flex`;
+            }
+        }
+
+        return classes.trim();
+    });
+
+    /** Contains any additional style values to apply to the cell. */
+    const additionalCellStyles = computed((): Record<string, string> => {
+        const styles: Record<string, string> = {
+            ...getColumnStyles(props.column)
+        };
+
+        return styles;
+    });
+</script>

@@ -27,17 +27,17 @@ namespace Rock.ViewModels.Rest.Controls
     public class GroupRolePickerGetAllForGroupRoleResultsBag
     {
         /// <summary>
-        /// 
+        /// Data for the selected group role, used by the group role picker.
         /// </summary>
         public ListItemBag SelectedGroupRole { get; set; }
 
         /// <summary>
-        /// 
+        /// Data for the selected group type, used by the group type picker.
         /// </summary>
         public ListItemBag SelectedGroupType { get; set; }
 
         /// <summary>
-        /// 
+        /// List of group roles to include in the group role picker.
         /// </summary>
         public List<ListItemBag> GroupRoles { get; set; }
     }

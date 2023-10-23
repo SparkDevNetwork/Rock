@@ -24,9 +24,9 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";{% if UseAttributeValues == true %}
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";{% endif %}{% if UseIsActive == true %}
-    import CheckBox from "@Obsidian/Controls/checkBox";{% endif %}{% if UseDescription == true or UseName == true %}
-    import TextBox from "@Obsidian/Controls/textBox";{% endif %}
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";{% endif %}{% if UseIsActive == true %}
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";{% endif %}{% if UseDescription == true or UseName == true %}
+    import TextBox from "@Obsidian/Controls/textBox.obs";{% endif %}
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";

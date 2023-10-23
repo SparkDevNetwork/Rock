@@ -1,0 +1,76 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+        <div style="padding-left: calc(50% - 18px); display: flex; background-color: #f3f3f3;">
+            <DropDownMenu :items="menuItems" :align="align" />
+        </div>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <DropDownList label="Align"
+                                  v-model="align"
+                                  :items="alignItems"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { computed, ref } from "vue";
+
+    const align = ref<"left" | "right">("left");
+
+    const alignItems: ListItemBag[] = [
+        {
+            value: "left",
+            text: "Left"
+        },
+        {
+            value: "right",
+            text: "Right"
+        }
+    ];
+
+    const menuItems: MenuAction[] = [
+        {
+            title: "Default",
+            type: "default",
+            handler: async () => await alert("Default action clicked.")
+        },
+        {
+            iconCssClass: "fa fa-refresh",
+            title: "Refresh",
+            type: "default",
+            handler: async () => await alert("Refresh action clicked.")
+        },
+        {
+            iconCssClass: "fa fa-trash",
+            title: "Delete",
+            type: "danger",
+            handler: async () => await alert("Delete action clicked.")
+        },
+        {
+            title: "Disabled",
+            type: "default",
+            disabled: true
+        }
+    ];
+
+    const importCode = getSfcControlImportPath("dropDownMenu");
+
+    const exampleCode = computed((): string => {
+        return `<DropDownMenu :items="menuItems" align="${align.value}">
+    <!-- Optional content -->
+    <i class="fa fa-ellipsis-v"></i>
+</DropDownMenu>`;
+    });
+</script>

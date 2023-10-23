@@ -215,8 +215,8 @@ namespace RockWeb.Blocks.Steps
         {
             int? categoryId = cpCategory.SelectedValueAsInt();
 
-            rFilter.SaveUserPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : string.Empty );
-            rFilter.SaveUserPreference( "Active", ddlActiveFilter.SelectedValue );
+            rFilter.SetFilterPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : string.Empty );
+            rFilter.SetFilterPreference( "Active", ddlActiveFilter.SelectedValue );
 
             BindGrid();
         }
@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            rFilter.DeleteUserPreferences();
+            rFilter.DeleteFilterPreferences();
 
             BindFilter();
         }
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void BindFilter()
         {
-            var categoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+            var categoryId = rFilter.GetFilterPreference( "Category" ).AsIntegerOrNull();
             if ( categoryId > 0 )
             {
                 cpCategory.SetValue( categoryId );
@@ -389,7 +389,7 @@ namespace RockWeb.Blocks.Steps
                 cpCategory.SetValue( null );
             }
 
-            ddlActiveFilter.SetValue( rFilter.GetUserPreference( "Active" ) );
+            ddlActiveFilter.SetValue( rFilter.GetFilterPreference( "Active" ) );
         }
 
         /// <summary>
@@ -412,7 +412,7 @@ namespace RockWeb.Blocks.Steps
             }
             else
             {
-                var categoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+                var categoryId = rFilter.GetFilterPreference( "Category" ).AsIntegerOrNull();
 
                 if ( categoryId.HasValue && categoryId > 0 )
                 {
@@ -421,7 +421,7 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Filter by: Active
-            var activeFilter = rFilter.GetUserPreference( "Active" ).ToLower();
+            var activeFilter = rFilter.GetFilterPreference( "Active" ).ToLower();
 
             switch ( activeFilter )
             {

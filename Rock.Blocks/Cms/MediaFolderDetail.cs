@@ -35,12 +35,13 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the details of a particular media folder.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Media Folder Detail" )]
-    [Category( "Cms" )]
+    [Category( "CMS" )]
     [Description( "Displays the details of a particular media folder." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -48,7 +49,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "29cf7521-2dcd-467a-98fa-1c28c16c8b69" )]
     [Rock.SystemGuid.BlockTypeGuid( "662af7bb-5b61-43c6-bda6-a6e7aab8fc00" )]
-    public class MediaFolderDetail : RockObsidianDetailBlockType
+    public class MediaFolderDetail : RockDetailBlockType
     {
         #region Keys
 
@@ -78,7 +79,7 @@ namespace Rock.Blocks.Cms
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<MediaFolder>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<MediaFolder>();
 
                 return box;
             }
@@ -200,7 +201,7 @@ namespace Rock.Blocks.Cms
             {
                 IdKey = entity.IdKey,
                 ContentChannel = entity.ContentChannel.ToListItemBag(),
-                ContentChannelAttribute = entity.ContentChannelAttribute.ToListItemBag(),
+                ContentChannelAttribute = new ListItemBag() { Text = entity.ContentChannelAttribute?.Name, Value = entity.ContentChannelAttribute?.Guid.ToString() },
                 MediaAccount = entity.MediaAccount.ToListItemBag(),
                 Description = entity.Description,
                 IsContentChannelSyncEnabled = entity.IsContentChannelSyncEnabled,
@@ -226,6 +227,7 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
+            bag.MetricData = entity.MediaAccount.GetMediaAccountComponent()?.GetFolderHtmlSummary( entity );
 
             if ( loadAttributes )
             {

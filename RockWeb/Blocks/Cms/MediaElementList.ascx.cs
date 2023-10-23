@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( UserPreferenceKey.Name, txtElementName.Text );
+            gfFilter.SetFilterPreference( UserPreferenceKey.Name, txtElementName.Text );
 
             BindGrid();
         }
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            gfFilter.DeleteUserPreferences();
+            gfFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -294,7 +294,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindFilter()
         {
-            txtElementName.Text = gfFilter.GetUserPreference( UserPreferenceKey.Name );
+            txtElementName.Text = gfFilter.GetFilterPreference( UserPreferenceKey.Name );
         }
 
         /// <summary>
@@ -313,7 +313,7 @@ namespace RockWeb.Blocks.Cms
                 .Where( a => a.Operation == "Watch" );
             var interactionComponentQry = new InteractionComponentService( rockContext ).Queryable().Where( c => c.InteractionChannelId == interactionChannelId );
             // name filter
-            string nameFilter = gfFilter.GetUserPreference( UserPreferenceKey.Name );
+            string nameFilter = gfFilter.GetFilterPreference( UserPreferenceKey.Name );
             if ( !string.IsNullOrEmpty( nameFilter ) )
             {
                 qry = qry.Where( a => a.Name.Contains( nameFilter ) );

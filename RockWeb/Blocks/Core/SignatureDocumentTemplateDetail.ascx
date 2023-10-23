@@ -55,9 +55,9 @@
                         <p>Below are some common merge fields for templates used for the electronic signature workflow action. Note that the attribute keys will need to map to what you have configured in your workflow template.</p>
                         <div class='row'>
                             <div class='col-md-6'>
-                                {{ Workflow | Attribute:'SignedByPerson' }}<br>
-                                {{ Workflow | Attribute:'AppliesToPerson' }}<br>
-                                {{ Workflow | Attribute:'AssignedToPerson' }}<br>
+                                <code>{{ Workflow | Attribute:'SignedByPerson' }}</code><br>
+                                <code>{{ Workflow | Attribute:'AppliesToPerson' }}</code><br>
+                                <code>{{ Workflow | Attribute:'AssignedToPerson' }}</code><br>
                             </div>
                             <div class='col-md-6'>
 
@@ -71,12 +71,45 @@
                         <div class='row'>
                             <div class='col-md-6'>
                                 <p><b>Registrant Fields</b></p>
-                                {{ Registrant.FirstName }}<br />
-                                {{ Registrant.LastName }}
+                                <p>The Registrant in this context is not the Registrant Rock Model, but a curated collection of properties for Signature Documents. These mostly correspond with the Person Field form values. If a person does not exist then one is created for the lava merge using the available info collected in the registration form. The full field list is below:</p>
+                                <ul>
+                                    <li><code>{{ Registrant.Attributes }}</code> - The Registrant attributes</li>
+                                    <li><code>{{ Registrant.AttributeValues }}</code> - The values for the Registrant attributes</li>
+                                    <li><code>{{ Registrant.Person }}</code> - Person obj, attributes available. Depending on the information available some navigation properties may not be available.</li>
+                                    <li><code>{{ Registrant.Address }}</code> - Location obj Example: {{ Registrant.Address:'FormattedAddress' }}</li>
+                                    <li><code>{{ Registrant.Campus }}</code> - Campus obj. Example: {{ Registrant.Campus.Name }}</li>
+                                    <li><code>{{ Registrant.ConnectionStatus }}</code> - DefinedValue obj, A person's selected connection status from the Defined Type "Connection Status". Example: {{ Registrant.ConnectionStatus | AsString }}</li>
+                                    <li><code>{{ Registrant.AnniversaryDate }}</code> - DateTime. Example: {{ Registrant.AnniversaryDate | Date:'yyyy-MM-dd' }}</li>
+                                    <li><code>{{ Registrant.BirthDate }}</code> - DateTime. Example: {{ Registrant.BirthDate | Date:'yyyy-MM-dd' }}</li>
+                                    <li><code>{{ Registrant.Email }}</code> - Text</li>
+                                    <li><code>{{ Registrant.FirstName }}</code> - Text</li>
+                                    <li><code>{{ Registrant.MiddleName }}</code> - Text</li>
+                                    <li><code>{{ Registrant.LastName }}</code> - Text</li>
+                                    <li><code>{{ Registrant.Gender }}</code> - Gender Enum, values are "Unknown", "Female", and "Male"</li>
+                                    <li><code>{{ Registrant.GradeFormatted }}</code> - Text</li>
+                                    <li><code>{{ Registrant.GradeOffset }}</code> - Integer</li>
+                                    <li><code>{{ Registrant.GraduationYear }}</code> - Integer</li>
+                                    <li><code>{{ Registrant.MaritalStatus | AsString }}</code> - DefinedValue obj, A person's selected martial status from the Defined Type "Marital Status"</li>
+                                    <li><code>{{ Registrant.HomePhone }}</code> - Text</li>
+                                    <li><code>{{ Registrant.MobilePhone }}</code> - Text</li>
+                                    <li><code>{{ Registrant.WorkPhone }}</code> - Text</li>
+                                    <li><code>{{ Registrant.GroupMember }}</code> - Group Member obj, attributes available</li>
+                                </ul>
+                                <p>Access the Registrant attributes using the normal syntax, e.g.<br> <code>{{ Registrant | Attribute:'LeaderPreference' }}</code></p>
                             </div>
                             <div class='col-md-6'>
                                 <p><b>Registration Fields</b></p>
-                                {{ Registration | Attribute:'VehicleDescription' }}
+                                <p>The Registration in this context is not the Registration Rock Model, but a curated collection of properties from the RegistrationInstance and RegistrationTemplate. The full field list is below:</p>
+                                <ul>
+                                    <li><code>{{ Registration.InstanceId }}</code> - Integer</li>
+                                    <li><code>{{ Registration.InstanceName }}</code> - Text</li>
+                                    <li><code>{{ Registration.TemplateId }}</code> - Integer</li>
+                                    <li><code>{{ Registration.TemplateName }}</code> - Text</li>
+                                    <li><code>{{ Registration.RegistrationTerm }}</code> - Text</li>
+                                    <li><code>{{ Registration.RegistrantTerm }}</code> - Text</li>
+                                    <li><code>{{ Registration.RegistrantCount }}</code> - Integer</li>
+                                    <li><code>{{ Registration.GroupId }}</code> - Integer. Get the Group using <code>{% assign group = Registration.GroupId | GroupById %}</code></li>
+                                </ul>
                             </div>
                         </div>
 

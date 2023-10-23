@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,12 +33,13 @@ namespace Rock.Blocks.Types.Mobile.Events
     /// <summary>
     /// Displays a list of events from a calendar.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Calendar Event List" )]
     [Category( "Mobile > Events" )]
     [Description( "Displays a list of events from a calendar." )]
     [IconCssClass( "fa fa-list-alt" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -90,7 +91,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_CALENDAREVENTLIST_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "A9149623-6A82-4F25-8F4D-0961557BE78C")]
-    public class CalendarEventList : RockMobileBlockType
+    public class CalendarEventList : RockBlockType
     {
         #region Block Attributes
 
@@ -212,21 +213,8 @@ namespace Rock.Blocks.Types.Mobile.Events
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Events.CalendarEventList";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -385,11 +373,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
                 var lavaTemplate = CreateLavaTemplate();
 
-                var commonMergeFields = new CommonMergeFieldsOptions
-                {
-                    GetLegacyGlobalMergeFields = false
-                };
-
+                var commonMergeFields = new CommonMergeFieldsOptions();
                 var mergeFields = RequestContext.GetCommonMergeFields( null, commonMergeFields );
                 mergeFields.Add( "Items", occurrences.ToList() );
 

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,10 +37,10 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Attribute Set to Group Leader" )]
 
-    [WorkflowAttribute("Group", "The attribute containing the group to get the leader for.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupFieldType" })]
+    [WorkflowAttribute( "Group", "The attribute containing the group to get the leader for.", true, "", "", 0, null,
+        new string[] { "Rock.Field.Types.GroupFieldType" })]
 
-    [WorkflowAttribute( "Leader", "The attribute to set to the group loader.", true, "", "", 1, null,
+    [WorkflowAttribute( "Leader", "The attribute to set to the group leader.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
 
     [Rock.SystemGuid.EntityTypeGuid( "179BE15E-DA54-4517-BDA9-E3ED339FFC7D")]

@@ -1,0 +1,134 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen"
+           title="Category Detail Settings"
+           :saveText="saveButtonText"
+           @save="onSave">
+
+        <NotificationBox v-if="errorMessage"
+               v-text="errorMessage"
+               alertType="warning" />
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <div v-else>
+            <CategoryPicker label="Root Category"
+                            v-model="rootCategory"
+                            :multiple="false"
+                            :entityTypeGuid="entityTypeGuid" />
+
+            <CategoryPicker label="Exclude Categories"
+                            v-model="excludeCategories"
+                            :multiple="true"
+                            :entityTypeGuid="entityTypeGuid" />
+        </div>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { CustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/customSettingsBag";
+    import { CustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/customSettingsOptionsBag";
+    import { Guid } from "@Obsidian/Types";
+
+    const emit = defineEmits(["close"]);
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(null);
+    const reloadBlock = useReloadBlock();
+
+    // #region Values
+
+    const errorMessage = ref("");
+
+    const isLoading = ref(true);
+    const isModalOpen = ref(true);
+    const entityTypeGuid = ref<Guid | undefined>(undefined);
+    const excludeCategories = ref<ListItemBag[] | null>();
+    const rootCategory = ref<ListItemBag | null>();
+    // #endregion
+
+    // #region Computed Values
+
+    const saveButtonText = computed((): string => {
+        return errorMessage.value || !isLoading.value ? "Save" : "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Begins loading the current settings in the background so that the UI
+     * can be displayed.
+     */
+    const startLoading = async (): Promise<void> => {
+        const result = await invokeBlockAction<CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag>>("GetCustomSettings");
+
+        if (result.isSuccess && result.data && result.data.settings && result.data.options) {
+            entityTypeGuid.value = result.data.settings.entityTypeGuid ?? undefined;
+            rootCategory.value = result.data.settings.rootCategory;
+            excludeCategories.value = result.data.settings.excludeCategories;
+
+
+            // Set any additional information required by the UI to paint the
+            // custom settings interface.
+            securityGrant.updateToken(result.data.securityGrantToken);
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+        }
+
+        isLoading.value = false;
+    };
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the person clicks the Save button and all
+     * components have validated their values.
+     */
+    const onSave = async (): Promise<void> => {
+        const box: CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag> = {};
+
+        setCustomSettingsBoxValue(box, "rootCategory", rootCategory?.value);
+        setCustomSettingsBoxValue(box, "excludeCategories", excludeCategories?.value);
+
+        const data = {
+            box
+        };
+
+        const result = await invokeBlockAction("SaveCustomSettings", data);
+
+        if (result.isSuccess) {
+            isModalOpen.value = false;
+            reloadBlock();
+        }
+        else {
+            alert(result.errorMessage || "Unable to save block settings.");
+        }
+    };
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    startLoading();
+
+</script>

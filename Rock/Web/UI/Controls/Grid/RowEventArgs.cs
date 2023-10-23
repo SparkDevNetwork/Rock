@@ -70,7 +70,7 @@ namespace Rock.Web.UI.Controls
         public int RowKeyId {
             get
             {
-                return (int)RowKeyValue;
+                return ( int ) RowKeyValue;
             }
         }
 

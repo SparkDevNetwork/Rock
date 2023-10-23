@@ -104,16 +104,23 @@ namespace Rock.Attribute
 
             rockContext = rockContext ?? new RockContext();
 
+            var customizedGrid = type.GetCustomAttribute<Blocks.CustomizedGridAttribute>();
+
             bool customGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
-            if ( customGridColumnsBlock )
+            if ( customGridColumnsBlock || customizedGrid?.IsCustomColumnsSupported == true )
             {
                 entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" ) );
             }
 
             bool customGridOptionsBlock = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( type );
-            if ( customGridOptionsBlock )
+
+            if ( customGridOptionsBlock || customizedGrid?.IsStickyHeaderSupported == true )
             {
                 entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
+            }
+
+            if ( customGridOptionsBlock || customizedGrid?.IsCustomActionsSupported == true )
+            {
                 entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, category: "CustomSetting" ) );
                 entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
             }
@@ -1081,7 +1088,7 @@ This can be due to multiple threads updating the same attribute at the same time
             var entityIdsTable = new DataTable();
             entityIdsTable.Columns.Add( "EntityTypeId", typeof( int ) );
             entityIdsTable.Columns.Add( "EntityId", typeof( int ) );
-            entityIdsTable.Columns.Add( "RealTypeId", typeof( int ) );
+            entityIdsTable.Columns.Add( "RealEntityId", typeof( int ) );
 
             for ( int i = 0; i < entityKeys.Count; i++ )
             {

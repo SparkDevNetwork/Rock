@@ -32,7 +32,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to select an integer value using a slider
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.RANGE_SLIDER )]
     public class RangeSliderFieldType : FieldType
     {

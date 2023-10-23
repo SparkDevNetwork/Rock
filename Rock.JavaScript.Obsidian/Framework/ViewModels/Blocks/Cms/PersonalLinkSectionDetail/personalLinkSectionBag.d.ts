@@ -34,6 +34,9 @@ export type PersonalLinkSectionBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** Gets or sets a value indicating whether the current user can take administrative actions. */
+    canAdministrate: boolean;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 

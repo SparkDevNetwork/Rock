@@ -45,6 +45,13 @@ namespace Rock
                 return;
             }
 
+            // If they specified both the media element guid and the url
+            // then assume they provided everything we need.
+            if ( options.MediaElementGuid.HasValue && options.MediaUrl.IsNotNullOrWhiteSpace() )
+            {
+                return;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var mediaElementService = new MediaElementService( rockContext );
@@ -132,7 +139,10 @@ namespace Rock
                 {
                     if ( autoResumeInDays < 0 || interaction.InteractionDateTime >= now.AddDays( -autoResumeInDays ) )
                     {
-                        options.ResumePlaying = true;
+                        if ( !options.ResumePlaying.HasValue )
+                        {
+                            options.ResumePlaying = true;
+                        }
 
                         var data = interaction.InteractionData.FromJsonOrNull<MediaWatchedInteractionData>();
                         options.Map = data?.WatchMap;

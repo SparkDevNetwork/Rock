@@ -5,12 +5,12 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch, computed } from "vue";
+    import { PropType, computed } from "vue";
     import { DayOfWeek } from "@Obsidian/Enums/Controls/dayOfWeek";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import DropDownList from "./dropDownList";
-    import CheckBoxList from "./checkBoxList";
+    import DropDownList from "./dropDownList.obs";
+    import CheckBoxList from "./checkBoxList.obs";
 
     const props = defineProps({
         modelValue: {

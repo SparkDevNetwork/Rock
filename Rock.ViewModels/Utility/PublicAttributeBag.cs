@@ -24,7 +24,7 @@ namespace Rock.ViewModels.Utility
     /// A slimmed down version of an attribute that includes enough detail to
     /// view and edit a value, but not enough to edit the attribute itself.
     /// </summary>
-    public class PublicAttributeBag : IViewModel
+    public class PublicAttributeBag
     {
         /// <summary>
         /// Gets or sets the field type unique identifier.
@@ -95,5 +95,17 @@ namespace Rock.ViewModels.Utility
         /// </summary>
         /// <value>The configuration values.</value>
         public Dictionary<string, string> ConfigurationValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value> The HTML string the is prepended before the attribute's markup. </value>
+        public string PreHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value> The HTML string the is appended after the attribute's markup. </value>
+        public string PostHtml { get; set; }
     }
 }

@@ -1,0 +1,41 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SkeletonRow v-for="(_, index) in items"
+             :columns="props.columns"
+             :grid="props.grid"
+             :isEven="(index + 1) % 2 === 0" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import SkeletonRow from "./skeletonRow.partial.obs";
+    import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
+
+    const props = defineProps({
+        /**
+         * The array of columns that should be displayed in the data rows.
+         * This may be different than the columns defined in the grid but
+         * must be a subset of them.
+         */
+        columns: {
+            type: Array as PropType<ReadonlyArray<ColumnDefinition>>,
+            required: true
+        },
+
+        /** The grid that contains all the state information. */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        },
+
+        /** The number of skeleton rows to render. */
+        count: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const items = computed((): unknown[] => {
+        return new Array(props.count);
+    });
+</script>

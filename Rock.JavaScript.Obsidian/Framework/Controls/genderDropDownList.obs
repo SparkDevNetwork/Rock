@@ -1,0 +1,45 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownList v-model="internalValue" label="Gender" :items="options" :showBlankItem="false" :rules="computedRules" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import { normalizeRules, rulesPropType } from "@Obsidian/ValidationRules";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import DropDownList from "./dropDownList.obs";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<string | string[]>,
+            required: true
+        },
+
+        rules: rulesPropType
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string | string[]): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const options: ListItemBag[] = [
+        { text: " ", value: Gender.Unknown.toString() },
+        { text: "Male", value: Gender.Male.toString() },
+        { text: "Female", value: Gender.Female.toString() }
+    ];
+
+    const computedRules = computed(() => {
+        const rules = normalizeRules(props.rules);
+        const notEqualRule = `notequal:${Gender.Unknown}`;
+
+        if (rules.includes("required") && !rules.includes(notEqualRule)) {
+            rules.push(notEqualRule);
+        }
+
+        return rules;
+    });
+</script>

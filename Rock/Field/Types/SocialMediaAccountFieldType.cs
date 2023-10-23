@@ -32,7 +32,7 @@ namespace Rock.Field.Types
     /// Field used to configure and display the social Network accounts
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SOCIAL_MEDIA_ACCOUNT )]
     public class SocialMediaAccountFieldType : FieldType
     {
@@ -60,7 +60,7 @@ namespace Rock.Field.Types
             {
                 if ( privateConfigurationValues != null )
                 {
-                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() );
                     string template = string.Empty;
 
                     if ( privateConfigurationValues.ContainsKey( TEXT_TEMPLATE ) )
@@ -121,6 +121,99 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetHtmlValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var baseUrl = string.Empty;
+            var baseUrlAliases = new List<string>();
+
+            if ( privateConfigurationValues != null )
+            {
+                if ( privateConfigurationValues.ContainsKey( BASEURL ) )
+                {
+                    baseUrl = privateConfigurationValues[BASEURL];
+                    if ( !string.IsNullOrWhiteSpace( baseUrl ) )
+                    {
+                        baseUrlAliases.Add( baseUrl );
+                    }
+                }
+
+                if ( privateConfigurationValues.ContainsKey( BASEURL_ALIASES ) )
+                {
+                    baseUrlAliases.AddRange( privateConfigurationValues[BASEURL_ALIASES].SplitDelimitedValues( "," ).ToList() );
+                }
+            }
+
+            return ReplaceBaseUrlAliases( publicValue, baseUrlAliases, baseUrl );
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var baseUrlAliases = new List<string>();
+
+            if ( privateConfigurationValues != null )
+            {
+                if ( privateConfigurationValues.ContainsKey( BASEURL ) )
+                {
+                    var baseUrl = privateConfigurationValues[BASEURL];
+                    if ( !string.IsNullOrWhiteSpace( baseUrl ) )
+                    {
+                        baseUrlAliases.Add( baseUrl );
+                    }
+                }
+
+                if ( privateConfigurationValues.ContainsKey( BASEURL_ALIASES ) )
+                {
+                    baseUrlAliases.AddRange( privateConfigurationValues[BASEURL_ALIASES].SplitDelimitedValues( "," ).ToList() );
+                }
+            }
+
+            return ReplaceBaseUrlAliases( privateValue, baseUrlAliases, string.Empty );
+        }
+
+        private string ReplaceBaseUrlAliases( string input, List<string> baseUrls, string newBaseUrl )
+        {
+                        var output = input;
+            if ( string.IsNullOrWhiteSpace( output ) )
+            {
+                return output;
+            }
+
+            // Recursively remove the base URL and any aliases from the input.
+            bool doReplace;
+            do
+            {
+                output = output.Trim();
+
+                // Strip recognized Base Urls from the input text.
+                doReplace = false;
+                foreach ( var baseUrl in baseUrls )
+                {
+                    if ( !string.IsNullOrWhiteSpace( baseUrl ) && output.StartsWith( baseUrl, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        output = output.Substring( baseUrl.Length );
+                        doReplace = true;
+                    }
+                }
+            } while ( doReplace );
+
+            // If the remaining text represents a relative URL, add the new base URL.
+            if ( !string.IsNullOrWhiteSpace( newBaseUrl )
+                 && Uri.IsWellFormedUriString( output, UriKind.Relative ) )
+            {
+                output = newBaseUrl.TrimEnd( '/' ) + "/" + output.TrimStart( '/' );
+            }
+
+            return output;
+        }
 
         #endregion
 

@@ -19,14 +19,14 @@ using Rock.Web;
 
 namespace Rock.Blocks.Types.Mobile.Groups
 {
-    public partial class GroupFinder : RockMobileBlockType
+    public partial class GroupFinder : RockBlockType
     {
         /// <summary>
         /// Defines the control that will provide the additional custom
         /// settings for the <see cref="GroupFinder"/> block.
         /// </summary>
         /// <seealso cref="Rock.Web.RockCustomSettingsUserControlProvider" />
-        [TargetType( typeof( GroupFinder ) )]
+        [CustomSettingsBlockType( typeof( GroupFinder ), Model.SiteType.Mobile )]
         public class GroupFinderCustomSettingsProvider : RockCustomSettingsUserControlProvider
         {
             /// <inheritdoc/>

@@ -69,5 +69,16 @@ namespace Rock.Model
                 return RockDateTime.Now;
             }
         }
+
+        /// <summary>
+        /// Gets the condensed name of the campus. This will be the short code
+        /// if set, otherwise the name of the campus by stripping off any
+        /// trailing " Campus" text.
+        /// </summary>
+        /// <value>
+        /// The condensed name of the campus.
+        /// </value>
+        [NotMapped]
+        public string CondensedName => ShortCode.IfEmpty( Name.ReplaceIfEndsWith( " Campus", string.Empty ) );
     }
 }

@@ -76,12 +76,12 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import ListUnmetRequirements from "./listUnmetRequirements.partial.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-    import EmailBox from "@Obsidian/Controls/emailBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

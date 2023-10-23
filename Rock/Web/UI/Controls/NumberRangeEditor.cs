@@ -286,7 +286,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return (ViewState["RangeLabel"] as string ) ?? "to";
+                return ( ViewState["RangeLabel"] as string ) ?? "to";
             }
 
             set

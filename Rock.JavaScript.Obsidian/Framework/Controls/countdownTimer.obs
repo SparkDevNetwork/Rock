@@ -1,0 +1,52 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span>{{ timeString }}</span>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, onMounted, onUnmounted } from "vue";
+
+    const props = defineProps({
+        /** Seconds until 0:00 */
+        modelValue: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: number): void;
+    }>();
+
+    let handle: number | null = null;
+
+    const timeString = computed((): string => {
+        const minutes = Math.floor(props.modelValue / 60);
+        const seconds = Math.floor(props.modelValue % 60);
+        return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+    });
+
+    function onInterval(): void {
+        if (props.modelValue <= 0) {
+            emit("update:modelValue", 0);
+            return;
+        }
+
+        emit("update:modelValue", Math.floor(props.modelValue - 1));
+    }
+
+    onMounted(() => {
+        if (handle) {
+            clearInterval(handle);
+        }
+
+        handle = window.setInterval(() => onInterval(), 1000);
+    });
+
+    onUnmounted(() => {
+        if (handle) {
+            clearInterval(handle);
+            handle = null;
+        }
+    });
+</script>

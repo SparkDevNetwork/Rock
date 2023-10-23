@@ -133,9 +133,8 @@ namespace Rock
             {
                 return val.FromJsonOrThrow<T>();
             }
-            catch ( Exception ex )
+            catch
             {
-                System.Diagnostics.Debug.WriteLine( ex.Message );
                 return default( T );
             }
         }

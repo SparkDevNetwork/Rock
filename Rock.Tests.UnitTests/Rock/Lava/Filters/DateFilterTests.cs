@@ -903,12 +903,9 @@ namespace Rock.Tests.UnitTests.Lava
         {
             LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
-                var now = RockDateTime.Now;
-                int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) now.DayOfWeek + 7 ) % 7;
-                var nextSaturday = now.AddDays( daysUntilSaturday );
-
-                // Get a Rock time of 4:30PM for next Saturday.
-                var expectedDateTime = LavaDateTime.NewDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0 );
+                // Get the expected datetime for the test time zone.
+                var nowDateTime = TimeZoneInfo.ConvertTime( DateTime.UtcNow, timeZone );
+                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( nowDateTime, DayOfWeek.Saturday, new TimeSpan( 16, 30, 0 ) );
 
                 VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
                     new List<DateTime> { expectedDateTime },
@@ -924,17 +921,30 @@ namespace Rock.Tests.UnitTests.Lava
         {
             LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
-                var today = RockDateTime.Today;
-                int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
-                var nextSaturday = today.AddDays( daysUntilSaturday );
-
-                // Get a Rock time of 5:30PM for next Saturday.
-                var expectedDateTime = LavaDateTime.NewDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 17, 30, 0 );
+                // Get the expected datetime for the test time zone.
+                var nowDateTime = TimeZoneInfo.ConvertTime( DateTime.UtcNow, timeZone );
+                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( nowDateTime, DayOfWeek.Saturday, new TimeSpan(17,30,0) );
 
                 VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
                     new List<DateTime> { expectedDateTime },
                     $"1,'enddatetime','{expectedDateTime.Date:u}'" );
             } );
+        }
+
+        private DateTime GetNextScheduledWeeklyEventDateTime( DateTime currentDateTime, DayOfWeek scheduledDayOfWeek, TimeSpan scheduledTime )
+        {
+            var daysUntilTargetDay = ( ( int ) scheduledDayOfWeek - ( int ) currentDateTime.Date.DayOfWeek + 7 ) % 7;
+            var nextTargetDate = currentDateTime.AddDays( daysUntilTargetDay );
+            var expectedDateTime = LavaDateTime.NewDateTime( nextTargetDate.Year, nextTargetDate.Month, nextTargetDate.Day, scheduledTime.Hours, scheduledTime.Minutes, scheduledTime.Seconds );
+
+            // If the current day is the same as the schedule day and the current time is greater than the schedule time,
+            // get the date for the following weekday instead.
+            if ( daysUntilTargetDay == 0 && currentDateTime.TimeOfDay > expectedDateTime.TimeOfDay )
+            {
+                expectedDateTime = expectedDateTime.AddDays( 7 );
+            }
+
+            return expectedDateTime;
         }
 
         /// <summary>

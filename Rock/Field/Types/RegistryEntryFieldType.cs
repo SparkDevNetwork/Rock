@@ -24,14 +24,19 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
+
     /// <summary>
     /// Field Type used for Volume / Page / Entry that is useful for sacraments or steps (<see cref="Rock.Model.Step"/>)
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "D98E1D88-2240-4248-B93B-0512BD3BB61A" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REGISTRY_ENTRY )]
     public class RegistryEntryFieldType : FieldType
     {
+
+        #region WebForms
+#if WEBFORMS
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -103,6 +108,9 @@ namespace Rock.Field.Types
             return false;
         }
 
+        #endregion
+
+#endif
         #endregion
     }
 }

@@ -41,6 +41,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Performance" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
+[assembly: InternalsVisibleTo( "Rock.AI.OpenAI" )]
 
 // The following type forwardings were setup in Rock 1.13.0
 [assembly: TypeForwardedTo( typeof( Rock.RockObsolete ) )]

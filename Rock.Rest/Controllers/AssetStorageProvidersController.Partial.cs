@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,10 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 
-using Rock.Data;
-using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Storage.AssetStorage;
+using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
@@ -39,19 +38,18 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "4D7B4AE1-82F3-46B9-99E3-BAE03B2EDFAA" )]
         public IQueryable<TreeViewItem> GetChildren( string assetFolderId )
         {
-            var assetStorageService = new AssetStorageProviderService( new RockContext() );
             var treeViewItemList = new List<TreeViewItem>();
             if ( assetFolderId == "0" )
             {
-                foreach ( var assetStorageProvider in assetStorageService.GetActiveNoTracking() )
+                foreach ( var assetStorageProviderCache in AssetStorageProviderCache.All().Where( a => a.IsActive ) )
                 {
-                    var component = assetStorageProvider.GetAssetStorageComponent();
-                    var rootFolder = component.GetRootFolder( assetStorageProvider );
+                    var component = assetStorageProviderCache.AssetStorageComponent;
+                    var rootFolder = component.GetRootFolder( assetStorageProviderCache.ToEntity() );
 
                     var treeViewItem = new TreeViewItem();
-                    treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProvider.Id.ToString()},{rootFolder},{true}" );
+                    treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProviderCache.Id},{rootFolder},{true}" );
                     treeViewItem.IconCssClass = component.IconCssClass;
-                    treeViewItem.Name = assetStorageProvider.Name;
+                    treeViewItem.Name = assetStorageProviderCache.Name;
                     treeViewItem.HasChildren = true;
                     treeViewItemList.Add( treeViewItem );
                 }
@@ -62,7 +60,7 @@ namespace Rock.Rest.Controllers
                 if ( assetFolderIdParts.Length > 0 )
                 {
                     int assetStorageProviderId = assetFolderIdParts[0].AsInteger();
-                    var assetStorageProvider = assetStorageService.GetNoTracking( assetStorageProviderId );
+                    var assetStorageProviderCache = AssetStorageProviderCache.Get( assetStorageProviderId );
 
                     Asset asset = new Asset { Key = string.Empty, Type = AssetType.Folder };
                     if ( assetFolderIdParts.Length > 1 && assetFolderIdParts[1].Length > 0 )
@@ -80,12 +78,12 @@ namespace Rock.Rest.Controllers
                         asset.Key = string.Empty;
                     }
 
-                    var component = assetStorageProvider.GetAssetStorageComponent();
-                    var folderAssets = component.ListFoldersInFolder( assetStorageProvider, asset );
+                    var component = assetStorageProviderCache.AssetStorageComponent;
+                    var folderAssets = component.ListFoldersInFolder( assetStorageProviderCache.ToEntity(), asset );
                     foreach ( Asset folderAsset in folderAssets )
                     {
                         var treeViewItem = new TreeViewItem();
-                        treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProvider.Id},{folderAsset.Key}" );
+                        treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProviderCache.Id},{folderAsset.Key}" );
                         treeViewItem.IconCssClass = "fa fa-folder";
                         treeViewItem.Name = folderAsset.Name;
 
@@ -115,13 +113,11 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "8A2E7EC6-2A38-41AC-9A83-B74FF4B7FD45" )]
         public List<Asset> GetFolders( int assetStorageProviderId, string path )
         {
-            var assetStorageProviderService = ( AssetStorageProviderService ) Service;
-            var assetStorageProvider = assetStorageProviderService.Get( assetStorageProviderId );
+            var assetStorageProviderCache = AssetStorageProviderCache.Get( assetStorageProviderId );
 
-            assetStorageProvider.LoadAttributes();
-            var component = assetStorageProvider.GetAssetStorageComponent();
+            var component = assetStorageProviderCache.AssetStorageComponent;
 
-            List<Asset> assets = component.ListFoldersInFolder( assetStorageProvider, new Asset { Key = path } );
+            List<Asset> assets = component.ListFoldersInFolder( assetStorageProviderCache.ToEntity(), new Asset { Key = path } );
 
             return assets;
         }
@@ -138,14 +134,11 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "40DEFE35-2196-4A11-BD08-BCFFCE1C4240" )]
         public List<Asset> GetFiles( int assetStorageProviderId, string path )
         {
+            var assetStorageProviderCache = AssetStorageProviderCache.Get( assetStorageProviderId );
 
-            var assetStorageProviderService = ( AssetStorageProviderService ) Service;
-            var assetStorageProvider = assetStorageProviderService.Get( assetStorageProviderId );
+            var component = assetStorageProviderCache.AssetStorageComponent;
 
-            assetStorageProvider.LoadAttributes();
-            var component = assetStorageProvider.GetAssetStorageComponent();
-
-            List<Asset> assets = component.ListFilesInFolder( assetStorageProvider, new Asset { Key = path } );
+            List<Asset> assets = component.ListFilesInFolder( assetStorageProviderCache.ToEntity(), new Asset { Key = path } );
 
 
             return assets;

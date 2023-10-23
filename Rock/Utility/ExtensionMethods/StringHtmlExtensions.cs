@@ -235,6 +235,11 @@ namespace Rock
         /// <returns></returns>
         public static string ConvertMarkdownToHtml( this string markdown, bool renderSoftLineBreaksAsLineBreaks = false )
         {
+            if ( markdown == null )
+            {
+                return string.Empty;
+            }
+
             // convert any Markdown into HTML
             var settings = CommonMark.CommonMarkSettings.Default.Clone();
             settings.RenderSoftLineBreaksAsLineBreaks = renderSoftLineBreaksAsLineBreaks;

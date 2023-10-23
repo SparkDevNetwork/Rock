@@ -10,7 +10,7 @@
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import { CategorizedValuePickerNodeBag } from "@Obsidian/ViewModels/Rest/Controls/categorizedValuePickerNodeBag";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, updateRefValue } from "@Obsidian/Utility/component";
-    import DropDownList from "./dropDownList";
+    import DropDownList from "./dropDownList.obs";
     import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({

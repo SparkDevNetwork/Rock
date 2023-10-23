@@ -1,0 +1,211 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+        <Panel type="block">
+
+            <template #default>
+
+                <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+                <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+                <div v-if="receiptText" v-html="receiptText">
+
+                </div>
+
+                <div v-else>
+                    <NotificationBox v-if="duplicatePledgeWarningText"
+                                     v-html="duplicatePledgeWarningText"
+                                     :dismissable="false"
+                                     alertType="warning"></NotificationBox>
+                    <EditPanel v-else v-model="financialPledgeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+                </div>
+            </template>
+
+            <template #footerActions v-if="!receiptText">
+                <div>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onStartSubmitForm">
+                        {{ saveButtonText }}
+                    </RockButton>
+                    <RockButton v-if="duplicatePledgeWarningText"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onCancelEdit">
+                        Cancel
+                    </RockButton>
+                </div>
+
+                <div v-if="!duplicatePledgeWarningText" class="mt-3">
+                    <p v-if="noteMessage">{{ noteMessage }}</p>
+                </div>
+            </template>
+
+        </Panel>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import EditPanel from "./FinancialPledgeEntry/editPanel.partial.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { FinancialPledgeEntryBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryBag";
+    import { FinancialPledgeEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryOptionsBag";
+
+    const config = useConfigurationValues<DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const financialPledgeEditBag = ref(config.entity ?? {} as FinancialPledgeEntryBag);
+
+    const submitForm = ref(false);
+    const resetKey = ref("");
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+
+    // The properties that are being edited in the UI. This is used to
+    // inform the server which incoming values have valid data in them.
+    const validProperties = [
+        "attributeValues",
+        "account",
+        "endDate",
+        "group",
+        "personAlias",
+        "pledgeFrequencyValue",
+        "startDate",
+        "totalAmount"
+    ];
+
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(financialPledgeEditBag, validProperties, invokeBlockAction), undefined, true);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const noteMessage = computed((): string => {
+        return config.options?.noteMessage ?? "";
+    });
+
+    const duplicatePledgeWarningText = computed((): string => {
+        return financialPledgeEditBag.value?.duplicatePledgeWarningText ?? "";
+    });
+
+    const saveButtonText = computed((): string => {
+        return financialPledgeEditBag.value?.saveButtonText ?? "";
+    });
+
+    const receiptText = computed((): string | null | undefined => {
+        return financialPledgeEditBag.value.receiptText;
+    });
+
+    const options = computed((): FinancialPledgeEntryOptionsBag => {
+        return config.options ?? { requirePledgeFrequency: false, showPledgeFrequency: false, showDateRange: true };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<void> {
+
+        resetKey.value = "reset-errors";
+        const result = await invokeBlockAction<DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag>>("InitializeBox");
+
+        if (result.isSuccess && result.data && result.data.entity) {
+            financialPledgeEditBag.value = result.data.entity;
+        }
+    }
+
+    /**
+     * Event handler for when a value has changed that has an associated
+     * C# property name. This is used to detect changes to values that
+     * might cause qualified attributes to either show up or not show up.
+     *
+     * @param propertyName The name of the C# property that was changed.
+     */
+    function onPropertyChanged(propertyName: string): void {
+        // If we don't have any qualified attribute properties or this property
+        // is not one of them then do nothing.
+        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+            return;
+        }
+
+        refreshAttributesDebounce();
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+
+        const data: DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag> = {
+            entity: financialPledgeEditBag.value,
+            isEditable: true,
+            validProperties: validProperties
+        };
+
+        const result = await invokeBlockAction<FinancialPledgeEntryBag | string>("Save", {
+            box: data
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                financialPledgeEditBag.value = result.data;
+            }
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save financial pledge.";
+        }
+
+
+    }
+
+    const onStartSubmitForm = (): void => {
+        submitForm.value = true;
+    };
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified financial pledge could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        financialPledgeEditBag.value = config.entity;
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

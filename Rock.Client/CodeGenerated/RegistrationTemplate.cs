@@ -192,6 +192,9 @@ namespace Rock.Client
         public bool ShowCurrentFamilyMembers { get; set; }
 
         /// <summary />
+        public bool ShowSmsOptIn { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.SignatureDocumentAction SignatureDocumentAction { get; set; }
 
         /// <summary />
@@ -298,6 +301,7 @@ namespace Rock.Client
             this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             this.SetCostOnInstance = source.SetCostOnInstance;
             this.ShowCurrentFamilyMembers = source.ShowCurrentFamilyMembers;
+            this.ShowSmsOptIn = source.ShowSmsOptIn;
             this.SignatureDocumentAction = source.SignatureDocumentAction;
             this.SuccessText = source.SuccessText;
             this.SuccessTitle = source.SuccessTitle;

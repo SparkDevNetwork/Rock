@@ -34,13 +34,66 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) GroupType
     /// Stored as GroupType.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_TYPE )]
     public class GroupTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
         private const string GROUP_TYPE_PURPOSE_VALUE_GUID = "groupTypePurposeValueGuid";
+        private const string GROUP_TYPES_PURPOSES = "groupTypePurposes";
+        private const string VALUES = "values";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicEditConfigurationValues = new Dictionary<string, string>();
+
+            // if the block is in view mode, merely return the Group Type as ListBagItem to be viewed so that the remote device can display it accordingly.
+            if ( usage == ConfigurationValueUsage.View )
+            {
+                publicEditConfigurationValues[VALUES] = GroupTypeCache.All()
+                    .Where( g => g.Guid == value.AsGuid() )
+                    .ToListItemBagList()
+                    .ToCamelCaseJson( false, true );
+                return publicEditConfigurationValues;
+            }
+
+            publicEditConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            using ( var rockContext = new RockContext() )
+            {
+                // Disable security since we are intentionally returning items even
+                // if the person (whom we don't know) doesn't have access.
+                var definedValueClientService = new Rock.ClientService.Core.DefinedValue.DefinedValueClientService( rockContext, null )
+                {
+                    EnableSecurity = false
+                };
+                var groupTypePurposeValueGuid = privateConfigurationValues.GetValueOrNull( GROUP_TYPE_PURPOSE_VALUE_GUID )?.AsGuid();
+                publicEditConfigurationValues[GROUP_TYPES_PURPOSES] = definedValueClientService
+                        .GetDefinedValuesAsListItems( SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid(),
+                            new ClientService.Core.DefinedValue.Options.DefinedValueOptions { UseDescription = true } )
+                        .ToCamelCaseJson( false, true );
+
+                if ( groupTypePurposeValueGuid != Guid.Empty )
+                {
+                    publicEditConfigurationValues[VALUES] = GroupTypeCache.All()
+                        .Where( g => g.GroupTypePurposeValue?.Guid == groupTypePurposeValueGuid )
+                        .OrderBy( g => g.Name )
+                        .ToListItemBagList()
+                        .ToCamelCaseJson( false, true );
+                }
+                else
+                {
+                    // show all the groups if there is no Group Type Purpose is set
+                    publicEditConfigurationValues[VALUES] = GroupTypeCache.All()
+                        .OrderBy( g => g.Name )
+                        .ToListItemBagList()
+                        .ToCamelCaseJson( false, true );
+                }
+            }
+            return publicEditConfigurationValues;
+        }
 
         #endregion
 

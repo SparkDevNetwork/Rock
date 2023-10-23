@@ -1,0 +1,67 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="section-container well">
+        <div class="section-header">
+            <div class="section-header-content">
+                <SectionHeader :title="title" :description="description" :isSeparatorHidden="true">
+                    <template #actions>
+                        <slot name="actions" />
+                    </template>
+                </SectionHeader>
+            </div>
+
+            <div v-if="toggleText" class="section-header-toggle align-self-end">
+                <InlineSwitch v-model="enabled" :label="toggleText" />
+            </div>
+        </div>
+
+        <TransitionVerticalCollapse>
+            <div v-if="showContent">
+                <hr class="section-header-hr">
+                <slot />
+            </div>
+        </TransitionVerticalCollapse>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import InlineSwitch from "./inlineSwitch.obs";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import SectionHeader from "./sectionHeader.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        toggleText: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        title: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        description: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const enabled = useVModelPassthrough(props, "modelValue", emit);
+
+    /**
+     * True if the content should be visible. Content is visible if we either
+     * do not have an enable button or the enable button is on.
+     */
+    const showContent = computed((): boolean => enabled.value || !props.toggleText);
+</script>

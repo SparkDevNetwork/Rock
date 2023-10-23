@@ -1,0 +1,43 @@
+//
+// Color Selector Control - styling for color
+// selector
+// --------------------------------------------------
+
+.color-selector-items {
+  display: flex;
+  flex-wrap: wrap;
+
+  .color-selector-item-container {
+    display: flex;
+    padding: 8px;
+
+    &.checked {
+      border: 2px solid #EE7624;
+      padding: 2px;
+      margin: 4px;
+    }
+
+    .color-selector-item {
+      width: 33px;
+      height: 33px;
+      margin: 0;
+
+      &:not(.readonly) {
+        cursor: pointer;
+      }
+
+      /* Show border around items that are difficult to see. */
+      &.camouflaged-light {
+        border: 1px solid black;
+      }
+      &.camouflaged-dark {
+        border: 1px solid white;
+      }
+
+      /* Hide the input checkbox. */
+      .color-selector-item-checkbox {
+        display: none;
+      }
+    }
+  }
+}

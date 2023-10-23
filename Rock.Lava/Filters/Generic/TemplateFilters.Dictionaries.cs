@@ -41,7 +41,7 @@ namespace Rock.Lava.Filters
         {
             var dict = AsDictionary( input );
 
-            dict.Add( key.ToString(), value );
+            dict.AddOrReplace( key.ToString(), value );
 
             return dict;
         }

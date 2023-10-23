@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Core
             var parms = new Dictionary<string, string>();
             parms.Add( "TagId", "0" );
             parms.Add( "CategoryId", cpCategory.SelectedValueAsId().ToString() );
-            parms.Add( "EntityTypeId", rFilter.GetUserPreference( "EntityType" ).AsIntegerOrNull().ToString() );
+            parms.Add( "EntityTypeId", rFilter.GetFilterPreference( "EntityType" ).AsIntegerOrNull().ToString() );
             NavigateToLinkedPage( AttributeKey.DetailPage, parms );
         }
 
@@ -256,10 +256,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Category", cpCategory.SelectedValue );
-            rFilter.SaveUserPreference( "EntityType", ddlEntityType.SelectedValue );
-            rFilter.SaveUserPreference( "Scope", cblScope.SelectedValues.AsDelimited( "," ) );
-            rFilter.SaveUserPreference( "Owner",
+            rFilter.SetFilterPreference( "Category", cpCategory.SelectedValue );
+            rFilter.SetFilterPreference( "EntityType", ddlEntityType.SelectedValue );
+            rFilter.SetFilterPreference( "Scope", cblScope.SelectedValues.AsDelimited( "," ) );
+            rFilter.SetFilterPreference( "Owner",
                 ( _canConfigure && cblScope.SelectedValues.Contains( "Personal" ) && ppOwner.PersonId.HasValue ) ?
                 ppOwner.PersonId.Value.ToString() : string.Empty );
 
@@ -275,14 +275,14 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilter()
         {
-            cpCategory.SetValue( rFilter.GetUserPreference( "Category" ).AsIntegerOrNull() );
-            ddlEntityType.SelectedValue = rFilter.GetUserPreference( "EntityType" );
-            cblScope.SetValues( rFilter.GetUserPreference( "Scope" ).SplitDelimitedValues().ToList() );
+            cpCategory.SetValue( rFilter.GetFilterPreference( "Category" ).AsIntegerOrNull() );
+            ddlEntityType.SelectedValue = rFilter.GetFilterPreference( "EntityType" );
+            cblScope.SetValues( rFilter.GetFilterPreference( "Scope" ).SplitDelimitedValues().ToList() );
 
             if ( _canConfigure && cblScope.SelectedValues.Contains( "Personal" ) )
             {
                 Person owner = CurrentPerson;
-                int? savedOwnerId = rFilter.GetUserPreference( "Owner" ).AsIntegerOrNull();
+                int? savedOwnerId = rFilter.GetFilterPreference( "Owner" ).AsIntegerOrNull();
                 if ( savedOwnerId.HasValue )
                 {
                     var person = new PersonService( new RockContext() ).Queryable()
@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            bool ordered = _canConfigure && !rFilter.GetUserPreference( "Scope" ).SplitDelimitedValues().ToList().Contains( "Personal" );
+            bool ordered = _canConfigure && !rFilter.GetFilterPreference( "Scope" ).SplitDelimitedValues().ToList().Contains( "Personal" );
             rGrid.ColumnsOfType<ReorderField>().First().Visible = ordered;
 
             bool showQualifierCols = GetAttributeValue( AttributeKey.ShowQualifierColumns ).AsBoolean();
@@ -352,19 +352,19 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.Where( t => t.CategoryId == categoryId.Value );
             }
 
-            int? entityTypeId = rFilter.GetUserPreference( "EntityType" ).AsIntegerOrNull();
+            int? entityTypeId = rFilter.GetFilterPreference( "EntityType" ).AsIntegerOrNull();
             if ( entityTypeId.HasValue )
             {
                 queryable = queryable.Where( t => t.EntityTypeId == entityTypeId.Value );
             }
 
             string personFlag = string.Empty;     // Space = None, 0 = All, Integer = Specific Person
-            var scopes = rFilter.GetUserPreference( "Scope" ).SplitDelimitedValues().ToList();
+            var scopes = rFilter.GetFilterPreference( "Scope" ).SplitDelimitedValues().ToList();
             if ( scopes.Contains( "Personal" ) )
             {
                 if ( _canConfigure )
                 {
-                    personFlag = ( rFilter.GetUserPreference( "Owner" ).AsIntegerOrNull() ?? 0 ).ToString();
+                    personFlag = ( rFilter.GetFilterPreference( "Owner" ).AsIntegerOrNull() ?? 0 ).ToString();
                 }
                 else
                 {

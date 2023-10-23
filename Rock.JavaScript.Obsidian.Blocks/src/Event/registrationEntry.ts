@@ -17,10 +17,11 @@
 
 import { defineComponent, provide, reactive, ref } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import CountdownTimer from "@Obsidian/Controls/countdownTimer";
-import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
-import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progressTracker";
-import RockButton from "@Obsidian/Controls/rockButton";
+import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
+import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor.obs";
+import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
+import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
 import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "@Obsidian/Utility/stringUtils";
 import { useStore } from "@Obsidian/PageState";
@@ -29,7 +30,7 @@ import { newGuid } from "@Obsidian/Utility/guid";
 import { List } from "@Obsidian/Utility/linq";
 import Page from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import RegistrationEntryIntro from "./RegistrationEntry/intro.partial";
 import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial";
 import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial";
@@ -132,11 +133,12 @@ export default defineComponent({
             discountCode: viewModel.session?.discountCode || "",
             discountAmount: viewModel.session?.discountAmount || 0,
             discountPercentage: viewModel.session?.discountPercentage || 0,
+            discountMaxRegistrants: viewModel.session?.discountMaxRegistrants || 0,
             successViewModel: viewModel.successViewModel,
             amountToPayToday: 0,
             sessionExpirationDateMs: null,
             registrationSessionGuid: viewModel.session?.registrationSessionGuid || newGuid(),
-            ownFamilyGuid: store.state.currentPerson?.primaryFamilyGuid || newGuid()
+            ownFamilyGuid: viewModel.currentPersonFamilyGuid || newGuid()
         };
         const registrationEntryState = reactive(staticRegistrationEntryState);
 
@@ -198,7 +200,7 @@ export default defineComponent({
     },
     computed: {
         /** The person currently authenticated */
-        currentPerson(): PersonBag | null {
+        currentPerson(): CurrentPersonBag | null {
             return store.state.currentPerson;
         },
 

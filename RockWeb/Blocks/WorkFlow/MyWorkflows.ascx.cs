@@ -51,9 +51,9 @@ namespace RockWeb.Blocks.WorkFlow
         /// True = 'Initiated By Me',
         /// False = 'Assigned To Me'
         /// </summary>
-        private const string ROLE_TOGGLE_SETTING = "MyWorkflows_RoleToggle";
+        private const string ROLE_TOGGLE_SETTING = "role-toggle";
 
-        private const string DISPLAY_TOGGLE_SETTING = "MyWorkflows_DisplayToggle";
+        private const string DISPLAY_TOGGLE_SETTING = "display-toggle";
 
         #endregion
 
@@ -139,6 +139,7 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 bool? queryStatusFilter = Request.QueryString["StatusFilter"].AsBooleanOrNull();
                 bool? queryRoleFilter = Request.QueryString["RoleFilter"].AsBooleanOrNull();
+                var preferences = GetBlockPersonPreferences();
 
                 /// If query string values exist then set them
                 if ( queryStatusFilter.HasValue || queryRoleFilter.HasValue )
@@ -148,8 +149,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 else
                 {
-                    tglDisplay.Checked = GetUserPreference( DISPLAY_TOGGLE_SETTING ).AsBoolean();
-                    tglRole.Checked = GetUserPreference( ROLE_TOGGLE_SETTING ).AsBoolean();
+                    tglDisplay.Checked = preferences.GetValue( DISPLAY_TOGGLE_SETTING ).AsBoolean();
+                    tglRole.Checked = preferences.GetValue( ROLE_TOGGLE_SETTING ).AsBoolean();
                 }
 
                 StatusFilter = tglDisplay.Checked;
@@ -197,8 +198,11 @@ namespace RockWeb.Blocks.WorkFlow
             StatusFilter = tglDisplay.Checked;
             RoleFilter = tglRole.Checked;
 
-            SetUserPreference( DISPLAY_TOGGLE_SETTING, tglDisplay.Checked.ToString() );
-            SetUserPreference( ROLE_TOGGLE_SETTING, tglRole.Checked.ToString() );
+            var preferences = GetBlockPersonPreferences();
+
+            preferences.SetValue( DISPLAY_TOGGLE_SETTING, tglDisplay.Checked.ToString() );
+            preferences.SetValue( ROLE_TOGGLE_SETTING, tglRole.Checked.ToString() );
+            preferences.Save();
 
             GetData();
         }

@@ -110,6 +110,8 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
 
                 isLoaded = true;
 
+                rootElement.classList.remove("obsidian-block-loading");
+
                 // Get the number of pending blocks. If this is the last one
                 // then signal the page that all blocks are loaded and ready.
                 let pendingCount = parseInt(document.body.getAttribute("data-obsidian-pending-blocks") ?? "0");
@@ -184,7 +186,7 @@ export async function initializePageTimings(config: DebugTimingConfig): Promise<
         return;
     }
 
-    const pageDebugTimings = (await import("@Obsidian/Controls/pageDebugTimings")).default;
+    const pageDebugTimings = (await import("@Obsidian/Controls/Internal/pageDebugTimings.obs")).default;
 
     const app = createApp({
         name: "PageDebugTimingsRoot",

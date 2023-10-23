@@ -46,7 +46,7 @@ namespace Rock.Tests.Shared
             var guid = Guid.NewGuid();
             _tasks.Add( guid, testName );
 
-            Trace.WriteLine( $"<START> Task: { testName }" );
+            Log( $"<START> Task: { testName }" );
             return guid;
         }
 
@@ -54,7 +54,7 @@ namespace Rock.Tests.Shared
         {
             if ( _tasks.ContainsKey( taskGuid ) )
             {
-                Trace.WriteLine( $"<STOP> Task: { _tasks[taskGuid] }" );
+                Log( $"<STOP> Task: { _tasks[taskGuid] }" );
             }
         }
 

@@ -27,6 +27,10 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The <see cref="EventHandler"/> to set for the config button action.
         /// </summary>
+        /// <remarks>
+        /// The <see cref="CustomActionConfig.Route" /> parameter determines the security associated with this action.
+        /// The action will be unavailable if the associated route is not accessible to the current user.
+        /// </remarks>
         public EventHandler EventHandler { get; set; }
     }
 }

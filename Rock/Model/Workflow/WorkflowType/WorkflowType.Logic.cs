@@ -50,6 +50,18 @@ namespace Rock.Model
 
         #endregion Properties
 
+        /*
+            9/13/2023 - PA
+
+            WorkflowType should never be having a ParentAuthority or a ParentAuthorityPre.
+            WorflowType is the ParentAuthority of Workflow. Let say, if we were to set the ParentAuthority on the
+            WorkflowType to be Category, then anyone who has the edit on the Category would be able to edit the running
+            Workflows in the Category which is not the desired behavior. Similarly the ParentAuthorityPre were to be set to
+            Category, we would run into issues like https://github.com/SparkDevNetwork/Rock/issues/5537 where the forms in
+            the sub categories become uneditable.
+
+        */
+
         #region Public Methods
 
         /// <summary>
@@ -62,17 +74,6 @@ namespace Rock.Model
         {
             return this.Name;
         }
-
-        /// <summary>
-        /// When checking for security, first check the category it belongs to, but then check the default entity security.
-        /// I don't think we would ever want an actual ParentAuthority defined on WorkflowType because it would
-        /// likely interfere with the WorkflowEntry block's behavior when it checks the workflow.IsAuthorized(...).
-        /// Why? -- Because the Workflow's ParentAuthority is the WorkflowType, and if we were to add a
-        /// ParentAuthority (not ParentAuthorityPre) to be the Category, it would then cause anyone who had edit on the
-        /// Category to also be able to edit the _running_ workflow instance (which should really only be handled
-        /// by the 'workflow assignment' feature).
-        /// </summary>
-        public override ISecured ParentAuthorityPre => this.Category ?? base.ParentAuthority;
 
         #endregion Public Methods
 

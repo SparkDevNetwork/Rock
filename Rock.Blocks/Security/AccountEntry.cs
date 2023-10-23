@@ -39,11 +39,12 @@ namespace Rock.Blocks.Security
     /// <summary>
     /// Allows the user to register.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Account Entry" )]
-    [Category( "Obsidian > Security" )]
+    [Category( "Security" )]
     [Description( "Allows the user to register." )]
     [IconCssClass( "fa fa-user-lock" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region "Block Attributes"
     [BooleanField(
@@ -293,7 +294,7 @@ namespace Rock.Blocks.Security
 
     [Rock.SystemGuid.EntityTypeGuid( "75704274-FDB8-4A0C-AE0E-510F1977BE0A" )]
     [Rock.SystemGuid.BlockTypeGuid( "E5C34503-DDAD-4881-8463-0E1E20B1675D" )]
-    public class AccountEntry : RockObsidianBlockType
+    public class AccountEntry : RockBlockType
     {
         #region Attribute Keys
 
@@ -336,16 +337,8 @@ namespace Rock.Blocks.Security
         #region IRockObsidianBlockType Implementation
 
         /// <inheritdoc/>
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
-
-        /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            if ( PageParameter( "caption" ).ToLower() == "success" && GetCurrentPerson() != null )
-            {
-                return GetInitializationBox( step: AccountEntryStep.Completed );
-            }
-
             return GetInitializationBox();
         }
 
@@ -603,7 +596,7 @@ namespace Rock.Blocks.Security
                 {
                     continue;
                 }
-
+                
                 var phoneNumber = new PhoneNumber
                 {
                     NumberTypeValueId = DefinedValueCache.Get( item.Guid ).Id,
@@ -789,7 +782,7 @@ namespace Rock.Blocks.Security
         /// </summary>
         /// <param name="encryptedStateOverride">The encrypted passwordless state override. If not specified, the encrypted passwordless state is retrieved from page parameters.</param>
         /// <returns>The initialization box.</returns>
-        private AccountEntryInitializationBox GetInitializationBox( string encryptedStateOverride = null, AccountEntryStep? step = null )
+        private AccountEntryInitializationBox GetInitializationBox( string encryptedStateOverride = null )
         {
             // Automatically set the phone number or email if this user is coming from the passwordless login flow.
             var passwordlessLoginStateString = encryptedStateOverride ?? Uri.UnescapeDataString( PageParameter( "State" ) );
@@ -831,6 +824,26 @@ namespace Rock.Blocks.Security
 
             var isEmailRequiredForUsername = GetAttributeValue( AttributeKey.RequireEmailForUsername ).AsBoolean();
 
+            var accountEntryRegisterStepBox = new AccountEntryRegisterResponseBox
+            {
+                Step = AccountEntryStep.Registration
+            };
+
+            var currentPerson = GetCurrentPerson();
+            if ( PageParameter( "status" ).ToLower() == "success" && currentPerson != null )
+            {
+                accountEntryRegisterStepBox = new AccountEntryRegisterResponseBox()
+                {
+                    Step = AccountEntryStep.Completed,
+                    CompletedStepBag = new AccountEntryCompletedStepBag()
+                    {
+                        Caption = GetSuccessCaption( currentPerson ),
+                        IsPlainCaption = true,
+                        IsRedirectAutomatic = true,
+                    }
+                };
+            }
+
             return new AccountEntryInitializationBox
             {
                 ArePhoneNumbersShown = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean(),
@@ -850,11 +863,11 @@ namespace Rock.Blocks.Security
                 PhoneNumbers = phoneNumberBags,
                 SentLoginCaption = GetAttributeValue( AttributeKey.SentLoginCaption ),
                 State = passwordlessLoginStateString,
-                SuccessCaption = GetCurrentPerson() == null ? GetAttributeValue( AttributeKey.SuccessCaption ) : GetSuccessCaption( GetCurrentPerson() ),
+                SuccessCaption = GetAttributeValue( AttributeKey.SuccessCaption ),
                 UsernameFieldLabel = GetAttributeValue( AttributeKey.UsernameFieldLabel ),
                 UsernameRegex = isEmailRequiredForUsername ? @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" ),
                 UsernameRegexDescription = isEmailRequiredForUsername ? string.Empty : GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ),
-                Step = step
+                AccountEntryRegisterStepBox = accountEntryRegisterStepBox
             };
         }
 
@@ -892,16 +905,7 @@ namespace Rock.Blocks.Security
                 return returnUrl;
             }
 
-            return GetCurrentPageUrl();
-        }
-
-        /// <summary>
-        /// Gets the current page URL.
-        /// </summary>
-        /// <returns>The current page URL.</returns>
-        private string GetCurrentPageUrl()
-        {
-            return $"{this.RequestContext.RootUrlPath}/page/{PageCache.Id}?caption=success";
+            return $"{this.RequestContext.RootUrlPath}/page/{PageCache.Id}?status=success";
         }
 
         /// <summary>

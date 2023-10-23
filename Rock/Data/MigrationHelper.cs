@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using Rock.Model;
@@ -328,13 +329,29 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Updates the type of the mobile block.
+        /// Updates the Entity block or creates it if it is not already present in the database.
+        /// This method serves as a syntactic sugar over the <see cref="MigrationHelper.UpdateMobileBlockType(string, string, string, string)" /> which was origianlly used to add or updated the obsidian blocks.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="entityName">Name of the entity.</param>
         /// <param name="category">The category.</param>
         /// <param name="guid">The unique identifier.</param>
+        public void AddOrUpdateEntityBlockType( string name, string description, string entityName, string category, string guid )
+        {
+            UpdateMobileBlockType( name, description, entityName, category, guid );
+        }
+
+        /// <summary>
+        /// Updates the Entity block or creates it if it is not already present in the database.
+        /// This method was first written for the mobile blocks and later repurposed for Obsidian.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="entityName">Name of the entity.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="guid">The unique identifier.</param>
+        // DO NOT RENAME: This method is being used by older migrations and so the name of the function should not be changed.
         public void UpdateMobileBlockType( string name, string description, string entityName, string category, string guid )
         {
             Migration.Sql( $@"
@@ -2163,8 +2180,8 @@ END" );
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="key">The key. Defaults to Name without Spaces. If this is a core global attribute, specify the key with a 'core_' prefix</param>
-        [Obsolete("Use AddOrUpdateEntityAttribute instead.")]
-        [RockObsolete("1.13")]
+        [Obsolete( "Use AddOrUpdateEntityAttribute instead." )]
+        [RockObsolete( "1.13" )]
         public void AddEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string category, string description, int order, string defaultValue, string guid, string key = null )
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
@@ -2233,8 +2250,8 @@ END" );
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core global attribute, specify the key with a 'core_' prefix</param>
-        [Obsolete("Use AddNewEntityAttributeDeletingAllAttributeValues or AddOrUpdateEntityAttribute instead.")]
-        [RockObsolete("1.13")]
+        [Obsolete( "Use AddNewEntityAttributeDeletingAllAttributeValues or AddOrUpdateEntityAttribute instead." )]
+        [RockObsolete( "1.13" )]
         public void AddNewEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string abbreviatedName, string description, int order, string defaultValue, string guid, string key )
         {
             AddNewEntityAttributeDeletingAllAttributeValues( entityTypeName, fieldTypeGuid, entityTypeQualifierColumn, entityTypeQualifierValue, name, abbreviatedName, description, order, defaultValue, guid, key );
@@ -2383,9 +2400,9 @@ END" );
                         , 0
                         , '{defaultValue?.Replace( "'", "''" ) ?? string.Empty}'
                         , 0
-                        , {(isRequired == true ? 1 : 0)}
+                        , {( isRequired == true ? 1 : 0 )}
                         , '{guid}')
-                END");
+                END" );
         }
 
         /// <summary>
@@ -3373,6 +3390,40 @@ END" );
         }
 
         /// <summary>
+        /// This is a quick fix method. DO NOT USE
+        /// </summary>
+        /// <param name="attributeGuid"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="guid"></param>
+        internal void AddAttributeQualifierForSQL( string attributeGuid, string key, string value, string guid )
+        {
+            value = value?.Replace( "'", "''" ) ?? "";
+            string sql = $@"
+                DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+
+                IF NOT EXISTS(SELECT * FROM [AttributeQualifier] WHERE [Guid] = '{guid}')
+                BEGIN
+	                -- It's possible that the qualifier exists with a different GUID so also check for AttributeId and Key
+	                DECLARE @guid UNIQUEIDENTIFIER = (SELECT [Guid] FROM [AttributeQualifier] WHERE AttributeId = @AttributeId AND [Key] = '{key}')
+	                IF @guid IS NOT NULL
+	                BEGIN
+		                UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Guid] = '{guid}', [Value] = '{value}' WHERE [Guid] = @guid
+	                END
+	                ELSE BEGIN
+		                INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+		                VALUES(1, @AttributeId, '{key}', '{value}', '{guid}')
+	                END
+                END
+                ELSE
+                BEGIN
+                    UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Key] = '{key}', [Value] = '{value}' WHERE [Guid] = '{guid}'
+                END";
+
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
         /// Adds the attribute qualifier.
         /// </summary>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
@@ -3566,7 +3617,7 @@ END" );
 ",
                     blockGuid,
                     attributeGuid,
-                    value.Replace( "'", "''" ),
+                    value?.Replace( "'", "''" ) ?? null,
                     ( appendToExisting ? "1" : "0" )
                 );
 
@@ -4587,7 +4638,7 @@ END
                     , [EntityTypeId] = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{entityTypeGuid}')
                     , [UserSelectable] = {userSelectable.Bit()}
                     , [IsSystem] = {IsSystem.Bit()}
-                    , [IconCssClass] = {(iconCssClass.IsNullOrWhiteSpace() ? "NULL" : $"'{iconCssClass}'")}
+                    , [IconCssClass] = {( iconCssClass.IsNullOrWhiteSpace() ? "NULL" : $"'{iconCssClass}'" )}
                     , [AllowsWatching] = {AllowWatching.Bit()}
                 WHERE [Guid] = '{guid}'" );
         }
@@ -5164,6 +5215,28 @@ END
         /// <summary>
         /// Adds the security authentication for rest action.
         /// </summary>
+        /// <param name="restActionGuid">The rest action unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForRestAction( string restActionGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            AddSecurityAuthForEntityBase( "Rock.Model.RestAction", "RestAction", restActionGuid, order, action, allow, groupGuid, specialRole, authGuid );
+        }
+
+        /// <summary>
+        /// Adds the security authentication for rest action.
+        /// </summary>
+        /// <remarks>
+        /// This method should not be used for new code, and is deprecated.
+        /// This method will break if we change the C# signature of the method
+        /// which would then cause the default security on a new install to not set correctly.
+        /// Instead you should use <see cref="AddSecurityAuthForRestAction(string, int, string, bool, string, SpecialRole, string)"/>,
+        /// which takes a string Guid that represents the Rest Action (the <see cref="Rock.SystemGuid.RestActionGuidAttribute"/>).
+        /// </remarks>
         /// <param name="restActionMethod">The rest action method.</param>
         /// <param name="restActionPath">The rest action path.</param>
         /// <param name="order">The order.</param>
@@ -5172,8 +5245,15 @@ END
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
+        [Obsolete( "1.15.2" )]
         public void AddSecurityAuthForRestAction( string restActionMethod, string restActionPath, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
+            /*
+             * BC - 08/23
+             * This method can never be removed.  
+             * Old versions of plugins could be referencing this API. 
+             */
+
             AddSecurityAuthForEntityBase( "Rock.Model.RestAction", "RestAction", $"{restActionMethod}{restActionPath}", order, action, allow, groupGuid, specialRole, authGuid, "ApiId" );
         }
 
@@ -7584,12 +7664,52 @@ END
         /// <summary>
         /// Adds the rest action.
         /// </summary>
+        /// <param name="restActionGuid">The rest action unique identifier.</param>
+        /// <param name="controllerName">Name of the controller.</param>
+        /// <param name="controllerClass">The controller class.</param>
+        public void AddRestAction( string restActionGuid, string controllerName, string controllerClass )
+        {
+            AddRestController( controllerName, controllerClass );
+
+            var sql = string.Format( @"
+    DECLARE @ControllerId int = ( SELECT TOP 1 [Id] FROM [RestController] WHERE [ClassName] = '{0}' )
+    DECLARE @ActionId int = ( SELECT TOP 1 [Id] FROM [RestAction] WHERE [Guid] = '{1}' )
+    IF @ActionId IS NULL
+    BEGIN
+
+	    INSERT INTO [RestAction] ( [ControllerId], [Guid] )
+	    VALUES ( @ControllerId, '{1}' )
+    END
+
+",
+                controllerClass,
+                restActionGuid
+                );
+
+            Migration.Sql( sql );
+        }
+
+        /// <summary>
+        /// Adds the rest action.
+        /// </summary>
+        /// <remarks>
+        /// This method should not be used for new code, and is deprecated.
+        /// This method will break if we change the C# signature of the Rest Action.
+        /// Instead you should use <see cref="AddRestAction(string, string, string)" />,
+        /// which takes a string Guid that represents the Rest Action (the <see cref="Rock.SystemGuid.RestActionGuidAttribute"/>).
+        /// </remarks>
         /// <param name="controllerName">Name of the controller.</param>
         /// <param name="controllerClass">The controller class.</param>
         /// <param name="actionMethod">The action method.</param>
         /// <param name="actionPath">The action path.</param>
+        [Obsolete( message: "1.15.2" )]
         public void AddRestAction( string controllerName, string controllerClass, string actionMethod, string actionPath )
         {
+            /*
+             * BC - 08/23
+             * This method can never be removed.  
+             * Old versions of plugins could be referencing this API. 
+             */
             AddRestController( controllerName, controllerClass );
 
             Migration.Sql( string.Format( @"
@@ -8200,6 +8320,136 @@ END
                 VALUES
                     (1, @AttributeId, @ServiceJobId, N'{value.Replace( "'", "''" )}', NEWID())"
             );
+        }
+
+        /// <summary>
+        /// Adds/Overwrites the ServiceJob attribute value.
+        /// This would throw an exception if the Attribute Key does not exist on the Service Job Entity. So please ensure the prior migrations add the attribute.
+        /// </summary>
+        /// <param name="serviceJobGuid">The service job unique identifier.</param>
+        /// <param name="key">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
+        public void AddOrUpdatePostUpdateJobAttributeValue( string serviceJobGuid, string key, string value )
+        {
+            Migration.Sql( $@" 
+                DECLARE @ServiceJobEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.ServiceJob' )
+                DECLARE @ServiceJobId int
+                DECLARE @ServiceJobClass varchar(100)
+                SELECT @ServiceJobId = [Id], @ServiceJobClass = [Class]  FROM [ServiceJob] WHERE [Guid] = '{serviceJobGuid}'
+
+                -- Get the Attribute Id For Service Job by the key
+                DECLARE @AttributeId int
+                SET @AttributeId = (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] = @ServiceJobEntityTypeId
+                        AND [EntityTypeQualifierColumn] = 'Class'
+                        AND [EntityTypeQualifierValue] = @ServiceJobClass
+                        AND [Key] = '{key}' )
+
+                
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId AND [EntityId] = @ServiceJobId
+
+                -- Insert the Attribute Value
+                -- Intentionally not checking if the Attribute Id is null as we expect the SQL to throw an exception if so.
+                INSERT INTO [AttributeValue]
+                    ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
+                VALUES
+                    (1, @AttributeId, @ServiceJobId, N'{value.Replace( "'", "''" )}', NEWID())"
+            );
+        }
+
+        /// <summary>
+        /// Creates a new Post Update Job <see cref="Rock.Jobs.PostUpdateJobs.PostUpdateJob" /> to be run on Rock Start Up.
+        /// By default all Post Update Jobs need to be marked active and are system jobs so that they are not accidentally deleted by the admins.
+        /// </summary>
+        /// <param name="name">The Name of the Job as it should be shown on the job list block in the front end</param>
+        /// <param name="description">The brief description of what the job does</param>
+        /// <param name="jobType"></param>
+        /// <param name="cronExpression">The cron expression the job scheduler may use to run the job. For instance: <b>0 15 2 1/1 * ? *</b></param>
+        /// <param name="guid">The Job Guid</param>
+        public void AddPostUpdateServiceJob( string name, string description, string jobType, string cronExpression, string guid )
+        {
+            Migration.Sql( $@"IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Guid] = '{guid}' )
+    BEGIN
+        INSERT INTO [ServiceJob] (
+            [IsSystem]
+            ,[IsActive]
+            ,[Name]
+            ,[Description]
+            ,[Class]
+            ,[CronExpression]
+            ,[NotificationStatus]
+            ,[Guid] )
+        VALUES ( 
+            1
+            ,1
+            ,'{name}'
+            ,'{description}'
+            ,'{jobType}'
+            ,'{cronExpression}'
+            ,1
+            ,'{guid}'
+            );
+    END" );
+        }
+
+        /// <summary>
+        /// Creates a Service Job to Replace webforms blocks with corresponding obsidian blocks.
+        /// </summary>
+        /// <param name="name">The name of the Job. For instance the list of block types it would be replacing. Restricted to 31 characters due to DB constraints.
+        /// In the front end the name would be prefixed with : "Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks -"
+        /// </param>
+        /// <param name="blockTypeReplacements">A key value pair of the webforms block type GUID to be replaced with the corresponding obsidian block type GUID</param>
+        /// <param name="migrationStrategy">The Migration Strategy to be used to replace the block. It can be either "Chop" or "Swap"</param>
+        /// <param name="jobGuid">The GUID of the job</param>
+        public void ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid )
+        {
+            if ( name.Length > 31 )
+            {
+                throw new ArgumentException( $"Service job name '{name}' exceeds the max limit of 31 characters.", "name" );
+            }
+
+            // note: the cronExpression was chosen at random. It is provided as it is mandatory in the Service Job. Feel free to change it if needed.
+            AddPostUpdateServiceJob(
+                name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks - { name }",
+                description: "This job will replace the  WebForms blocks with their Obsidian blocks on all sites, pages, and layouts.",
+                jobType: "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", cronExpression: "0 0 21 1/1 * ? *", guid: jobGuid);
+
+            // Adding the Attributes for the Job in case they happen to not be present in the database before
+
+            // Attribute: Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks: Block Type Guid Replacement Pairs
+            AddOrUpdateEntityAttribute( "Rock.Model.ServiceJob", Rock.SystemGuid.FieldType.KEY_VALUE_LIST, "Class", "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", "Block Type Guid Replacement Pairs", "Block Type Guid Replacement Pairs", "The key-value pairs of replacement BlockType.Guid values, where the key is the existing BlockType.Guid and the value is the new BlockType.Guid. Blocks of BlockType.Guid == key will be replaced by blocks of BlockType.Guid == value in all sites, pages, and layouts.", 1, "", "CDDB8075-E559-499F-B12F-B8DC8CCD73B5", "BlockTypeGuidReplacementPairs" );
+
+            // Attribute: Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks: Migration 
+            AddOrUpdateEntityAttribute( "Rock.Model.ServiceJob", Rock.SystemGuid.FieldType.SINGLE_SELECT, "Class", "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", "Migration Strategy", "Migration Strategy", "Determines if the blocks should be chopped instead of swapped. By default,the old blocks are swapped with the new ones.", 2, "Swap", "FA99E828-2388-4CDF-B69B-DBC36332D6A4", "MigrationStrategy" );
+
+            // Adding the values to the Attributes for the job
+            AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "BlockTypeGuidReplacementPairs", SerializeDictionary( blockTypeReplacements ) );
+            AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "MigrationStrategy", migrationStrategy );
+        }
+
+        private string SerializeDictionary( Dictionary<string, string> dictionary )
+        {
+            const string keyValueSeparator = "^";
+
+            if ( dictionary?.Any() != true )
+            {
+                return string.Empty;
+            }
+
+            var sb = new StringBuilder();
+            var first = dictionary.First();
+            sb.Append( $"{first.Key}{keyValueSeparator}{first.Value}" );
+
+            foreach ( var kvp in dictionary.Skip( 1 ) )
+            {
+                sb.Append( $"|{kvp.Key}{keyValueSeparator}{kvp.Value}" );
+            }
+
+            return sb.ToString();
         }
 
         #endregion

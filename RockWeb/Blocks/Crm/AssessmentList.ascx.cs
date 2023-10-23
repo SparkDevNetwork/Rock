@@ -107,36 +107,37 @@ namespace Rockweb.Blocks.Crm
 
         #region constants
 
-        protected const string lavaTemplateDefaultValue = @"<div class='panel panel-default'>
-    <div class='panel-heading'>Assessments</div>
-    <div class='panel-body'>
-            {% for assessmenttype in AssessmentTypes %}
-                {% if assessmenttype.LastRequestObject %}
-                    {% if assessmenttype.LastRequestObject.Status == 'Complete' %}
-                        <div class='panel panel-success'>
-                            <div class='panel-heading'>{{ assessmenttype.Title }}<br />
-                                Completed: {{ assessmenttype.LastRequestObject.CompletedDate | Date:'M/d/yyyy'}} <br />
-                                <a href='{{ assessmenttype.AssessmentResultsPath}}'>View Results</a>
-                                &nbsp;&nbsp;{{ assessmenttype.AssessmentRetakeLinkButton }}
-                            </div>
+        protected const string lavaTemplateDefaultValue = @"<div class=""panel panel-default"">
+    <div class=""panel-heading"">Assessments</div>
+    <div class=""panel-body"">
+        {% for assessmenttype in AssessmentTypes %}
+            {% if assessmenttype.LastRequestObject %}
+                {% if assessmenttype.LastRequestObject.Status == 'Complete' %}
+                    <div class='panel panel-success'>
+                        <div class=""panel-heading"">{{ assessmenttype.Title }}<br />
+                            Completed: {{ assessmenttype.LastRequestObject.CompletedDate | Date:'sd' }} <br />
+                            <div>
+                            <a href=""{{ assessmenttype.AssessmentResultsPath}}"" class=""d-inline-block"">View Results</a> {% if assessmenttype.AssessmentRetakePath != '' %}<br/><a href=""{{ assessmenttype.AssessmentRetakePath }}"" class=""d-inline-block mt-2"">Retake Assessment</a>{% endif %}</div>
                         </div>
-                    {% elseif assessmenttype.LastRequestObject.Status == 'Pending' %}
-                        <div class='panel panel-warning'>
-                            <div class='panel-heading'> {{ assessmenttype.Title }}<br />
-                                Requested: {{assessmenttype.LastRequestObject.Requester}} ({{ assessmenttype.LastRequestObject.RequestedDate | Date:'M/d/yyyy'}})<br />
-                                <a href='{{ assessmenttype.AssessmentPath}}'>Start Assessment</a>
-                            </div>
+                    </div>
+                {% elseif assessmenttype.LastRequestObject.Status == 'Pending' %}
+                    <div class=""panel panel-warning"">
+                        <div class=""panel-heading"">
+                            {{ assessmenttype.Title }}<br />
+                            Requested: {{assessmenttype.LastRequestObject.Requester}} ({{ assessmenttype.LastRequestObject.RequestedDate | Date:'sd'}})<br />
+                            <a href=""{{ assessmenttype.AssessmentPath}}"">Start Assessment</a>
                         </div>
-                    {% endif %}
-                    {% else %}
-                        <div class='panel panel-default'>
-                            <div class='panel-heading'> {{ assessmenttype.Title }}<br />
-                                Available<br />
-                                <a href='{{ assessmenttype.AssessmentPath}}'>Start Assessment</a>
-                            </div>
-                        </div>
+                    </div>
                 {% endif %}
-            {% endfor %}
+                {% else %}
+                    <div class=""panel panel-default"">
+                        <div class=""panel-heading"">{{ assessmenttype.Title }}<br/>
+                            Available<br />
+                            <a href=""{{ assessmenttype.AssessmentPath}}"">Start Assessment</a>
+                        </div>
+                    </div>
+            {% endif %}
+        {% endfor %}
     </div>
 </div>";
 
@@ -208,6 +209,7 @@ namespace Rockweb.Blocks.Crm
                     Description = t.Description,
                     AssessmentPath = t.AssessmentPath,
                     AssessmentResultsPath = t.AssessmentResultsPath,
+                    AssessmentRetakePath = "",
                     AssessmentRetakeLinkButton = "",
                     RequiresRequest = t.RequiresRequest,
                     MinDaysToRetake = t.MinimumDaysToRetake,
@@ -250,6 +252,7 @@ namespace Rockweb.Blocks.Crm
                         item.LastRequestObject.CompletedDate.Value.AddDays( item.MinDaysToRetake ) <= RockDateTime.Now &&
                         !item.RequiresRequest )
                     {
+                        item.AssessmentRetakePath = item.AssessmentPath + "?AssessmentId=0";
                         item.AssessmentRetakeLinkButton = string.Format("<a href='{0}?AssessmentId=0'>Retake Assessment</a>", item.AssessmentPath );
                     }
                 }
@@ -309,6 +312,7 @@ namespace Rockweb.Blocks.Crm
             public string Description { get; set; }
             public string AssessmentPath { get; set; }
             public string AssessmentResultsPath { get; set; }
+            public string AssessmentRetakePath { get; set; }
             public string AssessmentRetakeLinkButton { get; set; }
             public bool RequiresRequest { get; set; }
             public int MinDaysToRetake { get; set; }

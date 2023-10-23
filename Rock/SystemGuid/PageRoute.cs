@@ -96,5 +96,10 @@ namespace Rock.SystemGuid
         /// The external site Workflow Entry route 'WorkflowEntry/{WorkflowTypeGuid}'.
         /// </summary>
         public const string EXTERNAL_WORKFLOW_ENTRY = "ABDBED7B-93F5-4341-8B38-5E96F3009A1E";
+
+        /// <summary>
+        /// The library viewer route 'admin/cms/content-library'.
+        /// </summary>
+        public const string LIBRARY_VIEWER = "36648CBD-A1F6-4DF4-81FB-D36DB0932919";
     }
 }

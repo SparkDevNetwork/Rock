@@ -1,0 +1,27 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    {{ formattedValue }}
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { computed } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    /** Contains the human friendly formatted value of the number. */
+    const formattedValue = computed((): string => {
+        if (!props.column.field) {
+            return "";
+        }
+
+        const value = props.row[props.column.field];
+
+        if (typeof value !== "number") {
+            return "";
+        }
+
+        return toCurrencyOrNull(value) ?? "";
+    });
+</script>

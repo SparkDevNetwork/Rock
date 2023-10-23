@@ -33,11 +33,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
     /// <summary>
     /// The mobile block to set scheduling preferences.
     /// </summary>
-    /// <seealso cref="RockMobileBlockType" />
+    /// <seealso cref="RockBlockType" />
     [DisplayName( "Schedule Preferences" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows you to set your scheduling preferences." )]
     [IconCssClass( "fa fa-user-edit" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -53,7 +54,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_SCHEDULE_PREFERENCE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_SCHEDULE_PREFERENCE )]
-    public class GroupSchedulePreference : RockMobileBlockType
+    public class GroupSchedulePreference : RockBlockType
     {
 
         #region Block Attributes
@@ -80,21 +81,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 4;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Groups.GroupSchedulePreference";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 4 );
 
         /// <summary>
         /// Gets the mobile configuration.

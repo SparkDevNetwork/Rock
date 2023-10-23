@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,12 +29,13 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     /// <summary>
     /// Displays an existing prayer request and allows the user to enter the answer to prayer.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Answer To Prayer" )]
     [Category( "Mobile > Prayer" )]
     [Description( "Displays an existing prayer request and allows the user to enter the answer to prayer." )]
     [IconCssClass( "fa fa-reply" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -63,7 +64,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_ANSWER_TO_PRAYER_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "324D5295-72E6-42DF-B111-E428E811B786")]
-    public class AnswerToPrayer : RockMobileBlockType
+    public class AnswerToPrayer : RockBlockType
     {
         /// <summary>
         /// The page parameter keys for the <see cref="AnswerToPrayer"/> block.
@@ -127,21 +128,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 2;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Prayer.AnswerToPrayer";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 2 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

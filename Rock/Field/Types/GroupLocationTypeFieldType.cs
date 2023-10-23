@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,7 +36,7 @@ namespace Rock.Field.Types
     /// Stored as GroupLocationTypeValue.Guid.
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_LOCATION_TYPE )]
     public class GroupLocationTypeFieldType : FieldType, IEntityReferenceFieldType
     {
@@ -43,6 +44,7 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string GROUP_TYPE_KEY = "groupTypeGuid";
+        private const string GROUP_TYPE_LOCATIONS_KEY = "groupTypeLocations";
 
         #endregion
 
@@ -68,6 +70,103 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var locationTypeValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( locationTypeValue != null )
+            {
+                return locationTypeValue.Value;
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                return new ListItemBag()
+                {
+                    Text = DefinedValueCache.Get( privateValue )?.Value,
+                    Value = privateValue
+                }.ToCamelCaseJson( false, true );
+            }
+
+            return base.GetPublicEditValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( publicConfigurationValues.ContainsKey( GROUP_TYPE_KEY ) )
+            {
+                var groupTypeValue= publicConfigurationValues[GROUP_TYPE_KEY].FromJsonOrNull<ListItemBag>();
+                if ( groupTypeValue != null )
+                {
+                    privateConfigurationValues[GROUP_TYPE_KEY] = groupTypeValue.Value;
+                }
+            }
+
+            privateConfigurationValues.Remove( GROUP_TYPE_LOCATIONS_KEY );
+
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+            var groupTypes = new List<GroupTypeCache>();
+
+            if ( publicConfigurationValues.ContainsKey( GROUP_TYPE_KEY ) )
+            {
+                var groupTypeValue = publicConfigurationValues[GROUP_TYPE_KEY];
+                if ( Guid.TryParse( groupTypeValue, out Guid groupTypeGuid ) )
+                {
+                    var groupType = GroupTypeCache.Get( groupTypeGuid );
+                    publicConfigurationValues[GROUP_TYPE_KEY] = new ListItemBag()
+                    {
+                        Text = groupType?.Name,
+                        Value = groupTypeValue
+                    }.ToCamelCaseJson( false, true );
+
+                    // If in Edit mode add GroupType if any so we get its locations.
+                    if ( usage == ConfigurationValueUsage.Edit && groupType != null )
+                    {
+                        groupTypes.Add( groupType );
+                    }
+                }
+            }
+
+            // If in Configure mode get all GroupTypes so we can get their locations
+            if ( usage == ConfigurationValueUsage.Configure )
+            {
+                groupTypes = GroupTypeCache.All();
+            }
+
+            var locationTypes = new Dictionary<string, string>();
+            foreach ( var groupType in groupTypes )
+            {
+                var locationTypeValues = groupType.LocationTypeValues.ConvertAll( g => new ListItemBag() { Text = g.Value, Value = g.Guid.ToString() } );
+                locationTypes.Add( groupType.Guid.ToString(), locationTypeValues.ToCamelCaseJson( false, true ) );
+            }
+
+            publicConfigurationValues.Add( GROUP_TYPE_LOCATIONS_KEY, locationTypes.ToCamelCaseJson( false, true ) );
+
+            return publicConfigurationValues;
+        }
 
         #endregion
 

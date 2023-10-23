@@ -582,6 +582,16 @@ namespace Rock.Model
         [DataMember]
         public bool IsRegistrationMeteringEnabled { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show SMS opt in].
+        /// When enabled a checkbox will be shown next ot each mobile phone number for registrants allowing the registrar to enable SMS messaging for this number.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowSmsOptIn { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

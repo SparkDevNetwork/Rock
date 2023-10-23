@@ -222,11 +222,11 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rAccountFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rAccountFilter.SaveUserPreference( "Account Name", txtAccountName.Text );
-            rAccountFilter.SaveUserPreference( "Campus", ddlCampus.SelectedValue );
-            rAccountFilter.SaveUserPreference( "Active", ddlIsActive.SelectedValue );
-            rAccountFilter.SaveUserPreference( "Public", ddlIsPublic.SelectedValue );
-            rAccountFilter.SaveUserPreference( "Tax Deductible", ddlIsTaxDeductible.SelectedValue );
+            rAccountFilter.SetFilterPreference( "Account Name", txtAccountName.Text );
+            rAccountFilter.SetFilterPreference( "Campus", ddlCampus.SelectedValue );
+            rAccountFilter.SetFilterPreference( "Active", ddlIsActive.SelectedValue );
+            rAccountFilter.SetFilterPreference( "Public", ddlIsPublic.SelectedValue );
+            rAccountFilter.SetFilterPreference( "Tax Deductible", ddlIsTaxDeductible.SelectedValue );
             BindGrid();
         }
 
@@ -266,31 +266,31 @@ namespace RockWeb.Blocks.Finance
                 accountQuery = accountQuery.Where( account => account.ParentAccountId == null );
             }
 
-            string accountNameFilter = rAccountFilter.GetUserPreference( "Account Name" );
+            string accountNameFilter = rAccountFilter.GetFilterPreference( "Account Name" );
             if ( !string.IsNullOrEmpty( accountNameFilter ) )
             {
                 accountQuery = accountQuery.Where( account => account.Name.Contains( accountNameFilter ) );
             }
 
             int campusId = int.MinValue;
-            if ( int.TryParse( rAccountFilter.GetUserPreference( "Campus" ), out campusId ) )
+            if ( int.TryParse( rAccountFilter.GetFilterPreference( "Campus" ), out campusId ) )
             {
                 accountQuery = accountQuery.Where( account => account.Campus.Id == campusId );
             }
 
-            string publicFilter = rAccountFilter.GetUserPreference( "Public" );
+            string publicFilter = rAccountFilter.GetFilterPreference( "Public" );
             if ( !string.IsNullOrWhiteSpace( publicFilter ) )
             {
                 accountQuery = accountQuery.Where( account => ( account.IsPublic ?? false ) == ( publicFilter == "Yes" ) );
             }
 
-            string activeFilter = rAccountFilter.GetUserPreference( "Active" );
+            string activeFilter = rAccountFilter.GetFilterPreference( "Active" );
             if ( !string.IsNullOrWhiteSpace( activeFilter ) )
             {
                 accountQuery = accountQuery.Where( account => account.IsActive == ( activeFilter == "Yes" ) );
             }
 
-            string taxDeductibleFilter = rAccountFilter.GetUserPreference( "Tax Deductible" );
+            string taxDeductibleFilter = rAccountFilter.GetFilterPreference( "Tax Deductible" );
             if ( !string.IsNullOrWhiteSpace( taxDeductibleFilter ) )
             {
                 accountQuery = accountQuery.Where( account => account.IsTaxDeductible == ( taxDeductibleFilter == "Yes" ) );
@@ -315,18 +315,18 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindFilter()
         {
-            txtAccountName.Text = rAccountFilter.GetUserPreference( "Account Name" );
+            txtAccountName.Text = rAccountFilter.GetFilterPreference( "Account Name" );
             ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
             foreach ( var campus in CampusCache.All() )
             {
                 ListItem li = new ListItem( campus.Name, campus.Id.ToString() );
-                li.Selected = campus.Id.ToString() == rAccountFilter.GetUserPreference( "Campus" );
+                li.Selected = campus.Id.ToString() == rAccountFilter.GetFilterPreference( "Campus" );
                 ddlCampus.Items.Add( li );
             }
 
-            ddlIsActive.SelectedValue = rAccountFilter.GetUserPreference( "Active" );
-            ddlIsPublic.SelectedValue = rAccountFilter.GetUserPreference( "Public" );
-            ddlIsTaxDeductible.SelectedValue = rAccountFilter.GetUserPreference( "Tax Deductible" );
+            ddlIsActive.SelectedValue = rAccountFilter.GetFilterPreference( "Active" );
+            ddlIsPublic.SelectedValue = rAccountFilter.GetFilterPreference( "Public" );
+            ddlIsTaxDeductible.SelectedValue = rAccountFilter.GetFilterPreference( "Tax Deductible" );
         }
 
         /// <summary>

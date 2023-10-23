@@ -1,0 +1,71 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="skeleton-container">
+        <slot />
+    </div>
+</template>
+
+<style>
+.table-obsidian > tbody > tr > td .skeleton-text {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+}
+</style>
+
+<style scoped>
+.skeleton-container {
+    display: flex;
+    flex: 1 1 auto;
+}
+
+.skeleton-container :deep(.skeleton) {
+    background: #ddd;
+    background: linear-gradient(90deg, #ddd 0%, #f0f0f0 8%, #ddd 16%);
+    background-size: 200% 100%;
+    background-position-x: 100%;
+    animation: 2s skeleton ease-in infinite;
+}
+
+.skeleton-container :deep(.skeleton-rounded) {
+    border-radius: 4px;
+}
+
+.skeleton-container :deep(.skeleton-text) {
+    height: 1em;
+    flex: 1 1 auto;
+}
+
+.skeleton-container :deep(.skeleton-xs) {
+    background: linear-gradient(90deg, #ddd 0%, #f0f0f0 12%, #ddd 24%);
+    background-size: 200% 100%;
+    background-position-x: 100%;
+}
+
+.skeleton-container :deep(.skeleton-sm) {
+    background: linear-gradient(90deg, #ddd 0%, #f0f0f0 14%, #ddd 28%);
+    background-size: 200% 100%;
+    background-position-x: 100%;
+}
+
+.skeleton-container :deep(.skeleton-md) {
+    background: linear-gradient(90deg, #ddd 0%, #f0f0f0 8%, #ddd 16%);
+    background-size: 200% 100%;
+    background-position-x: 100%;
+}
+
+.skeleton-container :deep(.skeleton-lg) {
+    background: linear-gradient(90deg, #ddd 0%, #f0f0f0 5%, #ddd 10%);
+    background-size: 200% 100%;
+    background-position-x: 100%;
+}
+
+@keyframes skeleton {
+  to {
+    background-position-x: -100%;
+  }
+}
+</style>
+
+<script setup lang="ts">
+    // No content needed.
+</script>

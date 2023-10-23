@@ -1,0 +1,98 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <BaseAsyncPicker v-model="internalValue"
+                     v-bind="standardProps"
+                     :items="actualItems" />
+</template>
+
+<script setup lang="ts">
+    import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { RegistrationInstancePickerGetRegistrationInstancesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/registrationInstancePickerGetRegistrationInstancesOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, computed, ref, watch } from "vue";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        /** The currently selected campus value(s). */
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        /** GUID for the Registration Template that you want to pull instances from */
+        registrationTemplateGuid: {
+            type: String as PropType<Guid>,
+            default: null
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const standardProps = useStandardAsyncPickerProps(props);
+    const http = useHttp();
+    const loadedItems = ref<ListItemBag[] | null>(null);
+
+    const securityGrantToken = useSecurityGrantToken();
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const actualItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedItems.value || loadOptions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the items from the server.
+     */
+    async function loadOptions(): Promise<ListItemBag[]> {
+        if (!props.registrationTemplateGuid) {
+            loadedItems.value = [];
+            return [];
+        }
+
+        const options: RegistrationInstancePickerGetRegistrationInstancesOptionsBag = {
+            registrationTemplateGuid: props.registrationTemplateGuid,
+            securityGrantToken: securityGrantToken.value
+        };
+
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/RegistrationInstancePickerGetRegistrationInstances", null, options);
+
+        if (result.isSuccess && result.data) {
+            loadedItems.value = result.data;
+
+            return loadedItems.value ?? [];
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedItems.value = [];
+            return [];
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.registrationTemplateGuid, () => loadedItems.value = null);
+
+        // #endregion
+</script>

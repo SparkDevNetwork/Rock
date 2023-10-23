@@ -139,16 +139,16 @@ namespace RockWeb.Blocks.Security.Oidc
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfSettings.SaveUserPreference( UserPreferenceKey.Name, tbName.Text );
-            gfSettings.SaveUserPreference( UserPreferenceKey.PublicName, tbPublicName.Text );
+            gfSettings.SetFilterPreference( UserPreferenceKey.Name, tbName.Text );
+            gfSettings.SetFilterPreference( UserPreferenceKey.PublicName, tbPublicName.Text );
 
             if ( ddlActiveFilter.SelectedValue == "all" )
             {
-                gfSettings.SaveUserPreference( UserPreferenceKey.ActiveStatus, string.Empty );
+                gfSettings.SetFilterPreference( UserPreferenceKey.ActiveStatus, string.Empty );
             }
             else
             {
-                gfSettings.SaveUserPreference( UserPreferenceKey.ActiveStatus, ddlActiveFilter.SelectedValue );
+                gfSettings.SetFilterPreference( UserPreferenceKey.ActiveStatus, ddlActiveFilter.SelectedValue );
             }
 
             BindGrid();
@@ -246,11 +246,11 @@ namespace RockWeb.Blocks.Security.Oidc
         /// </summary>
         private void BindFilter()
         {
-            tbName.Text = gfSettings.GetUserPreference( UserPreferenceKey.Name );
-            tbPublicName.Text = gfSettings.GetUserPreference( UserPreferenceKey.PublicName );
+            tbName.Text = gfSettings.GetFilterPreference( UserPreferenceKey.Name );
+            tbPublicName.Text = gfSettings.GetFilterPreference( UserPreferenceKey.PublicName );
 
             // Set the Active Status
-            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfSettings.GetUserPreference( UserPreferenceKey.ActiveStatus ) );
+            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfSettings.GetFilterPreference( UserPreferenceKey.ActiveStatus ) );
             if ( itemActiveStatus != null )
             {
                 itemActiveStatus.Selected = true;

@@ -15,7 +15,11 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { trackModalState } from "./page";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
+declare const Rock: any;
 
 type DialogOptions = {
     message: string;
@@ -31,7 +35,7 @@ type ButtonOptions = {
 
 /**
  * Creates a dialog to display a message.
- * 
+ *
  * @param body The body content to put in the dialog.
  * @param footer The footer content to put in the dialog.
  *
@@ -138,7 +142,7 @@ function createBackdrop(): HTMLElement {
  * Shows a dialog modal. This is meant to look and behave like the standard
  * Rock.dialog.* functions, but this handles fullscreen mode whereas the old
  * methods do not.
- * 
+ *
  * @param options The options that describe the dialog to be shown.
  *
  * @returns The key of the button that was clicked, or "cancel" if the cancel button was clicked.
@@ -155,7 +159,7 @@ function showDialog(options: DialogOptions): Promise<string> {
         /**
          * Internal function to handle clearing the dialog and resolving the
          * promise.
-         * 
+         *
          * @param result The result to return in the promise.
          */
         function clearDialog(result: string): void {
@@ -227,7 +231,7 @@ function showDialog(options: DialogOptions): Promise<string> {
 
 /**
  * Shows an alert message that requires the user to acknowledge.
- * 
+ *
  * @param message The message text to be displayed.
  *
  * @returns A promise that indicates when the dialog has been dismissed.
@@ -248,7 +252,7 @@ export async function alert(message: string): Promise<void> {
 /**
  * Shows a confirmation dialog that consists of OK and Cancel buttons. The
  * user will be required to click one of these two buttons.
- * 
+ *
  * @param message The message to be displayed inside the dialog.
  *
  * @returns A promise that indicates when the dialog has been dismissed. The
@@ -292,4 +296,15 @@ export function confirmDelete(typeName: string, additionalMessage?: string): Pro
     }
 
     return confirm(message);
+}
+
+/**
+ * Shows the security dialog for the given entity.
+ *
+ * @param entityTypeIdKey The identifier of the entity's type.
+ * @param entityIdKey The identifier of the entity to secure.
+ * @param entityTitle The title of the entity. This is used to construct the modal title.
+ */
+export function showSecurity(entityTypeIdKey: Guid | string | number, entityIdKey: Guid | string | number, entityTitle: string = "Item"): void {
+    Rock.controls.modal.show(undefined, `/Secure/${entityTypeIdKey}/${entityIdKey}?t=Secure ${entityTitle}&pb=&sb=Done`);
 }

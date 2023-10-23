@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,50 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// PersonDuplicate View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( PersonDuplicate ) )]
-    public partial class PersonDuplicateViewModelHelper : ViewModelHelper<PersonDuplicate, PersonDuplicateBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override PersonDuplicateBag CreateViewModel( PersonDuplicate model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new PersonDuplicateBag
-            {
-                IdKey = model.IdKey,
-                Capacity = model.Capacity,
-                DuplicatePersonAliasId = model.DuplicatePersonAliasId,
-                IgnoreUntilScoreChanges = model.IgnoreUntilScoreChanges,
-                IsConfirmedAsNotDuplicate = model.IsConfirmedAsNotDuplicate,
-                PersonAliasId = model.PersonAliasId,
-                Score = model.Score,
-                ScoreDetail = model.ScoreDetail,
-                TotalCapacity = model.TotalCapacity,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -177,20 +129,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static PersonDuplicateBag ToViewModel( this PersonDuplicate model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new PersonDuplicateViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

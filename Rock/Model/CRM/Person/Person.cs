@@ -15,6 +15,11 @@
 // </copyright>
 //
 
+using Rock.Data;
+using Rock.Enums.Crm;
+using Rock.Lava;
+using Rock.UniversalSearch;
+using Rock.Utility.Enums;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,13 +27,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Data;
-using Rock.Enums.Crm;
-using Rock.Lava;
-using Rock.UniversalSearch;
-using Rock.Utility.Enums;
 
 namespace Rock.Model
 {
@@ -228,6 +227,12 @@ namespace Rock.Model
         [DataMember]
         public int? PhotoId { get; set; }
 
+        #region Birthday Fields
+
+        private int? _birthday;
+        private int? _birthmonth;
+        private int? _birthyear;
+
         /// <summary>
         /// Gets or sets the day of the month portion of the Person's birth date.
         /// </summary>
@@ -236,7 +241,17 @@ namespace Rock.Model
         /// this value will be null.
         /// </value>
         [DataMember]
-        public int? BirthDay { get; set; }
+        public int? BirthDay
+        {
+            get => _birthday;
+            set
+            {
+                _birthday = value;
+                // updating the Age so as to keep it consistent with the birthyear
+                // the BirthDate field is updated automatically unlike the Age.
+                Age = Person.GetAge( BirthDate, null );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the month portion of the Person's birth date.
@@ -245,7 +260,17 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the month portion of the Person's birth date. If the birth date is not known this value will be null.
         /// </value>
         [DataMember]
-        public int? BirthMonth { get; set; }
+        public int? BirthMonth
+        {
+            get => _birthmonth;
+            set
+            {
+                _birthmonth = value;
+                // updating the Age so as to keep it consistent with the birthyear
+                // the BirthDate field is updated automatically unlike the Age.
+                Age = Person.GetAge( BirthDate, null );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the year portion of the Person's birth date.
@@ -254,7 +279,34 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the year portion of the Person's birth date. If the birth date is not known this value will be null.
         /// </value>
         [DataMember]
-        public int? BirthYear { get; set; }
+        public int? BirthYear
+        {
+            get => _birthyear;
+            set
+            {
+                _birthyear = value;
+                // updating the Age so as to keep it consistent with the birthyear
+                // the BirthDate field is updated automatically unlike the Age.
+                Age = Person.GetAge( BirthDate, null );
+            }
+        }
+
+        /// <summary>
+        /// Gets the Person's age.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing the person's age. Returns null if the birthdate or birthyear is not available.
+        /// </value>
+        [DataMember]
+        public int? Age
+        {
+            get;
+            // The setter has been explicitly set to private as the value of this property is dependent on the birthday fields
+            // and should not be manipulated otherwise.
+            private set;
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets or sets the gender of the Person. This property is required.
@@ -575,16 +627,6 @@ namespace Rock.Model
         [DataMember]
         public int? BirthDateKey { get; set; }
 
-
-        /// <summary>
-        /// Gets the Person's age.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Int32"/> representing the person's age. Returns null if the birthdate or birthyear is not available.
-        /// </value>
-        [DataMember]
-        public int? Age { get; set; }
-
         /// <summary>
         /// Gets or sets the age bracket.
         /// </summary>
@@ -592,7 +634,84 @@ namespace Rock.Model
         /// The age range.
         /// </value>
         [DataMember]
-        public AgeBracket AgeBracket { get; set; }
+        public AgeBracket AgeBracket { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the First Name pronunciation override.
+        /// </summary>
+        /// <value>
+        /// A string with a pronunciation of the first name.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string FirstNamePronunciationOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the nick Name pronunciation override.
+        /// </summary>
+        /// <value>
+        /// A string with a pronunciation of the nick name.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string NickNamePronunciationOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last Name pronunciation override.
+        /// </summary>
+        /// <value>
+        /// A string with a pronunciation of the last name.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string LastNamePronunciationOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notes for the pronunciation.
+        /// </summary>
+        /// <value>
+        /// A string with notes on the pronunciation.
+        /// </value>
+        [MaxLength( 1000 )]
+        [DataMember]
+        public string PronunciationNote { get; set; }
+
+
+        /**
+            6/29/2023 - KA
+
+            The PrimaryAliasId is not configured as a foreign key with a navigation property to the PersonAlias
+            table because Person.Id is already referenced as a foreign key on PersonAlias. Introducing a foreign
+            key here back to that table makes delete operations tricky because either one must be deleted first
+            before the other can be deleted and at the same time neither can be deleted because it is referenced
+            by the other table.
+        */
+
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see> identifier.
+        /// </summary>
+        /// <value>
+        /// The primary alias identifier.
+        /// </value>
+        [DataMember]
+        public int? PrimaryAliasId
+        {
+            get
+            {
+                var id = _primaryAliasId ?? PrimaryAlias?.Id;
+                if ( id == 0 )
+                {
+                    // This is not a valid reference to a persisted PersonAlias.
+                    // In this case, most verification code will expect a null value to be returned.
+                    return null;
+                }
+                return id;
+            }
+
+            set => _primaryAliasId = value;
+        }
+
+        private int? _primaryAliasId;
 
         #endregion
 

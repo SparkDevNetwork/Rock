@@ -1,0 +1,19 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <label class="control-label">
+        <slot />
+        <HelpBlock v-if="props.help" :text="props.help" />
+    </label>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import HelpBlock from "./helpBlock.obs";
+
+    const props = defineProps({
+        help: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+</script>

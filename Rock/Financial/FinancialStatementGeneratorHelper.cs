@@ -378,7 +378,7 @@ namespace Rock.Financial
                 var lavaTemplateLava = financialStatementTemplate.ReportTemplate;
                 var lavaTemplateFooterHtmlFragment = financialStatementTemplate.FooterSettings.HtmlFragment;
 
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false, GetDeviceFamily = false, GetOSFamily = false, GetPageContext = false, GetPageParameters = false, GetCampuses = true, GetCurrentPerson = true } );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetDeviceFamily = false, GetOSFamily = false, GetPageContext = false, GetPageParameters = false, GetCampuses = true, GetCurrentPerson = true } );
                 mergeFields.Add( MergeFieldKey.RenderMedium, financialStatementGeneratorOptions.RenderMedium );
                 mergeFields.Add( MergeFieldKey.FinancialStatementTemplate, financialStatementTemplate );
                 mergeFields.Add( MergeFieldKey.RenderedPageCount, financialStatementGeneratorRecipientRequest.FinancialStatementGeneratorRecipient.RenderedPageCount );
@@ -1291,7 +1291,7 @@ namespace Rock.Financial
             if ( documentName.IsNullOrWhiteSpace() &&
                  documentNameTemplate.IsNotNullOrWhiteSpace() )
             {
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false, GetDeviceFamily = false, GetOSFamily = false, GetPageContext = false, GetPageParameters = false, GetCampuses = true, GetCurrentPerson = true } );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetDeviceFamily = false, GetOSFamily = false, GetPageContext = false, GetPageParameters = false, GetCampuses = true, GetCurrentPerson = true } );
                 mergeFields.AddOrReplace( "NickName", uploadGivingStatementData.FinancialStatementGeneratorRecipient.NickName );
                 mergeFields.AddOrReplace( "LastName", uploadGivingStatementData.FinancialStatementGeneratorRecipient.LastName );
                 mergeFields.AddOrReplace( "DocumentPurposeKey", uploadGivingStatementData.FinancialStatementIndividualSaveOptions.DocumentPurposeKey );

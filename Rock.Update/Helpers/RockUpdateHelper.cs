@@ -56,7 +56,7 @@ namespace Rock.Update.Helpers
 
             try
             {
-                envData.Add( "SqlVersion", DbService.ExecuteScaler( "SELECT SERVERPROPERTY('productversion')" ).ToString() );
+                envData.Add( "SqlVersion", DbService.ExecuteScalar( "SELECT SERVERPROPERTY('productversion')" ).ToString() );
             }
             catch
             {

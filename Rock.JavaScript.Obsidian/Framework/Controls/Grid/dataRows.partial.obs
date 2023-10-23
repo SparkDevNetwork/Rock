@@ -1,0 +1,67 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DataRow v-for="(row, index) in props.rows"
+             :key="props.grid.getRowKey(row)"
+             :columns="props.columns"
+             :row="row"
+             :grid="props.grid"
+             :tooltipField="props.tooltipField"
+             :isSelectable="isSelectable"
+             :isEven="(index + 1) % 2 === 0"
+             @click="onRowClick" />
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import DataRow from "./dataRow.partial.obs";
+    import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
+
+    const props = defineProps({
+        /**
+         * The array of columns that should be displayed in the data rows.
+         * This may be different than the columns defined in the grid but
+         * must be a subset of them.
+         */
+        columns: {
+            type: Array as PropType<ReadonlyArray<ColumnDefinition>>,
+            required: true
+        },
+
+        /** The rows that contain the data to be displayed. */
+        rows: {
+            type: Array as PropType<Record<string, unknown>[]>,
+            required: true
+        },
+
+        /** The grid that contains all the state information. */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        },
+
+        /** The field that will be used to display per-row tooltips. */
+        tooltipField: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** True if any data row is selectable. */
+        isSelectable: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "click", key: string): void
+    }>();
+
+    /**
+     * Called when a single row has been clicked.
+     *
+     * @param key The key of the row that was clicked.
+     */
+    function onRowClick(key: string): void {
+        emit("click", key);
+    }
+</script>

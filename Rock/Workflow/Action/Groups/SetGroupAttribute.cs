@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Group Attribute Set" )]
 
     [WorkflowAttribute( "Group", "The attribute containing the group whose attribute will be set.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.GroupFieldType" } )]
+        new string[] { "Rock.Field.Types.GroupFieldType" } )]
 
     [TextField( "Group Attribute Key", "The attribute key to use for the group attribute.", true, "", "", 2 )]
 

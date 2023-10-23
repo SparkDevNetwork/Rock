@@ -441,7 +441,11 @@ namespace Rock.Web
             routesToInsert.Ignore( "{resource}.axd/{*pathInfo}" );
 
             //Add page routes, order is very important here as IIS takes the first match
-            IOrderedEnumerable<PageRoute> pageRoutes = pageRouteService.Queryable().AsNoTracking().ToList().OrderBy( r => r.Route, StringComparer.OrdinalIgnoreCase );
+            IOrderedEnumerable<PageRoute> pageRoutes = pageRouteService.Queryable()
+                .AsNoTracking()
+                .Where( r => r.Page.Layout.Site.SiteType == SiteType.Web )
+                .ToList()
+                .OrderBy( r => r.Route, StringComparer.OrdinalIgnoreCase );
 
             foreach ( var pageRoute in pageRoutes )
             {

@@ -430,7 +430,7 @@
             /**
             * Toggle the picker on and off when the control's link is clicked.
             */
-            $('#' + controlId + ' a.picker-label').on('click', function (e) {
+            $('#' + controlId + ' .picker-label').on('click', function (e) {
                 e.preventDefault();
                 var $control = $('#' + controlId);
                 $(this).toggleClass("active");

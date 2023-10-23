@@ -1,0 +1,30 @@
+<template>
+    <GalleryAndResult :title="field.name" :values="values" :attributes="attributes" fieldTypeEditor>
+        <FieldTypeEditor v-model="editorValue" showConfigOnly />
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor.obs";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import { PropType, ref } from "vue";
+    import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
+    import { FieldComponent } from "./types.partial";
+    import { getAttributeData } from "./utils.partial";
+
+    const props = defineProps({
+        field: {
+            type: Object as PropType<FieldComponent>,
+            required: true
+        }
+    });
+
+    const editorValue = ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag>({
+        configurationValues: props.field.initialConfigValues,
+        fieldTypeGuid: props.field.fieldTypeGuid
+    });
+
+    const values = { "value1": "", "value2": props.field.initialValue };
+
+    const attributes = getAttributeData(props.field.name, props.field.fieldTypeGuid, props.field.initialConfigValues);
+</script>

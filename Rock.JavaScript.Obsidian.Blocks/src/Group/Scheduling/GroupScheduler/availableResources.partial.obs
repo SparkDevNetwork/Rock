@@ -32,7 +32,7 @@
     import { PropType } from "vue";
     import ResourceNotes from "./resourceNotes.partial.obs";
     import { ISchedulerResource } from "./types.partial";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({

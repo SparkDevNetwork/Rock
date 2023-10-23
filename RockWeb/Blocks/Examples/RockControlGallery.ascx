@@ -51,6 +51,8 @@
 
                     <h1 runat="server">General Information</h1>
 
+                    <Rock:BlockTemplatePicker ID="lfkjs" runat="server" />
+
                     <h2 id="input-sizing">Input Sizing Rules</h2>
 
                     <div class="alert alert-warning">
@@ -981,7 +983,7 @@ Horizontal Rule
                     <a id="CampusAccountAmountPicker"></a>
                     <h2 runat="server">Rock:CampusAccountAmountPicker</h2><span>(SingleAccount Mode)</span>
                     <div runat="server" class="r-example">
-                        <Rock:CampusAccountAmountPicker ID="caapExampleSingleAccount" runat="server" AmountEntryMode="SingleAccount" AutoPostBack="true" OnAccountChanged="caapExample_Changed" />
+                        <Rock:CampusAccountAmountPicker ID="caapExampleSingleAccount" runat="server" AmountEntryMode="SingleAccount" AutoPostBack="true" OnAccountChanged="caapExample_Changed" OnCampusChanged="caapExample_Changed" />
 
                         <hr />
                         <Rock:RockLiteral ID="lCaapExampleSingleAccountResultAccount" runat="server" Label="Resulting Campus Account" Text="-"/>
@@ -989,7 +991,7 @@ Horizontal Rule
 
                     <h2 runat="server">Rock:CampusAccountAmountPicker</h2><span>(MultipleAccounts Mode)</span>
                     <div runat="server" class="r-example">
-                        <Rock:CampusAccountAmountPicker ID="caapExampleMultiAccount" runat="server" AmountEntryMode="MultipleAccounts" OnAccountChanged="caapExample_Changed"/>
+                        <Rock:CampusAccountAmountPicker ID="caapExampleMultiAccount" runat="server" AmountEntryMode="MultipleAccounts" OnAccountChanged="caapExample_Changed" OnCampusChanged="caapExample_Changed" />
 
                          <hr />
                         <Rock:RockLiteral ID="lCaapExampleMultiAccountResultAccount" runat="server" Label="Resulting Campus Accounts" Text="-" />

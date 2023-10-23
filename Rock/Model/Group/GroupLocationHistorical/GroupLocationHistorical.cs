@@ -175,6 +175,8 @@ namespace Rock.Model
         /// The group location historical schedules.
         /// </value>
         [DataMember]
+        [Obsolete( "The GroupLocationHistoricalSchedule entity and its usages will be removed." )]
+        [RockObsolete( "1.16" )]
         public virtual ICollection<GroupLocationHistoricalSchedule> GroupLocationHistoricalSchedules { get; set; }
 
         #endregion

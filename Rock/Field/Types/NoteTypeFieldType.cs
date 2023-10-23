@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,10 +34,13 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as NoteType.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.NOTE_TYPE )]
     public class NoteTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
+        private const string VALUES_PUBLIC_KEY = "values";
+        private const string ENTITY_TYPES = "entityTypes";
+
         #region Configuration
 
         /// <summary>
@@ -53,6 +57,85 @@ namespace Rock.Field.Types
         /// Qualifier Value Key
         /// </summary>
         protected const string QUALIFIER_VALUE_KEY = "qualifierValue";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            if ( usage == ConfigurationValueUsage.Configure )
+            {
+                publicConfigurationValues[ENTITY_TYPES] = new EntityTypeService( new RockContext() )
+                    .GetEntities()
+                    .OrderBy( e => e.FriendlyName )
+                    .ThenBy( e => e.Name )
+                    .ToList()
+                    .Select( e => e.ToListItemBag() )
+                    .ToCamelCaseJson( false, true );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeGuid = privateConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY );
+                if ( string.IsNullOrWhiteSpace( entityTypeGuid ) )
+                {
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = new NoteTypeService( rockContext )
+                        .Queryable()
+                        .OrderBy( n => n.EntityType.Name )
+                        .ThenBy( n => n.Name )
+                        .Select( n => new
+                        {
+                            EntityTypeFriendlyName = n.EntityType.FriendlyName,
+                            n.Name,
+                            n.Guid
+                        } ) // creating this anonymous object to prevent further calls database
+                        .ToList() // getting the results to the memory so that the subsequent operations do not throw InvalidOperationException
+                        .Select( n => new ListItemBag
+                        {
+                            Text = $"{n.EntityTypeFriendlyName}: {n.Name}",
+                            Value = n.Guid.ToString().ToUpper()
+                        } )
+                        .ToCamelCaseJson( false, true );
+                }
+                else
+                {
+                    int entityTypeId = 0;
+                    string qualifierColumn = string.Empty;
+                    string qualifierValue = string.Empty;
+
+                    if ( privateConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+                    {
+                        if ( !string.IsNullOrWhiteSpace( entityTypeGuid ) && entityTypeGuid != None.IdValue )
+                        {
+                            var entityType = EntityTypeCache.Get( entityTypeGuid.AsGuid() );
+                            if ( entityType != null )
+                            {
+                                entityTypeId = entityType.Id;
+                            }
+                        }
+                    }
+                    if ( publicConfigurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) )
+                    {
+                        qualifierColumn = publicConfigurationValues[QUALIFIER_COLUMN_KEY];
+                    }
+
+                    if ( publicConfigurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
+                    {
+                        qualifierValue = publicConfigurationValues[QUALIFIER_VALUE_KEY];
+                    }
+
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = new NoteTypeService( rockContext )
+                        .Get( entityTypeId, qualifierColumn, qualifierValue )
+                        .OrderBy( n => n.Name )
+                        .Select( n => new ListItemBag
+                        {
+                            Text = n.Name,
+                            Value = n.Guid.ToString().ToUpper()
+                        } ).ToCamelCaseJson( false, true );
+                }
+            }
+            return publicConfigurationValues;
+        }
 
         #endregion
 

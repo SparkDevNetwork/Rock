@@ -34,7 +34,7 @@ export const EditComponent = defineComponent({
     },
 
     setup(props, { emit }) {
-        const internalValue = computed<MonthDayValue>({
+        const internalValue = computed<MonthDayValue | undefined>({
             get() {
                 const components = (props.modelValue || "").split("/");
 
@@ -45,14 +45,11 @@ export const EditComponent = defineComponent({
                     };
                 }
                 else {
-                    return {
-                        month: 0,
-                        day: 0
-                    };
+                    return undefined;
                 }
             },
-            set(newVal: MonthDayValue) {
-                const value = newVal.month !== 0 && newVal.day !== 0
+            set(newVal: MonthDayValue | undefined) {
+                const value = newVal && newVal.month !== 0 && newVal.day !== 0
                     ? `${newVal.month}/${newVal.day}`
                     : "";
 

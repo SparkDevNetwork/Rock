@@ -1,0 +1,69 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="numberincrement">
+        <a @click="goDown" class="numberincrement-down" :class="{ disabled: disabled || isDownDisabled }" :disabled="disabled || isDownDisabled">
+            <i class="fa fa-minus "></i>
+        </a>
+        <span class="numberincrement-value">{{ internalValue }}</span>
+        <a @click="goUp" class="numberincrement-up" :class="{ disabled: disabled || isUpDisabled }" :disabled="disabled || isUpDisabled">
+            <i class="fa fa-plus "></i>
+        </a>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        modelValue: {
+            type: Number as PropType<number>,
+            required: true
+        },
+        min: {
+            type: Number as PropType<number>,
+            default: 1
+        },
+        max: {
+            type: Number as PropType<number>,
+            default: 10
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: number): void;
+    }>();
+
+    const internalValue = ref(props.modelValue);
+
+    const isUpDisabled = computed((): boolean => {
+        return internalValue.value >= props.max;
+    });
+
+    const isDownDisabled = computed((): boolean => {
+        return internalValue.value <= props.min;
+    });
+
+    function goUp(): void {
+        if (!isUpDisabled.value) {
+            internalValue.value++;
+        }
+    }
+
+    function goDown(): void {
+        if (!isDownDisabled.value) {
+            internalValue.value--;
+        }
+    }
+
+    watch(() => props.modelValue, () => {
+        internalValue.value = props.modelValue;
+    });
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+</script>

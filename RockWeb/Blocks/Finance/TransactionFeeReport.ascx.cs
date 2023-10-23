@@ -81,7 +81,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindFilter()
         {
-            var slidingDateRangeDelimitedValues = this.GetBlockUserPreference( UserPreferenceKey.SlidingDateRangeDelimitedValues );
+            var preferences = GetBlockPersonPreferences();
+            var slidingDateRangeDelimitedValues = preferences.GetValue( UserPreferenceKey.SlidingDateRangeDelimitedValues );
             if ( slidingDateRangeDelimitedValues.IsNotNullOrWhiteSpace() )
             {
                 srpFilterDates.DelimitedValues = slidingDateRangeDelimitedValues;
@@ -93,7 +94,7 @@ namespace RockWeb.Blocks.Finance
                 srpFilterDates.NumberOfTimeUnits = 3;
             }
 
-            var accountIds = this.GetBlockUserPreference( UserPreferenceKey.AccountIds ).SplitDelimitedValues().AsIntegerList();
+            var accountIds = preferences.GetValue( UserPreferenceKey.AccountIds ).SplitDelimitedValues().AsIntegerList();
             apAccounts.SetValues( accountIds );
         }
 
@@ -132,14 +133,16 @@ namespace RockWeb.Blocks.Finance
         {
             var rockContext = new RockContext();
             var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
+            var preferences = GetBlockPersonPreferences();
 
             var qry = financialTransactionDetailService.Queryable();
 
             var startDateTime = srpFilterDates.SelectedDateRange.Start;
             var endDateTime = srpFilterDates.SelectedDateRange.End;
 
-            this.SetBlockUserPreference( UserPreferenceKey.SlidingDateRangeDelimitedValues, srpFilterDates.DelimitedValues );
-            this.SetBlockUserPreference( UserPreferenceKey.AccountIds, apAccounts.SelectedIds.ToList().AsDelimited( "," ) );
+            preferences.SetValue( UserPreferenceKey.SlidingDateRangeDelimitedValues, srpFilterDates.DelimitedValues );
+            preferences.SetValue( UserPreferenceKey.AccountIds, apAccounts.SelectedIds.ToList().AsDelimited( "," ) );
+            preferences.Save();
 
             qry = qry.Where( a => a.Transaction.TransactionDateTime >= startDateTime && a.Transaction.TransactionDateTime < endDateTime );
 

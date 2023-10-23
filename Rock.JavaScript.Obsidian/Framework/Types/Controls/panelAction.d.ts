@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+
 /** The type to use for coloring and styling of the action. */
 export type PanelActionType = "default" | "primary" | "success" | "info" | "warning" | "danger" | "link";
 
@@ -35,7 +37,7 @@ export type PanelAction = {
     iconCssClass?: string;
 
     /** The type of action for styling. */
-    type: PanelActionType;
+    type: LiteralUnion<PanelActionType>;
 
     /** The callback function that will handle the action. */
     handler?: PanelActionCallback;

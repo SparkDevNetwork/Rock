@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -64,78 +60,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// Communication View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( Communication ) )]
-    public partial class CommunicationViewModelHelper : ViewModelHelper<Communication, CommunicationBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override CommunicationBag CreateViewModel( Communication model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new CommunicationBag
-            {
-                IdKey = model.IdKey,
-                AdditionalMergeFieldsJson = model.AdditionalMergeFieldsJson,
-                BCCEmails = model.BCCEmails,
-                CCEmails = model.CCEmails,
-                CommunicationTemplateId = model.CommunicationTemplateId,
-                CommunicationType = ( int ) model.CommunicationType,
-                EnabledLavaCommands = model.EnabledLavaCommands,
-                ExcludeDuplicateRecipientAddress = model.ExcludeDuplicateRecipientAddress,
-                FromEmail = model.FromEmail,
-                FromName = model.FromName,
-                FutureSendDateTime = model.FutureSendDateTime,
-                IsBulkCommunication = model.IsBulkCommunication,
-                ListGroupId = model.ListGroupId,
-                Message = model.Message,
-                MessageMetaData = model.MessageMetaData,
-                Name = model.Name,
-                PushData = model.PushData,
-                PushImageBinaryFileId = model.PushImageBinaryFileId,
-                PushMessage = model.PushMessage,
-                PushOpenAction = ( int? ) model.PushOpenAction,
-                PushOpenMessage = model.PushOpenMessage,
-                PushSound = model.PushSound,
-                PushTitle = model.PushTitle,
-                ReplyToEmail = model.ReplyToEmail,
-                ReviewedDateTime = model.ReviewedDateTime,
-                ReviewerNote = model.ReviewerNote,
-                ReviewerPersonAliasId = model.ReviewerPersonAliasId,
-                SegmentCriteria = ( int ) model.SegmentCriteria,
-                Segments = model.Segments,
-                SendDateTime = model.SendDateTime,
-                SenderPersonAliasId = model.SenderPersonAliasId,
-                SmsFromSystemPhoneNumberId = model.SmsFromSystemPhoneNumberId,
-                SMSMessage = model.SMSMessage,
-                Status = ( int ) model.Status,
-                Subject = model.Subject,
-                SystemCommunicationId = model.SystemCommunicationId,
-                UrlReferrer = model.UrlReferrer,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -242,20 +166,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static CommunicationBag ToViewModel( this Communication model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new CommunicationViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

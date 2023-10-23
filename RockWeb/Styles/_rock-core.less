@@ -9,7 +9,32 @@
 @color-base-primary: red(@brand-primary), green(@brand-primary), blue(@brand-primary);
 
 :root {
+  --theme-darkest: @gray-darker;
+  --theme-dark: @gray-dark;
+  --theme-medium: @gray;
+  --theme-light: @gray-lighter;
+  --theme-lightest: @gray-lightest;
+
+  --theme-white: @white;
+  --theme-black: #343A40;
+
+  --text-color: @text-color;
+
   --color-primary: @brand-primary;
+  --color-success: @brand-success;
+  --color-info: @brand-info;
+  --color-warning: @brand-warning;
+  --color-danger: @brand-danger;
+
+  --gutter-x: @grid-gutter-width;
+
+  --panel-border: @panel-border;
+  --panel-body-padding: @panel-body-padding;
+
+  --fa-font-face: @fa-font-face;
+  --fa-theme-weight: @fa-theme-weight;
+
+  --border-radius-base: @border-radius-base;
   --color-base-primary: @color-base-primary;
   --focus-state-border: 1px solid @input-border-focus;
   --focus-state-border-color: @input-border-focus;
@@ -43,7 +68,6 @@
 @import "_page-admin.less";
 @import "_modal.less";
 @import "_forms.less";
-@import "_dashboard.less";
 @import "_grid.less";
 
 @import "_rock-obsidian.less";
@@ -57,9 +81,7 @@
 @import "_blocks-finance.less";
 @import "_blocks-crm.less";
 @import "_blocks-communication.less";
-@import "_blocks-checkinadmin.less";
 @import "_blocks-workflow.less";
-@import "_blocks-prayer.less";
 @import "_blocks-events.less";
 @import "_components.less";
 
@@ -67,8 +89,6 @@
 
 @import "_scroll.less";
 @import "_helpers.less";
-
-@import "_devices.less";
 
 @import "./Bootstrap/mixins.less";
 
@@ -508,7 +528,6 @@ th[align="right"] {
     .btn {
       display: flex;
       justify-content: space-between;
-      padding-top: 0;
       padding-top: (@padding-base-vertical * 2) + 14px;
       text-align: left;
       background: transparent;
@@ -519,7 +538,7 @@ th[align="right"] {
 }
 
 .panel-toolbar {
-  padding: 4px 16px;
+  padding: 6px 16px;
   font-size: @font-size-xs;
   border-bottom: 1px solid #dbdbdb;
   display: flex;
@@ -563,8 +582,8 @@ th[align="right"] {
     }
   }
 
-  .slidingdaterange-select, 
-  .slidingdaterange-number, 
+  .slidingdaterange-select,
+  .slidingdaterange-number,
   .slidingdaterange-daterange .input-group {
     margin-bottom: 0;
   }
@@ -854,7 +873,7 @@ th[align="right"] {
 
 .panel-analytics {
   .panel-body {
-    padding: 0 (@grid-gutter-width / 2);
+    padding: ~"0 calc(var(--gutter-x) * 0.5)";
 
     // & > .row > [class*="col-"]:first-child {
     //   padding-top: 15px;
@@ -886,9 +905,15 @@ th[align="right"] {
   }
 
   .analysis-types {
-    margin-bottom: (@grid-gutter-width / 2);
+    margin-bottom: ~"calc(var(--gutter-x) * 0.5)";
     border-bottom: 1px solid @panel-border;
   }
+}
+
+// Used for Dashboard Widget (Remove?)
+.panel-dashboard {
+  height: 220px;
+  margin: 24px 0 0;
 }
 
 // styles for panel drawers
@@ -1189,23 +1214,6 @@ h5.condensed,
 h6.condensed {
   margin-top: 0;
   margin-bottom: 0;
-}
-
-// add 10 column row
-.col-md-2-10 {
-  padding-right: 15px;
-  padding-left: 15px;
-}
-
-@media (min-width: 992px) {
-  .col-md-2-10 {
-    position: relative;
-    float: left;
-    width: 20%;
-    min-height: 1px;
-    padding-right: 15px;
-    padding-left: 15px;
-  }
 }
 
 

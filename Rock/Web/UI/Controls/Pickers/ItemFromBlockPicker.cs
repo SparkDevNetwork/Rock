@@ -25,7 +25,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
     /// <seealso cref="Rock.Web.UI.Controls.IRockControl" />
@@ -314,7 +314,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the button text lava template.
-        /// HINT: Use {{ SelectedText }} 
+        /// HINT: Use {{ SelectedText }}
         /// </summary>
         /// <value>
         /// The button text template.
@@ -548,7 +548,7 @@ namespace Rock.Web.UI.Controls
 
             _btnSelectNone = new LinkButton();
             _btnSelectNone.ID = this.ID + "_btnSelectNone";
-            _btnSelectNone.CssClass = "js-picker-select-none picker-select-none";
+            _btnSelectNone.CssClass = "btn picker-select-none js-picker-select-none";
             _btnSelectNone.Text = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Click += _lbClearPicker_Click;
@@ -621,7 +621,7 @@ namespace Rock.Web.UI.Controls
         {
             _pickerDialog.Hide();
 
-            // if the picker was in a modal dialog, track the SelectValue and SelectedText in a hidden when saved 
+            // if the picker was in a modal dialog, track the SelectValue and SelectedText in a hidden when saved
             _hfPickerBlockSelectedValue.Value = ( _pickerBlock as IPickerBlock )?.SelectedValue;
 
             SelectItem?.Invoke( this, e );
@@ -677,7 +677,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockBlock().RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockBlock().RockPage, null, new Rock.Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "SelectedText", SelectedText );
             mergeFields.Add( "SelectedValue", SelectedValue ?? string.Empty );
 

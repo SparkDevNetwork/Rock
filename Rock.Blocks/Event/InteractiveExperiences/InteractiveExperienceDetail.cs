@@ -37,12 +37,13 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <summary>
     /// Displays the details of a particular interactive experience.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Interactive Experience Detail" )]
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays the details of a particular interactive experience." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -50,7 +51,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
     [Rock.SystemGuid.EntityTypeGuid( "e9e76f40-3e00-40e1-bd9d-3156e9208557" )]
     [Rock.SystemGuid.BlockTypeGuid( "dc997692-3bb4-470c-a2ee-83cb87d246b1" )]
-    public class InteractiveExperienceDetail : RockObsidianDetailBlockType
+    public class InteractiveExperienceDetail : RockDetailBlockType
     {
         #region Keys
 
@@ -66,8 +67,6 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>
@@ -81,7 +80,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<InteractiveExperience>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<InteractiveExperience>();
 
                 return box;
             }
@@ -565,6 +564,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         private static bool UpdateSchedules( InteractiveExperience interactiveExperience, List<InteractiveExperienceScheduleBag> scheduleBags, RockContext rockContext, out string errorMessage )
         {
             var experienceScheduleService = new InteractiveExperienceScheduleService( rockContext );
+            var experienceAnswerService = new InteractiveExperienceAnswerService( rockContext );
             var incomingScheduleGuids = scheduleBags?.Select( s => s.Guid ).ToList() ?? new List<Guid>();
 
             errorMessage = null;
@@ -578,6 +578,13 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     {
                         return false;
                     }
+
+                    var answersToDelete = experienceAnswerService
+                        .Queryable()
+                        .Where( a => a.InteractiveExperienceOccurrence.InteractiveExperienceScheduleId == schedule.Id )
+                        .ToList();
+
+                    experienceAnswerService.DeleteRange( answersToDelete );
 
                     interactiveExperience.InteractiveExperienceSchedules.Remove( schedule );
                     experienceScheduleService.Delete( schedule );
@@ -1195,6 +1202,8 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             using ( var rockContext = new RockContext() )
             {
                 var actionService = new InteractiveExperienceActionService( rockContext );
+                var answerService = new InteractiveExperienceAnswerService( rockContext );
+                var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
 
                 if ( !TryGetEntityForEditAction( idKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -1207,6 +1216,20 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 {
                     return ActionNotFound( "The specified action was not found." );
                 }
+
+                var answersToDelete = answerService
+                    .Queryable()
+                    .Where( a => a.InteractiveExperienceActionId == action.Id )
+                    .ToList();
+
+                answerService.DeleteRange( answersToDelete );
+
+                var occurrencesToUpdate = occurrenceService
+                    .Queryable()
+                    .Where( o => o.CurrentlyShownActionId == action.Id )
+                    .ToList();
+
+                occurrencesToUpdate.ForEach( o => o.CurrentlyShownActionId = null );
 
                 actionService.Delete( action );
 

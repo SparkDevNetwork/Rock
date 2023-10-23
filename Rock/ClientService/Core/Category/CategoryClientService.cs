@@ -15,11 +15,7 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using Rock.ClientService.Core.Category.Options;
 using Rock.Data;
 using Rock.Model;
@@ -27,6 +23,10 @@ using Rock.Model.Core.Category.Options;
 using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 
 namespace Rock.ClientService.Core.Category
 {
@@ -69,6 +69,18 @@ namespace Rock.ClientService.Core.Category
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A list of view models that describe the tree of categories and items.</returns>
         public List<TreeItemBag> GetCategorizedTreeItems( CategoryItemTreeOptions options = null )
+        {
+            return GetCategorizedTreeItems<ICategorized>( options, null );
+        }
+
+        /// <summary>
+        /// Gets the categorized tree items. This supports various options
+        /// for filtering and determine how much data to load.
+        /// </summary>
+        /// <param name="options">The options that describe the request.</param>
+        /// <param name="filterMethod">A Function to filter out Categories</param>
+        /// <returns>A list of view models that describe the tree of categories and items.</returns>
+        public List<TreeItemBag> GetCategorizedTreeItems<T>( CategoryItemTreeOptions options = null, Func<T, bool> filterMethod = null ) where T : ICategorized
         {
             options = options ?? DefaultCategoryItemTreeOptions;
 
@@ -143,8 +155,7 @@ namespace Rock.ClientService.Core.Category
 
                 if ( itemsQry != null )
                 {
-                    var childItems = GetChildrenItems( options, cachedEntityType, itemsQry );
-
+                    var childItems = GetChildrenItems<ICategorized>( options, cachedEntityType, itemsQry );
                     categoryItemList.AddRange( childItems );
                 }
             }
@@ -172,7 +183,7 @@ namespace Rock.ClientService.Core.Category
                         item.Children = new List<TreeItemBag>();
                     }
 
-                    GetAllDescendants( item, Person, categoryService, serviceInstance, cachedEntityType, options );
+                    GetAllDescendants( item, Person, categoryService, serviceInstance, cachedEntityType, options, filterMethod );
                 }
             }
 
@@ -243,13 +254,18 @@ namespace Rock.ClientService.Core.Category
         /// </summary>
         /// <param name="options">The options that describe the current operation.</param>
         /// <param name="cachedEntityType">The cached entity type object that describes the items.</param>
-        /// <param name="itemsQry">The items qry.</param>
+        /// <param name="itemsQry">The items query.</param>
+        /// <param name="filterMethod">A Function to filter out Categories</param>
         /// <returns>A list of child items that should be included in the results.</returns>
-        private List<TreeItemBag> GetChildrenItems( CategoryItemTreeOptions options, EntityTypeCache cachedEntityType, IQueryable<ICategorized> itemsQry )
+        private List<TreeItemBag> GetChildrenItems<T>( CategoryItemTreeOptions options, EntityTypeCache cachedEntityType, IQueryable<ICategorized> itemsQry, Func<T, bool> filterMethod = null ) where T : ICategorized
         {
             // Do a ToList() to load from database prior to ordering
             // by name, just in case Name is a virtual property.
             var itemsList = itemsQry.ToList();
+            if ( filterMethod != null )
+            {
+                itemsList = itemsList.Where( i => filterMethod.Invoke( ( T ) i ) ).ToList();
+            }
             var entityTypeIsSchedule = cachedEntityType.Id == EntityTypeCache.GetId<Rock.Model.Schedule>();
 
             List<ICategorized> sortedItemsList;
@@ -303,8 +319,9 @@ namespace Rock.ClientService.Core.Category
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="cachedEntityType">The cached entity type of the items.</param>
         /// <param name="options">The options that describe the current operation.</param>
+        /// <param name="filterMethod">A Function to filter out Categories</param>
         /// <returns></returns>
-        private TreeItemBag GetAllDescendants( TreeItemBag categoryItem, Person currentPerson, CategoryService categoryService, IService serviceInstance, EntityTypeCache cachedEntityType, CategoryItemTreeOptions options )
+        private TreeItemBag GetAllDescendants<T>( TreeItemBag categoryItem, Person currentPerson, CategoryService categoryService, IService serviceInstance, EntityTypeCache cachedEntityType, CategoryItemTreeOptions options, Func<T, bool> filterMethod = null ) where T : ICategorized
         {
             if ( categoryItem.IsFolder )
             {
@@ -334,7 +351,7 @@ namespace Rock.ClientService.Core.Category
                             childCategoryItem.IsActive = activatedItem.IsActive;
                         }
 
-                        var childCategorizedItemBranch = GetAllDescendants( childCategoryItem, currentPerson, categoryService, serviceInstance, cachedEntityType, options );
+                        var childCategorizedItemBranch = GetAllDescendants<T>( childCategoryItem, currentPerson, categoryService, serviceInstance, cachedEntityType, options, filterMethod );
                         if ( categoryItem.Children == null )
                         {
                             categoryItem.Children = new List<TreeItemBag>();
@@ -360,7 +377,7 @@ namespace Rock.ClientService.Core.Category
 
                     if ( childQry != null )
                     {
-                        var childItems = GetChildrenItems( options, cachedEntityType, childQry );
+                        var childItems = GetChildrenItems<T>( options, cachedEntityType, childQry, filterMethod );
 
                         if ( categoryItem.Children == null )
                         {

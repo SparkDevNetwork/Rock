@@ -24,8 +24,10 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
 
 using Rock.Web.UI;
@@ -52,10 +54,17 @@ namespace RockWeb.Blocks.Reminders
         Order = 1,
         Key = AttributeKey.EditReminderPage )]
 
+    [LinkedPage(
+        "View Notifications Page",
+        Description = "The page where a person can view their notifications.",
+        DefaultValue = Rock.SystemGuid.Page.NOTIFICATION_LIST,
+        Order = 0,
+        Key = AttributeKey.ViewNotificationsPage )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.REMINDER_LINKS )]
-    public partial class ReminderLinks : RockBlock
+    public partial class ReminderLinks : RockBlock, IRockBlockType
     {
         #region Attribute Keys
 
@@ -66,6 +75,7 @@ namespace RockWeb.Blocks.Reminders
         {
             public const string ViewRemindersPage = "ViewRemindersPage";
             public const string EditReminderPage = "EditReminderPage";
+            public const string ViewNotificationsPage = "ViewNotificationsPage";
         }
 
         #endregion Attribute Keys
@@ -80,6 +90,28 @@ namespace RockWeb.Blocks.Reminders
         }
 
         #endregion Page Parameter Keys
+
+        #region IRockBlockType
+
+        /// <inheritdoc/>
+        int IRockBlockType.BlockId => ( ( IRockBlockType ) this ).BlockCache.Id;
+
+        /// <inheritdoc/>
+        BlockCache IRockBlockType.BlockCache { get; set; }
+
+        /// <inheritdoc/>
+        PageCache IRockBlockType.PageCache { get; set; }
+
+        /// <inheritdoc/>
+        RockRequestContext IRockBlockType.RequestContext { get; set; }
+
+        /// <inheritdoc/>
+        object IRockBlockType.GetBlockInitialization( RockClientType clientType )
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
 
         #region Base Control Methods
 
@@ -125,8 +157,7 @@ namespace RockWeb.Blocks.Reminders
                 btnReminders.Visible = true;
                 ppPerson.SetValue( CurrentPerson );
 
-                int reminderCount = CurrentPerson?.ReminderCount ?? 0;
-                hfReminderCount.Value = reminderCount.ToString();
+                hfActionUrl.Value = $"/api/v2/BlockActions/{PageCache.Guid}/{BlockCache.Guid}/GetNotificationCounts";
 
                 SetContextEntityType();
             }
@@ -153,7 +184,15 @@ namespace RockWeb.Blocks.Reminders
             {
                 var firstKey = contextTypes.Keys.First();
                 var contextType = contextTypes[firstKey];
-                hfContextEntityTypeId.Value = contextType.Id.ToString();
+                if ( contextType == EntityTypeCache.Get<Person>() )
+                {
+                    // if the context entity is a Person, use PersonAlias instead.
+                    hfContextEntityTypeId.Value = EntityTypeCache.GetId<PersonAlias>().ToString();
+                }
+                else
+                {
+                    hfContextEntityTypeId.Value = contextType.Id.ToString();
+                }
             }
         }
 
@@ -167,7 +206,22 @@ namespace RockWeb.Blocks.Reminders
             if ( contextEntities.Any() )
             {
                 var firstKey = contextEntities.Keys.First();
-                return contextEntities[firstKey];
+                var contextEntity = contextEntities[firstKey];
+
+                if ( contextEntity is Person )
+                {
+                    // if the context entity is a Person, use PersonAlias instead.
+                    var person = contextEntity as Person;
+                    var personAlias = person.PrimaryAlias;
+                    if ( personAlias == null )
+                    {
+                        personAlias = person.Aliases.FirstOrDefault();
+                    }
+
+                    contextEntity = personAlias;
+                }
+
+                return contextEntity;
             }
 
             return null;
@@ -218,8 +272,13 @@ namespace RockWeb.Blocks.Reminders
             rptReminders.DataBind();
 
             var entityTypeName = EntityTypeCache.Get( contextEntity.TypeId ).FriendlyName;
-            var reminderText = lExistingReminderTextTemplate.Text
-                .Replace( "{ENTITY_TYPE}", entityTypeName );
+            if ( contextEntity.TypeId == EntityTypeCache.GetId<PersonAlias>() )
+            {
+                // Show "Person" instead of "Person Alias".
+                entityTypeName = EntityTypeCache.Get<Person>().FriendlyName;
+            }
+
+            var reminderText = lExistingReminderTextTemplate.Text.Replace( "{ENTITY_TYPE}", entityTypeName );
 
             if ( reminders.Count == 1 )
             {
@@ -252,17 +311,35 @@ namespace RockWeb.Blocks.Reminders
 
             using ( var rockContext = new RockContext() )
             {
-                var entityTypeService = new EntityTypeService( rockContext );
                 var reminderService = new ReminderService( rockContext );
-                var reminders = reminderService
-                    .GetReminders( CurrentPersonId.Value, contextEntity.TypeId, contextEntity.Id, null )
-                    .Where( r => r.ReminderDate <= RockDateTime.Now )
-                    .OrderByDescending( r => r.ReminderDate )
-                    .Take( 2 ); // We're only interested in two reminders for this block.
 
-                foreach ( var reminder in reminders.ToList() )
+                if ( contextEntity is PersonAlias personAlias )
                 {
-                    if ( reminder.IsActive )
+                    var personAliasService = new PersonAliasService( rockContext );
+                    var personAliasIds = personAlias.Person.Aliases.Select( a => a.Id ).ToList();
+
+                    var reminders = reminderService
+                        .GetReminders( CurrentPersonId.Value, contextEntity.TypeId, null, null )
+                        .Where( r => personAliasIds.Contains( r.EntityId ) && !r.IsComplete && r.ReminderDate < RockDateTime.Now ) // only get active reminders for this person.
+                        .OrderByDescending( r => r.ReminderDate )
+                        .Take( 2 ); // We're only interested in two reminders for this block.
+
+                    foreach ( var reminder in reminders.ToList() )
+                    {
+                        var entity = personAliasService.Get( contextEntity.Id );
+                        reminderViewModels.Add( new ReminderViewModel( reminder, entity ) );
+                    }
+                }
+                else
+                {
+                    var entityTypeService = new EntityTypeService( rockContext );
+                    var reminders = reminderService
+                        .GetReminders( CurrentPersonId.Value, contextEntity.TypeId, contextEntity.Id, null )
+                        .Where( r => !r.IsComplete && r.ReminderDate < RockDateTime.Now ) // only get active reminders.
+                        .OrderByDescending( r => r.ReminderDate )
+                        .Take( 2 ); // We're only interested in two reminders for this block.
+
+                    foreach ( var reminder in reminders.ToList() )
                     {
                         var entity = entityTypeService.GetEntity( reminder.ReminderType.EntityTypeId, reminder.EntityId );
                         reminderViewModels.Add( new ReminderViewModel( reminder, entity ) );
@@ -435,6 +512,16 @@ namespace RockWeb.Blocks.Reminders
         }
 
         /// <summary>
+        /// Handles the Click event of the btnViewNotifications control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnViewNotifications_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( AttributeKey.ViewNotificationsPage );
+        }
+
+        /// <summary>
         /// Handles the SaveClick event of the mdAddReminder control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -504,5 +591,36 @@ namespace RockWeb.Blocks.Reminders
         }
 
         #endregion Events
+
+        #region Block Actions
+
+        /// <summary>
+        /// Get the current notification counts for this person.
+        /// </summary>
+        /// <returns>An object that represents the counts.</returns>
+        [BlockAction]
+        public BlockActionResult GetNotificationCounts()
+        {
+            var rockBlock = ( IRockBlockType ) this;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var notificationMessageService = new NotificationMessageService( rockContext );
+                var notificationCount = 0;
+
+                if ( rockBlock.RequestContext.CurrentPerson != null )
+                {
+                    notificationCount = notificationMessageService.GetUnreadMessagesForPerson( rockBlock.RequestContext.CurrentPerson.Id, rockBlock.PageCache.Layout.Site ).Count();
+                }
+
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, new
+                {
+                    Reminders = rockBlock.RequestContext.CurrentPerson?.ReminderCount ?? 0,
+                    Notifications = notificationCount
+                } );
+            }
+        }
+
+        #endregion
     }
 }

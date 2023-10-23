@@ -35,12 +35,13 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <summary>
     /// Displays a live interactive experience.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Live Experience" )]
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays a live interactive experience" )]
     [IconCssClass( "fa fa-tv" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -55,7 +56,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
     [Rock.SystemGuid.EntityTypeGuid( "9a853836-5155-4ce5-817f-49bfcbe7502c" )]
     [Rock.SystemGuid.BlockTypeGuid( "ba26f4fc-f6db-462e-9697-bd6a0504a0a8" )]
-    public class LiveExperience : RockObsidianBlockType
+    public class LiveExperience : RockBlockType
     {
         #region Keys
 
@@ -79,8 +80,6 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         }
 
         #endregion
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         #region Methods
 

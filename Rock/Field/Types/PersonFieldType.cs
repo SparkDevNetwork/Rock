@@ -21,11 +21,13 @@ using System.Linq;
 using System.Linq.Expressions;
 #if WEBFORMS
 using System.Web.UI;
+using OpenXmlPowerTools;
 #endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,13 +37,14 @@ namespace Rock.Field.Types
     /// Field used to save and display a person. Stored as PersonAlias.Guid
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PERSON )]
     public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
         private const string ENABLE_SELF_SELECTION_KEY = "EnableSelfSelection";
+        private const string INCLUDE_BUSINESSES = "includeBusinesses";
 
         #endregion
 
@@ -65,7 +68,6 @@ namespace Rock.Field.Types
                     .FirstOrDefault();
                 }
             }
-
             return formattedValue;
         }
 
@@ -93,6 +95,42 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( Guid.TryParse( privateValue, out Guid guid ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var personAlias = new PersonAliasService( rockContext )
+                        .GetNoTracking( guid );
+                    if ( personAlias != null )
+                    {
+                        return new ListItemBag()
+                        {
+                            Value = personAlias.Guid.ToString(),
+                            Text = personAlias.Person.NickName + " " + personAlias.Person.LastName,
+                        }.ToCamelCaseJson( false, true );
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var personValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( personValue != null )
+            {
+                return personValue.Value;
+            }
+
+            return string.Empty;
+        }
 
         #endregion
 
@@ -258,6 +296,7 @@ namespace Rock.Field.Types
         {
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( ENABLE_SELF_SELECTION_KEY );
+            configKeys.Add( INCLUDE_BUSINESSES );
             return configKeys;
         }
 
@@ -271,9 +310,20 @@ namespace Rock.Field.Types
 
             var cbEnableSelfSelection = new RockCheckBox();
             controls.Add( cbEnableSelfSelection );
+            cbEnableSelfSelection.AutoPostBack = true;
+            cbEnableSelfSelection.CheckedChanged += OnQualifierUpdated;
             cbEnableSelfSelection.Label = "Enable Self Selection";
             cbEnableSelfSelection.Text = "Yes";
             cbEnableSelfSelection.Help = "When using Person Picker, show the self selection option";
+
+            var cbIncludeBusinesses = new RockCheckBox();
+            controls.Add( cbIncludeBusinesses );
+            cbIncludeBusinesses.AutoPostBack = true;
+            cbIncludeBusinesses.CheckedChanged += OnQualifierUpdated;
+            cbIncludeBusinesses.Label = "Include Businesses";
+            cbIncludeBusinesses.Text = "Yes";
+            cbIncludeBusinesses.Help = "When using Person Picker, include businesses in the search results";
+
             return controls;
         }
 
@@ -284,17 +334,22 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( ENABLE_SELF_SELECTION_KEY, new ConfigurationValue( "Enable Self Selection", "When using Person Picker, show the self selection option", string.Empty ) );
-
-            if ( controls != null && controls.Count > 0 )
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>
             {
-                var cbEnableSelfSelection = controls[0] as RockCheckBox;
-                if ( cbEnableSelfSelection != null )
+                { ENABLE_SELF_SELECTION_KEY, new ConfigurationValue( "Enable Self Selection", "When using Person Picker, show the self selection option", string.Empty ) },
+                { INCLUDE_BUSINESSES, new ConfigurationValue( "Include Businesses", "When using Person Picker, include businesses in the search results", string.Empty ) }
+            };
+
+            if ( controls != null )
+            {
+                if ( controls.Count > 0 && controls[0] is RockCheckBox cbEnableSelfSelection )
                 {
                     configurationValues[ENABLE_SELF_SELECTION_KEY].Value = cbEnableSelfSelection.Checked.ToString();
                 }
-
+                if ( controls.Count > 1 && controls[1] is RockCheckBox cbIncludeBusinesses )
+                {
+                    configurationValues[INCLUDE_BUSINESSES].Value = cbIncludeBusinesses.Checked.ToString();
+                }
             }
 
             return configurationValues;
@@ -307,13 +362,15 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && configurationValues != null && controls.Count > 0 )
+            if ( controls != null && configurationValues != null )
             {
-                var cbEnableSelfSelection = controls[0] as RockCheckBox;
-
-                if ( cbEnableSelfSelection != null && configurationValues.ContainsKey( ENABLE_SELF_SELECTION_KEY ) )
+                if ( controls.Count > 0 && controls[0] is RockCheckBox cbEnableSelfSelection && configurationValues.ContainsKey( ENABLE_SELF_SELECTION_KEY ) )
                 {
                     cbEnableSelfSelection.Checked = configurationValues[ENABLE_SELF_SELECTION_KEY].Value.AsBoolean();
+                }
+                if ( controls.Count > 1 && controls[1] is RockCheckBox cbIncludeBusinesses && configurationValues.ContainsKey( INCLUDE_BUSINESSES ) )
+                {
+                    cbIncludeBusinesses.Checked = configurationValues[INCLUDE_BUSINESSES].Value.AsBoolean();
                 }
             }
         }
@@ -347,6 +404,11 @@ namespace Rock.Field.Types
             if ( configurationValues.ContainsKey( ENABLE_SELF_SELECTION_KEY ) )
             {
                 personPicker.EnableSelfSelection = configurationValues[ENABLE_SELF_SELECTION_KEY].Value.AsBoolean();
+            }
+
+            if ( configurationValues.ContainsKey( INCLUDE_BUSINESSES ) )
+            {
+                personPicker.IncludeBusinesses = configurationValues[INCLUDE_BUSINESSES].Value.AsBoolean();
             }
 
             return personPicker;
