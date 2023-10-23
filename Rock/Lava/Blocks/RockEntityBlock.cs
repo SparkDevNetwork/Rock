@@ -806,7 +806,7 @@ namespace Rock.Lava.Blocks
 
                 var countResults = EntitySearchService.GetSearchResults( entitySearchCache, userQuery, GetCurrentPerson( context ) );
 
-                context.SetMergeField( "count", countResults.Count, LavaContextRelativeScopeSpecifier.Root );
+                context.SetMergeField( "count", countResults.Count, LavaContextRelativeScopeSpecifier.Default );
 
                 return;
             }
