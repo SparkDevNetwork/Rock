@@ -64,6 +64,7 @@
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
     <Compile Include="Cms\SiteList.cs" />
+    <Compile Include="Core\AttributeMatrixTemplateDetail.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
     <Compile Include="Core\BinaryFileTypeDetail.cs" />
     <Compile Include="Core\CampusList.cs" />
