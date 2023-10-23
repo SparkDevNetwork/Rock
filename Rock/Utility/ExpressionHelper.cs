@@ -177,7 +177,16 @@ namespace Rock.Utility
             }
 
             var service = new AttributeValueService( ( RockContext ) serviceInstance.Context );
-            var attributeValues = service.Queryable();
+
+            /*
+                13-Sep-2023 - DJL
+
+                Restricting the Attribute Value query to non-null values for EntityId allows the database server
+                to take advantage of an index seek rather than requiring a full index scan.
+
+                Reason: Improve Data View performance. (https://github.com/SparkDevNetwork/Rock/issues/5575)
+            */
+            var attributeValues = service.Queryable().Where( v => v.EntityId.HasValue );
 
             AttributeCache attributeCache = null;
 
@@ -215,12 +224,6 @@ namespace Rock.Utility
                     case ComparisonType.IsBlank:
                         evaluatedComparisonType = ComparisonType.IsNotBlank;
                         break;
-                    case ComparisonType.LessThan:
-                        evaluatedComparisonType = ComparisonType.GreaterThanOrEqualTo;
-                        break;
-                    case ComparisonType.LessThanOrEqualTo:
-                        evaluatedComparisonType = ComparisonType.GreaterThan;
-                        break;
                     case ComparisonType.NotEqualTo:
                         evaluatedComparisonType = ComparisonType.EqualTo;
                         break;
@@ -254,7 +257,7 @@ namespace Rock.Utility
                 return new NoAttributeFilterExpression();
             }
 
-            IQueryable<int> ids = attributeValues.Select( v => v.EntityId ?? 0 );
+            IQueryable<int> ids = attributeValues.Select( v => v.EntityId.Value );
 
             MemberExpression propertyExpression = Expression.Property( parameterExpression, "Id" );
             ConstantExpression idsExpression = Expression.Constant( ids.AsQueryable(), typeof( IQueryable<int> ) );

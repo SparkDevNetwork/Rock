@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -27,6 +26,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaAccountDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -48,7 +48,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "704fa615-60eb-4fd2-99ed-6b5ae0879145" )]
     [Rock.SystemGuid.BlockTypeGuid( "a63f0145-d323-4b6e-ad21-bcda1f1d8d5d" )]
-    public class MediaAccountDetail : RockDetailBlockType
+    public class MediaAccountDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -63,9 +63,6 @@ namespace Rock.Blocks.Cms
         }
 
         #endregion Keys
-
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -181,13 +178,21 @@ namespace Rock.Blocks.Cms
                 return null;
             }
 
-            return new MediaAccountBag
+            var bag = new MediaAccountBag
             {
                 IdKey = entity.IdKey,
                 ComponentEntityType = entity.ComponentEntityType.ToListItemBag(),
                 IsActive = entity.IsActive,
-                Name = entity.Name
+                Name = entity.Name,
+                MetricData = entity.GetMediaAccountComponent()?.GetAccountHtmlSummary( entity )
             };
+
+            if ( entity.LastRefreshDateTime.HasValue )
+            {
+                bag.LastRefresh = "Last Refreshed: " + entity.LastRefreshDateTime.ToRelativeDateString();
+            }
+
+            return bag;
         }
 
         /// <summary>
@@ -207,7 +212,7 @@ namespace Rock.Blocks.Cms
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, true, IsAttributeIncluded );
             }
 
             return bag;
@@ -230,7 +235,7 @@ namespace Rock.Blocks.Cms
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, true, IsAttributeIncluded );
             }
 
             return bag;
@@ -264,7 +269,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, true, IsAttributeIncluded );
                 } );
 
             return true;
@@ -362,6 +367,43 @@ namespace Rock.Blocks.Cms
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines if the attribute should be included in the block.
+        /// </summary>
+        /// <param name="attribute">The attribute to be checked.</param>
+        /// <returns><c>true</c> if the attribute should be included, <c>false</c> otherwise.</returns>
+        private bool IsAttributeIncluded( AttributeCache attribute )
+        {
+            // Don't include the special attributes "Order" and "Active".
+            return attribute.Key != "Order" && attribute.Key != "Active";
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.MediaAccountId );
+                var pageParameters = new Dictionary<string, string>();
+
+                var name = new MediaAccountService( rockContext )
+                    .GetSelect( key, mf => mf.Name );
+
+                if ( name != null )
+                {
+                    pageParameters.Add( PageParameterKey.MediaAccountId, key );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( name ?? "New Media Account", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+                };
+            }
         }
 
         #endregion

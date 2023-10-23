@@ -19,8 +19,8 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { AssessmentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentTypeDetail/assessmentTypeBag";
@@ -55,7 +55,7 @@
         }
 
         if (props.modelValue.description) {
-            valueBuilder.addTextValue("Description", props.modelValue.description);
+            valueBuilder.addTextValue("", props.modelValue.description);
         }
 
         return valueBuilder.build();
@@ -69,17 +69,11 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.requiresRequest) {
-            valueBuilder.addTextValue("Requires Request", props.modelValue.requiresRequest ? "True" : "False");
-        }
+        valueBuilder.addTextValue("Requires Request", props.modelValue.requiresRequest ? "True" : "False");
 
-        if (props.modelValue.minimumDaysToRetake) {
-            valueBuilder.addTextValue("Minimum Days To Retake", props.modelValue.minimumDaysToRetake.toString());
-        }
+        valueBuilder.addTextValue("Minimum Days To Retake", props.modelValue.minimumDaysToRetake ? props.modelValue.minimumDaysToRetake.toString() : "0");
 
-        if (props.modelValue.validDuration) {
-            valueBuilder.addTextValue("Valid Duration", props.modelValue.validDuration.toString());
-        }
+        valueBuilder.addTextValue("Valid Duration", props.modelValue.validDuration.toString());
 
         return valueBuilder.build();
     });

@@ -17,20 +17,21 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, inject, PropType, ref } from "vue";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
-import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
+import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
 import { getRegistrantBasicInfo } from "./utils.partial";
 import StringFilter from "@Obsidian/Utility/stringUtils";
-import RockButton from "@Obsidian/Controls/rockButton";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
-import RockForm from "@Obsidian/Controls/rockForm";
+import RockForm from "@Obsidian/Controls/rockForm.obs";
 import FeeField from "./feeField.partial";
-import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "@Obsidian/Controls/itemsWithPreAndPostHtml";
+import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
+import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
 import { useStore } from "@Obsidian/PageState";
 import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -38,6 +39,7 @@ import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { smoothScrollToTop } from "@Obsidian/Utility/page";
 
 const store = useStore();
 
@@ -95,9 +97,7 @@ export default defineComponent({
         const signatureSource = ref("");
         const signatureToken = ref("");
         const formResetKey = ref("");
-
         const isNextDisabled = ref(false);
-
         const isSignatureDrawn = computed((): boolean => registrationEntryState.viewModel.isSignatureDrawn);
 
         return {
@@ -112,6 +112,9 @@ export default defineComponent({
             signatureToken
         };
     },
+    updated() {
+        this.updateFeeItemsRemaining();
+    },
     data() {
         return {
             fieldSources: {
@@ -124,7 +127,22 @@ export default defineComponent({
     },
     computed: {
         showPrevious(): boolean {
-            return this.registrationEntryState.firstStep !== this.registrationEntryState.steps.perRegistrantForms;
+            // Allow to navigate to other registrants
+            if(this.registrationEntryState.currentRegistrantIndex > 0) {
+                return true;
+            }
+
+            // Allow to navigate to registration attributes
+            if(this.registrationEntryState.viewModel?.registrationAttributesStart?.length > 0) {
+                return true;
+            }
+
+            // Allow back to intro page if this is not an existing registration
+            if(!this.registrationEntryState.viewModel.isExistingRegistration) {
+                return true;
+            }
+
+            return false;
         },
         viewModel(): RegistrationEntryBlockViewModel {
             return this.registrationEntryState.viewModel;
@@ -166,9 +184,9 @@ export default defineComponent({
 
         /** The filtered fields to show on the current form augmented to remove pre/post HTML from non-visible fields */
         currentFormFieldsAugmented(): RegistrationEntryBlockFormFieldViewModel[] {
-            const fields = JSON.parse(JSON.stringify(this.currentFormFields));
+            const fields = JSON.parse(JSON.stringify(this.currentFormFields)) as RegistrationEntryBlockFormFieldViewModel[];
 
-            fields.forEach((value, index) => {
+            fields.forEach(value => {
                 if (value.fieldSource != this.fieldSources.personField) {
                     let isVisible = true;
                     switch (value.visibilityRuleType) {
@@ -301,12 +319,17 @@ export default defineComponent({
     methods: {
         onPrevious(): void {
             this.clearFormErrors();
+
             if (this.currentFormIndex <= 0) {
                 this.$emit("previous");
                 return;
             }
 
+
             this.registrationEntryState.currentRegistrantFormIndex--;
+
+            // Wait for the previous form to be rendered and then scroll to the top
+            setTimeout(() => smoothScrollToTop(), 10);
         },
         async onNext(): Promise<void> {
             this.clearFormErrors();
@@ -346,6 +369,54 @@ export default defineComponent({
             }
 
             this.registrationEntryState.currentRegistrantFormIndex++;
+
+            // Wait for the next form to be rendered and then scroll to the top
+            setTimeout(() => smoothScrollToTop(), 10);
+        },
+        updateFeeItemsRemaining(): void {
+            // calculate fee items remaining
+            const combinedFeeItemQuantities: Record<Guid, number> = {};
+
+            /* eslint-disable-next-line */
+            const self = this;
+
+            // Get all of the fee items in use for all registrants and add them to the combinedFeeItemQuantities Record
+            for(const registrant of self.registrationEntryState.registrants) {
+                if(registrant.guid === this.currentRegistrant.guid) {
+                    continue;
+                }
+
+                for (const feeItemGuid in registrant.feeItemQuantities) {
+
+                    if (registrant.feeItemQuantities[feeItemGuid] > 0) {
+                        const feeItemsUsed = registrant.feeItemQuantities[feeItemGuid];
+                        if(combinedFeeItemQuantities[feeItemGuid] === undefined || combinedFeeItemQuantities[feeItemGuid] === null) {
+                            combinedFeeItemQuantities[feeItemGuid] = feeItemsUsed;
+                        }
+                        else {
+                            combinedFeeItemQuantities[feeItemGuid] = combinedFeeItemQuantities[feeItemGuid] + feeItemsUsed;
+                        }
+                    }
+                }
+            }
+
+            // No go through all of the fee items and update the usage by subtracting the the total in combinedFeeItemQuantities from the originalCountRemaining
+            const fees = self.registrationEntryState.viewModel.fees;
+            for(const fee of fees){
+                const selfFee = fee;
+                if(selfFee !== undefined && selfFee !== null && selfFee.items !== undefined && selfFee.items !== null && selfFee.items.length > 0) {
+                    for(const feeItem of selfFee.items) {
+                        if(feeItem.countRemaining === null || feeItem.countRemaining === undefined || feeItem.originalCountRemaining === undefined || feeItem.originalCountRemaining === null) {
+                            continue;
+                        }
+
+                        const usedFeeItemCount = combinedFeeItemQuantities[feeItem.guid];
+                        if(usedFeeItemCount !== undefined && usedFeeItemCount !== null) {
+                            feeItem.countRemaining = feeItem.originalCountRemaining - usedFeeItemCount;
+                        }
+                    }
+                }
+            }
         },
 
         /**
@@ -382,7 +453,7 @@ export default defineComponent({
 
         /** Copy the values that are to have current values used */
         copyValuesFromFamilyMember(): void {
-            if (!this.familyMember || this.registrationEntryState.navBack) {
+            if (!this.familyMember || this.registrationEntryState.navBack || this.registrationEntryState.viewModel.isExistingRegistration) {
                 // Nothing to copy
                 return;
             }
@@ -390,6 +461,13 @@ export default defineComponent({
             // If the family member selection is made then set all form fields where use existing value is enabled
             for (const form of this.viewModel.registrantForms) {
                 for (const field of form.fields) {
+                    // Do not set common fields if they are of type
+                    // Registrant Attribute since there is no value to set.
+                    // Fixes issue #5610.
+                    if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                        continue;
+                    }
+
                     if (field.guid in this.familyMember.fieldValues) {
                         const familyMemberValue = this.familyMember.fieldValues[field.guid];
 
@@ -409,6 +487,35 @@ export default defineComponent({
                 }
             }
         },
+
+        async getFieldValues(): Promise<void> {
+            const result = await this.invokeBlockAction<Record<Guid, unknown>>("GetDefaultAttributeFieldValues", {
+                args: this.getRegistrationEntryBlockArgs(),
+                forms: this.viewModel.registrantForms,
+                registrantGuid: this.currentRegistrant.guid
+            });
+
+            if (result.isSuccess && result.data) {
+                for (const form of this.viewModel.registrantForms) {
+                    for (const field of form.fields) {
+                        // Check if we gota value for the attribute
+                        if (field.guid in result.data) {
+                            const formFieldValue = result.data[field.guid];
+                            const currentFormFieldValue = this.currentRegistrant.fieldValues[field.guid];
+
+                            if(currentFormFieldValue === undefined || currentFormFieldValue === null || currentFormFieldValue === "") {
+                                if (typeof formFieldValue === "object" && typeof currentFormFieldValue === "object") {
+                                    this.currentRegistrant.fieldValues[field.guid] = { ...formFieldValue };
+                                }
+                                else {
+                                    this.currentRegistrant.fieldValues[field.guid] = formFieldValue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
     },
     watch: {
         "currentRegistrant.familyGuid"(): void {
@@ -421,6 +528,14 @@ export default defineComponent({
                     // If the family member selection is cleared then clear all form fields
                     for (const form of this.viewModel.registrantForms) {
                         for (const field of form.fields) {
+                            // Do not touch common fields if they are of type
+                            // Registrant Attribute since we don't set them when
+                            // selecting a family member either.
+                            // Fixes issue #5610.
+                            if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                                continue;
+                            }
+
                             delete this.currentRegistrant.fieldValues[field.guid];
                         }
                     }
@@ -433,10 +548,11 @@ export default defineComponent({
         }
     },
     created() {
+        this.getFieldValues();
         this.copyValuesFromFamilyMember();
     },
     template: `
-<div>
+<div class="registrationentry-registrant-details" >
     <RockForm @submit="onNext" :formResetKey="formResetKey">
         <template v-if="isDataForm">
             <template v-if="currentFormIndex === 0">

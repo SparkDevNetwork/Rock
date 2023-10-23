@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import NumberBox from "@Obsidian/Controls/numberBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import { ServiceMetricsEntryMetricItemBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryMetricItemBag";
 
     defineProps({

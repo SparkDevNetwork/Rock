@@ -10,7 +10,7 @@ const babel = require("@rollup/plugin-babel").default;
 const commonjs = require("@rollup/plugin-commonjs");
 const resolve = require("@rollup/plugin-node-resolve").default;
 const postcss = require("rollup-plugin-postcss");
-const { terser } = require("rollup-plugin-terser");
+const terser = require("@rollup/plugin-terser").default;
 const copy = require("rollup-plugin-copy");
 const cssnano = require("cssnano");
 const { cwd } = require("process");
@@ -76,27 +76,24 @@ function fastBuild(pattern) {
 
     let newestFileStamp = 0;
 
-    glob(pattern, (err, files) => {
-        if (err) {
-            return;
-        }
+    const files = glob.globSync(pattern.replace(/\\/g, "/"));
 
-        for (const file of files) {
-            const st = statSync(file);
-            if (st.mtime.getTime() > newestFileStamp) {
-                newestFileStamp = st.mtime.getTime();
-            }
-        }
+    for (const file of files) {
+        const st = statSync(file);
 
-        if (newestFileStamp > buildstamp.mtime.getTime()) {
-            // Newer file sources exist, build required.
-            performBuild();
+        if (st.mtime.getTime() > newestFileStamp) {
+            newestFileStamp = st.mtime.getTime();
         }
-        else {
-            // Dist is up to date, no build required.
-            exit(0);
-        }
-    });
+    }
+
+    if (newestFileStamp > buildstamp.mtime.getTime()) {
+        // Newer file sources exist, build required.
+        performBuild();
+    }
+    else {
+        // Dist is up to date, no build required.
+        exit(0);
+    }
 }
 
 // #endregion
@@ -206,7 +203,7 @@ function createVirtualNestedIndex(indexes, sourcePath) {
 function defineConfigs(sourcePath, outputPath, options) {
     options = options || {};
 
-    const files = glob.sync(sourcePath + "/**/*.@(ts|obs)")
+    const files = glob.sync(sourcePath.replace(/\\/g, "/") + "/**/*.@(ts|obs)")
         .map(f => path.normalize(f).substring(sourcePath.length + 1))
         .filter(f => !f.endsWith(".d.ts") && !f.endsWith(".partial.ts") && !f.endsWith(".partial.obs"));
 

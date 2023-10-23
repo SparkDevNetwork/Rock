@@ -21,7 +21,7 @@ namespace Rock.Security
     /// <summary>
     /// A class Attribute that can be used by objects that implement ISecured to add an additional security action or change the description of an action
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true )]
+    [AttributeUsage( AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true )]
     public class SecurityActionAttribute : System.Attribute
     {
         /// <summary>

@@ -49,7 +49,7 @@
 
 <script setup lang="ts">
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { computed, ref, watch } from "vue";
     import { actionProps } from "./util.partial";

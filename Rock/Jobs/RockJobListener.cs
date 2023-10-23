@@ -113,12 +113,15 @@ namespace Rock.Jobs
             context.JobDetail.JobDataMap.LoadFromJobAttributeValues( job );
 #pragma warning restore CS0612 // Type or member is obsolete
 
-            // Add job observability
-            ObservabilityHelper.StartActivity( $"JOB: {job.Class.Replace( "Rock.Jobs.", "" )} - {job.Name}" );
-            Activity.Current?.AddTag( "rock-otel-type", "rock-job" );
-            Activity.Current?.AddTag( "rock-job-id", job.Id );
-            Activity.Current?.AddTag( "rock-job-type", job.Class.Replace( "Rock.Jobs.", "" ) );
-            Activity.Current?.AddTag( "rock-job-description", job.Description );
+            // Add job observability if this is a legacy job.
+            if ( !( context.JobInstance is RockJob ) )
+            {
+                var activity = ObservabilityHelper.StartActivity( $"JOB: {job.Class.Replace( "Rock.Jobs.", "" )} - {job.Name}" );
+                activity?.AddTag( "rock-otel-type", "rock-job" );
+                activity?.AddTag( "rock-job-id", job.Id );
+                activity?.AddTag( "rock-job-type", job.Class.Replace( "Rock.Jobs.", "" ) );
+                activity?.AddTag( "rock-job-description", job.Description );
+            }
         }
 
         /// <summary>
@@ -152,11 +155,14 @@ namespace Rock.Jobs
 
             var rockJobInstance = context.JobInstance as RockJob;
 
-            // Complete the observability
-            Activity.Current?.AddTag( "rock-job-duration", context.JobRunTime.TotalSeconds );
-            Activity.Current?.AddTag( "rock-job-message", rockJobInstance.Result ?? context.Result as string );
-            Activity.Current?.AddTag( "rock-job-result", jobException == null ? "Success" : "Failed" );
-            Activity.Current?.Dispose();
+            // Complete the observability if this is a legacy job.
+            if ( !( context.JobInstance is RockJob ) )
+            {
+                Activity.Current?.AddTag( "rock-job-duration", context.JobRunTime.TotalSeconds );
+                Activity.Current?.AddTag( "rock-job-message", rockJobInstance?.Result ?? context.Result as string );
+                Activity.Current?.AddTag( "rock-job-result", jobException == null ? "Success" : "Failed" );
+                Activity.Current?.Dispose();
+            }
 
             // load job
             var rockContext = new RockContext();
@@ -255,7 +261,7 @@ namespace Rock.Jobs
 
         private static void SendNotificationMessage( JobExecutionException jobException, ServiceJob job )
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "Job", job );
             try
             {

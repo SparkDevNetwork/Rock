@@ -14,13 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Rock.Bus;
+using Rock.Lava.RockLiquid.Blocks;
 using Rock.Observability;
 using Rock.Web.Cache.NonEntities;
 
@@ -279,32 +282,46 @@ namespace Rock.Data.Interception
             */
                         
             // Create observability activity
-            ObservabilityHelper.StartActivity( "Database Command", ActivityKind.Client );
-            
+            var activity = ObservabilityHelper.StartActivity( "Database Command", ActivityKind.Client );
+
             // Check if there is an activity before we make calls to get observability information. If there is no observability configuration
             // then there will not be an activity.
-            if ( Activity.Current != null )
+            if ( activity != null )
             {
                 var observabilityInfo = DbCommandObservabilityCache.Get( command.CommandText );
-                var queryHash = command.CommandText.XxHash();
-                Activity.Current.DisplayName = $"DB: {observabilityInfo.Prefix} ({observabilityInfo.CommandHash})";
 
-                Activity.Current.AddTag( "db.system", "mssql" );
-                Activity.Current.AddTag( "db.query", command.CommandText );
-                Activity.Current.AddTag( "rock-otel-type", "rock-db" );
-                Activity.Current.AddTag( "rock-db-hash", queryHash );
+                activity.DisplayName = $"DB: {observabilityInfo.Prefix} ({observabilityInfo.CommandHash})";
+                activity.AddTag( "db.system", "mssql" );
+                activity.AddTag( "db.query", command.CommandText );
+                activity.AddTag( "rock-otel-type", "rock-db" );
+                activity.AddTag( "rock-db-hash", observabilityInfo.CommandHash );
 
                 // Check if this query should get additional observability telemetry
-                if (DbCommandObservabilityCache.TargetedQueryHashes.Contains( queryHash ) )
+                if ( DbCommandObservabilityCache.TargetedQueryHashes.Contains( observabilityInfo.CommandHash ) )
                 {
-                    Activity.Current.AddTag( "rock-db-stacktrace", System.Environment.StackTrace );
+                    // Append stack trace 
+                    activity.AddTag( "rock-db-stacktrace", System.Environment.StackTrace );
+
+                    // Append parameters
+                    var parameters = new StringBuilder();
+                    foreach ( DbParameter parm in command.Parameters )
+                    {
+                        var keyValue = GetSqlParameterKeyValue( parm );
+
+                        parameters.Append( $"{keyValue.Key}: {keyValue.Value}{Environment.NewLine}" );
+                    }
+
+                    activity.AddTag( "rock-db-parameters", parameters.ToString() );
                 }
+
+                // Add observability metric
+                var tags = RockMetricSource.CommonTags;
+                tags.Add( "operation", observabilityInfo.CommandType );
+                RockMetricSource.DatabaseQueriesCounter.Add( 1, tags );
             }
 
-            if ( context is RockContext )
+            if ( context is RockContext rockContext )
             {
-                var rockContext = ( RockContext ) context;
-
                 if ( rockContext.QueryMetricDetailLevel != QueryMetricDetailLevel.Off )
                 {
                     _commandStartTimes.TryAdd( command, _stopwatch.ElapsedTicks );
@@ -349,12 +366,17 @@ namespace Rock.Data.Interception
         /// <param name="context">The context.</param>
         private void EndTiming( DbCommand command, System.Data.Entity.DbContext context )
         {
-            if ( context is RockContext )
+            if ( context is RockContext rockContext )
             {
-                // Complete the observability activity
-                Activity.Current?.Dispose();
+                var queryHash = command.CommandText.XxHash();
+                var activity = Activity.Current;
 
-                var rockContext = ( RockContext ) context;
+                // Complete the observability activity if it is the correct
+                // activity.
+                if ( activity != null && activity.GetTagItem( "rock-db-hash" ) is string activityHash && queryHash == activityHash )
+                {
+                    activity.Dispose();
+                }
 
                 if ( rockContext.QueryMetricDetailLevel != QueryMetricDetailLevel.Off )
                 {
@@ -393,26 +415,32 @@ namespace Rock.Data.Interception
             // Merge each parameter into the SQL string
             foreach ( DbParameter parm in command.Parameters )
             {
-                var key = parm.ParameterName;
+                var keyValue = GetSqlParameterKeyValue( parm );
 
-                // If the parameter doesn't start with @ append it. EF puts @ on parms for INSERTS but not SELECTS
-                if ( !key.StartsWith( "@" ) )
-                {
-                    key = "@" + key;
-                }
-
-                var value = parm.Value.ToString();
-
-                // Check if the value needs to be quoted
-                if ( _quoteRequiredFieldTypes.Contains( parm.DbType ) )
-                {
-                    value = "'" + value.Replace( "'", "''" ) + "'";
-                }
-
-                sql = sql.Replace( key, value );
+                sql = sql.Replace( keyValue.Key, keyValue.Value );
             }
 
             return sql;
+        }
+
+        /// <summary>
+        /// Parses a DbParameter into a key value pair.
+        /// </summary>
+        /// <param name="parm"></param>
+        /// <returns></returns>
+        private (string Key, string Value) GetSqlParameterKeyValue( DbParameter parm )
+        {
+            var key = parm.ParameterName.AddStringAtBeginningIfItDoesNotExist( "@" );
+
+            var value = parm.Value.ToString();
+
+            // Check if the value needs to be quoted
+            if ( _quoteRequiredFieldTypes.Contains( parm.DbType ) )
+            {
+                value = "'" + value.Replace( "'", "''" ) + "'";
+            }
+
+            return (key, value);
         }
 
         #endregion

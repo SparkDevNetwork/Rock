@@ -180,7 +180,7 @@ namespace Rock.Reporting.DataSelect.Person
             if (groupTypeId > 0)
             {
                 var groupType = GroupTypeCache.Get(groupTypeId);
-                return (groupType == null) ? string.Empty : groupType.Guid.ToString();
+                return ( groupType == null ) ? string.Empty : groupType.Guid.ToString();
             }
 
             return string.Empty;

@@ -124,6 +124,9 @@ namespace Rock.Model
             target.IsAutomated = source.IsAutomated;
             target.Name = source.Name;
             target.Note = source.Note;
+            target.RemoteSettlementAmount = source.RemoteSettlementAmount;
+            target.RemoteSettlementBatchKey = source.RemoteSettlementBatchKey;
+            target.RemoteSettlementBatchUrl = source.RemoteSettlementBatchUrl;
             target.Status = source.Status;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

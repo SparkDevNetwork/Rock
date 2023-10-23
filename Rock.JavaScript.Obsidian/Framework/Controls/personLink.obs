@@ -19,7 +19,7 @@
     import PopOver from "./popOver.obs";
     import { PersonLinkGetPopupHtmlOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/personLinkGetPopupHtmlOptionsBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
-    import Loading from "./loading";
+    import Loading from "./loading.obs";
 
     const props = defineProps({
         /** ID is used to create the link and fetch person data */

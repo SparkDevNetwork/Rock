@@ -45,7 +45,7 @@
                         <Rock:RockDropDownList ID="ddlMovePersonSchedule" runat="server" Label="Schedule" AutoPostBack="true" Required="true" OnSelectedIndexChanged="ddlMovePersonSchedule_SelectedIndexChanged" />
                     </div>
                     <div class="col-md-4">
-                        <Rock:RockDropDownList ID="ddlMovePersonLocation" runat="server" Label="Location" AutoPostBack="true" OnSelectedIndexChanged="ddlMovePersonLocation_SelectedIndexChanged" />
+                        <Rock:RockDropDownList ID="ddlMovePersonLocation" runat="server" Label="Location" AutoPostBack="true" Required="true" OnSelectedIndexChanged="ddlMovePersonLocation_SelectedIndexChanged" />
                     </div>
                     <div class="col-md-4">
                         <Rock:RockDropDownList ID="ddlMovePersonGroup" runat="server" Label="Group" AutoPostBack="true" Required="true" />

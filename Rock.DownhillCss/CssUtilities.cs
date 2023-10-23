@@ -1816,19 +1816,47 @@ formfield .required-indicator {
     margin: 0, 8, 0, 0;
 }
 
-^ContactButton .contact-button {
-    border-radius: 6;
-    width: 50;
-    background-color: #e3e3e3;
-    padding: 4;
+^ContactButton.contact-button,
+^VerticalIconButton.contact-button {
+  padding: 4;
+  width: 44;
+  height: 32;
+  background-color: #e3e3e3;
+  border-radius: 6;
 }
 
-^ContactButton .contact-button-icon {
+^ContactButton .contact-button-icon,
+^VerticalIconButton .contact-button-icon {
     font-size: 14;
+    color: ?color-primary;
 }
 
-^ContactButton .contact-button-text {
+^ContactButton .contact-button-text,
+^VerticalIconButton .contact-button-text {
     font-size: 11;
+    color: ?color-primary;
+}
+
+.contact-button.is-followed {
+  background-color: ?color-primary;
+}
+
+^VerticalIconButton.contact-button.is-followed .contact-button-text,
+^VerticalIconButton.contact-button.is-followed .contact-button-icon {
+  color: white;
+}
+
+^VerticalIconButton.contact-button-disabled {
+    opacity: 0.4;
+}
+
+^VerticalIconButton.contact-button-enabled {
+    opacity: 1.0;
+}
+
+^VerticalIconButton.contact-button-disabled .contact-button-icon,
+^VerticalIconButton.contact-button-disabled .contact-button-text {
+  color: ?color-primary-100;
 }
 
 .connection-request-detail-content .request-details {
@@ -1983,10 +2011,6 @@ formfield .required-indicator {
 .recipient-container {
     padding: 8, 0;
     -xf-spacing: 8;
-}
-
-.recipient-name-and-communication {
-    -xf-spacing: 0;
 }
 
 .recipients-layout {
@@ -2193,46 +2217,6 @@ the .filter-card-icon class */
 .person-profile-email-edit-sheet.email-field-container ^SwitchList ^Divider {
   padding: 0, 8;
   margin: 0;
-}
-
-^ContactButton.contact-button {
-  padding: 4;
-  width: 44;
-  height: 32;
-  background-color: #e3e3e3;
-  border-radius: 6;
-}
-
-^ContactButton .contact-button-icon {
-    font-size: 14;
-    color: ?color-primary;
-}
-
-^ContactButton .contact-button-text {
-    font-size: 11;
-    color: ?color-primary;
-}
-
-.contact-button.is-followed {
-  background-color: ?color-primary;
-}
-
-^ContactButton.contact-button.is-followed .contact-button-text,
-^ContactButton.contact-button.is-followed .contact-button-icon {
-  color: white;
-}
-
-^ContactButton.contact-button-disabled {
-    opacity: 0.4;
-}
-
-^ContactButton.contact-button-enabled {
-    opacity: 1.0;
-}
-
-^ContactButton.contact-button-disabled .contact-button-icon,
-^ContactButton.contact-button-disabled .contact-button-text {
-  color: ?color-primary-100;
 }
 ";
         #endregion

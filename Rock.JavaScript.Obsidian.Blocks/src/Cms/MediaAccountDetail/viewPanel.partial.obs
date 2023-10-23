@@ -2,8 +2,11 @@
 <template>
     <fieldset>
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-sm-6 col-md-7 col-lg-8">
                 <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+            <div class="col-sm-6 col-md-5 col-lg-4">
+                <ValueDetailList :modelValue="rightSideValues" />
             </div>
         </div>
 
@@ -13,8 +16,8 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { MediaAccountBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountBag";
@@ -50,12 +53,26 @@
         }
 
         if (props.modelValue.componentEntityType?.text) {
-            valueBuilder.addTextValue("Status", props.modelValue.componentEntityType.text);
+            valueBuilder.addTextValue("Type", props.modelValue.componentEntityType.text);
         }
 
         return valueBuilder.build();
     });
 
+     /** The values to display at half-width on the right side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.metricData) {
+            valueBuilder.addHtmlValue("", props.modelValue.metricData);
+        }
+
+        return valueBuilder.build();
+    });
     // #endregion
 
     // #region Functions

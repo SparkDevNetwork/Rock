@@ -1,55 +1,47 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="errorMessage" alertType="validation" v-html="errorMessage">
-    </NotificationBox>
+    <BreakpointObserver>
+        <NotificationBox v-if="errorMessage" alertType="validation" v-html="errorMessage" />
 
-    <RegistrationStep
-                      v-if="step.isRegistration"
-                      v-model="registrationInfo"
-                      v-model:isUsernameAvailable="isUsernameAvailable"
-                      :config="config"
-                      :disabled="isRegistering || isNavigating"
-                      @checkUsernameAvailability="onCheckUsernameAvailability"
-                      @error="showError"
-                      @register="onRegister">
-    </RegistrationStep>
+        <RegistrationStep v-if="step.isRegistration"
+                          v-model="registrationInfo"
+                          v-model:isUsernameAvailable="isUsernameAvailable"
+                          :config="config"
+                          :disabled="isRegistering || isNavigating"
+                          @checkUsernameAvailability="onCheckUsernameAvailability"
+                          @error="showError"
+                          @register="onRegister" />
 
-    <DuplicatePersonSelectionStep
-                                  v-else-if="step.isDuplicatePersonSelection"
-                                  v-model="selectedDuplicatePerson"
-                                  :disabled="isRegistering || isNavigating"
-                                  :options="duplicatePersonSelectionStepOptions"
-                                  @movePrevious="onDuplicatePersonSelectionStepMovePrevious()"
-                                  @personSelected="onDuplicatePersonSelected"
-                                  @noPersonSelected="onNoDuplicatePersonSelected"></DuplicatePersonSelectionStep>
-
-    <PasswordlessConfirmationSentStep
-                                      v-else-if="step.isPasswordlessConfirmationSent"
-                                      v-model="passwordlessConfirmationCode"
+        <DuplicatePersonSelectionStep v-else-if="step.isDuplicatePersonSelection"
+                                      v-model="selectedDuplicatePerson"
                                       :disabled="isRegistering || isNavigating"
-                                      :options="passwordlessConfirmationSentStepOptions"
-                                      @movePrevious="onPasswordlessConfirmationSentStepMovePrevious()"
-                                      @submit="onPasswordlessConfirmationSubmitted"></PasswordlessConfirmationSentStep>
+                                      :options="duplicatePersonSelectionStepOptions"
+                                      @movePrevious="onDuplicatePersonSelectionStepMovePrevious()"
+                                      @personSelected="onDuplicatePersonSelected"
+                                      @noPersonSelected="onNoDuplicatePersonSelected" />
 
-    <ExistingAccountStep
-                         v-else-if="step.isExistingAccount"
-                         :disabled="isSendingForgotUsername || isRegistering || isNavigating"
-                         :options="existingAccountStepOptions"
-                         @movePrevious="onMovePrevious()"
-                         @emailUsername="onEmailUsername"
-                         @sendToLogin="onSendToLogin"></ExistingAccountStep>
+        <PasswordlessConfirmationSentStep v-else-if="step.isPasswordlessConfirmationSent"
+                                          v-model="passwordlessConfirmationCode"
+                                          :disabled="isRegistering || isNavigating"
+                                          :options="passwordlessConfirmationSentStepOptions"
+                                          @movePrevious="onPasswordlessConfirmationSentStepMovePrevious()"
+                                          @submit="onPasswordlessConfirmationSubmitted" />
 
-    <ConfirmationSentStep
-                          v-else-if="step.isConfirmationSent"
-                          :options="confirmationSentStepOptions">
-    </ConfirmationSentStep>
+        <ExistingAccountStep v-else-if="step.isExistingAccount"
+                             :disabled="isSendingForgotUsername || isRegistering || isNavigating"
+                             :options="existingAccountStepOptions"
+                             @movePrevious="onMovePrevious()"
+                             @emailUsername="onEmailUsername"
+                             @sendToLogin="onSendToLogin" />
 
-    <CompletedStep
-                   v-else-if="step.isCompleted"
-                   :disabled="isRegistering || isNavigating"
-                   :options="completedStepOptions"
-                   @navigate="onNavigate($event)">
-    </CompletedStep>
+        <ConfirmationSentStep v-else-if="step.isConfirmationSent"
+                              :options="confirmationSentStepOptions" />
+
+        <CompletedStep v-else-if="step.isCompleted"
+                       :disabled="isRegistering || isNavigating"
+                       :options="completedStepOptions"
+                       @navigate="onNavigate($event)" />
+    </BreakpointObserver>
 </template>
 
 <script setup lang="ts">
@@ -60,6 +52,7 @@
     import ExistingAccountStep from "./AccountEntry/existingAccountStep.partial.obs";
     import PasswordlessConfirmationSentStep from "./AccountEntry/passwordlessConfirmationSentStep.partial.obs";
     import RegistrationStep from "./AccountEntry/registrationStep.partial.obs";
+    import BreakpointObserver from "./breakpointObserver.partial.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AccountEntryStep } from "@Obsidian/Enums/Blocks/Security/AccountEntry/accountEntryStep";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
@@ -80,7 +73,7 @@
     const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
 
-    removeCurrentUrlQueryParams("State");
+    removeCurrentUrlQueryParams("State", "AreUsernameAndPasswordRequired");
 
     //#region Values
 
@@ -424,9 +417,9 @@
     }
 
     /**
-     * Shows the "Registration" step.
+     * Shows a registration step.
      */
-    function displayStep(data: AccountEntryRegisterResponseBox ): void {
+    function displayStep(data: AccountEntryRegisterResponseBox): void {
         switch (data.step) {
             case AccountEntryStep.Completed: {
                 showCompletedStepNext(data.completedStepBag);
@@ -461,6 +454,7 @@
     }
 
     //#endregion
+
     displayStep(config.accountEntryRegisterStepBox || { step: AccountEntryStep.Registration });
     onConfigurationValuesChanged(useReloadBlock());
 </script>

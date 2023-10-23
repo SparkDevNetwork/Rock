@@ -83,6 +83,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         protected void BuildDropDown()
         {
+            var groupMembers = GetGroupMembers();
+            if ( groupMembers == null || groupMembers.Count == 0 )
+            {
+                litGroupMemberNav.Text = string.Empty;
+                return;
+            }
+
             var sb = new StringBuilder(
             $@"<a href=""#"" id=""familyDropdownNav"" class=""profile-toggle"" data-toggle=""dropdown"" aria-haspopup=""true"" aria-expanded=""false"">
                     <img src=""{Person.GetPersonPhotoUrl( this.Person )}&Style=icon"" class=""avatar mr-2 flex-shrink-0"" alt="""" />
@@ -93,7 +100,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             sb.AppendLine();
 
-            var groupMembers = GetGroupMembers();
             foreach ( var groupMember in groupMembers )
             {
                 sb.Append( CreateGroupMemberListItem( groupMember ) );

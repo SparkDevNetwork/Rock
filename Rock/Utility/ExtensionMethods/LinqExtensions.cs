@@ -366,7 +366,8 @@ namespace Rock
                             && method.GetParameters().Length == 2 )
                     .MakeGenericMethod( typeof( T ), type )
                     .Invoke( null, new object[] { source, lambda } );
-            return (IOrderedQueryable<T>)result;
+
+            return ( IOrderedQueryable<T> ) result;
         }
 
         /// <summary>

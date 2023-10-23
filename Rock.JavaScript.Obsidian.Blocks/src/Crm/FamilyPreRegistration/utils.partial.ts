@@ -18,6 +18,10 @@
 import { ChildRequestBag, PersonRequestBag, PropertiesOfType } from "./types.partial";
 import { CommunicationPreference, CommunicationPreferenceDescription } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
 import { Gender } from "@Obsidian/Enums/Crm/gender";
+import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+import { getDay, getMonth, getYear } from "@Obsidian/Utility/dateKey";
+import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
 import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { Ref, WritableComputedRef, computed, reactive, toRefs } from "vue";
@@ -109,7 +113,7 @@ export function createPersonViewModel(person: Ref<PersonRequestBag>): PersonRequ
                 return person.value.gender.toString();
             },
             set(newValue: string) {
-                person.value.gender = Number(newValue);
+                person.value.gender = Number(newValue) as Gender;
             }
         }),
         gradeListItemBag: createListItemBagWrapper(person, "gradeDefinedValueGuid"),
@@ -502,4 +506,177 @@ export function getNumberAsOrdinalString(numb: number): string {
     }
 
     return getQuadrillionth(numb);
+}
+
+/**
+ * Validates that a value is entered.
+ *
+ * This was copied from the "required" validation rule.
+ */
+export function required(value: unknown, params?: unknown[]): ValidationResult {
+    // This needs to be changed. JSON is not safe in rules because of the
+    // comma and pipe characters.
+    const options = params && params.length >= 1 && typeof params[0] === "string" ? JSON.parse(params[0]) : {};
+
+    if (typeof value === "string") {
+        const allowEmptyString = !!(options.allowEmptyString);
+
+        if (!allowEmptyString && !(value?.trim())) {
+            return "is required";
+        }
+
+        return true;
+    }
+
+    if (typeof value === "number" && value === 0) {
+        return "is required";
+    }
+
+    if (Array.isArray(value) && value.length === 0) {
+        return "is required";
+    }
+
+    // Special case for booleans, required rule is ignored. Otherwise things
+    // like checkbox and toggle would always require a True value.
+    if (typeof value === "boolean") {
+        return true;
+    }
+
+    if (!value) {
+        return "is required";
+    }
+
+    return true;
+}
+
+/**
+ * Validates whether a birthday with an optional year is valid.
+ */
+export function monthAndDayRequiredRule(value: unknown, _params?: unknown): ValidationResult {
+    if (typeof value !== "string") {
+        return true;
+    }
+
+    if (!getMonth(value)) {
+        return "must have a month";
+    }
+
+    if (!getDay(value)) {
+        return "must have a day";
+    }
+
+    return true;
+}
+
+/**
+ * Validates whether a birthday with an optional year is valid.
+ *
+ * This was copied from the "datekey" validation rule.
+ */
+export function monthAndDayAndYearRequiredRule(value: unknown, _params?: unknown): ValidationResult {
+    if (typeof value !== "string") {
+        return true;
+    }
+
+    if (!getYear(value)) {
+        return "must have a year";
+    }
+
+    if (!getMonth(value)) {
+        return "must have a month";
+    }
+
+    if (!getDay(value)) {
+        return "must have a day";
+    }
+
+    return true;
+}
+
+/**
+ * Convert the string to a number
+ * @param val
+ */
+function convertToNumber(value: unknown): number {
+    if (typeof value === "number") {
+        return value;
+    }
+
+    if (typeof value === "string") {
+        return toNumberOrNull(value) || 0;
+    }
+
+    return 0;
+}
+
+/**
+ * Is the value numeric?
+ * '0.9' => true
+ * 0.9 => true
+ * '9a' => false
+ * @param value
+ */
+function isNumeric(value: unknown): boolean {
+    if (typeof value === "number") {
+        return true;
+    }
+
+    if (typeof value === "string") {
+        return toNumberOrNull(value) !== null;
+    }
+
+    return false;
+}
+
+/**
+ * Validates that a value does not equal another value.
+ */
+export function createNotEqualRule(compare: unknown): ValidationRuleFunction {
+    return (value: unknown, params?: unknown[]): ValidationResult => {
+        if (isNumeric(value) && isNumeric(compare)) {
+            if (convertToNumber(value) !== convertToNumber(compare)) {
+                return true;
+            }
+        }
+        else if (typeof value === "boolean") {
+            if (value !== asBooleanOrNull(compare)) {
+                return true;
+            }
+        }
+        else if (value !== compare) {
+            return true;
+        }
+
+        return `must not equal ${compare}`;
+    };
+}
+
+/**
+ * Returns a wrapper around a validation function which appends a suffix to validation error messages.
+ */
+export function createRuleWithSuffix(rule: ValidationRuleFunction, suffix: string): ValidationRuleFunction {
+    return (value: unknown, params?: unknown[]): ValidationResult => {
+        const result = rule(value, params);
+
+        if (typeof result === "string" && result && suffix) {
+            return `${result} ${suffix}`;
+        }
+
+        return result;
+    };
+}
+
+/**
+ * Returns a wrapper around a validation function which replaces a validation error message.
+ */
+export function createRuleWithReplacement(rule: ValidationRuleFunction, replacement: string): ValidationRuleFunction {
+    return (value: unknown, params?: unknown[]): ValidationResult => {
+        const result = rule(value, params);
+
+        if (typeof result === "string" && result && replacement) {
+            return replacement;
+        }
+
+        return result;
+    };
 }

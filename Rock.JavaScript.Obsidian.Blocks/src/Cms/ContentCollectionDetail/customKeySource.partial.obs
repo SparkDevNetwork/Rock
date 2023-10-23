@@ -61,9 +61,9 @@
 </template>
 
 <script setup lang="ts">
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ContentCollectionCustomFieldBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldBag";
     import { useFormState } from "@Obsidian/Utility/form";
     import { newGuid } from "@Obsidian/Utility/guid";

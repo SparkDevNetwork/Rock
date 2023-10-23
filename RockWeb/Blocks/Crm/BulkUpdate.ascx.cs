@@ -2336,9 +2336,14 @@ namespace RockWeb.Blocks.Crm
                                 {
                                     var newGroupMembers = new List<GroupMember>();
 
-                                    var existingIds = existingMembersQuery.Select( m => m.PersonId ).Distinct().ToList();
+                                    var existingMembers = existingMembersQuery
+                                        .Select( m => new
+                                        {
+                                            m.PersonId,
+                                            m.GroupRoleId
+                                        } ).ToList();
 
-                                    var personKeys = ids.Where( id => !existingIds.Contains( id ) ).ToList();
+                                    var personKeys = ids.Where( id => !existingMembers.Any( m => m.PersonId == id && m.GroupRoleId == UpdateGroupRoleId.Value ) ).ToList();
 
                                     Action<RockContext, List<int>> addAction = ( context, items ) =>
                                     {

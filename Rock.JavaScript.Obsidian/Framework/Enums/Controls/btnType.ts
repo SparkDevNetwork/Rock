@@ -27,7 +27,8 @@ export const BtnType = {
     Info: "info",
     Link: "link",
     Authentication: "authentication",
-    Action: "action"
+    Action: "action",
+    Tool: "tool",
 } as const;
 
 /** Options for types of buttons. */

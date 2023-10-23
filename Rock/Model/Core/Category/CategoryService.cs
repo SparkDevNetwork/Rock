@@ -417,6 +417,10 @@ namespace Rock.Model
                         {
                             itemFilterPropertyValueExpression = Expression.Constant( options.ItemFilterPropertyValue.AsGuidOrNull(), typeof( Guid? ) );
                         }
+                        else if ( itemFilterPropertyNameExpression.Type == typeof( bool? ) || itemFilterPropertyNameExpression.Type == typeof( bool ) )
+                        {
+                            itemFilterPropertyValueExpression = Expression.Constant( options.ItemFilterPropertyValue.AsBooleanOrNull(), typeof( bool? ) );
+                        }
                         else
                         {
                             itemFilterPropertyValueExpression = Expression.Constant( options.ItemFilterPropertyValue );

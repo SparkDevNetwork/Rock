@@ -47,68 +47,70 @@
  */
 
 import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
-import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath } from "./ControlGallery/utils.partial";
+import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/utils.partial";
 import GalleryAndResult from "./ControlGallery/galleryAndResult.partial.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
-import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-import TextBox from "@Obsidian/Controls/textBox";
-import EmailBox from "@Obsidian/Controls/emailBox";
-import CodeEditor from "@Obsidian/Controls/codeEditor";
-import CurrencyBox from "@Obsidian/Controls/currencyBox";
+import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
+import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+import TextBox from "@Obsidian/Controls/textBox.obs";
+import EmailBox from "@Obsidian/Controls/emailBox.obs";
+import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
 import DatePicker from "@Obsidian/Controls/datePicker.obs";
-import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
-import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
-import ListBox from "@Obsidian/Controls/listBox";
-import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
-import NumberUpDown from "@Obsidian/Controls/numberUpDown";
+import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+import ListBox from "@Obsidian/Controls/listBox.obs";
+import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
+import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
 import AddressControl from "@Obsidian/Controls/addressControl.obs";
-import InlineSwitch from "@Obsidian/Controls/inlineSwitch";
-import Switch from "@Obsidian/Controls/switch";
-import Toggle from "@Obsidian/Controls/toggle";
-import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "@Obsidian/Controls/itemsWithPreAndPostHtml";
-import StaticFormControl from "@Obsidian/Controls/staticFormControl";
-import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progressTracker";
-import RockForm from "@Obsidian/Controls/rockForm";
-import RockButton from "@Obsidian/Controls/rockButton";
-import RadioButtonList from "@Obsidian/Controls/radioButtonList";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import Dialog from "@Obsidian/Controls/dialog";
-import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
-import CheckBox from "@Obsidian/Controls/checkBox";
+import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+import Switch from "@Obsidian/Controls/switch.obs";
+import Toggle from "@Obsidian/Controls/toggle.obs";
+import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
+import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
+import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
+import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
+import RockForm from "@Obsidian/Controls/rockForm.obs";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import Dialog from "@Obsidian/Controls/dialog.obs";
+import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
-import HelpBlock from "@Obsidian/Controls/helpBlock";
-import DatePartsPicker, { DatePartsPickerValue } from "@Obsidian/Controls/datePartsPicker";
-import ColorPicker from "@Obsidian/Controls/colorPicker";
-import NumberBox from "@Obsidian/Controls/numberBox";
-import NumberRangeBox from "@Obsidian/Controls/numberRangeBox";
-import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
-import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox";
+import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
+import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
+import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
+import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
+import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
+import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox.obs";
 import TimePicker from "@Obsidian/Controls/timePicker.obs";
-import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
-import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-import Rating from "@Obsidian/Controls/rating";
-import Fullscreen from "@Obsidian/Controls/fullscreen";
+import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+import Rating from "@Obsidian/Controls/rating.obs";
+import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
-import PersonPicker from "@Obsidian/Controls/personPicker";
-import FileUploader from "@Obsidian/Controls/fileUploader";
-import ImageUploader from "@Obsidian/Controls/imageUploader";
-import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
-import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker";
-import AssessmentTypePicker from "@Obsidian/Controls/assessmentTypePicker";
-import AssetStorageProviderPicker from "@Obsidian/Controls/assetStorageProviderPicker";
-import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker";
-import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker";
+import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker.obs";
+import AssessmentTypePicker from "@Obsidian/Controls/assessmentTypePicker.obs";
+import AssetStorageProviderPicker from "@Obsidian/Controls/assetStorageProviderPicker.obs";
+import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
+import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker.obs";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
-import CategoryPicker from "@Obsidian/Controls/categoryPicker";
-import LocationItemPicker from "@Obsidian/Controls/locationItemPicker";
-import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker";
-import CopyButton from "@Obsidian/Controls/copyButton";
+import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
+import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker.obs";
+import CopyButton from "@Obsidian/Controls/copyButton.obs";
 import TagList from "@Obsidian/Controls/tagList.obs";
-import Following from "@Obsidian/Controls/following";
-import AuditDetail from "@Obsidian/Controls/auditDetail";
+import Following from "@Obsidian/Controls/following.obs";
+import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
 import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
@@ -126,71 +128,72 @@ import { SlidingDateRange, rangeTypeOptions } from "@Obsidian/Utility/slidingDat
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
 import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
-import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
-import SectionContainer from "@Obsidian/Controls/sectionContainer";
-import SectionHeader from "@Obsidian/Controls/sectionHeader";
+import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
+import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 import { useStore } from "@Obsidian/PageState";
-import BadgeComponentPicker from "@Obsidian/Controls/badgeComponentPicker";
-import ComponentPicker from "@Obsidian/Controls/componentPicker";
-import Modal from "@Obsidian/Controls/modal";
-import EventItemPicker from "@Obsidian/Controls/eventItemPicker";
-import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
+import BadgeComponentPicker from "@Obsidian/Controls/badgeComponentPicker.obs";
+import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+import Modal from "@Obsidian/Controls/modal.obs";
+import EventItemPicker from "@Obsidian/Controls/eventItemPicker.obs";
+import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
 import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
-import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker";
-import FinancialStatementTemplatePicker from "@Obsidian/Controls/financialStatementTemplatePicker";
-import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
-import GradePicker from "@Obsidian/Controls/gradePicker";
+import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker.obs";
+import FinancialStatementTemplatePicker from "@Obsidian/Controls/financialStatementTemplatePicker.obs";
+import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker.obs";
+import GradePicker from "@Obsidian/Controls/gradePicker.obs";
 import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
-import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker";
+import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker.obs";
 import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
 import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker.obs";
-import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker";
-import RemoteAuthsPicker from "@Obsidian/Controls/remoteAuthsPicker";
+import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
+import RemoteAuthsPicker from "@Obsidian/Controls/remoteAuthsPicker.obs";
 import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker.obs";
 import StepProgramStepTypePicker from "@Obsidian/Controls/stepProgramStepTypePicker.obs";
 import StepProgramStepStatusPicker from "@Obsidian/Controls/stepProgramStepStatusPicker.obs";
 import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker.obs";
 import StepTypePicker from "@Obsidian/Controls/stepTypePicker.obs";
-import StreakTypePicker from "@Obsidian/Controls/streakTypePicker";
+import StreakTypePicker from "@Obsidian/Controls/streakTypePicker.obs";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { AlertType } from "@Obsidian/Enums/Controls/alertType";
-import BadgeList from "@Obsidian/Controls/badgeList";
-import BadgePicker from "@Obsidian/Controls/badgePicker";
+import BadgeList from "@Obsidian/Controls/badgeList.obs";
+import BadgePicker from "@Obsidian/Controls/badgePicker.obs";
 import BasicTimePicker from "@Obsidian/Controls/basicTimePicker.obs";
-import CountdownTimer from "@Obsidian/Controls/countdownTimer";
-import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
+import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
+import MediaSelector from "@Obsidian/Controls/mediaSelector.obs";
+import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
 import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
-import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
+import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor.obs";
 import InlineRangeSlider from "@Obsidian/Controls/inlineRangeSlider.obs";
 import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
-import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
-import KeyValueList from "@Obsidian/Controls/keyValueList";
-import Loading from "@Obsidian/Controls/loading";
-import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
-import NumberUpDownGroup, { NumberUpDownGroupOption } from "@Obsidian/Controls/numberUpDownGroup";
-import PanelWidget from "@Obsidian/Controls/panelWidget";
-import ProgressBar from "@Obsidian/Controls/progressBar";
-import RockLabel from "@Obsidian/Controls/rockLabel";
-import RockValidation from "@Obsidian/Controls/rockValidation";
+import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor.obs";
+import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+import Loading from "@Obsidian/Controls/loading.obs";
+import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+import NumberUpDownGroup from "@Obsidian/Controls/numberUpDownGroup.obs";
+import { NumberUpDownGroupOption } from "@Obsidian/Types/Controls/numberUpDownGroup";
+import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+import RockValidation from "@Obsidian/Controls/rockValidation.obs";
 import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
 import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
-import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
 import PagePicker from "@Obsidian/Controls/pagePicker.obs";
-import GroupPicker from "@Obsidian/Controls/groupPicker";
-import MergeTemplatePicker from "@Obsidian/Controls/mergeTemplatePicker";
+import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+import MergeTemplatePicker from "@Obsidian/Controls/mergeTemplatePicker.obs";
 import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
-import MetricCategoryPicker from "@Obsidian/Controls/metricCategoryPicker";
-import MetricItemPicker from "@Obsidian/Controls/metricItemPicker";
-import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker";
-import ReportPicker from "@Obsidian/Controls/reportPicker";
-import SchedulePicker from "@Obsidian/Controls/schedulePicker";
+import MetricCategoryPicker from "@Obsidian/Controls/metricCategoryPicker.obs";
+import MetricItemPicker from "@Obsidian/Controls/metricItemPicker.obs";
+import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker.obs";
+import ReportPicker from "@Obsidian/Controls/reportPicker.obs";
+import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
 import WorkflowActionTypePicker from "@Obsidian/Controls/workflowActionTypePicker.obs";
 import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
 import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.obs";
 import MonthYearPicker from "@Obsidian/Controls/monthYearPicker.obs";
-import { RockCacheability } from "@Obsidian/ViewModels/Controls/rockCacheability";
+import { RockCacheabilityBag } from "@Obsidian/ViewModels/Controls/rockCacheabilityBag";
 import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
 import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
 import IntervalPicker from "@Obsidian/Controls/intervalPicker.obs";
@@ -219,34 +222,29 @@ import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
 import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
 import GroupAndRolePicker from "@Obsidian/Controls/groupAndRolePicker.obs";
 import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+import NoteTextEditor from "@Obsidian/Controls/noteTextEditor.obs";
 import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
 import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstancePicker.obs";
 import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/interactionChannelInteractionComponentPicker.obs";
 import WorkflowPicker from "@Obsidian/Controls/workflowPicker.obs";
 import ValueList from "@Obsidian/Controls/valueList.obs";
 import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
+import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
 import DropDownMenuGallery from "./ControlGallery/dropDownMenuGallery.partial.obs";
 import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.partial.obs";
 import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
+import CampusAccountAmountPickerGallery from "./ControlGallery/campusAccountAmountPickerGallery.partial.obs";
+import PersonPickerGallery from "./ControlGallery/personPickerGallery.partial.obs";
+import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
+import HighlightLabelGallery from "./ControlGallery/highlightLabelGallery.partial.obs";
+import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
+import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
+import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
+import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
+import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
+import PersonBasicEditorGallery from "./ControlGallery/personBasicEditorGallery.partial.obs";
 
-// #region Gallery Support
-
-const displayStyleItems: ListItemBag[] = [
-    {
-        value: PickerDisplayStyle.Auto,
-        text: "Auto"
-    },
-    {
-        value: PickerDisplayStyle.List,
-        text: "List"
-    },
-    {
-        value: PickerDisplayStyle.Condensed,
-        text: "Condensed"
-    }
-];
-
-// #endregion
 
 // #region Control Gallery
 
@@ -735,7 +733,7 @@ const dropDownListGallery = defineComponent({
             { text: "A Text", value: "a", category: "First" },
             { text: "B Text", value: "b", category: "First" },
             { text: "C Text", value: "c", category: "Second" },
-            { text: "D Text", value: "d", category: "Second" }
+            { text: "D Text", value: "d", category: "Second", disabled: true }
         ];
 
         // This function can be used to demonstrate lazy loading of items.
@@ -752,7 +750,7 @@ const dropDownListGallery = defineComponent({
             grouped: ref(false),
             multiple: ref(false),
             value: ref(null),
-            options: options,
+            options,
             importCode: getControlImportPath("dropDownList"),
             exampleCode: `<DropDownList label="Select" v-model="value" :items="options" :showBlankItem="true" :enhanceForLongLists="false" :grouped="false" :multiple="false" />`
         };
@@ -765,7 +763,7 @@ const dropDownListGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <DropDownList label="Select" v-model="value" :items="[]" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
+    <DropDownList label="Select" v-model="value" :items="options" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
 
     <template #settings>
         <div class="row">
@@ -989,6 +987,54 @@ const checkBoxListGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates media selector list */
+const mediaSelectorGallery = defineComponent({
+    name: "mediaSelectorGallery",
+    components: {
+        GalleryAndResult,
+        MediaSelector,
+        KeyValueList,
+        DropDownList
+    },
+    setup() {
+        return {
+            items: ref([""]),
+            mediaItems: [
+            ] as KeyValueItem[],
+            modeOptions: [
+                {
+                    text: "Image",
+                    value: "0"
+                },
+                {
+                    text: "Audio",
+                    value: "1"
+                }
+            ] as ListItemBag[],
+            mode: ref(MediaSelectorMode.Image),
+            itemWidth: "100px",
+            importCode: getControlImportPath("mediaSelector"),
+            exampleCode: `<MediaSelector label="MediaSelector" v-model="value" :mediaItems="mediaItems" :itemWidth="itemWidth" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{'output:modelValue': items, 'input:items': mediaItems}"
+    hasMultipleValues
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <MediaSelector label="MediaSelector" v-model="items" :mediaItems="mediaItems" :mode="mode"/>
+
+    <template #settings>
+        <div class="row">
+            <KeyValueList label="Media Items" v-model="mediaItems" />
+            <DropDownList label="Mode" v-model="mode" :items="modeOptions" />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 /** Demonstrates a list box */
 const listBoxGallery = defineComponent({
     name: "ListBoxGallery",
@@ -1129,8 +1175,9 @@ const dateTimePickerGallery = defineComponent({
             date: ref<string | null>(null),
             displayCurrentOption: ref(false),
             isCurrentDateOffset: ref(false),
+            disabled: ref(false),
             importCode: getControlImportPath("dateTimePicker"),
-            exampleCode: `<DateTimePicker label="Date and Time" v-model="date" :displayCurrentOption="false" :isCurrentDateOffset="false" />`
+            exampleCode: `<DateTimePicker label="Date and Time" v-model="date" :displayCurrentOption="false" :isCurrentDateOffset="false" :disabled="disabled" />`
         };
     },
     template: `
@@ -1140,7 +1187,7 @@ const dateTimePickerGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <DateTimePicker label="Date and Time" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" />
+    <DateTimePicker label="Date and Time" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" :disabled="disabled" />
 
     <template #settings>
         <div class="row">
@@ -1149,6 +1196,9 @@ const dateTimePickerGallery = defineComponent({
             </div>
             <div class="col-sm-4">
                 <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
+            </div>
+            <div class="col-sm-4">
+                <InlineCheckBox v-model="disabled" label="Is Disabled" />
             </div>
         </div>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
@@ -1331,17 +1381,17 @@ const numberRangeBoxGallery = defineComponent({
 });
 
 /** Demonstrates a gender picker */
-const genderDropDownListGallery = defineComponent({
-    name: "GenderDropDownListGallery",
+const genderPickerGallery = defineComponent({
+    name: "GenderPickerGallery",
     components: {
         GalleryAndResult,
-        GenderDropDownList
+        GenderPicker
     },
     setup() {
         return {
             value: ref("1"),
-            importCode: getControlImportPath("genderDropDownList"),
-            exampleCode: `<GenderDropDownList label="Your Gender" v-model="value" />`
+            importCode: getControlImportPath("genderPicker"),
+            exampleCode: `<GenderPicker label="Your Gender" v-model="value" />`
         };
     },
     template: `
@@ -1350,7 +1400,7 @@ const genderDropDownListGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <GenderDropDownList label="Your Gender" v-model="value" />
+    <GenderPicker label="Your Gender" v-model="value" />
 
     <template #settings>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
@@ -1628,11 +1678,31 @@ const addressControlGallery = defineComponent({
     name: "AddressControlGallery",
     components: {
         GalleryAndResult,
-        AddressControl
+        RockForm,
+        RockButton,
+        CheckBox,
+        AddressControl,
+        ButtonDropDownList
     },
     setup() {
+        const showCountrySelected = ref("default");
+        const showCountry = computed(() => {
+            return showCountrySelected.value == "true" ? true :
+                showCountrySelected.value == "false" ? false : null;
+        });
+
         return {
             value: ref({}),
+            submit: ref(false),
+            required: ref(false),
+            partial: ref(false),
+            showCountry,
+            showCountrySelected,
+            showCountryOptions: [
+                {text: "Default", value: "default"},
+                {text: "Yes", value: "true"},
+                {text: "No", value: "false"},
+            ],
             importCode: getSfcControlImportPath("addressControl"),
             exampleCode: `<AddressControl label="Address" v-model="value" />`
         };
@@ -1642,9 +1712,25 @@ const addressControlGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <AddressControl label="Address" v-model="value" />
+
+    <RockForm v-model:submit="submit">
+    <AddressControl label="Address" v-model="value" :rules="required ? 'required' : ''" :partialAddressIsAllowed="partial" :showCountry="showCountry" />
+
+    <RockButton @click="submit=true">Validate</RockButton>
+    </RockForm>
 
     <template #settings>
+        <div class="row">
+            <div class="col-sm-4">
+                <CheckBox label="Required" v-model="required" />
+            </div>
+            <div class="col-sm-4">
+                <CheckBox label="Allow Partial Addresses" v-model="partial" />
+            </div>
+            <div class="col-sm-4">
+                <ButtonDropDownList label="Show Country" v-model="showCountrySelected" :items="showCountryOptions" help="If no value is passed in, the visibility of the Country field will depend on the 'Support International Addresses' Global Attribute setting." />
+            </div>
+        </div>
         <p>All props match that of a <code>Rock Form Field</code></p>
     </template>
 </GalleryAndResult>`
@@ -2025,42 +2111,6 @@ const panelGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates a person picker */
-const personPickerGallery = defineComponent({
-    name: "PersonPickerGallery",
-    components: {
-        GalleryAndResult,
-        PersonPicker,
-        CheckBox
-    },
-    setup() {
-        return {
-            value: ref(null),
-            includeBusinesses: ref(false),
-            importCode: getControlImportPath("personPicker"),
-            exampleCode: `<PersonPicker v-model="value" label="Person" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value ?? null"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <PersonPicker v-model="value" label="Person" :includeBusinesses="includeBusinesses" />
-    <template #settings>
-        <div class="row">
-            <div class="col-md-4">
-                <CheckBox label="Include Businesses" v-model="includeBusinesses" />
-            </div>
-        </div>
-
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
 /** Demonstrates the file uploader component. */
 const fileUploaderGallery = defineComponent({
     name: "FileUploaderGallery",
@@ -2291,7 +2341,7 @@ const entityTypePickerGallery = defineComponent({
             includeGlobalOption: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
-            value: ref({ value: EntityType.Person, text: "Default Person" }),
+            value: ref({ value: EntityType.Person, text: "Person" }),
             importCode: getControlImportPath("entityTypePicker"),
             exampleCode: `<EntityTypePicker label="Entity Type" v-model="value" :multiple="false" :includeGlobalOption="false" />`
         };
@@ -2309,7 +2359,8 @@ const entityTypePickerGallery = defineComponent({
         :includeGlobalOption="includeGlobalOption"
         :enhanceForLongLists="enhanceForLongLists"
         :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem" />
+        :showBlankItem="showBlankItem"
+        :entityTypeGuids="['5c144b51-3d2e-4bc2-b6c7-7e4cb890e15f','72657ed8-d16e-492e-ac12-144c5e7567e7']" />
 
     <template #settings>
         <div class="row">
@@ -2340,7 +2391,7 @@ const entityTypePickerGallery = defineComponent({
             </div>
         </div>
 
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        <p class="mt-3 text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -3736,9 +3787,17 @@ const modalGallery = defineComponent({
     setup() {
         return {
             isOpen: ref(false),
+            saveText: ref<string>("Save"),
+            cancelText: ref<string>("Cancel"),
+            isFooterHidden: ref(false),
+            isSaveButtonDisabled: ref(false),
+            isCloseButtonHidden: ref(false),
+            clickBackdropToClose: ref(false),
             value: "",
             importCode: getControlImportPath("modal"),
-            exampleCode: `<Modal title="Modal Dialog Title" saveText="Save" />`
+            exampleCode: `<Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
+    <TextBox label="Required Value" v-model="value" rules="required" />
+</Modal>`
         };
     },
     template: `
@@ -3747,11 +3806,42 @@ const modalGallery = defineComponent({
     :exampleCode="exampleCode">
     <CheckBox label="Is Open" v-model="isOpen" />
 
-    <Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
+    <Modal v-model="isOpen"
+           title="Modal Dialog Title"
+           :saveText="saveText"
+           :cancelText="cancelText"
+           :isFooterHidden="isFooterHidden"
+           :isSaveButtonDisabled="isSaveButtonDisabled"
+           :isCloseButtonHidden="isCloseButtonHidden"
+           :clickBackdropToClose="clickBackdropToClose"
+           @save="isOpen = false">
         <TextBox label="Required Value" v-model="value" rules="required" />
     </Modal>
 
     <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox label="Save Text" v-model="saveText" help="If an empty string is provided, the Save button will be hidden." />
+            </div>
+            <div class="col-md-4">
+                <TextBox label="Cancel Text" v-model="cancelText" help="If an empty string is provided, the Cancel button will be hidden." />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Is Footer Hidden" v-model="isFooterHidden" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Is Save Button Disabled" v-model="isSaveButtonDisabled" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Is Close Button Hidden" v-model="isCloseButtonHidden" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Click Backdrop to Close" v-model="clickBackdropToClose" />
+            </div>
+        </div>
+        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -5154,47 +5244,6 @@ const numberUpDownGroupGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates panel widget */
-const panelWidgetGallery = defineComponent({
-    name: "PanelWidgetGallery",
-    components: {
-        GalleryAndResult,
-        PanelWidget
-    },
-    setup() {
-        return {
-            importCode: getControlImportPath("panelWidget"),
-            exampleCode: `<PanelWidget :isDefaultOpen="false">
-    <template #header>Header</template>
-    Main Content...
-</PanelWidget>`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-
-    <PanelWidget :isDefaultOpen="false">
-        <template #header>Panel Widget Header</template>
-        <h4>Romans 11:33-36</h4>
-        <p>
-            Oh, the depth of the riches<br />
-            and the wisdom and the knowledge of God!<br />
-            How unsearchable his judgments<br />
-            and untraceable his ways!<br />
-            For who has known the mind of the Lord?<br />
-            Or who has been his counselor?<br />
-            And who has ever given to God,<br />
-            that he should be repaid?<br />
-            For from him and through him<br />
-            and to him are all things.<br />
-            To him be the glory forever. Amen.
-        </p>
-    </PanelWidget>
-</GalleryAndResult>`
-});
-
 /** Demonstrates progress bar */
 const progressBarGallery = defineComponent({
     name: "ProgressBarGallery",
@@ -5270,7 +5319,7 @@ const rockButtonGallery = defineComponent({
             isLoading: ref(false),
             isSquare: ref(false),
             loadingText: ref("Loading..."),
-            importCode: `import RockButton, { BtnType, BtnSize } from "@Obsidian/Controls/rockButton";`,
+            importCode: `import RockButton, { BtnType, BtnSize } from "@Obsidian/Controls/rockButton.obs";`,
             exampleCode: `<RockButton
     :btnSize="BtnSize.Default"
     :btnType="BtnType.Default"
@@ -5414,14 +5463,11 @@ const tabbedBarGallery = defineComponent({
     setup() {
         return {
             list: ["Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians"],
+            selectedTab: ref(""),
             type: ref("tabs"),
-            typeItems: [{value: "tabs", text: "Tabs"}, {value: "pills", text: "Pills" }],
+            typeItems: [{ value: "tabs", text: "Tabs" }, { value: "pills", text: "Pills" }],
             importCode: getSfcControlImportPath("tabbedBar"),
-            exampleCode: `<TabbedBar :tabs="arrayOfItems">
-    <template #default="{item}">
-        {{ item }}
-    </template>
-</TabbedBar`
+            exampleCode: `<TabbedBar v-model="selectedTab" :tabs="arrayOfItems" :type="type" />`
         };
     },
     template: `
@@ -5429,8 +5475,7 @@ const tabbedBarGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode" >
 
-    <TabbedBar :tabs="list" :type="type">
-    </TabbedBar>
+    <TabbedBar v-model="selectedTab" :tabs="list" :type="type" />
 
     <template #settings>
         <div class="row">
@@ -5456,9 +5501,6 @@ const tabbedContentGallery = defineComponent({
             list: ["Matthew", "Mark", "Luke", "John"],
             importCode: getSfcControlImportPath("tabbedContent"),
             exampleCode: `<TabbedContent :tabs="arrayOfItems">
-    <template #tab="{item}">
-        {{ item }}
-    </template>
     <template #tabpane="{item}">
         This is the content for {{item}}.
     </template>
@@ -5470,11 +5512,7 @@ const tabbedContentGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode" >
 
-
     <TabbedContent :tabs="list">
-        <template #tab="{item}">
-            {{ item }}
-        </template>
         <template #tabpane="{item}">
             This is the content for {{item}}.
         </template>
@@ -5954,6 +5992,7 @@ const schedulePickerGallery = defineComponent({
     setup() {
         return {
             multiple: ref(false),
+            showOnlyPublic: ref(false),
             value: ref(null),
             importCode: getControlImportPath("schedulePicker"),
             exampleCode: `<SchedulePicker label="Schedule" v-model="value" :multiple="false" />`
@@ -5968,11 +6007,18 @@ const schedulePickerGallery = defineComponent({
 
     <SchedulePicker label="Schedule"
         v-model="value"
-        :multiple="multiple" />
+        :multiple="multiple"
+        :showOnlyPublic="showOnlyPublic" />
 
     <template #settings>
-
-        <CheckBox label="Multiple" v-model="multiple" />
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Limit to Public Only" v-model="showOnlyPublic" />
+            </div>
+        </div>
 
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
@@ -6129,7 +6175,7 @@ const cacheabilityPickerGallery = defineComponent({
     },
     setup() {
         return {
-            value: ref<RockCacheability | null>(null),
+            value: ref<RockCacheabilityBag | null>(null),
             importCode: getSfcControlImportPath("cacheabilityPicker"),
             exampleCode: `<CacheabilityPicker v-model="value" :showBlankItem="false" :multiple="false" />`
         };
@@ -7341,11 +7387,9 @@ const popOverGallery = defineComponent({
             show: ref(false),
             importCode: getSfcControlImportPath("popOver"),
             exampleCode: `<PopOver v-model:isVisible="isVisible" placement="right">
+    This is the content that shows up in the popOver
     <template #activator="props">
         <strong v-bind="props">Hover Me</strong>
-    </template>
-    <template #popOverContent>
-        This is the content that shows up in the popOver
     </template>
 </PopOver>`
         };
@@ -7357,11 +7401,9 @@ const popOverGallery = defineComponent({
 
     <div class="text-center">
         <PopOver v-model:isVisible="show" :placement="placement" v-model:triggerUpdate="triggerUpdate">
+            This is the content that shows up in the popOver
             <template #activator="props">
                 <strong v-bind="props">Hover Me</strong>
-            </template>
-            <template #popOverContent>
-                This is the content that shows up in the popOver
             </template>
         </PopOver>
     </div>
@@ -7592,8 +7634,8 @@ const accountPickerGallery = defineComponent({
     components: {
         GalleryAndResult,
         CheckBox,
-        AccountPicker,
-        TextBox,
+        AccountPicker, https://configurelaptop.eu/cat/custom-laptop/
+            TextBox,
         RockButton
     },
     setup() {
@@ -7637,6 +7679,35 @@ const accountPickerGallery = defineComponent({
         </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates new editor */
+const noteTextEditorGallery = defineComponent({
+    name: "NoteTextEditorGallery",
+    components: {
+        GalleryAndResult,
+        NoteTextEditor,
+        CheckBox
+    },
+    setup() {
+        return {
+            value: ref(""),
+            importCode: getSfcControlImportPath("noteTextEditor"),
+            exampleCode: `<NoteTextEditor v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection>
+
+    <NoteTextEditor v-model="value" :avatar="avatar" />
+
+    <template #settings>
     </template>
 </GalleryAndResult>`
 });
@@ -7976,6 +8047,7 @@ const controlGalleryComponents: Record<string, Component> = [
     switchGallery,
     inlineSwitchGallery,
     checkBoxListGallery,
+    mediaSelectorGallery,
     listBoxGallery,
     phoneNumberBoxGallery,
     dropDownListGallery,
@@ -7983,7 +8055,7 @@ const controlGalleryComponents: Record<string, Component> = [
     colorPickerGallery,
     numberBoxGallery,
     numberRangeBoxGallery,
-    genderDropDownListGallery,
+    genderPickerGallery,
     socialSecurityNumberBoxGallery,
     timePickerGallery,
     ratingGallery,
@@ -7998,7 +8070,7 @@ const controlGalleryComponents: Record<string, Component> = [
     urlLinkBoxGallery,
     fullscreenGallery,
     panelGallery,
-    personPickerGallery,
+    PersonPickerGallery,
     fileUploaderGallery,
     imageUploaderGallery,
     slidingDateRangePickerGallery,
@@ -8052,7 +8124,6 @@ const controlGalleryComponents: Record<string, Component> = [
     loadingGallery,
     loadingIndicatorGallery,
     numberUpDownGroupGallery,
-    panelWidgetGallery,
     progressBarGallery,
     rockButtonGallery,
     rockLabelGallery,
@@ -8103,6 +8174,7 @@ const controlGalleryComponents: Record<string, Component> = [
     groupTypeGroupPickerGallery,
     groupAndRolePickerGallery,
     accountPickerGallery,
+    noteTextEditorGallery,
     structuredContentEditorGallery,
     registrationInstancePickerGallery,
     interactionChannelInteractionComponentPickerGallery,
@@ -8112,7 +8184,20 @@ const controlGalleryComponents: Record<string, Component> = [
     DropDownMenuGallery,
     DropDownContentGallery,
     ButtonDropDownListGallery,
+    CampusAccountAmountPickerGallery,
+    LightGridGallery,
+    ImageEditorGallery,
+    HighlightLabelGallery,
+    PdfViewerGallery,
+    ChartGallery,
+    EntityPickerGallery,
+    PersonBasicEditorGallery,
 ]
+    // Fix vue 3 SFC putting name in __name.
+    .map(a => {
+        a.name = upperCaseFirstCharacter((a.__name ?? a.name).replace(/\.partial$/, ""));
+        return a;
+    })
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
     // Convert list to an object where the key is the component name and the value is the component
@@ -8349,6 +8434,10 @@ const detailBlockGallery = defineComponent({
 const templateGalleryComponents = [
     detailBlockGallery
 ]
+    .map(a => {
+        a.name = a.__name ?? a.name;
+        return a;
+    })
     .sort((a, b) => a.name.localeCompare(b.name))
     .reduce((newList, comp) => {
         newList[comp.name] = comp;

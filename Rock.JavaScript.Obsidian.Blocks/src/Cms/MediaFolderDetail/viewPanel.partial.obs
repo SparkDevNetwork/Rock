@@ -5,11 +5,11 @@
         <ValueDetailList :modelValue="topValues" />
 
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-sm-6 col-md-7 col-lg-8">
                 <ValueDetailList :modelValue="leftSideValues" />
             </div>
 
-            <div class="col-md-6">
+            <div class="col-sm-6 col-md-5 col-lg-4">
                 <ValueDetailList :modelValue="rightSideValues" />
             </div>
         </div>
@@ -20,8 +20,8 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { MediaFolderBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaFolderDetail/mediaFolderBag";
@@ -56,10 +56,6 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.description) {
-            valueBuilder.addTextValue("Description", props.modelValue.description);
-        }
-
         return valueBuilder.build();
     });
 
@@ -87,6 +83,14 @@
             valueBuilder.addTextValue("Content Channel Item Status", props.modelValue.contentChannelItemStatus ?? "");
         }
 
+        if (props.modelValue.workflowType?.text) {
+            valueBuilder.addTextValue("Workflow Type", props.modelValue.workflowType?.text ?? "");
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
         return valueBuilder.build();
     });
 
@@ -96,6 +100,11 @@
 
         if (!props.modelValue) {
             return valueBuilder.build();
+        }
+
+
+        if (props.modelValue.metricData) {
+            valueBuilder.addHtmlValue("", props.modelValue.metricData);
         }
 
         return valueBuilder.build();

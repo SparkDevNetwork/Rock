@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Web;
 using Microsoft.Ajax.Utilities;
 using Rock.Attribute;
@@ -41,6 +42,11 @@ namespace Rock.Web.HttpModules
     public class Observability : HttpModuleComponent
     {
         /// <summary>
+        /// The key used to store the Activity on the HttpContext.
+        /// </summary>
+        private const string ContextKey = "__AspnetObservabilityContext__";
+
+        /// <summary>
         /// This is used to ensure single access when adding the control adapter
         /// to the browser context.
         /// </summary>
@@ -51,7 +57,6 @@ namespace Rock.Web.HttpModules
         /// </summary>
         public Observability()
         {
-
         }
 
         /// <summary>
@@ -100,42 +105,62 @@ namespace Rock.Web.HttpModules
                 }
             }
 
+            Activity activity;
+
             // Create activity with the correct prefix
             if ( context.Request.FilePath.EndsWith( ".ashx" ) )
             {
-                ObservabilityHelper.StartActivity( $"HANDLER: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
-                Activity.Current?.AddTag( "rock-otel-type", "rock-handler" );
+                activity = ObservabilityHelper.StartActivity( $"HANDLER: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
+                activity?.AddTag( "rock-otel-type", "rock-handler" );
+
+                RockMetricSource.HandlerRequestCounter.Add( 1, RockMetricSource.CommonTags );
             }
             else if ( context.Request.Headers["X-Rock-Mobile-Api-Key"] != null )
             {
-                ObservabilityHelper.StartActivity( $"MOBILE: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
-                Activity.Current?.AddTag( "rock-otel-type", "rock-mobile" );
+                activity = ObservabilityHelper.StartActivity( $"MOBILE: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
+                activity?.AddTag( "rock-otel-type", "rock-mobile" );
+
+                RockMetricSource.MobileAppRequestCounter.Add( 1, RockMetricSource.CommonTags );
             }
             else if ( context.Request.Url.PathAndQuery.StartsWith( "/api/v2/tv" ) )
             {
-                ObservabilityHelper.StartActivity( $"TV: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
-                Activity.Current?.AddTag( "rock-otel-type", "rock-tv" );
+                activity = ObservabilityHelper.StartActivity( $"TV: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
+                activity?.AddTag( "rock-otel-type", "rock-tv" );
+
+                RockMetricSource.TvAppRequestCounter.Add( 1, RockMetricSource.CommonTags );
             }
-            else if( context.Request.Url.PathAndQuery.StartsWith( "/api" ) )
+            else if ( context.Request.Url.PathAndQuery.StartsWith( "/api" ) )
             {
-                ObservabilityHelper.StartActivity( $"API: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
-                Activity.Current?.AddTag( "rock-otel-type", "rock-api" );
+                activity = ObservabilityHelper.StartActivity( $"API: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
+                activity?.AddTag( "rock-otel-type", "rock-api" );
+
+                RockMetricSource.ApiRequestCounter.Add( 1, RockMetricSource.CommonTags ); 
             }
             else
             {
-                ObservabilityHelper.StartActivity( $"WEB: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
-                Activity.Current?.AddTag( "rock-otel-type", "rock-web" );
+                activity = ObservabilityHelper.StartActivity( $"WEB: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
+                activity?.AddTag( "rock-otel-type", "rock-web" );
+
+                RockMetricSource.ApiRequestCounter.Add( 1, RockMetricSource.CommonTags );
             }
 
-            // Set Attributes
-            Activity.Current?.AddTag( "http.host", context.Request.UrlProxySafe().Host );
-            Activity.Current?.AddTag( "http.request.method", context.Request.HttpMethod );
-            Activity.Current?.AddTag( "http.url", context.Request.UrlProxySafe().AbsoluteUri );
-            Activity.Current?.AddTag( "http.user_agent", context.Request.UserAgent );
-            Activity.Current?.AddTag( "server.address", context.Request.ServerVariables["LOCAL_ADDR"] );
-            Activity.Current?.AddTag( "client.address", Rock.Utility.WebRequestHelper.GetXForwardedForIpAddress( context.Request.ServerVariables["HTTP_X_FORWARDED_FOR"] )
-                                                            ?? context.Request.ServerVariables["REMOTE_ADDR"]
-                                                            ?? string.Empty );
+            // Increment the HTTP request metric for all requests
+            RockMetricSource.AllRequestCounter.Add( 1, RockMetricSource.CommonTags );
+
+            if ( activity != null )
+            {
+                // Set Attributes
+                activity?.AddTag( "http.host", context.Request.UrlProxySafe().Host );
+                activity?.AddTag( "http.request.method", context.Request.HttpMethod );
+                activity?.AddTag( "http.url", context.Request.UrlProxySafe().AbsoluteUri );
+                activity?.AddTag( "http.user_agent", context.Request.UserAgent );
+                activity?.AddTag( "server.address", context.Request.ServerVariables["LOCAL_ADDR"] );
+                activity?.AddTag( "client.address", Rock.Utility.WebRequestHelper.GetXForwardedForIpAddress( context.Request.ServerVariables["HTTP_X_FORWARDED_FOR"] )
+                                                    ?? context.Request.ServerVariables["REMOTE_ADDR"]
+                                                    ?? string.Empty );
+
+                context.Items[ContextKey] = activity;
+            }
         }
 
         /// <summary>
@@ -149,10 +174,13 @@ namespace Rock.Web.HttpModules
             HttpApplication application = ( HttpApplication ) sender;
             HttpContext context = application.Context;
 
-            Activity.Current?.AddTag( "http.status_code", context.Response.StatusCode );
-            //http.response.body.size
+            if ( context.Items[ContextKey] is Activity activity )
+            {
+                activity.AddTag( "http.status_code", context.Response.StatusCode );
+                //http.response.body.size
 
-            Activity.Current?.Dispose();
+                activity.Dispose();
+            }
         }
     }
 }

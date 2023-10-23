@@ -80,7 +80,10 @@ var Rock;
                     volume: this.options.volume,
                     muted: this.options.muted,
                     clickToPlay: this.options.clickToPlay,
-                    hideControls: this.options.hideControls
+                    hideControls: this.options.hideControls,
+                    fullscreen: {
+                        iosNative: true
+                    }
                 };
                 if (!this.isHls(this.options.mediaUrl)) {
                     this.initializePlayer(mediaElement, plyrOptions);
@@ -344,6 +347,14 @@ var Rock;
                 });
                 this.player.on("ready", () => {
                     this.writeDebugMessage(`Event 'ready' called: ${this.player.duration}`);
+                    if (!this.player.download) {
+                        const canDownload = !this.isYouTubeEmbed(this.options.mediaUrl)
+                            && !this.isVimeoEmbed(this.options.mediaUrl)
+                            && !this.isHls(this.options.mediaUrl);
+                        if (canDownload) {
+                            this.player.download = this.options.mediaUrl;
+                        }
+                    }
                     if (this.player.duration > 0) {
                         this.prepareForPlay();
                     }
@@ -376,6 +387,11 @@ var Rock;
                     OriginalUrl: window.location.href,
                     PageId: Rock.settings.get("pageId")
                 };
+                if (typeof navigator.sendBeacon !== "undefined" && !async) {
+                    var beaconData = new Blob([JSON.stringify(data)], { type: 'application/json; charset=UTF-8' });
+                    navigator.sendBeacon("/api/MediaElements/WatchInteraction", beaconData);
+                    return;
+                }
                 const xmlRequest = new XMLHttpRequest();
                 const self = this;
                 xmlRequest.open("POST", "/api/MediaElements/WatchInteraction", async);

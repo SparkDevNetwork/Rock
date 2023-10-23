@@ -101,15 +101,15 @@
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
     import { computed, ref, watch } from "vue";
-    import AttributeEditor from "@Obsidian/Controls/attributeEditor";
-    import Modal from "@Obsidian/Controls/modal";
-    import RockField from "@Obsidian/Controls/rockField";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockField from "@Obsidian/Controls/rockField.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Block from "@Obsidian/Templates/block";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";

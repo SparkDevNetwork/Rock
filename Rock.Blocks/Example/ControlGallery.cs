@@ -36,5 +36,7 @@ namespace Rock.Blocks.Example
     [Rock.SystemGuid.BlockTypeGuid( "6FAB07FF-D4C6-412B-B13F-7B881ECBFAD0")]
     public class ControlGallery : RockBlockType
     {
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => base.ObsidianFileUrl.ReplaceIfEndsWith( ".obs", string.Empty );
     }
 }

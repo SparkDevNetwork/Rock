@@ -1,0 +1,359 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="documentTerm"
+                         label="Document Term"
+                         help="How the document should be referred to (e.g Waiver, Contract, Statement, etc.)" />
+
+                <RadioButtonList v-model="signatureType"
+                                 label="Signature Input Type"
+                                 help="The input type for the signature. Drawn will display an area where the individual can use the mouse or a finger to draw a representation of their signature.
+                                 Typed will allow them to type their name as their digital signature. Both are legally acceptable in the US and Canada.
+                                 The drawn value is considered Personally identifiable information (PII) and is more sensitive to keep. It is encrypted in the database."
+                                 horizontal
+                                 :items="signatureInputTypes" />
+            </div>
+
+            <div class="col-md-6">
+                <BinaryFileTypePicker v-model="binaryFileType"
+                                      label="File Type"
+                                      help="Determines which file type is used when storing the signed document."
+                                      showBlankItem
+                                      rules="required" />
+
+                <DropDownList v-model="completionSystemCommunicationValue"
+                              label="Completion Email Template"
+                              help="The email template to use when sending the signed document upon completion."
+                              :items="communicationTemplates" />
+            </div>
+        </div>
+
+        <div class="row">
+
+        </div>
+
+        <p class="text-right">
+            <small><a @click="onTemplateTipsClick" class="btn btn-link">Template Tips</a></small>
+        </p>
+
+        <TransitionVerticalCollapse>
+            <div class="well" v-if="showTips">
+                <h2>Template Tips</h2>
+                <p>Below are some tips to assist you in your template creation. The merge fields that you use to customize your templates will vary depending on where they are being used.</p>
+
+                <RockLabel>Merge Fields for Workflow Electronic Signatures</RockLabel>
+                <p>Below are some common merge fields for templates used for the electronic signature workflow action. Note that the attribute keys will need to map to what you have configured in your workflow template.</p>
+                <div class='row'>
+                    <div class='col-md-6'>
+                        <code>{{ "\{\{ Workflow | Attribute:'SignedByPerson' \}\}" }}</code><br>
+                        <code>{{ "\{\{ Workflow | Attribute:'AppliesToPerson' \}\}" }}</code><br>
+                        <code>{{ "\{\{ Workflow | Attribute:'AssignedToPerson' \}\}" }}</code><br>
+                    </div>
+                    <div class='col-md-6'>
+
+                    </div>
+                </div>
+
+                <br />
+
+                <RockLabel>Merge Fields for Event Registration</RockLabel>
+                <p>Below are some common merge fields for templates used for event registration. Again, the attribute value keys will be different in your registration.</p>
+                <div class='row'>
+                    <div class='col-md-6'>
+                        <p><b>Registrant Fields</b></p>
+                        <p>The Registrant in this context is not the Registrant Rock Model, but a curated collection of properties for Signature Documents. These mostly correspond with the Person Field form values. If a person does not exist then one is created for the lava merge using the available info collected in the registration form. The full field list is below:</p>
+                        <ul>
+                            <li><code>{{ "\{\{ Registrant.Attributes \}\}" }}</code> - The Registrant attributes</li>
+                            <li><code>{{ "\{\{ Registrant.AttributeValues \}\}" }}</code> - The values for the Registrant attributes</li>
+                            <li><code>{{ "\{\{ Registrant.Person \}\}" }}</code> - Person obj, attributes available. Depending on the information available some navigation properties may not be available.</li>
+                            <li><code>{{ "\{\{ Registrant.Address \}\}" }}</code> - Location obj Example: {{ "\{\{ Registrant.Address: 'FormattedAddress' \}\}" }}</li>
+                            <li><code>{{ "\{\{ Registrant.Campus \}\}" }}</code> - Campus obj. Example: {{ "\{\{ Registrant.Campus.Name \}\}" }}</li>
+                            <li><code>{{ "\{\{ Registrant.ConnectionStatus \}\}" }}</code> - DefinedValue obj, A person's selected connection status from the Defined Type "Connection Status". Example: {{ "\{\{ Registrant.ConnectionStatus | AsString \}\}" }}</li>
+                            <li><code>{{ "\{\{ Registrant.AnniversaryDate \}\}" }}</code> - DateTime. Example: {{ "\{\{Registrant.AnniversaryDate | Date: 'yyyy-MM-dd' \}\}" }}</li>
+                            <li><code>{{ "\{\{ Registrant.BirthDate \}\}" }}</code> - DateTime. Example: {{ "\{\{ Registrant.BirthDate | Date: 'yyyy-MM-dd' \}\}" }}</li>
+                            <li><code>{{ "\{\{ Registrant.Email \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registrant.FirstName \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registrant.MiddleName \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registrant.LastName \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registrant.Gender \}\}" }}</code> - Gender Enum, values are "Unknown", "Female", and "Male"</li>
+                            <li><code>{{ "\{\{ Registrant.GradeFormatted \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registrant.GradeOffset  \}\}" }}</code> - Integer</li>
+                            <li><code>{{ "\{\{ Registrant.GraduationYear \}\}" }}</code> - Integer</li>
+                            <li><code>{{ "\{\{ Registrant.MaritalStatus | AsString \}\}" }}</code> - DefinedValue obj, A person's selected martial status from the Defined Type "Marital Status"</li>
+                            <li><code>{{ "\{\{ Registrant.HomePhone \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registrant.MobilePhone \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registrant.WorkPhone \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registrant.GroupMember \}\}" }}</code> - Group Member obj, attributes available</li>
+                        </ul>
+                        <p>Access the Registrant attributes using the normal syntax, e.g.<br> <code>{{ "\{\{ Registrant | Attribute: 'LeaderPreference' \}\}" }}</code></p>
+                    </div>
+                    <div class='col-md-6'>
+                        <p><b>Registration Fields</b></p>
+                        <p>The Registration in this context is not the Registration Rock Model, but a curated collection of properties from the RegistrationInstance and RegistrationTemplate. The full field list is below:</p>
+                        <ul>
+                            <li><code>{{ "\{\{ Registration.InstanceId \}\}" }}</code> - Integer</li>
+                            <li><code>{{ "\{\{ Registration.InstanceName \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registration.TemplateId \}\}" }}</code> - Integer</li>
+                            <li><code>{{ "\{\{ Registration.TemplateName \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registration.RegistrationTerm \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registration.RegistrantTerm \}\}" }}</code> - Text</li>
+                            <li><code>{{ "\{\{ Registration.RegistrantCount \}\}" }}</code> - Integer</li>
+                            <li><code>{{ "\{\{ Registration.GroupId \}\}" }}</code> - Integer. Get the Group using <code>{% assign group = Registration.GroupId | GroupById %}</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </TransitionVerticalCollapse>
+
+        <div class="well">
+            <p class="text-right">
+                <Toggle v-model="isPreviewMode"
+                        trueText="Preview"
+                        falseText="Edit"
+                        onButtonActiveCssClass="btn-info"
+                        offButtonActiveCssClass="btn-info"
+                        :btnSize="BtnSize.ExtraSmall" />
+            </p>
+
+            <div v-if="isPreviewMode">
+                <Loading :isLoading="isLoadingUrl">
+                    <RockLabel help="Preview of Signature Template as a PDF">Lava Template Preview</RockLabel>
+                    <PdfViewer :sourceUrl="pdfUrl" />
+                </Loading>
+            </div>
+
+            <CodeEditor v-else v-model="lavaTemplate" label="Lava Template" help="The Lava template that makes up the body of the document." theme="rock" mode="text" :editorHeight="500" />
+
+        </div>
+
+        <div class="well" v-if="showLegacyExternalProviders">
+            <RockLabel>Legacy Signature Provider Settings</RockLabel>
+            <span> Support for these providers will be fully removed in the next full release.</span>
+
+            <NotificationBox v-if="errorMessage" alertType="info" v-html="errorMessage" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <ComponentPicker v-model="providerEntityType"
+                                     containerType="Rock.Security.DigitalSignatureContainer"
+                                     label="External Digital Signature Provider"
+                                     help="This will be obsolete in a future version of Rock. Leave this blank to use the Rock's built-in Electronic Signature." />
+                </div>
+                <div class="col-md-6">
+                    <DropDownList v-model="providerTemplateKey"
+                                  :options="externalProviders"
+                                  label="External Provider Template"
+                                  help="A template that has been created with your digital signature provider" />
+                </div>
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import PdfViewer from "@Obsidian/Controls/pdfViewer.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { SignatureDocumentTemplateBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/signatureDocumentTemplateBag";
+    import { GetPdfPreviewUrlRequestBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/getPdfPreviewUrlRequestBag";
+    import { SignatureDocumentTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/signatureDocumentTemplateDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<SignatureDocumentTemplateBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<SignatureDocumentTemplateDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: SignatureDocumentTemplateBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const documentTerm = propertyRef(props.modelValue.documentTerm ?? "", "DocumentTerm");
+    const signatureInputTypes = ref(props.modelValue.signatureInputTypes ?? []);
+    const signatureType = propertyRef(props.modelValue.signatureType ?? "", "SignatureType");
+    const binaryFileType = propertyRef(props.modelValue.binaryFileType ?? null, "BinaryFileTypeId");
+    const completionSystemCommunicationValue = propertyRef(props.modelValue.completionSystemCommunication?.value ?? "", "CompletionSystemCommunicationId");
+    const providerEntityType = propertyRef(props.modelValue.providerEntityType ?? null, "ProviderEntityTypeId");
+    const providerTemplateKey = propertyRef(props.modelValue.providerTemplateKey ?? "", "ProviderTemplateKey");
+    const lavaTemplate = propertyRef(props.modelValue.lavaTemplate ?? "", "LavaTemplate");
+    const communicationTemplates = ref(props.options.communicationTemplates ?? []);
+    const showLegacyExternalProviders = ref(props.options.showLegacyExternalProviders);
+    const externalProviders = ref<ListItemBag[]>([]);
+    const pdfUrl = ref(props.modelValue.pdfUrl ?? "");
+    const showTips = ref(false);
+    const isPreviewMode = ref(false);
+    const isLoadingUrl = ref(false);
+    const errorMessage = ref("");
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, documentTerm, signatureType, binaryFileType, completionSystemCommunicationValue, lavaTemplate, providerTemplateKey, providerEntityType];
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onTemplateTipsClick(): void {
+        showTips.value = !showTips.value;
+    }
+
+    // #endregion
+
+    // Watch for changes to the ExternalSignature provider and load the corresponding templates for the selected provider.
+    watch(() => providerEntityType.value, async () => {
+
+        if (!providerEntityType.value?.value) {
+            return;
+        }
+
+        errorMessage.value = "";
+
+        try {
+            const result = await invokeBlockAction<{ externalProviders: ListItemBag[] } | string>("GetExternalProviders", {
+                entityTypeGuid: providerEntityType.value?.value
+            });
+
+            if (result.isSuccess && typeof result.data === "object") {
+                externalProviders.value = result.data?.externalProviders ?? [];
+            }
+            else if (!result.isSuccess && typeof result.data === "string") {
+                errorMessage.value = result.data ?? "";
+            }
+        }
+        catch {
+            externalProviders.value = [];
+        }
+    });
+
+    // Watch for toggling to and from Preview mode and load the URL for the pdf from the server when in preview mode.
+    watch(() => isPreviewMode.value, async () => {
+
+        try {
+            if (isPreviewMode.value === true) {
+                isLoadingUrl.value = true;
+
+                const requestBag: GetPdfPreviewUrlRequestBag = {
+                    binaryFileType: binaryFileType.value,
+                    lavaTemplate: lavaTemplate.value,
+                    signatureType: signatureType.value
+                };
+
+
+                const result = await invokeBlockAction<{ previewUrl: string }>("GetPdfPreviewUrl", {
+                    requestBag: requestBag
+                });
+
+                if (result.isSuccess && result.data) {
+                    pdfUrl.value = result.data.previewUrl;
+                }
+                else {
+                    pdfUrl.value = "";
+                }
+            }
+            else {
+                pdfUrl.value = "";
+            }
+        }
+        catch {
+            pdfUrl.value = "";
+        }
+        finally {
+            isLoadingUrl.value = false;
+        }
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(documentTerm, props.modelValue.documentTerm ?? "");
+        updateRefValue(signatureType, props.modelValue.signatureType ?? "");
+        updateRefValue(binaryFileType, props.modelValue.binaryFileType ?? {});
+        updateRefValue(completionSystemCommunicationValue, props.modelValue.completionSystemCommunication?.value ?? "");
+        updateRefValue(lavaTemplate, props.modelValue.lavaTemplate ?? "");
+        updateRefValue(providerTemplateKey, props.modelValue.providerTemplateKey ?? "");
+        updateRefValue(providerEntityType, props.modelValue.providerEntityType ?? {});
+        updateRefValue(showLegacyExternalProviders, props.options.showLegacyExternalProviders);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: SignatureDocumentTemplateBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            signatureType: signatureType.value,
+            binaryFileType: binaryFileType.value,
+            completionSystemCommunication: { value: completionSystemCommunicationValue.value },
+            lavaTemplate: lavaTemplate.value,
+            providerTemplateKey: providerTemplateKey.value,
+            providerEntityType: providerEntityType.value,
+            documentTerm: documentTerm.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

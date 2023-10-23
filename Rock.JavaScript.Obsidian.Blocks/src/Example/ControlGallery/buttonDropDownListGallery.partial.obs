@@ -24,8 +24,8 @@
 </template>
 
 <script setup lang="ts">
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

@@ -66,16 +66,17 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import KeyValueList, { KeyValueItem } from "@Obsidian/Controls/keyValueList";
-    import LocationPicker from "@Obsidian/Controls/locationItemPicker";
-    import PersonPicker from "@Obsidian/Controls/personPicker";
-    import CheckBox from "@Obsidian/Controls/checkBox";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import  { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import LocationPicker from "@Obsidian/Controls/locationItemPicker.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
-    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";

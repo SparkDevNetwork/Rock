@@ -186,7 +186,7 @@ export async function initializePageTimings(config: DebugTimingConfig): Promise<
         return;
     }
 
-    const pageDebugTimings = (await import("@Obsidian/Controls/pageDebugTimings")).default;
+    const pageDebugTimings = (await import("@Obsidian/Controls/Internal/pageDebugTimings.obs")).default;
 
     const app = createApp({
         name: "PageDebugTimingsRoot",

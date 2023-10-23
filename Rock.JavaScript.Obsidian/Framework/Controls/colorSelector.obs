@@ -1,0 +1,290 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue"
+                   formGroupClasses="color-selector"
+                   :label="label"
+                   name="color-selector"
+                   :rules="internalRules" >
+        <template #default="{uniqueId}">
+            <div class="control-wrapper">
+                <div class="color-selector-items" ref="colorSelectorElement">
+                    <div v-for="item in internalItemsForDisplay" :class="['color-selector-item-container form-control-group', isChecked(item) ? 'checked' : '']">
+                        <label :class="['color-selector-item', isChecked(item) ?  'checked' : '', isCamouflaged(item) ? getCamouflagedClass(item) : '']"
+                               :for="uniqueIdForItem(uniqueId, item)"
+                               :style="{ backgroundColor: item.isValidHexValue ? item.rawColor : undefined }">
+                            <input v-model="internalValue"
+                                   class="color-selector-item-checkbox form-control"
+                                   :disabled="disabled"
+                                   :id="uniqueIdForItem(uniqueId, item)"
+                                   :name="uniqueId"
+                                   type="checkbox"
+                                   :value="item.rawColor"
+                                   @change="onCheckboxChanged(item)" />
+                            {{ !item.isValidHexValue ? `${item.rawColor} (invalid)` : "" }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import RockFormField from "./rockFormField.obs";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { Guid } from "@Obsidian/Types";
+    import { standardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
+    import { normalizeRules } from "@Obsidian/ValidationRules";
+
+    type ColorItem = {
+        hasValue: boolean;
+        isValidHexValue: boolean;
+        rawColor: string;
+        color: RockColor;
+    };
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<string[]>,
+            default: []
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>
+        },
+
+        items: {
+            type: Object as PropType<string[]>,
+            default: []
+        },
+
+        compareValue: {
+            type: Function as PropType<((value: string, itemValue: string) => boolean)>,
+            default: defaultControlCompareValue
+        },
+
+        showInvalidHexColors: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        allowMultiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", newValue: string[]): void
+    }>();
+
+    //#region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const colorSelectorElement = ref<HTMLElement | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    const internalBackgroundColor = computed<RockColor | undefined>(() => {
+        if (!colorSelectorElement.value) {
+            return;
+        }
+
+        return getBackgroundColor(colorSelectorElement.value);
+    });
+
+    const camouflagedItems = computed<ColorItem[]>(() => {
+        const backgroundColor = internalBackgroundColor.value;
+
+        if (!backgroundColor) {
+            // Unable to check if a color is camouflaged if there is no background color.
+            return [];
+        }
+
+        // This percentage controls how similar colors need to be to consider them camouflaged.
+        const percentSimilar = .95;
+
+        // Keep track of the color items that are camouflaged.
+        const camouflaged: ColorItem[] = [];
+
+        for (const item of internalItems.value) {
+            if (item.color.isSimilarTo(backgroundColor, percentSimilar)) {
+                camouflaged.push(item);
+            }
+        }
+
+        return camouflaged;
+    });
+
+    const internalItemsForDisplay = computed<ColorItem[]>(() => {
+        const colorItems = internalItems.value;
+        if (props.showInvalidHexColors) {
+            return colorItems.filter(color => color.hasValue);
+        }
+        else {
+            return colorItems.filter(color => color.hasValue && color.isValidHexValue);
+        }
+    });
+
+    const internalItems = computed<ColorItem[]>(() => {
+        return props.items.map(rawColor => {
+            const rockColor = new RockColor(rawColor);
+
+            return {
+                hasValue: !!rawColor,
+                isValidHexValue: isValidHexColor(rawColor),
+                rawColor: rawColor,
+                color: rockColor
+            };
+        });
+    });
+
+    const internalRules = computed(() => {
+        const rules = normalizeRules(props.rules);
+
+        // Only validate selected hex color values if invalid hex colors are showing.
+        if (props.showInvalidHexColors) {
+            rules.push(validateHexColor);
+        }
+
+        return rules;
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Gets the first non-alpha background color of this or any ancestor element that
+     * doesn't match the default background color.
+     *
+     * @param element The element for which to get the background color.
+     */
+    function getBackgroundColor(element: Element): RockColor {
+        function getComputedBackgroundColor(element: Element): string {
+            return window.getComputedStyle(element).getPropertyValue("background-color");
+        }
+
+        // typically "rgba(0, 0, 0, 0)"
+        const defaultColor = new RockColor(getComputedBackgroundColor(document.body));
+
+        // Start with the supplied element.
+        const elementsToProcess: Element[] = [
+            element
+        ];
+
+        while (elementsToProcess.length) {
+            // Process the first element in the array.
+            const elementToProcess = elementsToProcess.shift();
+
+            if (!elementToProcess) {
+                // Skip to the next element if the current one is null or undefined.
+                continue;
+            }
+
+            const backgroundColor = new RockColor(getComputedBackgroundColor(elementToProcess));
+
+            // If we got a different value than the default, return it.
+            if (backgroundColor.alpha !== 0 && backgroundColor.compareTo(defaultColor) !== 0) {
+                return backgroundColor;
+            }
+            // Otherwise, add the parent element to the elements in process.
+            else if (elementToProcess.parentElement) {
+                elementsToProcess.push(elementToProcess.parentElement);
+            }
+        }
+
+        // If we reached the top parent element and no unique color was found,
+        // then return the default color.
+        return defaultColor;
+    }
+
+    /**
+     * Gets the camouflaged class for a color.
+     *
+     * @param item The color for which to get the camouflaged class.
+     */
+    function getCamouflagedClass(item: ColorItem): string {
+        if (item.color.luma > 0.5) {
+            return "camouflaged-light";
+        }
+        else {
+            return "camouflaged-dark";
+        }
+    }
+
+    /** Returns `true` if the color is difficult to see. */
+    function isCamouflaged(item: ColorItem): boolean {
+        return camouflagedItems.value.indexOf(item) !== -1;
+    }
+
+    /** Returns `true` if the item is checked. */
+    function isChecked(item: ColorItem): boolean {
+        return internalValue.value.some(c => props.compareValue(c, item.rawColor));
+    }
+
+    /** Returns a unique ID for an item. */
+    function uniqueIdForItem(uniqueId: Guid, item: ColorItem): string {
+        return `${uniqueId}-${(item.rawColor).replace("#", "").replace(" ", "-")}`;
+    }
+
+    /** Validates a hex color value. */
+    function validateHexColor(value: unknown): string | boolean {
+        if (!value || !Array.isArray(value) || !value.length) {
+            // Return true if no hex values are entered.
+            return true;
+        }
+
+        const invalidValues: string[] = [];
+
+        for (const color of value) {
+            if (!isValidHexColor(color)) {
+                invalidValues.push(color);
+            }
+        }
+
+        if (!invalidValues.length) {
+            return true;
+        }
+        else if (invalidValues.length === 1) {
+            return `The color '${invalidValues[0]}' is not a valid hex color.`;
+        }
+        else {
+            return `The colors '${invalidValues.join("', '")}' are not a valid hex colors.`;
+        }
+    }
+
+    /**
+     * Tests if the provided string is a valid hexadecimal color.
+     * Validate formats are:
+     * 1. #RGB
+     * 2. #RGBA
+     * 3. #RRGGBB
+     * 4. #RRGGBBAA
+     * @param value The value to test.
+     */
+    function isValidHexColor(value: string): boolean {
+        const regex = /^#(([0-9a-fA-F]{3})|([0-9a-fA-F]{4})|([0-9a-fA-F]{6})|([0-9a-fA-F]{8}))$/gm;
+        return regex.test(value);
+    }
+
+    //#endregion
+
+    // #region Event Handlers
+
+    /** Event handler for a checkbox being changed. */
+    function onCheckboxChanged(item: ColorItem): void {
+        if (!props.allowMultiple) {
+            // If in single-select mode, set the value to an array with only the currently selected item.
+            internalValue.value = [item.rawColor];
+        }
+    }
+
+    // #endregion
+</script>

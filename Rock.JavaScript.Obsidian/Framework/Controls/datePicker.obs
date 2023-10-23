@@ -4,7 +4,7 @@
         <div class="control-wrapper">
             <div v-if="displayCurrentOption" class="form-control-group">
                 <div class="form-row">
-                    <DatePickerBase v-model.lazy="internalValue" :id="uniqueId" v-bind="{ ...field, ...basePickerProps }" :disabled="isCurrent || field.disabled" />
+                    <DatePickerBase v-model.lazy="internalValue" :id="uniqueId" v-bind="field" :disabled="isCurrent || field.disabled" />
                     <div v-if="displayCurrentOption || isCurrent" class="input-group">
                         <div class="checkbox">
                             <label title="">
@@ -23,11 +23,13 @@
 </template>
 
 <script setup lang="ts">
+
+
     import { computed, PropType, ref, watch } from "vue";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import RockFormField from "./rockFormField";
-    import TextBox from "./textBox";
+    import RockFormField from "./rockFormField.obs";
+    import TextBox from "./textBox.obs";
     import DatePickerBase from "./datePickerBase.obs";
 
     const props = defineProps({
@@ -82,15 +84,6 @@
             default: 0
         },
 
-        /**
-         * The container to attach the popup to, if not specified it will
-         * default to the document body.
-         */
-         container: {
-            type: HTMLElement as PropType<HTMLElement | null>,
-            required: false
-        },
-
         ...standardRockFormFieldProps
     });
 
@@ -131,7 +124,6 @@
             disallowFutureDateSelection: props.disallowFutureDateSelection,
             disallowPastDateSelection: props.disallowPastDateSelection,
             startView: props.startView,
-            container: props.container
         };
     });
 

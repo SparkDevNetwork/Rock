@@ -6,14 +6,12 @@
                      :label="label"
                      :displayStyle="displayStyle"
                      :items="actualTypeItems"
-                     showBlankItem
                      :multiple="false" />
     <BaseAsyncPicker v-model="internalRoleValue"
                      v-bind="standardProps"
                      :label="roleLabel"
                      :displayStyle="displayStyle"
                      :items="actualRoleItems"
-                     showBlankItem
                      :multiple="false" />
 </template>
 
@@ -22,7 +20,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, nextTick, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import { Guid } from "@Obsidian/Types";
     import { GroupRolePickerGetGroupRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetGroupRolesOptionsBag";
     import { GroupRolePickerGetAllForGroupRoleOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleOptionsBag";
@@ -180,7 +178,7 @@
 
     /** If the value is changed from the outside, fill in all the required data */
     watch(() => props.modelValue, () => {
-        if (updateRefValue(internalRoleValue, props.modelValue)) {
+        if (updateRefValue(internalRoleValue, props.modelValue) && props.modelValue != null) {
             loadRoleOptionsFromValue();
         }
     });
@@ -207,5 +205,5 @@
         loadRoleOptions();
     }
 
-        // #endregion
+    // #endregion
 </script>

@@ -19,8 +19,8 @@
 </template>
 
 <script setup lang="ts">
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { PickExistingFilterMethod, PickExistingFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/pickExistingFilterMethod";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { ref, watch, computed } from "vue";

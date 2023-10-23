@@ -22,12 +22,6 @@
         }
         /* eslint-enable @typescript-eslint/naming-convention */
     }
-
-    export enum StartViewOption {
-        Month = 0,
-        Year = 1,
-        Decade = 2
-    }
 </script>
 
 <script setup lang="ts">

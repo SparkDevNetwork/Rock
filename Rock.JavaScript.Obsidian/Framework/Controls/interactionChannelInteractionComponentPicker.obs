@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="internalValue" name="step-program-step-type-picker">
+    <RockFormField :modelValue="internalValue" name="interaction-channel-interaction-component-picker">
         <InteractionChannelPicker
                                   v-if="!defaultInteractionChannelGuid"
                                   v-model="internalChannelValue"
@@ -27,7 +27,7 @@
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import InteractionChannelPicker from "./interactionChannelPicker.obs";
     import InteractionComponentPicker from "./interactionComponentPicker.obs";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { Guid } from "@Obsidian/Types";
     import { useHttp } from "@Obsidian/Utility/http";

@@ -1083,7 +1083,7 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 string quickReturnLava = "{{ Report.Name | AddQuickReturn:'Reports', 40 }}";
-                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                 quickReturnMergeFields.Add( "Report", report );
                 quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
             }

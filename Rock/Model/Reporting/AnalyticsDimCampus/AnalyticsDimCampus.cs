@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,7 +29,6 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimCampus" )]
     [DataContract]
-    [CodeGenExclude( CodeGenFeature.ViewModelFile )]
     [Rock.SystemGuid.EntityTypeGuid( "DCEB0575-1351-4CFF-BA4F-410BA2D638CB")]
     public class AnalyticsDimCampus : AnalyticsSourceCampusBase<AnalyticsDimCampus>
     {

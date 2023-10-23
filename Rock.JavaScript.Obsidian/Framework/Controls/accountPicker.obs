@@ -120,10 +120,10 @@
     import { computed, PropType, ref, watch } from "vue";
     import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import ContentDropDownPicker from "./contentDropDownPicker.obs";
-    import Loading from "./loading";
-    import TextBox from "./textBox";
-    import TreeList from "./treeList";
-    import RockButton from "./rockButton";
+    import Loading from "./loading.obs";
+    import TextBox from "./textBox.obs";
+    import TreeList from "./treeList.obs";
+    import RockButton from "./rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -141,7 +141,7 @@
         ...standardRockFormFieldProps,
 
         modelValue: {
-            type: Object as PropType<ListItemBag>,
+            type: Object as PropType<ListItemBag | ListItemBag[]>,
             required: true
         },
 

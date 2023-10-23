@@ -77,11 +77,11 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-    import NumberBox from "@Obsidian/Controls/numberBox";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ContentCollectionBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentCollectionBag";

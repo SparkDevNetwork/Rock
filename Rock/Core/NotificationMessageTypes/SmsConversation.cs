@@ -180,7 +180,7 @@ namespace Rock.Core.NotificationMessageTypes
             var key = $"number-{phoneNumber.Id}";
 
             var messageTypeCache = NotificationMessageTypeCache.All()
-                .Where( nmt => nmt.Key == key )
+                .Where( nmt => nmt.EntityTypeId == _componentEntityTypeId.Value && nmt.Key == key )
                 .FirstOrDefault();
 
             if ( messageTypeCache != null )
@@ -208,14 +208,26 @@ namespace Rock.Core.NotificationMessageTypes
 
             rockContext.SaveChanges();
 
-            return NotificationMessageTypeCache.All()
-                .Where( nmt => nmt.Key == key )
-                .FirstOrDefault();
+            return NotificationMessageTypeCache.Get( messageType.Id );
         }
 
         #endregion
 
         #region Methods
+
+        /// <inheritdoc/>
+        public override NotificationMessageMetadataBag GetMetadata( NotificationMessage message )
+        {
+            var messageData = message.ComponentDataJson.FromJsonOrNull<MessageData>();
+            var url = messageData != null ? $"~/GetAvatar.ashx?PersonId={messageData.PersonId}" : "~/GetAvatar.ashx?Style=Icon";
+
+            return new NotificationMessageMetadataBag
+            {
+                PhotoUrl = url,
+                IconCssClass = "fa fa-comment-o",
+                Color = "#16C98D"
+            };
+        }
 
         /// <inheritdoc/>
         public override NotificationMessageActionBag GetActionForNotificationMessage( NotificationMessage message, SiteCache site, RockRequestContext context )
@@ -238,7 +250,7 @@ namespace Rock.Core.NotificationMessageTypes
                 return new NotificationMessageActionBag
                 {
                     Type = NotificationMessageActionType.ShowMessage,
-                    Message = $"This {siteTerm} has not been configured to SMS conversations."
+                    Message = $"This {siteTerm} has not been configured for SMS conversations."
                 };
             }
 

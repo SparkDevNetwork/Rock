@@ -12,11 +12,11 @@
 
 <script setup lang="ts">
     import { PropType, computed, watch } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
-    import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
+    import { TimeIntervalBag } from "@Obsidian/ViewModels/Utility/timeIntervalBag";
     import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -25,7 +25,7 @@
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<TimeInterval | null>,
+            type: Object as PropType<TimeIntervalBag | null>,
             required: true
         },
 
@@ -43,14 +43,14 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", _value: TimeInterval): void
+        (e: "update:modelValue", _value: TimeIntervalBag): void
     }>();
 
-    function defaultValue(): TimeInterval {
+    function defaultValue(): TimeIntervalBag {
         return { unit: TimeIntervalUnit.Minutes, value: 1 };
     }
 
-    const internalValue = computed<TimeInterval>({
+    const internalValue = computed<TimeIntervalBag>({
         get() {
             return props.modelValue ?? defaultValue();
         },
@@ -63,7 +63,7 @@
         internalValue.value = defaultValue();
     }
 
-    const value = computed<NonNullable<TimeInterval["value"]>>({
+    const value = computed<NonNullable<TimeIntervalBag["value"]>>({
         get() {
             return internalValue.value.value ?? 1;
         },
@@ -75,7 +75,7 @@
         }
     });
 
-    const unit = computed<`${TimeInterval["unit"]}`>({
+    const unit = computed<`${TimeIntervalBag["unit"]}`>({
         get() {
             return `${internalValue.value.unit ?? TimeIntervalUnit.Minutes}`;
         },

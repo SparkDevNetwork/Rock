@@ -1,0 +1,116 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { NoteWatchBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchDetail/noteWatchBag";
+    import { NoteWatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchDetail/noteWatchDetailOptionsBag";
+    import { asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<NoteWatchBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<NoteWatchDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.watcherPersonAlias?.text) {
+            valueBuilder.addTextValue("Watcher Person", props.modelValue.watcherPersonAlias?.text);
+        }
+
+        if (props.modelValue.watcherGroup?.text) {
+            valueBuilder.addTextValue("Watcher Group", props.modelValue.watcherGroup?.text);
+        }
+
+        if (props.modelValue.entityType?.text) {
+            const entityTypeName = props.modelValue.entityName ? `${props.modelValue.entityType.text} (${props.modelValue.entityName})` : props.modelValue.entityType.text;
+            valueBuilder.addTextValue("Watching Entity Type", entityTypeName);
+        }
+
+        if (props.modelValue.noteType?.text) {
+            valueBuilder.addTextValue("Watching Note Type", props.modelValue.noteType?.text);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addTextValue("Watching", asTrueOrFalseString(props.modelValue.isWatching));
+
+        valueBuilder.addTextValue("Allow Overrides", asTrueOrFalseString(props.modelValue.watcherPersonAlias?.text));
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

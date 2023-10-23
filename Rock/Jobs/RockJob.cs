@@ -23,6 +23,7 @@ using Quartz;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Observability;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -138,8 +139,34 @@ namespace Rock.Jobs
         /// <param name="context"></param>
         internal void ExecuteInternal( IJobExecutionContext context )
         {
-            InitializeFromJobContext( context );
-            Execute();
+            using ( var activity = ObservabilityHelper.StartActivity( $"JOB: {GetType().FullName.Replace( "Rock.Jobs.", "" )} - {context.JobDetail.Key?.Group}" ) )
+            {
+                InitializeFromJobContext( context );
+
+                activity?.AddTag( "rock-otel-type", "rock-job" );
+                activity?.AddTag( "rock-job-id", ServiceJob.Id );
+                activity?.AddTag( "rock-job-type", GetType().FullName.Replace( "Rock.Jobs.", "" ) );
+                activity?.AddTag( "rock-job-description", ServiceJob.Description );
+
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+
+                try
+                {
+                    Execute();
+                    activity?.AddTag( "rock-job-result", "Success" );
+                }
+                catch
+                {
+                    activity?.AddTag( "rock-job-result", "Failed" );
+                    // the exception needs to be thrown so that the Scheduler catches it and passes it to the <see cref="Rock.Jobs.RockJobListener.JobWasExecuted" /> for logging to the front end
+                    throw;
+                }
+                finally
+                {
+                    activity?.AddTag( "rock-job-duration", sw.Elapsed.TotalSeconds );
+                    activity?.AddTag( "rock-job-message", Result );
+                }
+            }
         }
 
         /// <summary>

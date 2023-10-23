@@ -45,8 +45,8 @@
     import { PropType, ref } from "vue";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { padLeft } from "@Obsidian/Utility/stringUtils";
-    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue.d";
-    import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
 
     const props = defineProps({
         modelValue: {

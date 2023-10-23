@@ -16,7 +16,7 @@
 //
 import { mount } from "@vue/test-utils";
 import assert = require("assert");
-import RockButton from "../../Framework/Controls/rockButton";
+import RockButton from "../../Framework/Controls/rockButton.obs";
 
 
 describe("RockButton", () => {

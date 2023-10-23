@@ -15,8 +15,14 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Linq;
+using System.Reflection;
+
+using Rock.Security;
+using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -24,6 +30,11 @@ namespace Rock.Model
 {
     public partial class RestAction
     {
+        /// <summary>
+        /// The cached actions that are supported by this instance.
+        /// </summary>
+        private Dictionary<string, string> _supportedActions;
+
         #region Properties
 
         private RockCacheability _cacheControlHeader;
@@ -57,6 +68,43 @@ namespace Rock.Model
             get
             {
                 return this.Controller != null ? this.Controller : base.ParentAuthority;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                // If we don't already have the supported actions cached, then
+                // use reflection to find the original method and check for
+                // any SecurityActionAttributes defined on it.
+                if ( _supportedActions == null )
+                {
+                    var actions = base.SupportedActions;
+                    var controller = RestControllerCache.Get( ControllerId );
+
+                    if ( controller != null )
+                    {
+                        // Might be nice to cache this data in the future.
+                        var type = Reflection.FindType( typeof( object ), controller.ClassName );
+                        var method = type?.GetMethods()
+                            .Where( m => m.GetCustomAttribute<RestActionGuidAttribute>()?.Guid == Guid )
+                            .FirstOrDefault();
+
+                        if ( method != null )
+                        {
+                            foreach ( var sa in method.GetCustomAttributes<SecurityActionAttribute>() )
+                            {
+                                actions.AddOrIgnore( sa.Action, sa.Description );
+                            }
+                        }
+                    }
+
+                    _supportedActions = actions;
+                }
+
+                return _supportedActions;
             }
         }
 

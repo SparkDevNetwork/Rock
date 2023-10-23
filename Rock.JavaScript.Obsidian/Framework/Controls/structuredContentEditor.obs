@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField v-bind="fieldProps" :rules="internalRules" :formGroupClasses="`structure-content-editor ${fieldProps.formGroupClasses}`" #default="{ uniqueId, field }" name="sceContent" :modelValue="modelValue">
         <div class="control-wrapper">
@@ -8,7 +9,7 @@
 
 <script setup lang="ts">
     import { computed, onMounted, PropType, ref, watch } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { Guid } from "@Obsidian/Types";
     import { ValidationResult, ValidationRule } from "@Obsidian/Types/validationRules";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";

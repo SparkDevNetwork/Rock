@@ -258,15 +258,20 @@ namespace Rock.Lava
             // than the source block, template, action, etc. permits.
             var securityCheckResult = _engine.RenderTemplate( residualMarkup, LavaRenderParameters.WithContext( context ) );
 
+            // If the template render failed, throw the exception.
+            if ( securityCheckResult.HasErrors )
+            {
+                throw securityCheckResult.GetLavaException();
+            }
+
+            // If the template output contains a security error message, generate an exception.
             var securityErrorPattern = new Regex( string.Format( Constants.Messages.NotAuthorizedMessage, ".*" ) );
             var securityErrorMatch = securityErrorPattern.Match( securityCheckResult.Text );
 
             // If the security check failed, return the error message.
             if ( securityErrorMatch.Success )
             {
-                result.Write( securityErrorMatch.Value );
-
-                return;
+                throw new Exception( securityErrorMatch.Value );
             }
 
             // Render the shortcode template in a child scope that includes the shortcode parameters.
@@ -277,7 +282,7 @@ namespace Rock.Lava
             {
                 context.SetMergeFields( parms );
 
-                // If the shortcode specifies a set of Lava commands, add these to the context.
+                // If the shortcode specifies a set of Lava commands, add these to the child context.
                 // The set of permitted entity commands is the union of the parent scope and the specific shortcode settings.
                 if ( _shortcode.EnabledLavaCommands != null )
                 {

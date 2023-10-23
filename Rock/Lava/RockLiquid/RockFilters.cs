@@ -3609,6 +3609,19 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns the list of campuses closest to the target person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">A Person entity object or identifier.</param>
+        /// <param name="maximumCount">The maximum number of campuses to return.</param>
+        /// <returns>A single Campus, or a list of Campuses in ascending order of distance from the target Person.</returns>
+        public static object NearestCampus( Context context, object input, object maximumCount = null )
+        {
+            // Call the newer Lava Filter implementation, and inject a null Lava context.
+            return LavaFilters.NearestCampus( null, input, maximumCount );
+        }
+
+        /// <summary>
         /// Returns the Campus (or Campuses) that the Person belongs to
         /// </summary>
         /// <param name="context">The context.</param>
@@ -5158,7 +5171,7 @@ namespace Rock.Lava
             {
                 return null;
             }
-            return (int?)input.ToString().AsDecimalOrNull();
+            return ( int? ) input.ToString().AsDecimalOrNull();
         }
 
         /// <summary>

@@ -23,7 +23,9 @@ using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
+using Rock.Enums.Core;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
@@ -490,7 +492,6 @@ namespace Rock.Blocks.Types.Mobile.Core
                 }
 
                 var noteData = viewableNotes
-                    .OrderByDescending( n => n.CreatedDateTime )
                     .Select( a => GetNoteObject( a ) )
                     .ToList();
 
@@ -616,7 +617,8 @@ namespace Rock.Blocks.Types.Mobile.Core
                 {
                     a.Guid,
                     a.Name,
-                    a.UserSelectable
+                    a.UserSelectable,
+                    IsMentionEnabled = a.FormatType != Enums.Core.NoteFormatType.Unstructured && a.IsMentionEnabled
                 } );
 
             return ActionOk( new
@@ -676,7 +678,8 @@ namespace Rock.Blocks.Types.Mobile.Core
                     NoteTypeName = note.NoteType.Name,
                     NoteTypeGuid = note.NoteType.Guid,
                     IsAlert = note.IsAlert ?? false,
-                    IsPrivate = note.IsPrivateNote
+                    IsPrivate = note.IsPrivateNote,
+                    Date = note.CreatedDateTime.HasValue ? ( DateTimeOffset? ) new DateTimeOffset( note.CreatedDateTime.Value ) : null
                 } );
             }
         }
@@ -772,29 +775,21 @@ namespace Rock.Blocks.Types.Mobile.Core
                     }
                 }
 
+                var mentionedPersonIds = noteType.FormatType != NoteFormatType.Unstructured && noteType.IsMentionEnabled
+                    ? noteService.GetNewPersonIdsMentionedInContent( text, note.Text )
+                    : new List<int>();
+
                 note.Text = text;
                 note.IsAlert = isAlert;
 
                 note.EditedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
                 note.EditedDateTime = RockDateTime.Now;
 
-                if ( noteType.RequiresApprovals )
-                {
-                    if ( note.IsAuthorized( Authorization.APPROVE, RequestContext.CurrentPerson ) )
-                    {
-                        note.ApprovalStatus = NoteApprovalStatus.Approved;
-                        note.ApprovedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
-                        note.ApprovedDateTime = RockDateTime.Now;
-                    }
-                    else
-                    {
-                        note.ApprovalStatus = NoteApprovalStatus.PendingApproval;
-                    }
-                }
-                else
-                {
-                    note.ApprovalStatus = NoteApprovalStatus.Approved;
-                }
+#pragma warning disable CS0618 // Type or member is obsolete
+                // Set this so anything doing direct SQL queries will still find
+                // the right set of notes.
+                note.ApprovalStatus = NoteApprovalStatus.Approved;
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 rockContext.SaveChanges();
 
@@ -810,6 +805,19 @@ namespace Rock.Blocks.Types.Mobile.Core
                             SendNoteAddedCommunicationToGroup( contextGroupEntity.Value as Group, text );
                         } );
                     }
+                }
+
+                // If we have any new mentioned person ids, start a background
+                // task to create the notifications.
+                if ( mentionedPersonIds.Any() )
+                {
+                    Task.Run( () =>
+                    {
+                        foreach ( var personId in mentionedPersonIds )
+                        {
+                            NoteMention.CreateNotificationMessage( note, personId, RequestContext.CurrentPerson.Id, PageCache.Id, RequestContext.GetPageParameters() );
+                        }
+                    } );
                 }
 
                 return ActionOk( GetNoteObject( note ) );
@@ -881,7 +889,8 @@ namespace Rock.Blocks.Types.Mobile.Core
                     {
                         a.Guid,
                         a.Name,
-                        a.UserSelectable
+                        a.UserSelectable,
+                        IsMentionEnabled = a.FormatType != Enums.Core.NoteFormatType.Unstructured && a.IsMentionEnabled
                     } );
 
                 return ActionOk( new

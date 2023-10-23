@@ -1,0 +1,52 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <div v-html="options.viewCaption"></div>
+
+        <RockForm @submit="onDeleteAccountSubmitted">
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary"
+                    :disabled="disabled"
+                    type="submit">Yes, Delete the Account</RockButton>
+            </div>
+        </RockForm>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { DeleteAccountEvent } from "./events";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ConfirmAccountDeleteConfirmationViewOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/ConfirmAccount/confirmAccountDeleteConfirmationViewOptionsBag";
+
+    const props = defineProps({
+        options: {
+            type: Object as PropType<ConfirmAccountDeleteConfirmationViewOptionsBag>,
+            required: true
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "deleteAccount", value: DeleteAccountEvent): void
+    }>();
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the delete account form being submitted.
+     */
+    function onDeleteAccountSubmitted(): void {
+        emit("deleteAccount", {
+            code: props.options.code || ""
+        });
+    }
+
+    //#endregion
+</script>

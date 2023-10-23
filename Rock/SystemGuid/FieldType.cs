@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 
 namespace Rock.SystemGuid
 {
@@ -23,6 +22,11 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class FieldType
     {
+        /// <summary>
+        /// Address field type
+        /// </summary>
+        public const string ACHIEVEMENT_TYPE = "593132CF-BA5D-462F-97F6-94DCC0BFFE6F";
+
         /// <summary>
         /// Address field type
         /// </summary>
@@ -62,6 +66,11 @@ namespace Rock.SystemGuid
         /// Background Check field type
         /// </summary>
         public const string BACKGROUNDCHECK = "D05B3808-803A-4531-9680-DD4AAB8ADF1A";
+
+        /// <summary>
+        /// Badges field type
+        /// </summary>
+        public const string BADGES = "602F273B-7EC2-42E6-9AA7-A36A268192A3";
 
         /// <summary>
         /// Benevolence Request field type
@@ -129,6 +138,11 @@ namespace Rock.SystemGuid
         public const string COLOR = "D747E6AE-C383-4E22-8846-71518E3DD06F";
 
         /// <summary>
+        /// Color selector field type
+        /// </summary>
+        public const string COLOR_SELECTOR = "B07070F6-B66E-4B83-8DA6-12CF3400A1EC";
+
+        /// <summary>
         /// Communication Template field type
         /// </summary>
         public const string COMMUNICATION_TEMPLATE = "C3B37465-DCAF-4C8C-930C-9A9B5D066CA9";
@@ -192,6 +206,11 @@ namespace Rock.SystemGuid
         /// Content Channel field type
         /// </summary>
         public const string CONTENT_CHANNEL = "D835A0EC-C8DB-483A-A37C-E8FB6E956C3D";
+
+        /// <summary>
+        /// Content Channels field type
+        /// </summary>
+        public const string CONTENT_CHANNELS = "0E2B924A-C1AC-4A7C-AD77-A036581552D4";
 
         /// <summary>
         /// Content Channel Item field type
@@ -499,6 +518,11 @@ namespace Rock.SystemGuid
         public const string METRICS = "3AF9AD35-9F3E-4497-BFDE-60C6C1827653";
 
         /// <summary>
+        /// Media Selector field type
+        /// </summary>
+        public const string MEDIA_SELECTOR = "243E40FC-04D0-48AD-B379-25A400CB0CAC";
+
+        /// <summary>
         /// Month Day field type
         /// </summary>
         public const string MONTH_DAY = "8BED8DD8-8167-4052-B807-A1E72C133611";
@@ -622,6 +646,16 @@ namespace Rock.SystemGuid
         /// Social Security Number
         /// </summary>
         public const string SSN = "4722C99A-C078-464A-968F-13AB5E8E318F";
+
+        /// <summary>
+        /// Streak Type field type
+        /// </summary>
+        public const string STREAK_TYPE = "F1411F4A-BD4B-4F80-9A83-94026C009F4D";
+
+        /// <summary>
+        /// Structured Content field type
+        /// </summary>
+        public const string STRUCTURE_CONTENT_EDITOR = "92C88D02-CE12-4217-80FB-19422B758437";
 
         /// <summary>
         /// System Email field type

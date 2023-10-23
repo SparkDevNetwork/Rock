@@ -55,6 +55,14 @@ namespace Rock.ViewModels.Blocks.Security.Login
         public List<ListItemBag> MatchingPeople { get; set; }
 
         /// <summary>
+        /// Gets or sets the MFA details.
+        /// </summary>
+        /// <value>
+        /// The MFA details.
+        /// </value>
+        public CredentialLoginMfaBag Mfa { get; set; }
+
+        /// <summary>
         /// Gets or sets the registration URL.
         /// </summary>
         public string RegistrationUrl { get; set; }

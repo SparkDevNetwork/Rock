@@ -1,0 +1,207 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <TextBox v-model="fileName"
+                 label="File Name"
+                 rules="required"
+                 :disabled="!isEditable" />
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline"
+                 :disabled="!isEditable" />
+
+        <div class="row">
+            <div class="col-md-6">
+
+                <NotificationBox v-if="workflowNotificationMessage" alertType="info" v-html="workflowNotificationMessage" />
+
+                <FileUploader v-if="isEditable"
+                              v-model="file"
+                              label="File Uploader"
+                              uploadButtonText="Upload"
+                              :uploadAsTemporary="true"
+                              :binaryFileTypeGuid="binaryFileTypeGuid"
+                              :showDeleteButton="false" />
+
+                <TextBox v-model="mimeType"
+                         label="Mime Type"
+                         rules="required"
+                         :disabled="!isEditable" />
+
+                <BinaryFileTypePicker v-if="showBinaryFileType"
+                                      v-model="binaryFileType"
+                                      :disabled="!isEditable" />
+            </div>
+            <div class="col-md-6">
+                <AttributeValuesContainer v-model="attributeValues"
+                                          :showCategoryLabel="!isEditable"
+                                          :attributes="attributes"
+                                          :isEditMode="isEditable"
+                                          :numberOfColumns="1" />
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { BinaryFileBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileDetail/binaryFileBag";
+    import { BinaryFileDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileDetail/binaryFileDetailOptionsBag";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<BinaryFileBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<BinaryFileDetailOptionsBag>,
+            required: true
+        },
+
+        isEditable: {
+            type: Object as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: BinaryFileBag): void,
+        (e: "propertyChanged", value: string): void
+        (e: "isLabelFileChanged", value: boolean): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const fileName = propertyRef(props.modelValue.fileName ?? "", "FileName");
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const file = ref(props.modelValue.file ?? {});
+    const mimeType = propertyRef(props.modelValue.mimeType ?? "", "MimeType");
+    const binaryFileType = propertyRef(props.modelValue.binaryFileType ?? {}, "BinaryFileTypeId");
+    const showBinaryFileType = ref(props.modelValue.showBinaryFileType);
+    const workflowNotificationMessage = ref(props.modelValue.workflowNotificationMessage ?? "");
+    const orphanedBinaryFileIdList = ref(props.modelValue.orphanedBinaryFileIdList ?? []);
+    const binaryFileTypeGuid = ref(props.modelValue.binaryFileType?.value ?? BinaryFiletype.Default);
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, fileName, mimeType, binaryFileType];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // If a file is uploaded run the FileUploaded logic on the server to update some of the missing
+    // property values and also run any attached workflows.
+    watch(() => file.value, async () => {
+        if (file.value && file.value.value !== props.modelValue.file?.value) {
+            const result = await invokeBlockAction<BinaryFileBag>("FileUploaded", {
+                bag: {
+                    ...props.modelValue,
+                    attributeValues: attributeValues.value,
+                    description: description.value,
+                    fileName: fileName.value,
+                    mimeType: mimeType.value,
+                    binaryFileType: binaryFileType.value,
+                    file: file.value
+                }
+            });
+
+            // If successful update UI, NOTE: Any data sent from the front-end that does not need to be ovewritten
+            // e.g. a filename if one was provided before uploading the file will not be returned as is so we can
+            // set it as the current value.
+            if (result.isSuccess && result.data) {
+                if (result.data.fileName) {
+                    fileName.value = result.data.fileName;
+                }
+
+                if (result.data.description) {
+                    description.value = result.data.description;
+                }
+
+                if (result.data.mimeType) {
+                    mimeType.value = result.data.mimeType;
+                }
+
+                if (result.data.binaryFileType) {
+                    binaryFileType.value = result.data.binaryFileType;
+                }
+
+                if (result.data.workflowNotificationMessage) {
+                    workflowNotificationMessage.value = result.data.workflowNotificationMessage;
+                }
+
+                // Add the uploaded file to the OrphanedFileIdList, after the Binary file has been saved of the process is cancelled,
+                // those not persisted or has IsTemporary = true will be deleted.
+                if (file.value.value) {
+                    orphanedBinaryFileIdList.value.push(file.value.value);
+                }
+
+                // If isLabelFile status changes e.g. after uploading a check-in lable file, emit event so parent block can show
+                // the Edit Label Contents button.
+                if (result.data.isLabelFile != props.modelValue.isLabelFile) {
+                    emit("isLabelFileChanged", result.data.isLabelFile);
+                }
+            }
+        }
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(fileName, props.modelValue.fileName ?? "");
+        updateRefValue(mimeType, props.modelValue.mimeType ?? "");
+        updateRefValue(binaryFileType, props.modelValue.binaryFileType ?? {});
+        updateRefValue(binaryFileTypeGuid, props.modelValue.binaryFileType?.value ?? BinaryFiletype.Default);
+        updateRefValue(workflowNotificationMessage, props.modelValue.workflowNotificationMessage ?? "");
+        updateRefValue(orphanedBinaryFileIdList, props.modelValue.orphanedBinaryFileIdList ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, file, ...propRefs], () => {
+        const newValue: BinaryFileBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            fileName: fileName.value,
+            mimeType: mimeType.value,
+            binaryFileType: binaryFileType.value,
+            file: file.value,
+            workflowNotificationMessage: workflowNotificationMessage.value,
+            orphanedBinaryFileIdList: orphanedBinaryFileIdList.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

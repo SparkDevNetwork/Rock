@@ -16,9 +16,9 @@
 //
 import { defineComponent, ref, computed, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
-import TextBox from "@Obsidian/Controls/textBox";
-import NumberBox from "@Obsidian/Controls/numberBox";
-import CheckBox from "@Obsidian/Controls/checkBox";
+import TextBox from "@Obsidian/Controls/textBox.obs";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
@@ -164,7 +164,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

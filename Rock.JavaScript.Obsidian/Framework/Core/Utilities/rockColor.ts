@@ -368,13 +368,7 @@ export class RockColor {
      * Calculates the luma value based on the W3 Standard.
      */
     public get luma(): number {
-        const linearR = this.r / 255;
-        const linearG = this.g / 255;
-        const linearB = this.b / 255;
-
-        const red = (linearR <= 0.03928) ? linearR / 12.92 : Math.pow((linearR + 0.055) / 1.055, 2.4);
-        const green = (linearG <= 0.03928) ? linearG / 12.92 : Math.pow((linearG + 0.055) / 1.055, 2.4);
-        const blue = (linearB <= 0.03928) ? linearB / 12.92 : Math.pow((linearB + 0.055) / 1.055, 2.4);
+        const { red, green, blue } = this.toStandardRgb();
 
         return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
     }
@@ -805,7 +799,7 @@ export class RockColor {
         // a different recipe so the color looks more like the original (which
         // would be gray).
         if (color.saturation <= 0.15) {
-            recipeSaturation = 0.15;
+            recipeSaturation = color.saturation;
         }
 
         recipeColor.saturation = recipeSaturation;
@@ -998,6 +992,114 @@ export class RockColor {
         }
 
         return this.valueOf() > otherColor.valueOf() ? 1 : -1;
+    }
+
+    /**
+     * Determines if two colors are similar.
+     *
+     * @param otherColor The other color to compare this color to.
+     * @param similarityPercent The minimum percentage to consider the colors similar. This will be between 0 and 1 (defaults to 0.95).
+     * @returns `true` if the colors are N percent similar, where N is the `similarityPercentage`; otherwise, returns `false`.
+     * @example
+     * // this = new RockColor("#FFF")
+     * this.isSimilarTo(new RockColor("#FFE"), 0.95) // `true`, color similarity >= 95%
+     * this.isSimilarTo(new RockColor("#FFE"), 0.99) // `false`, color similarity < 99%
+     * this.isSimilarTo(new RockColor("#FFE"), 1) // `false`, color similarity != 100%
+     * this.isSimilarTo(new RockColor("#FFF"), 1) // `true`, color similarity = 100%
+     */
+    public isSimilarTo(otherColor: RockColor, similarityPercent: number = 0.95): boolean {
+        similarityPercent = normalize(similarityPercent, 0, 1);
+
+        if (similarityPercent === 0) {
+            // A color similarity of 0% will always return `true`
+            // as the colors do not have to be similar at all.
+            return true;
+        }
+
+        if (this.compareTo(otherColor) === 0) {
+            // The same colors will always return `true`
+            // regardless of the percent similar passed in.
+            return true;
+        }
+
+        if (similarityPercent === 1) {
+            // The colors are not the same at this point
+            // but the similarity percentage was set to 100%,
+            // so return `false`.
+            return false;
+        }
+
+        // Calculate the actual similarity percent and compare the actual and expected values.
+
+        function calculateWeightedColorDistance(r1: number, g1: number, b1: number, r2: number, g2: number, b2: number, maxColorValue: number): number {
+            const redDiffSquared = Math.pow(r2 - r1, 2);
+            const greenDiffSquared = Math.pow(g2 - g1, 2);
+            const blueDiffSquared = Math.pow(b2 - b1, 2);
+            const redAverage = (r2 + r1) / 2;
+            const redAveragePercentage = redAverage / maxColorValue;
+
+            return Math.sqrt(
+                ((2 + redAveragePercentage) * redDiffSquared) +
+                (4 * greenDiffSquared) +
+                ((3 - redAveragePercentage) * blueDiffSquared)
+            );
+        }
+
+        function calculateSimilarityPercent(r1: number, g1: number, b1: number, r2: number, g2: number, b2: number, maxColorValue: number): number {
+            const maxDistance = calculateWeightedColorDistance(
+                maxColorValue, maxColorValue, maxColorValue,
+                0, 0, 0,
+                maxColorValue);
+
+            const colorDistance = calculateWeightedColorDistance(
+                r1, g1, b1,
+                r2, g2, b2,
+                maxColorValue);
+
+            return 1 - (colorDistance / maxDistance);
+        }
+
+        // Compare the sRGB values first.
+        const sRgb = this.toStandardRgb();
+        const otherSRgb = otherColor.toStandardRgb();
+
+        let actualSimilarityPercent = calculateSimilarityPercent(
+            sRgb.red, sRgb.green, sRgb.blue,
+            otherSRgb.red, otherSRgb.green, otherSRgb.blue,
+            1);
+
+        if (actualSimilarityPercent >= similarityPercent) {
+            return true;
+        }
+        // Only fallback to comparing RGB values if the previous result was close (within 5%).
+        else if (similarityPercent - actualSimilarityPercent <= 0.05) {
+            actualSimilarityPercent = calculateSimilarityPercent(
+                this.r, this.g, this.b,
+                otherColor.r, otherColor.g, otherColor.b,
+                255);
+
+            return actualSimilarityPercent >= similarityPercent;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Gets the sRGB value of this color.
+     *
+     * @returns This color in the standard RGB color space.
+     */
+    private toStandardRgb(): { red: number, green: number, blue: number } {
+        const linearR = this.r / 255;
+        const linearG = this.g / 255;
+        const linearB = this.b / 255;
+
+        const red = (linearR <= 0.03928) ? linearR / 12.92 : Math.pow((linearR + 0.055) / 1.055, 2.4);
+        const green = (linearG <= 0.03928) ? linearG / 12.92 : Math.pow((linearG + 0.055) / 1.055, 2.4);
+        const blue = (linearB <= 0.03928) ? linearB / 12.92 : Math.pow((linearB + 0.055) / 1.055, 2.4);
+
+        return { red, green, blue };
     }
 
     // #endregion

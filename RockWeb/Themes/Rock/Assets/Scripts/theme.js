@@ -47,6 +47,17 @@ function BindNavEvents() {
       }
     });
 
+    // Because the header naturally closes addClass navbar-side-open when a modal is open
+    if ($('#fixed-header').length) {
+      if ( $('#fixed-header').find('.modal.in').length ) {
+        bodyElement.addClass('navbar-side-open');
+        // Listen for modal close
+        $('#fixed-header').find('.modal.in').on('hidden.bs.modal', function (e) {
+          bodyElement.removeClass('navbar-side-open');
+        })
+      }
+    }
+
     topHeaderOffset()
 
     var topHeader = $('.rock-top-header');
@@ -83,7 +94,7 @@ function navMouseEvents() {
   const navbarStaticSide = $('.navbar-static-side');
   const navbarFixedTop = $('.navbar-fixed-top');
   const bodyElement = $('body');
-  
+
   if ($(window).width() > 768) {
     navbarSideLi.on("mouseenter.sidenav", function() {
       const $this = $(this);
@@ -104,7 +115,7 @@ function navMouseEvents() {
               bodyElement.css('padding-right', scrollWidth);
               navbarFixedTop.css('right', scrollWidth);
             }
-            
+
             $this.addClass('open');
             navbarStaticSide.addClass('open-secondary-nav');
             bodyElement.addClass('nav-open');
@@ -113,7 +124,7 @@ function navMouseEvents() {
         }
       }
     });
-    
+
     navbarSideLi.on("mouseleave.sidenav", function() {
       const $this = $(this);
       if ($this.data('navHoverTimeout')) {
@@ -132,7 +143,6 @@ function navMouseEvents() {
       }
     });
   } else {
-    console.log("remove mouseenter mouseleave");
     navbarSideLi.off(".sidenav");
   }
 }
@@ -161,8 +171,8 @@ function PreventNumberScroll() {
     // calculate height of noteBody
     var height = noteBody.prop('scrollHeight');
     noteBody.addClass("focus-within").css('height', height);
-    
-    
+
+
     noteBody.on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function(e) {
       if ($(this).hasClass("focus-within")) {
         noteBody.addClass("overflow-visible");
@@ -201,15 +211,19 @@ function ResizeTextarea() {
 
 // Fixes an issue with the wait spinner caused by browser Back/Forward caching.
 function HandleBackForwardCache() {
-
-    // Forcibly hide the wait spinner if the page is being reloaded from cache.
-    // Browsers that implement back/forward caching may otherwise continue to display the wait spinner when the page is restored.
-    // This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
-    // (https://bugs.webkit.org/show_bug.cgi?id=156356)
-    $(window).bind('pageshow', function (e) {
-        if ( e.originalEvent.persisted )
-        {
-            $('#updateProgress').hide();
-        }
-    });
+	// Forcibly hide the wait spinner, and clear the pending request if the page is being reloaded from bfcache. (Currently WebKit only)
+	// Browsers that implement bfcache will otherwise trigger updateprogress because the pending request is still in the PageRequestManager state.
+	// This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
+	// (https://bugs.webkit.org/show_bug.cgi?id=156356)
+	window.addEventListener('pageshow', function (e) {
+		if ( e.persisted ) {
+			document.querySelector('#updateProgress').style.display = 'none';
+			// Check if the page is in postback, and if so, reset the PageRequestManager state.
+			if (Sys.WebForms.PageRequestManager.getInstance().get_isInAsyncPostBack()) {
+				// Reset the PageRequestManager state. & Manually clear the request object
+				Sys.WebForms.PageRequestManager.getInstance()._processingRequest = false;
+				Sys.WebForms.PageRequestManager.getInstance()._request = null;
+			}
+		}
+	});
 }

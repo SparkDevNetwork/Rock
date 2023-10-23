@@ -16,8 +16,8 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { PersonalLinkSectionBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinkSectionDetail/personalLinkSectionBag";

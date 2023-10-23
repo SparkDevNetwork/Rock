@@ -17,9 +17,9 @@
 
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
-import CategoryPicker from "@Obsidian/Controls/categoryPicker";
-import TextBox from "@Obsidian/Controls/textBox";
-import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
+import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+import TextBox from "@Obsidian/Controls/textBox.obs";
+import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
 import { ConfigurationValueKey } from "./categoryField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

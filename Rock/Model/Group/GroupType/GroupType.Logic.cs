@@ -36,7 +36,6 @@ namespace Rock.Model
         /// Gets or sets the attendance reminder followup days list.  This is the logical representation of <see cref="AttendanceReminderFollowupDays"/>.
         /// </summary>
         /// <value>The attendance reminder followup days list.</value>
-        [CodeGenExclude(CodeGenFeature.ViewModelFile)]
         public List<int> AttendanceReminderFollowupDaysList
         {
             get

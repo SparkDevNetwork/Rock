@@ -19,6 +19,7 @@ using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web;
+
 using Rock;
 using Rock.Data;
 using Rock.Drawing.Avatar;
@@ -141,6 +142,14 @@ namespace RockWeb
                     context.Response.Flush();
                 }
             }
+            /*
+                8/31/2023 - PA
+
+                We are trying to ignore "The Remote Host Closed the Connection" exceptions which were being thrown from this method as there is nothing much an admin
+                could do about those. It was hard to reproduce the issue but we believe it occurs when the client browser drops the connection abruptly.
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/5521
+            */
+            catch ( System.Web.HttpException ) { }
             finally
             {
                 fileContent?.Dispose();

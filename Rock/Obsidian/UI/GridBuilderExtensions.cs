@@ -157,11 +157,24 @@ namespace Rock.Obsidian.UI
         /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
         public static GridBuilder<T> WithBlock<T>( this GridBuilder<T> builder, IRockBlockType block )
         {
+            return WithBlock( builder, block, null );
+        }
+
+        /// <summary>
+        /// Adds all the standard features when displaying a grid as part of a block.
+        /// </summary>
+        /// <typeparam name="T">The type of the source collection that will be used to populate the grid.</typeparam>
+        /// <param name="builder">The <see cref="GridBuilder{T}"/> to add the field to.</param>
+        /// <param name="block">The block that is displaying this grid.</param>
+        /// <param name="options">The options that describe optional configuration data.</param>
+        /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
+        public static GridBuilder<T> WithBlock<T>( this GridBuilder<T> builder, IRockBlockType block, GridBuilderGridOptions<T> options )
+        {
             // Add all the action URLs for the current site.
             AddDefaultGridActionUrls( builder, block );
 
             // Add any custom columns that are defined in the block settings.
-            AddCustomGridColumns( builder, block );
+            AddCustomGridColumns( builder, block, options?.LavaObject );
 
             // Add any custom actions that are defined in the block settings.
             AddCustomGridActions( builder, block );
@@ -277,7 +290,8 @@ namespace Rock.Obsidian.UI
         /// <typeparam name="T">The type of the source collection that will be used to populate the grid.</typeparam>
         /// <param name="builder">The <see cref="GridBuilder{T}"/> to add the field to.</param>
         /// <param name="block">The block that is displaying this grid.</param>
-        private static void AddCustomGridColumns<T>( GridBuilder<T> builder, IRockBlockType block )
+        /// <param name="lavaAccessor">The function that will be used to access the object sent to lava.</param>
+        private static void AddCustomGridColumns<T>( GridBuilder<T> builder, IRockBlockType block, Func<T, object> lavaAccessor )
         {
             var customizedGrid = block.GetType().GetCustomAttribute<CustomizedGridAttribute>();
 
@@ -299,7 +313,14 @@ namespace Rock.Obsidian.UI
 
                 builder.AddTextField( $"core.customColumn_${i}", row =>
                 {
-                    return GetCustomColumnText( row, column.LavaTemplate, block.RequestContext );
+                    if ( lavaAccessor != null )
+                    {
+                        return GetCustomColumnText( lavaAccessor( row ), column.LavaTemplate, block.RequestContext );
+                    }
+                    else
+                    {
+                        return GetCustomColumnText( row, column.LavaTemplate, block.RequestContext );
+                    }
                 } );
             }
 

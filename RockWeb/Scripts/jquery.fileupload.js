@@ -1112,7 +1112,15 @@
         _onPaste: function (e) {
             var items = e.originalEvent && e.originalEvent.clipboardData &&
                     e.originalEvent.clipboardData.items,
-                data = {files: []};
+                data = { files: [] };
+
+            // Check if there is plain text in the paste buffer, if so cancel the paste as this is hijacking the page (Issue: #2994).
+            var pasteText = e.originalEvent.clipboardData.getData('text/plain');
+
+            if (pasteText != '') {
+                return;
+            }
+
             if (items && items.length) {
                 $.each(items, function (index, item) {
                     var file = item.getAsFile && item.getAsFile();

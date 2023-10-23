@@ -34,6 +34,8 @@ using Rock.Web;
 using System.Web.UI.WebControls;
 using Rock.UniversalSearch;
 using System.Text;
+using Rock.Store;
+using Rock.Cms;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -44,8 +46,21 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details for a content channel." )]
     [Rock.SystemGuid.BlockTypeGuid( "B28075DA-46C1-4F6B-933D-DFCFEFB439EE" )]
+
     public partial class ContentChannelDetail : RockBlock
     {
+        #region Keys
+
+        private static class SettingsKey
+        {
+            public const string EnablePersonalization = "EnablePersonalization";
+            public const string EnableIndexing = "EnableIndexing";
+            public const string ItemsManuallyOrdered = "ItemsManuallyOrdered";
+            public const string ChildItemsManuallyOrdered = "ChildItemsManuallyOrdered";
+            public const string ItemsRequireApproval = "ItemsRequireApproval";
+        }
+
+        #endregion
 
         #region Properties
 
@@ -157,15 +172,26 @@ namespace RockWeb.Blocks.Cms
             {
                 if ( pnlEditDetails.Visible )
                 {
-                    var channel = new ContentChannel();
-                    channel.Id = hfId.Value.AsInteger();
-                    channel.ContentChannelTypeId = hfTypeId.Value.AsInteger();
+                    var channel = new ContentChannel
+                    {
+                        Id = hfId.Value.AsInteger(),
+                        ContentChannelTypeId = hfTypeId.Value.AsInteger()
+                    };
                     channel.LoadAttributes();
                     phAttributes.Controls.Clear();
                     Rock.Attribute.Helper.AddEditControls( channel, phAttributes, false, BlockValidationGroup );
 
                     ShowDialog();
                 }
+
+                if ( cbEnableContentLibrary.Checked )
+                {
+                    rblLicenseType.Required = true;
+                }
+                else
+                {
+                    rblLicenseType.Required = false;
+                } 
             }
         }
 
@@ -276,13 +302,16 @@ namespace RockWeb.Blocks.Cms
 
             int contentChannelTypeId = ddlChannelType.SelectedValueAsInt() ?? 0;
             var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( contentChannelTypeId );
+
             if ( contentChannelType != null )
             {
-                cbIsStructuredContent.Visible = !contentChannelType.DisableContentField;
+                bgEditorType.Visible = !contentChannelType.DisableContentField;
                 ddlContentControlType.Visible = !contentChannelType.DisableContentField && !channel.IsStructuredContent;
                 dvEditorTool.Visible = !contentChannelType.DisableContentField && channel.IsStructuredContent;
-                cbRequireApproval.Visible = !contentChannelType.DisableStatus;
             }
+
+            BindSettings( channel, contentChannelType );
+            BindContentLibraryAttributes( contentChannelType?.Id );
         }
 
         /// <summary>
@@ -325,24 +354,33 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.Name = tbName.Text;
                 contentChannel.Description = tbDescription.Text;
                 contentChannel.ContentChannelTypeId = ddlChannelType.SelectedValueAsInt() ?? 0;
-                contentChannel.IsStructuredContent = cbIsStructuredContent.Checked;
+                contentChannel.IsStructuredContent = bgEditorType.SelectedValue.AsInteger() == 1;
                 contentChannel.StructuredContentToolValueId = dvEditorTool.SelectedDefinedValueId;
                 contentChannel.ContentControlType = ddlContentControlType.SelectedValueAsEnum<ContentControlType>();
                 contentChannel.RootImageDirectory = tbRootImageDirectory.Visible ? tbRootImageDirectory.Text : string.Empty;
                 contentChannel.IconCssClass = tbIconCssClass.Text;
 
                 // the cbRequireApproval will be hidden if contentChannelType.DisableStatus == True
-                contentChannel.RequiresApproval = cbRequireApproval.Visible && cbRequireApproval.Checked;
-                contentChannel.IsIndexEnabled = cbIndexChannel.Checked;
-                contentChannel.ItemsManuallyOrdered = cbItemsManuallyOrdered.Checked;
-                contentChannel.ChildItemsManuallyOrdered = cbChildItemsManuallyOrdered.Checked;
+                contentChannel.RequiresApproval = cblSettings.Items.FindByValue( SettingsKey.ItemsRequireApproval ) != null && cblSettings.SelectedValues.Contains( SettingsKey.ItemsRequireApproval );
+                contentChannel.IsIndexEnabled = cblSettings.SelectedValues.Contains( SettingsKey.EnableIndexing );
+                contentChannel.ItemsManuallyOrdered = cblSettings.SelectedValues.Contains( SettingsKey.ItemsManuallyOrdered );
+                contentChannel.ChildItemsManuallyOrdered = cblSettings.SelectedValues.Contains( SettingsKey.ChildItemsManuallyOrdered );
                 contentChannel.EnableRss = cbEnableRss.Checked;
                 contentChannel.ChannelUrl = tbChannelUrl.Text;
                 contentChannel.TimeToLive = nbTimetoLive.Text.AsIntegerOrNull();
                 contentChannel.ItemUrl = tbContentChannelItemPublishingPoint.Text;
                 contentChannel.IsTaggingEnabled = cbEnableTag.Checked;
-                contentChannel.EnablePersonalization = cbEnablePersonalization.Checked;
+                contentChannel.EnablePersonalization = cblSettings.SelectedValues.Contains( SettingsKey.EnablePersonalization );
                 contentChannel.ItemTagCategoryId = cbEnableTag.Checked ? cpCategory.SelectedValueAsInt() : ( int? ) null;
+
+                // Content Library configuration.
+                var contentLibraryConfiguration = contentChannel.ContentLibraryConfiguration ?? new ContentLibraryConfiguration();
+                contentLibraryConfiguration.IsEnabled = cbEnableContentLibrary.Checked;
+                contentLibraryConfiguration.LicenseTypeValueGuid = rblLicenseType.SelectedValue.AsGuidOrNull();
+                contentLibraryConfiguration.SummaryAttributeGuid = ddlSummaryAttribute.SelectedValue.AsGuidOrNull();
+                contentLibraryConfiguration.AuthorAttributeGuid = ddlAuthorAttribute.SelectedValue.AsGuidOrNull();
+                contentLibraryConfiguration.ImageAttributeGuid = ddlImageAttribute.SelectedValue.AsGuidOrNull();
+                contentChannel.ContentLibraryConfiguration = contentLibraryConfiguration;
 
                 // Add any categories
                 contentChannel.Categories.Clear();
@@ -436,17 +474,74 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the CheckedChanged event of the cbIsStructuredContent control.
+        /// Handles the SelectedIndexChanged event of the bgEditorType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void cbIsStructuredContent_CheckedChanged( object sender, EventArgs e )
+        protected void bgEditorType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ddlContentControlType.Visible = !cbIsStructuredContent.Checked;
-            dvEditorTool.Visible = cbIsStructuredContent.Checked;
-            if ( !cbIsStructuredContent.Checked )
+            var isStructuredContentChecked = bgEditorType.SelectedValueAsInt() == 1;
+            ddlContentControlType.Visible = !isStructuredContentChecked;
+            dvEditorTool.Visible = isStructuredContentChecked;
+            if ( !isStructuredContentChecked )
             {
                 dvEditorTool.SelectedDefinedValueId = null;
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblLicenseType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rblLicenseType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var selectedLicenseType = rblLicenseType.SelectedValueAsGuid();
+
+            if ( !selectedLicenseType.HasValue )
+            {
+                nbLicenseType.Visible = false;
+                return;
+            }
+
+            var contentChannelId = PageParameter( "ContentChannelId" ).AsIntegerOrNull();
+
+            if ( !contentChannelId.HasValue )
+            {
+                nbLicenseType.Visible = false;
+                return;
+            }
+
+            var contentChannel = GetContentChannel( contentChannelId.Value );
+
+            var contentLibraryConfiguration = contentChannel?.ContentLibraryConfiguration;
+
+            if ( contentLibraryConfiguration == null )
+            {
+                nbLicenseType.Visible = false;
+                return;
+            }
+
+            if ( contentLibraryConfiguration.LicenseTypeValueGuid.HasValue
+                 && contentLibraryConfiguration.LicenseTypeValueGuid != selectedLicenseType )
+            {
+                var oldLicenseType = DefinedValueCache.Get( contentLibraryConfiguration.LicenseTypeValueGuid.Value );
+                var newLicenseType = DefinedValueCache.Get( selectedLicenseType.Value );
+
+                if ( newLicenseType.Guid != Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_OPEN.AsGuid() )
+                {
+                    nbLicenseType.Text = $"Future items will be uploaded with the license of \"{newLicenseType.Value}\". Items previously uploaded will retain the \"{oldLicenseType.Value}\" license.";
+                }
+                else
+                {
+                    nbLicenseType.Text = $"Future items will be uploaded with the license of \"{newLicenseType.Value}\". Items previously uploaded will retain the \"{oldLicenseType.Value}\" license. If you would like to change your existing items to \"{newLicenseType.Value}\", please reach out to us at <a href=\"mailto:info@sparkdevnetwork.org\">info@sparkdevnetwork.org</a>.";
+                }
+
+                nbLicenseType.Visible = true;
+            }
+            else
+            {
+                nbLicenseType.Visible = false;
             }
         }
 
@@ -500,7 +595,7 @@ namespace RockWeb.Blocks.Cms
 
             edtItemAttributes.SetAttributeProperties( attribute, typeof( ContentChannelItem ) );
 
-            edtItemAttributes.IsIndexingEnabledVisible = cbIndexChannel.Visible && cbIndexChannel.Checked;
+            edtItemAttributes.IsIndexingEnabledVisible = cblSettings.Items.FindByValue( SettingsKey.EnableIndexing ) != null && cblSettings.SelectedValues.Contains( SettingsKey.EnableIndexing );
 
             ShowDialog( "ItemAttributes", true );
         }
@@ -550,6 +645,7 @@ namespace RockWeb.Blocks.Cms
             ItemAttributesState.RemoveEntity( attributeGuid );
 
             BindItemAttributesGrid();
+            BindContentLibraryAttributes( ddlChannelType.SelectedValueAsInt() );
         }
 
         /// <summary>
@@ -579,6 +675,7 @@ namespace RockWeb.Blocks.Cms
 
             BindItemAttributesGrid();
             HideDialog();
+            BindContentLibraryAttributes( ddlChannelType.SelectedValueAsInt() );
         }
 
         /// <summary>
@@ -623,8 +720,6 @@ namespace RockWeb.Blocks.Cms
         {
             ContentChannel contentChannel = null;
 
-            cbIndexChannel.Visible = IndexContainer.IndexingEnabled;
-
             bool editAllowed = IsUserAuthorized( Authorization.EDIT );
 
             var rockContext = new RockContext();
@@ -641,8 +736,12 @@ namespace RockWeb.Blocks.Cms
 
             if ( contentChannel == null )
             {
-                contentChannel = new ContentChannel { Id = 0 };
-                contentChannel.ChildContentChannels = new List<ContentChannel>();
+                contentChannel = new ContentChannel
+                {
+                    Id = 0,
+                    ChildContentChannels = new List<ContentChannel>(),
+                    IsStructuredContent = true
+                };
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -777,7 +876,7 @@ namespace RockWeb.Blocks.Cms
                 ddlChannelType.SetValue( contentChannel.ContentChannelTypeId );
                 var categoryIds = contentChannel.Categories.Select( c => c.Id ).ToList();
                 cpCategories.SetValues( categoryIds );
-                cbIsStructuredContent.Checked = contentChannel.IsStructuredContent;
+                bgEditorType.SetValue( contentChannel.IsStructuredContent ? 1 : 2 );
                 if ( contentChannel.IsStructuredContent )
                 {
                     dvEditorTool.SelectedDefinedValueId = contentChannel.StructuredContentToolValueId;
@@ -786,14 +885,9 @@ namespace RockWeb.Blocks.Cms
                 tbRootImageDirectory.Text = contentChannel.RootImageDirectory;
                 tbRootImageDirectory.Visible = contentChannel.ContentControlType == ContentControlType.HtmlEditor;
                 tbIconCssClass.Text = contentChannel.IconCssClass;
-                cbRequireApproval.Checked = contentChannel.RequiresApproval;
-                cbIndexChannel.Checked = contentChannel.IsIndexEnabled;
-                cbItemsManuallyOrdered.Checked = contentChannel.ItemsManuallyOrdered;
-                cbChildItemsManuallyOrdered.Checked = contentChannel.ChildItemsManuallyOrdered;
                 cbEnableRss.Checked = contentChannel.EnableRss;
                 tbContentChannelItemPublishingPoint.Text = contentChannel.ItemUrl;
                 cbEnableTag.Checked = contentChannel.IsTaggingEnabled;
-                cbEnablePersonalization.Checked = contentChannel.EnablePersonalization;
                 cpCategory.SetValue( contentChannel.ItemTagCategoryId );
 
                 divRss.Attributes["style"] = cbEnableRss.Checked ? "display:block" : "display:none";
@@ -826,6 +920,7 @@ namespace RockWeb.Blocks.Cms
                 ItemAttributesState.ForEach( a => a.Order = newOrder++ );
 
                 BindItemAttributesGrid();
+                BindContentLibraryControls( contentChannel );
             }
         }
 
@@ -1115,7 +1210,254 @@ namespace RockWeb.Blocks.Cms
             HideDialog();
         }
 
-        #endregion
+        /// <summary>
+        /// Checks or unchecks a RockCheckBoxList item.
+        /// </summary>
+        /// <param name="cblControl">The RockCheckBoxList control.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="isChecked">If set to <c>true</c> the control is checked; otherwise, the control is unchecked.</param>
+        private void SetCheckBoxListItem( RockCheckBoxList cblControl, string value, bool isChecked )
+        {
+            var selectedValues = cblControl.SelectedValues;
 
+            if ( isChecked )
+            {
+                if ( !selectedValues.Contains( value ) )
+                {
+                    selectedValues.Add( value );
+                    cblControl.SetValues( selectedValues );
+                }
+            }
+            else
+            {
+                if ( selectedValues.Contains( value ) )
+                {
+                    selectedValues.Remove( value );
+                    cblControl.SetValues( selectedValues );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Binds the settings check box list.
+        /// </summary>
+        /// <param name="contentChannelType">Content channel type.</param>
+        private void BindSettings( ContentChannel contentChannel, ContentChannelType contentChannelType )
+        {
+            // If the items are cleared in this method,
+            // we would lose unsaved settings when the content channel type is changed.
+            // Instead, just add or remove items individually to keep their checked status in tact.
+            var items = cblSettings.Items;
+
+            // Items Require Approval
+            var item = items.FindByValue( SettingsKey.ItemsRequireApproval );
+            if ( !contentChannelType.DisableStatus )
+            {
+                if ( item == null )
+                {
+                    items.Add( new ListItem
+                    {
+                        Text = "Items Require Approval",
+                        Value = SettingsKey.ItemsRequireApproval
+                    } );
+                }
+                SetCheckBoxListItem( cblSettings, SettingsKey.ItemsRequireApproval, contentChannel.RequiresApproval );
+            }
+            else
+            {
+                if ( item != null )
+                {
+                    items.Remove( item );
+                }
+            }
+
+            // Enable Personalization
+            item = items.FindByValue( SettingsKey.EnablePersonalization );
+            if ( item == null )
+            {
+                cblSettings.Items.Add( new ListItem
+                {
+                    Text = "Enable Personalization",
+                    Value = SettingsKey.EnablePersonalization
+                } );
+            }
+            SetCheckBoxListItem( cblSettings, SettingsKey.EnablePersonalization, contentChannel.EnablePersonalization );
+
+            // Enable Indexing
+            item = items.FindByValue( SettingsKey.EnableIndexing );
+            if ( IndexContainer.IndexingEnabled )
+            {
+                if ( item == null )
+                {
+                    cblSettings.Items.Add( new ListItem
+                    {
+                        Text = "Enable Indexing",
+                        Value = SettingsKey.EnableIndexing
+                    } );
+                }
+                SetCheckBoxListItem( cblSettings, SettingsKey.EnableIndexing, contentChannel.IsIndexEnabled );
+            }
+            else
+            {
+                if ( item != null )
+                {
+                    items.Remove( item );
+                }
+            }
+
+            // Items Manually Ordered
+            item = items.FindByValue( SettingsKey.ItemsManuallyOrdered );
+            if ( item == null )
+            {
+                cblSettings.Items.Add( new ListItem
+                {
+                    Text = "Items Manually Ordered",
+                    Value = SettingsKey.ItemsManuallyOrdered
+                } );
+            }
+            SetCheckBoxListItem( cblSettings, SettingsKey.ItemsManuallyOrdered, contentChannel.ItemsManuallyOrdered );
+
+            // Child Items Manually Ordered
+            item = items.FindByValue( SettingsKey.ChildItemsManuallyOrdered );
+            if ( item == null )
+            {
+                cblSettings.Items.Add( new ListItem
+                {
+                    Text = "Child Items Manually Ordered",
+                    Value = SettingsKey.ChildItemsManuallyOrdered
+                } );
+            }
+            SetCheckBoxListItem( cblSettings, SettingsKey.ChildItemsManuallyOrdered, contentChannel.ChildItemsManuallyOrdered );
+        }
+
+        /// <summary>
+        /// Binds the content library controls.
+        /// </summary>
+        /// <param name="contentChannel">The content channel.</param>
+        private void BindContentLibraryControls( ContentChannel contentChannel )
+        {
+            // Content Library configuration.
+            var contentLibraryConfiguration = contentChannel.ContentLibraryConfiguration;
+
+            // Enabled
+            var isContentLibraryEnabled = contentChannel.IsContentLibraryEnabled;
+            cbEnableContentLibrary.Checked = isContentLibraryEnabled;
+
+            // License
+            var availableLicenseGuids = new[]
+            {
+                Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_OPEN.AsGuid(),
+                Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_AUTHOR_ATTRIBUTION.AsGuid(),
+                Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_ORGANIZATION_ATTRIBUTION.AsGuid()
+            };
+
+            rblLicenseType.Required = isContentLibraryEnabled;
+            rblLicenseType.Items.Clear();
+            foreach ( var licenseGuid in availableLicenseGuids )
+            {
+                var license = DefinedValueCache.Get( licenseGuid );
+
+                if ( license != null )
+                {
+                    rblLicenseType.Items.Add( new ListItem { Text = license.Value, Value = license.Guid.ToString() } );
+                }
+            }
+
+            if ( contentLibraryConfiguration?.LicenseTypeValueGuid.HasValue == true )
+            {
+                rblLicenseType.SetValue( contentLibraryConfiguration.LicenseTypeValueGuid );
+            }
+
+            // Attributes
+            BindContentLibraryAttributes( contentChannel.ContentChannelTypeId );
+            ddlSummaryAttribute.SetValue( contentLibraryConfiguration?.SummaryAttributeGuid );
+            ddlAuthorAttribute.SetValue( contentLibraryConfiguration?.AuthorAttributeGuid );
+            ddlImageAttribute.SetValue( contentLibraryConfiguration?.ImageAttributeGuid );
+
+            // Link Organization
+            var isOrganizationConfigured = StoreService.OrganizationIsConfigured();
+
+            if ( !isOrganizationConfigured )
+            {
+                nbLinkYourOrganization.Text = $"Your Rock instance is currently not associated with any organization. To proceed, <a href=\"/page/358?ReturnUrl={GetCurrentPageUrl().UrlEncode()}\">please link your instance to an organization</a>.";
+                nbLinkYourOrganization.Visible = true;
+
+                // Although we are hiding the fields here,
+                // we still want to set them in the code above
+                // so saving retains the values.
+                // Once the organization is [re]linked,
+                // then the fields should be displayed with the expected values.
+                phContentLibraryFields.Visible = false;
+            }
+            else
+            {
+                nbLinkYourOrganization.Visible = false;
+                phContentLibraryFields.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Binds the content library attribute drop down lists while retaining their current values.
+        /// </summary>
+        private void BindContentLibraryAttributes( int? contentChannelTypeId )
+        {
+            var selectedSummaryAttributeValue = ddlSummaryAttribute.SelectedValue;
+            var selectedAuthorAttributeValue = ddlAuthorAttribute.SelectedValue;
+            var selectedImageAttributeValue = ddlImageAttribute.SelectedValue;
+
+            var listItems = ItemAttributesState?.Select( attribute => new { Text = attribute.Name, Value = attribute.Guid.ToString() } ).ToList();
+
+            // Add content channel item attributes defined on the ContentChannelType.
+            // These should not be added to the ItemAttributesState but should be available for selection in the ContentLibraryConfiguration.
+            if ( contentChannelTypeId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var attributeService = new AttributeService( rockContext );
+                    var inheritedAttributes = attributeService
+                        .GetByEntityTypeId( new ContentChannelItem().TypeId, true )
+                        .AsQueryable()
+                        .Where( a =>
+                            a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                            a.EntityTypeQualifierValue.Equals( contentChannelTypeId.Value.ToString() ) )
+                        .Select( a => new { Text = a.Name, Value = a.Guid.ToString() } );
+
+                    if ( listItems == null )
+                    {
+                        listItems = inheritedAttributes.ToList();
+                    }
+                    else
+                    {
+                        listItems.AddRange( inheritedAttributes );
+                    }
+                }
+            }
+
+            ddlSummaryAttribute.Items.Clear();
+            ddlSummaryAttribute.Items.Add( new ListItem() );
+            if ( listItems != null )
+            {
+                ddlSummaryAttribute.Items.AddRange( listItems.Select( l => new ListItem { Text = l.Text, Value = l.Value } ).ToArray() );
+            }
+            ddlSummaryAttribute.SetValue( selectedSummaryAttributeValue );
+
+            ddlAuthorAttribute.Items.Clear();
+            ddlAuthorAttribute.Items.Add( new ListItem() );
+            if ( listItems != null )
+            {
+                ddlAuthorAttribute.Items.AddRange( listItems.Select( l => new ListItem { Text = l.Text, Value = l.Value } ).ToArray() );
+            }
+            ddlAuthorAttribute.SetValue( selectedAuthorAttributeValue );
+
+            ddlImageAttribute.Items.Clear();
+            ddlImageAttribute.Items.Add( new ListItem() );
+            if ( listItems != null )
+            {
+                ddlImageAttribute.Items.AddRange( listItems.Select( l => new ListItem { Text = l.Text, Value = l.Value } ).ToArray() );
+            }
+            ddlImageAttribute.SetValue( selectedImageAttributeValue );
+        }
+
+        #endregion
     }
 }

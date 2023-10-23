@@ -55,7 +55,7 @@ namespace Rock.Web.Cache
         private const string ORG_LOC_COUNTRY = "com.rockrms.orgLocationCountry";
 
         /// <summary>
-        /// This setting is the formatted organization's location (used by legacy lava support).
+        /// This setting is the formatted organization's location.
         /// </summary>
         private const string ORG_LOC_FORMATTED = "com.rockrms.orgLoctionFormatted";
 
@@ -604,14 +604,6 @@ namespace Rock.Web.Cache
                 return string.Empty;
             }
         }
-
-        /// <summary>
-        /// Gets the lava support level.
-        /// </summary>
-        /// <value>
-        /// The lava support level.
-        /// </value>
-        public Lava.LavaSupportLevel LavaSupportLevel => GetValue( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Lava.LavaSupportLevel>() ?? Lava.LavaSupportLevel.NoLegacy;
 
         /// <summary>
         /// Gets a value indicating whether Envelope Number feature is enabled

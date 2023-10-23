@@ -1,9 +1,10 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="tabbed-bar" :class="{ 'pills': props.type === 'pills' }">
         <ul class="toolbar-nav" ref="toolbarNavElement">
-            <li v-for="tab in tabs" :class="{ active: selectedTab === tab }">
+            <li v-for="tab in tabs" :class="{ active: isTabActive(tab) }">
                 <span class="title" @click.prevent="onSelectTab(tab)">
-                    <slot>{{ tab }}</slot>
+                    {{ getTabText(tab) }}
                 </span>
             </li>
 
@@ -104,6 +105,7 @@
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         /** The currently selected tab. */
@@ -114,11 +116,11 @@
 
         /** The list of tab names to be displayed. */
         tabs: {
-            type: Array as PropType<string[]>,
+            type: Array as PropType<string[] | ListItemBag[]>,
             required: true
         },
 
-        /** The type of tab bar to displaye. */
+        /** The type of tab bar to display. */
         type: {
             type: String as PropType<"tabs" | "pills">,
             default: "tabs"
@@ -131,7 +133,7 @@
 
     const toolbarNavElement = ref<HTMLElement>();
     const selectedTab = useVModelPassthrough(props, "modelValue", emit);
-    const overflowTabs = ref<string[]>([]);
+    const overflowTabs = ref<ListItemBag[]>([]);
     let resizeObserver: ResizeObserver | undefined;
     let resizeTimer: number | undefined;
 
@@ -142,12 +144,12 @@
      * overflown the container and are not directly visible.
      */
     const overflowTabActions = computed((): MenuAction[] => {
-        return overflowTabs.value.map(tab => {
+        return overflowTabs.value.map((tab: ListItemBag) => {
             return {
                 type: "default",
-                title: tab,
+                title: getTabText(tab),
                 handler: () => {
-                    selectedTab.value = tab;
+                    selectedTab.value = getTabValue(tab);
                 }
             };
         });
@@ -156,6 +158,33 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets the provided tab's value.
+     *
+     * @param tab The tab, which could be a string or list item bag.
+     */
+    function getTabValue(tab: string | ListItemBag): string {
+        return typeof tab === "object" ? tab.value ?? "" : tab;
+    }
+
+    /**
+     * Gets the provided tab's [friendly] text.
+     *
+     * @param tab The tab, which could be a string or list item bag.
+     */
+    function getTabText(tab: string | ListItemBag): string {
+        return typeof tab === "object" ? tab.text ?? "" : tab;
+    }
+
+    /**
+     * Gets whether provided tab is currently active.
+     *
+     * @param tab The tab, which could be a string or a list item bag.
+     */
+    function isTabActive(tab: string | ListItemBag): boolean {
+        return getTabValue(tab) === selectedTab.value;
+    }
 
     /**
      * Install or remove the overflow observer. If we are on a recent browser
@@ -239,7 +268,8 @@
             // Get the total width of all tabs, including the "More" tab.
             let totalWidth = requiredWidth + elementWidths[elementWidths.length - 1];
             const tabsToOverflow: number[] = [];
-            const selectedTabIndex = props.tabs.indexOf(selectedTab.value);
+            const selectedTabIndex = props.tabs
+                .findIndex((tab: string | ListItemBag) => getTabValue(tab) === selectedTab.value);
 
             // Start hiding tabs from the end.
             for (let i = elementWidths.length - 1; i >= 0; i--) {
@@ -269,7 +299,16 @@
                 }
             }
 
-            overflowTabs.value = props.tabs.filter((v, idx) => tabsToOverflow.includes(idx));
+            overflowTabs.value = props.tabs
+                .filter((_, idx) => tabsToOverflow.includes(idx))
+                .map((tab: string | ListItemBag) => {
+                    return typeof tab === "object"
+                        ? tab
+                        : {
+                            text: tab,
+                            value: tab
+                        };
+                });
         }
     }
 
@@ -282,15 +321,18 @@
      *
      * @param tab The tab that was selected.
      */
-    function onSelectTab(tab: string): void {
-        selectedTab.value = tab;
+    function onSelectTab(tab: string | ListItemBag): void {
+        selectedTab.value = getTabValue(tab);
     }
 
     // #endregion
 
     // Make sure we have a valid selection.
-    if (!props.tabs.includes(selectedTab.value)) {
-        selectedTab.value = props.tabs[0];
+    if (!props.tabs.some((tab: string | ListItemBag) => getTabValue(tab) === selectedTab.value)) {
+        // Select the first tab (if any were provided).
+        selectedTab.value = props.tabs.length
+            ? getTabValue(props.tabs[0])
+            : "";
     }
 
     watch(toolbarNavElement, updateOverflowObserver);

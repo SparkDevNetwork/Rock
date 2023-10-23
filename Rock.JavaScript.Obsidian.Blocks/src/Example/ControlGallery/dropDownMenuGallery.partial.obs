@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
     import { alert } from "@Obsidian/Utility/dialogs";

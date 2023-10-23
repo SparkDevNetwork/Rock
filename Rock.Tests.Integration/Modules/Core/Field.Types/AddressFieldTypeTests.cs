@@ -100,5 +100,32 @@ namespace Rock.Tests.Integration.Core.Field.Types
             var locationGuid = editValue.AsGuidOrNull();
             Assert.That.IsNull( locationGuid );
         }
+
+        [TestMethod]
+        [DataRow( "00000000-0000-0000-0000-000000000000" )]
+        [DataRow( null )]
+        [DataRow( "1234" )]
+        [DataRow( "not_a_guid" )]
+        public void GetTextValue_ShouldReturnEmptyStringForInvalidLocation( string locationGuidString )
+        {
+            var addressFieldType = new AddressFieldType();
+            var configurationValues = new Dictionary<string, string>();
+
+            var textValue = addressFieldType.GetTextValue( locationGuidString, configurationValues );
+
+            Assert.That.AreEqual( string.Empty, textValue );
+        }
+
+        [TestMethod]
+        public void GetTextValue_ShouldReturnTextValueForValidLocation()
+        {
+            var addressFieldType = new AddressFieldType();
+            var configurationValues = new Dictionary<string, string>();
+
+            var mainCampusLocationGuid = "17e57ea8-d942-485b-8b61-233589aac631";
+            var textValue = addressFieldType.GetTextValue( mainCampusLocationGuid, configurationValues );
+
+            Assert.That.AreEqualIgnoreWhitespace( "3120 W Cholla St Phoenix, AZ 85029-4113", textValue );
+        }
     }
 }

@@ -143,7 +143,7 @@ namespace Rock.Drawing.Avatar
                 avatar = RockImage.GetPersonImageFromBinaryFileService( settings.PhotoId.Value );
 
                 // Resize image
-                avatar.CropResize( settings.Size, settings.Size );
+                avatar?.CropResize( settings.Size, settings.Size );
             }
 
             // If not photo was provided then we'll create a fallback

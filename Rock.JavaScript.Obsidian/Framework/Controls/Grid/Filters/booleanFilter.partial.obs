@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
     import { ref, watch } from "vue";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { BooleanFilterMethod, BooleanFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/booleanFilterMethod";
     import { standardFilterProps } from "@Obsidian/Core/Controls/grid";

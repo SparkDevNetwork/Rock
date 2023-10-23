@@ -522,7 +522,8 @@
       line-height: 24px;
     }
 
-    .hidden + .checkbox {
+    .hidden + .checkbox,
+    .checkbox:first-child {
       margin-left: 0 !important;
     }
 
@@ -608,7 +609,7 @@
 .recurrence-pattern-monthly,
 .continue-until {
   .form-control-group {
-    display: block;
+    align-items: center;
     min-height: @input-height-base;
     margin-bottom: 3px;
   }

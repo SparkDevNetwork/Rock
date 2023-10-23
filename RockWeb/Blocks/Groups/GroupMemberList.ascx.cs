@@ -246,8 +246,8 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
 
-                    // If all of the roles in a group are sync'd then don't show the add button
-                    gGroupMembers.Actions.ShowAdd = _groupTypeCache.Roles
+                    // If someone can edit group members and if all of the roles in a group are sync'd then don't show the add button
+                    gGroupMembers.Actions.ShowAdd = canEditBlock && _groupTypeCache.Roles
                         .Where( r => !_group.GroupSyncs.Select( s => s.GroupTypeRoleId )
                         .Contains( r.Id ) )
                         .Any();

@@ -120,24 +120,39 @@ namespace Rock.Model
             target.AllowsAttachments = source.AllowsAttachments;
             target.AllowsReplies = source.AllowsReplies;
             target.AllowsWatching = source.AllowsWatching;
+            #pragma warning disable 612, 618
             target.ApprovalUrlTemplate = source.ApprovalUrlTemplate;
+            #pragma warning restore 612, 618
             target.AutoWatchAuthors = source.AutoWatchAuthors;
+            #pragma warning disable 612, 618
             target.BackgroundColor = source.BackgroundColor;
+            #pragma warning restore 612, 618
             target.BinaryFileTypeId = source.BinaryFileTypeId;
+            #pragma warning disable 612, 618
             target.BorderColor = source.BorderColor;
+            #pragma warning restore 612, 618
+            target.Color = source.Color;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            #pragma warning disable 612, 618
             target.FontColor = source.FontColor;
+            #pragma warning restore 612, 618
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.FormatType = source.FormatType;
             target.IconCssClass = source.IconCssClass;
+            target.IsMentionEnabled = source.IsMentionEnabled;
             target.IsSystem = source.IsSystem;
             target.MaxReplyDepth = source.MaxReplyDepth;
             target.Name = source.Name;
             target.Order = source.Order;
+            #pragma warning disable 612, 618
             target.RequiresApprovals = source.RequiresApprovals;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
             target.SendApprovalNotifications = source.SendApprovalNotifications;
+            #pragma warning restore 612, 618
             target.UserSelectable = source.UserSelectable;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

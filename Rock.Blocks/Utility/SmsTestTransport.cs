@@ -46,14 +46,12 @@ namespace Rock.Blocks.Utility
     [Rock.SystemGuid.BlockTypeGuid( "2c2d6bc3-8257-4e23-8fe7-06e744d58ac0" )]
     public class SmsTestTransport : RockDetailBlockType
     {
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var phoneNumbers = SystemPhoneNumberCache.All()
+            var phoneNumbers = SystemPhoneNumberCache.All( false )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
                 .ThenBy( spn => spn.Id )

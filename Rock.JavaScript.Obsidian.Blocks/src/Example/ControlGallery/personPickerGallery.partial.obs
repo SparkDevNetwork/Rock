@@ -1,0 +1,46 @@
+<template>
+    <GalleryAndResult :value="value ?? null" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <PersonPicker v-model="value" label="Select a Person" :includeBusinesses="includeBusinesses" :enableSelfSelection="enableSelfSelection" :expandSearchOptions="expandSearchOptions" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox label="Include Businesses" v-model="includeBusinesses" help="Include businesses in the search results" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Exclude Deceased" v-model="excludeDeceased" help="Exclude deceased people from the search results" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Enable Self Selection" v-model="enableSelfSelection" help="Add a button that can select the current person" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Expand Search Options" v-model="expandSearchOptions" help="Show the extra (address, phone, and email) search fields immediately rather than needing to press the magnifying glass button first." />
+                </div>
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref({});
+
+    const includeBusinesses = ref(false);
+    const excludeDeceased = ref(false);
+    const enableSelfSelection = ref(false);
+    const expandSearchOptions = ref(false);
+
+    const importCode = getSfcControlImportPath("personPicker");
+    const exampleCode = computed(() => {
+        return `<PersonPicker v-model="value" label="Select a Person"${includeBusinesses.value ? ` includeBusinesses` : ""}${excludeDeceased.value ? ` excludeDeceased` : ""}${enableSelfSelection.value ? ` enableSelfSelection` : ""}${expandSearchOptions.value ? ` expandSearchOptions` : ""} />`;
+    });
+</script>

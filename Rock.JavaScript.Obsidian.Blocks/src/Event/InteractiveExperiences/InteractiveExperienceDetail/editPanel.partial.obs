@@ -299,10 +299,26 @@
            :title="scheduleModalTitle"
            saveText="OK"
            @save="onSaveSchedule">
-        <ScheduleBuilder v-model="scheduleContent"
-                         label="Schedule"
-                         help="The schedule of when the experience is active."
-                         rules="required" />
+        <SectionHeader title="Schedule Configuration"
+                       description="Settings to determine when the occurrence should occur." />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ScheduleBuilder v-model="scheduleContent"
+                                 label="Schedule"
+                                 help="The schedule of when the experience is active."
+                                 rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <NumberBox v-model="scheduleEnableMinutesBefore"
+                           label="Enable Experience">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">mins before start</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
 
         <SectionHeader title="Filters"
                        description="Filters help to limit who will see experiences on the list those that are available." />
@@ -320,26 +336,37 @@
         <GroupPicker v-model="scheduleGroup"
                      label="Group"
                      help="A group that the individual must be in to see the environment." />
+
+        <SectionHeader v-if="Object.keys(scheduleAttributes).length > 0"
+                       title="Attributes"
+                       description="Additional configuration settings for the schedule." />
+
+        <AttributeValuesContainer v-model="scheduleAttributeValues"
+                                  :attributes="scheduleAttributes"
+                                  isEditMode
+                                  :numberOfColumns="2"
+                                  :showCategoryLabel="false" />
     </Modal>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, shallowRef, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import CodeEditor from "@Obsidian/Controls/codeEditor";
-    import ColorPicker from "@Obsidian/Controls/colorPicker";
-    import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
-    import ImageUploader from "@Obsidian/Controls/imageUploader";
-    import GroupPicker from "@Obsidian/Controls/groupPicker";
-    import Modal from "@Obsidian/Controls/modal";
-    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
-    import SectionContainer from "@Obsidian/Controls/sectionContainer";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader";
-    import TextBox from "@Obsidian/Controls/textBox";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
@@ -413,9 +440,12 @@
     let editingSchedule: InteractiveExperienceScheduleBag | null = null;
     const scheduleModalTitle = ref("");
     const scheduleContent = ref("");
+    const scheduleEnableMinutesBefore = ref<number | null>(null);
     const scheduleCampuses = shallowRef<ListItemBag[]>([]);
     const scheduleDataView = shallowRef<ListItemBag | null>(null);
     const scheduleGroup = shallowRef<ListItemBag | null>(null);
+    const scheduleAttributes = ref(props.modelValue.scheduleAttributes ?? {});
+    const scheduleAttributeValues = ref<Record<string, string>>({});
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -528,9 +558,11 @@
         scheduleModalTitle.value = "Add Schedule";
         editingSchedule = null;
         scheduleContent.value = "";
+        scheduleEnableMinutesBefore.value = null;
         scheduleCampuses.value = [];
         scheduleDataView.value = null;
         scheduleGroup.value = null;
+        scheduleAttributeValues.value = {};
         isScheduleModalVisible.value = true;
     }
 
@@ -543,9 +575,11 @@
         scheduleModalTitle.value = "Edit Schedule";
         editingSchedule = schedule;
         scheduleContent.value = schedule.schedule?.value ?? "";
+        scheduleEnableMinutesBefore.value = schedule.enableMinutesBefore ?? null;
         scheduleCampuses.value = schedule.campuses ?? [];
         scheduleDataView.value = schedule.dataView ?? null;
         scheduleGroup.value = schedule.group ?? null;
+        scheduleAttributeValues.value = schedule.attributeValues ?? {};
         isScheduleModalVisible.value = true;
     }
 
@@ -580,9 +614,11 @@
             value: scheduleContent.value,
             text: calendar.events[0].toFriendlyText()
         };
+        schedule.enableMinutesBefore = scheduleEnableMinutesBefore.value;
         schedule.campuses = scheduleCampuses.value;
         schedule.dataView = scheduleDataView.value;
         schedule.group = scheduleGroup.value;
+        schedule.attributeValues = scheduleAttributeValues.value;
 
         if (!editingSchedule) {
             schedules.value.push(schedule);

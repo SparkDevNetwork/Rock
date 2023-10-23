@@ -115,11 +115,14 @@ export type RegistrationEntryBlockViewModel = {
     registrationInstanceNotFoundMessage: string | null;
     races: ListItemBag[];
     ethnicities: ListItemBag[];
+    showSmsOptIn: boolean;
 
     isInlineSignatureRequired: boolean;
     isSignatureDrawn: boolean;
     signatureDocumentTerm?: string | null;
     signatureDocumentTemplateName?: string | null;
+
+    hideProgressBar: boolean;
 };
 
 export type RegistrationEntryBlockFamilyMemberViewModel = {
@@ -142,6 +145,7 @@ export type RegistrationEntryBlockFeeItemViewModel = {
     name: string;
     guid: Guid;
     cost: number;
+    originalCountRemaining: number | null;
     countRemaining: number | null;
 };
 
@@ -204,11 +208,11 @@ export type RegistrationEntryBlockArgs = {
     registrationGuid: Guid | null;
     registrationSessionGuid: Guid | null;
     registrants: RegistrantInfo[];
-    fieldValues: Record<Guid, unknown>;
-    registrar: RegistrarInfo;
+    fieldValues: Record<Guid, unknown> | null;
+    registrar: RegistrarInfo | null;
     savedAccountGuid: Guid | null;
-    gatewayToken: string;
-    discountCode: string;
+    gatewayToken: string | null;
+    discountCode: string | null;
     amountToPayNow: number;
 };
 
@@ -216,6 +220,7 @@ export type RegistrationEntryBlockSession = RegistrationEntryBlockArgs & {
     discountAmount: number;
     discountPercentage: number;
     previouslyPaid: number;
+    discountMaxRegistrants: number;
 };
 
 export const enum Step {
@@ -251,6 +256,7 @@ export type RegistrationEntryState = {
     discountCode: string;
     discountAmount: number;
     discountPercentage: number;
+    discountMaxRegistrants: number;
     successViewModel: RegistrationEntryBlockSuccessViewModel | null;
     amountToPayToday: number;
     sessionExpirationDateMs: number | null;

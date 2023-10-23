@@ -121,6 +121,8 @@ namespace Rock.Model
             target.GroupId = source.GroupId;
             target.IsDefault = source.IsDefault;
             target.IsSystem = source.IsSystem;
+            target.LastErrorCode = source.LastErrorCode;
+            target.LastErrorCodeDateTime = source.LastErrorCodeDateTime;
             target.Name = source.Name;
             target.PersonAliasId = source.PersonAliasId;
             target.PreferredForeignCurrencyCodeValueId = source.PreferredForeignCurrencyCodeValueId;

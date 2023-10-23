@@ -1209,7 +1209,7 @@ namespace RockWeb.Blocks.Communication
                 {
                     var allowedSmsNumbersGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
 
-                    ( ( Sms ) mediumControl ).SelectedNumbers = SystemPhoneNumberCache.All()
+                    ( ( Sms ) mediumControl ).SelectedNumbers = SystemPhoneNumberCache.All( false )
                         .Where( spn => spn.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) && allowedSmsNumbersGuids.ContainsOrEmpty( spn.Guid ) )
                         .Select( spn => spn.Guid )
                         .ToList();

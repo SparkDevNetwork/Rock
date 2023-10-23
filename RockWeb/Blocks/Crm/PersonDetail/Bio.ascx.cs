@@ -352,7 +352,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
 
                 string quickReturnLava = "{{ Person.FullName | AddQuickReturn:'People', 10 }}";
-                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                 quickReturnMergeFields.Add( "Person", Person );
                 quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
 
@@ -836,7 +836,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( raceAndEthnicity.Count > 0 )
             {
-                var title = $"{Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )}/{Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )}";
+                var title = $"{Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL )}/{Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL )}";
                 lRaceAndEthnicity.Text =
                     $@"<dt title=""{title}"">{raceAndEthnicity.AsDelimited("/")}</dt>
                     <dd class=""d-none"">{title}</dd>";

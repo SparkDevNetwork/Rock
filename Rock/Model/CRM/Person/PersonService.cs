@@ -3458,10 +3458,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Removes duplicate and empty number phone numbers from a person
+        /// Removes duplicate and empty number phone numbers from a person.
+        /// NOTE: This method deletes the all the Person's phone numbers which have a phone number type not present in the provided
+        /// phoneNumberTypeIds list of phone number types.
         /// </summary>
         /// <param name="person">The Person.</param>
-        /// <param name="phoneNumberTypeIds">The list of phone number type ids.</param>
+        /// <param name="phoneNumberTypeIds">The list of phone number type ids. The phone numbers with a phone number type not in this list would be deleted.</param>
         /// <param name="rockContext">The rock context.</param>
         public void RemoveEmptyAndDuplicatePhoneNumbers( Person person, List<int> phoneNumberTypeIds, RockContext rockContext )
         {
@@ -4503,6 +4505,13 @@ WHERE GivingId IS NULL OR GivingId != (
         private static int UpdatePersonGivingLeaderId( int? personId, RockContext rockContext )
         {
             var sqlUpdateBuilder = new StringBuilder();
+
+            /* 
+                JME 9/25/2023
+                Updated this logic to not filter out deceased, but to sort by IsDeceased (living before deceased).
+                So that if both adults are deceased the Giving Leader goes back to being the adult male vs it
+                becoming different for both individuals. (Issue #2848).
+            */
             sqlUpdateBuilder.Append( @"
 UPDATE x
 SET x.GivingLeaderId = x.CalculatedGivingLeaderId
@@ -4519,9 +4528,10 @@ FROM (
 		INNER JOIN [GroupTypeRole] r ON r.[Id] = gm.[GroupRoleId]
 		INNER JOIN [Person] p2 ON p2.[Id] = gm.[PersonId]
 		WHERE gm.[GroupId] = p.GivingGroupId
-			AND p2.[IsDeceased] = 0
 			AND p2.[GivingGroupId] = p.GivingGroupId
-		ORDER BY r.[Order]
+		ORDER BY
+            p2.[IsDeceased]
+            , r.[Order]
 			,p2.[Gender]
 			,p2.[BirthYear]
 			,p2.[BirthMonth]
@@ -4771,6 +4781,42 @@ UPDATE Person
 SET PrimaryAliasId = @primaryAliasId
 WHERE Id = @personId",
         new System.Data.SqlClient.SqlParameter( "@personId", personId ), new System.Data.SqlClient.SqlParameter( "@primaryAliasId", primaryAliasId ) );
+        }
+
+        /// <summary>
+        /// Updates the person's group member role (whether Adult/Child) for the specified person.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="age">The age.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdateFamilyMemberRoleByAge( int personId, int age, RockContext rockContext )
+        {
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+
+            int? roleId;
+            int result = 0;
+
+            if ( age >= 18 )
+            {
+                roleId = familyGroupType.Roles?.Find( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )?.Id;
+            }
+            else
+            {
+                roleId = familyGroupType.Roles?.Find( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() )?.Id;
+            }
+
+            if ( roleId.HasValue )
+            {
+                result = rockContext.Database.ExecuteSqlCommand( $@"
+UPDATE GroupMember
+SET GroupRoleId = {roleId}
+WHERE PersonId = ${personId}
+AND GroupTypeId = ${familyGroupType.Id}
+" );
+            }
+
+            return result;
         }
 
         #endregion

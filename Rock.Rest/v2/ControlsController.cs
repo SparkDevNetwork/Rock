@@ -33,6 +33,7 @@ using Rock.Enums.Controls;
 using Rock.Extension;
 using Rock.Field.Types;
 using Rock.Financial;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -55,7 +56,6 @@ namespace Rock.Rest.v2
     [Rock.SystemGuid.RestControllerGuid( "815B51F0-B552-47FD-8915-C653EEDD5B67" )]
     public class ControlsController : ApiControllerBase
     {
-
         #region Account Picker
 
         /// <summary>
@@ -360,40 +360,36 @@ namespace Rock.Rest.v2
 
             var orgCountryCode = globalAttributesCache.OrganizationCountry;
             var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
-            var countryCode = options.CountryCode.IsNullOrWhiteSpace() ? "US" : options.CountryCode;
+            var countryCode = options.CountryCode.IsNullOrWhiteSpace() ? defaultCountryCode : options.CountryCode;
 
             var orgStateCode = globalAttributesCache.OrganizationState;
             var defaultStateCode = countryCode == orgCountryCode ? orgStateCode : string.Empty;
 
-
             // Generate List of Countries
             var countries = new List<ListItemBag>();
-            if ( showCountrySelection )
+            var countryValues = DefinedTypeCache.Get( SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
+                .DefinedValues
+                .OrderBy( v => v.Order )
+                .ThenBy( v => v.Value )
+                .ToList();
+
+            // Move default country to the top of the list
+            if ( !string.IsNullOrWhiteSpace( defaultCountryCode ) )
             {
-                var countryValues = DefinedTypeCache.Get( SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
-                    .DefinedValues
-                    .OrderBy( v => v.Order )
-                    .ThenBy( v => v.Value )
-                    .ToList();
-
-                // Move default country to the top of the list
-                if ( !string.IsNullOrWhiteSpace( defaultCountryCode ) )
+                var defaultCountry = countryValues
+                    .Where( v => v.Value.Equals( defaultCountryCode, StringComparison.OrdinalIgnoreCase ) )
+                    .FirstOrDefault();
+                if ( defaultCountry != null )
                 {
-                    var defaultCountry = countryValues
-                        .Where( v => v.Value.Equals( defaultCountryCode, StringComparison.OrdinalIgnoreCase ) )
-                        .FirstOrDefault();
-                    if ( defaultCountry != null )
-                    {
-                        countries.Add( new ListItemBag { Text = "Countries", Value = string.Empty } );
-                        countries.Add( new ListItemBag { Text = options.UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, Value = defaultCountry.Value } );
-                        countries.Add( new ListItemBag { Text = "------------------------", Value = "------------------------" } );
-                    }
+                    countries.Add( new ListItemBag { Text = "Countries", Value = string.Empty } );
+                    countries.Add( new ListItemBag { Text = options.UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, Value = defaultCountry.Value } );
+                    countries.Add( new ListItemBag { Text = "------------------------", Value = "------------------------" } );
                 }
+            }
 
-                foreach ( var country in countryValues )
-                {
-                    countries.Add( new ListItemBag { Text = options.UseCountryAbbreviation ? country.Value : country.Description, Value = country.Value } );
-                }
+            foreach ( var country in countryValues )
+            {
+                countries.Add( new ListItemBag { Text = options.UseCountryAbbreviation ? country.Value : country.Description, Value = country.Value } );
             }
 
             // Generate List of States
@@ -443,7 +439,6 @@ namespace Rock.Rest.v2
             DataEntryRequirementLevelSpecifier localityRequirement = DataEntryRequirementLevelSpecifier.Optional;
             DataEntryRequirementLevelSpecifier stateRequirement = DataEntryRequirementLevelSpecifier.Optional;
             DataEntryRequirementLevelSpecifier postalCodeRequirement = DataEntryRequirementLevelSpecifier.Optional;
-
 
             var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                 .DefinedValues
@@ -769,7 +764,7 @@ namespace Rock.Rest.v2
         /// <returns>A list of badge types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BadgePickerGetBadges" )]
-        [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
+        [Rock.SystemGuid.RestActionGuid( "6D50B8E4-985E-4AC6-B491-74B827108882" )]
         public IHttpActionResult BadgePickerGetBadges( [FromBody] BadgePickerGetBadgesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -883,7 +878,6 @@ namespace Rock.Rest.v2
                 {
                     if ( item.GetAttributeValue( "TemplateBlock" ).AsGuid() == blockTemplateDefinedValue.Guid )
                     {
-
                         var imageUrl = string.Format( "~/GetImage.ashx?guid={0}", item.GetAttributeValue( "Icon" ).AsGuid() );
 
                         items.Add( new BlockTemplatePickerGetBlockTemplatesResultsBag { Guid = item.Guid, Name = item.Value, IconUrl = RockRequestContext.ResolveRockUrl( imageUrl ), Template = item.Description } );
@@ -913,22 +907,142 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var items = new CampusService( rockContext )
-                    .Queryable()
-                    .OrderBy( f => f.Order )
-                    .ThenBy( f => f.Name )
-                    .Select( c => new CampusPickerItemBag
+                return Ok( GetCampuses( options, rockContext ) );
+            }
+        }
+
+        private List<CampusPickerItemBag> GetCampuses( CampusPickerGetCampusesOptionsBag options, RockContext rockContext )
+        {
+            var items = new CampusService( rockContext )
+                .Queryable()
+                .OrderBy( f => f.Order )
+                .ThenBy( f => f.Name )
+                .Select( c => new CampusPickerItemBag
+                {
+                    Value = c.Guid.ToString(),
+                    Text = c.Name,
+                    IsActive = c.IsActive ?? true,
+                    CampusStatus = c.CampusStatusValue.Guid,
+                    CampusType = c.CampusTypeValue.Guid
+                } )
+                .ToList();
+
+            return items;
+        }
+
+        #endregion
+
+        #region Campus Account Amount Picker
+
+        /// <summary>
+        /// Gets the accounts that can be displayed in the campus account amount picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="CampusPickerItemBag"/> objects that represent the binary file types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "CampusAccountAmountPickerGetAccounts" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9833fcd3-30cf-4bab-840a-27ee497ebfb8" )]
+        public IHttpActionResult CampusAccountAmountPickerGetAccounts( [FromBody] CampusAccountAmountPickerGetAccountsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                IQueryable<FinancialAccount> accountsQry;
+                var financialAccountService = new FinancialAccountService( rockContext );
+
+                if ( options.SelectableAccountGuids.Any() )
+                {
+                    accountsQry = financialAccountService.GetByGuids( options.SelectableAccountGuids );
+                }
+                else
+                {
+                    accountsQry = financialAccountService.Queryable();
+                }
+
+                accountsQry = accountsQry.Where( f =>
+                    f.IsActive &&
+                    f.IsPublic.HasValue &&
+                    f.IsPublic.Value &&
+                    ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
+                    ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
+                .OrderBy( f => f.Order );
+
+                var accountsList = accountsQry.AsNoTracking().ToList();
+
+                string accountHeaderTemplate = options.AccountHeaderTemplate;
+                if ( accountHeaderTemplate.IsNullOrWhiteSpace() )
+                {
+                    accountHeaderTemplate = "{{ Account.PublicName }}";
+                }
+
+                if ( options.OrderBySelectableAccountsIndex )
+                {
+                    accountsList = accountsList.OrderBy( x => options.SelectableAccountGuids.IndexOf( x.Guid ) ).ToList();
+                }
+
+                var items = new List<CampusAccountAmountPickerGetAccountsResultItemBag>();
+                var campuses = CampusCache.All();
+
+                foreach ( var account in accountsList )
+                {
+                    var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions() );
+                    mergeFields.Add( "Account", account );
+                    var accountAmountLabel = accountHeaderTemplate.ResolveMergeFields( mergeFields );
+                    items.Add( new CampusAccountAmountPickerGetAccountsResultItemBag
                     {
-                        Value = c.Guid.ToString(),
-                        Text = c.Name,
-                        IsActive = c.IsActive ?? true,
-                        CampusStatus = c.CampusStatusValue.Guid,
-                        CampusType = c.CampusTypeValue.Guid
-                    } )
-                    .ToList();
+                        Name = accountAmountLabel,
+                        Value = account.Guid,
+                        CampusAccounts = getCampusAccounts( account, campuses )
+                    } );
+                }
 
                 return Ok( items );
             }
+        }
+
+        private Dictionary<Guid, ListItemBag> getCampusAccounts( FinancialAccount baseAccount, List<CampusCache> campuses )
+        {
+            var results = new Dictionary<Guid, ListItemBag>();
+
+            foreach ( var campus in campuses )
+            {
+                results.Add( campus.Guid, GetBestMatchingAccountForCampusFromDisplayedAccount( campus.Id, baseAccount ) );
+            }
+
+            return results;
+        }
+
+        private ListItemBag GetBestMatchingAccountForCampusFromDisplayedAccount( int campusId, FinancialAccount baseAccount )
+        {
+            if ( baseAccount.CampusId.HasValue && baseAccount.CampusId == campusId )
+            {
+                // displayed account is directly associated with selected campusId, so return it
+                return GetAccountListItemBag( baseAccount );
+            }
+            else
+            {
+                // displayed account doesn't have a campus (or belongs to another campus). Find first active matching child account
+                var firstMatchingChildAccount = baseAccount.ChildAccounts.Where( a => a.IsActive ).FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
+                if ( firstMatchingChildAccount != null )
+                {
+                    // one of the child accounts is associated with the campus so, return the child account
+                    return GetAccountListItemBag( firstMatchingChildAccount );
+                }
+                else
+                {
+                    // none of the child accounts is associated with the campus so, return the displayed account
+                    return GetAccountListItemBag( baseAccount );
+                }
+            }
+        }
+
+        private ListItemBag GetAccountListItemBag( FinancialAccount account )
+        {
+            return new ListItemBag
+            {
+                Text = account.Name,
+                Value = account.Guid.ToString()
+            };
         }
 
         #endregion
@@ -947,7 +1061,6 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "9294f070-e8c8-48da-bd50-076f26200d75" )]
         public IHttpActionResult CategorizedValuePickerGetTree( [FromBody] CategorizedValuePickerGetTreeOptionsBag options )
         {
-
             // NO Parent -> get roots using DefinedTypeGuid
             // Parent -> get children of ParentGuid
             // Eliminate values not in the LimitTo list
@@ -967,7 +1080,6 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = new RockContext() )
             {
-
                 var definedValueService = new DefinedValueService( rockContext );
                 var definedValues = definedValueService.GetByDefinedTypeGuid( options.DefinedTypeGuid )
                     .Where( x => x.IsActive )
@@ -1235,7 +1347,7 @@ namespace Rock.Rest.v2
                 string service = null;
 
                 /*
-                 * Determine what type of resource the GUID we received is so we know what types of 
+                 * Determine what type of resource the GUID we received is so we know what types of
                  * children to query for.
                  */
                 if ( options.ParentGuid == null )
@@ -1631,6 +1743,21 @@ namespace Rock.Rest.v2
                     definedValue.SaveAttributeValues( rockContext );
                 } );
 
+                // Update the attribute configuration if requested.
+                var updateAttribute = options.UpdateAttributeGuid.HasValue
+                    ? AttributeCache.Get( options.UpdateAttributeGuid.Value )
+                    : null;
+
+                if ( updateAttribute?.FieldType?.Field is DefinedValueFieldType )
+                {
+                    var needSave = DefinedValueFieldType.AddValueToAttributeConfiguration( updateAttribute.Id, definedValue.Id, rockContext );
+
+                    if ( needSave )
+                    {
+                        rockContext.SaveChanges();
+                    }
+                }
+
                 return Ok( new ListItemBag { Text = definedValue.Value, Value = definedValue.Guid.ToString() } );
             }
         }
@@ -2019,6 +2146,79 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Entity Picker
+
+        /// <summary>
+        /// Gets the entity type GUIDs to be displayed in the entity type picker part of the entity picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="Guid"/> of the entity types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityPickerGetEntityTypeGuids" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "8E92F72E-235A-4192-9C09-742F94849D62" )]
+        public IHttpActionResult EntityPickerGetEntityTypeGuids( [FromBody] EntityPickerGetEntityTypeGuidsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeGuids = new EntityTypeService( new RockContext() )
+                    .Queryable()
+                    .Where( e => e.IsEntity == true && e.SingleValueFieldTypeId.HasValue )
+                    .Select( e => e.Guid.ToString() )
+                    .ToList();
+
+                return Ok( entityTypeGuids );
+            }
+        }
+
+        /// <summary>
+        /// Gets the single value field type Guid of the given entity type
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A GUID of the field type</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityPickerGetFieldTypeConfiguration" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6BDA28C3-E6D7-42EB-9011-0C076455D4A7" )]
+        public IHttpActionResult EntityPickerGetFieldTypeConfiguration( [FromBody] EntityPickerGetFieldTypeConfigurationOptionsBag options )
+        {
+            if ( options.EntityTypeGuid == null )
+            {
+                return NotFound();
+            }
+
+            var entityType = EntityTypeCache.Get( options.EntityTypeGuid );
+
+            if ( entityType == null )
+            {
+                return NotFound();
+            }
+
+            var fieldType = entityType.SingleValueFieldType;
+            var fieldTypeGuid = fieldType.Guid;
+
+            if ( fieldType == null || fieldTypeGuid == null )
+            {
+                return NotFound();
+            }
+
+            var field = fieldType.Field;
+
+            var entityValue = options.EntityValue ?? "";
+            var privateValue = field.GetPrivateEditValue( entityValue, new Dictionary<string, string>() );
+            var configurationValues = field.GetPublicConfigurationValues( new Dictionary<string, string>(), Field.ConfigurationValueUsage.Edit, privateValue );
+
+            return Ok( new EntityPickerGetFieldTypeConfigurationResultsBag
+            {
+                FieldTypeGuid = fieldTypeGuid,
+                FieldTypeName = fieldType.Name.Replace( " ", string.Empty ),
+                FieldTypePluralName = fieldType.Name.Replace( " ", string.Empty ).Pluralize(),
+                ConfigurationValues = configurationValues
+            } );
+        }
+
+        #endregion
+
         #region Entity Type Picker
 
         /// <summary>
@@ -2034,8 +2234,15 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var items = EntityTypeCache.All( rockContext )
-                    .Where( t => t.IsEntity )
+                var itemQuery = EntityTypeCache.All( rockContext )
+                    .Where( t => t.IsEntity );
+
+                if ( options.EntityTypeGuids != null && options.EntityTypeGuids.Any() )
+                {
+                    itemQuery = itemQuery.Where( t => options.EntityTypeGuids.Contains( t.Guid ) );
+                }
+
+                var items = itemQuery
                     .OrderByDescending( t => t.IsCommon )
                     .ThenBy( t => t.FriendlyName )
                     .Select( t => new ListItemBag
@@ -2071,7 +2278,7 @@ namespace Rock.Rest.v2
             return Ok( new EthnicityPickerGetEthnicitiesResultsBag
             {
                 Ethnicities = ethnicities,
-                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" )
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL )
             } );
         }
 
@@ -2091,7 +2298,6 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-
                 var calendars = EventCalendarCache.All();
                 var calendarList = new List<ListItemBag>();
 
@@ -2121,7 +2327,6 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-
                 var eventItems = new EventCalendarItemService( rockContext ).Queryable()
                     .Where( i => options.IncludeInactive ? true : i.EventItem.IsActive )
                     .Select( i => new ListItemBag
@@ -2306,7 +2511,6 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "4E10F2DC-BD7C-4F75-919C-B3F71868ED24" )]
         public IHttpActionResult FinancialStatementTemplatePickerGetFinancialStatementTemplates()
         {
-
             using ( var rockContext = new RockContext() )
             {
                 List<ListItemBag> items = new FinancialStatementTemplateService( rockContext )
@@ -2729,7 +2933,6 @@ namespace Rock.Rest.v2
             }
 
             return NotFound();
-
         }
 
         #endregion
@@ -3318,7 +3521,7 @@ namespace Rock.Rest.v2
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "LocationListGetLocations" )]
-        [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
+        [Rock.SystemGuid.RestActionGuid( "DA17BFF5-B9B8-4CD1-AAB4-2F703EDBEF46" )]
         public IHttpActionResult LocationListGetLocations( [FromBody] LocationListGetLocationsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -3372,7 +3575,6 @@ namespace Rock.Rest.v2
 
                 return Ok( locations );
             }
-
         }
 
         /// <summary>
@@ -3841,7 +4043,6 @@ namespace Rock.Rest.v2
                     {
                         return Ok( "{{ PageParameter.[Enter Page Parameter Name Here] }}" );
                     }
-
                 }
 
                 var workingParts = new List<string>();
@@ -3931,19 +4132,15 @@ namespace Rock.Rest.v2
                             }
                             else
                             {
-
                                 itemString = string.Format( "{{{{ {0} | Attribute:'{1}' }}}}", partPath, partItem );
                             }
-
                         }
-
                     }
 
                     return Ok( string.Format( formatString, itemString ).Replace( "<", "{" ).Replace( ">", "}" ) );
                 }
 
                 return Ok( string.Format( "{{{{ {0} }}}}", idParts.AsDelimited( "." ) ) );
-
             }
 
             return Ok( string.Empty );
@@ -4098,7 +4295,6 @@ namespace Rock.Rest.v2
                                 // Add the tree view items
                                 foreach ( var propInfo in Rock.Lava.LavaHelper.GetLavaProperties( type ) )
                                 {
-
                                     var treeViewItem = new TreeViewItem
                                     {
                                         Id = id + "|" + propInfo.Name,
@@ -4160,7 +4356,6 @@ namespace Rock.Rest.v2
 
                                     foreach ( var attribute in attributeList )
                                     {
-
                                         if ( attribute.IsAuthorized( Authorization.VIEW, person ) )
                                         {
                                             items.Add( new TreeViewItem
@@ -4343,7 +4538,7 @@ namespace Rock.Rest.v2
                     if ( metricCategory != null )
                     {
                         // Swap the Id to the Metric Guid (instead of MetricCategory.Guid).
-                        categoryItem.Value = metricCategory.Guid.ToString();
+                        categoryItem.Value = metricCategory.Metric.Guid.ToString();
                     }
                 }
 
@@ -4359,11 +4554,120 @@ namespace Rock.Rest.v2
                     }, rockContext ) );
                 }
 
-
                 convertedMetrics.Add( categoryItem );
             }
 
             return convertedMetrics;
+        }
+
+        #endregion
+
+        #region Note Editor
+
+        /// <summary>
+        /// Searches for possible mention candidates to display that match the request.
+        /// </summary>
+        /// <param name="options">The options that describe the mention sources to search for.</param>
+        /// <returns>An instance of <see cref="NoteEditorMentionSearchResultsBag"/> that contains the possible matches.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "NoteEditorMentionSearch" )]
+        [Authenticate]
+        [SecurityAction( "FullSearch", "Allows individuals to perform a full search of all individuals in the database." )]
+        [Rock.SystemGuid.RestActionGuid( "dca338b6-9749-427e-8238-1686c9587d16" )]
+        public IHttpActionResult NoteEditorMentionSearch( [FromBody] NoteEditorMentionSearchOptionsBag options )
+        {
+            var restAction = RestActionCache.Get( new Guid( "dca338b6-9749-427e-8238-1686c9587d16" ) );
+            var isFullSearchAllowed = restAction.IsAuthorized( "FullSearch", RockRequestContext.CurrentPerson );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var searchComponent = Rock.Search.SearchContainer.GetComponent( typeof( Rock.Search.Person.Name ).FullName );
+                var allowFirstNameOnly = searchComponent?.GetAttributeValue( "FirstNameSearch" ).AsBoolean() ?? false;
+                var personService = new PersonService( rockContext );
+
+                var personSearchOptions = new PersonService.PersonSearchOptions
+                {
+                    Name = options.Name,
+                    AllowFirstNameOnly = allowFirstNameOnly,
+                    IncludeBusinesses = false,
+                    IncludeDeceased = false
+                };
+
+                // Prepare the basic person search filter that wil be used
+                // for both the "full database" search as well as the priority
+                // list search.
+                var basicPersonSearchQry = personService.Search( personSearchOptions ).AsNoTracking();
+
+                // Get the query to run for a full-database search. The where
+                // clause will make it so we get no results unless full search
+                // is allowed.
+                var searchQry = basicPersonSearchQry
+                    .Where( p => isFullSearchAllowed || p.Id == 0 )
+                    .Select( p => new
+                    {
+                        Person = p,
+                        Priority = false
+                    } );
+
+                // This is intentionally commented out since we don't support
+                // this just yet. But it is here to see the pattern of how to
+                // provide priority search results based on values in the token.
+                //if ( DecryptedToken.GroupId.HasValue )
+                //{
+                //    var groupPersonIdQry = new GroupMemberService( rockContext ).Queryable()
+                //        .Where( gm => gm.GroupId == DecryptedToken.GroupId.Value )
+                //        .Select( gm => gm.PersonId );
+
+                //    var prioritySearchQry = basicPersonSearchQry
+                //        .Where( p => groupPersonIdQry.Contains( p.Id ) )
+                //        .Select( p => new
+                //        {
+                //            Person = p,
+                //            Priority = true
+                //        } );
+
+                //    searchQry = searchQry.Union( prioritySearchQry );
+                //}
+
+                // We want the priority people first and then after that sort by
+                // view count in descending order.
+                //
+                // Then take 50 total items, put it in C# memory and then get the
+                // distinct ones and finally limit to our final 25 people. This
+                // is done because if we do a Distinct() in SQL it will lose the
+                // sorting, but we can't do the sorting after a SQL .Distinct().
+                var people = searchQry
+                    .OrderByDescending( p => p.Priority )
+                    .ThenByDescending( p => p.Person.ViewedCount )
+                    .ThenBy( p => p.Person.Id )
+                    .Select( p => p.Person )
+                    .Take( 50 )
+                    .ToList()
+                    .DistinctBy( p => p.Id )
+                    .Take( 25 )
+                    .ToList();
+
+                var hasMultipleCampuses = CampusCache.All().Count( c => c.IsActive == true ) > 1;
+
+                // Convert the list of people into a collection of mention items.
+                var items = people
+                    .Select( p => new NoteMentionItemBag
+                    {
+                        CampusName = p.PrimaryCampusId.HasValue && hasMultipleCampuses
+                            ? CampusCache.Get( p.PrimaryCampusId.Value )?.CondensedName
+                            : string.Empty,
+                        DisplayName = p.FullName,
+                        Email = p.Email,
+                        Identifier = IdHasher.Instance.GetHash( p.PrimaryAliasId ?? 0 ),
+                        ImageUrl = p.PhotoUrl
+                    } )
+                    .ToList();
+
+                return Ok( new NoteEditorMentionSearchResultsBag
+                {
+                    Items = items
+                } );
+            }
         }
 
         #endregion
@@ -4527,6 +4831,11 @@ namespace Rock.Rest.v2
             var page = PageCache.Get( options.PageGuid );
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
+            if ( page == null )
+            {
+                return NotFound();
+            }
+
             var isAuthorized = page.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( page, Authorization.VIEW ) == true;
 
             if ( !isAuthorized )
@@ -4662,7 +4971,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "PhoneNumberBoxGetConfiguration" )]
         [Rock.SystemGuid.RestActionGuid( "2f15c4a2-92c7-4bd3-bf48-7eb11a644142" )]
-        public IHttpActionResult PhoneNumberBoxGetConfiguration()
+        public IHttpActionResult PhoneNumberBoxGetConfiguration( [FromBody] PhoneNumberBoxGetConfigurationOptionsBag options )
         {
             var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
@@ -4695,6 +5004,16 @@ namespace Rock.Rest.v2
                 }
             }
 
+            if ( options?.ShowSmsOptIn ?? false )
+            {
+                return Ok( new PhoneNumberBoxGetConfigurationResultsBag
+                {
+                    Rules = countryCodeRules,
+                    DefaultCountryCode = defaultCountryCode,
+                    SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL )
+                } );
+            }
+
             return Ok( new PhoneNumberBoxGetConfigurationResultsBag
             {
                 Rules = countryCodeRules,
@@ -4723,7 +5042,7 @@ namespace Rock.Rest.v2
             return Ok( new RacePickerGetRacesResultsBag
             {
                 Races = races,
-                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" )
+                Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL )
             } );
         }
 
@@ -5126,6 +5445,12 @@ namespace Rock.Rest.v2
                     LazyLoad = true,
                     SecurityGrant = grant
                 };
+
+                if ( options.includePublicItemsOnly )
+                {
+                    queryOptions.ItemFilterPropertyName = "IsPublic";
+                    queryOptions.ItemFilterPropertyValue = true.ToTrueFalse();
+                }
 
                 var items = clientService.GetCategorizedTreeItems( queryOptions );
 
@@ -5560,13 +5885,18 @@ namespace Rock.Rest.v2
                     continue;
                 }
 
-                var componentName = component.Value.Key;
+                var componentName = Rock.Reflection.GetDisplayName( entityType.GetEntityType() );
 
-                // If the component name already has a space then trust
-                // that they are using the exact name formatting they want.
-                if ( !componentName.Contains( ' ' ) )
+                // If it has a DisplayName use it as is, otherwise use the original logic
+                if ( string.IsNullOrWhiteSpace( componentName ) )
                 {
-                    componentName = componentName.SplitCase();
+                    componentName = component.Value.Key;
+                    // If the component name already has a space then trust
+                    // that they are using the exact name formatting they want.
+                    if ( !componentName.Contains( ' ' ) )
+                    {
+                        componentName = componentName.SplitCase();
+                    }
                 }
 
                 items.Add( new ListItemBag
@@ -5575,7 +5905,6 @@ namespace Rock.Rest.v2
                     Value = entityType.Guid.ToString().ToUpper()
                 } );
             }
-
 
             return items;
         }
@@ -5589,7 +5918,6 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-
                 Type entityType = model.GetType();
                 if ( entityType.IsDynamicProxyType() )
                 {

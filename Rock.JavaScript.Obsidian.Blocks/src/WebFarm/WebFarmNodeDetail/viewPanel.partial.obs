@@ -1,0 +1,164 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-5">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-7">
+                <span class="control-label">CPU Utilization</span>
+                <div style="height:250px;">
+                    <Chart type="line" :data="chartData" :options="options" />
+                </div>
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<style>
+.card .indicator {
+    height: 4px;
+}
+
+.server-meta {
+    font-size: 20px;
+}
+
+.bg-disabled {
+    background: #F5F5F5;
+    color: #AEAEAE;
+}
+
+.bg-disabled .indicator {
+    background: #A3A3A3;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeBag";
+    import { WebFarmNodeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeDetailOptionsBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<WebFarmNodeBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<WebFarmNodeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+    const chartData = ref<ChartData>(JSON.parse(props.modelValue?.chartData ?? "{}"));
+    const options = ref<ChartOptions>({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                intersect: false,
+                callbacks: {
+                    label: function (context) {
+                        var label = context.dataset.data[context.dataIndex] || "";
+                        if (label) {
+                            label = "CPU: " + label + "%";
+                        }
+
+                        return `${label}`;
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                display: false,
+                min: 0,
+                max: 100,
+            },
+            x: {
+                display: false
+            }
+        },
+        hover: {
+            mode: "nearest",
+            intersect: false
+        },
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.lastSeenDateTime) {
+            const date = RockDateTime.parseISO(props.modelValue.lastSeenDateTime);
+            if (date) {
+                valueBuilder.addTextValue("Last Seen", date.toLocaleString({
+                    dateStyle: "short",
+                    timeStyle: "short"
+                } as Intl.DateTimeFormatOptions));
+            }
+        }
+
+        if (props.modelValue.isLeader) {
+            valueBuilder.addTextValue("Is Leader", "Yes");
+        }
+        else {
+            valueBuilder.addTextValue("Is Leader", "No");
+        }
+
+        if (props.modelValue.isCurrentJobRunner) {
+            valueBuilder.addTextValue("Job Runner", "Yes");
+        }
+        else {
+            valueBuilder.addTextValue("Job Runner", "No");
+        }
+
+        if (props.modelValue.currentLeadershipPollingIntervalSeconds) {
+            valueBuilder.addTextValue("Polling Interval", `${props.modelValue.currentLeadershipPollingIntervalSeconds}s`);
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+</script>

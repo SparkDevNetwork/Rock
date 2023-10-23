@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({

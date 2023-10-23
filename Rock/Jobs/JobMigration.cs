@@ -29,9 +29,13 @@ namespace Rock.Jobs
         {
             _commandTimeout = commandTimeout;
         }
-        public JobMigration( RockContext rockContext, int commandTimeout )
+
+        /// <summary>
+        /// Create a Job Migration Class out of a RockContext
+        /// </summary>
+        /// <param name="rockContext">The RockContext to be used to make the SQL commands. Please ensure that the rockContext has the commandTimeout set.</param>
+        public JobMigration( RockContext rockContext)
         {
-            _commandTimeout = commandTimeout;
             _rockContext = rockContext;
         }
 
@@ -61,7 +65,7 @@ namespace Rock.Jobs
 
         public object SqlScalar( string sql )
         {
-            return DbService.ExecuteScaler( sql );
+            return DbService.ExecuteScalar( sql );
         }
     }
 }

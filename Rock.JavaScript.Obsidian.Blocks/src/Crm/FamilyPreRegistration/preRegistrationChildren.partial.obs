@@ -30,7 +30,7 @@
     import { ChildRequestBag } from "./types.partial";
     import { convertPersonToChildRequest } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
 

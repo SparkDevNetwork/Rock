@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Field.Types
@@ -29,10 +30,36 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_TYPES )]
     public class ConnectionTypesFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {
+        private const string VALUES_PUBLIC_KEY = "values";
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            using ( var rockContext = new RockContext() )
+            {
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = new ConnectionTypeService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .OrderBy( o => o.Name )
+                    .Select( o => new ListItemBag
+                    {
+                        Value = o.Guid.ToString(),
+                        Text = o.Name
+                    } )
+                    .ToCamelCaseJson( false, true );
+            }
+            return publicConfigurationValues;
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>

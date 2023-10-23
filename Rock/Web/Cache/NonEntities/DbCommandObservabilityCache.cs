@@ -42,6 +42,11 @@ namespace Rock.Web.Cache.NonEntities
         /// </summary>
         public string Prefix { get; set; }
 
+        /// <summary>
+        /// The type of SQL command (select, update, insert, delete, exec)
+        /// </summary>
+        public string CommandType { get; set; }
+
         #endregion
 
         #region Constructor
@@ -172,6 +177,8 @@ namespace Rock.Web.Cache.NonEntities
                             break;
                         }
                 }
+
+                item.CommandType = sqlFirstWord;
             }
             catch ( Exception ) { }
 
@@ -204,7 +211,10 @@ namespace Rock.Web.Cache.NonEntities
             {
                 tableName = commandText.Substring( indexOfFrom ).Split( new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries )[1].Trim();
 
-                if ( tableName.StartsWith( "(" ) )
+                // Check for
+                // * SELECTS with sub queries (starts with a '(' )
+                // * DELETES with alias (the alias for this in EF is a)
+                if ( tableName.StartsWith( "(" ) || tableName == "a" )
                 {
                     tableName = ParseSelectForTable( commandText, ( iterationCount + 1 ) );
                 }

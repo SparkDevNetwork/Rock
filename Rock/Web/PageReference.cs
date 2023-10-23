@@ -22,7 +22,11 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Routing;
 using System.Web.Security.AntiXss;
+
+using Rock.Blocks;
+using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -89,6 +93,43 @@ namespace Rock.Web
                 }
             }
         }
+
+        /// <summary>
+        /// If this is reference to a PageRoute, this will return the Route, otherwise it will return the normal URL of the page
+        /// </summary>
+        /// <value>
+        /// The route.
+        /// </value>
+        public string Route
+        {
+            get
+            {
+                if ( PageId <= 0 )
+                {
+                    return null;
+                }
+
+                var pageCache = PageCache.Get( PageId );
+                if ( pageCache == null )
+                {
+                    return null;
+                }
+
+                var pageRoute = pageCache.PageRoutes.FirstOrDefault( a => a.Id == RouteId );
+                return pageRoute != null ? pageRoute.Route : BuildUrl();
+            }
+        }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// This is a cached lookup of all entity parameter identifier names
+        /// and then a set of alternate names. For example, "PersonId" is a
+        /// known identifier name with an alternate of "PersonGuid".
+        /// </summary>
+        private static readonly Lazy<Dictionary<string, (int EntityTypeId, List<string> Names)>> _allEntityParameterNames = new Lazy<Dictionary<string, (int EntityTypeId, List<string> Names)>>( BuildEntityParameterNames );
 
         #endregion
 
@@ -274,6 +315,50 @@ namespace Rock.Web
         #region Public Methods
 
         /// <summary>
+        /// Gets the value that matches the given page parameter name. This will
+        /// first try to search the route parameters and then try the query
+        /// parameters.
+        /// </summary>
+        /// <param name="name">The name of the parameter to be retrieved.</param>
+        /// <returns>The value of the parameter or <c>null</c> if it was found.</returns>
+        public string GetPageParameter( string name )
+        {
+            if ( Parameters.TryGetValue( name, out var value ) )
+            {
+                return value;
+            }
+
+            if ( QueryString.AllKeys.Contains( name ) )
+            {
+                return QueryString[name];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets all the page parameters related to this page reference. This
+        /// includes both route parameters and query string parameters.
+        /// </summary>
+        /// <returns>A dictionary of parameter data whose case are case-insensitive.</returns>
+        public IDictionary<string, string> GetPageParameters()
+        {
+            var parameters = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+
+            foreach ( var p in Parameters )
+            {
+                parameters.AddOrIgnore( p.Key, p.Value );
+            }
+
+            foreach ( var k in QueryString.AllKeys )
+            {
+                parameters.AddOrIgnore( k, QueryString[k] );
+            }
+
+            return parameters;
+        }
+
+        /// <summary>
         /// Builds the URL.
         /// </summary>
         /// <returns></returns>
@@ -358,6 +443,66 @@ namespace Rock.Web
         }
 
         /// <summary>
+        /// Builds the URL for use by mobile applications.
+        /// </summary>
+        /// <returns>A string that represents the mobile formatted link.</returns>
+        internal string BuildMobileUrl()
+        {
+            return BuildMobileUrl( false );
+        }
+
+        /// <summary>
+        /// Builds the URL for use by mobile applications.
+        /// </summary>
+        /// <param name="removeMagicToken">if set to <c>true</c> then the <c>rckipid</c> token is removed if found.</param>
+        /// <returns>A string that represents the mobile formatted link.</returns>
+        internal string BuildMobileUrl( bool removeMagicToken )
+        {
+            var parms = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+
+            // Add any route parameters
+            if ( Parameters != null )
+            {
+                foreach ( var route in Parameters )
+                {
+                    if ( ( !removeMagicToken || route.Key.ToLower() != "rckipid" ) && !parms.ContainsKey( route.Key ) )
+                    {
+                        parms.Add( route.Key, route.Value );
+                    }
+                }
+            }
+
+            // merge parms from query string to the parms dictionary to get a single list of parms
+            // skipping those parms that are already in the dictionary
+            if ( QueryString != null )
+            {
+                foreach ( string key in QueryString.AllKeys.Where( a => a.IsNotNullOrWhiteSpace() ) )
+                {
+                    if ( !removeMagicToken || key.ToLower() != "rckipid" )
+                    {
+                        // check that the dictionary doesn't already have this key
+                        if ( key != null && !parms.ContainsKey( key ) && QueryString[key] != null )
+                        {
+                            parms.Add( key, QueryString[key].ToString() );
+                        }
+                    }
+                }
+            }
+
+            var url = PageCache.Get( PageId )?.Guid.ToString() ?? string.Empty;
+            var delimitor = "?";
+
+            // add parms to the url
+            foreach ( KeyValuePair<string, string> parm in parms )
+            {
+                url += $"{delimitor}{parm.Key.UrlEncode()}={parm.Value.UrlEncode()}";
+                delimitor = "&";
+            }
+
+            return url;
+        }
+
+        /// <summary>
         /// Builds and HTML encodes the URL.
         /// </summary>
         /// <returns></returns>
@@ -374,55 +519,6 @@ namespace Rock.Web
         public string BuildUrlEncoded( bool removeMagicToken )
         {
             return AntiXssEncoder.HtmlEncode( BuildUrl( removeMagicToken ), false );
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        /// <summary>
-        /// Gets the route id from page and parms.
-        /// </summary>
-        /// <returns></returns>
-        private int? GetRouteIdFromPageAndParms()
-        {
-            var pageCache = PageCache.Get( PageId );
-            if ( pageCache != null && pageCache.PageRoutes.Any() )
-            {
-                var r = new Regex( @"(?<={)[A-Za-z0-9\-]+(?=})" );
-
-                foreach ( var item in pageCache.PageRoutes )
-                {
-                    // If route contains no parameters, and no parameters were provided, return this route
-                    var matches = r.Matches( item.Route );
-                    if ( matches.Count == 0 && ( Parameters == null || Parameters.Count == 0 ) )
-                    {
-                        return item.Id;
-                    }
-
-                    // If route contains the same number of parameters as provided, check to see if they all match names
-                    if ( matches.Count > 0 && Parameters != null && Parameters.Count == matches.Count )
-                    {
-                        bool matchesAllParms = true;
-
-                        foreach ( Match match in matches )
-                        {
-                            if ( !Parameters.ContainsKey( match.Value ) )
-                            {
-                                matchesAllParms = false;
-                                break;
-                            }
-                        }
-
-                        if ( matchesAllParms )
-                        {
-                            return item.Id;
-                        }
-                    }
-                }
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -498,16 +594,6 @@ namespace Rock.Web
         }
 
         /// <summary>
-        /// Builds the storage key.
-        /// </summary>
-        /// <param name="suffix">The suffix - if any - that should be added to the base key.</param>
-        /// <returns>The base key + any suffix that should be added.</returns>
-        private static string BuildStorageKey( string suffix )
-        {
-            return $"RockPageReferenceHistory{( string.IsNullOrWhiteSpace( suffix ) ? string.Empty : suffix )}";
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -530,30 +616,356 @@ namespace Rock.Web
             return pageRoute != null ? pageRoute.Route : pageCache.InternalName;
         }
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
-        /// If this is reference to a PageRoute, this will return the Route, otherwise it will return the normal URL of the page
+        /// Gets the route id from page and parms.
         /// </summary>
-        /// <value>
-        /// The route.
-        /// </value>
-        public string Route
+        /// <returns></returns>
+        private int? GetRouteIdFromPageAndParms()
         {
-            get
+            var pageCache = PageCache.Get( PageId );
+            if ( pageCache != null && pageCache.PageRoutes.Any() )
             {
-                if ( PageId <= 0 )
-                {
-                    return null;
-                }
+                var r = new Regex( @"(?<={)[A-Za-z0-9\-]+(?=})" );
 
-                var pageCache = PageCache.Get( PageId );
-                if ( pageCache == null )
+                foreach ( var item in pageCache.PageRoutes )
                 {
-                    return null;
-                }
+                    // If route contains no parameters, and no parameters were provided, return this route
+                    var matches = r.Matches( item.Route );
+                    if ( matches.Count == 0 && ( Parameters == null || Parameters.Count == 0 ) )
+                    {
+                        return item.Id;
+                    }
 
-                var pageRoute = pageCache.PageRoutes.FirstOrDefault( a => a.Id == RouteId );
-                return pageRoute != null ? pageRoute.Route : BuildUrl();
+                    // If route contains the same number of parameters as provided, check to see if they all match names
+                    if ( matches.Count > 0 && Parameters != null && Parameters.Count == matches.Count )
+                    {
+                        bool matchesAllParms = true;
+
+                        foreach ( Match match in matches )
+                        {
+                            if ( !Parameters.ContainsKey( match.Value ) )
+                            {
+                                matchesAllParms = false;
+                                break;
+                            }
+                        }
+
+                        if ( matchesAllParms )
+                        {
+                            return item.Id;
+                        }
+                    }
+                }
             }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Builds the storage key.
+        /// </summary>
+        /// <param name="suffix">The suffix - if any - that should be added to the base key.</param>
+        /// <returns>The base key + any suffix that should be added.</returns>
+        private static string BuildStorageKey( string suffix )
+        {
+            return $"RockPageReferenceHistory{( string.IsNullOrWhiteSpace( suffix ) ? string.Empty : suffix )}";
+        }
+
+        /// <summary>
+        /// Translates a route parameter value representing an entity identifier
+        /// into one that can be used by the targer parameter name.
+        /// </summary>
+        /// <param name="value">The value of the existing route parameter.</param>
+        /// <param name="parameterName">The name of the destination route parameter.</param>
+        /// <param name="entityTypeId">The identifier of the entity type that <paramref name="value"/> represents.</param>
+        /// <param name="disablePredictableIdentifiers"><c>true</c> if the destination site does not allow predictable identifiers and "Id" values should be hashed.</param>
+        /// <returns>The expected value for <paramref name="parameterName"/> or the original <paramref name="value"/>.</returns>
+        private static string GetRouteAlternateEntityValue( string value, string parameterName, int entityTypeId, bool disablePredictableIdentifiers )
+        {
+            if ( parameterName.EndsWith( "Guid", StringComparison.OrdinalIgnoreCase ) )
+            {
+                var guid = Reflection.GetEntityGuidForEntityType( entityTypeId, value );
+
+                return guid.HasValue ? guid.Value.ToString() : value;
+            }
+            else if ( parameterName.EndsWith( "Id", StringComparison.OrdinalIgnoreCase ) )
+            {
+                var id = Reflection.GetEntityIdForEntityType( entityTypeId, value );
+
+                if ( !id.HasValue )
+                {
+                    return value;
+                }
+
+                return disablePredictableIdentifiers ? IdHasher.Instance.GetHash( id.Value ) : id.Value.ToString();
+            }
+            else
+            {
+                return value;
+            }
+        }
+
+        /// <summary>
+        /// Builds the lookup table for entity parameter names so that we
+        /// know which route parameters can be converted between Id and Guid.
+        /// </summary>
+        /// <returns>A dictionary with all the known entity parameter names.</returns>
+        private static Dictionary<string, (int EntityTypeId, List<string> Names)> BuildEntityParameterNames()
+        {
+            var entityParameterNames = new Dictionary<string, (int EntityTypeId, List<string> Names)>( StringComparer.OrdinalIgnoreCase );
+            var entityNames = EntityTypeCache.All()
+                .Where( e => e.IsEntity )
+                .Select( e => new
+                {
+                    e.Id,
+                    e.GetEntityType()?.Name
+                } )
+                .Where( t => t.Name != null );
+
+            foreach ( var entityType in entityNames )
+            {
+                entityParameterNames.Add( $"{entityType.Name}Id", (entityType.Id, new List<string> { $"{entityType.Name}Guid" }) );
+                entityParameterNames.Add( $"{entityType.Name}Guid", (entityType.Id, new List<string> { $"{entityType.Name}Id" }) );
+            }
+
+            return entityParameterNames;
+        }
+
+        /// <summary>
+        /// <para>
+        /// Checks if the parameters for the two routes match. This is not an
+        /// exact match. Meaning, if <paramref name="sourceRoute"/> has three parameters
+        /// and <paramref name="destinationRoute"/> only has two but those two
+        /// parameters can be found in <paramref name="sourceRoute"/> then it is
+        /// considered a satisfying matching.
+        /// </para>
+        /// <para>
+        /// A parameter will be considered satisfied if it is either a
+        /// case-insensitive exact match or if it is a compatible known entity
+        /// identifier. Meaning, <c>PersonId</c> will not satisfy <c>GroupGuid</c>
+        /// because they are not compatible - even though they are known entity
+        /// identifiers. However, <c>PersonId</c> will satisfy <c>PersonGuid</c>.
+        /// </para>
+        /// </summary>
+        /// <param name="sourceRoute">The source route that is providing the parameters.</param>
+        /// <param name="destinationRoute">The destination route that requires the parameters.</param>
+        /// <returns><c>true</c> if the route parameters in <paramref name="sourceRoute"/> will satisfy the parameters in <paramref name="destinationRoute"/>; otherwise <c>false</c>.</returns>
+        private static bool DoRouteParametersSatisfy( PageCache.PageRouteInfo sourceRoute, PageCache.PageRouteInfo destinationRoute )
+        {
+            foreach ( var parameter in destinationRoute.Parameters )
+            {
+                // Check if this is an exact name match.
+                if ( sourceRoute.Parameters.Contains( parameter, StringComparer.OrdinalIgnoreCase ) )
+                {
+                    continue;
+                }
+
+                // Check if this parameter might have altername names.
+                if ( _allEntityParameterNames.Value.TryGetValue( parameter, out var alternate ) )
+                {
+                    // See if any of the source route parameters match the alternate names.
+                    if ( alternate.Names.Any( n => sourceRoute.Parameters.Contains( n, StringComparer.OrdinalIgnoreCase ) ) )
+                    {
+                        continue;
+                    }
+                }
+
+                // Parameter name mismatch, so it isn't a match.
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// This looks for any destination routes that match any of the source
+        /// routes.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// A route matches if the route text (minus parameter names) is equal
+        /// and the parameter names match. Parameter names match if they either
+        /// are an exact (case-insensitive) match or if they match via an alternate
+        /// entity identifier. Meaning, the destination "PersonId" would match
+        /// the source parameter "PersonGuid" because it's a known entity identifier.
+        /// </para>
+        /// <para>
+        /// The route <c>person/{PersonId}</c> will be reduced to <c>person/{}</c>
+        /// for comparison purposes. The route <c>person/{PersonGuid}</c> will be
+        /// reduced to the same so they will be considered matching. Then the
+        /// parameter names will be compared. <c>PersonId</c> does not equal
+        /// <c>PersonGuid</c>, but both are known to be compatible entity identifier
+        /// parameter names so they are considered a match.
+        /// </para>
+        /// </remarks>
+        /// <param name="sourceRoutes">The collection of source routes.</param>
+        /// <param name="destinationRoutes">The potential destination routes that must match one of the <paramref name="sourceRoutes"/>.</param>
+        /// <returns>An enumeration of matching destination routes.</returns>
+        private static IEnumerable<PageCache.PageRouteInfo> GetCrossMatchingRoutes( List<PageCache.PageRouteInfo> sourceRoutes, List<PageCache.PageRouteInfo> destinationRoutes )
+        {
+            // Loop through all destination routes looking for any that match.
+            foreach ( var destinationRoute in destinationRoutes )
+            {
+                // Loop through all source routes looking for any with a route
+                // that matches the possible destination route.
+                foreach ( var sourceRoute in sourceRoutes )
+                {
+                    // Basic routes without parameters must match.
+                    if ( !sourceRoute.RouteWithEmptyParameters.Equals( destinationRoute.RouteWithEmptyParameters, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        continue;
+                    }
+
+                    // Parameter names must match or be one of the auto-translatable names.
+                    if ( !DoRouteParametersSatisfy( sourceRoute, destinationRoute ) )
+                    {
+                        continue;
+                    }
+
+                    yield return destinationRoute;
+
+                    // Don't need to keep checking additional source routes.
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the page references and their breadcrumbs that make up the
+        /// current page and it's tree of parent pages.
+        /// </summary>
+        /// <param name="rockPage">The page handling this request.</param>
+        /// <param name="initialPage">The initial page to start building the references from.</param>
+        /// <param name="initialPageReference">The page reference that contains the parameter data for <paramref name="initialPage"/>.</param>
+        /// <param name="keySuffix">The cache key suffix when accessing cache.</param>
+        /// <returns>An array of page references with the current page being the last item in the list.</returns>
+        internal static List<PageReference> GetBreadCrumbPageReferences( RockPage rockPage, PageCache initialPage, PageReference initialPageReference, string keySuffix )
+        {
+            if ( initialPage == null )
+            {
+                return new List<PageReference>();
+            }
+
+            // Get previous page references in nav history
+            var key = BuildStorageKey( keySuffix );
+            var pageReferenceHistory = ( Dictionary<int, List<BreadCrumb>> ) HttpContext.Current.Session[key];
+            var newPageReferenceHistory = new Dictionary<int, List<BreadCrumb>>();
+
+            // Current page hierarchy references
+            var pageReferences = new List<PageReference>();
+
+            // Initial starting parameters.
+            var trackedPageParameters = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+
+            if ( initialPageReference != null )
+            {
+                foreach ( var p in initialPageReference.Parameters )
+                {
+                    trackedPageParameters.AddOrIgnore( p.Key, p.Value );
+                }
+
+                // As Querystring is a NameValueCollection, it may contain entries with key as null.
+                // However, adding null as a key to a Dictionary throws an exception and so we would like to filter those entries out of Querystring.
+                foreach ( var qs in initialPageReference.QueryString.AllKeys.Where( k => k != null ) )
+                {
+                    trackedPageParameters.AddOrIgnore( qs, initialPageReference.QueryString[qs] );
+                }
+            }
+
+            var currentParentPages = initialPage.GetPageHierarchy();
+
+            foreach ( PageCache page in currentParentPages )
+            {
+                var pageBlocks = page.Blocks.Where( b => b.BlockLocation == BlockLocation.Page );
+                var pageBreadCrumbs = new List<BreadCrumb>();
+
+                // Check the blocks that support the new breadcrumb behavior.
+                foreach ( var block in pageBlocks )
+                {
+                    var compiledType = block.BlockType.GetCompiledType();
+
+                    if ( compiledType == null || !typeof( IBreadCrumbBlock ).IsAssignableFrom( compiledType ) )
+                    {
+                        continue;
+                    }
+
+                    var instance = ( IBreadCrumbBlock ) Activator.CreateInstance( compiledType );
+                    var instancePageReference = new PageReference( page.Id, 0, trackedPageParameters );
+                    var crumbResult = instance.GetBreadCrumbs( instancePageReference );
+
+                    if ( crumbResult?.BreadCrumbs != null && crumbResult.BreadCrumbs.Count > 0 )
+                    {
+                        foreach ( var crumb in crumbResult.BreadCrumbs )
+                        {
+                            // In the future, when we can change PageReference.BreadCrumbs
+                            // to be a list of IBreadCrumb then this can be simplified.
+                            pageBreadCrumbs.Add( new BreadCrumb( crumb.Name, crumb.Url, crumb.Active ) );
+                        }
+                    }
+
+                    if ( crumbResult?.AdditionalParameters != null && crumbResult.AdditionalParameters.Count > 0 )
+                    {
+                        foreach ( var ap in crumbResult.AdditionalParameters )
+                        {
+                            trackedPageParameters.AddOrReplace( ap.Key, ap.Value );
+                        }
+                    }
+                }
+
+                if ( initialPage.Id != page.Id && pageReferenceHistory != null && pageReferenceHistory.TryGetValue( page.Id, out var cachedBreadCrumbs ) )
+                {
+                    pageBreadCrumbs.AddRange( cachedBreadCrumbs );
+                    newPageReferenceHistory.Add( page.Id, cachedBreadCrumbs );
+                }
+                else
+                {
+                    var blockPageReference = page.Id == initialPage.Id ? new PageReference( initialPageReference ) : new PageReference( page.Id );
+
+                    foreach ( var block in pageBlocks.Where( b => b.BlockType.Path.IsNotNullOrWhiteSpace() ) )
+                    {
+                        try
+                        {
+                            System.Web.UI.Control control = rockPage.TemplateControl.LoadControl( block.BlockType.Path );
+                            if ( control is RockBlock rockBlock )
+                            {
+                                rockBlock.SetBlock( page, block );
+                                rockBlock.GetBreadCrumbs( blockPageReference ).ForEach( c => blockPageReference.BreadCrumbs.Add( c ) );
+                            }
+
+                            control = null;
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( ex, HttpContext.Current, initialPage.Id, initialPage.Layout.SiteId );
+                        }
+                    }
+
+                    pageBreadCrumbs.AddRange( blockPageReference.BreadCrumbs );
+                    newPageReferenceHistory.Add( page.Id, blockPageReference.BreadCrumbs );
+                }
+
+                var parentPageReference = new PageReference( page.Id );
+
+                var bcName = page.BreadCrumbText;
+                if ( bcName != string.Empty )
+                {
+                    parentPageReference.BreadCrumbs.Add( new BreadCrumb( bcName, parentPageReference.BuildUrl() ) );
+                }
+
+                parentPageReference.BreadCrumbs.AddRange( pageBreadCrumbs );
+                parentPageReference.BreadCrumbs.ForEach( c => c.Active = false );
+                pageReferences.Add( parentPageReference );
+            }
+
+            HttpContext.Current.Session[key] = newPageReferenceHistory;
+
+            pageReferences.Reverse();
+
+            return pageReferences;
         }
 
         #endregion
@@ -567,9 +979,11 @@ namespace Rock.Web
         /// <param name="currentPage">The current page.</param>
         /// <param name="currentPageReference">The current page reference.</param>
         /// <returns></returns>
+        [RockObsolete( "1.16.1" )]
+        [Obsolete( "Parent page references is handled internally." )]
         public static List<PageReference> GetParentPageReferences( RockPage rockPage, PageCache currentPage, PageReference currentPageReference )
         {
-            return GetParentPageReferences( rockPage, currentPage, currentPageReference, null );
+            return new List<PageReference>();
         }
 
         /// <summary>
@@ -580,86 +994,21 @@ namespace Rock.Web
         /// <param name="currentPageReference">The current page reference.</param>
         /// <param name="keySuffix">The suffix - if any - that should be added to the base key that will be used to get the parent page references.</param>
         /// <returns></returns>
+        [RockObsolete( "1.16.1" )]
+        [Obsolete( "Parent page references is handled internally." )]
         public static List<PageReference> GetParentPageReferences( RockPage rockPage, PageCache currentPage, PageReference currentPageReference, string keySuffix )
         {
-            var key = BuildStorageKey( keySuffix );
-
-            // Get previous page references in nav history
-            var pageReferenceHistory = HttpContext.Current.Session[key] as List<PageReference>;
-
-            // Current page hierarchy references
-            var pageReferences = new List<PageReference>();
-
-            if ( currentPage != null )
-            {
-                var parentPage = currentPage.ParentPage;
-                if ( parentPage != null )
-                {
-                    var currentParentPages = parentPage.GetPageHierarchy();
-                    if ( currentParentPages != null && currentParentPages.Count > 0 )
-                    {
-                        currentParentPages.Reverse();
-                        foreach ( PageCache page in currentParentPages )
-                        {
-                            PageReference parentPageReference = null;
-                            if ( pageReferenceHistory != null )
-                            {
-                                parentPageReference = pageReferenceHistory.Where( p => p.PageId == page.Id ).FirstOrDefault();
-                            }
-
-                            if ( parentPageReference == null )
-                            {
-                                parentPageReference = new PageReference();
-                                parentPageReference.PageId = page.Id;
-
-                                parentPageReference.BreadCrumbs = new List<BreadCrumb>();
-                                parentPageReference.QueryString = new NameValueCollection();
-                                parentPageReference.Parameters = new Dictionary<string, string>();
-
-                                string bcName = page.BreadCrumbText;
-                                if ( bcName != string.Empty )
-                                {
-                                    parentPageReference.BreadCrumbs.Add( new BreadCrumb( bcName, parentPageReference.BuildUrl() ) );
-                                }
-
-                                foreach ( var block in page.Blocks.Where( b => b.BlockLocation == Model.BlockLocation.Page && b.BlockType.Path.IsNotNullOrWhiteSpace() ) )
-                                {
-                                    try
-                                    {
-                                        System.Web.UI.Control control = rockPage.TemplateControl.LoadControl( block.BlockType.Path );
-                                        if ( control is RockBlock )
-                                        {
-                                            RockBlock rockBlock = control as RockBlock;
-                                            rockBlock.SetBlock( page, block );
-                                            rockBlock.GetBreadCrumbs( parentPageReference ).ForEach( c => parentPageReference.BreadCrumbs.Add( c ) );
-                                        }
-
-                                        control = null;
-                                    }
-                                    catch ( Exception ex )
-                                    {
-                                        ExceptionLogService.LogException( ex, HttpContext.Current, currentPage.Id, currentPage.Layout.SiteId );
-                                    }
-                                }
-                            }
-
-                            parentPageReference.BreadCrumbs.ForEach( c => c.Active = false );
-                            pageReferences.Add( parentPageReference );
-                        }
-                    }
-                }
-            }
-
-            return pageReferences;
+            return new List<PageReference>();
         }
 
         /// <summary>
         /// Saves the history.
         /// </summary>
         /// <param name="pageReferences">The page references.</param>
+        [RockObsolete( "1.16.1" )]
+        [Obsolete( "Caching of page references for use as breadcrumbs is handled internally." )]
         public static void SavePageReferences( List<PageReference> pageReferences )
         {
-            SavePageReferences( pageReferences, null );
         }
 
         /// <summary>
@@ -667,11 +1016,10 @@ namespace Rock.Web
         /// </summary>
         /// <param name="pageReferences">The page references.</param>
         /// <param name="keySuffix">The suffix - if any - that should be added to the base key that will be used to save the parent page references.</param>
+        [RockObsolete( "1.16.1" )]
+        [Obsolete( "Caching of page references for use as breadcrumbs is handled internally." )]
         public static void SavePageReferences( List<PageReference> pageReferences, string keySuffix )
         {
-            var key = BuildStorageKey( keySuffix );
-
-            HttpContext.Current.Session[key] = pageReferences;
         }
 
         /// <summary>
@@ -683,45 +1031,16 @@ namespace Rock.Web
         /// <returns></returns>
         public static PageReference GetBestMatchForParameters( int pageId, Dictionary<string, string> parameters )
         {
-            // Get the definition of the specified page if it exists.
-            var outputPage = PageCache.Get( pageId );
-
-            // Find a route associated with the page that contains the maximum number of available parameters.
-            int matchedRouteId = 0;
-            var routeParameters = new List<string>();
-            if ( outputPage != null )
-            {
-                foreach ( var route in outputPage.PageRoutes )
-                {
-                    if ( string.IsNullOrEmpty( route.Route ) )
-                    {
-                        continue;
-                    }
-
-                    var matchedTokens = new List<string>();
-                    foreach ( var parameterName in parameters.Keys )
-                    {
-                        var token = "{" + parameterName + "}";
-                        if ( route.Route.IndexOf( token, StringComparison.OrdinalIgnoreCase ) > 0 )
-                        {
-                            matchedTokens.Add( parameterName );
-                            matchedRouteId = route.Id;
-                            break;
-                        }
-                    }
-                    if ( routeParameters.Count == 0 || matchedTokens.Count > routeParameters.Count )
-                    {
-                        routeParameters = matchedTokens;
-                    }
-                }
-            }
+            // Find a route associated with the page that contains the
+            // maximum number of available parameters.
+            var route = PageCache.Get( pageId )?.GetBestMatchingRoute( parameters );
 
             // Separate the query and route parameters.
             var queryValues = new NameValueCollection();
             var routeValues = new Dictionary<string, string>();
             foreach ( var p in parameters )
             {
-                if ( routeParameters.Contains( p.Key ) )
+                if ( route?.Parameters.Contains( p.Key ) == true )
                 {
                     routeValues.Add( p.Key, p.Value );
                 }
@@ -732,8 +1051,120 @@ namespace Rock.Web
             }
 
             // Create and return a new page reference.
-            var pageReference = new PageReference( pageId, matchedRouteId, routeValues, queryValues );
-            return pageReference;
+            return new PageReference( pageId, route?.Id ?? 0, routeValues, queryValues );
+        }
+
+        /// <summary>
+        /// <para>
+        /// Determines the best alternate page for the given parameters. An
+        /// alternate page is one that has the same route but exists on a different
+        /// site. For example, a mobile application might have a person profile
+        /// page route with the same route name as the internal staff site person
+        /// profile page route. This makes those two pages alternates of each other.
+        /// </para>
+        /// <para>
+        /// If is possible a route to the original page will be returned depending
+        /// on the type of site.
+        /// </para>
+        /// </summary>
+        /// <param name="originalPageId">The original page to use when finding alternate page routes.</param>
+        /// <param name="destinationSiteId">The destination site the alternate page is being requested for. This is used for filtering and prioritizing the results.</param>
+        /// <param name="parameters">The available parameters to use when finding the available and best alternate routes.</param>
+        /// <returns>A <see cref="PageReference"/> instance representing the best route or <c>null</c> if one could not be determined.</returns>
+        internal static PageReference GetBestAlternatePageRouteForParameters( int originalPageId, int destinationSiteId, Dictionary<string, string> parameters )
+        {
+            var sourcePage = PageCache.Get( originalPageId );
+            var destinationSite = SiteCache.Get( destinationSiteId );
+
+            if ( sourcePage == null || destinationSite == null )
+            {
+                return null;
+            }
+
+            // Step 1: Get all routes from the original page that match the parameters.
+            var sourcePageRoutes = sourcePage.GetAllMatchingRoutes( parameters );
+
+            // Step 2: Find all destination pages that match the routes.
+            var pageCacheQry = PageCache.All().AsQueryable();
+
+            if ( destinationSite.SiteType == SiteType.Web )
+            {
+                // Web sites can only link to websites, not apps.
+                pageCacheQry = pageCacheQry.Where( p => p.Layout.Site.SiteType == SiteType.Web );
+            }
+            else if ( destinationSite.SiteType == SiteType.Mobile )
+            {
+                // Mobile apps can only link within the one app or out to web.
+                pageCacheQry = pageCacheQry.Where( p => p.Layout.SiteId == destinationSiteId || p.Layout.Site.SiteType == SiteType.Web );
+            }
+            else
+            {
+                // Anything else must be an exact site match.
+                pageCacheQry = pageCacheQry.Where( p => p.Layout.SiteId == destinationSiteId );
+            }
+
+            // Get all the matching pages and any routes that page has that matches
+            // one of the source routes. Then filter out any results with no
+            // matching routes.
+            var destinationPagesQry = pageCacheQry
+                .Select( p => new
+                {
+                    Page = p,
+                    Routes = GetCrossMatchingRoutes( sourcePageRoutes, p.PageRoutes ).ToList()
+                } )
+                .Where( p => p.Routes.Any() );
+
+            // Step 3: Take the best matching page and route. This looks for a
+            // page on the same site first. Then orders by the number of route
+            // parameters to find the most specific route.
+            var destinationPageRoute = destinationPagesQry
+                .OrderByDescending( p => p.Page.Layout.SiteId == destinationSiteId )
+                .SelectMany( p => p.Routes.Select( r => new
+                {
+                    p.Page,
+                    Route = r
+                } ) )
+                .OrderByDescending( p => p.Page.Layout.SiteId == destinationSiteId )
+                .ThenByDescending( p => p.Route.Parameters.Count )
+                .FirstOrDefault();
+
+            if ( destinationPageRoute == null )
+            {
+                return null;
+            }
+
+            var routeParameters = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+            var queryStringCollection = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
+
+            // Convert the parameters to either route parameters or query parameters.
+            foreach ( var parameter in parameters )
+            {
+                if ( destinationPageRoute.Route.Parameters.Contains( parameter.Key ) == true )
+                {
+                    // Exact name match on a route parameter.
+                    routeParameters.Add( parameter.Key, parameter.Value );
+                }
+                else
+                {
+                    // No exact match, check if we can convert it.
+                    if ( _allEntityParameterNames.Value.TryGetValue( parameter.Key, out var alternate ) )
+                    {
+                        var alternateKey = alternate.Names.FirstOrDefault( a => destinationPageRoute.Route.Parameters.Contains( a ) );
+
+                        if ( alternateKey != null )
+                        {
+                            // We found an alternate, get the real value.
+                            routeParameters.Add( alternateKey, GetRouteAlternateEntityValue( parameter.Value, alternateKey, alternate.EntityTypeId, destinationPageRoute.Page.Layout.Site.DisablePredictableIds ) );
+                            continue;
+                        }
+                    }
+
+                    // If we didn't find a match
+                    queryStringCollection.Add( parameter.Key, parameter.Value );
+                }
+            }
+
+            return new PageReference( destinationPageRoute.Page.Id, destinationPageRoute.Route.Id, routeParameters, queryStringCollection );
         }
 
         #endregion

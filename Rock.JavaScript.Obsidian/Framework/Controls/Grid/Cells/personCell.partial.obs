@@ -44,7 +44,7 @@
             return "";
         }
 
-        if (props.column.props.showLastNameFirst === true || props.column.props.showLastNameFirst === "") {
+        if (props.column.props.showLastNameFirst === true) {
             return `${value.lastName ?? ""}, ${value.nickName ?? ""}`;
         }
 

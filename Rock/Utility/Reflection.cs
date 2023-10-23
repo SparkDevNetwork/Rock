@@ -377,8 +377,12 @@ namespace Rock
             {
                 var cacheType = Type.GetType( $"Rock.Web.Cache.{type.Name}Cache" );
 
-                // Make sure the base type inherits from ModelCache<,>
-                if ( cacheType != null && cacheType.BaseType.IsGenericType && cacheType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) )
+                // Make sure the base type inherits from ModelCache<,> or EntityCache<,>
+                var isValidCacheType = cacheType != null
+                    && cacheType.BaseType.IsGenericType
+                    && ( cacheType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) || cacheType.BaseType.GetGenericTypeDefinition() == typeof( EntityCache<,> ) );
+
+                if ( isValidCacheType )
                 {
                     // Make sure the base type is the expected type, e.g. ModelCache<CampusCache, Campus>
                     if ( cacheType.BaseType.GenericTypeArguments[1] == type )
@@ -517,7 +521,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the entity identifiers for the set of entity keys.
+        /// Gets the entity ids for a entity type from a list of entity guids, idkeys or ids as strings.
         /// </summary>
         /// <param name="entityType">The entity type cache, this represents the model to use when mapping the <paramref name="entityKeys"/> to a identifiers.</param>
         /// <param name="entityKeys">The entity identifier keys to be converted to integer identifiers.</param>

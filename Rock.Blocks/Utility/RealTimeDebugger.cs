@@ -47,8 +47,6 @@ namespace Rock.Blocks.Utility
     [Rock.SystemGuid.BlockTypeGuid( "e5fa4818-2e0c-4cc6-95f2-34dcc5b3d8c8" )]
     public class RealTimeDebugger : RockDetailBlockType
     {
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>

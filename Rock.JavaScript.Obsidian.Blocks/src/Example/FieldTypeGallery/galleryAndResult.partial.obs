@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <PanelWidget>
-        <template #header>{{ title }}</template>
+    <Panel :title="title" hasCollapse>
         <div class="row">
             <div class="col-md-6">
                 <h4>Qualifier Values</h4>
@@ -26,13 +25,13 @@
                 </p>
             </div>
         </div>
-    </PanelWidget>
+    </Panel>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import PanelWidget from "@Obsidian/Controls/panelWidget";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     const props = defineProps({

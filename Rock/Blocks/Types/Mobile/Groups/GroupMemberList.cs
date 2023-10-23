@@ -30,7 +30,6 @@ using Rock.Data;
 using Rock.Mobile;
 using Rock.Mobile.JsonFields;
 using Rock.Model;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -117,13 +116,21 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Key = AttributeKeys.ShowGenderFilter,
         Order = 8 )]
 
-    [BooleanField( "Show Child Groups Filter",
-        Description = "If enabled then the 'Child Groups' filter option will be shown.",
+    [BooleanField( "Show Unknown as Gender Filter Option",
+        Description = "If enabled then 'Unknown' will be shown as a Gender filter option.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        Category = "filter",
+        Key = AttributeKeys.ShowUnknownAsGenderFilterOption,
+        Order = 9 )]
+
+    [BooleanField( "Show Subgroup Filter",
+        Description = "If enabled then the 'Subgroup' filter option will be shown.",
         IsRequired = false,
         DefaultBooleanValue = false,
         Category = "filter",
         Key = AttributeKeys.ShowChildGroupsFilter,
-        Order = 9 )]
+        Order = 10 )]
 
     [BooleanField( "Show Attendance Filter",
         Description = "If enabled then the 'Attendance' filter option will be shown.",
@@ -131,7 +138,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = false,
         Key = AttributeKeys.ShowAttendanceFilter,
         Category = "filter",
-        Order = 10 )]
+        Order = 11 )]
 
     [IntegerField( "Attendance Filter Short Week Range",
         Description = "Displays a filter option that gives a variety of different options for attendance based on x number of weeks.",
@@ -139,7 +146,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultIntegerValue = 3,
         Key = AttributeKeys.AttendanceFilterShortWeekRange,
         Category = "filter",
-        Order = 11 )]
+        Order = 12 )]
 
     [IntegerField( "Attendance Filter Long Week Range",
         Description = "Displays a filter option that gives a variety of different options for attendance based on x number of weeks.",
@@ -147,7 +154,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultIntegerValue = 12,
         Key = AttributeKeys.AttendanceFilterLongWeekRange,
         Category = "filter",
-        Order = 12 )]
+        Order = 13 )]
 
     #endregion
 
@@ -201,6 +208,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// The show gender filter key.
             /// </summary>
             public const string ShowGenderFilter = "ShowGenderFilter";
+
+            /// <summary>
+            /// The show unknown as gender filter option key.
+            /// </summary>
+            public const string ShowUnknownAsGenderFilterOption = "ShowUnknownAsGenderFilterOption";
 
             /// <summary>
             /// The show child groups filter key.
@@ -267,6 +279,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         /// <value><c>true</c> if [show gender filter]; otherwise, <c>false</c>.</value>
         protected bool ShowGenderFilter => GetAttributeValue( AttributeKeys.ShowGenderFilter ).AsBoolean();
+
+        /// <summary>
+        /// Gets a value indicating whether to show 'Unknown' as a gender filter option.
+        /// </summary>
+        /// <value><c>true</c> if [show unknown as gender filter option]; otherwise, <c>false</c>.</value>
+        protected bool ShowUnknownAsGenderFilterOption => GetAttributeValue( AttributeKeys.ShowUnknownAsGenderFilterOption ).AsBoolean();
 
         /// <summary>
         /// Gets a value indicating whether to show the child group filter option.
@@ -344,6 +362,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 ShowChildGroupFilter = ShowChildGroupFilter,
                 AttendanceFilterLongWeekRange = AttendanceFilterLongWeekRange,
                 AttendanceFilterShortWeekRange = AttendanceFilterShortWeekRange,
+                ShowUnknownAsGenderFilterOption = ShowUnknownAsGenderFilterOption,
                 GroupByPerson = GroupByPerson
             };
         }

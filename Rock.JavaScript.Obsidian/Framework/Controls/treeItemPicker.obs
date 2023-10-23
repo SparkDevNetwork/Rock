@@ -1,3 +1,4 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ContentDropDownPicker
                            @primaryButtonClicked="onSelect"
@@ -50,7 +51,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
-    import TreeList from "./treeList";
+    import TreeList from "./treeList.obs";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import ContentDropDownPicker from "./contentDropDownPicker.obs";
 

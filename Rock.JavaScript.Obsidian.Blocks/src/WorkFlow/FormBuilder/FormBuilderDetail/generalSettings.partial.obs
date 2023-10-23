@@ -1,0 +1,118 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SectionContainer title="General Settings"
+                      description="Update the general settings for the form below.">
+        <div class="row">
+            <div class="col-md-6">
+                <div>
+                    <TextBox v-model="name"
+                             label="Form Name"
+                             rules="required" />
+
+                    <TextBox v-model="description"
+                             label="Description"
+                             textMode="multiline" />
+
+                    <DropDownList v-model="template"
+                                  label="Template"
+                                  :items="sources.formTemplateOptions ?? undefined" />
+
+                    <CategoryPicker v-model="category"
+                                    label="Category"
+                                    rules="required"
+                                    :entityTypeGuid="EntityType.WorkflowType" />
+                </div>
+            </div>
+        </div>
+
+        <CheckBox v-if="!isLoginRequiredForced" v-model="isLoginRequired"
+                  label="Is Login Required"
+                  help="Determines if a person needs to be logged in to complete the form." />
+
+        <NotificationBox v-else alertType="info">
+            The template has enforced the login required setting.
+        </NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DateTimePicker v-model="entryStarts"
+                                label="Form Entry Starts" />
+            </div>
+
+            <div class="col-md-6">
+                <DateTimePicker v-model="entryEnds"
+                                label="Form Entry Ends" />
+            </div>
+        </div>
+    </SectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
+    import { FormGeneral } from "../Shared/types.partial";
+    import { FormTemplateListItem } from "./types.partial";
+    import { useFormSources } from "./utils.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FormGeneral>,
+            required: true
+        },
+
+        templateOverrides: {
+            type: Object as PropType<FormTemplateListItem | null>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FormGeneral): void;
+    }>();
+
+    const sources = useFormSources();
+
+    const name = ref(props.modelValue.name ?? "");
+    const description = ref(props.modelValue.description ?? "");
+    const template = ref(props.modelValue.template ?? "");
+    const category = ref(props.modelValue.category ?? null);
+    const entryStarts = ref(props.modelValue.entryStarts ?? "");
+    const entryEnds = ref(props.modelValue.entryEnds ?? "");
+    const isLoginRequired = ref(props.modelValue.isLoginRequired ?? false);
+
+    const isLoginRequiredForced = computed((): boolean => props.templateOverrides?.isLoginRequiredConfigured ?? false);
+
+    // Watch for changes in our modelValue and then update all our internal values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(template, props.modelValue.template ?? "");
+        updateRefValue(category, props.modelValue.category ?? null);
+        updateRefValue(entryStarts, props.modelValue.entryStarts ?? "");
+        updateRefValue(entryEnds, props.modelValue.entryEnds ?? "");
+    });
+
+    // Watch for changes on any of our internal values and then update the modelValue.
+    watch([name, description, template, category, isLoginRequired, entryStarts, entryEnds], () => {
+        const newValue: FormGeneral = {
+            ...props.modelValue,
+            name: name.value,
+            description: description.value,
+            template: template.value,
+            category: category.value,
+            isLoginRequired: isLoginRequired.value,
+            entryStarts: entryStarts.value,
+            entryEnds: entryEnds.value,
+        };
+
+        emit("update:modelValue", newValue);
+    });
+</script>

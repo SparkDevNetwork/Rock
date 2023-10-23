@@ -25,8 +25,25 @@ namespace Rock.Lava
     /// </summary>
     public enum LavaContextRelativeScopeSpecifier
     {
+        [Obsolete( "[v17] Use Default instead." )]
         Current = 0,
+
+        /// <summary>
+        /// The scope appropriate to the current operation, as determined by the framework.
+        /// </summary>
+        Default = 0,
+
+        /// <summary>
+        /// The immediate parent of the current scope.
+        /// </summary>
         Parent = 1,
+
+        /// <summary>
+        /// The current local scope.
+        /// </summary>
+        Local = 3,
+
+        [Obsolete("The behavior of this setting is equivalent to Default. (v16.1).")]
         Root = 2
     }
 
@@ -113,7 +130,7 @@ namespace Rock.Lava
         /// <param name="value"></param>
         /// <param name="scope">Current, Parent, or Root.</param>
         /// <returns></returns>
-        void SetMergeField( string key, object value, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Current );
+        void SetMergeField( string key, object value, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Default );
 
         /// <summary>
         /// Sets the user-defined variables in the current context that are internally available to custom filters and tags.

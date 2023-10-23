@@ -24,6 +24,8 @@
 /** Guids for Field Types. NOTE: Some of these are referenced in Migrations to avoid string-typos. */
 export const FieldType = {
     /** Address field type */
+    AchievementType: "593132CF-BA5D-462F-97F6-94DCC0BFFE6F",
+    /** Address field type */
     Address: "0A495222-23B7-41D3-82C8-D484CDB75D17",
     /** Assessment field type */
     AssessmentType: "C263513A-30BE-4823-ABF1-AC12A56F9644",
@@ -39,6 +41,8 @@ export const FieldType = {
     AudioUrl: "3B2D8714-421C-4CB8-A892-58B83521EF8A",
     /** Background Check field type */
     Backgroundcheck: "D05B3808-803A-4531-9680-DD4AAB8ADF1A",
+    /** Badges field type */
+    Badges: "602F273B-7EC2-42E6-9AA7-A36A268192A3",
     /** Benevolence Request field type */
     BenevolenceRequest: "44EEC881-3C07-4A58-ACC4-0F21D873DBE0",
     /** Binary File field type */
@@ -65,6 +69,8 @@ export const FieldType = {
     CodeEditor: "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5",
     /** Color field type */
     Color: "D747E6AE-C383-4E22-8846-71518E3DD06F",
+    /** Color selector field type */
+    ColorSelector: "B07070F6-B66E-4B83-8DA6-12CF3400A1EC",
     /** Communication Preference field type */
     CommunicationPreferenceType: "507C28F2-8BC0-4909-A4FE-9C2B1149E2B2",
     /** Communication Template field type */
@@ -97,6 +103,8 @@ export const FieldType = {
     ContentChannelType: "2B58514E-47F8-4740-A72C-B862B030855B",
     /** Content Channel Types field type */
     ContentChannelTypes: "DF974799-6656-4F0C-883D-85E44EEC999A",
+    /** Content Channels field type */
+    ContentChannels: "0E2B924A-C1AC-4A7C-AD77-A036581552D4",
     /** Currency field type */
     Currency: "3EE69CBC-35CE-4496-88CC-8327A447603F",
     /** A measure of necessity and/or availability of a data entry field. */
@@ -199,6 +207,8 @@ export const FieldType = {
     Matrix: "F16FC460-DC1E-4821-9012-5F21F974C677",
     /** Media Element field type */
     MediaElement: "A17D5AAC-B7AE-4587-B703-A0FC3625F0F8",
+    /** Media Selector field type */
+    MediaSelector: "243E40FC-04D0-48AD-B379-25A400CB0CAC",
     /** Media Watch field type */
     MediaWatch: "98180C6F-5167-45E1-8ADE-E1A31EC4930D",
     /** Memo field type */
@@ -263,6 +273,10 @@ export const FieldType = {
     SocialMediaAccount: "92C0E3A1-9F63-49D4-B23B-73624AC42546",
     /** Social Security Number */
     Ssn: "4722C99A-C078-464A-968F-13AB5E8E318F",
+    /** Streak Type field type */
+    StreakType: "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
+    /** Structured Content field type */
+    StructureContentEditor: "92C88D02-CE12-4217-80FB-19422B758437",
     /** System Communication field type */
     SystemCommunication: "72ED40C7-4D64-4D60-9411-4FFB2B9E833E",
     /** System Email field type */

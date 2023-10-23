@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { Component, createElementVNode, defineComponent, PropType, toRaw, unref, VNode, watch, WatchStopHandle } from "vue";
+import { Component, createElementVNode, defineComponent, PropType, reactive, toRaw, unref, VNode, watch, WatchStopHandle } from "vue";
 import { NumberFilterMethod } from "@Obsidian/Enums/Core/Grid/numberFilterMethod";
 import { DateFilterMethod } from "@Obsidian/Enums/Core/Grid/dateFilterMethod";
 import { PickExistingFilterMethod } from "@Obsidian/Enums/Core/Grid/pickExistingFilterMethod";
@@ -955,6 +955,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
     const excludeFromExport = getVNodeProp<boolean>(node, "excludeFromExport") === true || getVNodeProp<string>(node, "excludeFromExport") === "";
     const visiblePriority = getVNodeProp<"xs" | "sm" | "md" | "lg" | "xl">(node, "visiblePriority") || "xs";
     const width = getVNodeProp<string>(node, "width");
+    const filterPrependComponent = node.children?.["filterPrepend"] as Component | undefined;
 
     // Get the function that will provide the sort value.
     let sortValue = getVNodeProp<SortValueFunction | string>(node, "sortValue");
@@ -1090,6 +1091,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         condensedComponent,
         headerComponent,
         skeletonComponent,
+        filterPrependComponent,
         filter,
         sortValue,
         filterValue,
@@ -1613,6 +1615,7 @@ class BackgroundGridRowCacheWorker extends BackgroundWorker {
 export class GridState implements IGridState {
     // #region Properties
 
+    private internalColumns: ReadonlyArray<ColumnDefinition> = [];
     private internalRows: Record<string, unknown>[] = [];
     private internalFilteredRows: ReadonlyArray<Record<string, unknown>> = [];
     private internalSortedRows: ReadonlyArray<Record<string, unknown>> = [];
@@ -1620,6 +1623,9 @@ export class GridState implements IGridState {
     private internalSelectedKeys: string[] = [];
     private internalIsFiltered: boolean = false;
     private internalIsSorted: boolean = false;
+
+    /** The definition data we were created with. */
+    private gridDefinition?: GridDefinitionBag;
 
     /** This tracks the state of each row when operating in reactive mode. */
     private rowReactiveTracker: Record<string, string> = {};
@@ -1665,15 +1671,19 @@ export class GridState implements IGridState {
      * @param entityTypeGuid The unique identifier of the entity type this grid represents, or `undefined`.
      */
     constructor(columns: ColumnDefinition[], gridDefinition: GridDefinitionBag | undefined, liveUpdates: boolean, itemTerm: string, entityTypeGuid: Guid | undefined) {
+        this.gridDefinition = gridDefinition;
         this.rowCache = new GridRowCache(undefined);
-        this.columns = [...columns];
         this.liveUpdates = liveUpdates;
         this.itemTerm = itemTerm;
         this.entityTypeGuid = entityTypeGuid;
 
-        // If we have custom columns, append them as the last data columns.
         if (gridDefinition?.customColumns && gridDefinition.customColumns.length > 0) {
-            insertCustomColumns(this.columns, gridDefinition.customColumns);
+            const tempColumns = [...columns];
+            insertCustomColumns(tempColumns, gridDefinition.customColumns);
+            this.internalColumns = tempColumns;
+        }
+        else {
+            this.internalColumns = [...columns];
         }
 
         this.internalVisibleColumns = this.columns.filter(c => !c.hideOnScreen);
@@ -1717,7 +1727,9 @@ export class GridState implements IGridState {
         this.emitter.emit("sortedRowsChanged", this);
     }
 
-    public readonly columns: ColumnDefinition[];
+    public get columns(): ColumnDefinition[] {
+        return [...this.internalColumns];
+    }
 
     public get visibleColumns(): ReadonlyArray<ColumnDefinition> {
         return this.internalVisibleColumns;
@@ -1812,6 +1824,7 @@ export class GridState implements IGridState {
     private detectRowChanges(): void {
         const rows = unref(this.internalRows);
         const knownKeys = new Map<string, boolean>();
+        let hasChanged = false;
 
         // Loop through all the rows we still have and check for any that
         // are new or have been modified.
@@ -1826,7 +1839,7 @@ export class GridState implements IGridState {
             knownKeys.set(key, true);
 
             if (!this.rowReactiveTracker[key]) {
-                this.emitter.emit("rowsChanged", this);
+                hasChanged = true;
             }
             else if (this.rowReactiveTracker[key] !== JSON.stringify(rows[i])) {
                 this.rowReactiveTracker[key] = JSON.stringify(rows[i]);
@@ -1841,8 +1854,12 @@ export class GridState implements IGridState {
             if (!knownKeys.has(oldKeys[i])) {
                 this.rowCache.removeByRowKey(oldKeys[i], undefined);
                 delete this.rowReactiveTracker[oldKeys[i]];
-                this.emitter.emit("rowsChanged", this);
+                hasChanged = true;
             }
+        }
+
+        if (hasChanged) {
+            this.emitter.emit("rowsChanged", this);
         }
     }
 
@@ -1861,7 +1878,7 @@ export class GridState implements IGridState {
         const columns = this.visibleColumns;
         const quickFilterRawValue = this.quickFilter.toLowerCase();
 
-        const result = this.rows.filter(row => {
+        const result = toRaw(this.rows).filter(row => {
             // Check if the row matches the quick filter.
             const quickFilterMatch = !quickFilterRawValue || columns.some((column): boolean => {
                 const value = column.quickFilterValue(row, column, this);
@@ -1976,6 +1993,33 @@ export class GridState implements IGridState {
         this.sortedRows = this.sortRows(this.filteredRows);
     }
 
+    /**
+     * Gets the row key and row index of the specified key or index.
+     *
+     * @param keyOrIndex The row key or index.
+     *
+     * @returns An object that contains both the key and index or `undefined` if it was not found.
+     */
+    private getRowKeyAndIndex(keyOrIndex: string | number): { key: string, index: number } | undefined {
+        let key: string | undefined = undefined;
+        let index: number = -1;
+
+        if (typeof keyOrIndex === "string") {
+            key = keyOrIndex;
+            index = this.rows.findIndex(r => getRowKey(r, this.itemKey) === key);
+        }
+        else if (keyOrIndex < this.rows.length) {
+            index = keyOrIndex;
+            key = getRowKey(this.rows[index], this.itemKey);
+        }
+
+        if (!key || index === -1) {
+            return undefined;
+        }
+
+        return { key, index };
+    }
+
     // #endregion
 
     // #region Public Functions
@@ -1988,6 +2032,43 @@ export class GridState implements IGridState {
     public setItemKey(value: string | undefined): void {
         this.itemKey = value;
         (this.rowCache as GridRowCache).setRowItemKey(value);
+    }
+
+    /**
+     * Sets the columns that can be used on the grid.
+     *
+     * @param columns The new columns that should be available on the grid.
+     */
+    public setColumns(columns: ColumnDefinition[]): void {
+        // Stop the cache worker if it is running.
+        if (this.populateRowCacheWorker) {
+            this.populateRowCacheWorker.cancel();
+            this.populateRowCacheWorker = null;
+        }
+
+        // Clear all the cache.
+        this.cache.clear();
+        this.rowCache.clear();
+
+        // Update the columns.
+        if (this.gridDefinition?.customColumns && this.gridDefinition.customColumns.length > 0) {
+            const tempColumns = [...columns];
+            insertCustomColumns(tempColumns, this.gridDefinition.customColumns);
+            this.internalColumns = tempColumns;
+        }
+        else {
+            this.internalColumns = [...columns];
+        }
+
+        this.visibleColumns = this.columns.filter(c => !c.hideOnScreen);
+
+        // Start the cache worker.
+        this.populateRowCacheWorker = new BackgroundGridRowCacheWorker(this);
+        this.populateRowCacheWorker.run().catch(err => {
+            if (!(err instanceof Error) || err.message !== "Cancellation requested.") {
+                console.error(err);
+            }
+        });
     }
 
     /**
@@ -2010,7 +2091,7 @@ export class GridState implements IGridState {
         }
 
         // Update our internal rows and clear all the cache.
-        this.internalRows = rows;
+        this.internalRows = this.liveUpdates ? rows : reactive(rows);
         this.cache.clear();
         this.rowCache.clear();
 
@@ -2026,7 +2107,11 @@ export class GridState implements IGridState {
 
         // Start the cache worker.
         this.populateRowCacheWorker = new BackgroundGridRowCacheWorker(this);
-        this.populateRowCacheWorker.run();
+        this.populateRowCacheWorker.run().catch(err => {
+            if (!(err instanceof Error) || err.message !== "Cancellation requested.") {
+                console.error(err);
+            }
+        });
 
         this.emitter.emit("rowsChanged", this);
         this.updateFilteredRows();
@@ -2059,6 +2144,74 @@ export class GridState implements IGridState {
         this.updateSortedRows();
 
         this.isSorted = this.columnSort !== undefined;
+    }
+
+    /**
+     * Deletes a row from the grid when not tracking live updates.
+     *
+     * @param keyOrIndex The row key or row index that should be deleted.
+     */
+    public deleteRow(keyOrIndex: string | number): void {
+        const item = this.getRowKeyAndIndex(keyOrIndex);
+
+        if (!item) {
+            throw new Error(`Row '${keyOrIndex}' was not found in grid.`);
+        }
+
+        this.internalRows.splice(item.index, 1);
+        this.rowCache.removeByRowKey(item.key, undefined);
+
+        if (this.liveUpdates) {
+            delete this.rowReactiveTracker[item.key];
+        }
+
+        this.updateFilteredRows();
+
+        this.emitter.emit("rowsChanged", this);
+    }
+
+    /**
+     * Informs the grid that the specified row has been modified.
+     *
+     * @param keyOrIndex The row key or index that was updated.
+     */
+    public rowUpdated(keyOrIndex: string | number): void {
+        const item = this.getRowKeyAndIndex(keyOrIndex);
+
+        if (!item) {
+            throw new Error(`Row '${keyOrIndex}' was not found in grid.`);
+        }
+
+        this.rowCache.remove(this.rows[item.index]);
+
+        if (this.liveUpdates) {
+            this.rowReactiveTracker[item.key] = JSON.stringify(this.rows[item.index]);
+        }
+
+        this.updateFilteredRows();
+    }
+
+    /**
+     * Informs the grid that the specified rows have been modified.
+     *
+     * @param keysOrIndexes The row keys or indexes that have been updated.
+     */
+    public rowsUpdated(keysOrIndexes: readonly string[] | readonly number[]): void {
+        for (const keyOrIndex of keysOrIndexes) {
+            const item = this.getRowKeyAndIndex(keyOrIndex);
+
+            if (!item) {
+                throw new Error(`Row '${keyOrIndex}' was not found in grid.`);
+            }
+
+            this.rowCache.remove(this.rows[item.index]);
+
+            if (this.liveUpdates) {
+                this.rowReactiveTracker[item.key] = JSON.stringify(this.rows[item.index]);
+            }
+        }
+
+        this.updateFilteredRows();
     }
 
     // #endregion

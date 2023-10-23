@@ -538,7 +538,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void SetCampusVisibility()
         {
-            bool showCampusPicker = ( knownCampusId == null ) || this.AskForCampusIfKnown;
+            bool showCampusPicker = ( ( knownCampusId == null ) || this.AskForCampusIfKnown ) && GetCampusList().Count > 1;
 
             _ddlMultiAccountCampus.Visible = showCampusPicker;
             _ddlSingleAccountCampus.Visible = showCampusPicker;
@@ -685,17 +685,10 @@ namespace Rock.Web.UI.Controls
         {
             _ddlSingleAccountCampus.Items.Clear();
             _ddlMultiAccountCampus.Items.Clear();
-            var campusList = CampusCache.All( this.IncludeInactiveCampuses );
+            var campusList = GetCampusList();
 
-            if ( IncludedCampusTypeIds?.Any() == true )
-            {
-                campusList = campusList.Where( a => a.CampusTypeValueId.HasValue && IncludedCampusTypeIds.Contains( a.CampusTypeValueId.Value ) ).ToList();
-            }
-
-            if ( IncludedCampusStatusIds?.Any() == true )
-            {
-                campusList = campusList.Where( a => a.CampusStatusValueId.HasValue && IncludedCampusStatusIds.Contains( a.CampusStatusValueId.Value ) ).ToList();
-            }
+            _ddlSingleAccountCampus.Items.Add( new ListItem() );
+            _ddlMultiAccountCampus.Items.Add( new ListItem() );
 
             foreach ( var campus in campusList.OrderBy( a => a.Order ) )
             {
@@ -709,11 +702,39 @@ namespace Rock.Web.UI.Controls
                 _ddlMultiAccountCampus.Visible = false;
             }
 
+            if ( campusList.Count == 1 && !this.CampusId.HasValue )
+            {
+                // If we have just one campus after filtering and out CampusId is null, set the only Campus
+                // as the CampusId.
+                this.CampusId = campusList[0].Id;
+            }
+
             // This will select the value in both campus ddls
             if ( knownCampusId.HasValue )
             {
                 this.CampusId = knownCampusId;
             }
+        }
+
+        /// <summary>
+        /// Gets the campus list after filtering based on the selected Campus Types and Statuses.
+        /// </summary>
+        /// <returns></returns>
+        private List<CampusCache> GetCampusList()
+        {
+            var campusList = CampusCache.All( this.IncludeInactiveCampuses );
+
+            if ( IncludedCampusTypeIds?.Any() == true )
+            {
+                campusList = campusList.Where( a => a.CampusTypeValueId.HasValue && IncludedCampusTypeIds.Contains( a.CampusTypeValueId.Value ) ).ToList();
+            }
+
+            if ( IncludedCampusStatusIds?.Any() == true )
+            {
+                campusList = campusList.Where( a => a.CampusStatusValueId.HasValue && IncludedCampusStatusIds.Contains( a.CampusStatusValueId.Value ) ).ToList();
+            }
+
+            return campusList;
         }
 
         /// <summary>
@@ -762,7 +783,7 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var account in accountsList )
             {
-                var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions() );
                 mergeFields.Add( "Account", account );
                 var accountAmountLabel = accountHeaderTemplate.ResolveMergeFields( mergeFields );
                 _ddlAccountSingle.Items.Add( new ListItem( accountAmountLabel, account.Id.ToString() ) );
@@ -1028,7 +1049,7 @@ namespace Rock.Web.UI.Controls
                 accountHeaderTemplate = "{{ Account.PublicName }}";
             }
 
-            var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = LavaHelper.GetCommonMergeFields( null, null, new CommonMergeFieldsOptions() );
             mergeFields.Add( "Account", financialAccount );
             var accountAmountLabel = accountHeaderTemplate.ResolveMergeFields( mergeFields );
 

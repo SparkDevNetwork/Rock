@@ -23,30 +23,30 @@
                                          @loadServiceTimes="onLoadServiceTimes"
                                          @loadWeekendDates="onLoadWeekendDates" />
                 <div v-else>
-                    <div class="panel-settings-group margin-b-lg">
-                        <DropDownList v-model="campusGuidOrEmptyString"
-                                      :disabled="isLoadingCampuses"
-                                      :items="campuses"
-                                      label="Campus"
-                                      @update:modelValue="onCampusUpdated" />
-                        <DropDownList v-model="weekendDateOrEmptyString"
-                                      :disabled="isLoadingWeekendDates"
-                                      :items="weekendDates"
-                                      label="Week of"
-                                      @update:modelValue="onWeekendDateUpdated" />
+                    <div class="panel-settings-group mb-3">
+                        <ButtonDropDownList v-model="campusGuidOrEmptyString"
+                                            :disabled="isLoadingCampuses"
+                                            :items="campuses"
+                                            label="Campus"
+                                            @update:modelValue="onCampusUpdated" />
+                        <ButtonDropDownList v-model="weekendDateOrEmptyString"
+                                            :disabled="isLoadingWeekendDates"
+                                            :items="weekendDates"
+                                            label="Week of"
+                                            @update:modelValue="onWeekendDateUpdated" />
                         <div v-if="areNoServiceTimesLoaded" class="btn">No Services Available</div>
-                        <DropDownList v-else
-                                      v-model="scheduleGuidOrEmptyString"
-                                      :disabled="isLoadingServiceTimes"
-                                      :items="serviceTimes"
-                                      label="Service"
-                                      @update:modelValue="onScheduleUpdated" />
+                        <ButtonDropDownList v-else
+                                            v-model="scheduleGuidOrEmptyString"
+                                            :disabled="isLoadingServiceTimes"
+                                            :items="serviceTimes"
+                                            label="Service"
+                                            @update:modelValue="onScheduleUpdated" />
                     </div>
                     <RockForm @submit="onSubmit">
                         <NotificationBox v-if="isSavedMessage" alertType="success">{{ isSavedMessage }}</NotificationBox>
                         <NotificationBox v-if="areNoServiceTimesLoaded" alertType="warning">No services exist for the selected campus and date. Change the date or campus to find the desired service.</NotificationBox>
                         <div v-else>
-                            <div class="form-horizontal label-md">
+                            <div class="form-horizontal label-xl">
                                 <MetricItemTree v-if="config.showMetricCategorySubtotals"
                                                 v-for="category of metricCategories"
                                                 :areDuplicateMetricsIncludedInCategorySubtotals="config.areDuplicateMetricsIncludedInCategorySubtotals"
@@ -81,12 +81,12 @@
     import MetricItemTree from "./ServiceMetricsEntry/metricItemTree.obs";
     import MetricParametersStepper from "./ServiceMetricsEntry/metricParametersStepper.partial.obs";
     import { StepperController } from "./ServiceMetricsEntry/types.partial";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { ServiceMetricsEntryGetMetricsRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryGetMetricsRequestBag";
@@ -112,10 +112,10 @@
     const scheduleGuid = ref<string | null | undefined>(config.scheduleGuid);
     const stepperController = ref<StepperController>();
     const areMetricParametersSet = ref<boolean>(false);
-    const campuses = ref<ListItemBag[] | undefined>();
+    const campuses = ref<ListItemBag[]>([]);
     const areCampusesLoaded = ref<boolean>(false);
-    const weekendDates = ref<ListItemBag[] | undefined>();
-    const serviceTimes = ref<ListItemBag[] | undefined>();
+    const weekendDates = ref<ListItemBag[]>([]);
+    const serviceTimes = ref<ListItemBag[]>([]);
     const areServiceTimesLoaded = ref<boolean>(false);
     const isSaving = ref<boolean>(false);
     const isSavedMessage = ref<string | null | undefined>();

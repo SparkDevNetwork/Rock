@@ -86,8 +86,8 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { areEqual } from "@Obsidian/Utility/guid";
 

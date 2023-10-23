@@ -660,6 +660,7 @@ namespace RockWeb.Blocks.Event
                 registrationInstanceList = registrationInstanceService
                     .Queryable()
                     .Where( a => a.RegistrationTemplateId == registrationTemplateId.Value )
+                    .Select( a => new RegistrationInstance { Id = a.Id, Name = a.Name } )
                     .OrderBy( a => a.Name )
                     .ToList();
             }
@@ -673,7 +674,7 @@ namespace RockWeb.Blocks.Event
                 foreach ( var registrationInstance in registrationInstanceList )
                 {
                     var placementGroupsQry = registrationInstanceService
-                        .GetRegistrationInstancePlacementGroupsByPlacement( registrationInstance, registrationTemplatePlacementId )
+                        .GetRegistrationInstancePlacementGroupsByPlacement( registrationInstance.Id, registrationTemplatePlacementId )
                         .Where( a => a.GroupTypeId == groupType.Id );
 
                     if ( displayedCampusId.HasValue )
@@ -683,7 +684,11 @@ namespace RockWeb.Blocks.Event
 
                     placementGroupsQry = ApplyGroupFilter( groupType, groupService, placementGroupsQry );
 
-                    var placementGroups = placementGroupsQry.ToList();
+                    // Only fetch what we actually need for each registration *instance* placement group.
+                    var placementGroups = placementGroupsQry
+                        .Select( g => new { g.Id, g.Name, g.CampusId, g.GroupCapacity } )
+                        .ToList()
+                        .Select( g => new Group { Id = g.Id, Name = g.Name, CampusId = g.CampusId, GroupCapacity = g.GroupCapacity } );
 
                     foreach ( var placementGroup in placementGroups )
                     {
@@ -704,7 +709,12 @@ namespace RockWeb.Blocks.Event
 
             registrationTemplatePlacementGroupQuery = ApplyGroupFilter( groupType, groupService, registrationTemplatePlacementGroupQuery );
 
-            var registrationTemplatePlacementGroupList = registrationTemplatePlacementGroupQuery.ToList();
+            // Only fetch what we actually need for each registration *template* placement group.
+            var registrationTemplatePlacementGroupList = registrationTemplatePlacementGroupQuery
+                .Select( g => new { g.Id, g.Name, g.CampusId, g.GroupCapacity } )
+                .ToList()
+                .Select( g => new Group { Id = g.Id, Name = g.Name, CampusId = g.CampusId, GroupCapacity = g.GroupCapacity } );
+
             _registrationTemplatePlacementGroupIds = registrationTemplatePlacementGroupList.Select( a => a.Id ).ToList();
             var placementGroupList = new List<Group>();
             placementGroupList.AddRange( registrationTemplatePlacementGroupList );
@@ -718,8 +728,9 @@ namespace RockWeb.Blocks.Event
             _placementGroupIdGroupRoleIdCount = groupMemberService
                .Queryable()
                .Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive && groupIds.Contains( a.GroupId ) )
+               .Select( gm => new { GroupId = gm.GroupId, GroupRoleId = gm.GroupRoleId } )
                .ToList()
-               .GroupBy( a => a.GroupId )
+               .GroupBy( gm => gm.GroupId )
                .ToDictionary( a => a.Key, b => b.GroupBy( a => a.GroupRoleId ).ToDictionary( a => a.Key, a => a.Count() ) );
 
             rptPlacementGroups.DataSource = placementGroupList;

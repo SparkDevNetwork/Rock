@@ -232,8 +232,6 @@ namespace RockWeb.Blocks.Reporting
 
                 var options = new Rock.Lava.CommonMergeFieldsOptions();
                 options.GetPageContext = false;
-                options.GetLegacyGlobalMergeFields = false;
-
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, options );
                 mergeFields.Add( "ComponentListPage", LinkedPageRoute( "ComponentListPage" ) );
                 mergeFields.Add( "SessionListPage", LinkedPageRoute( "SessionListPage" ) );

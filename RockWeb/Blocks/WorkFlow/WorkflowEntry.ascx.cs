@@ -360,9 +360,7 @@ namespace RockWeb.Blocks.WorkFlow
             if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
             {
                 /* 03/22/2021 MDP
-
-                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-
+                    see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
                 */
 
                 nbRockFullName.Visible = true;
@@ -409,7 +407,7 @@ namespace RockWeb.Blocks.WorkFlow
                     GetWorkflowFormPersonEntryValues( personEntryRockContext );
                 }
             }
-
+            
             SetWorkflowFormAttributeValues();
             CompleteFormAction( eventArgument );
         }
@@ -534,9 +532,7 @@ namespace RockWeb.Blocks.WorkFlow
                     Guid guid = PageParameter( PageParameterKey.WorkflowGuid ).AsGuid();
                     if ( !guid.IsEmpty() )
                     {
-                        _workflow = _workflowService.Queryable()
-                            .Where( w => w.Guid.Equals( guid ) && w.WorkflowTypeId == workflowType.Id )
-                            .FirstOrDefault();
+                        _workflow = _workflowService.Queryable().Where( w => w.Guid.Equals( guid ) && w.WorkflowTypeId == workflowType.Id ).FirstOrDefault();
                         if ( _workflow != null )
                         {
                             WorkflowId = _workflow.Id;
@@ -584,25 +580,6 @@ namespace RockWeb.Blocks.WorkFlow
                     return false;
                 }
 
-                // If a PersonId or GroupId parameter was included, load the corresponding
-                // object and pass that to the actions for processing
-                IEntity entity = null;
-                int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
-                if ( personId.HasValue )
-                {
-                    entity = new PersonService( _workflowRockContext ).Get( personId.Value );
-                }
-                else
-                {
-                    int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
-                    if ( groupId.HasValue )
-                    {
-                        entity = new GroupService( _workflowRockContext ).Get( groupId.Value );
-                    }
-                }
-
-                // Loop through all the query string parameters and try to set any workflow
-                // attributes that might have the same key
                 foreach ( var param in RockPage.PageParameters() )
                 {
                     if ( param.Value != null && param.Value.ToString().IsNotNullOrWhiteSpace() )
@@ -611,20 +588,22 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                 }
 
-                List<string> errorMessages;
-                if ( !_workflowService.Process( _workflow, entity, out errorMessages ) )
+                var isWorkflowProcessSuccess = ProcessWorkflow();
+                if ( isWorkflowProcessSuccess == false )
                 {
-                    ShowNotes( false );
-                    ShowMessage(
-                        NotificationBoxType.Danger,
-                        "Workflow Processing Error(s):",
-                        "<ul><li>" + errorMessages.AsDelimited( "</li><li>" ) + "</li></ul>" );
                     return false;
                 }
 
-                if ( _workflow.Id != 0 )
+                WorkflowId = _workflow.Id != 0 ? _workflow.Id : WorkflowId;
+            }
+            else
+            {
+                // A workflow already exists, run WorkflowService.Process to ensure that any actions that were not completed due to delays, incomplete previous actions, or errors are run.
+                // This is to ensure that any forms available in the workflow are presented and not delayed until the Process Workflows job has completed.
+                var isWorkflowProcessSuccess = ProcessWorkflow();
+                if ( isWorkflowProcessSuccess == false )
                 {
-                    WorkflowId = _workflow.Id;
+                    return false;
                 }
             }
 
@@ -701,60 +680,42 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     if ( canEdit || activity.ActivityTypeCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
-                        foreach ( var action in activity.ActiveActions
-                            .Where( a => ( !actionId.HasValue || a.Id == actionId.Value ) ) )
+                        var actions = activity.ActiveActions.Where( a => !actionId.HasValue || a.Id == actionId.Value ).ToList();
+
+                        // Check each active action in the activity for valid criteria and get the first one. This is to prevent a conditional action that didn't meet criteria from preventing a form from showing.
+                        WorkflowAction action = actions.Where( a => a.IsCriteriaValid ).FirstOrDefault();
+                        
+                        if ( action == null )
                         {
-                            if ( action.ActionTypeCache.WorkflowForm != null && action.IsCriteriaValid )
-                            {
-                                _activity = activity;
-                                if ( _activity.Id != 0 || _activity.AttributeValues == null )
-                                {
-                                    _activity.LoadAttributes();
-                                }
+                            continue;
+                        }
 
-                                _action = action;
-                                _actionType = _action.ActionTypeCache;
-                                ActionTypeId = _actionType.Id;
-                                return true;
+                        if ( action.ActionTypeCache.WorkflowForm != null )
+                        {
+                            _activity = activity;
+                            if ( _activity.Id != 0 || _activity.AttributeValues == null )
+                            {
+                                _activity.LoadAttributes();
                             }
 
-                            if ( action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.ElectronicSignature && action.IsCriteriaValid )
-                            {
-                                _activity = activity;
-                                if ( _activity.Id != 0 || _activity.AttributeValues == null )
-                                {
-                                    _activity.LoadAttributes();
-                                }
+                            _action = action;
+                            _actionType = _action.ActionTypeCache;
+                            ActionTypeId = _actionType.Id;
+                            return true;
+                        }
 
-                                _action = action;
-                                _actionType = _action.ActionTypeCache;
-                                ActionTypeId = _actionType.Id;
-                                return true;
+                        if ( action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.ElectronicSignature )
+                        {
+                            _activity = activity;
+                            if ( _activity.Id != 0 || _activity.AttributeValues == null )
+                            {
+                                _activity.LoadAttributes();
                             }
 
-                            if ( action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Delay && action.IsCriteriaValid )
-                            {
-                                if ( action.CompletedDateTime == null )
-                                {
-                                    var errorMessages = new List<string>();
-                                    _workflowService.Process( _workflow, out errorMessages );
-                                    if ( errorMessages.Any() )
-                                    {
-                                        ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):", "<ul><li>" + errorMessages.AsDelimited( "</li><li>", null, true ) + "</li></ul>" );
-                                    }
-
-                                    if ( action.CompletedDateTime == null )
-                                    {
-                                        ShowMessage( NotificationBoxType.Info, string.Empty, "Workflow is delayed", true );
-                                        _action = action;
-                                        _actionType = _action.ActionTypeCache;
-                                        ActionTypeId = _actionType.Id;
-
-                                        return true;
-                                    }
-
-                                }
-                            }
+                            _action = action;
+                            _actionType = _action.ActionTypeCache;
+                            ActionTypeId = _actionType.Id;
+                            return true;
                         }
                     }
                 }
@@ -789,7 +750,6 @@ namespace RockWeb.Blocks.WorkFlow
             ShowNotes( false );
             pnlWorkflowUserForm.Visible = false;
             pnlWorkflowActionElectronicSignature.Visible = false;
-            
             return false;
         }
 
@@ -804,6 +764,56 @@ namespace RockWeb.Blocks.WorkFlow
             mergeFields.Add( "Activity", _activity );
             mergeFields.Add( "Workflow", _workflow );
             return mergeFields;
+        }
+
+        /// <summary>
+        /// Gets the workflow entity using the values stored in the workflow for an existing workflow, or the page parameters for a new workflow.
+        /// </summary>
+        /// <returns></returns>
+        private IEntity GetWorkflowEntity()
+        {
+            IEntity iEntity = null;
+            if( _workflow.Id == 0 )
+            {
+                // This is a new workflow, so get the EntityType and Id from the PersonId or GroupId page parameters if they exist.
+                // If this is an existing workflow the EntityType and Id are already inserted into the Workflow instance.
+                int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+                if ( personId.HasValue )
+                {
+                    iEntity = new PersonService( _workflowRockContext ).Get( personId.Value );
+                }
+                else
+                {
+                    int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+                    if ( groupId.HasValue )
+                    {
+                        iEntity = new GroupService( _workflowRockContext ).Get( groupId.Value );
+                    }
+                }
+            }
+
+            return iEntity;
+        }
+
+        /// <summary>
+        /// Processes the workflow.
+        /// </summary>
+        /// <returns></returns>
+        private bool ProcessWorkflow()
+        {
+            var entity = GetWorkflowEntity();
+            if ( !_workflowService.Process( _workflow, entity, out List<string> errorMessages ) )
+            {
+                ShowNotes( false );
+                ShowMessage(
+                    NotificationBoxType.Danger,
+                    "Workflow Processing Error(s):",
+                    "<ul><li>" + errorMessages.AsDelimited( "</li><li>" ) + "</li></ul>" );
+
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -1491,6 +1501,8 @@ namespace RockWeb.Blocks.WorkFlow
 
             personBasicEditor.RequireMobilePhone = formPersonEntrySettings.MobilePhone == WorkflowActionFormPersonEntryOption.Required;
             personBasicEditor.ShowMobilePhone = formPersonEntrySettings.MobilePhone != WorkflowActionFormPersonEntryOption.Hidden;
+
+            personBasicEditor.ShowSmsOptIn = formPersonEntrySettings.SmsOptIn != WorkflowActionFormShowHideOption.Hide && personBasicEditor.ShowMobilePhone;
 
             personBasicEditor.RequireBirthdate = formPersonEntrySettings.Birthdate == WorkflowActionFormPersonEntryOption.Required;
             personBasicEditor.ShowBirthdate = formPersonEntrySettings.Birthdate != WorkflowActionFormPersonEntryOption.Hidden;
@@ -2185,21 +2197,12 @@ namespace RockWeb.Blocks.WorkFlow
                 System.Threading.Thread.Sleep( 1 );
             }
 
-            List<string> errorMessages;
+            var isWorkflowProcessSuccess = ProcessWorkflow();
 
-            var workflowProcessSuccess = _workflowService.Process( _workflow, out errorMessages );
+            WorkflowId = _workflow.Id != 0 ? _workflow.Id : WorkflowId;
 
-            if ( _workflow.Id != 0 )
+            if ( !isWorkflowProcessSuccess )
             {
-                WorkflowId = _workflow.Id;
-            }
-
-            if ( !workflowProcessSuccess )
-            {
-                ShowMessage(
-                    NotificationBoxType.Danger,
-                    "Workflow Processing Error(s):",
-                    "<ul><li>" + errorMessages.AsDelimited( "</li><li>", null, true ) + "</li></ul>" );
                 return;
             }
 
@@ -2257,8 +2260,7 @@ namespace RockWeb.Blocks.WorkFlow
                 // final form completed
                 LogWorkflowEntryInteraction( _workflow, completionActionTypeId, WorkflowInteractionOperationType.FormCompleted );
 
-                //Don't use the default response if there is summary text or if the action is a delay, which has its own message.
-                if ( lSummary.Text.IsNullOrWhiteSpace() || ( _action != null && !(_action.ActionTypeCache.WorkflowAction is Rock.Workflow.Action.Delay ) ) )
+                if ( lSummary.Text.IsNullOrWhiteSpace() )
                 {
                     var hideForm = _action == null || _action.Guid != previousActionGuid;
                     ShowMessage( NotificationBoxType.Success, string.Empty, responseText, hideForm );
@@ -2271,24 +2273,20 @@ namespace RockWeb.Blocks.WorkFlow
 
                 // Confirmation email can come FormBuilderSettings or FormBuilderTemplate
                 FormConfirmationEmailSettings confirmationEmailSettings;
-                FormCompletionActionSettings completionActionSettings;
-                if ( _workflowType?.FormBuilderTemplate != null )
+                if ( _workflowType?.FormBuilderTemplate?.ConfirmationEmailSettings?.Enabled == true )
                 {
                     // Use FormBuilderTemplate
                     confirmationEmailSettings = _workflowType?.FormBuilderTemplate.ConfirmationEmailSettings;
-                    completionActionSettings = _workflowType?.FormBuilderTemplate.CompletionActionSettings;
                 }
                 else if ( _workflowType?.FormBuilderSettings?.ConfirmationEmail != null )
                 {
-                    // User FormBuilderSettings
+                    // Use FormBuilderSettings
                     confirmationEmailSettings = _workflowType.FormBuilderSettings.ConfirmationEmail;
-                    completionActionSettings = _workflowType.FormBuilderSettings.CompletionAction;
                 }
                 else
                 {
                     // Not a FormBuilder
                     confirmationEmailSettings = null;
-                    completionActionSettings = null;
                 }
 
                 if ( confirmationEmailSettings != null )
@@ -2297,6 +2295,24 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         SendFormBuilderConfirmationEmail( confirmationEmailSettings );
                     }
+                }
+
+                // Completion Action can come FormBuilderSettings or FormBuilderTemplate
+                FormCompletionActionSettings completionActionSettings;
+                if ( _workflowType?.FormBuilderTemplate?.CompletionActionSettings != null )
+                {
+                    // Use FormBuilderTemplate
+                    completionActionSettings = _workflowType?.FormBuilderTemplate.CompletionActionSettings;
+                }
+                else if ( _workflowType?.FormBuilderSettings?.CompletionAction != null )
+                {
+                    // Use FormBuilderSettings
+                    completionActionSettings = _workflowType.FormBuilderSettings.CompletionAction;
+                }
+                else
+                {
+                    // Not a FormBuilder
+                    completionActionSettings = null;
                 }
 
                 // Notification Email is only defined on FormBuilder. FormBuilderTemplate doesn't have NotificationEmailSettings

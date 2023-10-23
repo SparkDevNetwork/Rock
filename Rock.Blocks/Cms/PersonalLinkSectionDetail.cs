@@ -37,10 +37,10 @@ namespace Rock.Blocks.Cms
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Personal Link Section Detail" )]
-    [Category( "Cms" )]
+    [Category( "CMS" )]
     [Description( "Displays the details of a particular personal link section." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -60,7 +60,7 @@ namespace Rock.Blocks.Cms
 
         private static class PageParameterKey
         {
-            public const string PersonalLinkSectionId = "PersonalLinkSectionId";
+            public const string PersonalLinkSectionId = "SectionId";
         }
 
         private static class NavigationUrlKey
@@ -74,9 +74,6 @@ namespace Rock.Blocks.Cms
         }
 
         #endregion Keys
-
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}.obs";
 
         #region Methods
 
@@ -154,6 +151,7 @@ namespace Rock.Blocks.Cms
                     {
                         box.Entity = GetEntityBagForView( entity, loadAttributes );
                         box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                        box.Entity.CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
                     }
                     else
                     {
@@ -195,7 +193,7 @@ namespace Rock.Blocks.Cms
             return new PersonalLinkSectionBag
             {
                 IdKey = entity.IdKey,
-                IsShared = entity.IsShared,
+                IsShared = entity.Id == 0 ? GetAttributeValue( AttributeKey.SharedSection ).AsBoolean() : entity.IsShared,
                 Name = entity.Name
             };
         }

@@ -5,7 +5,7 @@
            :modelValue="true"
            :title="category.name ?? ''">
         <template #headerActions>
-            <span class="action label label-default"
+            <span class="label label-default"
                   data-toggle="tooltip"
                   ref="metricCategoryCountLabel"
                   :title="metricCategoryCountLabelTooltip">{{ descendantMetricItemValuesSum }}</span>
@@ -26,15 +26,31 @@
 :deep(.metric-category) {
     border: none;
     box-shadow: none;
+    margin-bottom: 0;
 }
 
 :deep(.metric-category > .panel-body) {
+    padding-left: 0;
     padding-right: 0;
     padding-bottom: 0;
 }
 
+:deep(.metric-category .panel-title) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+:deep(.metric-category .metric-category) {
+    margin-left: 8%;
+}
+
 .metric-item {
-    padding-right: 18px;
+    margin: 0;
+}
+
+.metric-item + div:not(.metric-item) {
+    margin-top: 18px;
 }
 </style>
 

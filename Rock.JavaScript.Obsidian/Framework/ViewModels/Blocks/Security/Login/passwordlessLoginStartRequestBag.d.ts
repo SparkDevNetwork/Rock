@@ -29,6 +29,9 @@ export type PasswordlessLoginStartRequestBag = {
     /** Gets or sets the matching person value. */
     matchingPersonValue?: string | null;
 
+    /** Gets or sets the MFA details. */
+    mfaTicket?: string | null;
+
     /** Gets or sets the phone number. */
     phoneNumber?: string | null;
 

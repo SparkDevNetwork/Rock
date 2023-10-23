@@ -18,9 +18,9 @@
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import CheckBox from "@Obsidian/Controls/checkBox";
-import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ConfigurationPropertyKey, ConfigurationValueKey } from "./campusField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";

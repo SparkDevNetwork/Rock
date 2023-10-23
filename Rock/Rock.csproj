@@ -35,7 +35,7 @@
     <DefineConstants>TRACE;WEBFORMS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Rock.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Rock.xml</DocumentationFile>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -112,26 +112,29 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\FCM\FCM.Net.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Api.Gax, Version=2.10.0.0, Culture=neutral, PublicKeyToken=3ec5ea7f18953e47, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Api.Gax.2.10.0\lib\net45\Google.Api.Gax.dll</HintPath>
+    <Reference Include="FirebaseAdmin, Version=2.4.0.0, Culture=neutral, PublicKeyToken=97c8d00c348326ed, processorArchitecture=MSIL">
+      <HintPath>..\packages\FirebaseAdmin.2.4.0\lib\net461\FirebaseAdmin.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Api.Gax.Rest, Version=2.10.0.0, Culture=neutral, PublicKeyToken=3ec5ea7f18953e47, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Api.Gax.Rest.2.10.0\lib\net45\Google.Api.Gax.Rest.dll</HintPath>
+    <Reference Include="Google.Api.Gax, Version=3.2.0.0, Culture=neutral, PublicKeyToken=3ec5ea7f18953e47, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Api.Gax.3.2.0\lib\net461\Google.Api.Gax.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis, Version=1.42.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.1.42.0\lib\net45\Google.Apis.dll</HintPath>
+    <Reference Include="Google.Api.Gax.Rest, Version=3.2.0.0, Culture=neutral, PublicKeyToken=3ec5ea7f18953e47, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Api.Gax.Rest.3.2.0\lib\net461\Google.Api.Gax.Rest.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Auth, Version=1.42.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.Auth.1.42.0\lib\net45\Google.Apis.Auth.dll</HintPath>
+    <Reference Include="Google.Apis, Version=1.49.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.49.0\lib\net45\Google.Apis.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.42.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.Auth.1.42.0\lib\net45\Google.Apis.Auth.PlatformServices.dll</HintPath>
+    <Reference Include="Google.Apis.Auth, Version=1.49.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.49.0\lib\net45\Google.Apis.Auth.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.Core, Version=1.42.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.Core.1.42.0\lib\net45\Google.Apis.Core.dll</HintPath>
+    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.49.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.49.0\lib\net45\Google.Apis.Auth.PlatformServices.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis.PlatformServices, Version=1.42.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Apis.1.42.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
+    <Reference Include="Google.Apis.Core, Version=1.49.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Core.1.49.0\lib\net45\Google.Apis.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.PlatformServices, Version=1.49.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.49.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
     </Reference>
     <Reference Include="Google.Apis.Storage.v1, Version=1.42.0.1744, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Apis.Storage.v1.1.42.0.1744\lib\net45\Google.Apis.Storage.v1.dll</HintPath>
@@ -431,6 +434,9 @@
     <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ComponentModel.Annotations.4.7.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
     </Reference>
+    <Reference Include="System.Collections.Immutable, Version=1.2.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.7.1\lib\net461\System.Collections.Immutable.dll</HintPath>
+    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
@@ -596,6 +602,7 @@
     <Compile Include="Attribute\BenevolenceTypeFieldAttribute.cs" />
     <Compile Include="Attribute\BlockTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
+    <Compile Include="Attribute\ColorSelectorFieldAttribute.cs" />
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
     <Compile Include="Attribute\GroupMemberRequirementFieldAttribute.cs" />
     <Compile Include="Attribute\IconSvgAttribute.cs" />
@@ -853,6 +860,8 @@
     <Compile Include="Cms\StructuredContent\BlockTypes\ParagraphData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\QuoteRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\QuoteData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\RawData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\RawRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\TableRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\TableData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\WarningRenderer.cs" />
@@ -953,6 +962,8 @@
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
     <Compile Include="Core\NotificationMessageTypeComponent.cs" />
     <Compile Include="Core\NotificationMessageTypeContainer.cs" />
+    <Compile Include="Core\NotificationMessageTypes\ConnectionRequestMention.cs" />
+    <Compile Include="Core\NotificationMessageTypes\NoteMention.cs" />
     <Compile Include="Core\NotificationMessageTypes\SmsConversation.cs" />
     <Compile Include="Data\IncludeForModelMapAttribute.cs" />
     <Compile Include="Data\EntityContextState.cs" />
@@ -986,11 +997,14 @@
     <Compile Include="Field\PersistedValues.cs" />
     <Compile Include="Field\ReferencedEntity.cs" />
     <Compile Include="Field\ReferencedProperty.cs" />
+    <Compile Include="Field\Types\ColorSelectorFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
+    <Compile Include="Field\Types\MediaSelectorFieldType.cs" />
     <Compile Include="Field\Types\ReminderTypeFieldType.cs" />
     <Compile Include="Field\Types\ReminderTypesFieldType.cs" />
     <Compile Include="Field\Types\SecondaryAuthsFieldType.cs" />
     <Compile Include="Field\Types\SystemPhoneNumberFieldType.cs" />
+    <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
@@ -1004,9 +1018,13 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV16PopulateInteractionSessionData.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionAndInteractionSessionIndices.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionSessionChannelId.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateMediaElementDefaultUrls.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateNoteData.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdatePersonPrimaryAliasId.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV17InteractionIndexPostMigration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateWorkflowIds.cs" />
     <Compile Include="Jobs\PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV152CreateAttributeValue_ValueAsPersonId_Index.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV141AddMissingIndexes.cs" />
@@ -1020,10 +1038,19 @@
     <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
+    <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
+    <Compile Include="Lava\Helpers\LavaAppendWatchesHelper.cs" />
+    <Compile Include="Model\CMS\BlockType\BlockType.WebForms.cs" />
+    <Compile Include="Model\CMS\ContentChannelItem\AddToContentLibraryException.cs" />
+    <Compile Include="Model\CMS\ContentChannelItem\AddFromContentLibraryException.cs" />
+    <Compile Include="Model\CMS\ContentChannelItem\Options\ContentLibraryItemUploadOptions.cs" />
+    <Compile Include="Model\CMS\ContentChannelItem\Options\ContentLibraryItemDownloadOptions.cs" />
+    <Compile Include="Model\CMS\Page\Page.WebForms.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
     <Compile Include="Lava\Shortcodes\AICompletionShortcode.cs" />
     <Compile Include="Lava\WebsiteLavaHost.cs" />
     <Compile Include="Logging\RockLoggerMemoryBuffer.cs" />
+    <Compile Include="Cms\ContentLibraryConfiguration.cs" />
     <Compile Include="Model\CMS\ContentTopicDomain\ContentTopicDomain.cs" />
     <Compile Include="Model\CMS\ContentTopic\ContentTopic.cs" />
     <Compile Include="Model\CMS\Site\Site.SaveHook.cs" />
@@ -1074,6 +1101,7 @@
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
+    <Compile Include="Model\Core\NoteType\NoteType.SaveHook.cs" />
     <Compile Include="Model\Core\NotificationMessageType\NotificationMessageType.cs" />
     <Compile Include="Model\Core\NotificationMessageType\NotificationMessageType.Logic.cs" />
     <Compile Include="Model\Core\NotificationMessage\NotificationMessage.cs" />
@@ -1097,6 +1125,8 @@
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.Logic.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperienceService.cs" />
     <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormFieldException.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateFormService.cs" />
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
     <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />
@@ -1105,11 +1135,17 @@
     <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
+    <Compile Include="Net\BrowserCookie.cs" />
+    <Compile Include="Net\IRockResponseContext.cs" />
+    <Compile Include="Net\NullRockResponseContext.cs" />
+    <Compile Include="Net\RockResponseContext.WebForms.cs" />
     <Compile Include="Observability\ObservabilityHelper.cs" />
     <Compile Include="Observability\RockActivitySource.cs" />
+    <Compile Include="Observability\RockMetricSource.cs" />
     <Compile Include="Obsidian\UI\GridActionUrlKey.cs" />
     <Compile Include="Obsidian\UI\GridBuilder.cs" />
     <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
+    <Compile Include="Obsidian\UI\GridBuilderGridOptions.cs" />
     <Compile Include="Obsidian\UI\GridHelper.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\EnvironmentRequestFilter.cs" />
     <Compile Include="Net\IRequest.cs" />
@@ -1142,6 +1178,11 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\188_MigrationRollupsForV17_0_0.cs" />
+    <Compile Include="Plugin\HotFixes\187_MigrationRollupsForV15_2_6.cs" />
+    <Compile Include="Plugin\HotFixes\186_MigrationRollupsForV15_2_5.cs" />
+    <Compile Include="Plugin\HotFixes\185_MigrationRollupsForV15_2_4.cs" />
+    <Compile Include="Plugin\HotFixes\184_MigrationRollupsForV15_2_3.cs" />
     <Compile Include="Plugin\HotFixes\183_MigrationRollupsForV15_2_2.cs" />
     <Compile Include="Plugin\HotFixes\182_FamilyPreRegistrationObsidian.cs" />
     <Compile Include="Plugin\HotFixes\181_SmsOptionSystemSetting.cs" />
@@ -1238,6 +1279,9 @@
     <Compile Include="Security\Authentication\OneTimePasscode\OneTimePasscodeAuthenticationResult.cs" />
     <Compile Include="Security\Authentication\PasswordlessAuthentication.cs" />
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
+    <Compile Include="SystemGuid\SnippetType.cs" />
+    <Compile Include="Utility\ContentLibraryApi\CachedContentLibraryApi.cs" />
+    <Compile Include="Utility\ContentLibraryApi\ContentLibraryApi.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
     <Compile Include="SystemGuid\BlockTypeGuidAttribute.cs" />
     <Compile Include="SystemGuid\EntityTypeGuidAttribute.cs" />
@@ -1807,13 +1851,23 @@
     <Compile Include="Plugin\HotFixes\143_ServerCheckinPrinterCutter2.cs" />
     <Compile Include="Plugin\HotFixes\142_AddMobileGroupFinderBlock.cs" />
     <Compile Include="Utility\Container.cs" />
+    <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiItemDetailBagExtensions.cs" />
+    <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiItemSummaryBag.cs" />
+    <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiItemDetailBag.cs" />
+    <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiItemDownloadBag.cs" />
+    <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiItemUploadBag.cs" />
+    <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiMetadataBox.cs" />
+    <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiResult.cs" />
+    <Compile Include="Utility\ContentLibraryApi\IContentLibraryApi.cs" />
     <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
     <Compile Include="Utility\Enums\RockPlatform.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
     <Compile Include="Utility\Enums\UserLoginValidationState.cs" />
     <Compile Include="Utility\ExtensionMethods\CommunicationRecipientResponseExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\PersonBasicEditorExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\NameValueCollectionExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\JsonExtensions.cs" />
@@ -1824,6 +1878,7 @@
     <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
     <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\RockResponseContextExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Image.cs" />
     <Compile Include="Utility\IdHasher.cs" />
@@ -1992,6 +2047,7 @@
     <Compile Include="Utility\ExtensionMethods\StreamExtensions.cs" />
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
+    <Compile Include="Utility\NestedDictionaryConverter.cs" />
     <Compile Include="Utility\PersonPreferenceCollection.cs" />
     <Compile Include="Utility\PrayerRequestLastPrayedDetail.cs" />
     <Compile Include="Utility\PrayerRequestQueryOptions.cs" />
@@ -2053,9 +2109,13 @@
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
+    <Compile Include="Blocks\BreadCrumbResult.cs" />
+    <Compile Include="Web\BreadCrumbLink.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\ContentTopicDomainCache.cs" />
+    <Compile Include="Web\Cache\Entities\ContentTopicCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />
     <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
@@ -2089,6 +2149,8 @@
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\HttpModules\Observability.cs" />
+    <Compile Include="Web\IBreadCrumb.cs" />
+    <Compile Include="Blocks\IBreadCrumbBlock.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
     <Compile Include="Web\RockControlAdapter.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartJsChart.cs" />
@@ -2106,6 +2168,7 @@
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
     <Compile Include="Web\UI\Controls\IHasAttributeId.cs" />
     <Compile Include="Web\UI\Controls\MediaPlayer.cs" />
+    <Compile Include="Web\UI\Controls\MediaSelector.cs" />
     <Compile Include="Web\UI\Controls\MobileNavigationActionEditor.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
@@ -2124,6 +2187,7 @@
     <Compile Include="Web\UI\Controls\Pickers\SecondaryAuthsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumberPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumbersPicker.cs" />
+    <Compile Include="Web\UI\Controls\ColorSelector.cs" />
     <Compile Include="Web\UI\Controls\TagLiteral.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategorizedValuePicker.cs" />
     <Compile Include="Web\UI\Controls\TaskActivityProgressReporter.cs" />
@@ -2819,9 +2883,6 @@
     <Compile Include="Lava\Blocks\SqlBlock.cs" />
     <Compile Include="Lava\Blocks\WorkflowActivateBlock.cs" />
     <Compile Include="Lava\LavaHelper.cs" />
-    <Compile Include="Lava\LavaSupportLevel.cs" />
-    <Compile Include="Lava\LegacyLavaSyntaxDetectedException.cs" />
-    <Compile Include="Lava\LegacyLavaUpdater.cs" />
     <Compile Include="Lava\Shortcodes\BootstrapAlertShortcode.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
@@ -3321,7 +3382,7 @@
     <Compile Include="Reporting\DataTransform\Person\FamilyMembersTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\FatherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandchildTransform.cs" />
-    <Compile Include="Reporting\DataTransform\Person\GrandparentTransform.cs" />
+    <Compile Include="Reporting\DataTransform\Person\GrandParentTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\MotherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\SpouseTransform.cs" />
     <Compile Include="Reporting\IRecipientDataSelect.cs" />
@@ -3564,7 +3625,7 @@
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="UniversalSearch\FormattedSearchResult.cs" />
-    <Compile Include="UniversalSearch\IndexComponents\Elasticsearch.cs" />
+    <Compile Include="UniversalSearch\IndexComponents\ElasticSearch.cs" />
     <Compile Include="UniversalSearch\IndexComponents\Lucene.cs" />
     <Compile Include="UniversalSearch\IndexModels\Attributes\RockIndexField.cs" />
     <Compile Include="UniversalSearch\IndexModels\BusinessIndex.cs" />

@@ -1,0 +1,46 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="total"
+                   formGroupClasses="margin-b-md number-up-down-group"
+                   name="numberupdowngroup">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div v-for="option in options" :key="option.key" class="margin-l-sm margin-b-sm">
+                    <div v-if="option.label" class="margin-b-sm">
+                        {{ option.label }}
+                    </div>
+                    <NumberUpDownBase v-model="modelValue[option.key]" :min="option.min" :max="option.max" class="margin-t-sm" />
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import NumberUpDownBase from "./numberUpDownBase.obs";
+    import RockFormField from "./rockFormField.obs";
+    import { NumberUpDownGroupOption } from "@Obsidian/Types/Controls/numberUpDownGroup";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<Record<string, number>>,
+            required: true
+        },
+        options: {
+            type: Array as PropType<NumberUpDownGroupOption[]>,
+            required: true
+        }
+    });
+
+    const total = computed((): number => {
+        let total = 0;
+
+        for (const option of props.options) {
+            total += (props.modelValue[option.key] || 0);
+        }
+
+        return total;
+    });
+</script>

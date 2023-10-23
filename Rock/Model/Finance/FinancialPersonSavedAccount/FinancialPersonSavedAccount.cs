@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -151,6 +152,25 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE )]
         public int? PreferredForeignCurrencyCodeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last error code received from the gateway when attempting to charge this account.
+        /// </summary>
+        /// <value>
+        /// The last error code received from the gateway when attempting to charge this account.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string LastErrorCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date/time the last error code was received.
+        /// </summary>
+        /// <value>
+        /// The date/time the last error code was received.
+        /// </value>
+        [DataMember]
+        public DateTime? LastErrorCodeDateTime { get; set; }
 
         #endregion Entity Properties
 

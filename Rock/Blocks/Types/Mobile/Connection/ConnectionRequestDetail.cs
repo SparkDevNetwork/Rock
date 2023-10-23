@@ -19,13 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-
-using OpenXmlPowerTools;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
+using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -87,6 +87,13 @@ namespace Rock.Blocks.Types.Mobile.Connection
         Key = AttributeKey.WorkflowPage,
         Order = 4 )]
 
+    [LinkedPage(
+        "Reminder Page",
+        Description = "Page to link to when the reminder button is tapped.",
+        IsRequired = false,
+        Key = AttributeKey.ReminderPage,
+        Order = 5 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE )]
@@ -109,6 +116,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
             public const string GroupDetailPage = "GroupDetailPage";
 
             public const string WorkflowPage = "WorkflowPage";
+
+            public const string ReminderPage = "ReminderPage";
         }
 
         /// <summary>
@@ -151,7 +160,13 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// </value>
         protected Guid? WorkflowPageGuid => GetAttributeValue( AttributeKey.WorkflowPage ).AsGuidOrNull();
 
-        #endregion
+        /// <summary>
+        /// Gets the reminder page unique identifier.
+        /// </summary>
+        protected Guid? ReminderPageGuid => GetAttributeValue( AttributeKey.ReminderPage ).AsGuidOrNull();
+
+
+       #endregion
 
         #region IRockMobileBlockType Implementation
 
@@ -161,17 +176,37 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()
         {
-            return new
+            return new Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.Configuration
             {
-                PersonProfilePageGuid,
-                GroupDetailPageGuid,
-                WorkflowPageGuid
+                PersonProfilePageGuid = PersonProfilePageGuid,
+                GroupDetailPageGuid = GroupDetailPageGuid,
+                WorkflowPageGuid = WorkflowPageGuid,
+                ReminderPageGuid = ReminderPageGuid,
+                AreRemindersConfigured = CheckReminderConfiguration()
             };
         }
 
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Checks if there's any reminder with the ConnectionRequest entity type.
+        /// </summary>
+        private static bool CheckReminderConfiguration()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequestEntityTypeId = EntityTypeCache.Get( typeof( ConnectionRequest ) ).Id;
+
+                var reminderTypesExist = new ReminderTypeService( rockContext )
+                    .Queryable()
+                    .Where( rt => rt.EntityTypeId == connectionRequestEntityTypeId )
+                    .Any();
+
+                return reminderTypesExist;
+            }
+        }
 
         /// <summary>
         /// Determines whether the connection request is critical.
@@ -354,22 +389,25 @@ namespace Rock.Blocks.Types.Mobile.Connection
             var isEditable = request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             var activitiesViewModel = activities.ToList()
-            .Select( a => new ActivityViewModel
-            {
-                ActivityTypeGuid = a.ConnectionActivityType.Guid,
-                ConnectorGuid = a.ConnectorPersonAlias.Person.Guid,
-                CreatedDateTime = ( DateTimeOffset ) a.CreatedDateTime,
-                IsModifiable = IsActivityModifiable(a),
-                Note = a.Note,
-                Guid = a.Guid,
-                ActivityType = a.ConnectionActivityType.ToString(),
-                Connector = new ConnectorItemViewModel
+                .Select( a => new ActivityViewModel
                 {
-                    FirstName = a.ConnectorPersonAlias.Person.FirstName,
-                    LastName = a.ConnectorPersonAlias.Person.LastName,
-                    PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( a.ConnectorPersonAlias.Person.PhotoUrl )
-                }
-            } ).ToList();
+                    ActivityTypeGuid = a.ConnectionActivityType.Guid,
+                    ConnectorGuid = a.ConnectorPersonAlias?.Person.Guid,
+                    CreatedDateTime = ( DateTimeOffset ) a.CreatedDateTime,
+                    IsModifiable = IsActivityModifiable(a),
+                    Note = a.Note.StripHtml(),
+                    Guid = a.Guid,
+                    ActivityType = a.ConnectionActivityType.ToString(),
+                    Connector = a.ConnectorPersonAlias?.Person != null ?
+                        new ConnectorItemViewModel
+                        {
+                            FirstName = a.ConnectorPersonAlias.Person.FirstName,
+                            LastName = a.ConnectorPersonAlias.Person.LastName,
+                            PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( a.ConnectorPersonAlias.Person.PhotoUrl )
+                        }
+                        : null
+                } )
+                .ToList();
 
             var viewModel = new RequestViewModel
             {
@@ -399,7 +437,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 StatusGuid = request.ConnectionStatus.Guid,
                 StatusName = request.ConnectionStatus.Name,
                 WorkflowTypes = connectionWorkflows,
-                Activities = activitiesViewModel
+                Activities = activitiesViewModel,
+                ConnectionRequestGuid = request.Guid
             };
 
             if ( isEditable )
@@ -1605,6 +1644,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
                 var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
+                var noteService = new NoteService( rockContext );
                 int? connectorAliasId = null;
 
                 // Load the connection request. Include the connection opportunity
@@ -1668,6 +1708,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 requestActivity.ConnectionOpportunityId = request.ConnectionOpportunityId;
                 requestActivity.ConnectionActivityTypeId = activityTypeId;
                 requestActivity.ConnectorPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                var mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( activity.Note, requestActivity.Note );
                 requestActivity.Note = activity.Note;
                 requestActivity.ConnectorPersonAliasId = connectorAliasId;
 
@@ -1675,6 +1716,19 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 connectionRequestActivityService.Add( requestActivity );
 
                 rockContext.SaveChanges();
+
+                // If we have any new mentioned person ids, start a background
+                // task to create the notifications.
+                if ( mentionedPersonIds.Any() )
+                {
+                    Task.Run( () =>
+                    {
+                        foreach ( var personId in mentionedPersonIds )
+                        {
+                            ConnectionRequestMention.CreateNotificationMessage( request, personId, RequestContext.CurrentPerson.Id, PageCache.Id, RequestContext.GetPageParameters() );
+                        }
+                    } );
+                }
 
                 return ActionOk( GetRequestViewModel( request, rockContext ) );
             }
@@ -1696,6 +1750,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
                 var connectionRequestService = new ConnectionRequestService( rockContext );
+                var noteService = new NoteService( rockContext );
 
                 var activityToUpdate = activityService.Get( activityGuid );
 
@@ -1742,10 +1797,25 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 activityToUpdate.ConnectionActivityTypeId = connectionActivityType.Id;
                 activityToUpdate.ConnectorPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                var mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( activity.Note, activityToUpdate.Note );
                 activityToUpdate.Note = activity.Note;
                 activityToUpdate.ConnectorPersonAliasId = connectorAliasId;
 
                 rockContext.SaveChanges();
+
+                // If we have any new mentioned person ids, start a background
+                // task to create the notifications.
+                if ( mentionedPersonIds.Any() )
+                {
+                    Task.Run( () =>
+                    {
+                        foreach ( var personId in mentionedPersonIds )
+                        {
+                            ConnectionRequestMention.CreateNotificationMessage( request, personId, RequestContext.CurrentPerson.Id, PageCache.Id, RequestContext.GetPageParameters() );
+                        }
+                    } );
+                }
+
                 return ActionOk( GetRequestViewModel( request, rockContext ) );
             }
         }
@@ -2329,6 +2399,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// </summary>
             /// <value>The activities.</value>
             public List<ActivityViewModel> Activities { get; set; }
+
+            /// <summary>
+            /// Gets or sets the connection request guid.
+            /// </summary>
+            public Guid ConnectionRequestGuid { get; set; }
         }
 
         /// <summary>

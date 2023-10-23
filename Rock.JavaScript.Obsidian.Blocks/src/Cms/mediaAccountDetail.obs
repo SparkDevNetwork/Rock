@@ -7,6 +7,7 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.MediaAccount"
@@ -118,6 +119,12 @@
                 type: "danger"
             });
         }
+
+        labels.push({
+            iconCssClass:"",
+            title: mediaAccountViewBag.value?.lastRefresh ?? "",
+            type: "info"
+        });
 
         return labels;
     });

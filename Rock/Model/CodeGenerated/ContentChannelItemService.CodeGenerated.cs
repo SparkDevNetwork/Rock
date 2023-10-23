@@ -122,9 +122,16 @@ namespace Rock.Model
             target.Content = source.Content;
             target.ContentChannelId = source.ContentChannelId;
             target.ContentChannelTypeId = source.ContentChannelTypeId;
+            target.ContentLibraryContentTopicId = source.ContentLibraryContentTopicId;
+            target.ContentLibraryLicenseTypeValueId = source.ContentLibraryLicenseTypeValueId;
+            target.ContentLibrarySourceIdentifier = source.ContentLibrarySourceIdentifier;
+            target.ContentLibraryUploadedByPersonAliasId = source.ContentLibraryUploadedByPersonAliasId;
+            target.ContentLibraryUploadedDateTime = source.ContentLibraryUploadedDateTime;
+            target.ExperienceLevel = source.ExperienceLevel;
             target.ExpireDateTime = source.ExpireDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsContentLibraryOwner = source.IsContentLibraryOwner;
             target.ItemGlobalKey = source.ItemGlobalKey;
             target.Order = source.Order;
             target.Permalink = source.Permalink;

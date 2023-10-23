@@ -34,24 +34,22 @@ namespace Rock.Web
         /// <param name="e"></param>
         protected override void OnInit( EventArgs e )
         {
-            var rockBlock = ( Control as RockBlock );
-
             // Start the block observability activity. Note that some blocks are not loaded directly by RockPage and therefore don't have a block cache.
-            if ( rockBlock.BlockCache != null )
+            if ( Control is RockBlock rockBlock && rockBlock.BlockCache != null )
             {
-                ObservabilityHelper.StartActivity( $"BLOCK INIT {rockBlock.BlockCache.BlockType.Name} - {rockBlock.BlockCache.Name}" );
-                Activity.Current?.AddTag( "rock-otel-type", "rock-block" );
-                Activity.Current?.AddTag( "rock-blocktype-name", rockBlock.BlockCache.BlockType.Name );
-                Activity.Current?.AddTag( "rock-blocktype-id", rockBlock.BlockCache.BlockType.Id );
-                Activity.Current?.AddTag( "rock-node", RockMessageBus.NodeName );
+                using ( var activity = ObservabilityHelper.StartActivity( $"BLOCK INIT {rockBlock.BlockCache.BlockType.Name} - {rockBlock.BlockCache.Name}" ) )
+                {
+                    activity?.AddTag( "rock-otel-type", "rock-block" );
+                    activity?.AddTag( "rock-blocktype-name", rockBlock.BlockCache.BlockType.Name );
+                    activity?.AddTag( "rock-blocktype-id", rockBlock.BlockCache.BlockType.Id );
+                    activity?.AddTag( "rock-node", RockMessageBus.NodeName );
+
+                    base.OnInit( e );
+                }
             }
-
-            base.OnInit( e );
-
-            // Close out activity
-            if ( rockBlock.BlockCache != null )
+            else
             {
-                Activity.Current?.Dispose();
+                base.OnInit( e );
             }
         }
 
@@ -61,23 +59,21 @@ namespace Rock.Web
         /// <param name="e"></param>
         protected override void OnLoad( EventArgs e )
         {
-            var rockBlock = ( Control as RockBlock );
-
-            // Start the block observability activity
-            if ( rockBlock.BlockCache != null )
+            // Start the block observability activity. Note that some blocks are not loaded directly by RockPage and therefore don't have a block cache.
+            if ( Control is RockBlock rockBlock && rockBlock.BlockCache != null )
             {
-                ObservabilityHelper.StartActivity( $"BLOCK LOAD {rockBlock.BlockCache.BlockType.Name} - {rockBlock.BlockCache.Name}" );
-                Activity.Current?.AddTag( "rock-otel-type", "rock-block" );
-                Activity.Current?.AddTag( "rock-blocktype-name", rockBlock.BlockCache.BlockType.Name );
-                Activity.Current?.AddTag( "rock-blocktype-id", rockBlock.BlockCache.BlockType.Id );
+                using ( var activity = ObservabilityHelper.StartActivity( $"BLOCK LOAD {rockBlock.BlockCache.BlockType.Name} - {rockBlock.BlockCache.Name}" ) )
+                {
+                    activity?.AddTag( "rock-otel-type", "rock-block" );
+                    activity?.AddTag( "rock-blocktype-name", rockBlock.BlockCache.BlockType.Name );
+                    activity?.AddTag( "rock-blocktype-id", rockBlock.BlockCache.BlockType.Id );
+
+                    base.OnLoad( e );
+                }
             }
-
-            base.OnLoad( e );
-
-            // Close out activity
-            if ( rockBlock.BlockCache != null )
+            else
             {
-                Activity.Current?.Dispose();
+                base.OnLoad( e );
             }
         }
     }

@@ -83,6 +83,17 @@ namespace Rock.Web.Cache
         public string ShortCode { get; private set; }
 
         /// <summary>
+        /// Gets the condensed name of the campus. This will be the short code
+        /// if set, otherwise the name of the campus by stripping off any
+        /// trailing " Campus" text.
+        /// </summary>
+        /// <value>
+        /// The condensed name of the campus.
+        /// </value>
+        [DataMember]
+        public string CondensedName { get; private set; }
+
+        /// <summary>
         /// Gets or sets the URL.
         /// </summary>
         /// <value>
@@ -316,6 +327,7 @@ namespace Rock.Web.Cache
             Description = campus.Description;
             IsActive = campus.IsActive;
             ShortCode = campus.ShortCode;
+            CondensedName = campus.CondensedName;
             Url = campus.Url;
             LocationId = campus.LocationId;
             TimeZoneId = campus.TimeZoneId;

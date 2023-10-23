@@ -16,8 +16,8 @@
 //
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import CheckBox from "@Obsidian/Controls/checkBox";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 
@@ -36,7 +36,7 @@ export const EditComponent = defineComponent({
     props: getFieldEditorProps(),
 
     data() {
-        
+
         return {
             internalValue: ""
         };
@@ -126,7 +126,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

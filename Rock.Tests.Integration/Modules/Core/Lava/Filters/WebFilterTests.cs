@@ -631,9 +631,15 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
                 ThemeName = "MyTheme",
                 HasActiveHttpRequest = hasHttpRequest
             };
-            var fluidEngine = LavaService.NewEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ),
-                    new LavaEngineConfigurationOptions { HostService = host } );
 
+            // In addition to the HostService, a FileSystem is also required to resolve the path for the Site Theme.
+            var config = new LavaEngineConfigurationOptions
+            {
+                HostService = host,
+                FileSystem = new WebsiteLavaFileSystem()
+            };
+
+            var fluidEngine = LavaService.NewEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ), config );
             return fluidEngine;
         }
 

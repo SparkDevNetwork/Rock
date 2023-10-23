@@ -134,7 +134,7 @@ namespace Rock.CodeGeneration.Pages
         private List<Type> GetViewModelTypes()
         {
             // We only include types that end in "Bag" or "Box".
-            return typeof( Rock.ViewModels.Utility.IViewModel ).Assembly
+            return typeof( Rock.ViewModels.Utility.EntityBagBase ).Assembly
                 .GetExportedTypes()
                 .Where( t => t.Name.Split( '`' )[0].EndsWith( "Bag" ) || t.Name.Split( '`' )[0].EndsWith( "Box" ) )
                 .Where( t => !t.IsAbstract && !t.IsInterface )
@@ -160,7 +160,7 @@ namespace Rock.CodeGeneration.Pages
         /// <returns>A string that represents the file name.</returns>
         private string GetFileNameForType( Type type )
         {
-            return $"{type.Name.Split( '`' )[0].CamelCase()}.d.ts";
+            return $"{type.Name.Split( '`' )[0].ToCamelCase()}.d.ts";
         }
 
         /// <summary>

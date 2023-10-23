@@ -140,7 +140,7 @@
                             <Rock:NotificationBox ID="nbListWarning" runat="server" NotificationBoxType="Info" />
                             <Rock:Grid ID="gRecipientList" runat="server" OnRowDataBound="gRecipientList_RowDataBound">
                                 <Columns>
-                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName"  />
+                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName" />
                                     <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
                                     <Rock:RockLiteralField ID="lRecipientListAlert" HeaderText="Notes" />
                                     <Rock:RockLiteralField ID="lRecipientListAlertEmail" HeaderText="Email" />
@@ -153,69 +153,84 @@
                 </asp:Panel>
 
                 <%-- Recipient List --%>
-                <asp:Panel ID="pnlIndividualRecipientList" CssClass="js-navigation-panel d-flex flex-column h-100" runat="server" Visible="false">
-                                <div>
-                                    <h1 class="step-title text-break">Recipient List</h1>
-                                    <p>Below is a listing of your current recipients. You can add or remove individuals from this list before continuing.</p>
-                                    <hr />
+                <asp:Panel ID="pnlIndividualRecipientPanel" CssClass="js-navigation-panel d-flex flex-column h-100" runat="server" Visible="false">
+                    <div>
+                        <h1 class="step-title text-break">Recipient List</h1>
+                        <p>
+                            <asp:Literal ID="lIndividualRecipientPanelCaption" runat="server" />
+                        </p>
+                        <hr />
 
-                                    <asp:ValidationSummary
-                                        ID="vsIndividualRecipientList"
-                                        runat="server"
-                                        HeaderText="Please correct the following:"
-                                        ValidationGroup="vsIndividualRecipientList"
-                                        CssClass="alert alert-warning" />
+                        <asp:ValidationSummary
+                            ID="vsIndividualRecipientList"
+                            runat="server"
+                            HeaderText="Please correct the following:"
+                            ValidationGroup="vsIndividualRecipientList"
+                            CssClass="alert alert-warning" />
 
-                                    <Rock:NotificationBox
-                                        ID="nbIndividualListWarning"
-                                        runat="server"
-                                        NotificationBoxType="Validation" />
+                        <Rock:NotificationBox
+                            ID="nbIndividualListWarning"
+                            runat="server"
+                            NotificationBoxType="Validation" />
 
-                                    <div class="d-flex margin-b-md">
-                                        <div class="mr-sm-auto">
-                                            <Rock:PersonPicker
-                                                ID="ppAddPerson"
-                                                runat="server"
-                                                CssClass="picker-menu-left"
-                                                Label="Person"
-                                                PersonName="Add Person"
-                                                OnSelectPerson="ppAddPerson_SelectPerson"
-                                                EnableSelfSelection="true" />
-                                        </div>
-                                        <div class="ml-sm-auto mt-auto form-group">
-                                            <asp:Panel ID="pnlIndividualRecipientListCount" runat="server" CssClass="label label-info">
-                                                <asp:Literal ID="lIndividualRecipientListCount" runat="server" Text="" />
-                                            </asp:Panel>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="position-relative flex-fill styled-scroll" style="min-height:200px;">
-                                    <div class="position-absolute inset-0 overflow-auto">
-                                    <Rock:Grid
-                                        ID="gIndividualRecipients"
-                                        runat="server"
-                                        DisplayType="Light"
-                                        OnRowDataBound="gIndividualRecipients_RowDataBound"
-                                        HideDeleteButtonForIsSystem="false"
-                                        ShowConfirmDeleteDialog="false">
-                                        <Columns>
-                                            <Rock:SelectField></Rock:SelectField>
-                                            <asp:BoundField DataField="FullName" HeaderText="Name" SortExpression="FullName" />
-                                            <Rock:RockLiteralField ID="lRecipientAlertEmail" HeaderText="Email" />
-                                            <Rock:RockLiteralField ID="lRecipientAlertSMS" HeaderText="SMS" />
-                                            <Rock:RockLiteralField ID="lRecipientAlert" HeaderText="Notes" />
-                                            <Rock:DeleteField OnClick="gIndividualRecipients_DeleteClick" />
-                                        </Columns>
-                                    </Rock:Grid>
-                                    </div>
-                                </div>
-                                <div class="my-3">
-                                        <asp:LinkButton ID="btnDeleteSelectedRecipients"
-                                            runat="server"
-                                            CssClass="btn btn-xs btn-outline-primary"
-                                            OnClick="btnDeleteSelectedRecipients_Click"
-                                            Text="Remove Selected" />
-                                </div>
+                        <div class="d-flex margin-b-md">
+                            <div class="mr-sm-auto">
+                                <Rock:PersonPicker
+                                    ID="ppAddPerson"
+                                    runat="server"
+                                    CssClass="picker-menu-left"
+                                    Label="Person"
+                                    PersonName="Add Person"
+                                    OnSelectPerson="ppAddPerson_SelectPerson"
+                                    EnableSelfSelection="true" />
+                            </div>
+                            <div class="ml-sm-auto mt-auto form-group">
+                                <asp:Panel ID="pnlIndividualRecipientListCount" runat="server" CssClass="label label-info">
+                                    <asp:Literal ID="lIndividualRecipientListCount" runat="server" Text="" />
+                                </asp:Panel>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%-- Recipient List Panel --%>
+                    <asp:Panel ID="pnlIndividualRecipientList" runat="server" Visible="false">
+                        <div class="position-relative flex-fill styled-scroll" style="min-height: 200px;">
+                            <Rock:Grid
+                                ID="gIndividualRecipients"
+                                runat="server"
+                                DisplayType="Light"
+                                OnRowDataBound="gIndividualRecipients_RowDataBound"
+                                HideDeleteButtonForIsSystem="false"
+                                ShowConfirmDeleteDialog="false">
+                                <Columns>
+                                    <Rock:SelectField></Rock:SelectField>
+                                    <asp:BoundField DataField="FullName" HeaderText="Name" SortExpression="FullName" />
+                                    <Rock:RockLiteralField ID="lRecipientAlertEmail" HeaderText="Email" />
+                                    <Rock:RockLiteralField ID="lRecipientAlertSMS" HeaderText="SMS" />
+                                    <Rock:RockLiteralField ID="lRecipientAlert" HeaderText="Notes" />
+                                    <Rock:DeleteField OnClick="gIndividualRecipients_DeleteClick" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                        <div class="my-3">
+                            <asp:LinkButton ID="btnDeleteSelectedRecipients"
+                                runat="server"
+                                CssClass="btn btn-xs btn-outline-primary"
+                                OnClick="btnDeleteSelectedRecipients_Click"
+                                Text="Remove Selected" />
+                        </div>
+                    </asp:Panel>
+
+                    <%-- Recipient Summary Panel --%>
+                    <asp:Panel ID="pnlIndividualRecipientSummary" runat="server" Visible="false" CssClass="margin-t-md">
+                        <div class="position-relative flex-fill" style="min-height: 200px;">
+                            
+                                <asp:Literal ID="lRecipientSummary" runat="server" />
+                            
+                        </div>
+                    </asp:Panel>
+
+                    <%-- Panel Actions  --%>
                     <div class="actions panel-actions-bordered">
                         <asp:LinkButton ID="btnRecipientListNext"
                             runat="server"

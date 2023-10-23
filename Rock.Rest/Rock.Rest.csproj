@@ -169,7 +169,9 @@
     <Compile Include="Controllers\NotificationMessagesController.Partial.cs" />
     <Compile Include="Controllers\ReminderTypesController.Partial.cs" />
     <Compile Include="Controllers\RemindersController.Partial.cs" />
+    <Compile Include="Handler\RockHttpControllerSelector.cs" />
     <Compile Include="HttpRequestMessageWrapper.cs" />
+    <Compile Include="Utility\RockMessageResponseContext.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
@@ -271,7 +273,7 @@
     <Compile Include="Controllers\StreakTypesController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
     <Compile Include="Controllers\MobileController.cs" />
-    <Compile Include="Controllers\NotesController.Partial.cs" />
+    <Compile Include="Controllers\NotesController.partial.cs" />
     <Compile Include="Controllers\PbxController.cs" />
     <Compile Include="Controllers\PrayerRequestsController.Partial.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
@@ -543,7 +545,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="App.config" />
     <Compile Include="Controllers\RestControllersController.partial.cs" />
     <None Include="packages.config" />
     <None Include="v2\Models\README.md" />

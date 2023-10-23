@@ -1,0 +1,190 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <div class="row">
+            <div class="col-md-6">
+                <PersonPicker v-model="personAlias"
+                              label="Person"
+                              rules="required"
+                              :disabled="!isEditable" />
+            </div>
+            <div class="col-md-6">
+                <DateRangePicker label="Date Range"
+                                 v-model="selectedDateRange"
+                                 :disabled="!isEditable" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-if="selectGroupTypeGuid"
+                              :label="groupType"
+                              v-model="groupGuid"
+                              :items="groups"
+                              :showBlankItem="true"
+                              :enhanceForLongLists="false"
+                              :grouped="false"
+                              :multiple="false"
+                              :disabled="!isEditable" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <AccountPicker label="Account"
+                                       v-model="account"
+                                       rules="required"
+                                       :enhanceForLongLists="true"
+                                       :multiple="false"
+                                       :disabled="!isEditable" />
+                    </div>
+                </div>
+                <CurrencyBox label="Total Amount"
+                             v-model="totalAmount"
+                             help="The total amount that you are pledging. If you intend to give $100 monthly for one year, enter $1,200."
+                             rules="required"
+                             :disabled="!isEditable" />
+            </div>
+            <div class="col-md-6">
+                <DefinedValuePicker label="Payment Schedule"
+                                    help="How often the person is expected to give some portion of the total amount."
+                                    v-model="pledgeFrequencyValue"
+                                    :definedTypeGuid="DefinedType.FinancialFrequency"
+                                    :showBlankItem="true"
+                                    :multiple="false"
+                                    :enhanceForLongLists="true"
+                                    :disabled="!isEditable" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="attributes">
+                    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+                </div>
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { FinancialPledgeBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeBag";
+    import { FinancialPledgeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FinancialPledgeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<FinancialPledgeDetailOptionsBag>,
+            required: true
+        },
+
+        isEditable: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FinancialPledgeBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const account = propertyRef(props.modelValue.account ?? {}, "AccountId");
+    const groupGuid = propertyRef(props.modelValue.group?.value ?? "", "GroupId");
+    const personAlias = propertyRef(props.modelValue.personAlias ?? undefined, "PersonAliasId");
+    const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
+    const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
+    const totalAmount = propertyRef(props.modelValue.totalAmount ?? null, "TotalAmount");
+    const pledgeFrequencyValue = propertyRef(props.modelValue.pledgeFrequencyValue ?? {}, "PledgeFrequencyValueId");
+    const selectedDateRange = ref<DateRangeParts | undefined>(startDate.value || endDate.value ? { lowerValue: startDate.value, upperValue: endDate.value } : undefined);
+    const selectGroupTypeGuid = ref(props.options.selectGroupTypeGuid ?? "");
+    const groupType = ref(props.options.groupType ?? "Group");
+    const groups = ref(props.options.groups ?? []);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [startDate, endDate, totalAmount, groupGuid, pledgeFrequencyValue, personAlias, account];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch(() => personAlias.value, async () => {
+        if (personAlias.value?.value) {
+            const result = await invokeBlockAction<ListItemBag[]>("LoadGroups", {
+                personAliasGuid: personAlias.value.value
+            });
+
+            if (result.isSuccess) {
+                groups.value = result.data ?? [];
+            }
+        }
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(startDate, props.modelValue.startDate ?? "");
+        updateRefValue(endDate, props.modelValue.startDate ?? "");
+        updateRefValue(totalAmount, props.modelValue.totalAmount ?? 0);
+        updateRefValue(groupGuid, props.modelValue.group?.value ?? "");
+        updateRefValue(pledgeFrequencyValue, props.modelValue.pledgeFrequencyValue ?? {});
+        updateRefValue(personAlias, props.modelValue.personAlias ?? {});
+        updateRefValue(account, props.modelValue.account ?? {});
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, selectedDateRange, ...propRefs], () => {
+        const newValue: FinancialPledgeBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            totalAmount: totalAmount.value,
+            group: {
+                value: groupGuid.value
+            },
+            pledgeFrequencyValue: pledgeFrequencyValue.value,
+            startDate: selectedDateRange.value?.lowerValue,
+            endDate: selectedDateRange.value?.upperValue,
+            personAlias: personAlias.value,
+            account: account.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

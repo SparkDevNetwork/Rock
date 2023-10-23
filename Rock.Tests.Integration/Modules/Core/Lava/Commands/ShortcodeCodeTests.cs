@@ -292,7 +292,7 @@ Schedule Active = {{isScheduleActive}}
             var expectedOutput = @"
 <div id=`mediaplayer_*` style=`--plyr-color-main:var(--color-primary);`$></div>
 <script>
-(function(){newRock.UI.MediaPlayer(`#mediaplayer_*`,{`autopause`:true,`autoplay`:false,`clickToPlay`:true,`controls`:`play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen`,`debug`:false,`hideControls`:true,`mediaUrl`:``,`muted`:false,`posterUrl`:``,`resumePlaying`:false,`seekTime`:10.0,`trackProgress`:true,`type`:``,`volume`:1.0,`writeInteraction`:true});})();
+(function(){newRock.UI.MediaPlayer(`#mediaplayer_*`,{`autopause`:true,`autoplay`:false,`clickToPlay`:true,`controls`:`play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen`,`debug`:false,`hideControls`:true,`map`:``,`mediaUrl`:``,`muted`:false,`posterUrl`:``,`resumePlaying`:true,`seekTime`:10.0,`trackProgress`:true,`type`:``,`volume`:1.0,`writeInteraction`:true});})();
 </script>
 ";
             expectedOutput = expectedOutput.Replace( "`", @"""" );
@@ -352,7 +352,7 @@ Schedule Active = {{isScheduleActive}}
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
 
                 // Verify that the result emits the expected parse error.
-                var error = result.Error?.InnerException;
+                var error = result.Error;
                 if ( !(error is LavaParseException ) )
                 {
                     throw new Exception( "Parse exception expected but not encountered." );
@@ -385,7 +385,7 @@ Schedule Active = {{isScheduleActive}}
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
 
                 // Verify that the result emits the expected parse error.
-                var error = result.Error?.InnerException;
+                var error = result.Error;
                 if ( !( error is LavaParseException ) )
                 {
                     throw new Exception( "Parse exception expected but not encountered." );
@@ -448,7 +448,7 @@ Schedule Active = {{isScheduleActive}}
         }
 
         /// <summary>
-        /// Verify that an invalid shortcode name correctly throws a shortcode parsing error when embedded in an if/endif block.
+        /// Verify that nested shortcode blocks are rendered correctly.
         /// </summary>
         [TestMethod]
         public void ShortcodeParsing_ShortcodeEmbeddedInOuterShortcode_IsParsedCorrectly()
@@ -506,5 +506,62 @@ Schedule Active = {{isScheduleActive}}
 
             TestHelper.AssertTemplateOutput( expectedResult, input, new LavaTestRenderOptions { Wildcards = new List<string> { "<guid1>", "<guid2>" } } );
         }
+
+        /// <summary>
+        /// Verify that a shortcode embedded in an [[ item ]] tag is rendered correctly.
+        /// </summary>
+        [TestMethod]
+        [Ignore("This test documents a potential bug. The nested [[ item ]] tag is not resolved correctly.")]
+        public void ShortcodeParsing_ShortcodeEmbeddedInItemElement_IsParsedCorrectly()
+        {
+            var input = @"
+{[ accordion ]}
+    [[ item title:'Item 1' ]]
+        {[ accordion ]}
+            [[ item title:'Item 2' ]]
+            [[ enditem ]]
+        {[ endaccordion ]}
+    [[ enditem ]]
+{[ endaccordion ]}
+";
+
+            var expectedResult = @"
+<div class=""panel-group"" id=""accordion-id-<guid1>"" role=""tablist"" aria-multiselectable=""true"">
+    <div class=""panel panel-default"">
+        <div class=""panel-heading"" role=""tab"" id=""heading1-id-<guid1>"">
+          <h4 class=""panel-title"">
+            <a role=""button"" data-toggle=""collapse"" data-parent=""#accordion-id-<guid1>"" href=""#collapse1-id-<guid1>"" aria-expanded=""true"" aria-controls=""collapse1"">
+              Item 1
+            </a>
+          </h4>
+        </div>
+        <div id=""collapse1-id-<guid1>"" class=""panel-collapse collapse in"" role=""tabpanel"" aria-labelledby=""heading1-id-<guid1>"">
+          <div class=""panel-body"">
+
+            <div class=""panel-group"" id=""accordion-id-<guid2>"" role=""tablist"" aria-multiselectable=""true"">
+                <div class=""panel panel-default"">
+                    <div class=""panel-heading"" role=""tab"" id=""heading1-id-<guid2>"">
+                      <h4 class=""panel-title"">
+                        <a role=""button"" data-toggle=""collapse"" data-parent=""#accordion-id-<guid2>"" href=""#collapse1-id-<guid2>"" aria-expanded=""true"" aria-controls=""collapse1"">
+                          Item 2
+                        </a>
+                      </h4>
+                    </div>
+                    <div id=""collapse1-id-<guid2>"" class=""panel-collapse collapse in"" role=""tabpanel"" aria-labelledby=""heading1-id-<guid2>"">
+                      <div class=""panel-body"">
+                      </div>
+                    </div>
+                </div>
+            </div>
+
+          </div>
+        </div>
+    </div>
+</div>
+";
+
+            TestHelper.AssertTemplateOutput( expectedResult, input, new LavaTestRenderOptions { Wildcards = new List<string> { "<guid1>", "<guid2>" } } );
+        }
+
     }
 }

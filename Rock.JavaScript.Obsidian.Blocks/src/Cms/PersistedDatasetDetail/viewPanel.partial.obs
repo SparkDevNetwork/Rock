@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { PersistedDatasetBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetBag";

@@ -28,7 +28,7 @@
     import { computed, PropType, watch } from "vue";
     import StepProgramPicker from "./stepProgramPicker.obs";
     import StepStatusPicker from "./stepStatusPicker.obs";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { Guid } from "@Obsidian/Types";
 

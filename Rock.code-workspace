@@ -40,7 +40,8 @@
 		"recommendations": [
 			"dbaeumer.vscode-eslint",
 			"vue.volar",
-			"orta.vscode-jest"
+			"orta.vscode-jest",
+			"vue.vscode-typescript-vue-plugin"
 		]
 	},
 	"folders": [

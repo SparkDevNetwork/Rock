@@ -2065,6 +2065,10 @@ namespace Rock.Web.UI.Controls
                     qualifiers = this.AttributeQualifiers;
                 }
 
+                // Set a configuration flag to indicate that the control is accepting a default value.
+                // Some controls apply different validation rules to default values, such as allowing partial input.
+                qualifiers?.AddOrIgnore( "DataEntryMode", new ConfigurationValue { Name = "DataEntryMode", Value = "DefaultValue" } );
+
                 // make sure each default control has a unique/predictable ID to help avoid viewstate issues
                 var defaultControl = field.EditControl( qualifiers, $"defaultValue_{fieldTypeId}_{this.AttributeGuid.ToString("N")}" );
                 if ( defaultControl != null )

@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import { FilterOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/filterOptionsBag";
     import { DragReorder as vDragReorder, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";

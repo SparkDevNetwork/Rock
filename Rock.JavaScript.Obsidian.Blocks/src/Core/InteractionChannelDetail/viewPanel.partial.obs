@@ -1,0 +1,51 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <div v-html="content">
+
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+</fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { InteractionChannelBag } from "@Obsidian/ViewModels/Blocks/Core/InteractionChannelDetail/interactionChannelBag";
+    import { InteractionChannelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/InteractionChannelDetail/interactionChannelDetailOptionsBag";
+
+    const props = defineProps({
+    modelValue: {
+    type: Object as PropType<InteractionChannelBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<InteractionChannelDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+    const content = ref(props.modelValue?.content ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

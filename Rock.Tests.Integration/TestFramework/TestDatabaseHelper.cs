@@ -24,7 +24,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using Rock.Data;
+using Rock.Jobs;
 using Rock.Model;
+using Rock.Tests.Integration.Database;
 using Rock.Tests.Shared;
 using Rock.Utility;
 using Rock.Web;
@@ -42,12 +44,13 @@ namespace Rock.Tests.Integration
         // Force the database to be replaced if it exists.
         Force = 2
     }
+
     /// <summary>
     /// A helper class to manage database instances for the testing process.
     /// </summary>
     public class TestDatabaseHelper
     {
-        private const string SampleDataSourceKey = "com.rockrms.test.SampleDataSource";
+        public const string SampleDataSourceKey = "com.rockrms.test.SampleDataSource";
 
         private static bool _IsDatabaseInitialized = false;
         private static DatabaseRefreshStrategySpecifier _databaseDeleteStrategy = DatabaseRefreshStrategySpecifier.Verified;
@@ -57,6 +60,11 @@ namespace Rock.Tests.Integration
         public static string ConnectionString = null;
         public static string SampleDataUrl = null;
         public static bool DatabaseRemoteDeleteIsAllowed = false;
+        public static ITestDatabaseInitializer DatabaseInitializer = null;
+        public static string DefaultSnapshotName = null;
+        public static bool SampleDataIsEnabled = true;
+
+        #region Public Properties and Methods
 
         public static DatabaseRefreshStrategySpecifier DatabaseRefreshStrategy
         {
@@ -70,29 +78,18 @@ namespace Rock.Tests.Integration
             }
         }
 
-        private static bool IsLocalDbInstance()
-        {
-            var csb = new SqlConnectionStringBuilder( ConnectionString );
-
-            if ( csb.DataSource != null
-                && csb.DataSource.StartsWith( @"(LocalDB)\", StringComparison.OrdinalIgnoreCase ) )
-            {
-                return true;
-            }
-            return false;
-        }
-
-
         /// <summary>
         /// Initializes a new database and loads sample data.
         /// </summary>
-        public static bool InitializeTestDatabase()
+        public static bool InitializeTestDatabase( string snapshotName = null )
         {
+            snapshotName = snapshotName ?? DefaultSnapshotName;
+
             if ( _IsDatabaseInitialized )
             {
                 return true;
             }
-
+             
             _IsDatabaseInitialized = true;
 
             bool success;
@@ -100,217 +97,18 @@ namespace Rock.Tests.Integration
 
             if ( IsLocalDbInstance() )
             {
-                success = InitializeSqlServerDatabaseForLocal( forceReplaceExisting );
+                success = InitializeSqlServerDatabaseForLocal( forceReplaceExisting, snapshotName );
             }
             else
             {
-                success = InitializeSqlServerDatabaseForRemote( ConnectionString, SampleDataUrl, forceReplaceExisting );
+                success = InitializeSqlServerDatabaseForRemote( ConnectionString,
+                    snapshotName,
+                    SampleDataUrl,
+                    forceReplaceExisting );
             }
 
             return success;
         }
-
-        private static bool InitializeSqlServerDatabaseForRemote( string connectionString, string sampleDataUrl, bool forceReplace = false )
-        {
-            var csb = new SqlConnectionStringBuilder( connectionString );
-            var dbName = csb.InitialCatalog;
-
-            TestHelper.Log( $"Connecting to database server \"{ csb.DataSource }\"..." );
-            TestHelper.Log( $"Target database is \"{dbName}\"." );
-
-            var databaseExists = DatabaseExists( connectionString );
-
-            csb.InitialCatalog = "master";
-            using ( var connection = new SqlConnection( csb.ConnectionString ) )
-            {
-                connection.Open();
-
-                var migrateDatabase = false;
-                var createDatabase = false;
-
-                if ( databaseExists )
-                {
-                    TestHelper.Log( "Verifying migrations..." );
-
-                    var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
-                    var lastMigration = migrator.GetDatabaseMigrations().FirstOrDefault();
-                    var targetMigration = GetTargetMigration();
-
-                    migrateDatabase = lastMigration != targetMigration;
-
-                    if ( forceReplace )
-                    {
-                        // Backup the current database.
-                        using ( var cmd = connection.CreateCommand() )
-                        {
-                            TestHelper.Log( $"Backing up existing database..." );
-
-                            cmd.CommandText = $@"
-BACKUP DATABASE [{dbName}]
-    TO DISK = '{dbName}.bak')";
-                            cmd.ExecuteNonQuery();
-                        }
-
-                        TestHelper.Log( $"Deleting existing database..." );
-
-                        DeleteDatabase( connectionString ); // connection, dbName );
-
-                        createDatabase = true;
-                    }
-                }
-                else
-                {
-                    createDatabase = true;
-                }
-
-                //
-                // Execute the SQL command to create the empty database.
-                //
-                if ( createDatabase )
-                {
-                    TestHelper.Log( $"Creating new database..." );
-
-                    using ( var cmd = connection.CreateCommand() )
-                    {
-                        cmd.CommandText = $@"
-CREATE DATABASE [{dbName}];
-    --ON (NAME = '{dbName}')
-    --LOG ON (NAME = '{dbName}_Log');
-ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
-                        using ( var txn = cmd.Connection.BeginTransaction() )
-                        {
-                            try
-                            {
-                                var result = cmd.ExecuteNonQuery();
-                                txn.Commit();
-                            }
-                            catch
-                            {
-                                txn.Rollback();
-                                throw;
-                            }
-                        }
-                    }
-                }
-
-                if ( createDatabase || migrateDatabase )
-                {
-                    if ( !createDatabase )
-                    {
-                        TestHelper.Log( $"Target database migration level does not match the current Rock version." );
-                    }
-                    TestHelper.Log( $"Running migrations..." );
-
-                    MigrateDatabase( connection.ConnectionString );
-                }
-
-                if ( createDatabase )
-                {
-                    AddSampleDataForActiveDatabase( sampleDataUrl );
-                }
-
-                TestHelper.Log( $"Task complete." );
-            }
-
-            return true;
-        }
-
-        private static bool ValidateSampleDataForActiveDatabase( string sampleDataUrl )
-        {
-            TestHelper.Log( $"Verifying sample data..." );
-
-            var sampleDataId = SystemSettings.GetValue( SampleDataSourceKey );
-            if ( string.IsNullOrEmpty( sampleDataId ) || sampleDataId != sampleDataUrl )
-            {
-                return false;
-            }
-
-            TestHelper.Log( $"Sample data verified.  [SampleDataSource={sampleDataId}]" );
-            return true;
-        }
-
-        private static bool AddSampleDataForActiveDatabase( string sampleDataUrl )
-        {
-            TestHelper.Log( $"Loading sample data..." );
-
-            // Make sure all Entity Types are registered.
-            // This is necessary because some components are only registered at runtime,
-            // including the Rock.Bus.Transport.InMemory Type that is required to start the Rock Message Bus.
-            EntityTypeService.RegisterEntityTypes();
-
-            var factory = new SampleDataManager();
-            var args = new SampleDataManager.SampleDataImportActionArgs
-            {
-                FabricateAttendance = true,
-                EnableGiving = true
-            };
-
-            factory.CreateFromXmlDocumentFile( sampleDataUrl, args );
-
-            /*
-             * Run Rock Jobs to ensure calculated fields are updated.
-             */
-
-            // Rock Cleanup
-            TestHelper.Log( $"Running Job: RockCleanup..." );
-
-            var job = new Rock.Jobs.RockCleanup();
-
-            job.ExecuteInternal( new Dictionary<string, string>() );
-
-            TestHelper.Log( $"Running Job: CalculateFamilyAnalytics..." );
-
-            // Calculate Family Analytics
-            var jobFamilyAnalytics = new Rock.Jobs.CalculateFamilyAnalytics();
-
-            jobFamilyAnalytics.ExecuteInternal( new Dictionary<string, string>() );
-
-            // Process BI Analytics
-            TestHelper.Log( $"Running ProcessBiAnalytics Job..." );
-
-            var jobBIAnalytics = new Rock.Jobs.ProcessBIAnalytics();
-
-            var biAnalyticsSettings = new Dictionary<string, string>();
-            biAnalyticsSettings.AddOrReplace( Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessPersonBIAnalytics, "true" );
-            biAnalyticsSettings.AddOrReplace( Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessFamilyBIAnalytics, "true" );
-            biAnalyticsSettings.AddOrReplace( Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessAttendanceBIAnalytics, "true" );
-
-            jobBIAnalytics.ExecuteInternal( biAnalyticsSettings );
-
-            // Calculate Attribute "ValueAs..." columns.
-            var jobUpdateAttributeValueAs = new Rock.Jobs.PostV141UpdateValueAsColumns();
-            jobUpdateAttributeValueAs.ExecuteInternal( new Dictionary<string, string>() );
-
-            // Set the sample data identifiers.
-            SystemSettings.SetValue( SystemKey.SystemSetting.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );
-            SystemSettings.SetValue( SampleDataSourceKey, sampleDataUrl );
-
-            TestHelper.Log( $"Sample Data loaded." );
-
-            return true;
-        }
-
-        /// <summary>
-        /// Gets the target migration.
-        /// </summary>
-        private static string GetTargetMigration()
-        {
-            if ( _targetMigration == null )
-            {
-                _targetMigration = typeof( Rock.Migrations.RockMigration )
-                    .Assembly
-                    .GetExportedTypes()
-                       .Where( a => typeof( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ).IsAssignableFrom( a ) )
-                    .Select( a => ( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ) Activator.CreateInstance( a ) )
-                    .Select( a => a.Id )
-                    .OrderByDescending( a => a )
-                    .First();
-            }
-
-            return _targetMigration;
-        }
-
-        private static string _targetMigration;
 
         /// <summary>
         /// Checks if the database exists.
@@ -342,115 +140,6 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         public static void DeleteDatabase()
         {
             DeleteDatabase( ConnectionString );
-        }
-
-        /// <summary>
-        /// Migrates the database.
-        /// </summary>
-        private static void MigrateDatabase( string connectionString )
-        {
-            var connection = new DbConnectionInfo( connectionString, "System.Data.SqlClient" );
-
-            var config = new Rock.Migrations.Configuration();
-            config.TargetDatabase = connection;
-
-            var migrator = new System.Data.Entity.Migrations.DbMigrator( config );
-            try
-            {
-                migrator.Update();
-            }
-            catch ( Exception ex )
-            {
-                throw new Exception( "Test Database migration failed. Verify that the database connection string specified in the test project is valid. You may need to manually synchronize the database or configure the test environment to force-create a new database.", ex );
-            }
-        }
-
-        #region Local Database
-
-        /// <summary>
-        /// Gets the data path where we will store files.
-        /// </summary>
-        /// <returns>A string that contains the full path to our temporary folder.</returns>
-        private static string GetDataPath()
-        {
-            string path = Path.Combine( Directory.GetCurrentDirectory(), "Data" );
-
-            if ( !Directory.Exists( path ) )
-            {
-                Directory.CreateDirectory( path );
-            }
-
-            return path;
-        }
-
-        /// <summary>
-        /// Gets the path where our temporary files are stored.
-        /// </summary>
-        /// <returns>A string containing the path to temporary files.</returns>
-        private static string GetTempPath()
-        {
-            string tempPath = Path.Combine( Path.GetTempPath(), "RockUnitTests" );
-
-            if ( !Directory.Exists( tempPath ) )
-            {
-                Directory.CreateDirectory( tempPath );
-            }
-
-            return tempPath;
-        }
-
-        /// <summary>
-        /// Resets the database by using the default data source.
-        /// </summary>
-        private static bool InitializeSqlServerDatabaseForLocal( bool recreateArchive )
-        {
-            var restoreDatabase = ( TestDatabaseHelper.DatabaseRefreshStrategy != DatabaseRefreshStrategySpecifier.Never );
-
-            if ( DatabaseExists( ConnectionString ) )
-            {
-                if ( recreateArchive )
-                {
-                    // Remove the database from the local server, and delete the associated archive file.
-                    DeleteDatabase( ConnectionString );
-                }
-            }
-            else
-            {
-                // If the database has been manually deleted, make sure that the archive is recreated.
-                recreateArchive = true;
-            }
-
-            if ( recreateArchive )
-            {
-                var fileName = GetArchiveFileNameForCurrentMigration();
-                DeleteArchiveFile( new FileInfo( fileName ) );
-
-                restoreDatabase = true;
-            }
-
-            if ( restoreDatabase )
-            {
-                // Restore the database from the archive.
-                var testSource = GetOrGenerateLocalDatabaseArchive( ConnectionString, SampleDataUrl );
-
-                RestoreLocalDatabaseFromArchive( ConnectionString, testSource );
-            }
-
-            RockCache.ClearAllCachedItems();
-
-            if ( restoreDatabase )
-            {
-                // Verify that the test database is valid.
-                var valid = ValidateSampleDataForActiveDatabase( SampleDataUrl );
-
-                if ( !valid )
-                {
-                    TestHelper.Log( $"Invalid Sample Data. Sample data key does not match the sample data set specified for this test run. To refresh the test data set, delete the existing database. [Expected=\"{SampleDataUrl}\"]" );
-                    throw new Exception( $"Invalid Sample Data. Required sample data key not found in target database." );
-                }
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -513,8 +202,294 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             }
             else
             {
-                throw new NotImplementedException( "Reset is not available for a remote database." );
+                if ( string.IsNullOrEmpty( ConnectionString ) )
+                {
+                    throw new NotImplementedException( "ResetDatabase failed. The ConnectionString property is not set." );
+                }
+                else
+                {
+                    throw new NotImplementedException( "ResetDatabase failed. Reset is not available for a remote database." );
+                }
             }
+        }
+
+        #endregion
+
+        private static bool IsLocalDbInstance()
+        {
+            var csb = new SqlConnectionStringBuilder( ConnectionString );
+
+            if ( csb.DataSource != null
+                && csb.DataSource.StartsWith( @"(LocalDB)\", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private static bool InitializeSqlServerDatabaseForRemote( string connectionString, string snapshotName, string sampleDataUrl, bool forceReplace = false )
+        {
+            var csb = new SqlConnectionStringBuilder( connectionString );
+            var dbName = csb.InitialCatalog;
+
+            LogHelper.Log( $"Connecting to database server \"{ csb.DataSource }\"..." );
+            LogHelper.Log( $"Target database is \"{dbName}\"." );
+
+            var databaseExists = DatabaseExists( connectionString );
+
+            csb.InitialCatalog = "master";
+            using ( var connection = new SqlConnection( csb.ConnectionString ) )
+            {
+                connection.Open();
+
+                var migrateDatabase = false;
+                var createDatabase = false;
+                var loadSampleData = false;
+
+                if ( databaseExists )
+                {
+                    LogHelper.Log( "Verifying migrations..." );
+
+                    var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+                    var lastMigration = migrator.GetDatabaseMigrations().FirstOrDefault();
+                    var targetMigration = GetTargetMigration();
+
+                    migrateDatabase = lastMigration != targetMigration;
+                    loadSampleData = lastMigration == null;
+
+                    if ( forceReplace )
+                    {
+                        // Backup the current database.
+                        using ( var cmd = connection.CreateCommand() )
+                        {
+                            LogHelper.Log( $"Backing up existing database..." );
+
+                            cmd.CommandText = $@"
+BACKUP DATABASE [{dbName}]
+    TO DISK = '{dbName}.bak')";
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        LogHelper.Log( $"Deleting existing database..." );
+
+                        DeleteDatabase( connectionString ); // connection, dbName );
+
+                        createDatabase = true;
+                        loadSampleData = true;
+                    }
+                }
+                else
+                {
+                    createDatabase = true;
+                    loadSampleData = true;
+                }
+
+                //
+                // Execute the SQL command to create the empty database.
+                //
+                if ( createDatabase )
+                {
+                    LogHelper.Log( $"Creating new database..." );
+
+                    using ( var cmd = connection.CreateCommand() )
+                    {
+                        cmd.CommandText = $@"
+CREATE DATABASE [{dbName}];
+    --ON (NAME = '{dbName}')
+    --LOG ON (NAME = '{dbName}_Log');
+ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
+                        using ( var txn = cmd.Connection.BeginTransaction() )
+                        {
+                            try
+                            {
+                                var result = cmd.ExecuteNonQuery();
+                                txn.Commit();
+                            }
+                            catch
+                            {
+                                txn.Rollback();
+                                throw;
+                            }
+                        }
+                    }
+                }
+
+                if ( createDatabase || migrateDatabase )
+                {
+                    if ( !createDatabase )
+                    {
+                        LogHelper.Log( $"Target database migration level does not match the current Rock version." );
+                    }
+                    LogHelper.Log( $"Running migrations..." );
+
+                    MigrateDatabase( connectionString );
+                }
+
+                if ( loadSampleData )
+                {
+                    DatabaseInitializer?.InitializeSnapshot( snapshotName, sampleDataUrl );
+                }
+
+                LogHelper.Log( $"Task complete." );
+            }
+
+            return true;
+        }
+
+        private static bool ValidateSampleDataForActiveDatabase( string sampleDataUrl )
+        {
+            LogHelper.Log( $"Verifying sample data..." );
+
+            var sampleDataId = SystemSettings.GetValue( SampleDataSourceKey );
+            if ( string.IsNullOrEmpty( sampleDataId ) || sampleDataId != sampleDataUrl )
+            {
+                return false;
+            }
+
+            LogHelper.Log( $"Sample data verified.  [SampleDataSource={sampleDataId}]" );
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the target migration.
+        /// </summary>
+        private static string GetTargetMigration()
+        {
+            if ( _targetMigration == null )
+            {
+                _targetMigration = typeof( Rock.Migrations.RockMigration )
+                    .Assembly
+                    .GetExportedTypes()
+                       .Where( a => typeof( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ).IsAssignableFrom( a ) )
+                    .Select( a => ( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ) Activator.CreateInstance( a ) )
+                    .Select( a => a.Id )
+                    .OrderByDescending( a => a )
+                    .First();
+            }
+
+            return _targetMigration;
+        }
+
+        private static string _targetMigration;
+
+        /// <summary>
+        /// Migrates the database.
+        /// </summary>
+        private static void MigrateDatabase( string connectionString )
+        {
+            var connection = new DbConnectionInfo( connectionString, "System.Data.SqlClient" );
+
+            var config = new Rock.Migrations.Configuration();
+            config.TargetDatabase = connection;
+
+            var migrator = new System.Data.Entity.Migrations.DbMigrator( config );
+            try
+            {
+                migrator.Update();
+            }
+            catch ( Exception ex )
+            {
+                throw new Exception( "Test Database migration failed. Verify that the database connection string specified in the test project is valid. You may need to manually synchronize the database or configure the test environment to force-create a new database.", ex );
+            }
+        }
+
+        #region Local Database
+
+        /// <summary>
+        /// Gets the data path where we will store files.
+        /// </summary>
+        /// <returns>A string that contains the full path to our temporary folder.</returns>
+        private static string GetDataPath()
+        {
+            string path = Path.Combine( Directory.GetCurrentDirectory(), "Data" );
+
+            if ( !Directory.Exists( path ) )
+            {
+                Directory.CreateDirectory( path );
+            }
+
+            return path;
+        }
+
+        /// <summary>
+        /// Gets the path where our temporary files are stored.
+        /// </summary>
+        /// <returns>A string containing the path to temporary files.</returns>
+        private static string GetTempPath()
+        {
+            string tempPath = Path.Combine( Path.GetTempPath(), "RockUnitTests" );
+
+            if ( !Directory.Exists( tempPath ) )
+            {
+                Directory.CreateDirectory( tempPath );
+            }
+
+            return tempPath;
+        }
+
+        /// <summary>
+        /// Resets the database by using the default data source.
+        /// </summary>
+        private static bool InitializeSqlServerDatabaseForLocal( bool recreateArchive, string snapshotName = null )
+        {
+            var restoreDatabase = ( TestDatabaseHelper.DatabaseRefreshStrategy != DatabaseRefreshStrategySpecifier.Never );
+
+            if ( DatabaseExists( ConnectionString ) )
+            {
+                // If the database exists and should never be replaced, continue without verifying the migration level.
+                if ( DatabaseRefreshStrategy == DatabaseRefreshStrategySpecifier.Never )
+                {
+                    return true;
+                }
+
+                if ( recreateArchive )
+                {
+                    // Remove the database from the local server, and delete the associated archive file.
+                    DeleteDatabase( ConnectionString );
+                }
+            }
+            else
+            {
+                // If the database has been manually deleted, make sure that the archive is recreated.
+                recreateArchive = true;
+            }
+
+            if ( recreateArchive )
+            {
+                var fileName = GetArchiveFileNameForCurrentMigration();
+                DeleteArchiveFile( new FileInfo( fileName ) );
+
+                restoreDatabase = true;
+            }
+
+            var sampleDataUrl = SampleDataIsEnabled ? SampleDataUrl : string.Empty;
+
+            if ( restoreDatabase )
+            {
+                // Restore the database from the archive.
+                var testSource = GetOrGenerateLocalDatabaseArchive( ConnectionString, snapshotName, sampleDataUrl );
+
+                RestoreLocalDatabaseFromArchive( ConnectionString, testSource );
+            }
+
+            RockCache.ClearAllCachedItems();
+
+            if ( restoreDatabase )
+            {
+                if ( SampleDataIsEnabled )
+                {
+                    // Verify that the test database is valid.
+                    var valid = ValidateSampleDataForActiveDatabase( sampleDataUrl );
+
+                    if ( !valid )
+                    {
+                        LogHelper.Log( $"Invalid Sample Data. Sample data key does not match the sample data set specified for this test run. To refresh the test data set, delete the existing database. [Expected=\"{SampleDataUrl}\"]" );
+                        throw new Exception( $"Invalid Sample Data. Required sample data key not found in target database." );
+                    }
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -529,8 +504,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             var csbMaster = new SqlConnectionStringBuilder( connectionString );
             csbMaster.InitialCatalog = "master";
 
-            TestHelper.Log( $"Restoring local database from archive..." );
-            TestHelper.Log( $"Target database is \"{targetDbName}\"." );
+            LogHelper.Log( $"Restoring local database from archive..." );
+            LogHelper.Log( $"Target database is \"{targetDbName}\"." );
 
             // If this is a URL, download it.
             if ( archivePath.ToUpper().StartsWith( "HTTP" ) )
@@ -545,7 +520,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             }
 
             // Extract database files from archive.
-            TestHelper.Log( $"Reading archive \"{archivePath}\"." );
+            LogHelper.Log( $"Reading archive \"{archivePath}\"." );
 
             var dataFile = Path.Combine( GetDataPath(), $"{targetDbName}_Data.mdf" );
             var logFile = Path.Combine( GetDataPath(), $"{targetDbName}_Log.ldf" );
@@ -623,10 +598,10 @@ ALTER DATABASE [{targetDbName}] SET RECOVERY SIMPLE;";
                 connection.Close();
             }
 
-            TestHelper.Log( $"Clearing Rock cache..." );
+            LogHelper.Log( $"Clearing Rock cache..." );
             RockCache.ClearAllCachedItems();
 
-            TestHelper.Log( $"Database restored." );
+            LogHelper.Log( $"Database restored." );
         }
 
         /// <summary>
@@ -660,9 +635,15 @@ ALTER DATABASE [{targetDbName}] SET RECOVERY SIMPLE;";
             }
 
             var sql = $@"
-SELECT [Value]
-FROM [_TestDatabaseSettings]
-WHERE [Key] = 'DatabaseCreatorKey';";
+IF (EXISTS (SELECT * 
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_NAME = '_TestDatabaseSettings') )
+BEGIN
+    SELECT [Value]
+    FROM [_TestDatabaseSettings]
+    WHERE [Key] = 'DatabaseCreatorKey';
+END
+";
 
             var creatorId = DbService.ExecuteScalar( csbTarget.ConnectionString, sql ).ToStringSafe();
 
@@ -673,7 +654,7 @@ WHERE [Key] = 'DatabaseCreatorKey';";
             if ( DatabaseRefreshStrategy == DatabaseRefreshStrategySpecifier.Verified
                 && creatorId != DatabaseCreatorKey )
             {
-                throw new Exception( $"Delete database failed. Database Creator key mismatch. [Database={databaseDescription}, ExpectedCreatorId={DatabaseCreatorKey}, ActualCreatorId={creatorId}]" );
+                throw new Exception( $"Delete database failed. Database Creator key mismatch. [Database={databaseDescription}, ExpectedCreatorKey={DatabaseCreatorKey}, ActualCreatorKey={creatorId}]" );
             }
 
             var sqlDrop = $@"
@@ -775,8 +756,12 @@ DROP DATABASE [{name}];";
         /// This method checks to see if we have an archive for the most recent
         /// target migration already and if not it builds a new archive.
         /// </summary>
+        /// <param name="connectionString"></param>
+        /// <param name="sampleDataUrl">
+        /// The URL for the document containing the sample data. If not specified, sample data will not be added to the new database.
+        /// </param>
         /// <returns>A string containing the path to the archive.</returns>
-        private static string GetOrGenerateLocalDatabaseArchive( string connectionString, string sampleDataUrl )
+        private static string GetOrGenerateLocalDatabaseArchive( string connectionString, string snapshotName, string sampleDataUrl )
         {
             var archivePath = GetArchiveFileNameForCurrentMigration();
 
@@ -793,10 +778,6 @@ DROP DATABASE [{name}];";
             if ( string.IsNullOrWhiteSpace( connectionString ) )
             {
                 throw new Exception( "A database connection string must be provided." );
-            }
-            if ( string.IsNullOrWhiteSpace( sampleDataUrl ) )
-            {
-                throw new Exception( "A sample data file path or URL must be provided." );
             }
 
             var csbTarget = new SqlConnectionStringBuilder( connectionString );
@@ -820,7 +801,7 @@ DROP DATABASE [{name}];";
                 File.Delete( logFile );
             }
 
-            TestHelper.Log( $"Creating new test database \"{dbName}\"..." );
+            LogHelper.Log( $"Creating new test database \"{dbName}\"..." );
 
             var sqlCreate = $@"
 CREATE DATABASE [{dbName}]
@@ -856,11 +837,16 @@ SELECT DB_ID('{dbName}') AS [DatabaseId]
 
             MigrateDatabase( csbTarget.ConnectionString );
 
-            // Load the sample data.
-            AddSampleDataForActiveDatabase( sampleDataUrl );
+            // Initialize the new database with data specific to the requested snapshot.
+            DatabaseInitializer?.InitializeSnapshot( snapshotName, sampleDataUrl );
+
+            // Make sure all Entity Types are registered.
+            // This is necessary because some components are only registered at runtime,
+            // including the Rock.Bus.Transport.InMemory Type that is required to start the Rock Message Bus.
+            EntityTypeService.RegisterEntityTypes();
 
             // Shrink the database and log files.
-            TestHelper.Log( $"Creating test database archive..." );
+            LogHelper.Log( $"Creating test database archive..." );
 
             var sqlShrink = $@"USE [{dbName}];
 DBCC SHRINKFILE ([{dbName}], 1);
@@ -906,7 +892,7 @@ EXEC sp_detach_db '{dbName}', 'true';";
             File.Delete( dataFile );
             File.Delete( logFile );
 
-            TestHelper.Log( $"Test database archive created. [{archivePath}]" );
+            LogHelper.Log( $"Test database archive created. [{archivePath}]" );
 
             return archivePath;
         }
@@ -946,7 +932,7 @@ EXEC sp_detach_db '{dbName}', 'true';";
             var logFile = Path.Combine( GetDataPath(), $"{dbName}_Log.ldf" );
 
             // Shrink the database and log files.
-            TestHelper.Log( $"Creating test database archive..." );
+            LogHelper.Log( $"Creating test database archive..." );
 
             var sqlShrink = $@"USE [{dbName}];
 DBCC SHRINKFILE ([{dbName}], 1);
@@ -989,7 +975,7 @@ EXEC sp_detach_db '{dbName}', 'true';";
                 }
             }
 
-            TestHelper.Log( $"Database archive created. [{archivePath}]" );
+            LogHelper.Log( $"Database archive created. [{archivePath}]" );
 
             return archivePath;
         }

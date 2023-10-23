@@ -1,0 +1,234 @@
+<template>
+    <TransitionGroup name="list-group-transition"
+                     :css="!disable"
+                     @beforeLeave="onBeforeLeave"
+                     @leave="onLeave"
+                     @afterLeave="onAfterLeave"
+                     @leaveCancelled="onLeaveCancelled"
+                     @beforeEnter="onBeforeEnter"
+                     @enter="onEnter"
+                     @afterEnter="onAfterEnter"
+                     @enterCancelled="onEnterCancelled">
+        <slot />
+    </TransitionGroup>
+</template>
+
+<style>
+.list-group-transition-enter-active,
+.list-group-transition-leave-active {
+    pointer-events: none;
+}
+
+.list-group-transition-enter-active {
+    transition: height 0.25s ease, opacity 0.15s ease 0.20s, transform 0.15s ease 0.20s;
+}
+
+.list-group-transition-leave-active {
+    transition: opacity 0.25s ease, transform 0.25s ease, height 0.15s ease 0.20s;
+}
+
+.list-group-transition-enter-from,
+.list-group-transition-leave-to {
+    opacity: 0;
+    transform: translateX(30px);
+}
+
+.list-group-transition-leave-to {
+    height: 0 !important;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        disable: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "beginAnimation"): void;
+        (e: "endAnimation"): void;
+    }>();
+
+    // This tracks the number of active animations we have. When we start
+    // the first animation we emit the "beginAnimation" event and when we
+    // stop the last animation we emit the "endAnimation" event.
+    let animationCount = 0;
+
+    /**
+     * Event handler for when an element is about to start leaving the DOM.
+     *
+     * @param element The element that is about leave.
+     */
+    function onBeforeLeave(element: Element): void {
+        animationCount++;
+
+        if (animationCount === 1) {
+            emit("beginAnimation");
+        }
+
+        if (!(element instanceof HTMLElement)) {
+            return;
+        }
+
+        element.style.height = `${element.getBoundingClientRect().height}px`;
+
+        // Force a layout of the element so the new height is recognized.
+        // This doesn't seem like it should be needed but for some reason
+        // the browser was just snapping the height to 0 without this.
+        element.getBoundingClientRect();
+    }
+
+    /**
+     * Event handler for when an element has started leaving the DOM.
+     *
+     * @param element The element that is leaving.
+     */
+     function onLeave(element: Element, done: () => void): void {
+        if (props.disable) {
+            return done();
+        }
+
+        function onTransitionEnd(): void {
+            if (!element) {
+                return;
+            }
+
+            // Check for any remaining transitions.
+            const transitions = element.getAnimations().filter(a => a instanceof CSSTransition);
+
+            if (transitions.length > 0) {
+                return;
+            }
+
+            done();
+            element.removeEventListener("transitionend", onTransitionEnd);
+        }
+
+        element.addEventListener("transitionend", onTransitionEnd);
+    }
+
+    /**
+     * Event handler for when an element has fully left the DOM.
+     *
+     * @param element The element that has left.
+     */
+     function onAfterLeave(): void {
+        animationCount--;
+
+        if (animationCount === 0) {
+            emit("endAnimation");
+        }
+    }
+
+    /**
+     * Event handler for when an element that was leaving the DOM is no longer
+     * leaving.
+     *
+     * @param element The element that was leaving.
+     */
+     function onLeaveCancelled(): void {
+        animationCount--;
+
+        if (animationCount === 0) {
+            emit("endAnimation");
+        }
+    }
+
+    /**
+     * Event handler for when an element is about to start entering the DOM.
+     *
+     * @param element The element that is about enter.
+     */
+     function onBeforeEnter(element: Element): void {
+        animationCount++;
+
+        if (animationCount === 1) {
+            emit("beginAnimation");
+        }
+
+        if (!(element instanceof HTMLElement)) {
+            return;
+        }
+
+        element.style.height = "0px";
+
+        // Force a layout of the element so the new height is recognized.
+        // This doesn't seem like it should be needed but for some reason
+        // the browser was just snapping the height to 0 without this.
+        element.getBoundingClientRect();
+    }
+
+    /**
+     * Event handler for when an element has started entering the DOM.
+     *
+     * @param element The element that is entering.
+     */
+     function onEnter(element: Element, done: () => void): void {
+        if (props.disable) {
+            return done();
+        }
+
+        if (!(element instanceof HTMLElement)) {
+            return;
+        }
+
+        requestAnimationFrame(() => {
+            element.style.height = `${element.scrollHeight}px`;
+
+            function onTransitionEnd(): void {
+                if (!element) {
+                    return;
+                }
+
+                // Check for any remaining transitions.
+                const transitions = element.getAnimations().filter(a => a instanceof CSSTransition);
+
+                if (transitions.length > 0) {
+                    return;
+                }
+
+                done();
+                element.removeEventListener("transitionend", onTransitionEnd);
+            }
+
+            element.addEventListener("transitionend", onTransitionEnd);
+        });
+    }
+
+    /**
+     * Event handler for when an element has fully entered the DOM.
+     *
+     * @param element The element that has entered.
+     */
+     function onAfterEnter(element: Element): void {
+        animationCount--;
+
+        if (animationCount === 0) {
+            emit("endAnimation");
+        }
+
+        if (!(element instanceof HTMLElement)) {
+            return;
+        }
+
+        element.style.height = "";
+    }
+
+    /**
+     * Event handler for when an element that was entering the DOM is no longer
+     * entering.
+     *
+     * @param element The element that was entering.
+     */
+     function onEnterCancelled(): void {
+        animationCount--;
+
+        if (animationCount === 0) {
+            emit("endAnimation");
+        }
+    }
+</script>

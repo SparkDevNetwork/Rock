@@ -1,0 +1,131 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline"
+                 help="Add a description for this REST API User" />
+        <div class="row">
+            <div class="col-md-6">
+                <div class="d-flex align-items-end">
+                    <div class="flex-fill">
+                        <TextBox v-model="apiKey"
+                                 label="Key"
+                                 rules="required"
+                                 help="Enter a key to use for a access token, or use the 'Generate Key' button to create a random 24 digit key."
+                                 :maxLength="24" />
+                    </div>
+                    <div class="form-group">
+                        <RockButton class="btn-primary ml-2" @click="onGenerateKeyClick">
+                            Generate Key
+                        </RockButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, watch } from "vue";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { RestKeyBag } from "@Obsidian/ViewModels/Blocks/Security/RestKeyDetail/restKeyBag";
+    import { RestKeyDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/RestKeyDetail/restKeyDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<RestKeyBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<RestKeyDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: RestKeyBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const apiKey = propertyRef(props.modelValue.apiKey ?? "", "ApiKey");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? true, "IsActive");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, description, isActive, apiKey];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? true);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(apiKey, props.modelValue.apiKey ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: RestKeyBag = {
+            ...props.modelValue,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            apiKey: apiKey.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+
+    /**
+      * Event handler for when the individual clicks the Generate Key button.
+      */
+    const onGenerateKeyClick = async (): Promise<void> => {
+        const result = await invokeBlockAction<string>("GenerateKey", {});
+
+        if (result.isSuccess && result.data) {
+            updateRefValue(apiKey, result.data ?? {});
+        }
+    };
+</script>

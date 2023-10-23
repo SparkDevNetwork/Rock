@@ -1,0 +1,210 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="step === Step.Success" alertType="success" v-html="config.captions?.successCaption"></NotificationBox>
+
+    <template v-else-if="step === Step.EmailEntry">
+        <div v-html="config.captions?.headingCaption"></div>
+
+        <NotificationBox v-if="isErrorShown" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+        <NotificationBox v-if="isWarningShown" alertType="validation">
+            <template v-if="changePasswordNotSupportedWarningOptions">
+                <p>We were able to find the following accounts for this email, but none of them are able to be reset from this website.</p>
+                <p>Accounts:<br /> {{ changePasswordNotSupportedWarningOptions.accountTypes }}</p>
+                <p>To create a new account with a username and password please see our <a :href="changePasswordNotSupportedWarningOptions.newAccountUrl">New Account</a> page.</p>
+            </template>
+
+            <div v-else v-html="config.captions?.invalidEmailCaption"></div>
+        </NotificationBox>
+
+        <RockForm @submit="onSubmitted" :hideErrors="true">
+            <EmailBox v-model="email"
+                :disabled="isProcessing"
+                :isRequiredIndicatorHidden="true"
+                label="Enter your email address"
+                rules="required"></EmailBox>
+
+            <div class="actions">
+                <RockButton :autoDisable="true"
+                    :btnType="BtnType.Primary"
+                    :disabled="isProcessing"
+                    type="submit">Email me reset instructions</RockButton>
+            </div>
+        </RockForm>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { SendInstructionsResultType } from "@Obsidian/Enums/Blocks/Security/ForgotUserName/sendInstructionsResultType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { HttpResult } from "@Obsidian/Types/Utility/http";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { ForgotUserNameInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/ForgotUserName/forgotUserNameInitializationBox";
+    import { ForgotUserNameSendInstructionsRequestBag } from "@Obsidian/ViewModels/Blocks/Security/ForgotUserName/forgotUserNameSendInstructionsRequestBag";
+    import { ForgotUserNameSendInstructionsResultBag } from "@Obsidian/ViewModels/Blocks/Security/ForgotUserName/forgotUserNameSendInstructionsResultBag";
+
+    const config = useConfigurationValues<ForgotUserNameInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    enum Step {
+        EmailEntry,
+        Success
+    }
+
+    type ChangePasswordNotSupportedWarningOptions = {
+        accountTypes: string,
+        newAccountUrl: string
+    };
+
+    //#region Values
+
+    const step = ref<Step>(Step.EmailEntry);
+    const email = ref<string>("");
+
+    const isErrorShown = ref<boolean>(false);
+    const errorMessage = ref<string | null>(null);
+
+    const isWarningShown = ref<boolean>(false);
+    const warningMessage = ref<string | null>(null);
+    const changePasswordNotSupportedWarningOptions = ref<ChangePasswordNotSupportedWarningOptions | null>(null);
+
+    const isProcessing = ref<boolean>(false);
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the form being submitted.
+     */
+    async function onSubmitted(): Promise<void> {
+        try {
+            isProcessing.value = true;
+
+            hideError();
+            hideWarning();
+
+            const result = await send({
+                email: email.value
+            });
+
+            processResult(result);
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Clears the warning alert.
+     */
+    function clearWarning(): void {
+        warningMessage.value = null;
+        changePasswordNotSupportedWarningOptions.value = null;
+    }
+
+    /**
+     * Hides the error alert.
+     */
+    function hideError(): void {
+        isErrorShown.value = false;
+    }
+
+    /**
+     * Hides the warning alert.
+     */
+    function hideWarning(): void {
+        isWarningShown.value = false;
+    }
+
+    /**
+     * Processes the "Send Instructions" result.
+     *
+     * @param result The result to process.
+     */
+    function processResult(result: HttpResult<ForgotUserNameSendInstructionsResultBag>): void {
+        if (result.isError) {
+            showError(result.errorMessage || "Invalid request.");
+            return;
+        }
+
+        if (!result.data) {
+            showError("Invalid request.");
+            return;
+        }
+
+        switch (result.data.resultType) {
+            case SendInstructionsResultType.InstructionsSent: {
+                step.value = Step.Success;
+                break;
+            }
+
+            case SendInstructionsResultType.ChangePasswordNotSupported: {
+                showChangePasswordNotSupportedWarning({
+                    accountTypes: result.data.changePasswordNotSupportedResult?.accountTypes?.join(",") ?? "",
+                    newAccountUrl: result.data.changePasswordNotSupportedResult?.newAccountUrl || "/NewAccount"
+                });
+                break;
+            }
+
+            case SendInstructionsResultType.EmailInvalid: {
+                showWarning(config.captions?.invalidEmailCaption || "Sorry, we didn't recognize that email address. Want to try another?");
+                break;
+            }
+        }
+    }
+
+    /**
+     * Sends instructions to the provided email.
+     *
+     * @param bag The request.
+     */
+    async function send(bag: ForgotUserNameSendInstructionsRequestBag): Promise<HttpResult<ForgotUserNameSendInstructionsResultBag>> {
+        return await invokeBlockAction<ForgotUserNameSendInstructionsResultBag>("SendInstructions", { bag });
+    }
+
+    /**
+     * Shows the "Change Password Not Supported" warning.
+     *
+     * @param options The warning options.
+     */
+    function showChangePasswordNotSupportedWarning(options: ChangePasswordNotSupportedWarningOptions): void {
+        clearWarning();
+        changePasswordNotSupportedWarningOptions.value = options;
+        isWarningShown.value = true;
+    }
+
+    /**
+     * Shows the error message.
+     *
+     * @param message The message to show.
+     */
+    function showError(message: string): void {
+        errorMessage.value = message;
+        isErrorShown.value = true;
+    }
+
+    /**
+     * Shows the warning message.
+     *
+     * @param message The message to show.
+     */
+    function showWarning(message: string): void {
+        clearWarning();
+        warningMessage.value = message;
+        isWarningShown.value = true;
+    }
+
+    //#endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

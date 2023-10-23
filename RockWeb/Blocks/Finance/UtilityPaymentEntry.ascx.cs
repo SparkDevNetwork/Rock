@@ -698,6 +698,7 @@ mission. We are so grateful for your commitment.</p>
             public const string StartDate = "StartDate";
             public const string Transfer = "Transfer";
             public const string ParticipationMode = "ParticipationMode";
+            public const string CampusId = "CampusId";
         }
 
         private static class ViewStateKey
@@ -1128,7 +1129,10 @@ mission. We are so grateful for your commitment.</p>
         {
             var allowAccountsInUrl = this.GetAttributeValue( AttributeKey.AllowAccountOptionsInURL ).AsBoolean();
             var rockContext = new RockContext();
-            List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
+            List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() )
+                .OrderBy( a => a.Order )
+                .Select( a => a.Id )
+                .ToList();
             CampusAccountAmountPicker.AccountIdAmount[] accountAmounts = null;
             caapPromptForAccountAmounts.AccountHeaderTemplate = this.GetAttributeValue( AttributeKey.AccountHeaderTemplate );
 
@@ -1144,6 +1148,7 @@ mission. We are so grateful for your commitment.</p>
                 caapPromptForAccountAmounts.AmountEntryMode = CampusAccountAmountPicker.AccountAmountEntryMode.SingleAccount;
             }
 
+            caapPromptForAccountAmounts.CampusId = GetCampusId( _targetPerson );
             caapPromptForAccountAmounts.UseAccountCampusMappingLogic = this.GetAttributeValue( AttributeKey.UseAccountCampusMappingLogic ).AsBooleanOrNull() ?? false;
             caapPromptForAccountAmounts.AskForCampusIfKnown = this.GetAttributeValue( AttributeKey.AskForCampusIfKnown ).AsBoolean();
             caapPromptForAccountAmounts.IncludeInactiveCampuses = this.GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
@@ -1209,6 +1214,25 @@ mission. We are so grateful for your commitment.</p>
             {
                 caapPromptForAccountAmounts.AccountAmounts = accountAmounts;
             }
+        }
+
+        /// <summary>
+        /// Sets the selected CampusId from a CampusId url parameter or the target person of the transaction.
+        /// </summary>
+        private int? GetCampusId( Person person )
+        {
+            var campusId = this.PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+
+            if ( !campusId.HasValue && person != null )
+            {
+                var personCampus = person.GetCampus();
+                if ( personCampus != null )
+                {
+                    campusId = personCampus.Id;
+                }
+            }
+
+            return campusId;
         }
 
         /// <summary>
@@ -2445,7 +2469,7 @@ mission. We are so grateful for your commitment.</p>
                 {
                     cbSmsOptIn.Visible = true;
                     cbSmsOptIn.Text = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
-                    cbSmsOptIn.Checked = workPhone.IsMessagingEnabled;
+                    cbSmsOptIn.Checked = workPhone?.IsMessagingEnabled ?? false;
                 }
             }
             
@@ -3270,7 +3294,7 @@ mission. We are so grateful for your commitment.</p>
                     if ( scheduledTransactionAlreadyExists != null )
                     {
                         // Hopefully shouldn't happen, but just in case the scheduledtransaction already went through, show the success screen.
-                        ShowSuccess( gateway, person, paymentInfo );
+                        ShowSuccess( gateway, person, paymentInfo, givingAsBusiness );
                         return true;
                     }
 
@@ -3292,7 +3316,7 @@ mission. We are so grateful for your commitment.</p>
                     if ( transactionAlreadyExists != null )
                     {
                         // hopefully shouldn't happen, but just in case the transaction already went thru, show the success screen
-                        ShowSuccess( gateway, person, paymentInfo );
+                        ShowSuccess( gateway, person, paymentInfo, givingAsBusiness );
                         return true;
                     }
 
@@ -3309,7 +3333,7 @@ mission. We are so grateful for your commitment.</p>
                     paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
                 }
 
-                ShowSuccess( gateway, person, paymentInfo );
+                ShowSuccess( gateway, person, paymentInfo, givingAsBusiness );
 
                 return true;
             }
@@ -3468,23 +3492,10 @@ mission. We are so grateful for your commitment.</p>
             var batchService = new FinancialBatchService( rockContext );
 
             // Get the batch
-            var batch = batchService.Get(
-                GetAttributeValue( AttributeKey.BatchNamePrefix ),
-                paymentInfo.CurrencyTypeValue,
-                paymentInfo.CreditCardTypeValue,
-                transaction.TransactionDateTime.Value,
-                financialGateway.GetBatchTimeOffset() );
+            var batch = batchService.GetForNewTransaction( transaction, GetAttributeValue( AttributeKey.BatchNamePrefix ) );
 
             var batchChanges = new History.HistoryChangeList();
-
-            if ( batch.Id == 0 )
-            {
-                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-            }
+            FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
 
             transaction.LoadAttributes( rockContext );
 
@@ -3561,9 +3572,9 @@ mission. We are so grateful for your commitment.</p>
             }
         }
 
-        private void ShowSuccess( IHostedGatewayComponent gatewayComponent, Person person, ReferencePaymentInfo paymentInfo )
+        private void ShowSuccess( IHostedGatewayComponent gatewayComponent, Person person, ReferencePaymentInfo paymentInfo, bool givingAsBusiness )
         {
-            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
             var finishLavaTemplate = this.GetAttributeValue( AttributeKey.FinishLavaTemplate );
             IEntity transactionEntity = GetTransactionEntity();
             mergeFields.Add( "TransactionEntity", transactionEntity );
@@ -3658,7 +3669,7 @@ mission. We are so grateful for your commitment.</p>
                     CreateSavedAccount( accountTitle, rockContext, true );
                 }
             }
-            else if ( !isSavedAccount && !string.IsNullOrWhiteSpace( TransactionCode ) && gatewayComponent.SupportsSavedAccount( paymentInfo.CurrencyTypeValue ) )
+            else if ( !givingAsBusiness && !isSavedAccount && !string.IsNullOrWhiteSpace( TransactionCode ) && gatewayComponent.SupportsSavedAccount( paymentInfo.CurrencyTypeValue ) )
             {
                 cbSaveAccount.Visible = true;
                 pnlSaveAccount.Visible = true;

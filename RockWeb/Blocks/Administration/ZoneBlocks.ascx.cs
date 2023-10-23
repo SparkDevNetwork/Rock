@@ -584,41 +584,96 @@ namespace RockWeb.Blocks.Administration
             {
                 BlockService blockService = new BlockService( rockContext );
 
-                gSiteBlocks.DataSource = blockService.GetBySiteAndZone( _Page.SiteId, _ZoneName )
+                var siteBlocks = blockService.GetBySiteAndZone( _Page.SiteId, _ZoneName )
                     .Select( b => new
                     {
                         b.Id,
                         b.Name,
+                        EntityTypeId = b.BlockType.EntityTypeId ?? 0,
                         BlockTypeName = b.BlockType.Name,
                         BlockTypePath = b.BlockType.Path,
                         BlockTypeCategory = b.BlockType.Category
                     } )
+                    .AsEnumerable();
+
+                gSiteBlocks.DataSource = siteBlocks.Select( b => new
+                    {
+                        b.Id,
+                        b.Name,
+                        BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
+                        b.BlockTypePath,
+                        b.BlockTypeCategory
+                    } )
                     .ToList();
+
                 gSiteBlocks.DataBind();
 
-                gLayoutBlocks.DataSource = blockService.GetByLayoutAndZone( _Page.LayoutId, _ZoneName )
+                var layoutBlocks = blockService.GetByLayoutAndZone( _Page.LayoutId, _ZoneName )
                     .Select( b => new
                     {
                         b.Id,
                         b.Name,
+                        EntityTypeId = b.BlockType.EntityTypeId ?? 0,
                         BlockTypeName = b.BlockType.Name,
                         BlockTypePath = b.BlockType.Path,
                         BlockTypeCategory = b.BlockType.Category
                     } )
+                    .AsEnumerable();
+
+                gLayoutBlocks.DataSource = layoutBlocks.Select( b => new
+                    {
+                        b.Id,
+                        b.Name,
+                        BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
+                        b.BlockTypePath,
+                        b.BlockTypeCategory
+                    } )
                     .ToList();
+
                 gLayoutBlocks.DataBind();
 
-                gPageBlocks.DataSource = blockService.GetByPageAndZone( _Page.Id, _ZoneName )
+                var pageBlocks = blockService.GetByPageAndZone( _Page.Id, _ZoneName )
                 .Select( b => new
                 {
                     b.Id,
                     b.Name,
+                    EntityTypeId = b.BlockType.EntityTypeId ?? 0,
                     BlockTypeName = b.BlockType.Name,
                     BlockTypePath = b.BlockType.Path,
                     BlockTypeCategory = b.BlockType.Category
                 } )
+                .AsEnumerable();
+
+                gPageBlocks.DataSource = pageBlocks.Select( b => new
+                {
+                    b.Id,
+                    b.Name,
+                    BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
+                    b.BlockTypePath,
+                    b.BlockTypeCategory
+                } )
                 .ToList();
+
                 gPageBlocks.DataBind();
+            }
+        }
+
+        /// <summary>
+        /// Adds the "party popper" emoji to the block name if it is an Obsidian block type
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        private string AddIconIfObsidianBlock( int entityTypeId, string name )
+        {
+            var entityType = EntityTypeCache.Get( entityTypeId )?.GetEntityType();
+            if ( entityType != null && typeof( IRockObsidianBlockType ).IsAssignableFrom( entityType ) )
+            {
+                return name + " \U0001f389";
+            }
+            else
+            {
+                return name;
             }
         }
 

@@ -1,0 +1,288 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue"
+                   formGroupClasses="rock-code-editor"
+                   name="codeeditor">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div v-if="hasMergeFields" class="codeeditor-header margin-b-md clearfix">
+                </div>
+
+                <div :class="codeEditorClass" :style="codeEditorStyle">
+                    <pre v-once :id="codeEditorId" class="position-absolute inset-0 m-0 ace_editor">{{ internalValue }}</pre>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script lang="ts">
+    declare global {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-var
+        var ace: any | undefined;
+    }
+</script>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { isFullscreen, enterFullscreen, exitFullscreen } from "@Obsidian/Utility/fullscreen";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+
+    const themes = {
+        0: "rock",
+        1: "chrome",
+        2: "crimson_editor",
+        3: "dawn",
+        4: "dreamweaver",
+        5: "eclipse",
+        6: "solarized_light",
+        7: "textmate",
+        8: "tomorrow",
+        9: "xcode",
+        10: "github",
+        11: "ambiance",
+        12: "chaos",
+        13: "clouds_midnight",
+        14: "cobalt",
+        15: "idle_fingers",
+        16: "kr_theme",
+        17: "merbivore",
+        18: "merbivore_soft",
+        19: "mono_industrial",
+        20: "monokai",
+        21: "pastel_on_dark",
+        22: "solarized_dark",
+        23: "terminal",
+        24: "tomorrow_night",
+        25: "tomorrow_night_blue",
+        26: "tomorrow_night_bright",
+        27: "tomorrow_night_eighties",
+        28: "twilight",
+        29: "vibrant_ink",
+    } as const;
+
+    // The valid theme types for intellisense.
+    type ThemeTypes = keyof typeof themes | typeof themes[keyof typeof themes];
+
+    const modes = {
+        0: "text",
+        1: "css",
+        2: "html",
+        3: "lava",
+        4: "javascript",
+        5: "less",
+        6: "powershell",
+        7: "sql",
+        8: "typescript",
+        9: "csharp",
+        10: "markdown",
+        11: "xml"
+    } as const;
+
+    // The valid mode types for intellisense.
+    type ModeTypes = keyof typeof modes | typeof modes[keyof typeof modes];
+
+    // Start loading the signature pad script so that it is available for us
+    // to use later when the control becomes visible.
+    const aceScriptPromise = loadJavaScriptAsync("/Scripts/ace/ace.js", () => !!window.ace);
+
+    /**
+     * Gets the name of the theme to use with the ACE editor. This handles any
+     * name mapping and capitalization issues.
+     *
+     * @param theme The name of the theme being requested.
+     *
+     * @returns The name of the actual theme to use with the ACE editor.
+     */
+    function getAceTheme(theme?: string): string {
+        if (!theme || theme.toLowerCase() === "rock") {
+            return "github";
+        }
+
+        return theme.toLowerCase();
+    }
+
+    /**
+     * Gets the name of the syntax mode to use with the ACE editor. This handles any
+     * name mapping and capitalization issues.
+     *
+     * @param mode The name of the mode being requested.
+     *
+     * @returns The name of the actual mode to use with the ACE editor.
+     */
+    function getAceMode(mode?: string): string {
+        if (!mode) {
+            return "text";
+        }
+
+        return mode.toLowerCase();
+    }
+
+    const props = defineProps({
+        /** The text value of the code editor. */
+        modelValue: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The name of the theme to use when styling the editor. */
+        theme: {
+            type: [String, Number] as PropType<ThemeTypes>,
+            default: "rock"
+        },
+
+        /** The name of the syntax mode that represents the expected language. */
+        mode: {
+            type: [String, Number] as PropType<ModeTypes>,
+            default: "text"
+        },
+
+        /** If set then line wrapping will be disabled. */
+        noLineWrap: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The height of the editor in pixels. */
+        editorHeight: {
+            type: Number as PropType<number>,
+            required: false
+        },
+
+        /** A list of merge fields to make available. Not currently used! */
+        mergeFields: {
+            type: Array as PropType<string[]>,
+            required: false
+        },
+
+        /** If set then the the editor will be disabled and read-only. */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let editor: any | unknown;
+    const internalValue = ref(props.modelValue);
+    const uniqueId = newGuid();
+
+    // #region Computed Values
+
+    const codeEditorClass = computed((): string => {
+        return "code-editor-container";
+    });
+
+    const codeEditorId = computed((): string => {
+        return `codeeditor-div-${uniqueId}`;
+    });
+
+    const codeEditorStyle = computed((): Record<string, string> => {
+        return {
+            position: "relative",
+            height: `${editorHeight.value}px`
+        };
+    });
+
+    const hasMergeFields = computed((): boolean => {
+        return !!props.mergeFields && props.mergeFields.length > 0;
+    });
+
+    const editorHeight = computed((): number => {
+        let height = props.editorHeight ?? 200;
+
+        if (hasMergeFields.value) {
+            height -= 40;
+        }
+
+        return height;
+    });
+
+    // Since themes can be passed in as the number or string, we need to convert it to the string version
+    const themeName = computed<string>(() => {
+        if (typeof props.theme == "number") {
+            return themes[props.theme];
+        }
+
+        return props.theme;
+    });
+
+    // Since modes can be passed in as the number or string, we need to convert it to the string version
+    const modeName = computed<string>(() => {
+        if (typeof props.mode == "number") {
+            return modes[props.mode];
+        }
+
+        return props.mode;
+    });
+
+    // #endregion
+
+    // Watch for changes in the ACE configuration.
+    watch(() => [themeName.value, modeName.value, props.noLineWrap, props.disabled], () => {
+        if (editor) {
+            editor.setTheme(`ace/theme/${getAceTheme(themeName.value)}`);
+            editor.getSession().setMode(`ace/mode/${getAceMode(modeName.value)}`);
+            editor.getSession().setUseWrapMode(!props.noLineWrap);
+            editor.setReadOnly(props.disabled);
+        }
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(internalValue, props.modelValue);
+
+        if (editor && editor.getValue() !== internalValue.value) {
+            editor.setValue(internalValue.value, 1);
+        }
+    });
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+
+    onMounted(async (): Promise<void> => {
+        await aceScriptPromise;
+        editor = window.ace.edit(codeEditorId.value);
+        editor.setTheme(`ace/theme/${getAceTheme(themeName.value)}`);
+        editor.getSession().setMode(`ace/mode/${getAceMode(modeName.value)}`);
+        editor.getSession().setUseWrapMode(!props.noLineWrap);
+        editor.setShowPrintMargin(false);
+        editor.setReadOnly(props.disabled);
+
+        // Disable warning about block scrolling.
+        editor.$blockScrolling = Infinity;
+
+        // Add custom command to toggle fullscreen mode.
+        editor.commands.addCommand({
+            name: "Toggle Fullscreen",
+            bindKey: "F11",
+            exec: async () => {
+                if (isFullscreen()) {
+                    exitFullscreen();
+                }
+                else {
+                    enterFullscreen(editor.container, () => editor.resize());
+                }
+
+                editor.resize();
+            }
+        });
+
+        // Whenever the content of the editor changes, update our value.
+        editor.getSession().on("change", () => {
+            updateRefValue(internalValue, editor.getValue());
+        });
+
+        // Fix issue when code editor is inside a modal.
+        nextTick(() => {
+            editor.resize();
+        });
+    });
+</script>

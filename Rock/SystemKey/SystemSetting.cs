@@ -337,5 +337,10 @@ namespace Rock.SystemKey
         /// The label text for the SMS Opt-In checkbox
         /// </summary>
         public const string SMS_OPT_IN_MESSAGE_LABEL = "core_SmsOptInMessageLabel";
+
+        /// <summary>
+        /// The content library data (JSON).
+        /// </summary>
+        public const string CONTENT_LIBRARY_DATA_JSON = "core_ContentLibraryDataJson";
     }
 }
