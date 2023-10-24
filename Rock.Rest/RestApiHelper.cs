@@ -25,8 +25,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Net;
 using Rock.ViewModels.Core;
+using Rock.ViewModels.Rest.Models;
 
 #if WEBFORMS
 using System.Web.Http;
@@ -138,14 +138,15 @@ namespace Rock.Rest
                 }
 
                 var locationUri = new Uri( $"/api/v2/models/{typeof( TEntity ).Name.Pluralize().ToLower()}/{entity.Id}", UriKind.Relative );
-                var response = new CreatedAtResultBag
+                var response = new CreatedAtResponseBag
                 {
                     Id = entity.Id,
                     Guid = entity.Guid,
-                    IdKey = entity.IdKey
+                    IdKey = entity.IdKey,
+                    Location = $"{_controller.RockRequestContext.RootUrlPath}{locationUri}"
                 };
 
-                return new CreatedNegotiatedContentResult<CreatedAtResultBag>( locationUri, response, _controller );
+                return new CreatedNegotiatedContentResult<CreatedAtResponseBag>( locationUri, response, _controller );
             }
             catch ( Exception ex )
             {
@@ -467,7 +468,7 @@ namespace Rock.Rest
 
                     foreach ( var attributeKey in attributedEntity.Attributes.Keys)
                     {
-                        values.AddOrIgnore( attributeKey, new AttributeValueRestBag
+                        values.AddOrIgnore( attributeKey, new ModelAttributeValueBag
                         {
                             Value = attributedEntity.GetAttributeValue( attributeKey ),
                             TextValue = attributedEntity.GetAttributeTextValue( attributeKey  ),
@@ -723,65 +724,5 @@ namespace Rock.Rest
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// The response to be sent for a newly created item.
-    /// </summary>
-    internal class CreatedAtResultBag
-    {
-        /// <summary>
-        /// Gets or sets the integer identifier.
-        /// </summary>
-        /// <value>The integer identifier.</value>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unique identifier.
-        /// </summary>
-        /// <value>The unique identifier.</value>
-        public Guid Guid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the identifier key.
-        /// </summary>
-        /// <value>The identifier key.</value>
-        public string IdKey { get; set; }
-    }
-
-    /// <summary>
-    /// The object that contains the attribute value data.
-    /// </summary>
-    internal class AttributeValueRestBag
-    {
-        /// <summary>
-        /// Gets or sets the raw value.
-        /// </summary>
-        /// <value>The raw value.</value>
-        public string Value { get; set; }
-
-        /// <summary>
-        /// Gets or sets the text value.
-        /// </summary>
-        /// <value>The text value.</value>
-        public string TextValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the HTML value.
-        /// </summary>
-        /// <value>The HTML value.</value>
-        public string HtmlValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the condensed text value.
-        /// </summary>
-        /// <value>The condensed text value.</value>
-        public string CondensedTextValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the condensed HTML value.
-        /// </summary>
-        /// <value>The condensed HTML value.</value>
-        public string CondensedHtmlValue { get; set; }
     }
 }

@@ -39,6 +39,7 @@ namespace Rock.CodeGeneration.FileGenerators
             usings.Add( "Rock.Rest.Filters" );
             usings.Add( "Rock.Security" );
             usings.Add( "Rock.ViewModels.Core" );
+            usings.Add( "Rock.ViewModels.Rest.Models" );
 
             usingMaps.Add( ("FromBodyAttribute", "System.Web.Http.FromBodyAttribute") );
             usingMaps.Add( ("IActionResult", "System.Web.Http.IHttpActionResult") );
@@ -193,7 +194,7 @@ namespace Rock.CodeGeneration.FileGenerators
         [Authenticate]
         [Secured]
         [Route( """" )]
-        [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResultBag ) )]
+        [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
@@ -313,7 +314,7 @@ namespace Rock.CodeGeneration.FileGenerators
         [Authenticate]
         [Secured]
         [Route( ""{{id}}/attributevalues"" )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, AttributeValueRestBag> ) )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]

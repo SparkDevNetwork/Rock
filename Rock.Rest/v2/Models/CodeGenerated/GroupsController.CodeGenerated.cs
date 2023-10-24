@@ -27,6 +27,7 @@ using System.Net;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
+using Rock.ViewModels.Rest.Models;
 
 namespace Rock.Rest.v2.Models
 {
@@ -79,7 +80,7 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured]
         [Route( "" )]
-        [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResultBag ) )]
+        [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
@@ -159,7 +160,7 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured]
         [Route( "{id}/attributevalues" )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, AttributeValueRestBag> ) )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
