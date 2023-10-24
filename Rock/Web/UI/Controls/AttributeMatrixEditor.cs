@@ -378,13 +378,8 @@ namespace Rock.Web.UI.Controls
 
             if ( this.AttributeMatrixTemplateId.HasValue )
             {
-                Guid attributeMatrixTemplateGuid = new Guid( "1d24694e-445c-4852-b5bc-64cdea6f7175" );
-                AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
-                var template = attributeMatrixTemplateService.Get( attributeMatrixTemplateGuid );
-
-
                 tempAttributeMatrixItem = new AttributeMatrixItem();
-                tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = template.Id };
+                tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = this.AttributeMatrixTemplateId.Value };
                 tempAttributeMatrixItem.LoadAttributes();
 
                 foreach ( var attribute in tempAttributeMatrixItem.Attributes.Select( a => a.Value ) )
@@ -392,8 +387,8 @@ namespace Rock.Web.UI.Controls
                     _gMatrixItems.Columns.Add( new AttributeField { DataField = attribute.Key, HeaderText = attribute.Name } );
                 }
 
-                //AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
-                var attributeMatrixTemplateRanges = attributeMatrixTemplateService.GetSelect( attributeMatrixTemplateGuid, s => new { s.MinimumRows, s.MaximumRows } );
+                AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
+                var attributeMatrixTemplateRanges = attributeMatrixTemplateService.GetSelect( this.AttributeMatrixTemplateId.Value, s => new { s.MinimumRows, s.MaximumRows } );
 
                 // If a value is required, make sure we have a minumum row count of at least 1.
                 var minRowCount = attributeMatrixTemplateRanges.MinimumRows.GetValueOrDefault( 0 );

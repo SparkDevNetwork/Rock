@@ -616,37 +616,82 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var items = new List<string>();
                 Guid attributeMatrixTemplateGuid = new Guid( "1d24694e-445c-4852-b5bc-64cdea6f7175" );
+                Guid attributeMatrixGuid = new Guid( "66468021-39f0-4727-8156-8abf1067781c" );
                 AttributeMatrixItem tempAttributeMatrixItem = null;
 
                 if ( attributeMatrixTemplateGuid != null && !attributeMatrixTemplateGuid.IsEmpty() )
                 {
-                    AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
-                    var template = attributeMatrixTemplateService.Get( attributeMatrixTemplateGuid );
+                    var attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
+                    //var template = attributeMatrixTemplateService.Get( attributeMatrixTemplateGuid );
+                    var templateData = attributeMatrixTemplateService.GetSelect( attributeMatrixTemplateGuid, s => new { s.Id, s.MinimumRows, s.MaximumRows } );
 
 
                     tempAttributeMatrixItem = new AttributeMatrixItem();
-                    tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = template.Id };
+                    tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = templateData.Id };
                     tempAttributeMatrixItem.LoadAttributes();
 
-                    foreach ( var attribute in tempAttributeMatrixItem.Attributes.Select( a => a.Value ) )
-                    {
-                        items.Add( new AttributeField { DataField = attribute.Key, HeaderText = attribute.Name }.ToCamelCaseJson( false, true ) );
-                    }
-
-                    //AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
-                    var attributeMatrixTemplateRanges = attributeMatrixTemplateService.GetSelect( attributeMatrixTemplateGuid, s => new { s.MinimumRows, s.MaximumRows } );
 
                     // Configure Validation (minRows & maxRows & required)
+                    // Configure Validation (minRows & maxRows & required)
+                    // Configure Validation (minRows & maxRows & required)
+
+
+                    var attributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid );
+                    if ( attributeMatrix == null )
+                    {
+                        return NotFound();
+                    }
+
+                    var attributeMatrixItemList = attributeMatrix.AttributeMatrixItems
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Id )
+                        .ToList();
+
+                    foreach ( var attributeMatrixItem in attributeMatrixItemList )
+                    {
+                        attributeMatrixItem.LoadAttributes();
+                    }
+
+                    var matrixItems = attributeMatrixItemList
+                        .Select( a => new
+                        {
+                            a.Guid,
+                            a.Order,
+                            //Attributes = MakePublicAttributeBags( a.Attributes ),
+                            AttributeValues = a.AttributeValues.ToDictionary( v => v.Key, v => v.Value.Value )
+                        } )
+                        .ToList();
+
+                    return Ok( new
+                    {
+                        Attributes = MakePublicAttributeBags( tempAttributeMatrixItem.Attributes ),
+                        MatrixItems = matrixItems,
+                        MinRows = templateData.MinimumRows.GetValueOrDefault( 0 ),
+                        MaxRows = templateData.MaximumRows.GetValueOrDefault( 0 )
+                    } );
                 }
 
-                return Ok( new
-                {
-                    tempAttributeMatrixItem,
-                    items
-                } );
+                return NotFound();
             }
+        }
+
+        /// <summary>
+        /// Convert a dictionary of attributes into a dictionary of PublicAttributeBags.
+        /// </summary>
+        private Dictionary<string, PublicAttributeBag> MakePublicAttributeBags( Dictionary<string, AttributeCache> attributes )
+        {
+            return attributes.ToDictionary( a => a.Key, a => new PublicAttributeBag
+            {
+                AttributeGuid = a.Value.Guid,
+                ConfigurationValues = a.Value.ConfigurationValues,
+                Description = a.Value.Description,
+                FieldTypeGuid = a.Value.FieldType.Guid,
+                IsRequired = a.Value.IsRequired,
+                Key = a.Value.Key,
+                Name = a.Value.Name,
+                Order = a.Value.Order
+            } );
         }
 
         #endregion

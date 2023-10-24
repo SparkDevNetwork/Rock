@@ -1402,7 +1402,7 @@ const genderPickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <GenderPicker label="Your Gender" v-model="value" />
+    <GenderPicker  v-model="value" />
 
     <template #settings>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
