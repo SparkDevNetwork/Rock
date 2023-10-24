@@ -10,7 +10,9 @@
                 <div class="checkbox">
                     <label class="rock-checkbox-icon">
                         <input type="checkbox" v-bind="field" v-model="internalValue" :id="uniqueId" />
-                        <span class="label-text">&nbsp;{{ text }}</span>
+                        <span class="label-text">&nbsp;{{ text }}
+                            <slot name="besideText" />
+                        </span>
                     </label>
                 </div>
             </div>
