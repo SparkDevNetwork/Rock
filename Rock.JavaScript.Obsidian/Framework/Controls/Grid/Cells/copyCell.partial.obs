@@ -1,0 +1,21 @@
+<template>
+    <CopyButton :value="copyValue" @copy-clicked="onCopy"></CopyButton>
+</template>
+
+<script setup lang="ts">
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { ComputedRef, computed } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    const copyValue = computed(() => props.row.copyValue) as ComputedRef<string>;
+
+    function onCopy(): void {
+        if (typeof props.column.props.onClick === "function") {
+            props.column.props.onClick(props.grid.getRowKey(props.row), props.grid);
+        }
+    }
+</script>
+
+

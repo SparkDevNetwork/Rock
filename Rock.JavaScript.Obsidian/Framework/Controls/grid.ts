@@ -33,6 +33,7 @@ import ReorderColumn from "./Grid/Columns/reorderColumn.partial";
 import SecurityColumn from "./Grid/Columns/securityColumn.partial";
 import SelectColumn from "./Grid/Columns/selectColumn.partial";
 import TextColumn from "./Grid/Columns/textColumn.partial";
+import CopyColumn from "./Grid/Columns/copyColumn.partial";
 
 import BooleanCell from "./Grid/Cells/booleanCell.partial.obs";
 import CurrencyCell from "./Grid/Cells/currencyCell.partial.obs";
@@ -49,6 +50,7 @@ import SecurityCell from "./Grid/Cells/securityCell.partial.obs";
 import SelectCell from "./Grid/Cells/selectCell.partial.obs";
 import SelectHeaderCell from "./Grid/Cells/selectHeaderCell.partial.obs";
 import TextCell from "./Grid/Cells/textCell.partial";
+import CopyCell from "./Grid/Cells/copyCell.partial.obs";
 
 import BooleanFilter from "./Grid/Filters/booleanFilter.partial.obs";
 import DateFilter from "./Grid/Filters/dateFilter.partial.obs";
@@ -79,7 +81,8 @@ export {
     ReorderColumn,
     SecurityColumn,
     SelectColumn,
-    TextColumn
+    TextColumn,
+    CopyColumn,
 };
 
 // Export cell components.
@@ -98,7 +101,8 @@ export {
     SecurityCell,
     SelectCell,
     SelectHeaderCell,
-    TextCell
+    TextCell,
+    CopyCell,
 };
 
 // Export filter components.

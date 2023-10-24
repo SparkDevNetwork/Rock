@@ -7,13 +7,16 @@
                 data-toggle="tooltip"
                 :data-placement="tooltipPlacement"
                 data-container="body"
-                :data-original-title="tooltip"
+                :data-original-title="tooltipTitle"
+                @mouseleave="resetTooltip"
                 ref="el"><i class="fa fa-clipboard"></i></RockButton>
 </template>
 
 <script setup lang="ts">
     import { ComponentPublicInstance, onMounted, PropType, ref } from "vue";
     import RockButton from "./rockButton.obs";
+
+    const emit = defineEmits(["copy-clicked"]);
 
     const props = defineProps({
         value: {
@@ -35,17 +38,26 @@
         }
     });
 
+    const tooltipTitle = ref(props.tooltip);
     const el = ref<ComponentPublicInstance | null>(null);
     let jEl;
 
     function copy(e: MouseEvent): void {
         e.preventDefault();
-        navigator.clipboard.writeText(props.value);
+        tooltipTitle.value = "Copied!";
+        emit("copy-clicked", props.value);
 
-        jEl.attr("data-original-title", "Copied")
-            .tooltip("show")
-            .attr("data-original-title", props.tooltip);
+        jEl.attr("data-original-title", tooltipTitle.value);
+        jEl.tooltip("show");
 
+        if (el.value && el.value.$el) {
+            (el.value.$el as HTMLElement).blur();
+        }
+    }
+
+    function resetTooltip(): void {
+        tooltipTitle.value = props.tooltip;
+        jEl.attr("data-original-title", tooltipTitle.value);
     }
 
     onMounted(() => {
