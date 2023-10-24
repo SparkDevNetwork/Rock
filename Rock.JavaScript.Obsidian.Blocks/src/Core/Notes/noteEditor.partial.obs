@@ -36,6 +36,7 @@
 
                     <InlineCheckBox v-if="showAlert" v-model="isAlert" label="Alert" />
                     <InlineCheckBox v-if="showPrivate" v-model="isPrivate" label="Private" />
+                    <InlineCheckBox v-model="pinToTop" label="Pin to Top" />
 
                     <div class="commands">
                         <button v-if="showSecurity && modelValue?.idKey"
@@ -185,6 +186,7 @@
     const noteTypeIdKey = ref(props.modelValue?.noteTypeIdKey ?? "");
     const noteText = ref(props.modelValue?.text ?? "");
     const isAlert = ref(props.modelValue?.isAlert ?? false);
+    const pinToTop = ref(props.modelValue?.pinToTop ?? false);
     const isPrivate = ref(props.modelValue?.isPrivate ?? false);
     const createdDateTime = ref(props.modelValue?.createdDateTime ?? "");
     const attributes = ref<Record<string, PublicAttributeBag>>({});
@@ -418,18 +420,20 @@
         updateRefValue(noteTypeIdKey, props.modelValue?.noteTypeIdKey ?? noteTypeIdKey.value ?? defaultNoteTypeIdKey.value);
         updateRefValue(noteText, props.modelValue?.text ?? "");
         updateRefValue(isAlert, props.modelValue?.isAlert ?? false);
+        updateRefValue(pinToTop, props.modelValue?.pinToTop ?? false);
         updateRefValue(isPrivate, props.modelValue?.isPrivate ?? false);
         updateRefValue(createdDateTime, props.modelValue?.createdDateTime ?? "");
         updateRefValue(attributeValues, props.modelValue?.attributeValues ?? {});
     });
 
     // Watch for changes in the UI and update the model value.
-    watch([noteTypeIdKey, noteText, isAlert, isPrivate, createdDateTime, attributeValues], () => {
+    watch([noteTypeIdKey, noteText, isAlert, pinToTop, isPrivate, createdDateTime, attributeValues], () => {
         const newBag: NoteEditBag = {
             ...(props.modelValue ?? {}),
             noteTypeIdKey: noteTypeIdKey.value,
             text: noteText.value,
             isAlert: isAlert.value,
+            pinToTop: pinToTop.value,
             isPrivate: isPrivate.value,
             createdDateTime: createdDateTime.value || null,
             attributeValues: attributeValues.value

@@ -88,6 +88,10 @@
     <Compile Include="Migrations\202310231631563_AddAdaptiveMessage.designer.cs">
       <DependentUpon>202310231631563_AddAdaptiveMessage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202310241831421_AddPinTopTopFlagForNotes.cs" />
+    <Compile Include="Migrations\202310241831421_AddPinTopTopFlagForNotes.designer.cs">
+      <DependentUpon>202310241831421_AddPinTopTopFlagForNotes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.designer.cs">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>
@@ -1871,6 +1875,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202310231631563_AddAdaptiveMessage.resx">
       <DependentUpon>202310231631563_AddAdaptiveMessage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202310241831421_AddPinTopTopFlagForNotes.resx">
+      <DependentUpon>202310241831421_AddPinTopTopFlagForNotes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.resx">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>
