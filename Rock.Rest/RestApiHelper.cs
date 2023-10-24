@@ -122,6 +122,11 @@ namespace Rock.Rest
                     return authorizationResult;
                 }
 
+                if ( CheckIsSystem( entity, out var isSystemResult ) )
+                {
+                    return isSystemResult;
+                }
+
                 using ( var rockContext = new RockContext() )
                 {
                     new Service<TEntity>( rockContext ).Add( entity );
@@ -225,6 +230,11 @@ namespace Rock.Rest
                         return authorizationResult;
                     }
 
+                    if ( CheckIsSystem( entity, out var isSystemResult ) || CheckIsSystem( entity, out isSystemResult ) )
+                    {
+                        return isSystemResult;
+                    }
+
                     service.SetValues( entity, targetEntity );
 
                     if ( !targetEntity.IsValid )
@@ -272,6 +282,11 @@ namespace Rock.Rest
                     if ( !CheckAuthorized( Security.Authorization.EDIT, entity, out var authorizationResult ) )
                     {
                         return authorizationResult;
+                    }
+
+                    if ( CheckIsSystem( entity, out var isSystemResult ) )
+                    {
+                        return isSystemResult;
                     }
 
                     service.Delete( entity );
@@ -325,6 +340,11 @@ namespace Rock.Rest
                         return authorizationResult;
                     }
 
+                    if ( CheckIsSystem( entity, out var isSystemResult ) )
+                    {
+                        return isSystemResult;
+                    }
+
                     var type = entity.GetType();
                     var properties = type.GetProperties( BindingFlags.Public | BindingFlags.Instance ).ToList();
 
@@ -336,8 +356,12 @@ namespace Rock.Rest
 
                         if ( property == null )
                         {
-                            return BadRequest( $"{typeof( TEntity ).Name} does not have property {propKey}" );
+                            return BadRequest( $"{typeof( TEntity ).Name} does not have property '{propKey}'." );
 
+                        }
+                        else if ( property.Name == "IsSystem" )
+                        {
+                            return BadRequest( $"Modifying property '{propKey}' is not permitted." );
                         }
 
                         var propertyType = Nullable.GetUnderlyingType( property.PropertyType ) ?? property.PropertyType;
@@ -349,7 +373,7 @@ namespace Rock.Rest
                         }
                         else if ( !property.CanWrite )
                         {
-                            return BadRequest( $"Cannot write {property.Name}" );
+                            return BadRequest( $"Cannot write '{property.Name}'" );
                         }
 
                         if ( newValue == null )
@@ -367,7 +391,7 @@ namespace Rock.Rest
                             }
                             catch ( OverflowException )
                             {
-                                return BadRequest( $"Cannot cast {property.Name} to int32." );
+                                return BadRequest( $"Cannot cast '{property.Name}' to int32." );
                             }
                         }
                         else
@@ -620,6 +644,27 @@ namespace Rock.Rest
             errorResult = null;
 
             return true;
+        }
+
+        /// <summary>
+        /// Check if the entity is classified as a "system" entity. These do
+        /// not allow any editing actions performed on them.
+        /// </summary>
+        /// <param name="entity">The entity to be checked against.</param>
+        /// <param name="errorResult">The error result if <c>true</c> is returned; otherwise <c>null</c>.</param>
+        /// <returns><c>true</c> if the entity is considered "system" and should not be modified, <c>false</c> otherwise.</returns>
+        private bool CheckIsSystem( IEntity entity, out IActionResult errorResult )
+        {
+            var isSystemProperty = entity.GetType().GetProperty( "IsSystem" );
+
+            if ( isSystemProperty != null && ( bool ) isSystemProperty.GetValue( entity ) == true )
+            {
+                errorResult = BadRequest( "Not allowed to modify items marked as system." );
+                return true;
+            }
+
+            errorResult = null;
+            return false;
         }
 
         /// <summary>
