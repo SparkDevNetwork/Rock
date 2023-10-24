@@ -186,6 +186,7 @@
     <Compile Include="Utility\BlockUtilities.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\Models\CodeGenerated\GroupsController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\DataViewsActionsController.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
     <Compile Include="v2\BlockActionsController.cs" />
