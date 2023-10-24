@@ -290,6 +290,9 @@ registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
 import { SingleSelectFieldType } from "./singleSelectField.partial";
 registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());
 
+import { StructureContentEditorFieldType } from "./structureContentEditorField.partial";
+registerFieldType(FieldTypeGuids.StructureContentEditor, new StructureContentEditorFieldType());
+
 import { SlidingDateRangeFieldType } from "./slidingDateRangeField.partial";
 registerFieldType(FieldTypeGuids.SlidingDateRange, new SlidingDateRangeFieldType());
 
