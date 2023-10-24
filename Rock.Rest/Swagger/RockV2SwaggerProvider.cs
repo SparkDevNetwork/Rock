@@ -16,6 +16,8 @@
 //
 using System.Collections.Concurrent;
 
+using Rock.Rest.Utility;
+
 using Swashbuckle.Swagger;
 
 namespace Rock.Rest.Swagger
@@ -44,6 +46,11 @@ namespace Rock.Rest.Swagger
         public RockV2SwaggerProvider( ISwaggerProvider baseProvider )
         {
             _baseProvider = baseProvider;
+
+            var formatter = ApiPickerJsonMediaTypeFormatter.CreateV2Formatter();
+            var jsonSerializerSettingsField = baseProvider.GetType().GetField( "_jsonSerializerSettings", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance );
+
+            jsonSerializerSettingsField?.SetValue( baseProvider, formatter.SerializerSettings );
         }
 
         /// <summary>
@@ -59,7 +66,14 @@ namespace Rock.Rest.Swagger
 
             return _cachedDocuments.GetOrAdd( cacheKey, _ =>
             {
-                return _baseProvider.GetSwagger( rootUrl, apiVersion );
+                var document = _baseProvider.GetSwagger( rootUrl, apiVersion );
+
+                if ( document.basePath == null )
+                {
+                    document.basePath = "/";
+                }
+
+                return document;
             } );
         }
     }

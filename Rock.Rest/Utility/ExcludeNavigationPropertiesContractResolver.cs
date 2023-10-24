@@ -23,6 +23,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Utility
 {
@@ -46,13 +47,14 @@ namespace Rock.Rest.Utility
 
         /// <summary>
         /// Determines if the type is a navigation property. This is determined
-        /// by it either being of type IEntity or of type ICollection&lt;IEntity&gt;.
+        /// by it either being of type IEntity, IEntityCache, an ICollection&lt;&gt;
+        /// of one of those types, or the special properties used by IHasAttributes.
         /// </summary>
         /// <param name="type">The property type.</param>
         /// <returns><c>true</c> if the property type is a navigation property; otherwise <c>false</c>.</returns>
         internal static bool IsNavigationPropertyType( Type type )
         {
-            if ( typeof( IEntity ).IsAssignableFrom( type ) )
+            if ( typeof( IEntity ).IsAssignableFrom( type ) || typeof( IEntityCache ).IsAssignableFrom( type ) )
             {
                 return true;
             }
@@ -62,12 +64,21 @@ namespace Rock.Rest.Utility
                 return false;
             }
 
-            if ( type.GetGenericTypeDefinition() != typeof( ICollection<> ) )
+            if ( type.GetGenericTypeDefinition() == typeof( ICollection<> ) )
             {
-                return false;
+                var genericArgs = type.GetGenericArguments();
+
+                return typeof( IEntity ).IsAssignableFrom( genericArgs[0] )
+                    || typeof( IEntityCache ).IsAssignableFrom( genericArgs[0] );
             }
 
-            return typeof( IEntity ).IsAssignableFrom( type.GetGenericArguments()[0] );
+            // Special check for IHasAttributes properties.
+            if ( type == typeof( Dictionary<string, AttributeCache> ) || type == typeof( Dictionary<string, AttributeValueCache> ) )
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -15,11 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Linq;
 
 using Newtonsoft.Json;
-
-using Rock.Rest.Utility;
 
 using Swashbuckle.Swagger;
 
@@ -58,41 +55,6 @@ namespace Rock.Rest.Swagger
                     // cause the example JSON to be empty.
                     schema.example = new object();
                 }
-
-                schema.properties.Remove( "Attributes" );
-                schema.properties.Remove( "AttributeValues" );
-            }
-
-            if ( schema.properties != null )
-            {
-                schema.properties = schema.properties
-                    .Where( p =>
-                    {
-                        try
-                        {
-                            var propertyType = type.GetProperty( p.Key )?.PropertyType;
-
-                            if ( propertyType == null )
-                            {
-                                return false;
-                            }
-
-                            return !ExcludeNavigationPropertiesContractResolver.IsNavigationPropertyType( propertyType );
-                        }
-                        catch
-                        {
-                            return false;
-                        }
-                    } )
-                    .ToDictionary( a => ToCamelCase( a.Key ), a => a.Value );
-            }
-
-            if ( schema.required != null )
-            {
-                schema.required = schema.required
-                    .Select( a => ToCamelCase( a ) )
-                    .Where( a => schema.properties == null || schema.properties.ContainsKey( a ) )
-                    .ToList();
             }
         }
 
@@ -109,53 +71,6 @@ namespace Rock.Rest.Swagger
             }
 
             return _serializerSettings;
-        }
-
-        /// <summary>
-        /// Convert a string into camel case.
-        /// </summary>
-        /// <remarks>Originally from https://github.com/JamesNK/Newtonsoft.Json/blob/01e1759cac40d8154e47ed0e11c12a9d42d2d0ff/Src/Newtonsoft.Json/Utilities/StringUtils.cs#L155</remarks>
-        /// <param name="value">The string to be converted.</param>
-        /// <returns>A string in camel case.</returns>
-        private static string ToCamelCase( string value )
-        {
-            if ( string.IsNullOrEmpty( value ) || !char.IsUpper( value[0] ) )
-            {
-                return value;
-            }
-
-            var chars = value.ToCharArray();
-
-            for ( int i = 0; i < chars.Length; i++ )
-            {
-                if ( i == 1 && !char.IsUpper( chars[i] ) )
-                {
-                    break;
-                }
-
-                bool hasNext = ( i + 1 < chars.Length );
-                if ( i > 0 && hasNext && !char.IsUpper( chars[i + 1] ) )
-                {
-                    // if the next character is a space, which is not considered uppercase 
-                    // (otherwise we wouldn't be here...)
-                    // we want to ensure that the following:
-                    // 'FOO bar' is rewritten as 'foo bar', and not as 'foO bar'
-                    // The code was written in such a way that the first word in uppercase
-                    // ends when if finds an uppercase letter followed by a lowercase letter.
-                    // now a ' ' (space, (char)32) is considered not upper
-                    // but in that case we still want our current character to become lowercase
-                    if ( char.IsSeparator( chars[i + 1] ) )
-                    {
-                        chars[i] = char.ToLower( chars[i] );
-                    }
-
-                    break;
-                }
-
-                chars[i] = char.ToLower( chars[i] );
-            }
-
-            return new string( chars );
         }
     }
 }
