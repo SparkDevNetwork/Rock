@@ -107,7 +107,7 @@ namespace Rock.Rest
             {
                 if ( entity == null )
                 {
-                    return BadRequest( "Item to be created cannot be null.");
+                    return BadRequest( "Item to be created cannot be null." );
                 }
 
                 if ( !entity.IsValid )
@@ -466,12 +466,12 @@ namespace Rock.Rest
 
                     attributedEntity.LoadAttributes( rockContext );
 
-                    foreach ( var attributeKey in attributedEntity.Attributes.Keys)
+                    foreach ( var attributeKey in attributedEntity.Attributes.Keys )
                     {
                         values.AddOrIgnore( attributeKey, new ModelAttributeValueBag
                         {
                             Value = attributedEntity.GetAttributeValue( attributeKey ),
-                            TextValue = attributedEntity.GetAttributeTextValue( attributeKey  ),
+                            TextValue = attributedEntity.GetAttributeTextValue( attributeKey ),
                             HtmlValue = attributedEntity.GetAttributeHtmlValue( attributeKey ),
                             CondensedTextValue = attributedEntity.GetAttributeCondensedTextValue( attributeKey ),
                             CondensedHtmlValue = attributedEntity.GetAttributeCondensedHtmlValue( attributeKey )
@@ -636,7 +636,7 @@ namespace Rock.Rest
 
                 if ( !isAuthorized )
                 {
-                    errorResult = Unauthorized($"You are not authorized to {action.SplitCase().ToLower()} this item." );
+                    errorResult = Unauthorized( $"You are not authorized to {action.SplitCase().ToLower()} this item." );
 
                     return false;
                 }
