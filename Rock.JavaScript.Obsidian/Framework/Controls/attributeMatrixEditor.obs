@@ -2,7 +2,7 @@
 <template>
     <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="x-field">
         <Grid :data="gridData" keyField="key" liveUpdates light @addItem="onAddItem" @selectItem="console.log">
-            <ReorderColumn />
+            <ReorderColumn @orderChanged="orderChanged" />
             <!-- <TextColumn name="name"
                         title="nameTitle"
                         field="name" />
@@ -27,10 +27,31 @@
             <DeleteColumn @click="onDelete" disableConfirmation />
         </Grid>
     </RockFormField>
+
+    <div class="well">
+        {{ attributes }}
+        <br>
+        <br>
+        <br>
+        <br>
+        {{ matrixItems }}
+        <br>
+        <br>
+        <br>
+        <br>
+        <pre>
+{{ JSON.stringify(gridData, null, 4) }}
+        </pre>
+        <br>
+        <br>
+        <br>
+        <br>
+        {{ attributeList }}
+    </div>
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive } from "vue";
+    import { PropType, computed, reactive, ref } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import Grid, { AttributeColumns, BooleanColumn, DateColumn, DeleteColumn, EditColumn, NumberColumn, TextColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -59,7 +80,7 @@
 
 
 
-    const attributes = {
+    const attributes = ref({
         "ArticleImage": {
             "fieldTypeGuid": "97f8157d-a8c8-4ab3-96a2-9cb2a9049e6d",
             "attributeGuid": "ba1d667d-080d-4a17-9392-f3e953969c7a",
@@ -125,8 +146,8 @@
             "preHtml": null,
             "postHtml": null
         }
-    };
-    const matrixItems = [
+    });
+    const matrixItems = ref([
         {
             "guid": "ac0dd30f-6ec3-4254-9362-cfee0141c69e",
             "order": 0,
@@ -157,7 +178,7 @@
                 "ArticleLink": "/some-url"
             }
         }
-    ];
+    ]);
 
 
 
@@ -165,13 +186,14 @@
 
 
     const gridData: GridDataBag = reactive<GridDataBag>({
-        rows: matrixItems.map(item => ({
+        rows: matrixItems.value.map(item => ({
             key: item.guid,
+            order: item.order,
             ...item.attributeValues
         }))
     });
 
-    const attributeList = Object.values(attributes).map(attr => ({ fieldTypeGuid: attr.fieldTypeGuid, name: attr.key, title: attr.name }));
+    const attributeList = computed(() => Object.values(attributes.value).map(attr => ({ fieldTypeGuid: attr.fieldTypeGuid, name: attr.key, title: attr.name })));
 
 
     function generateItem(index: number): Record<string, unknown> {
@@ -199,6 +221,33 @@
                 gridData.rows.splice(index, 1);
             }
         }
+    }
+
+    /**
+     * When the order of the items in the matrix is changed via drag and drop, rearrange the items in the
+     * array and update the `order` property to match the array order.
+     */
+    function orderChanged(movedItem: Record<string, unknown>, movedBefore: Record<string, unknown> | null): void {
+        const movedIndex = gridData.rows?.indexOf(movedItem) ?? -1;
+
+        if (movedIndex < 0) {
+            return;
+        }
+
+        // TODO: Update the original data array instead of grid rows directly
+        gridData.rows?.splice(movedIndex, 1);
+
+        if (movedBefore == null || (gridData.rows?.indexOf(movedBefore) ?? -1) < 0) {
+            gridData.rows?.push(movedItem);
+        }
+        else {
+            const beforeIndex = gridData.rows?.indexOf(movedBefore) as number;
+            gridData.rows?.splice(beforeIndex, 0, movedItem);
+        }
+
+        gridData.rows?.forEach((item, index) => {
+            item.order = index;
+        });
     }
 
 
