@@ -2099,7 +2099,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             {
                 // disable paging if no specific keys where selected (or if no select option is shown)
                 bool selectAll = !SelectedKeys.Any();
-                RebindGrid( e, selectAll, true, false );
+                RebindGrid( e, selectAll, true, false, true );
                 entitySetId = GetEntitySetFromGrid( e );
             }
 
@@ -2840,6 +2840,30 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             }
 
             var eventArg = new GridRebindEventArgs( isExporting, isCommunication );
+            OnGridRebind( eventArg );
+
+            this.AllowPaging = origPaging;
+        }
+
+        /// <summary>
+        /// Calls OnGridRebind with an option to disable paging so the entire datasource is loaded vs just what is needed for the current page
+        /// and other options to indicate if the event is part of the grid's data export process, if this event was triggered by a communication
+        /// button click, or if the data export is as a result of the MergeTemplate button click.
+        /// </summary>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <param name="disablePaging">if set to <c>true</c> [disable paging].</param>
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        /// <param name="isCommunication">if set to <c>true</c> [is communication].</param>
+        /// <param name="isMergeExport">if set to <c>true</c> [is exporting] is due to the MergeTemplate buttom click.</param>
+        private void RebindGrid( EventArgs e, bool disablePaging, bool isExporting, bool isCommunication, bool isMergeExport )
+        {
+            var origPaging = this.AllowPaging;
+            if ( disablePaging )
+            {
+                this.AllowPaging = false;
+            }
+
+            var eventArg = new GridRebindEventArgs( isExporting, isCommunication, isMergeExport );
             OnGridRebind( eventArg );
 
             this.AllowPaging = origPaging;
@@ -4350,6 +4374,14 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         public bool IsExporting { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the export process was triggered by the merge document button click. 
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is merge document export; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsMergeDocumentExport { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is communication.
         /// </summary>
         /// <value>
@@ -4384,6 +4416,19 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         {
             IsExporting = isExporting;
             IsCommunication = isCommunication;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridRebindEventArgs"/> class.
+        /// </summary>
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        /// <param name="isCommunication">if set to <c>true</c> [is communication].</param>
+        /// <param name="isMergeDocumentExport">if set to <c>true</c> [is export] is due to the MergeTemplate button click.</param>
+        public GridRebindEventArgs( bool isExporting, bool isCommunication, bool isMergeDocumentExport ) : base()
+        {
+            IsExporting = isExporting;
+            IsCommunication = isCommunication;
+            IsMergeDocumentExport = isMergeDocumentExport;
         }
     }
 
