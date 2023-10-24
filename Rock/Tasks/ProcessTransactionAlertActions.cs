@@ -117,6 +117,8 @@ namespace Rock.Tasks
                         }
 
                         connectionRequestService.Add( request );
+                        rockContext.SaveChanges();
+                        request.SaveAttributeValues( rockContext );
                     }
                 }
 

@@ -169,15 +169,15 @@
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="nbGlobalRepeatPreventionDuration" Label="Global Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent any alert from being triggered within the provided number of days from a previous alteration." />
+                                <Rock:NumberBox ID="nbGlobalRepeatPreventionDuration" Label="Global Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent any alert from being triggered within the provided number of days from a previous alert." />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="nbGratitudeRepeatPreventionDuration" Label="Gratitude Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent a gratitude alert from being triggered within the provided number of days from a previous alteration." />
+                                <Rock:NumberBox ID="nbGratitudeRepeatPreventionDuration" Label="Gratitude Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent a gratitude alert from being triggered within the provided number of days from a previous alert." />
                             </div>
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="nbFollowupRepeatPreventionDuration" Label="Follow-up Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent a follow-up alert from being triggered within the provided number of days from a previous alteration." />
+                                <Rock:NumberBox ID="nbFollowupRepeatPreventionDuration" Label="Follow-up Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent a follow-up alert from being triggered within the provided number of days from a previous alert." />
                             </div>
                         </div>
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
@@ -239,7 +239,7 @@
                         <Rock:DaysOfWeekPicker ID="dwpDaysToRunAlertType" runat="server" Label="Days to Run" RepeatDirection="Horizontal" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="nbRepeatPreventionDuration" runat="server" Label="Repeat Prevention Duration" AppendText="days" ValidationGroup="vgAlertDetails" Help="The number of days between triggering the same alert. Blank means that the same trigger can occur on each occrrence if not global settings exist." />
+                        <Rock:NumberBox ID="nbRepeatPreventionDuration" runat="server" Label="Repeat Prevention Duration" AppendText="days" ValidationGroup="vgAlertDetails" Help="The number of days between triggering the same alert. Blank means that the same trigger can occur on each occrrence if no global settings exist." />
                     </div>
                 </div>
                 <div class="panel panel-section">
@@ -262,7 +262,7 @@
                         <hr>
                         <div class="row">
                             <div class="col-md-5">
-                                <Rock:NumberBox ID="nbFrequencySensitivityScale" CssClass="input-width-xl" runat="server" NumberType="Double" Label="Frequency Sensitivity Scale" ValidationGroup="vgAlertDetails" Help="The number of standard devivations below or above the mean the gift must be to trigger the alert. A value of 2 would classify the extreme 5% as outliers." />
+                                <Rock:NumberBox ID="nbFrequencySensitivityScale" CssClass="input-width-xl" runat="server" NumberType="Double" Label="Frequency Sensitivity Scale" ValidationGroup="vgAlertDetails" Help="The number of standard deviations below or above the mean the gift must be to trigger the alert. A value of 2 would classify the extreme 5% as outliers." />
                             </div>
                             <div class="col-md-7 text-sm">
                                 <asp:Literal ID="lFrequencySensitivityScaleHelp" runat="server" />
