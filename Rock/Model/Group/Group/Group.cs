@@ -44,10 +44,10 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "Group" )]
     [DataContract]
+    [CodeGenerateRest]
 
     // Support Analytics Tables, but only for GroupType Family
     [Analytics( "GroupTypeId", "10", true, true )]
-    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.GROUP )]
     public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable, ICacheable
     {

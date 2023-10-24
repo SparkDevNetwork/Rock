@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Lava;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -31,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Prayer" )]
     [Table( "PrayerRequest" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "F13C8FD2-7702-4C79-A6A9-86440DD5DE13")]
     public partial class PrayerRequest : Model<PrayerRequest>, ICategorized
     {

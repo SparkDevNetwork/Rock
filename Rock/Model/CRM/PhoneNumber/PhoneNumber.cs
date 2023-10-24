@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,18 +15,14 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text.RegularExpressions;
+
 using Rock.Data;
 using Rock.Lava;
-using Rock.Web.Cache;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -36,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "PhoneNumber" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "AD7E27CB-036D-40C6-B352-81B38BFAE798")]
     public partial class PhoneNumber : Model<PhoneNumber>
     {

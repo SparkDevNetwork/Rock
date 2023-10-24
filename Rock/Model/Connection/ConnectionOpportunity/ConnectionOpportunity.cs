@@ -21,8 +21,10 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Lava;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -32,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "ConnectionOpportunity" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONNECTION_OPPORTUNITY )]
     public partial class ConnectionOpportunity : Model<ConnectionOpportunity>, IHasActiveFlag, IOrdered
     {

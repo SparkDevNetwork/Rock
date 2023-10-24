@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,8 +17,10 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Lava;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -28,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannelItemAssociation" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "7C86EED3-C3F9-4B25-887B-F732FE3C35F0")]
     public partial class ContentChannelItemAssociation : Model<ContentChannelItemAssociation>, IOrdered
     {

@@ -16,13 +16,13 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "DefinedValue" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.DEFINED_VALUE )]
     public partial class DefinedValue : Model<DefinedValue>, IOrdered, ICacheable
     {

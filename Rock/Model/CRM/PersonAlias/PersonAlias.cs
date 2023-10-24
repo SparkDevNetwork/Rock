@@ -20,7 +20,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -34,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "PersonAlias" )]
     [NotAudited]
+    [CodeGenerateRest]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON_ALIAS )]
     public partial class PersonAlias : Entity<PersonAlias>

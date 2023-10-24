@@ -18,7 +18,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -28,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannelItemSlug" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "2FF2F1C3-A440-4D24-8FB8-2B0D9436EA75")]
     public partial class ContentChannelItemSlug : Model<ContentChannelItemSlug>
     {

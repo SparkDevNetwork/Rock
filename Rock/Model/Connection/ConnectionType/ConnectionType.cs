@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,13 +19,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "ConnectionType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONNECTION_TYPE )]
     public partial class ConnectionType : Model<ConnectionType>, IOrdered, ICacheable
     {
