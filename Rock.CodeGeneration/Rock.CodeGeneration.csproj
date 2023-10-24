@@ -98,6 +98,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FileGenerators\RestV2ApiGenerator.cs" />
     <Compile Include="Pages\ObsidianListBlockPage.xaml.cs">
       <DependentUpon>ObsidianListBlockPage.xaml</DependentUpon>
     </Compile>

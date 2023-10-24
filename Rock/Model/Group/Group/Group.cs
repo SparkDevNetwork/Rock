@@ -29,6 +29,7 @@ using Rock.Enums.Group;
 using Rock.Lava;
 using Rock.Security;
 using Rock.UniversalSearch;
+using Rock.Utility;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
@@ -46,6 +47,7 @@ namespace Rock.Model
 
     // Support Analytics Tables, but only for GroupType Family
     [Analytics( "GroupTypeId", "10", true, true )]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.GROUP )]
     public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable, ICacheable
     {

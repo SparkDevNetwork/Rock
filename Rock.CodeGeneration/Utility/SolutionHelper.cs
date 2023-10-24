@@ -369,6 +369,78 @@ namespace Rock.CodeGeneration.Utility
         }
 
         /// <summary>
+        /// Removes the file from project.
+        /// </summary>
+        /// <param name="projectName">Name of the project.</param>
+        /// <param name="absoluteFilePath">The absolute path and filename to the file that should be removed.</param>
+        /// <exception cref="Exception">Attempted to remove file from outside project path.</exception>
+        public void RemoveFileFromProject( string projectName, string absoluteFilePath )
+        {
+            // Add the file to either a running Visual Studio instance or
+            // directly to the files on disk.
+            if ( _dte != null )
+            {
+                // Get a reference to the project and determine the file system
+                // path of the project.
+                var project = GetOnlineProjectByName( projectName );
+                var projectPath = Path.GetDirectoryName( project.FullName );
+
+                if ( !absoluteFilePath.StartsWith( projectPath ) )
+                {
+                    throw new Exception( "Attempted to remove file from outside project path." );
+                }
+
+                // Get the folder in the project that will contain the file.
+                var relativeFilePath = absoluteFilePath.Substring( projectPath.Length + 1 );
+                var folder = GetOnlineProjectFolderFromPath( project, Path.GetDirectoryName( relativeFilePath ), false );
+                var file = folder?.ProjectItems.Cast<ProjectItem>().FirstOrDefault( pi => pi.Name == Path.GetFileName( absoluteFilePath ) );
+
+                // If the file exists, remove it.
+                if ( file != null )
+                {
+                    file.Remove();
+
+                    // Wait a moment for the COM object to settle, otherwise
+                    // random errors crop up.
+                    System.Threading.Thread.Sleep( 10 );
+
+                    // Mark the project as dirty if it isn't already.
+                    if ( !_dirtyOnlineProjects.Contains( project ) )
+                    {
+                        _dirtyOnlineProjects.Add( project );
+                    }
+                }
+            }
+            else
+            {
+                // Get a reference to the project and determine the file system
+                // path of the project.
+                var project = GetOfflineProjectByName( projectName );
+                var projectPath = project.DirectoryPath;
+
+                if ( !absoluteFilePath.StartsWith( projectPath ) )
+                {
+                    throw new Exception( "Attempted to add file from outside project path." );
+                }
+
+                var relativeFilePath = absoluteFilePath.Substring( projectPath.Length + 1 );
+                var projectItem = project.Items.FirstOrDefault( pi => pi.EvaluatedInclude == relativeFilePath );
+
+                // If the file exits, remove it.
+                if ( projectItem != null )
+                {
+                    project.Items.Remove( projectItem );
+
+                    // Mark the project as dirty if it isn't already.
+                    if ( !_dirtyOfflineProjects.Contains( project ) )
+                    {
+                        _dirtyOfflineProjects.Add( project );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Saves changes to any projects that have been modified. This persists
         /// the changes to disk immediately, but the changes may eventually be
         /// persisted even if this isn't called.
