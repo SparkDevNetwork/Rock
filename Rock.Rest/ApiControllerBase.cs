@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.ServiceModel.Channels;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +29,13 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Net;
 using Rock.Rest.Utility;
+using Rock.Web.Cache;
+
+#if WEBFORMS
+using System.Web.Http.Results;
+
+using IActionResult = System.Web.Http.IHttpActionResult;
+#endif
 
 namespace Rock.Rest
 {
@@ -175,5 +184,98 @@ namespace Rock.Rest
             var currentPersonAlias = GetPersonAlias( rockContext );
             return currentPersonAlias == null ? ( int? ) null : currentPersonAlias.Id;
         }
+
+        /// <summary>
+        /// Determines whether the current person has unrestricted view access
+        /// to the current controller action.
+        /// </summary>
+        /// <returns><c>true</c> if the current person has unrestricted view access; otherwise, <c>false</c>.</returns>
+        protected bool IsCurrentPersonUnrestrictedView()
+        {
+            if ( ActionContext.ActionDescriptor is ReflectedHttpActionDescriptor actionDescriptor )
+            {
+                var restGuid = actionDescriptor.MethodInfo.GetCustomAttribute<SystemGuid.RestActionGuidAttribute>()?.Guid;
+
+                if ( restGuid.HasValue )
+                {
+                    var restAction = RestActionCache.Get( restGuid.Value );
+
+                    return restAction?.IsAuthorized( "UnrestrictedView", RockRequestContext.CurrentPerson ) ?? false;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the current person has unrestricted edit access
+        /// to the current controller action.
+        /// </summary>
+        /// <returns><c>true</c> if the current person has unrestricted view access; otherwise, <c>false</c>.</returns>
+        protected bool IsCurrentPersonUnrestrictedEdit()
+        {
+            if ( ActionContext.ActionDescriptor is ReflectedHttpActionDescriptor actionDescriptor )
+            {
+                var restGuid = actionDescriptor.MethodInfo.GetCustomAttribute<SystemGuid.RestActionGuidAttribute>()?.Guid;
+
+                if ( restGuid.HasValue )
+                {
+                    var restAction = RestActionCache.Get( restGuid.Value );
+
+                    return restAction?.IsAuthorized( "UnrestrictedEdit", RockRequestContext.CurrentPerson ) ?? false;
+                }
+            }
+
+            return false;
+        }
+
+        #region .NET Core compatible methods
+
+        /// <summary>
+        /// Returns a response object to indicate that no content was generated.
+        /// </summary>
+        /// <returns>The response object.</returns>
+        protected IActionResult NoContent()
+        {
+            return new StatusCodeResult( HttpStatusCode.NoContent, this );
+        }
+
+        /// <summary>
+        /// Creates a not found response with the given error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>The response object.</returns>
+        protected IActionResult NotFound( string errorMessage )
+        {
+            var error = new HttpError( errorMessage );
+
+            return new NegotiatedContentResult<HttpError>( HttpStatusCode.NotFound, error, this );
+        }
+
+        /// <summary>
+        /// Creates an unauthorized response with the given error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>The response object.</returns>
+        protected IActionResult Unauthorized( string errorMessage )
+        {
+            var error = new HttpError( errorMessage );
+
+            return new NegotiatedContentResult<HttpError>( HttpStatusCode.Unauthorized, error, this );
+        }
+
+        /// <summary>
+        /// Creates an internals erver error response with the given error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>The response object.</returns>
+        protected IActionResult InternalServerError( string errorMessage )
+        {
+            var error = new HttpError( errorMessage );
+
+            return new NegotiatedContentResult<HttpError>( HttpStatusCode.InternalServerError, error, this );
+        }
+
+        #endregion
     }
 }
