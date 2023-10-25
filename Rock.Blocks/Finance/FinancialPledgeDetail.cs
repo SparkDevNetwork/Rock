@@ -41,7 +41,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Allows the details of a given pledge to be edited." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
     [GroupTypeField( "Select Group Type",

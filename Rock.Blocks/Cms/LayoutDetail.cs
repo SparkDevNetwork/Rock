@@ -41,7 +41,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular layout." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
