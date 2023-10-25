@@ -509,9 +509,9 @@ usernameTextbox.blur(function () {{
                         rPhoneNumbers.DataSource = phoneNumbers;
                         rPhoneNumbers.DataBind();
                     }
-
-                    SetCurrentPersonDetails();
                 }
+
+                SetCurrentPersonDetails();
 
                 BuildAttributes();
             }

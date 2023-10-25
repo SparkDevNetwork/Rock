@@ -817,7 +817,9 @@ namespace Rock.Blocks.Security
             // Automatically set the phone number or email if this user is coming from the passwordless login flow.
             var passwordlessLoginStateString = encryptedStateOverride ?? Uri.UnescapeDataString( PageParameter( PageParameterKey.State ) );
             var passwordlessLoginState = PasswordlessAuthentication.GetDecryptedAuthenticationState( passwordlessLoginStateString );
+            var currentPerson = GetCurrentPerson();
 
+            var showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
             var requiredPhoneTypes = GetAttributeValue( AttributeKey.PhoneTypesRequired )
                 .Split( ',' )
                 .Where( guidString => guidString.IsNotNullOrWhiteSpace() )
@@ -835,6 +837,13 @@ namespace Rock.Blocks.Security
             {
                 knownNumbers.Add( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), passwordlessLoginState.PhoneNumber );
             }
+            else if ( currentPerson != null && showPhoneNumbers )
+            {
+                foreach ( var phoneNumber in currentPerson.PhoneNumbers )
+                {
+                    knownNumbers.Add( phoneNumber.NumberTypeValue.Guid, phoneNumber.Number );
+                }
+            }
 
             var phoneNumberTypeDefinedType = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() );
 
@@ -843,8 +852,8 @@ namespace Rock.Blocks.Security
                 .Select( v => new AccountEntryPhoneNumberBag
                 {
                     Guid = v.Guid,
-                    IsHidden = knownNumbers.ContainsKey( v.Guid ) && knownNumbers[v.Guid].IsNotNullOrWhiteSpace(),
-                    IsRequired = requiredPhoneTypes.Contains( v.Guid ) || knownNumbers.ContainsKey( v.Guid ),
+                    IsHidden = passwordlessLoginState != null && knownNumbers.ContainsKey( v.Guid ) && knownNumbers[v.Guid].IsNotNullOrWhiteSpace(),
+                    IsRequired = requiredPhoneTypes.Contains( v.Guid ) || ( passwordlessLoginState != null && knownNumbers.ContainsKey( v.Guid ) ),
                     IsSmsEnabled = false,
                     IsUnlisted = false,
                     Label = v.Value,
@@ -859,7 +868,6 @@ namespace Rock.Blocks.Security
                 Step = AccountEntryStep.Registration
             };
 
-            var currentPerson = GetCurrentPerson();
             if ( PageParameter( PageParameterKey.Status ).ToLower() == "success" && currentPerson != null )
             {
                 accountEntryRegisterStepBox = new AccountEntryRegisterResponseBox()
@@ -875,6 +883,60 @@ namespace Rock.Blocks.Security
             }
 
             var areUsernameAndPasswordRequired = PageParameter( PageParameterKey.AreUsernameAndPasswordRequired ).AsBoolean();
+
+            AccountEntryPersonInfoBag accountEntryPersonInfoBag = null;
+
+            if ( currentPerson != null )
+            {
+                if ( showPhoneNumbers )
+                {
+                    foreach ( var bag in phoneNumberBags )
+                    {
+                        var phoneNumber = currentPerson.PhoneNumbers.FirstOrDefault( x => x.Number == bag.PhoneNumber );
+
+                        if ( phoneNumber != null )
+                        {
+                            bag.PhoneNumber = phoneNumber.Number;
+                            bag.IsSmsEnabled = phoneNumber.IsMessagingEnabled;
+                            bag.IsUnlisted = phoneNumber.IsUnlisted;
+                        }
+                    }
+                }
+
+                accountEntryPersonInfoBag = new AccountEntryPersonInfoBag
+                {
+                    FirstName = currentPerson.FirstName,
+                    Gender = currentPerson.Gender,
+                    Campus = currentPerson.PrimaryCampus?.Guid,
+                    Email = currentPerson.Email,
+                    LastName = currentPerson.LastName,
+                    PhoneNumbers = phoneNumberBags
+                };
+
+                if ( currentPerson.BirthDate.HasValue )
+                {
+                    accountEntryPersonInfoBag.Birthday = new ViewModels.Controls.BirthdayPickerBag()
+                    {
+                        Day = currentPerson.BirthDate.Value.Day,
+                        Month = currentPerson.BirthDate.Value.Month,
+                        Year = currentPerson.BirthDate.Value.Year,
+                    };
+                }
+
+                var homeAddress = currentPerson.GetHomeLocation();
+                if ( homeAddress != null )
+                {
+                    accountEntryPersonInfoBag.Address = new ViewModels.Controls.AddressControlBag
+                    {
+                        Street1 = homeAddress.Street1,
+                        Street2 = homeAddress.Street2,
+                        City = homeAddress.City,
+                        State = homeAddress.State,
+                        PostalCode = homeAddress.PostalCode,
+                        Country = homeAddress.Country
+                    };
+                }
+            }
 
             return new AccountEntryInitializationBox
             {
@@ -902,7 +964,8 @@ namespace Rock.Blocks.Security
                 UsernameRegex = isEmailRequiredForUsername ? @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" ),
                 UsernameRegexDescription = isEmailRequiredForUsername ? string.Empty : GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ),
                 AccountEntryRegisterStepBox = accountEntryRegisterStepBox,
-                IsGenderPickerShown = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean()
+                IsGenderPickerShown = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean(),
+                AccountEntryPersonInfoBag = accountEntryPersonInfoBag,
             };
         }
 
