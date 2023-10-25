@@ -1223,7 +1223,10 @@ usernameTextbox.blur(function () {{
             // save address
             if ( pnlAddress.Visible )
             {
-                if ( acAddress.IsValid && !string.IsNullOrWhiteSpace( acAddress.Street1 ) && !string.IsNullOrWhiteSpace( acAddress.City ) && !string.IsNullOrWhiteSpace( acAddress.PostalCode ) )
+                if ( acAddress.IsValid
+                     && !string.IsNullOrWhiteSpace( acAddress.Street1 )
+                     && !string.IsNullOrWhiteSpace( acAddress.City )
+                     && !string.IsNullOrWhiteSpace( acAddress.PostalCode ) )
                 {
                     Guid locationTypeGuid = GetAttributeValue( AttributeKey.LocationType ).AsGuid();
                     if ( locationTypeGuid != Guid.Empty )

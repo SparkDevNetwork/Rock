@@ -7,27 +7,27 @@
                 v-model="internalFirstName"
                 :disabled="disabled"
                 label="First Name"
-                rules="required"></TextBox>
+                rules="required" />
             <TextBox
                 v-model="internalLastName"
                 :disabled="disabled"
                 label="Last Name"
-                rules="required"></TextBox>
+                rules="required" />
             <EmailBox
                 v-if="!isEmailHidden"
                 v-model="internalEmail"
                 :disabled="disabled"
                 label="Email"
-                rules="required"></EmailBox>
+                rules="required" />
             <GenderDropDownList
                 v-if="isGenderPickerShown"
                 v-model="internalGender"
-                :disabled="disabled"></GenderDropDownList>
+                :disabled="disabled" />
             <BirthdayPicker
                 v-model="internalBirthday"
                 :disabled="disabled"
                 label="Birthday"
-                rules="required"></BirthdayPicker>
+                rules="required" />
         </fieldset>
 
         <fieldset v-if="internalArePhoneNumbersShown">
@@ -36,7 +36,8 @@
                 <PhoneNumberDetails
                     v-if="!value.isHidden"
                     v-model="internalPhoneNumbers[key]"
-                    :disabled="disabled"></PhoneNumberDetails>
+                    :disabled="disabled"
+                    :isMobile="isMobile" />
             </template>
         </fieldset>
 
@@ -55,7 +56,14 @@
             @update:modelValue="onCampusChanged"
             :forceVisible="true"
             :includeInactive="true"
-            :showBlankItem="true"></CampusPicker>
+            :showBlankItem="true" />
+
+        <AttributeValuesContainer
+            v-if="internalAttributes"
+            v-model="internalAttributeValues"
+            :attributes="internalAttributes"
+            isEditMode
+            :showCategoryLabel="false" />
     </div>
 </template>
 
@@ -63,18 +71,20 @@
     import { computed, PropType } from "vue";
     import PhoneNumberDetails from "./phoneNumberDetails.partial.obs";
     import Address from "@Obsidian/Controls/addressControl.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
     import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
     import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
     import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     const props = defineProps({
         modelValue: {
@@ -86,6 +96,11 @@
             required: true
         },
         disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+        isMobile: {
             type: Boolean as PropType<boolean>,
             required: false,
             default: false
@@ -160,11 +175,11 @@
         }
     });
 
-    const internalAddress = computed<AddressControlBag>({
+    const internalAddress = computed<AddressControlBag | undefined>({
         get() {
-            return props.modelValue?.address || {};
+            return props.modelValue?.address ?? undefined;
         },
-        set(newValue: AddressControlBag) {
+        set(newValue: AddressControlBag | undefined) {
             emit("update:modelValue", { ...props.modelValue, address: newValue });
         }
     });
@@ -172,6 +187,24 @@
     const addressRules = computed<string>(() => isAddressRequired.value ? "required" : "");
 
     const internalArePhoneNumbersShown = computed<boolean>(() => arePhoneNumbersShown.value && internalPhoneNumbers.value.some(p => !p.isHidden));
+
+    const internalAttributes = computed<Record<string, PublicAttributeBag> | null | undefined>({
+        get() {
+            return props.modelValue?.attributes;
+        },
+        set(newValue: Record<string, PublicAttributeBag> | null | undefined) {
+            emit("update:modelValue", { ...props.modelValue, attributes: newValue });
+        }
+    });
+
+    const internalAttributeValues = computed<Record<string, string>>({
+        get() {
+            return props.modelValue?.attributeValues ?? {};
+        },
+        set(newValue: Record<string, string>) {
+            emit("update:modelValue", { ...props.modelValue, attributeValues: newValue });
+        }
+    });
 
     // #endregion
 
