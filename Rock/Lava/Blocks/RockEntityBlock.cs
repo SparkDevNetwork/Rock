@@ -888,9 +888,20 @@ namespace Rock.Lava.Blocks
                         foreach ( var attribute in entityAttributeListForAttributeKey )
                         {
                             filterAttribute = attribute;
-                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
 
-                            var filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute, limitToFilterableAttributes:false );
+
+                            Expression filterExpression;
+                            if ( attributeEntityField == null )
+                            {
+                                // There is no Entity field matching this Attribute, so ignore the filter.
+                                filterExpression = new NoAttributeFilterExpression();
+                            }
+                            else
+                            {
+                                filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            }
+                            
                             if ( filterExpression is NoAttributeFilterExpression )
                             {
                                 // Ignore this filter because it would cause the Where expression to match everything.
