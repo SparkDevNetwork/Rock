@@ -573,7 +573,14 @@ namespace Rock.Blocks.Security
 
                 if ( !CanUserLogInWithInternalAuthentication( userLogin, out var authenticationComponent, out var errorMessage, out var isLockedOut ) )
                 {
-                    return ActionOk( ResponseHelper.CredentialLogin.Error( errorMessage ) );
+                    if ( isLockedOut )
+                    {
+                        return ActionOk( ResponseHelper.CredentialLogin.LockedOut( errorMessage ) );
+                    }
+                    else
+                    {
+                        return ActionOk( ResponseHelper.CredentialLogin.Error( errorMessage ) );
+                    }
                 }
 
                 // Check if the credentials are valid (does not authenticate in Rock).
@@ -588,7 +595,7 @@ namespace Rock.Blocks.Security
                 else if ( IsUserLockedOut( userLogin, out errorMessage ) )
                 {
                     // If the credentials are valid and the user is locked out then show an error.
-                    return ActionOk( ResponseHelper.CredentialLogin.Error( errorMessage ) );
+                    return ActionOk( ResponseHelper.CredentialLogin.LockedOut( errorMessage ) );
                 }
                 else if ( IsUserConfirmationRequired( userLogin, out errorMessage ) )
                 {
@@ -1463,7 +1470,7 @@ namespace Rock.Blocks.Security
         private void RedirectToSingleExternalAuthProviderIfNeeded( LoginInitializationBox box, List<NamedComponent<AuthenticationComponent>> externalAuthProviders )
         {
             // Short-circuit if we are already planning to redirect the client somewhere else.
-            if ( box.ShouldRedirect )
+            if ( box.ShouldRedirect || box.Is2FANotSupportedForAuthenticationFactor == true )
             {
                 return;
             }
@@ -1475,7 +1482,7 @@ namespace Rock.Blocks.Security
             {
                 var singleAuthProvider = externalAuthProviders.First();
 
-                if ( !(singleAuthProvider is IExternalRedirectAuthentication externalRedirectAuthentication) )
+                if ( !(singleAuthProvider.Component is IExternalRedirectAuthentication externalRedirectAuthentication) )
                 {
                     box.ErrorMessage = "Please try a different authentication method.";
                     return;
