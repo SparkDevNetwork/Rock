@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Utility;
+using System.Web.Util;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -148,6 +149,13 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.ShowDaysSinceLastTransaction
         )]
 
+    [BooleanField( "Hide Transactions in Pending Batches",
+        Description = "When enabled, transactions in a batch whose status is 'Pending' will be filtered out from the list.",
+        DefaultBooleanValue = false,
+        Order = 13,
+        Key = AttributeKey.HideTransactionsInPendingBatches
+        )]
+
     [Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
@@ -232,6 +240,11 @@ namespace RockWeb.Blocks.Finance
             /// The show days since last transaction
             /// </summary>
             public const string ShowDaysSinceLastTransaction = "ShowDaysSinceLastTransaction";
+
+            /// <summary>
+            /// The hide transactions in pending batches
+            /// </summary>
+            public const string HideTransactionsInPendingBatches = "HideTransactionsInPendingBatches";
         }
 
         #endregion Keys
@@ -1511,14 +1524,9 @@ namespace RockWeb.Blocks.Finance
 
             // If configured for a person and person is null, return
             int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
-            bool isContextPerson = false;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person == null )
             {
                 return;
-            }
-            else if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person != null )
-            {
-                isContextPerson = true;
             }
 
             // If configured for a batch and batch is null, return
@@ -1545,6 +1553,7 @@ namespace RockWeb.Blocks.Finance
                 lDaysSinceLastTransactionGridField.Visible = GetAttributeValue( AttributeKey.ShowDaysSinceLastTransaction ).AsBoolean();
             }
 
+            var hideTransactionsInPendingBatches = GetAttributeValue( AttributeKey.HideTransactionsInPendingBatches ).AsBoolean();
             var rockContext = new RockContext();
 
             SortProperty sortProperty = gTransactions.SortProperty;
@@ -1568,8 +1577,8 @@ namespace RockWeb.Blocks.Finance
                 {
                     financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.TransactionDateTime.HasValue );
                 }
-
-                if ( isContextPerson )
+               
+                if ( hideTransactionsInPendingBatches )
                 {
                     financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.Batch == null || a.Transaction.Batch.Status != BatchStatus.Pending );
                 }
@@ -1665,7 +1674,7 @@ namespace RockWeb.Blocks.Finance
                     financialTransactionQry = financialTransactionQry.Where( a => a.TransactionDateTime.HasValue );
                 }
 
-                if ( isContextPerson )
+                if ( hideTransactionsInPendingBatches )
                 {
                     financialTransactionQry = financialTransactionQry.Where( a => a.Batch == null || a.Batch.Status != BatchStatus.Pending );
                 }
