@@ -88,6 +88,7 @@
                 <asp:Panel ID="pnlActions" runat="server" CssClass="actions">
                     <asp:LinkButton ID="lbShowRole" runat="server" Text="Add Role" CssClass="btn btn-primary" OnClick="lbShowRole_Click"></asp:LinkButton>
                     <asp:LinkButton ID="lbShowUser" runat="server" Text="Add User" CssClass="btn btn-primary" OnClick="lbShowUser_Click"></asp:LinkButton>
+                    <asp:LinkButton ID="lbResetSecurity" runat="server" Visible="False" Text="Reset Security" CssClass="btn btn-danger" OnClick="lbResetSecurity_Click" ToolTip="Resets item permissions back to their default values." OnClientClick="return Rock.dialogs.confirmPreventOnCancel(event, 'Delete existing item permissions and reset back to default values?')"></asp:LinkButton>
                 </asp:Panel>
 
                 <div class="security-inherited">

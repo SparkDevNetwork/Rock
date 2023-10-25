@@ -22,6 +22,8 @@ using System.Reflection;
 
 using Rock;
 using Rock.Data;
+using Rock.Enums.Core;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -83,6 +85,8 @@ namespace Rock.Model
                             throw;
                         }
                     }
+
+                    InitializeEntityTypes( new List<EntityType> { entityType }, rockContext );
                 }
 
                 // Read type using current context
@@ -489,6 +493,7 @@ namespace Rock.Model
                         if ( !entityTypeService.AlreadyExists( entityType.Name ) )
                         {
                             entityTypeService.Add( entityType );
+                            entityTypeInDatabaseList.Add( entityType );
                         }
                     }
                 }
@@ -510,6 +515,13 @@ namespace Rock.Model
                         throw;
                     }
                 }
+
+                // Add the default security rules for each created entity type.
+                var entityTypesNeedingInitialization = entityTypeInDatabaseList
+                    .Where( et => !et.InitializedState.HasValue || et.InitializedState != EntityTypeInitializedState.FullyInitialized )
+                    .ToList();
+
+                InitializeEntityTypes( entityTypesNeedingInitialization, rockContext );
 
                 // make sure the EntityTypeCache is synced up with any changes that were made
                 foreach ( var entityTypeModel in entityTypeService.Queryable().AsNoTracking() )
@@ -546,5 +558,41 @@ namespace Rock.Model
             return this.Queryable().Where( a => a.Name == name ).Any();
         }
 
+        /// <summary>
+        /// Performs any missing initialization tasks on the entity types.
+        /// </summary>
+        /// <param name="entityTypes">The entity types.</param>
+        /// <param name="rockContext">The rock context to use when updating the entity types.</param>
+        private static void InitializeEntityTypes( List<EntityType> entityTypes, RockContext rockContext )
+        {
+            foreach ( var entityType in entityTypes )
+            {
+                entityType.InitializedState = entityType.InitializedState ?? 0;
+
+                try
+                {
+                    if ( !entityType.InitializedState.Value.HasFlag( EntityTypeInitializedState.DefaultSecurity ) )
+                    {
+                        if ( entityType.AssemblyName.IsNotNullOrWhiteSpace() )
+                        {
+                            var type = Type.GetType( entityType.AssemblyName, false );
+
+                            if ( type != null )
+                            {
+                                DefaultSecurityAttribute.CreateAuthRules( type, entityType.Id, 0 );
+                            }
+                        }
+
+                        entityType.InitializedState |= EntityTypeInitializedState.DefaultSecurity;
+                    }
+
+                    rockContext.SaveChanges();
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Failed to initialized entity type '{entityType.Name}'.", ex ) );
+                }
+            }
+        }
     }
 }

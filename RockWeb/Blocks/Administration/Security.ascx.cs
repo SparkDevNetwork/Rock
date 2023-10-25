@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -26,6 +27,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.SystemGuid;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -212,6 +214,20 @@ namespace RockWeb.Blocks.Administration
                 divContent.Visible = false;
                 nbMessage.Visible = true;
             }
+
+#if DEBUG
+            if ( !Page.IsPostBack && System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && iSecured != null )
+            {
+                if ( iSecured.Id == 0 )
+                {
+                    lbResetSecurity.Visible = true;
+                }
+                else if ( iSecured.TypeId == EntityTypeCache.GetId<RestController>() || iSecured.TypeId == EntityTypeCache.GetId<RestAction>() )
+                {
+                    lbResetSecurity.Visible = true;
+                }
+            }
+#endif
 
             base.OnLoad( e );
         }
@@ -494,6 +510,66 @@ namespace RockWeb.Blocks.Administration
 
             pnlAddUser.Visible = false;
             phList.Visible = true;
+
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbResetSecurity control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbResetSecurity_Click( object sender, EventArgs e )
+        {
+            // Delete any existing explicit rules.
+            using ( var rockContext = new RockContext() )
+            {
+                var authService = new AuthService( rockContext );
+                var auths = authService.Queryable()
+                    .Where( a => a.EntityTypeId == iSecured.TypeId && a.EntityId == iSecured.Id && a.Action == CurrentAction )
+                    .ToList();
+
+                if ( auths.Any() )
+                {
+                    authService.DeleteRange( auths );
+                    rockContext.SaveChanges();
+                }
+            }
+
+            // Create the default auth rules for the entity, depending on it's type.
+            if ( iSecured.Id == 0 )
+            {
+                var entityTypeCache = EntityTypeCache.Get( iSecured.TypeId );
+
+                if ( entityTypeCache.GetEntityType() != null )
+                {
+                    Rock.Utility.DefaultSecurityAttribute.CreateAuthRules( entityTypeCache.GetEntityType(), iSecured.TypeId, iSecured.Id );
+                }
+            }
+            else if ( iSecured.TypeId == EntityTypeCache.GetId<RestController>() )
+            {
+                var type = Reflection.FindType( typeof( object ), ( ( RestController ) iSecured ).ClassName );
+
+                if ( type != null )
+                {
+                    Rock.Utility.DefaultSecurityAttribute.CreateAuthRules( type, iSecured.TypeId, iSecured.Id );
+                }
+            }
+            else if ( iSecured.TypeId == EntityTypeCache.GetId<RestAction>() )
+            {
+                var restAction = ( RestAction ) iSecured;
+                var restControllerCache = RestControllerCache.Get( restAction.ControllerId );
+                var type = Reflection.FindType( typeof( object ), restControllerCache.ClassName );
+                var method = type.GetMethods()
+                    .FirstOrDefault( mi => mi.GetCustomAttribute<RestActionGuidAttribute>()?.Guid == restAction.Guid );
+
+                if ( method != null )
+                {
+                    Rock.Utility.DefaultSecurityAttribute.CreateAuthRules( method, iSecured.TypeId, iSecured.Id );
+                }
+            }
+
+            Authorization.RefreshAction( iSecured.TypeId, iSecured.Id, CurrentAction );
 
             BindGrid();
         }

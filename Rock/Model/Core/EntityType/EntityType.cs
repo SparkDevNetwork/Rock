@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Enums.Core;
 
 namespace Rock.Model
 {
@@ -182,6 +183,13 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public bool AttributesSupportShowOnBulk { get; set; }
+
+        /// <summary>
+        /// Gets or sets the initialized state of the entity type.
+        /// </summary>
+        /// <value>The initialized state of the entity type.</value>
+        [DataMember]
+        public EntityTypeInitializedState? InitializedState { get; set; }
 
         #endregion
 

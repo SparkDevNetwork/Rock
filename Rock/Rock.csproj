@@ -1868,6 +1868,7 @@
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiMetadataBox.cs" />
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiResult.cs" />
     <Compile Include="Utility\ContentLibraryApi\IContentLibraryApi.cs" />
+    <Compile Include="Utility\DefaultSecurityAttribute.cs" />
     <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
     <Compile Include="Utility\Enums\RockPlatform.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />

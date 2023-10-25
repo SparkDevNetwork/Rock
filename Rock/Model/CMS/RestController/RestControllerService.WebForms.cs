@@ -22,6 +22,8 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 
 using Rock.Data;
+using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -35,6 +37,9 @@ namespace Rock.Model
             public string Name { get; set; }
             public string ClassName { get; set; }
             public Guid? ReflectedGuid { get; set; }
+
+            public Type ReflectedType { get; set; }
+
             public List<DiscoveredRestAction> DiscoveredRestActions { get; set; } = new List<DiscoveredRestAction>();
             public override string ToString()
             {
@@ -48,6 +53,9 @@ namespace Rock.Model
             public string Method { get; set; }
             public string Path { get; set; }
             public Guid? ReflectedGuid { get; set; }
+
+            public MethodInfo ReflectedMethod { get; set; }
+
             public override string ToString()
             {
                 return ApiId;
@@ -85,6 +93,8 @@ namespace Rock.Model
             var rockContext = new RockContext();
             var restControllerService = new RestControllerService( rockContext );
             var discoveredControllers = new List<DiscoveredControllerFromReflection>();
+            var createdControllers = new Dictionary<Type, RestController>();
+            var createdActions = new Dictionary<MethodInfo, RestAction>();
 
             var config = GlobalConfiguration.Configuration;
             var explorer = config.Services.GetApiExplorer();
@@ -136,6 +146,7 @@ namespace Rock.Model
 
                     controller = new DiscoveredControllerFromReflection
                     {
+                        ReflectedType = action.ControllerDescriptor.ControllerType,
                         Name = name,
                         ClassName = action.ControllerDescriptor.ControllerType.FullName
                     };
@@ -164,7 +175,8 @@ namespace Rock.Model
                 {
                     ApiId = apiId,
                     Method = method,
-                    Path = apiDescription.RelativePath
+                    Path = apiDescription.RelativePath,
+                    ReflectedMethod = reflectedHttpActionDescriptor.MethodInfo
                 };
 
                 if ( restActionGuid.HasValue )
@@ -200,6 +212,7 @@ namespace Rock.Model
                     };
 
                     restControllerService.Add( controller );
+                    createdControllers.Add( discoveredController.ReflectedType, controller );
                 }
 
                 controller.ClassName = discoveredController.ClassName;
@@ -226,6 +239,7 @@ namespace Rock.Model
                     {
                         action = new RestAction { ApiId = newFormatId };
                         controller.Actions.Add( action );
+                        createdActions.Add( discoveredAction.ReflectedMethod, action );
                     }
 
                     action.Method = discoveredAction.Method;
@@ -276,6 +290,42 @@ namespace Rock.Model
                 else
                 {
                     throw;
+                }
+            }
+
+            // Add the default security rules for each created controller.
+            var restControllerEntityTypeId = EntityTypeCache.GetId<RestController>().Value;
+
+            foreach ( var createdController in createdControllers )
+            {
+                try
+                {
+                    DefaultSecurityAttribute.CreateAuthRules( createdController.Key, restControllerEntityTypeId, createdController.Value.Id );
+                }
+                catch ( Exception ex )
+                {
+                    // Don't throw the exception so that any other default rules for
+                    // other controllers will get created. Don't let one bad apple
+                    // ruin the whole batch.
+                    ExceptionLogService.LogException( ex );
+                }
+            }
+
+            // Add the default security rules for each created action.
+            var restActionEntityTypeId = EntityTypeCache.GetId<RestAction>().Value;
+
+            foreach ( var createdAction in createdActions )
+            {
+                try
+                {
+                    DefaultSecurityAttribute.CreateAuthRules( createdAction.Key, restActionEntityTypeId, createdAction.Value.Id );
+                }
+                catch ( Exception ex )
+                {
+                    // Don't throw the exception so that any other default rules for
+                    // other controllers will get created. Don't let one bad apple
+                    // ruin the whole batch.
+                    ExceptionLogService.LogException( ex );
                 }
             }
         }
