@@ -1,225 +1,131 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="x-field">
-        <Grid :data="gridData" keyField="key" liveUpdates light @addItem="onAddItem" @selectItem="console.log">
+    <RockFormField :modelValue="items" v-bind="fieldProps" name="x-field">
+        <Grid :data="gridData" itemTerm="Item" keyField="key" liveUpdates light @addItem="onAddItem" @selectItem="console.log">
             <ReorderColumn @orderChanged="orderChanged" />
-            <!-- <TextColumn name="name"
-                        title="nameTitle"
-                        field="name" />
-
-            <DateColumn name="date"
-                        title="dateTitle"
-                        field="date"
-                        visiblePriority="md" />
-
-            <NumberColumn name="index"
-                          title="numberTitle"
-                          field="index"
-                          visiblePriority="lg" />
-
-            <BooleanColumn name="isActive"
-                           title="activeTitle"
-                           field="isActive"
-                           visiblePriority="sm" /> -->
-
             <AttributeColumns :attributes="attributeList" />
-
             <DeleteColumn @click="onDelete" disableConfirmation />
         </Grid>
+
+
+
+        <div>TODO: ADD FORM</div>
+        <div>TODO: EDIT FORM</div>
     </RockFormField>
 
-    <div class="well">
-        {{ attributes }}
-        <br>
-        <br>
-        <br>
-        <br>
-        {{ matrixItems }}
-        <br>
-        <br>
-        <br>
-        <br>
-        <pre>
-{{ JSON.stringify(gridData, null, 4) }}
-        </pre>
-        <br>
-        <br>
-        <br>
-        <br>
-        {{ attributeList }}
-    </div>
+    <h6 class="text-semibold">GRID DATA</h6>
+    <pre>{{ JSON.stringify(gridData, null, 4) }}</pre>
+    <h6 class="text-semibold">PROPS.MODELVALUE</h6>
+    <pre>{{ JSON.stringify($props.modelValue, null, 4) }}</pre>
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, reactive, ref } from "vue";
+    import { PropType, computed, ref, watch } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
-    import Grid, { AttributeColumns, BooleanColumn, DateColumn, DeleteColumn, EditColumn, NumberColumn, TextColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { newGuid } from "@Obsidian/Utility/guid";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { clone } from "@Obsidian/Utility/objectUtils";
 
     const props = defineProps({
         modelValue: {
-            type: String as PropType<string>,
+            type: Array as PropType<Record<string, unknown>[]>, // TODO: Define type
+            default: []
+        },
+
+        attributes: {
+            type: Object as PropType<Record<string, PublicAttributeBag>>,
             required: true
+        },
+
+        minRows: {
+            type: Number,
+            default: 0
+        },
+
+        maxRows: {
+            type: Number,
+            default: Infinity
         },
 
         ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: string): void
+        (e: "update:modelValue", value: Record<string, unknown>[]): void
     }>();
 
-    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    // Main V-Model Binding
+    const items = ref(clone(props.modelValue));
+
+    watch(() => props.modelValue, () => {
+        if (!deepEqual(props.modelValue, items.value, false)) {
+            items.value = clone(props.modelValue);
+        }
+    }, { deep: true });
+
+    watch(items, () => {
+        if (!deepEqual(props.modelValue, items.value, false)) {
+            emit("update:modelValue", clone(items.value));
+        }
+    }, { deep: true });
+
 
     const fieldProps = useStandardRockFormFieldProps(props);
 
+    // This increments every time a new item is added. It is used to ensure a unique key for new items
+    // since they all have an empty guid.
+    let itemsAdded = 0;
 
 
 
 
-    const attributes = ref({
-        "ArticleImage": {
-            "fieldTypeGuid": "97f8157d-a8c8-4ab3-96a2-9cb2a9049e6d",
-            "attributeGuid": "ba1d667d-080d-4a17-9392-f3e953969c7a",
-            "name": "Article Image",
-            "key": "ArticleImage",
-            "description": "",
-            "isRequired": false,
-            "order": 0,
-            "categories": null,
-            "configurationValues": {
-                "binaryFileType": "c1142570-8cd6-4a20-83b1-acb47c1cd377",
-                "formatAsLink": "False",
-                "img_tag_template": "<img src='{{ ImageUrl }}' class='img-responsive' />"
-            },
-            "preHtml": null,
-            "postHtml": null
-        },
-        "ArticleTitle": {
-            "fieldTypeGuid": "9c204cd0-1233-41c5-818a-c5da439445aa",
-            "attributeGuid": "dbc9e868-d509-4436-8b11-1343a02db433",
-            "name": "Article Title",
-            "key": "ArticleTitle",
-            "description": "",
-            "isRequired": true,
-            "order": 1,
-            "categories": null,
-            "configurationValues": {
-                "ispassword": "False",
-                "maxcharacters": "",
-                "showcountdown": "False"
-            },
-            "preHtml": null,
-            "postHtml": null
-        },
-        "ArticleContent": {
-            "fieldTypeGuid": "dd7ed4c0-a9e0-434f-acfe-bd4f56b043df",
-            "attributeGuid": "95fe772f-d799-41dd-9802-f5fd487933fc",
-            "name": "Article Content",
-            "key": "ArticleContent",
-            "description": "",
-            "isRequired": true,
-            "order": 2,
-            "categories": null,
-            "configurationValues": {
-                "documentfolderroot": "",
-                "imagefolderroot": "",
-                "toolbar": "Light",
-                "userspecificroot": "False"
-            },
-            "preHtml": null,
-            "postHtml": null
-        },
-        "ArticleLink": {
-            "fieldTypeGuid": "c0d0d7e2-c3b0-4004-abea-4bbfad10d5d2",
-            "attributeGuid": "f1213105-c2ce-4ca3-9039-cd1c4b40d048",
-            "name": "ArticleLink",
-            "key": "ArticleLink",
-            "description": "Optional link to for the article.",
-            "isRequired": false,
-            "order": 3,
-            "categories": null,
-            "configurationValues": {},
-            "preHtml": null,
-            "postHtml": null
+
+    const gridData = computed<GridDataBag>(
+        () => {
+            console.log("GET GRID DATA");
+            return {
+                rows: props.modelValue.map(item => ({
+                    key: (item.guid as string) + "##" + (item.key ?? ""),
+                    order: item.order,
+                    ...(item.attributeValues as Record<string, string>)
+                }))
+            };
         }
-    });
-    const matrixItems = ref([
-        {
-            "guid": "ac0dd30f-6ec3-4254-9362-cfee0141c69e",
-            "order": 0,
-            "attributeValues": {
-                "ArticleImage": "",
-                "ArticleTitle": "Another",
-                "ArticleContent": "<p>Thing</p>",
-                "ArticleLink": "/foryou"
-            }
-        },
-        {
-            "guid": "6b2ed1cf-5e51-4b13-a59f-f19d55db8479",
-            "order": 1,
-            "attributeValues": {
-                "ArticleImage": "",
-                "ArticleTitle": "Hello",
-                "ArticleContent": "<p>There</p>",
-                "ArticleLink": ""
-            }
-        },
-        {
-            "guid": "296c0144-e58e-4eb9-8f42-5b5587b26f09",
-            "order": 2,
-            "attributeValues": {
-                "ArticleImage": "",
-                "ArticleTitle": "Some Title",
-                "ArticleContent": "<p>Some Content</p>",
-                "ArticleLink": "/some-url"
-            }
-        }
-    ]);
+    );
 
-
-
-
-
-
-    const gridData: GridDataBag = reactive<GridDataBag>({
-        rows: matrixItems.value.map(item => ({
-            key: item.guid,
-            order: item.order,
-            ...item.attributeValues
+    const attributeList = computed(
+        () => Object.values(props.attributes).map(attr => ({
+            fieldTypeGuid: attr.fieldTypeGuid,
+            name: attr.key,
+            title: attr.name
         }))
-    });
-
-    const attributeList = computed(() => Object.values(attributes.value).map(attr => ({ fieldTypeGuid: attr.fieldTypeGuid, name: attr.key, title: attr.name })));
-
-
-    function generateItem(index: number): Record<string, unknown> {
-        return {
-            key: newGuid(),
-            name: `Item ${index}`,
-            date: RockDateTime.now().date.addDays(-index).toISOString(),
-            index: index,
-            isActive: (index % 3) === 0
-        };
-    }
+    );
 
     function onAddItem(): void {
         console.log("TODO! SHOW POPUP");
-        if (gridData.rows) {
-            gridData.rows.push(generateItem(gridData.rows.length + 1));
-        }
+        items.value.push({
+            guid: emptyGuid,
+            key: ++itemsAdded,
+            order: items.value.length,
+            attributeValues: {
+                "ArticleImage": "",
+                "ArticleTitle": "I'm a new item " + itemsAdded,
+                "ArticleContent": "To be or not to be? That is the question. Or is it? Is that last sentence the question?",
+                "ArticleLink": "https://www.joezimjs.com"
+            }
+        });
     }
 
     function onDelete(key: string): void {
-        if (gridData.rows) {
-            const index = gridData.rows.findIndex(r => r.key === key);
-
-            if (index !== -1) {
-                gridData.rows.splice(index, 1);
-            }
+        const [itemGuid, itemKey] = key.split("##");
+        const index = items.value.findIndex(i => i.guid == itemGuid && i.key == (itemKey || undefined));
+        if (index !== -1) {
+            items.value.splice(index, 1);
         }
     }
 
@@ -227,27 +133,33 @@
      * When the order of the items in the matrix is changed via drag and drop, rearrange the items in the
      * array and update the `order` property to match the array order.
      */
-    function orderChanged(movedItem: Record<string, unknown>, movedBefore: Record<string, unknown> | null): void {
-        const movedIndex = gridData.rows?.indexOf(movedItem) ?? -1;
+    function orderChanged(movedItem: Record<string, unknown>, beforeItem: Record<string, unknown> | null): void {
+        // console.debug("⬇️", movedItem.key, movedItem.ArticleTitle, beforeItem?.key, beforeItem?.ArticleTitle, ...items.value);
+        const [movedItemGuid, movedItemKey] = (movedItem.key as string).split("##");
+        const [beforeItemGuid, beforeItemKey] = beforeItem == null ? [null, null] : (beforeItem.key as string).split("##");
+        // console.debug("⬇️", movedItemGuid, movedItemKey, beforeItemGuid, beforeItemKey);
+
+        const movedIndex = items.value.findIndex(i => i.guid == movedItemGuid && i.key == (movedItemKey || undefined));
 
         if (movedIndex < 0) {
             return;
         }
 
-        // TODO: Update the original data array instead of grid rows directly
-        gridData.rows?.splice(movedIndex, 1);
+        const [trueMovedItem] = items.value.splice(movedIndex, 1);
 
-        if (movedBefore == null || (gridData.rows?.indexOf(movedBefore) ?? -1) < 0) {
-            gridData.rows?.push(movedItem);
+        const beforeItemIndex = items.value.findIndex(i => i.guid == beforeItemGuid && i.key == (beforeItemKey || undefined));
+
+        if (beforeItem == null || beforeItemIndex < 0) {
+            items.value.push(trueMovedItem);
         }
         else {
-            const beforeIndex = gridData.rows?.indexOf(movedBefore) as number;
-            gridData.rows?.splice(beforeIndex, 0, movedItem);
+            items.value.splice(beforeItemIndex, 0, trueMovedItem);
         }
 
-        gridData.rows?.forEach((item, index) => {
+        items.value.forEach((item, index) => {
             item.order = index;
         });
+        // console.debug("⬇️", ...items.value);
     }
 
 
