@@ -190,7 +190,8 @@
     async function onExternalLogin(externalLogin: ExternalAuthenticationButtonBag): Promise<void> {
         isAuthenticating.value = true;
         const bag: RemoteLoginStartRequestBag = {
-            authenticationType: externalLogin.authenticationType
+            authenticationType: externalLogin.authenticationType,
+            route: location.pathname
         };
 
         try {

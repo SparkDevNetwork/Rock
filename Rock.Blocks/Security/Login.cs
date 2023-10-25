@@ -626,7 +626,9 @@ namespace Rock.Blocks.Security
                 return ActionBadRequest( "Please try a different authentication method" );
             }
 
-            var loginUrl = externalRedirectAuthentication.GenerateExternalLoginUrl( GetRedirectUri(), GetRedirectUrlAfterLogin() );
+            // Use the route passed from the client to build the redirect URI.
+            // The page route is not currently available within a block action.
+            var loginUrl = externalRedirectAuthentication.GenerateExternalLoginUrl( GetRedirectUri( bag.Route ), GetRedirectUrlAfterLogin() );
 
             if ( loginUrl == null )
             {
@@ -735,10 +737,28 @@ namespace Rock.Blocks.Security
         /// <summary>
         /// Gets the redirect URI that can be used by external authentication components to complete authentication.
         /// </summary>
-        private string GetRedirectUri()
+        /// <param name="path">The path to use for the redirect URI.</param>
+        private string GetRedirectUri( string path )
         {
-            var uri = this.RequestContext.RequestUri;
-            return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ).EnsureTrailingForwardslash() + $"page/{PageCache.Id}";
+            // If the path is not valid then default to the current page.
+            if ( !IsPageRouteValid( path ) )
+            {
+                path = this.GetCurrentPageUrl();
+            }
+
+            var uriBuilder = new UriBuilder
+            {
+                Scheme = this.RequestContext.RequestUri.Scheme,
+                Host = this.RequestContext.RequestUri.Host,
+                Port = this.RequestContext.RequestUri.Port,
+                Path = path
+            };
+
+            // Build the URI. This will pass a string representation of the URL (including the 443 port) to the Uri constructor.
+            var uri = uriBuilder.Uri;
+
+            // Return the original string that was passed to the Uri constructor (including the 443 port).
+            return uri.OriginalString;
         }
 
         /// <summary>
@@ -926,6 +946,31 @@ namespace Rock.Blocks.Security
         {
             return userLogin?.EntityType != null;
         }
+        
+        /// <summary>
+        /// Determines whether the specified route is a valid page route.
+        /// </summary>
+        /// <param name="route">The route.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified route is valid page route; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsPageRouteValid( string route )
+        {
+            // Ensure the supplied path is a valid page route.
+            if ( route.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var simplifiedRoute = route.ToLower().RemoveLeadingForwardslash().RemoveTrailingForwardslash();
+
+            if ( this.PageCache.PageRoutes.Any( r => r.Route?.ToLower().RemoveLeadingForwardslash().RemoveTrailingForwardslash() == simplifiedRoute ) )
+            {
+                return true;
+            }
+
+            return simplifiedRoute == $"page/{this.PageCache.Id}";
+        }
 
         /// <summary>
         /// Determines whether the <paramref name="credentialLoginRequestBag"/> is valid.
@@ -1007,7 +1052,7 @@ namespace Rock.Blocks.Security
         /// <param name="externalAuthProviders">The external authentication providers.</param>
         private void LogInWithExternalAuthProviderIfNeeded( LoginInitializationBox box, List<NamedComponent<AuthenticationComponent>> externalAuthProviders )
         {
-            var redirectUrl = GetRedirectUri();
+            var redirectUrl = GetRedirectUri( this.RequestContext.RequestUri.AbsolutePath );
 
             foreach ( var authProvider in externalAuthProviders.Select( c => c.Component ) )
             {
@@ -1091,7 +1136,7 @@ namespace Rock.Blocks.Security
                     return;
                 }
 
-                var authLoginUri = externalRedirectAuthentication.GenerateExternalLoginUrl( GetRedirectUri(), GetRedirectUrlAfterLogin() ).AbsoluteUri;
+                var authLoginUri = externalRedirectAuthentication.GenerateExternalLoginUrl( GetRedirectUri( this.RequestContext.RequestUri.AbsolutePath ), GetRedirectUrlAfterLogin() ).AbsoluteUri;
 
                 if ( authLoginUri.IsNotNullOrWhiteSpace() )
                 {
