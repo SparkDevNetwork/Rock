@@ -219,7 +219,9 @@ namespace Rock.Core.EntitySearch
             }
 
             idQry = new FollowingService( _rockContext ).Queryable()
-                .Where( f => f.EntityTypeId == entityTypeId.Value && f.PersonAlias.PersonId == _currentPersonId.Value )
+                .Where( f => f.EntityTypeId == entityTypeId.Value
+                    && string.IsNullOrEmpty( f.PurposeKey )
+                    && f.PersonAlias.PersonId == _currentPersonId.Value )
                 .Select( f => f.EntityId );
 
             _followedIdQueryables.Add( entityType, idQry );
