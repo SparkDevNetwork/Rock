@@ -75,6 +75,20 @@ namespace Rock.Core.EntitySearch
                 ["@CurrentPersonId"] = systemQuery?.CurrentPerson?.Id
             };
 
+            // The key prefix is used to allow ProcessIdKeyForItem() method to
+            // find properties that should be hashed into IdKey values. The '\0'
+            // character is to help ensure an early out when doing comparisons.
+            // The reason we use a random hex value is to prevent injection attacks
+            // aimed and translating an arbitrary integer value into an IdKey value.
+            // i.e. Don't let the user do something like '{ "\058" as IdKey }' to
+            // translate 58 into the IdKey value. This is not a huge concern but it
+            // closes an attack vector at the cost of fractions of a millisecond.
+            var idKeyPrefix = $"\0{new Random().Next( ushort.MaxValue ):X4}-";
+
+            // Create the expression visitors that we will be using later.
+            var idKeyExpressionVisitor = new IdKeyExpressionVisitor( idKeyPrefix );
+            var customExtensionMethodsExpressionVisitor = new CustomExtensionMethodsExpressionVisitor( rockContext, systemQuery?.CurrentPerson.Id );
+
             // Perform the system query elements.
             if ( systemQuery != null )
             {
@@ -99,6 +113,12 @@ namespace Rock.Core.EntitySearch
                             queryable = queryable.Include( path.Trim() );
                         }
                     }
+
+                    // Create a new expression that has all our custom conversion logic
+                    // translated into SQL friendly expressions.
+                    var securityVisitedExpression = idKeyExpressionVisitor.Visit( queryable.Expression );
+                    securityVisitedExpression = customExtensionMethodsExpressionVisitor.Visit( securityVisitedExpression );
+                    queryable = ( IQueryable<TEntity> ) queryable.Provider.CreateQuery( securityVisitedExpression );
 
                     queryable = queryable.ToList()
                         .Where( a => ( ( ISecured ) a ).IsAuthorized( Authorization.VIEW, systemQuery.CurrentPerson ) )
@@ -189,20 +209,10 @@ namespace Rock.Core.EntitySearch
                 };
             }
 
-            // The key prefix is used to allow ProcessIdKeyForItem() method to
-            // find properties that should be hashed into IdKey values. The '\0'
-            // character is to help ensure an early out when doing comparisons.
-            // The reason we use a random hex value is to prevent injection attacks
-            // aimed and translating an arbitrary integer value into an IdKey value.
-            // i.e. Don't let the user do something like '{ "\058" as IdKey }' to
-            // translate 58 into the IdKey value. This is not a huge concern but it
-            // closes an attack vector at the cost of fractions of a millisecond.
-            var idKeyPrefix = $"\0{new Random().Next( ushort.MaxValue ):X4}-";
-
-            // Create a new expression that converts IdKey accessors into simple Id
-            // accessors with the prefix so we can decode them later.
-            var visitedExpression = new IdKeyExpressionVisitor( idKeyPrefix ).Visit( resultQry.Expression );
-            visitedExpression = new CustomExtensionMethodsExpressionVisitor( rockContext ).Visit( visitedExpression );
+            // Create a new expression that has all our custom conversion logic
+            // translated into SQL friendly expressions.
+            var visitedExpression = idKeyExpressionVisitor.Visit( resultQry.Expression );
+            visitedExpression = customExtensionMethodsExpressionVisitor.Visit( visitedExpression );
             resultQry = resultQry.Provider.CreateQuery( visitedExpression );
 
             var results = resultQry.ToDynamicList();

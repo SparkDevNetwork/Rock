@@ -37,5 +37,16 @@ namespace Rock.Core.EntitySearch
         {
             throw new NotSupportedException( "Calling entity search query extension methods directly is not supported." );
         }
+
+        /// <summary>
+        /// Determines whether the specified entity is currently being followed
+        /// by the current person.
+        /// </summary>
+        /// <param name="entity">The entity to be checked.</param>
+        /// <returns><c>true</c> if the specified entity is followed; otherwise, <c>false</c>.</returns>
+        public static bool IsFollowed( this IEntity entity )
+        {
+            throw new NotSupportedException( "Calling entity search query extension methods directly is not supported." );
+        }
     }
 }

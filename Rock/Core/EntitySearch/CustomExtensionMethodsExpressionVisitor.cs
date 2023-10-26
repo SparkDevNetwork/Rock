@@ -42,11 +42,24 @@ namespace Rock.Core.EntitySearch
         private readonly RockContext _rockContext;
 
         /// <summary>
+        /// The current person identifier to use when filtering things for
+        /// the current person.
+        /// </summary>
+        private readonly int? _currentPersonId;
+
+        /// <summary>
         /// The cached data view identifier queryables for this query. This
         /// allows us to re-use the same queryable if it is used in different
         /// parts of the Where or Select clauses.
         /// </summary>
         private readonly Dictionary<(Type, int), IQueryable<int>> _dataViewIdQueryables = new Dictionary<(Type, int), IQueryable<int>>();
+
+        /// <summary>
+        /// The cached following queryables for this query. This allows us
+        /// to re-use the same queryable if it is used in different parts
+        /// of the Where or Select clauses.
+        /// </summary>
+        private readonly Dictionary<Type, IQueryable<int>> _followedIdQueryables = new Dictionary<Type, IQueryable<int>>();
 
         #endregion
 
@@ -56,9 +69,11 @@ namespace Rock.Core.EntitySearch
         /// Initializes a new instance of the <see cref="CustomExtensionMethodsExpressionVisitor"/> class.
         /// </summary>
         /// <param name="rockContext">The rock context to use when accessing the database.</param>
-        public CustomExtensionMethodsExpressionVisitor( RockContext rockContext )
+        /// <param name="currentPersonId">The identifier of the person running the search.</param>
+        public CustomExtensionMethodsExpressionVisitor( RockContext rockContext, int? currentPersonId )
         {
             _rockContext = rockContext;
+            _currentPersonId = currentPersonId;
         }
 
         #endregion
@@ -70,30 +85,73 @@ namespace Rock.Core.EntitySearch
         {
             if ( node.Method.Name == nameof( DynamicLinqQueryExtensionMethods.IsInDataView ) )
             {
-                var entityExpression = node.Arguments[0];
-                var dataViewIdExpression = node.Arguments[1];
-
-                if ( !( dataViewIdExpression is ConstantExpression constExpression ) || !( constExpression.Value is int dataViewId ) )
-                {
-                    throw new Exception( "InDataView() must take a constant integer value." );
-                }
-
-                var idQry = GetDataViewIdQueryable( entityExpression.Type, dataViewId );
-
-                // Get the method to be called: idQry.Contains( a.Id )
-                var containsMethod = typeof( Queryable ).GetMethods()
-                    .Where( m => m.Name == nameof( Queryable.Contains ) && m.GetParameters().Length == 2 )
-                    .Single();
-                var containsGenericMethod = containsMethod.MakeGenericMethod( typeof( int ) );
-
-                // Define the parameters for the method call.
-                var idQryExpression = Expression.Constant( idQry );
-                var entityIdExpression = Expression.Property( entityExpression, "Id" );
-
-                return Expression.Call( containsGenericMethod, idQryExpression, entityIdExpression );
+                return VisitIsInDataView( node );
+            }
+            else if ( node.Method.Name == nameof( DynamicLinqQueryExtensionMethods.IsFollowed ) )
+            {
+                return VisitIsFollowed( node );
             }
 
             return base.VisitMethodCall( node );
+        }
+
+        /// <summary>
+        /// Visits the method call for <see cref="DynamicLinqQueryExtensionMethods.IsInDataView(IEntity, int)"/>.
+        /// </summary>
+        /// <param name="node">The method call node.</param>
+        /// <returns>The expression to use for this node.</returns>
+        private Expression VisitIsInDataView( MethodCallExpression node )
+        {
+            var entityExpression = node.Arguments[0];
+            var dataViewIdExpression = node.Arguments[1];
+
+            if ( !( dataViewIdExpression is ConstantExpression constExpression ) || !( constExpression.Value is int dataViewId ) )
+            {
+                throw new Exception( $"{nameof( DynamicLinqQueryExtensionMethods.IsInDataView )}() must take a constant integer value." );
+            }
+
+            var idQry = GetDataViewIdQueryable( entityExpression.Type, dataViewId );
+
+            // Get the method to be called: idQry.Contains( a.Id )
+            var containsMethod = typeof( Queryable ).GetMethods()
+                .Where( m => m.Name == nameof( Queryable.Contains ) && m.GetParameters().Length == 2 )
+                .Single();
+            var containsGenericMethod = containsMethod.MakeGenericMethod( typeof( int ) );
+
+            // Define the parameters for the method call.
+            var idQryExpression = Expression.Constant( idQry );
+            var entityIdExpression = Expression.Property( entityExpression, "Id" );
+
+            return Expression.Call( containsGenericMethod, idQryExpression, entityIdExpression );
+        }
+
+        /// <summary>
+        /// Visits the method call for <see cref="DynamicLinqQueryExtensionMethods.IsFollowed(IEntity)"/>.
+        /// </summary>
+        /// <param name="node">The method call node.</param>
+        /// <returns>The expression to use for this node.</returns>
+        private Expression VisitIsFollowed( MethodCallExpression node )
+        {
+            if ( !_currentPersonId.HasValue )
+            {
+                return Expression.Constant( false );
+            }
+
+            var entityExpression = node.Arguments[0];
+
+            var idQry = GetFollowedIdQueryable( entityExpression.Type );
+
+            // Get the method to be called: idQry.Contains( a.Id )
+            var containsMethod = typeof( Queryable ).GetMethods()
+                .Where( m => m.Name == nameof( Queryable.Contains ) && m.GetParameters().Length == 2 )
+                .Single();
+            var containsGenericMethod = containsMethod.MakeGenericMethod( typeof( int ) );
+
+            // Define the parameters for the method call.
+            var idQryExpression = Expression.Constant( idQry );
+            var entityIdExpression = Expression.Property( entityExpression, "Id" );
+
+            return Expression.Call( containsGenericMethod, idQryExpression, entityIdExpression );
         }
 
         /// <summary>
@@ -136,6 +194,35 @@ namespace Rock.Core.EntitySearch
 
             idQry = qry.Select( a => a.Id );
             _dataViewIdQueryables.Add( (entityType, dataViewId), idQry );
+
+            return idQry;
+        }
+
+        /// <summary>
+        /// Gets the followed identifier queryable. This will use the cache
+        /// if possible, otherwise it attempts to hit the database.
+        /// </summary>
+        /// <param name="entityType">Type of the followed entity.</param>
+        /// <returns>A queryable of the Id values in the followed items for the entity type.</returns>
+        private IQueryable<int> GetFollowedIdQueryable( Type entityType )
+        {
+            if ( _followedIdQueryables.TryGetValue( entityType, out var idQry ) )
+            {
+                return idQry;
+            }
+
+            var entityTypeId = EntityTypeCache.Get( entityType, false )?.Id;
+
+            if ( !entityTypeId.HasValue )
+            {
+                throw new Exception( $"Type '{entityType.Name}' is not valid for {nameof( DynamicLinqQueryExtensionMethods.IsFollowed )}()." );
+            }
+
+            idQry = new FollowingService( _rockContext ).Queryable()
+                .Where( f => f.EntityTypeId == entityTypeId.Value && f.PersonAlias.PersonId == _currentPersonId.Value )
+                .Select( f => f.EntityId );
+
+            _followedIdQueryables.Add( entityType, idQry );
 
             return idQry;
         }
