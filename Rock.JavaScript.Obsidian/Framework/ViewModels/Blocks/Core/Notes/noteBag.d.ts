@@ -57,7 +57,7 @@ export type NoteBag = {
     isAlert: boolean;
 
     /** Gets or sets a value indicating whether this note should be pinned to top. */
-    pinToTop: boolean;
+    isPinned: boolean;
 
     /** Gets or sets a value indicating whether this note is deletable. */
     isDeletable: boolean;

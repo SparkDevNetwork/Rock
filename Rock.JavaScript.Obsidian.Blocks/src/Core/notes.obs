@@ -84,7 +84,7 @@
     const isAddNoteVisible = ref(config.showAdd && config.addAlwaysVisible);
     const selectableNoteTypes = config.noteTypes?.filter(nt => nt.userSelectable) ?? [];
     const showAddNote = selectableNoteTypes.length > 0 && !config.addAlwaysVisible && config.showAdd;
-    const addNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, pinToTop: false });
+    const addNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, isPinned: false });
     const isSavingNote = ref(false);
 
     // Construct our standard note options that will be used by child
@@ -168,7 +168,7 @@
             text: "",
             isAlert: false,
             isPrivate: false,
-            pinToTop: false,
+            isPinned: false,
             attributeValues: {}
         };
 
@@ -204,7 +204,7 @@
             setPropertiesBoxValue(request, "text", addNoteBag.value.text);
             setPropertiesBoxValue(request, "isAlert", addNoteBag.value.isAlert);
             setPropertiesBoxValue(request, "isPrivate", addNoteBag.value.isPrivate);
-            setPropertiesBoxValue(request, "pinToTop", addNoteBag.value.pinToTop);
+            setPropertiesBoxValue(request, "isPinned", addNoteBag.value.isPinned);
             setPropertiesBoxValue(request, "attributeValues", addNoteBag.value.attributeValues);
 
             if (addNoteBag.value.createdDateTime) {
@@ -245,8 +245,8 @@
 
                 // If not pinned to top, put it at the top of the list after all
                 // other pinned to top and alerts.
-                if (!expandedNote.pinToTop) {
-                    while (index < notes.length && notes[index].pinToTop) {
+                if (!expandedNote.isPinned) {
+                    while (index < notes.length && notes[index].isPinned) {
                         index++;
                     }
                 }
@@ -257,20 +257,20 @@
                 let index = 0;
 
                 // If an alert and pinned item, put it at as the last alert and pinned item.
-                if (expandedNote.isAlert && expandedNote.pinToTop) {
-                    while (index < notes.length && (notes[index].isAlert && notes[index].pinToTop)) {
+                if (expandedNote.isAlert && expandedNote.isPinned) {
+                    while (index < notes.length && (notes[index].isAlert && notes[index].isPinned)) {
                         index++;
                     }
                 }
                 // If an alert but not a pinned item, put it at as the last alert item.
-                else if (expandedNote.isAlert && !expandedNote.pinToTop) {
+                else if (expandedNote.isAlert && !expandedNote.isPinned) {
                     while (index < notes.length && notes[index].isAlert) {
                         index++;
                     }
                 }
                 // If not an alert but a pinned item, put it at as the last item.
-                else if (!expandedNote.isAlert && expandedNote.pinToTop) {
-                    while (index < notes.length && (notes[index].isAlert || notes[index].pinToTop)) {
+                else if (!expandedNote.isAlert && expandedNote.isPinned) {
+                    while (index < notes.length && (notes[index].isAlert || notes[index].isPinned)) {
                         index++;
                     }
                 }
@@ -285,7 +285,7 @@
             addNoteBag.value = {
                 isAlert: false,
                 isPrivate: false,
-                pinToTop: false
+                isPinned: false
             };
 
             isAddNoteVisible.value = config.addAlwaysVisible;
@@ -303,7 +303,7 @@
         addNoteBag.value = {
             isAlert: false,
             isPrivate: false,
-            pinToTop: false
+            isPinned: false
         };
 
         // Hide the UI for adding a new note.

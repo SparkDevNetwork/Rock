@@ -92,7 +92,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this note is an alert; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? PinToTop { get; set; }
+        public bool? IsPinned { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this note is viewable to only the person that created the note

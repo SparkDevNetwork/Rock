@@ -58,7 +58,7 @@
                                 </time>
                             </a>
                         </span>
-                        <div class="note-details text-muted">{{ note.pinToTop ? "Pinned To Top" : "" }}</div>
+                        <div class="note-details text-muted">{{ note.isPinned ? "Pinned to Top" : "" }}</div>
                     </div>
 
                     <span v-if="note.isPrivate" class="label label-warning mr-3">Private</span>
@@ -218,7 +218,7 @@
     const isChildNotesVisible = ref(noteOptions.autoExpandReplies);
     const isAddNoteVisible = ref(false);
     const isEditingNote = ref(false);
-    const editNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, pinToTop : false });
+    const editNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, isPinned : false });
     const isSavingNote = ref(false);
 
     const emitter = useEmitter();
@@ -525,7 +525,7 @@
             text: "",
             isAlert: false,
             isPrivate: false,
-            pinToTop: false,
+            isPinned: false,
             attributeValues: {}
         };
 
@@ -566,7 +566,7 @@
             setPropertiesBoxValue(request, "text", editNoteBag.value.text);
             setPropertiesBoxValue(request, "isAlert", editNoteBag.value.isAlert);
             setPropertiesBoxValue(request, "isPrivate", editNoteBag.value.isPrivate);
-            setPropertiesBoxValue(request, "pinToTop", editNoteBag.value.pinToTop);
+            setPropertiesBoxValue(request, "isPinned", editNoteBag.value.isPinned);
             setPropertiesBoxValue(request, "attributeValues", editNoteBag.value.attributeValues);
 
             if (editNoteBag.value.createdDateTime) {
@@ -611,8 +611,8 @@
 
                     // If not pinned to top, put it at the top of the list after all
                     // other pinned to top and alerts.
-                    if (!expandedNote.pinToTop) {
-                        while (index < notes.length && notes[index].pinToTop) {
+                    if (!expandedNote.isPinned) {
+                        while (index < notes.length && notes[index].isPinned) {
                             index++;
                         }
                     }
@@ -623,20 +623,20 @@
                     let index = 0;
 
                     // If an alert and pinned item, put it at as the last alert and pinned item.
-                    if (expandedNote.isAlert && expandedNote.pinToTop) {
-                        while (index < notes.length && (notes[index].isAlert && notes[index].pinToTop)) {
+                    if (expandedNote.isAlert && expandedNote.isPinned) {
+                        while (index < notes.length && (notes[index].isAlert && notes[index].isPinned)) {
                             index++;
                         }
                     }
                     // If an alert but not a pinned item, put it at as the last alert item.
-                    else if (expandedNote.isAlert && !expandedNote.pinToTop) {
+                    else if (expandedNote.isAlert && !expandedNote.isPinned) {
                         while (index < notes.length && notes[index].isAlert) {
                             index++;
                         }
                     }
                     // If not an alert but a pinned item, put it at as the last item.
-                    else if (!expandedNote.isAlert && expandedNote.pinToTop) {
-                        while (index < notes.length && (notes[index].isAlert || notes[index].pinToTop)) {
+                    else if (!expandedNote.isAlert && expandedNote.isPinned) {
+                        while (index < notes.length && (notes[index].isAlert || notes[index].isPinned)) {
                             index++;
                         }
                     }
