@@ -432,7 +432,7 @@ namespace RockWeb.Blocks.Core
                 bool readOnly = false;
 
                 nbEditModeMessage.Text = string.Empty;
-                bool canEdit = UserCanEdit || signatureDocumentTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                bool canEdit = UserCanEdit && signatureDocumentTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 bool canView = canEdit || signatureDocumentTemplate.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 if ( !canView )

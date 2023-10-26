@@ -62,6 +62,12 @@ namespace Rock.ViewModels.Blocks.Core.Notes
         public bool IsPrivate { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this note should be pinned to the top of the list.
+        /// </summary>
+        /// <value><c>true</c> if this note is to be pinned to the top; otherwise, <c>false</c>.</value>
+        public bool PinToTop { get; set; }
+
+        /// <summary>
         /// Gets or sets the created date time.
         /// </summary>
         /// <value>The created date time.</value>

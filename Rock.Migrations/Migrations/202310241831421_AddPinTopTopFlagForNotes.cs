@@ -14,24 +14,28 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.ViewModels.Blocks.Security.Login
+namespace Rock.Migrations
 {
+
     /// <summary>
-    /// A bag that contains the remote login start request information.
+    ///
     /// </summary>
-    public class RemoteLoginStartRequestBag
+    public partial class AddPinTopTopFlagForNotes : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// Gets or sets the authentication entity type guid.
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        public string AuthenticationType { get; set; }
+        public override void Up()
+        {
+            AddColumn( "dbo.Note", "PinToTop", c => c.Boolean( nullable: false, defaultValue: false ) );
+        }
 
         /// <summary>
-        /// Gets or sets the current URL path.
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        /// <value>
-        /// The current URL path.
-        /// </value>
-        public string Route { get; set; }
+        public override void Down()
+        {
+            DropColumn( "dbo.Note", "PinToTop" );
+        }
     }
 }
