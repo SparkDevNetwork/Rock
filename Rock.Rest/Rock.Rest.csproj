@@ -206,6 +206,7 @@
     <Compile Include="v2\Models\CodeGenerated\PersonAliasesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\PhoneNumbersController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\PrayerRequestsController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\WorkflowsActionsController.cs" />
     <Compile Include="v2\Models\DataViewsActionsController.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
