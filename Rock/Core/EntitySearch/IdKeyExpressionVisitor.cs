@@ -26,7 +26,7 @@ namespace Rock.Core.EntitySearch
     /// <summary>
     /// Expression visitor that handles IdKey requests for Entity Searches.
     /// </summary>
-    internal class IdKeyExpressionVisitor : ExpressionVisitor
+    class IdKeyExpressionVisitor : ExpressionVisitor
     {
         /// <summary>
         /// The prefix for IdKey property accessors.

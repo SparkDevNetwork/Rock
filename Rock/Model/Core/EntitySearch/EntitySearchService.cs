@@ -171,7 +171,7 @@ namespace Rock.Model
             var queryable = ( IQueryable<TEntity> ) Reflection.GetQueryableForEntityType( typeof( TEntity ), rockContext )
                 ?? throw new Exception( $"Entity type '{typeof( TEntity ).FullName}' does not support entity search." );
 
-            return EntitySearchHelper.GetSearchResults( queryable, systemQuery, userQuery );
+            return EntitySearchHelper.GetSearchResults( queryable, systemQuery, userQuery, rockContext );
         }
 
         #endregion

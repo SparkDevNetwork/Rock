@@ -15,16 +15,18 @@
 // </copyright>
 //
 
-using Rock.Data;
-using Rock.Security;
-using Rock.Utility;
-using Rock.ViewModels.Core;
-using System.Linq.Dynamic.Core;
-using System.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+
+using Rock.Data;
+using Rock.Model;
+using Rock.Security;
+using Rock.Utility;
+using Rock.ViewModels.Core;
 
 namespace Rock.Core.EntitySearch
 {
@@ -42,7 +44,8 @@ namespace Rock.Core.EntitySearch
         /// </summary>
         private readonly static ParsingConfig _parsingConfig = new ParsingConfig
         {
-            DisableMemberAccessToIndexAccessorFallback = true
+            DisableMemberAccessToIndexAccessorFallback = true,
+            CustomTypeProvider = new DynamicLinqCustomTypeProvider()
         };
 
         #endregion
@@ -57,8 +60,9 @@ namespace Rock.Core.EntitySearch
         /// <param name="queryable">The queryable to search.</param>
         /// <param name="systemQuery">The system query definition.</param>
         /// <param name="userQuery">The additional user query details.</param>
+        /// <param name="rockContext">The database context that <paramref name="queryable"/> is valid for. This may be <c>null</c> but will disable certain features.</param>
         /// <returns>A list of dynamic objects that represents the results.</returns>
-        public static EntitySearchResultsBag GetSearchResults<TEntity>( IQueryable<TEntity> queryable, EntitySearchSystemQuery systemQuery, EntitySearchQueryBag userQuery )
+        public static EntitySearchResultsBag GetSearchResults<TEntity>( IQueryable<TEntity> queryable, EntitySearchSystemQuery systemQuery, EntitySearchQueryBag userQuery, RockContext rockContext )
             where TEntity : IEntity
         {
             var config = _parsingConfig;
@@ -198,6 +202,7 @@ namespace Rock.Core.EntitySearch
             // Create a new expression that converts IdKey accessors into simple Id
             // accessors with the prefix so we can decode them later.
             var visitedExpression = new IdKeyExpressionVisitor( idKeyPrefix ).Visit( resultQry.Expression );
+            visitedExpression = new CustomExtensionMethodsExpressionVisitor( rockContext ).Visit( visitedExpression );
             resultQry = resultQry.Provider.CreateQuery( visitedExpression );
 
             var results = resultQry.ToDynamicList();

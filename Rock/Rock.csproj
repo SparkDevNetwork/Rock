@@ -605,6 +605,9 @@
     <Compile Include="Attribute\ColorSelectorFieldAttribute.cs" />
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
+    <Compile Include="Core\EntitySearch\CustomExtensionMethodsExpressionVisitor.cs" />
+    <Compile Include="Core\EntitySearch\DynamicLinqCustomTypeProvider.cs" />
+    <Compile Include="Core\EntitySearch\DynamicLinqQueryExtensionMethods.cs" />
     <Compile Include="Core\EntitySearch\EntitySearchHelper.cs" />
     <Compile Include="Core\EntitySearch\EntitySearchSystemQuery.cs" />
     <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />

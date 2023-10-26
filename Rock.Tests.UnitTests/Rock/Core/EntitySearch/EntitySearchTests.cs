@@ -44,7 +44,7 @@ namespace Rock.Tests.UnitTests.Rock.Core.EntitySearch
                 WhereExpression = "Id == 1"
             };
 
-            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null );
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
             var items = results.Items.Cast<dynamic>().ToList();
 
             Assert.That.Equal( typeof( Group ), ( Type ) items[0].GetType() );
@@ -60,7 +60,7 @@ namespace Rock.Tests.UnitTests.Rock.Core.EntitySearch
                 WhereExpression = "Id == 2"
             };
 
-            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null );
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
             var items = results.Items.Cast<dynamic>().ToList();
 
             Assert.That.Equal( 1, results.Items.Count );
@@ -77,7 +77,7 @@ namespace Rock.Tests.UnitTests.Rock.Core.EntitySearch
                 WhereExpression = "Id == 2893723"
             };
 
-            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null );
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
 
             Assert.That.Equal( 0, results.Items.Count );
         }
@@ -97,7 +97,7 @@ namespace Rock.Tests.UnitTests.Rock.Core.EntitySearch
                 SelectExpression = "GroupType.Name"
             };
 
-            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null );
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
             var items = results.Items.Cast<dynamic>().ToList();
 
             Assert.That.Equal( "Group Type 1", ( string ) items[0] );
@@ -129,7 +129,7 @@ namespace Rock.Tests.UnitTests.Rock.Core.EntitySearch
                 GroupByExpression = "GroupTypeId"
             };
 
-            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null );
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
 
             Assert.That.Equal( 2, results.Items.Count );
         }
@@ -161,7 +161,7 @@ namespace Rock.Tests.UnitTests.Rock.Core.EntitySearch
                 SortExpression = "GroupTypeId"
             };
 
-            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null );
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
             var items = results.Items.Cast<dynamic>().ToList();
 
             Assert.That.Equal( 2, results.Items.Count );
@@ -189,7 +189,7 @@ namespace Rock.Tests.UnitTests.Rock.Core.EntitySearch
                 IsCountOnly = true
             };
 
-            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, userQuery );
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, userQuery, null );
 
             Assert.That.Equal( queryable.Count(), results.Count );
         }
@@ -208,7 +208,7 @@ namespace Rock.Tests.UnitTests.Rock.Core.EntitySearch
                 IsCountOnly = true
             };
 
-            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, userQuery );
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, userQuery, null );
 
             Assert.That.Null( results.Items );
         }
@@ -240,7 +240,7 @@ namespace Rock.Tests.UnitTests.Rock.Core.EntitySearch
                 IsCountOnly = true
             };
 
-            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, userQuery );
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, userQuery, null );
 
             // We have more than two groups, so make sure we only get back "2"
             // which would indicate the count is for the number of groupings
@@ -261,7 +261,7 @@ namespace Rock.Tests.UnitTests.Rock.Core.EntitySearch
             {
             };
 
-            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null );
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
 
             Assert.That.Equal( queryable.Count(), results.Items.Count );
         }
