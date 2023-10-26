@@ -47,6 +47,9 @@ registerFieldType(FieldTypeGuids.Category, new CategoryFieldType());
 import { CategorizedDefinedValueField } from "./categorizedDefinedValueField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefinedValueField());
 
+import { CheckListFieldType } from "./checkListField.partial";
+registerFieldType(FieldTypeGuids.CheckList, new CheckListFieldType());
+
 import { ColorFieldType } from "./colorField.partial";
 registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 
