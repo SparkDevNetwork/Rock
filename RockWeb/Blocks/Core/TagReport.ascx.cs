@@ -162,9 +162,12 @@ namespace RockWeb.Blocks.Core
         {
             using ( var rockContext = new RockContext() )
             {
-                var grid = sender as Grid;
-                var dataKeys = grid.DataKeys[e.RowIndex].Values;
-                int id = dataKeys.Count > 1 ? dataKeys[1].ToString().AsInteger() : e.RowKeyId;
+                var id = e.RowKeyId;
+                if ( sender is Grid grid )
+                {
+                    var dataKeys = grid.DataKeys[e.RowIndex].Values;
+                    id = dataKeys.Count > 1 ? dataKeys[1].ToString().AsInteger() : e.RowKeyId;
+                }
 
                 var taggedItem = new TaggedItemService( rockContext ).Get( id );
                 if ( taggedItem != null )
@@ -197,9 +200,12 @@ namespace RockWeb.Blocks.Core
         {
             using ( var rockContext = new RockContext() )
             {
-                var grid = sender as Grid;
-                var dataKeys = grid.DataKeys[e.RowIndex].Values;
-                int id = dataKeys.Count > 1 ? dataKeys[1].ToString().AsInteger() : e.RowKeyId;
+                var id = e.RowKeyId;
+                if ( sender is Grid grid )
+                {
+                    var dataKeys = grid.DataKeys[e.RowIndex].Values;
+                    id = dataKeys.Count > 1 ? dataKeys[1].ToString().AsInteger() : e.RowKeyId;
+                }
 
                 var taggedItemService = new TaggedItemService( rockContext );
                 var taggedItem = taggedItemService.Get( id );
