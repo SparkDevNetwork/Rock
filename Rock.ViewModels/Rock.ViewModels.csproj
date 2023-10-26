@@ -405,6 +405,7 @@
     <Compile Include="Controls\RockCacheabilityBag.cs" />
     <Compile Include="Core\EntitySearchResultsBag.cs" />
     <Compile Include="Rest\Models\CreatedAtResponseBag.cs" />
+    <Compile Include="Rest\Models\ItemIdentifierBag.cs" />
     <Compile Include="Rest\Models\ModelAttributeValueBag.cs" />
     <Compile Include="Rest\Models\Workflows\LaunchWorkflowBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />
