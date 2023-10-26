@@ -1,5 +1,5 @@
 <template>
-    <h3>Entity Search Overview</h3>
+    <h1>Entity Search Overview</h1>
 
     <p>
         Entity Search allows you to define a named query that can be re-used
@@ -8,7 +8,7 @@
         exactly what bits of that data is returned to the caller.
     </p>
 
-    <h3>Entity Security</h3>
+    <h1>Entity Security</h1>
 
     <p>
         Security is important, but it can be slow. Especially if you don't
@@ -36,7 +36,7 @@
         thousands or tens of thousands.
     </p>
 
-    <h3>Include Paths</h3>
+    <h2>Include Paths</h2>
 
     <p>
         When Enable Entity Security is turned on, all the navigation properties
@@ -61,7 +61,7 @@
         as the <code>Person</code> property of the <code>Members</code> array.
     </p>
 
-    <h3>Personalization</h3>
+    <h1>Personalization</h1>
 
     <p>
         One of the amazing things about these searches is that you can customize
@@ -77,7 +77,7 @@
         type then the Where clause might look like this.
     </p>
 
-    <pre><code>Members.Any( gm => gm.GroupRole.IsLeader == true && gm.PersonId == @CurrentPersonId)</code></pre>
+    <pre><code>Members.Any( gm => gm.GroupRole.IsLeader == true && gm.PersonId == @CurrentPersonId )</code></pre>
 </template>
 
 <script setup lang="ts">

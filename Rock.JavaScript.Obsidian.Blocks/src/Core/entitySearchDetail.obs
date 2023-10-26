@@ -31,11 +31,7 @@
         </template>
 
         <template v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add" #helpContent>
-            <div class="p-4 pb-0">
-                <HelpPanel />
-            </div>
-
-            <hr />
+            <HelpPanel />
         </template>
     </DetailBlock>
 
