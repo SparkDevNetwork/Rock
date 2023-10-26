@@ -583,7 +583,6 @@
     <None Include="App.config" />
     <Compile Include="Controllers\RestControllersController.partial.cs" />
     <None Include="packages.config" />
-    <None Include="v2\Models\README.md" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Swagger\CustomAssets\index.html" />
