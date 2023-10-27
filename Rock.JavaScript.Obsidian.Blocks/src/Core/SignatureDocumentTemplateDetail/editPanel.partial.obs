@@ -32,6 +32,16 @@
                                  The drawn value is considered Personally identifiable information (PII) and is more sensitive to keep. It is encrypted in the database."
                                  horizontal
                                  :items="signatureInputTypes" />
+
+                <CheckBox v-model="isValidInFuture"
+                         label="Valid In Future"
+                         help="Determines if documents of this type should be considered valid for future eligibility needs." />
+                <NumberBox v-model="validityDurationInDays"
+                            v-if="isValidInFuture"
+                            label="Valid Duration Days"
+                            help="The number of days a signed document of this type will be considered valid."
+                            minimum-value="1"
+                            rules="required"/>
             </div>
 
             <div class="col-md-6">
@@ -179,6 +189,8 @@
     const providerEntityType = propertyRef(props.modelValue.providerEntityType ?? null, "ProviderEntityTypeId");
     const providerTemplateKey = propertyRef(props.modelValue.providerTemplateKey ?? "", "ProviderTemplateKey");
     const lavaTemplate = propertyRef(props.modelValue.lavaTemplate ?? "", "LavaTemplate");
+    const isValidInFuture = propertyRef(props.modelValue.isValidInFuture ?? false, "IsValidInFuture");
+    const validityDurationInDays = propertyRef(props.modelValue.validityDurationInDays, "ValidityDurationInDays");
     const communicationTemplates = ref(props.options.communicationTemplates ?? []);
     const showLegacyExternalProviders = ref(props.options.showLegacyExternalProviders);
     const showTips = ref(false);
@@ -186,7 +198,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, documentTerm, signatureType, binaryFileType, completionSystemCommunicationValue, lavaTemplate, providerTemplateKey, providerEntityType];
+    const propRefs = [description, isActive, name, documentTerm, signatureType, binaryFileType, completionSystemCommunicationValue, lavaTemplate, providerTemplateKey, providerEntityType, isValidInFuture, validityDurationInDays];
 
     // #endregion
 
@@ -220,6 +232,8 @@
         updateRefValue(lavaTemplate, props.modelValue.lavaTemplate ?? "");
         updateRefValue(providerTemplateKey, props.modelValue.providerTemplateKey ?? "");
         updateRefValue(providerEntityType, props.modelValue.providerEntityType ?? {});
+        updateRefValue(isValidInFuture, props.modelValue.isValidInFuture ?? false);
+        updateRefValue(validityDurationInDays, props.modelValue.validityDurationInDays);
         updateRefValue(showLegacyExternalProviders, props.options.showLegacyExternalProviders);
     });
 
@@ -236,6 +250,8 @@
             binaryFileType: binaryFileType.value,
             completionSystemCommunication: { value: completionSystemCommunicationValue.value },
             lavaTemplate: lavaTemplate.value,
+            isValidInFuture: isValidInFuture.value,
+            validityDurationInDays: validityDurationInDays.value,
             providerTemplateKey: providerTemplateKey.value,
             providerEntityType: providerEntityType.value,
             documentTerm: documentTerm.value

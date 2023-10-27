@@ -177,6 +177,11 @@ namespace RockWeb.Blocks.Core
             signatureDocumentTemplate.LavaTemplate = ceESignatureLavaTemplate.Text;
             signatureDocumentTemplate.DocumentTerm = tbDocumentTerm.Text;
             signatureDocumentTemplate.IsActive = cbIsActive.Checked;
+            signatureDocumentTemplate.IsValidInFuture = cbValidInFuture.Checked;
+            if ( cbValidInFuture.Checked )
+            {
+                signatureDocumentTemplate.ValidityDurationInDays = nbValidDurationDays.IntegerValue;
+            }
 
             if ( !signatureDocumentTemplate.IsValid )
             {
@@ -309,6 +314,16 @@ namespace RockWeb.Blocks.Core
             rblSignatureType.SetValue( signatureDocumentTemplate.SignatureType.ConvertToInt() );
             tbDocumentTerm.Text = signatureDocumentTemplate.DocumentTerm;
             ddlCompletionSystemCommunication.SetValue( signatureDocumentTemplate.CompletionSystemCommunicationId );
+            cbValidInFuture.Checked = signatureDocumentTemplate.IsValidInFuture;
+
+            // If the Is Valid In Future is set to true, enable and make mandatory the NumberBox for Valid Duration Days.
+            if ( signatureDocumentTemplate.IsValidInFuture )
+            {
+                nbValidDurationDays.Enabled = true;
+                nbValidDurationDays.Visible = true;
+                nbValidDurationDays.Required = true;
+            }
+            nbValidDurationDays.IntegerValue = signatureDocumentTemplate.ValidityDurationInDays;
         }
 
         /// <summary>
@@ -432,7 +447,7 @@ namespace RockWeb.Blocks.Core
                 bool readOnly = false;
 
                 nbEditModeMessage.Text = string.Empty;
-                bool canEdit = UserCanEdit && signatureDocumentTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                bool canEdit = signatureDocumentTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 bool canView = canEdit || signatureDocumentTemplate.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 if ( !canView )
@@ -496,6 +511,28 @@ namespace RockWeb.Blocks.Core
                 // toggle to hide PDF and show Lava Template
                 rcwSignatureDocumentPreview.Visible = false;
                 ceESignatureLavaTemplate.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Handles the CheckChanged event of the cbValidInFuture CheckBox Control
+        /// When the Checkbox is checked, we need to display the ValidDurationDays NumberBox and make it a required control
+        /// Otherwise, the NumberBox needs to be hidden.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void cbValidInFuture_CheckChanged( object sender, EventArgs e )
+        {
+            if ( cbValidInFuture.Checked )
+            {
+                nbValidDurationDays.Visible = true;
+                nbValidDurationDays.Enabled = true;
+                nbValidDurationDays.Required = true;
+            }
+            else
+            {
+                nbValidDurationDays.Visible = false;
+                nbValidDurationDays.Enabled = false;
             }
         }
 

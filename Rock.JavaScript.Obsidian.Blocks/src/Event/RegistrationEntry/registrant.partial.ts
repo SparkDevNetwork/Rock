@@ -360,6 +360,9 @@ export default defineComponent({
 
                         lastFormIndex += 1;
                     }
+                    // If the response is successful but the backend does not return a data, then the Signature Document is not required for the current
+                    // registrant. We may continue execution.
+                    else if (result.isSuccess) { }
                     else {
                         console.error(result.data);
                         return;

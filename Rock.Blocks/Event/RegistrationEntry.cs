@@ -24,6 +24,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
+using DotLiquid.Util;
+
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount;
@@ -567,6 +569,30 @@ namespace Rock.Blocks.Event
                 // Process the Person so we have data for the Lava merge.
                 bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
                 var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamily?.Guid ?? Guid.Empty, isCreatedAsRegistrant, rockContext );
+
+                // If the person happens to have a valid signature document of the required template, we may skip this step.
+                if ( documentTemplate.IsValidInFuture && documentTemplate.ValidityDurationInDays.HasValue )
+                {
+                    var earliestSignatureDate = RockDateTime.Today.AddDays( -documentTemplate.ValidityDurationInDays.ToIntSafe() );
+                    var existingSignatureDocument = new RegistrationRegistrantService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( r =>
+                            r.PersonAlias.PersonId == person.Id &&
+                            r.SignatureDocument.SignatureDocumentTemplateId == documentTemplate.Id &&
+                            r.SignatureDocument.SignedDateTime > earliestSignatureDate )
+                        .Select( r => new
+                        {
+                            r.SignatureDocument.SignatureDocumentTemplate.ValidityDurationInDays,
+                            r.SignatureDocument.SignedDateTime.Value
+                        } )
+                        .FirstOrDefault();
+                    if ( existingSignatureDocument != null && existingSignatureDocument.ValidityDurationInDays >= ( int ) ( RockDateTime.Today - existingSignatureDocument.Value ).TotalDays )
+                    {
+                        return ActionOk();
+                    }
+                }
+
                 var (campusId, location, _) = UpdatePersonFromRegistrant( person, registrantInfo, new History.HistoryChangeList(), context.RegistrationSettings );
 
                 if ( person.Attributes == null )
@@ -2523,21 +2549,53 @@ namespace Rock.Blocks.Event
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired && isNewRegistration )
             {
                 var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
-                var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
-                var signedBy = RequestContext.CurrentPerson ?? registrar;
 
-                var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.PersonAlias?.Person?.FullName ?? person.FullName, context.RegistrationSettings.Name );
-
-                new SignatureDocumentService( rockContext ).Add( document );
-                rockContext.SaveChanges();
-
-                // Send communication after the save is complete.
-                if ( documentTemplate.CompletionSystemCommunication != null )
+                // If documentTemplate is valid in future, make a query to the database to check if a valid document exists for the registrant.
+                dynamic existingSignatureDocumentForRegistrant = null;
+                if ( documentTemplate.IsValidInFuture && documentTemplate.ValidityDurationInDays.HasValue )
                 {
-                    postSaveActions.Add( () =>
+                    var earliestSignatureDate = RockDateTime.Today.AddDays( -documentTemplate.ValidityDurationInDays.ToIntSafe() );
+                    existingSignatureDocumentForRegistrant = new RegistrationRegistrantService( rockContext )
+                        .Queryable()
+                        .Where( r =>
+                            r.PersonAlias.PersonId == person.Id &&
+                            r.SignatureDocument.SignatureDocumentTemplateId == documentTemplate.Id &&
+                            r.SignatureDocument.SignedDateTime > earliestSignatureDate )
+                        .Select( r => new
+                        {
+                            r.SignatureDocument.Id,
+                            r.SignatureDocument.SignatureDocumentTemplate.ValidityDurationInDays,
+                            r.SignatureDocument.SignedDateTime.Value
+                        } )
+                        .FirstOrDefault();
+                }
+
+                // If a document is found for the registrant and it happens to be valid at the instant, use it to complete the registration. Otherwise, create a new document.
+                if ( existingSignatureDocumentForRegistrant != null )
+                {
+                    registrant.SignatureDocumentId = existingSignatureDocumentForRegistrant.Id;
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
+                    var signedBy = RequestContext.CurrentPerson ?? registrar;
+
+                    var document = CreateSignatureDocument( documentTemplate, signedData, signedBy, registrar, person, registrant.PersonAlias?.Person?.FullName ?? person.FullName, context.RegistrationSettings.Name );
+
+
+                    new SignatureDocumentService( rockContext ).Add( document );
+                    registrant.SignatureDocument = document;
+                    rockContext.SaveChanges();
+
+                    // Send communication after the save is complete.
+                    if ( documentTemplate.CompletionSystemCommunication != null )
                     {
-                        ElectronicSignatureHelper.SendSignatureCompletionCommunication( document.Id, out _ );
-                    } );
+                        postSaveActions.Add( () =>
+                        {
+                            ElectronicSignatureHelper.SendSignatureCompletionCommunication( document.Id, out _ );
+                        } );
+                    }
                 }
             }
 
@@ -2748,7 +2806,8 @@ namespace Rock.Blocks.Event
 
             // Get models needed for the view model
             var hasDiscountsAvailable = context.RegistrationSettings.Discounts?.Any() == true;
-            var formModels = context.RegistrationSettings.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
+            var formModels = context.RegistrationSettings
+                .Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
 
             // Get family members
             var currentPerson = GetCurrentPerson();
@@ -2816,12 +2875,17 @@ namespace Rock.Blocks.Event
 
             // Get forms with fields
             var formViewModels = new List<RegistrationEntryBlockFormViewModel>();
-            var allAttributeFields = formModels.SelectMany( fm => fm.Fields.Where( f => !f.IsInternal && f.Attribute?.IsActive == true ) ).ToList();
+            var allAttributeFields = formModels
+                .SelectMany( fm =>
+                    fm.Fields.Where( f => !f.IsInternal && f.Attribute?.IsActive == true )
+                ).ToList();
 
             foreach ( var formModel in formModels )
             {
                 var form = new RegistrationEntryBlockFormViewModel();
-                var fieldModels = formModel.Fields.Where( f => !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) ).OrderBy( f => f.Order );
+                var fieldModels = formModel.Fields
+                    .Where( f => !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
+                    .OrderBy( f => f.Order );
                 var fields = new List<RegistrationEntryBlockFormFieldViewModel>();
 
                 foreach ( var fieldModel in fieldModels )
@@ -4284,7 +4348,7 @@ namespace Rock.Blocks.Event
         /// <param name="assignedTo">The <see cref="Person"/> that is the responsible party for signing the document.</param>
         /// <param name="appliesTo">The <see cref="Person"/> that this document will apply to.</param>
         /// <returns>A <see cref="SignatureDocument"/> object that can be saved to the database.</returns>
-        private static SignatureDocument CreateSignatureDocument( SignatureDocumentTemplate signatureDocumentTemplate, SignedDocumentData documentData, IEntity entity, Person signedBy, Person assignedTo, Person appliesTo, String registrantName, String registrationInstanceName )
+        private static SignatureDocument CreateSignatureDocument( SignatureDocumentTemplate signatureDocumentTemplate, SignedDocumentData documentData, Person signedBy, Person assignedTo, Person appliesTo, String registrantName, String registrationInstanceName )
         {
             // Glue stuff into the signature document
             var signatureDocument = new SignatureDocument
@@ -4292,8 +4356,6 @@ namespace Rock.Blocks.Event
                 SignatureDocumentTemplateId = signatureDocumentTemplate.Id,
                 Status = SignatureDocumentStatus.Signed,
                 Name = $"{registrantName} ({registrationInstanceName})",
-                EntityTypeId = entity != null ? EntityTypeCache.GetId( entity.GetType() ) : null,
-                EntityId = entity?.Id,
                 SignedByPersonAliasId = signedBy.PrimaryAliasId,
                 AssignedToPersonAliasId = assignedTo.PrimaryAliasId,
                 AppliesToPersonAliasId = appliesTo.PrimaryAliasId,
