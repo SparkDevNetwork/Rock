@@ -271,7 +271,7 @@ namespace Rock.Blocks.Security
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
-        DefaultValue = "<div class=\"alert alert-warning\">Your current security access level requires you to complete a Two-Factor Authentication login in order to proceed. This additional layer of security is necessary to ensure the protection of your account and the sensitive data it contains.<br><br>Your account does not currently have an email address or mobile phone. Please contact us to assist you in configuring this.</div>",
+        DefaultValue = "<div class=\"alert alert-warning\">Your current security access level requires you to complete a Two-Factor Authentication login in order to proceed. This additional layer of security is necessary to ensure the protection of your account and the sensitive data it contains.<br><br>Your account does not currently have a username or password configured. Please contact us to assist you in configuring this.</div>",
         Category = AttributeCategory.Captions,
         Order = 22 )]
     
