@@ -78,6 +78,7 @@
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
+    <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
     <Compile Include="Tv\AppleTvAppDetail.cs" />
     <Compile Include="Event\EventItemDetail.cs" />

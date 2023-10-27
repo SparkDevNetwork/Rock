@@ -26,6 +26,7 @@ using Rock.Lava;
 using Rock.Web.Cache;
 using Ical.Net.CalendarComponents;
 using System.ComponentModel.DataAnnotations;
+using Rock.Attribute;
 
 namespace Rock.Model
 {
@@ -758,6 +759,21 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a list of scheduled start datetimes between the two specified dates, sorted by datetime.
+        /// </summary>
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="excludeOccurrencesAlreadyStarted">Whether to exclude occurrences whose start time has already passed.</param>
+        /// <returns>A list of scheduled start datetimes between the two specified dates, sorted by datetime.</returns>
+        [RockInternal( "1.16.1" )]
+        public virtual List<DateTime> GetScheduledStartTimes( DateTime beginDateTime, DateTime endDateTime, bool excludeOccurrencesAlreadyStarted )
+        {
+            return GetScheduledStartTimes( beginDateTime, endDateTime )
+                .Where( a => !excludeOccurrencesAlreadyStarted || a > beginDateTime )
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets the first start date time.
         /// </summary>
         /// <returns></returns>
@@ -1205,12 +1221,22 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns the schedule's name if defined, or a friendly text of the calendar event if not.
+        /// For example, "Every 3 days at 10:30am", "Monday, Wednesday, Friday at 5:00pm", "Saturday at 4:30pm"
         /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
+        /// <returns>The schedule's name if defined, or a friendly text of the calendar event if not.</returns>
         public override string ToString()
+        {
+            return ToString( false );
+        }
+
+        /// <summary>
+        /// Returns the schedule's name if defined, or a friendly text of the calendar event if not.
+        /// For example, "Every 3 days at 10:30am", "Monday, Wednesday, Friday at 5:00pm", "Saturday at 4:30pm"
+        /// </summary>
+        /// <param name="condensed">Whether to return condensed friendly text (with no HTML markup, for example).</param>
+        /// <returns>The schedule's name if defined, or a friendly text of the calendar event if not.</returns>
+        public string ToString( bool condensed )
         {
             if ( this.Name.IsNotNullOrWhiteSpace() )
             {
@@ -1218,7 +1244,7 @@ namespace Rock.Model
             }
             else
             {
-                return this.ToFriendlyScheduleText();
+                return this.ToFriendlyScheduleText( condensed );
             }
         }
 
