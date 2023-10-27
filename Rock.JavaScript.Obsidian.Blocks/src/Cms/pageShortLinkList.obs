@@ -2,7 +2,7 @@
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="idKey"
+          keyField="id"
           itemTerm="Shortened Links"
           :entityTypeGuid="EntityType.PageShortLink"
           stickyHeader
@@ -30,7 +30,7 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <CopyColumn @click="onCopyLink" />
+        <CopyColumn :getValueToCopy="linkToCopy" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -49,7 +49,6 @@
 
     const config = useConfigurationValues<ListBlockBox<PageShortLinkListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const emit = defineEmits(["copied"]);
 
     // #region Values
 
@@ -135,28 +134,12 @@
     }
 
     /**
-    * The event handler to copy a specific website link to the clipboard.
+    * The function to copy a specific website link to the clipboard.
     *
-    * @param key The key of the row whose link is to be copied.
+    * @param row The row whose link is to be copied.
     */
-    function onCopyLink(key: string): void {
-        // Find the data for the given key
-        const rowData = gridData?.rows?.find(row => row["idKey"] === key);
-
-        if (rowData) {
-            // Extract the URL from the data
-            const urlToCopy = rowData.shortLink as string;
-
-            // Copy the URL to clipboard
-            navigator.clipboard.writeText(urlToCopy).then(() => {
-                emit("copied");
-            }).catch(error => {
-                alert(error ?? "Failed to copy URL!");
-            });
-        }
-        else {
-            alert("Failed to find URL for selected link.");
-        }
+    function linkToCopy(row: Record<string, unknown>): string {
+        return row.shortLink as string;
     }
 
     // #endregion

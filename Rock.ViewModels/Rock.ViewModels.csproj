@@ -52,6 +52,7 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PageShortLinkClickList\PageShortLinkClickListBag .cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
@@ -621,6 +622,8 @@
       <Name>Rock.Enums</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Compile Include="Blocks\Cms\PageShortLinkClickList\PageShortLinkClickListOptionsBag.cs" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

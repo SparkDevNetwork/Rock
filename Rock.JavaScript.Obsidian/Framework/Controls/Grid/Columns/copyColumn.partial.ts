@@ -17,6 +17,11 @@ export default defineComponent({
             default: CopyCell
         },
 
+        getValueToCopy: {
+            type: Function as PropType<(row: Record<string, unknown>) => string>,
+            required: true
+        },
+
         headerClass: {
             type: String as PropType<string>,
             default: "grid-columncommand"

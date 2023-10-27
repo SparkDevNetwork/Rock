@@ -18,7 +18,6 @@
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
                  :footerSecondaryActions="internalFooterSecondaryActions"
-                 @copyLink="onCopyLink"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"

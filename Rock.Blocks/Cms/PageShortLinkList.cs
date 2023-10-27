@@ -29,7 +29,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageShortLinkList;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Cms
+namespace Rock.Blocks.CMS
 {
     /// <summary>
     /// Displays a list of page short links.
@@ -198,7 +198,7 @@ namespace Rock.Blocks.Cms
                 Url = pageShortLink.Url;
 
                 var url = pageShortLink.Site.DefaultDomainUri.ToString();
-                ShortLink = url.EnsureTrailingForwardslash() + Token; 
+                ShortLink = url.EnsureTrailingForwardslash() + Token;
             }
         }
 

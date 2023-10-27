@@ -16,8 +16,6 @@
     import { ComponentPublicInstance, onMounted, PropType, ref } from "vue";
     import RockButton from "./rockButton.obs";
 
-    const emit = defineEmits(["copy-clicked"]);
-
     const props = defineProps({
         value: {
             type: String as PropType<string>,
@@ -44,15 +42,16 @@
 
     function copy(e: MouseEvent): void {
         e.preventDefault();
-        tooltipTitle.value = "Copied!";
-        emit("copy-clicked", props.value);
+        navigator.clipboard.writeText(props.value).then(() => {
+            tooltipTitle.value = "Copied!";
+            jEl.attr("data-original-title", tooltipTitle.value);
+            jEl.tooltip("show");
 
-        jEl.attr("data-original-title", tooltipTitle.value);
-        jEl.tooltip("show");
+            if (el.value && el.value.$el) {
+                (el.value.$el as HTMLElement).blur();
+            }
+        });
 
-        if (el.value && el.value.$el) {
-            (el.value.$el as HTMLElement).blur();
-        }
     }
 
     function resetTooltip(): void {
