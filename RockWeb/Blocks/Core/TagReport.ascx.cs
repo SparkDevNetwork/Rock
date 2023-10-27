@@ -163,10 +163,10 @@ namespace RockWeb.Blocks.Core
             using ( var rockContext = new RockContext() )
             {
                 var id = e.RowKeyId;
-                if ( sender is Grid grid )
+                if ( e.RowKeyValues != null )
                 {
-                    var dataKeys = grid.DataKeys[e.RowIndex].Values;
-                    id = dataKeys.Count > 1 ? dataKeys[1].ToString().AsInteger() : e.RowKeyId;
+                    // If multiple RowKeyValues are in use, the second value represents the actual TaggedItemId.
+                    id = e.RowKeyValues.Count > 1 ? ( int ) e.RowKeyValues[1] : e.RowKeyId;
                 }
 
                 var taggedItem = new TaggedItemService( rockContext ).Get( id );
@@ -201,10 +201,10 @@ namespace RockWeb.Blocks.Core
             using ( var rockContext = new RockContext() )
             {
                 var id = e.RowKeyId;
-                if ( sender is Grid grid )
+                if ( e.RowKeyValues != null )
                 {
-                    var dataKeys = grid.DataKeys[e.RowIndex].Values;
-                    id = dataKeys.Count > 1 ? dataKeys[1].ToString().AsInteger() : e.RowKeyId;
+                    // If multiple RowKeyValues are in use, the second value represents the actual TaggedItemId.
+                    id = e.RowKeyValues.Count > 1 ? ( int ) e.RowKeyValues[1] : e.RowKeyId;
                 }
 
                 var taggedItemService = new TaggedItemService( rockContext );
