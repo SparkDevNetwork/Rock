@@ -218,4 +218,54 @@ namespace Rock.Mobile
             }
         }
     }
+
+    /// <summary>
+    /// Extension methods for the <see cref="Rock.Common.Mobile.Enums.ConnectionState" />.
+    /// </summary>
+    public static class MobileExtensionsConnectionState
+    {
+        /// <summary>
+        /// Converts a web native <see cref="ConnectionState"/> to a mobile <see cref="Rock.Common.Mobile.Enums.ConnectionState"/>.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public static Rock.Common.Mobile.Enums.ConnectionState ToMobile( this ConnectionState state )
+        {
+            switch ( state )
+            {
+                case ConnectionState.Active:
+                    return Rock.Common.Mobile.Enums.ConnectionState.Active;
+                case ConnectionState.Inactive:
+                    return Rock.Common.Mobile.Enums.ConnectionState.Inactive;
+                case ConnectionState.FutureFollowUp:
+                    return Rock.Common.Mobile.Enums.ConnectionState.FutureFollowUp;
+                case ConnectionState.Connected:
+                    return Rock.Common.Mobile.Enums.ConnectionState.Connected;
+                default:
+                    return Rock.Common.Mobile.Enums.ConnectionState.Active;
+            }
+        }
+
+        /// <summary>
+        /// Converts a mobile <see cref="Rock.Common.Mobile.Enums.ConnectionState"/> to a web native.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public static ConnectionState ToNative( this Rock.Common.Mobile.Enums.ConnectionState state )
+        {
+            switch ( state )
+            {
+                case Rock.Common.Mobile.Enums.ConnectionState.Active:
+                    return ConnectionState.Active;
+                case Rock.Common.Mobile.Enums.ConnectionState.Inactive:
+                    return ConnectionState.Inactive;
+                case Rock.Common.Mobile.Enums.ConnectionState.FutureFollowUp:
+                    return ConnectionState.FutureFollowUp;
+                case Rock.Common.Mobile.Enums.ConnectionState.Connected:
+                    return ConnectionState.Connected;
+                default:
+                    return ConnectionState.Active;
+            }
+        }
+    }
 }

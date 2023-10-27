@@ -527,7 +527,8 @@ namespace Rock.Mobile
                 var mobileCampus = new MobileCampus
                 {
                     Guid = campus.Guid,
-                    Name = campus.Name
+                    Name = campus.Name,
+                    Id = campus.IdKey
                 };
 
                 if ( campus.Location != null )

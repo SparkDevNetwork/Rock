@@ -755,6 +755,7 @@
     <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\RockMobileBlockTypeCustomSettingsProvider.cs" />
     <Compile Include="Blocks\SupportedSiteTypesAttribute.cs" />
+    <Compile Include="Blocks\Types\Mobile\Connection\AddConnectionRequest.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\AttributeValues.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\CommunicationEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\SmsConversation.cs" />
