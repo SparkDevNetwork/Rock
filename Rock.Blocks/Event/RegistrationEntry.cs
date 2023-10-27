@@ -765,6 +765,22 @@ namespace Rock.Blocks.Event
             return null;
         }
 
+        /// <inheritdoc/>
+        protected override string GetPlaceholderContent( RockClientType clientType )
+        {
+            if ( clientType == RockClientType.Web )
+            {
+                return @"
+   <div class=""skeleton skeleton-block w-lg mx-auto mb-4""></div>
+   <div class=""skeleton skeleton-heading w-md mx-auto""></div>
+   <div class=""skeleton skeleton-block w-sm mx-auto mt-5""></div>
+   <div class=""skeleton skeleton-button ml-auto""></div>
+";
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Updates or Inserts the session.
         /// </summary>
