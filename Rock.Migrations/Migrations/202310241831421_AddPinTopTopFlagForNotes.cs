@@ -27,7 +27,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn( "dbo.Note", "PinToTop", c => c.Boolean( nullable: false, defaultValue: false ) );
+            AddColumn( "dbo.Note", "IsPinned", c => c.Boolean( nullable: false, defaultValue: false ) );
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropColumn( "dbo.Note", "PinToTop" );
+            DropColumn( "dbo.Note", "IsPinned" );
         }
     }
 }

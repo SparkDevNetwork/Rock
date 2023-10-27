@@ -71,7 +71,7 @@ namespace Rock.ViewModels.Blocks.Core.Notes
         /// Gets or sets a value indicating whether this note should be pinned to top
         /// </summary>
         /// <value><c>true</c> if this note should be pinned to top otherwise, <c>false</c>.</value>
-        public bool PinToTop { get; set; }
+        public bool IsPinned { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this note is a private note.
