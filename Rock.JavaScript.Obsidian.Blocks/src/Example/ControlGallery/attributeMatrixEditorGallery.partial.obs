@@ -1,7 +1,7 @@
 <template>
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
-        <AttributeMatrixEditor v-model="items" :attributes="attributes" />
+        <AttributeMatrixEditor v-model="items" :attributes="attributes" :defaultAttributeValues="defaults" />
 
         <template #settings>
             <div class="row">
@@ -96,7 +96,7 @@
             "guid": "ac0dd30f-6ec3-4254-9362-cfee0141c69e",
             "order": 0,
             "attributeValues": {
-                "ArticleImage": "1ed83aa0-ab8b-4d3d-af71-9fea3cfae8b0",
+                "ArticleImage": "{\"value\":\"1ed83aa0-ab8b-4d3d-af71-9fea3cfae8b0\",\"text\":\"someimage.jpg\"}",
                 "ArticleTitle": "Another",
                 "ArticleContent": "<p>Thing</p>",
                 "ArticleLink": "/foryou"
@@ -123,6 +123,13 @@
             }
         }
     ]);
+
+    const defaults = {
+        "ArticleImage": "",
+        "ArticleTitle": "Add Your Title Here",
+        "ArticleContent": "",
+        "ArticleLink": "/blog/"
+    };
 
 
     const importCode = getSfcControlImportPath("attributeMatrixEditor");

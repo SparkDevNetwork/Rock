@@ -1,34 +1,41 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="items" v-bind="fieldProps" name="x-field">
-        <Grid :data="gridData" itemTerm="Item" keyField="key" liveUpdates light @addItem="onAddItem" @selectItem="console.log">
+    <RockFormField :modelValue="items" v-bind="fieldProps" name="TODO-field">
+        <Grid v-show="mode == 'grid'" :data="gridData" itemTerm="Item" keyField="key" liveUpdates light @addItem="onAddItem" @selectItem="onSelectItem">
             <ReorderColumn @orderChanged="orderChanged" />
-            <AttributeColumns :attributes="attributeList" />
+            <FieldColumn v-for="attr in attributeList" :key="attr.fieldTypeGuid ?? ''" :field="attr.field ?? ''" :name="attr.field ?? ''" :title="attr.title ?? ''" :attribute="attributes[attr.field ?? '']" />
             <DeleteColumn @click="onDelete" disableConfirmation />
         </Grid>
 
+        <RockForm v-if="mode == 'add'" class="well" @submit="onSubmitAddItem" novalidate>
+            <AttributeValuesContainer v-model="newValue" :attributes="attributes" isEditMode />
+            <RockButton type="submit" btnSize="sm" btnType="primary">Add</RockButton>
+            <RockButton btnType="link" @click="onCancelAddOrEditItem">Cancel</RockButton>
+        </RockForm>
 
-
-        <div>TODO: ADD FORM</div>
-        <div>TODO: EDIT FORM</div>
+        <RockForm v-if="mode == 'edit'" class="well" @submit="onSubmitEditItem" novalidate>
+            <AttributeValuesContainer v-model="editValue" :attributes="attributes" isEditMode />
+            <RockButton type="submit" btnSize="sm" btnType="primary">Save</RockButton>
+            <RockButton btnType="link" @click="onCancelAddOrEditItem">Cancel</RockButton>
+        </RockForm>
     </RockFormField>
-
-    <h6 class="text-semibold">GRID DATA</h6>
-    <pre>{{ JSON.stringify(gridData, null, 4) }}</pre>
-    <h6 class="text-semibold">PROPS.MODELVALUE</h6>
-    <pre>{{ JSON.stringify($props.modelValue, null, 4) }}</pre>
 </template>
 
 <script setup lang="ts">
     import { PropType, computed, ref, watch } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
-    import Grid, { AttributeColumns, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import Grid, { AttributeColumns, DeleteColumn, FieldColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { clone } from "@Obsidian/Utility/objectUtils";
+    import { provideSecurityGrant } from "@Obsidian/Utility/block";
+    import { Props } from "ant-design-vue/lib/form/useForm";
 
     const props = defineProps({
         modelValue: {
@@ -39,6 +46,11 @@
         attributes: {
             type: Object as PropType<Record<string, PublicAttributeBag>>,
             required: true
+        },
+
+        defaultAttributeValues: {
+            type: Object as PropType<Record<string, string>>,
+            default: {}
         },
 
         minRows: {
@@ -77,48 +89,85 @@
 
     const fieldProps = useStandardRockFormFieldProps(props);
 
+    const mode = ref<"grid" | "edit" | "add">("grid");
+    const newValue = ref({});
+    const editValue = ref({});
+    const editKey = ref("");
+
     // This increments every time a new item is added. It is used to ensure a unique key for new items
     // since they all have an empty guid.
     let itemsAdded = 0;
 
 
-
-
-
     const gridData = computed<GridDataBag>(
-        () => {
-            console.log("GET GRID DATA");
-            return {
-                rows: props.modelValue.map(item => ({
+        () => ({
+            rows: props.modelValue.map(item => {
+                const row = {
                     key: (item.guid as string) + "##" + (item.key ?? ""),
                     order: item.order,
                     ...(item.attributeValues as Record<string, string>)
-                }))
-            };
-        }
+                };
+
+                return row;
+            })
+        })
     );
 
     const attributeList = computed(
         () => Object.values(props.attributes).map(attr => ({
             fieldTypeGuid: attr.fieldTypeGuid,
-            name: attr.key,
+            field: attr.key,
             title: attr.name
         }))
     );
 
     function onAddItem(): void {
-        console.log("TODO! SHOW POPUP");
+        newValue.value = Object.keys(props.attributes).reduce((obj, key) => {
+            obj[key] = props.defaultAttributeValues[key] ?? "";
+            return obj;
+        }, {});
+
+        mode.value = "add";
+    }
+
+    function onSubmitAddItem(): void {
         items.value.push({
             guid: emptyGuid,
-            key: ++itemsAdded,
             order: items.value.length,
-            attributeValues: {
-                "ArticleImage": "",
-                "ArticleTitle": "I'm a new item " + itemsAdded,
-                "ArticleContent": "To be or not to be? That is the question. Or is it? Is that last sentence the question?",
-                "ArticleLink": "https://www.joezimjs.com"
-            }
+            key: ++itemsAdded,
+            attributeValues: clone(newValue.value)
         });
+
+        mode.value = "grid";
+    }
+
+    function onCancelAddOrEditItem(): void {
+        mode.value = "grid";
+    }
+
+    function onSelectItem(key: string): void {
+        const [itemGuid, itemKey] = key.split("##");
+        const item = items.value.find(i => i.guid == itemGuid && i.key == (itemKey || undefined));
+
+        if (item != undefined) {
+            editValue.value = clone(item.attributeValues as Record<string, unknown>);
+            editKey.value = key;
+            mode.value = "edit";
+        }
+    }
+
+    function onSubmitEditItem(): void {
+        const [itemGuid, itemKey] = editKey.value.split("##");
+        const index = items.value.findIndex(i => i.guid == itemGuid && i.key == (itemKey || undefined));
+
+        if (index >= 0) {
+            items.value[index].attributeValues = editValue.value;
+        }
+
+        editKey.value = "";
+        editValue.value = {};
+
+        mode.value = "grid";
     }
 
     function onDelete(key: string): void {
@@ -134,10 +183,8 @@
      * array and update the `order` property to match the array order.
      */
     function orderChanged(movedItem: Record<string, unknown>, beforeItem: Record<string, unknown> | null): void {
-        // console.debug("⬇️", movedItem.key, movedItem.ArticleTitle, beforeItem?.key, beforeItem?.ArticleTitle, ...items.value);
         const [movedItemGuid, movedItemKey] = (movedItem.key as string).split("##");
         const [beforeItemGuid, beforeItemKey] = beforeItem == null ? [null, null] : (beforeItem.key as string).split("##");
-        // console.debug("⬇️", movedItemGuid, movedItemKey, beforeItemGuid, beforeItemKey);
 
         const movedIndex = items.value.findIndex(i => i.guid == movedItemGuid && i.key == (movedItemKey || undefined));
 
@@ -159,7 +206,6 @@
         items.value.forEach((item, index) => {
             item.order = index;
         });
-        // console.debug("⬇️", ...items.value);
     }
 
 

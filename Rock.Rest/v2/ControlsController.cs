@@ -659,7 +659,8 @@ namespace Rock.Rest.v2
                             a.Guid,
                             a.Order,
                             //Attributes = MakePublicAttributeBags( a.Attributes ),
-                            AttributeValues = a.AttributeValues.ToDictionary( v => v.Key, v => v.Value.Value )
+                            AttributeValues = a.AttributeValues.ToDictionary( v => v.Key, v => v.Value.Value ),
+                            Other = a.Attributes.ToDictionary( v => v.Key, v => v.Value.FieldType.Field.GetPublicValue( a.AttributeValues.GetValueOrNull( v.Key )?.Value, v.Value.ConfigurationValues ) )
                         } )
                         .ToList();
 

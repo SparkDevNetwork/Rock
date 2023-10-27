@@ -3,8 +3,7 @@
     <RockSuspense>
         <template #default>
             <div v-if="displayWithinExistingRow" :class="columnClass" v-for="a in validAttributes" :key="a.attributeGuid!">
-                <RockField
-                           :isEditMode="isEditMode"
+                <RockField :isEditMode="isEditMode"
                            :attribute="a"
                            :modelValue="values[a.key!]"
                            @update:modelValue="onUpdateValue(a.key!, $event)"
@@ -15,8 +14,7 @@
             <TabbedContent v-else-if="actuallyDisplayAsTabs" :tabs="attributeCategoryNames">
                 <template #tabpane="{ item }">
                     <div v-for="a in getCategoryAttributes(item)" :key="a.attributeGuid!">
-                        <RockField
-                                   :isEditMode="isEditMode"
+                        <RockField :isEditMode="isEditMode"
                                    :attribute="a"
                                    :modelValue="values[a.key!]"
                                    @update:modelValue="onUpdateValue(a.key!, $event)"
@@ -34,8 +32,7 @@
                     <div :class="{ 'attribute-value-container-display': true, 'row': numberOfColumns > 1 }">
                         <ItemsWithPreAndPostHtml :items="prePostHtmlItems[cat.guid!]" v-if="isEditMode && showPrePostHtml">
                             <template v-slot:[a.attributeGuid!] v-for="a in cat.attributes" :key="a.attributeGuid ?? ''">
-                                <RockField
-                                           :isEditMode="isEditMode"
+                                <RockField :isEditMode="isEditMode"
                                            :attribute="a"
                                            :modelValue="values[a.key!]"
                                            @update:modelValue="onUpdateValue(a.key!, $event)"
@@ -45,8 +42,7 @@
                         </ItemsWithPreAndPostHtml>
 
                         <div v-else :class="columnClass" v-for="a in cat.attributes" :key="a.attributeGuid!">
-                            <RockField
-                                       :isEditMode="isEditMode"
+                            <RockField :isEditMode="isEditMode"
                                        :attribute="a"
                                        :modelValue="values[a.key!]"
                                        @update:modelValue="onUpdateValue(a.key!, $event)"
