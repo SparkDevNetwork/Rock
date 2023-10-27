@@ -51,14 +51,14 @@ namespace Rock.Blocks.Core
         Key = AttributeKey.DefaultFileType,
         IsRequired = false,
         DefaultBinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.SIGNED_DOCUMENT_FILE_TYPE,
-        Order = 0)]
+        Order = 0 )]
 
     [BooleanField(
         "Show Legacy Signature Providers",
         "Enable this setting to see the configuration for legacy signature providers. Note that support for these providers will be fully removed in the next full release.",
         Key = AttributeKey.ShowLegacyExternalProviders,
         DefaultBooleanValue = false,
-        Order = 1)]
+        Order = 1 )]
 
     #endregion
 
@@ -212,6 +212,8 @@ namespace Rock.Blocks.Core
                 ProviderTemplateKey = entity.ProviderTemplateKey,
                 SignatureInputTypes = GetSignatureInputTypes(),
                 SignatureType = entity.SignatureType.ConvertToStringSafe(),
+                IsValidInFuture = entity.IsValidInFuture,
+                ValidityDurationInDays = entity.ValidityDurationInDays,
             };
         }
 
@@ -321,6 +323,12 @@ namespace Rock.Blocks.Core
                     entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
+            box.IfValidProperty( nameof( box.Entity.IsValidInFuture ),
+                    () => entity.IsValidInFuture = box.Entity.IsValidInFuture );
+
+            box.IfValidProperty( nameof( box.Entity.ValidityDurationInDays ),
+                    () => entity.ValidityDurationInDays = box.Entity.ValidityDurationInDays );
+
             return true;
         }
 
@@ -410,7 +418,7 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
-            if ( !entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${SignatureDocumentTemplate.FriendlyTypeName}." );
                 return false;

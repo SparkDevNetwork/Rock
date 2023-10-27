@@ -66,4 +66,11 @@ export type SignatureDocumentTemplateBag = {
 
     /** Gets or sets the type of the signature. */
     signatureType?: string | null;
+
+    /** Gets or sets a value indicating if the signature document made using this template may be kept valid for future use. */
+    isValidInFuture?: boolean | null;
+
+    /** Gets or sets a number of days the signature document made form this template be deemed valid.
+     * This property is honored only if the IsValidInFuture property is set. */
+    validityDurationInDays?: number | null;
 };

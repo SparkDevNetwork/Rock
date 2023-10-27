@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Core
                 hfSignatureDocumentId.SetValue( signatureDocument.Id );
 
                 nbEditModeMessage.Text = string.Empty;
-                bool canEdit = UserCanEdit && signatureDocument.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                bool canEdit = signatureDocument.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 bool canView = canEdit || signatureDocument.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 if ( !canView )
