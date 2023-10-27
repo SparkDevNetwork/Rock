@@ -272,7 +272,7 @@ namespace Rock.Security.Authentication
                     return new SendOneTimePasscodeResult()
                     {
                         IsSuccessful = false,
-                        ErrorMessage = $"{passwordlessSystemCommunication.Title} System Communication is not configured for SMS",
+                        ErrorMessage = "Unable to send confirmation code. Make sure to use a mobile phone that can receive text messages.",
                         State = null
                     };
                 }
