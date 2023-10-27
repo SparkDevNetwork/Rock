@@ -285,10 +285,7 @@
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
     }
-    else if (!config.entity) {
-        blockError.value = "The specified schedule could not be viewed.";
-    }
-    else if (!config.entity.idKey) {
+    else if (config.entity && !config.entity.idKey) {
         scheduleEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }

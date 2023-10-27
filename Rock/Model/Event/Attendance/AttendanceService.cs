@@ -2548,7 +2548,7 @@ namespace Rock.Model
         {
             var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
             var recipientPerson = attendance.ScheduledByPersonAlias?.Person;
-            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+            SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
         }
 
         /// <summary>
@@ -2561,7 +2561,7 @@ namespace Rock.Model
         {
             var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
             var recipientPerson = attendance.Occurrence?.Group?.ScheduleCancellationPersonAlias?.Person;
-            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+            SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
         }
 
         /// <summary>
@@ -2570,7 +2570,8 @@ namespace Rock.Model
         /// <param name="attendance">The attendance.</param>
         /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
         /// <param name="recipientPerson">The recipient person.</param>
-        private void SendSendScheduledPersonResponseEmail( Attendance attendance, Guid? schedulingResponseEmailGuid, Person recipientPerson )
+        [RockInternal( "1.16.1" )]
+        public void SendScheduledPersonResponseEmail( Attendance attendance, Guid? schedulingResponseEmailGuid, Person recipientPerson )
         {
             if ( !schedulingResponseEmailGuid.HasValue )
             {
