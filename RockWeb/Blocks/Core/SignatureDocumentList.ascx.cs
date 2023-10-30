@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Core
 
             if ( document != null )
             {
-                if ( !UserCanEdit && !document.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                if ( !document.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
                     mdGridWarningValues.Show( "Sorry, you're not authorized to delete this signature document.", ModalAlertType.Alert );
                     return;
@@ -153,6 +153,10 @@ namespace RockWeb.Blocks.Core
                     mdGridWarningValues.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
+
+                // delete the binary file associated with the Signature Document
+                var binaryFileService = new BinaryFileService( rockContext );
+                binaryFileService.Delete( document.BinaryFile );
 
                 signatureDocumentService.Delete( document );
                 rockContext.SaveChanges();
@@ -199,7 +203,7 @@ namespace RockWeb.Blocks.Core
                     var signatureDocumentTemplate = signatureDocumentTemplateService.Get( documentTypeId.Value );
 
                     // Following the same logic as the Signature Document Detail to hide the Block if the Current Person is not authorized to view.
-                    bool canEdit = UserCanEdit && signatureDocumentTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                    bool canEdit = signatureDocumentTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
                     bool canView = canEdit || signatureDocumentTemplate.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                     if ( !canView )

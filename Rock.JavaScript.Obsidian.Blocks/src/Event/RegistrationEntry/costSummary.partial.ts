@@ -217,6 +217,10 @@ export default defineComponent({
 
             return rules;
         },
+
+        amountColumnClass(): string {
+            return this.hasDiscount ? "col-sm-3 fee-value" : "col-sm-6 fee-value";
+        }
     },
     methods: {
         /** Retrieve the line item costs from the server */
@@ -263,7 +267,7 @@ export default defineComponent({
             <div v-if="hasDiscount" class="col-sm-3 fee-value">
                 <strong>Discounted Amount</strong>
             </div>
-            <div class="col-sm-3 fee-value">
+            <div :class="amountColumnClass">
                 <strong>Amount</strong>
             </div>
         </div>
@@ -276,7 +280,7 @@ export default defineComponent({
                 <span class="visible-xs-inline">Discounted Amount:</span>
                 $ {{lineItem.discountedAmountFormatted}}
             </div>
-            <div class="col-sm-3 fee-value">
+            <div :class="amountColumnClass">
                 <span class="visible-xs-inline">Amount:</span>
                 $ {{lineItem.amountFormatted}}
             </div>
@@ -289,7 +293,7 @@ export default defineComponent({
                 <span class="visible-xs-inline">Discounted Amount:</span>
                 {{discountedTotalFormatted}}
             </div>
-            <div class="col-sm-3 fee-value">
+            <div :class="amountColumnClass">
                 <span class="visible-xs-inline">Amount:</span>
                 {{totalFormatted}}
             </div>

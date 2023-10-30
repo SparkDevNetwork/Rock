@@ -307,7 +307,7 @@ namespace Rock.Blocks.Core
                 Text = note.Text,
                 AnchorId = note.NoteAnchorId,
                 IsAlert = note.IsAlert ?? false,
-                IsPinned = note.IsPinned ?? false,
+                IsPinned = note.IsPinned,
                 IsPrivate = note.IsPrivateNote,
                 IsWatching = noteType.AllowsWatching && watchedNoteIds.Contains( note.Id ),
                 IsEditable = note.IsAuthorized( Authorization.EDIT, currentPerson ),
@@ -452,7 +452,7 @@ namespace Rock.Blocks.Core
                     Text = note.Text,
                     IsAlert = note.IsAlert ?? false,
                     IsPrivate = note.IsPrivateNote,
-                    IsPinned = note.IsPinned ?? false,
+                    IsPinned = note.IsPinned,
                     CreatedDateTime = note.CreatedDateTime?.ToRockDateTimeOffset(),
                     AttributeValues = note.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
                 };
