@@ -85,6 +85,11 @@ export default defineComponent({
         showLastNameFirst: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        showAsLink: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
     }
 });
