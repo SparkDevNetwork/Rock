@@ -31,4 +31,6 @@ export type Row = {
     adaptations: number;
 
     views: number;
+
+    description: string;
 };

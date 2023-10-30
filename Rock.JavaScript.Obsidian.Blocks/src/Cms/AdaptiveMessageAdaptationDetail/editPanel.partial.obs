@@ -23,7 +23,7 @@
                 <NumberBox v-model="viewSaturationCount" label="View Saturation Count" help="The number of times a person should view the message before it's deemed to have been saturated." />
             </div>
             <div class="col-md-3">
-                <NumberBox v-model="viewSaturationInDays" label="View Saturation in Days" help="Specify the number of days to be taken into consideration for the saturation calculation of views. Views outside this range will not be considered.">
+                <NumberBox v-model="viewSaturationInDays" label="View Saturation Date Range" help="Specify the number of days to be taken into consideration for the saturation calculation of views. Views outside this range will not be considered.">
                     <template #inputGroupAppend>
                         <span class="input-group-addon">days</span>
                     </template>
@@ -43,7 +43,9 @@
             </div>
         </div>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="1" />
+        <SectionHeader title="Message Content"
+                       description="The items below represent different forms of content that can the associated with the message." />
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="1" :showCategoryLabel="false" />
     </fieldset>
 </template>
 
@@ -54,6 +56,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AdaptiveMessageAdaptationBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationBag";

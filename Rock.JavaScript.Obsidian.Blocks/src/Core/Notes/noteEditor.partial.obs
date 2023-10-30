@@ -239,8 +239,17 @@
      * Contains the {@link ListItemBag} objects that represent the note types
      * to be displayed in the drop down list.
      */
-    const noteTypeItems = computed((): ListItemBag[] => {
+    const selectableNoteTypes = computed((): NoteTypeBag[] => {
         return props.noteTypes
+            .filter(nt => nt.userSelectable);
+    });
+
+    /**
+     * Contains the {@link ListItemBag} objects that represent the note types
+     * to be displayed in the drop down list.
+     */
+    const noteTypeItems = computed((): ListItemBag[] => {
+        return selectableNoteTypes.value
             .map(nt => {
                 return {
                     value: nt.idKey,
@@ -254,7 +263,7 @@
      * be determined which one is selected.
      */
     const selectedNoteType = computed((): NoteTypeBag | undefined => {
-        return props.noteTypes.find(nt => nt.idKey === noteTypeIdKey.value);
+        return selectableNoteTypes.value.find(nt => nt.idKey === noteTypeIdKey.value);
     });
 
     /** Determines if the currently selected note type supports mentions. */
@@ -264,7 +273,7 @@
 
     /** The default note type to select. */
     const defaultNoteTypeIdKey = computed((): string => {
-        return props.noteTypes.length > 0 ? props.noteTypes[0].idKey ?? "" : "";
+        return selectableNoteTypes.value.length > 0 ? selectableNoteTypes.value[0].idKey ?? "" : "";
     });
 
     // #endregion
