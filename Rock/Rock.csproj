@@ -1162,6 +1162,7 @@
     <Compile Include="Net\BrowserCookie.cs" />
     <Compile Include="Net\IRockResponseContext.cs" />
     <Compile Include="Net\NullRockResponseContext.cs" />
+    <Compile Include="Net\RockRequestContextAccessor.cs" />
     <Compile Include="Net\RockResponseContext.WebForms.cs" />
     <Compile Include="Observability\ObservabilityHelper.cs" />
     <Compile Include="Observability\RockActivitySource.cs" />

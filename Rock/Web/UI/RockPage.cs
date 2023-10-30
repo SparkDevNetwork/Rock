@@ -776,6 +776,7 @@ namespace Rock.Web.UI
             var stopwatchInitEvents = Stopwatch.StartNew();
 
             RequestContext = new RockRequestContext( Request, new RockResponseContext( this ) );
+            RockRequestContextAccessor.RequestContext = RequestContext;
 
             if ( _pageCache != null )
             {
@@ -2427,6 +2428,15 @@ Sys.Application.add_load(function () {
                     ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-view-state-size", script, true );
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            base.Render( writer );
+
+            // The page is rendered, so nothing else should be touching the context.
+            RockRequestContextAccessor.RequestContext = null;
         }
 
         /// <summary>

@@ -61,20 +61,20 @@ namespace Rock.Rest
         /// The rock request context that describes the current request
         /// being made.
         /// </value>
-        public RockRequestContext RockRequestContext => _rockRequestContext.Value;
-        private Lazy<RockRequestContext> _rockRequestContext;
+        public RockRequestContext RockRequestContext { get; private set; }
 
         /// <inheritdoc/>
         public override async Task<HttpResponseMessage> ExecuteAsync( HttpControllerContext controllerContext, CancellationToken cancellationToken )
         {
-            // Initialize as lazy since very few API calls use this yet. Once
-            // it becomes more common the lazy part can be removed.
             var responseContext = new RockMessageResponseContext();
-            _rockRequestContext = new Lazy<RockRequestContext>( () => new RockRequestContext( new HttpRequestMessageWrapper( controllerContext.Request ), responseContext ) );
+            RockRequestContext = new RockRequestContext( new HttpRequestMessageWrapper( controllerContext.Request ), responseContext );
+            RockRequestContextAccessor.RequestContext = RockRequestContext;
 
             var responseMessage = await base.ExecuteAsync( controllerContext, cancellationToken );
 
             responseContext.Update( responseMessage );
+
+            RockRequestContextAccessor.RequestContext = null;
 
             return responseMessage;
         }

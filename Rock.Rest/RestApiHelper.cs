@@ -129,10 +129,8 @@ namespace Rock.Rest
 
                 using ( var rockContext = new RockContext() )
                 {
-                    new Service<TEntity>( rockContext ).Add( entity );
-
-                    // TODO: Do something with this.
-                    // System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
+                    var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
+                    service.Add( entity );
 
                     rockContext.SaveChanges();
                 }
@@ -244,9 +242,6 @@ namespace Rock.Rest
 
                         return BadRequest( errorMessage );
                     }
-
-                    // TODO: Do something with this.
-                    // System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
                     rockContext.SaveChanges();
 
@@ -410,9 +405,6 @@ namespace Rock.Rest
 
                         return BadRequest( errorMessage );
                     }
-
-                    // TODO: Do something with this.
-                    // System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
                     rockContext.SaveChanges();
 
