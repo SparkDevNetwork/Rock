@@ -57,7 +57,6 @@
                             </a>
 
                             <a v-else-if="row.confirmationStatus === ToolboxScheduleRowConfirmationStatus.Declined"
-                               class="text-success"
                                href="#"
                                @click.prevent="onPerformAction(ToolboxScheduleRowActionType.Accept)">
                                 Accept Schedule
@@ -109,6 +108,7 @@
     import { computed, inject, PropType, ref } from "vue";
     import DeclineReason from "./declineReason.partial.obs";
     import { SelectedPersonGuid } from "./types.partial";
+    import { formatToolboxDate } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -122,7 +122,6 @@
         ToolboxScheduleRowConfirmationStatusDescription
     } from "@Obsidian/Enums/Blocks/Group/Scheduling/toolboxScheduleRowConfirmationStatus";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -165,19 +164,22 @@
     });
 
     const scheduleDate = computed((): string => {
-        const startDate = RockDateTime.parseISO(props.row.occurrenceStartDate ?? "");
-        if (!startDate) {
+        if (!props.row.occurrenceStartDate) {
             return "";
         }
 
-        const startDateLocaleString = startDate.toLocaleString(DateTimeFormat.DateShort);
+        const startDate = formatToolboxDate(props.row.occurrenceStartDate);
 
-        const endDate = RockDateTime.parseISO(props.row.occurrenceEndDate ?? "");
-        if (!endDate) {
-            return startDateLocaleString;
+        let endDate: string = "";
+        if (props.row.occurrenceEndDate) {
+            endDate = formatToolboxDate(props.row.occurrenceEndDate);
         }
 
-        return `${startDateLocaleString} - ${endDate.toLocaleString(DateTimeFormat.DateShort)}`;
+        if (!endDate) {
+            return startDate;
+        }
+
+        return `${startDate} - ${endDate}`;
     });
 
     const cardDetails = computed((): string => {

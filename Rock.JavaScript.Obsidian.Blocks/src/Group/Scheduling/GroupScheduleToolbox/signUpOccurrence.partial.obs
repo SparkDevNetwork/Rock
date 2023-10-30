@@ -45,9 +45,13 @@
     }
 }
 
-.schedule-toolbox-sign-up-occurrence-check.not-signed-up {
-    color: transparent !important;
-    transition: color .15s linear;
+.schedule-toolbox-sign-up-occurrence-check {
+    transition: color 0s linear;
+
+    &.not-signed-up {
+        color: transparent !important;
+        transition: color 1s linear;
+    }
 }
 </style>
 
@@ -98,17 +102,15 @@
     const isSavingSignUp = ref(false);
     const saveSignUpErrorMessage = inject(SaveSignUpErrorMessage, ref(""));
 
-    const isGreenBackgroundVisible = ref(false);
-    let backgroundTimeoutID: NodeJS.Timeout;
-
-    const isGreenCheckVisible = ref(false);
+    const areSuccessStylesVisible = ref(false);
+    let successStylesTimeoutID: NodeJS.Timeout;
 
     // #endregion Values
 
     // #region Computed Values
 
     const occurrenceCssClass = computed((): string => {
-        return `d-flex align-items-center schedule-toolbox-sign-up-occurrence${isGreenBackgroundVisible.value ? " sign-up-save-success" : ""}`;
+        return `d-flex align-items-center schedule-toolbox-sign-up-occurrence${areSuccessStylesVisible.value ? " sign-up-save-success" : ""}`;
     });
 
     const text = computed((): string => {
@@ -144,7 +146,7 @@
     });
 
     const checkCssClass = computed((): string => {
-        return `text-success schedule-toolbox-sign-up-occurrence-check${!isGreenCheckVisible.value ? " not-signed-up" : ""}`;
+        return `text-success schedule-toolbox-sign-up-occurrence-check${!areSuccessStylesVisible.value ? " not-signed-up" : ""}`;
     });
 
     // #endregion Computed Values
@@ -177,7 +179,7 @@
             return;
         }
 
-        clearTimeout(backgroundTimeoutID);
+        clearTimeout(successStylesTimeoutID);
 
         isSavingSignUp.value = true;
         saveSignUpErrorMessage.value = "";
@@ -210,10 +212,8 @@
         oldIsChecked = isChecked.value;
         oldSelectedLocationGuid = selectedLocationGuid.value;
 
-        isGreenBackgroundVisible.value = true;
-        backgroundTimeoutID = setTimeout(() => isGreenBackgroundVisible.value = false, 1000);
-
-        isGreenCheckVisible.value = isChecked.value;
+        areSuccessStylesVisible.value = true;
+        successStylesTimeoutID = setTimeout(() => areSuccessStylesVisible.value = false, 1000);
 
         isSavingSignUp.value = false;
     }
