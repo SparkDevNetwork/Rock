@@ -97,7 +97,7 @@
                 <TransitionVerticalCollapse>
                     <div v-if="isAddNoteVisible">
                         <NoteEditor v-model="editNoteBag"
-                                    :noteTypes="noteOptions.selectableNoteTypes"
+                                    :noteTypes="noteOptions.noteTypes"
                                     :showAlert="noteOptions.showAlert"
                                     :showDate="noteOptions.showCreateDate"
                                     :showPrivate="noteOptions.showPrivate"
@@ -114,7 +114,7 @@
         <TransitionVerticalCollapse>
             <div v-if="isEditingNote">
                 <NoteEditor v-model="editNoteBag"
-                            :noteTypes="noteOptions.selectableNoteTypes"
+                            :noteTypes="noteOptions.noteTypes"
                             :showAlert="noteOptions.showAlert"
                             :showDate="noteOptions.showCreateDate"
                             :showPrivate="noteOptions.showPrivate"
