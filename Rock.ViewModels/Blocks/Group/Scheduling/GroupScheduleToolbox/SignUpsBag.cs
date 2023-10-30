@@ -35,11 +35,6 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox
         public GroupBag SelectedGroup { get; set; }
 
         /// <summary>
-        /// Gets or sets the instructions HTML.
-        /// </summary>
-        public string InstructionsHtml { get; set; }
-
-        /// <summary>
         /// Gets or sets the selected person's additional time sign-up occurrences for the selected group.
         /// </summary>
         public List<SignUpOccurrenceBag> Occurrences { get; set; }

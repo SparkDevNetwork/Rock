@@ -92,30 +92,19 @@ namespace Rock.Blocks.Group.Scheduling
         Order = 4,
         IsRequired = false )]
 
-    [CodeEditorField( "Additional Time Sign-Up Instructions",
-        Key = AttributeKey.AdditionalTimeSignUpInstructions,
-        Description = "Instructions to show within each group tab of the Additional Time Sign-Up panel. <span class='tip tip-lava'></span>",
-        EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
-        EditorHeight = 200,
-        DefaultValue = AttributeDefault.SignUpInstructionsLavaTemplate,
-        Category = AttributeCategory.AdditionalTimeSignUp,
-        Order = 5,
-        IsRequired = true )]
-
     [BooleanField( "Require Location for Additional Time Sign-Up",
         Key = AttributeKey.AdditionalTimeSignUpRequireLocation,
         Description = "When enabled, a location will be required when signing up for additional times.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.AdditionalTimeSignUp,
-        Order = 6,
+        Order = 5,
         IsRequired = false )]
 
     [SchedulesField( "Additional Time Sign-Up Schedule Exclusions",
         Key = AttributeKey.AdditionalTimeSignUpScheduleExclusions,
         Description = "Select named schedules that you would like to exclude from all groups on the Additional Time Sign-Up panel.",
         Category = AttributeCategory.AdditionalTimeSignUp,
-        Order = 7,
+        Order = 6,
         IsRequired = false )]
 
     [BooleanField( "Enable Immediate Needs",
@@ -123,7 +112,7 @@ namespace Rock.Blocks.Group.Scheduling
         Description = "When enabled, upcoming opportunities that still need individuals will be highlighted.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.AdditionalTimeSignUp,
-        Order = 8,
+        Order = 7,
         IsRequired = false )]
 
     [TextField( "Immediate Need Title",
@@ -131,7 +120,7 @@ namespace Rock.Blocks.Group.Scheduling
         Description = "The title to use for the Immediate Need panel.",
         DefaultValue = "Immediate Needs",
         Category = AttributeCategory.AdditionalTimeSignUp,
-        Order = 9,
+        Order = 8,
         IsRequired = false )]
 
     [MemoField( "Immediate Need Introduction",
@@ -139,7 +128,7 @@ namespace Rock.Blocks.Group.Scheduling
         Description = "The introductory text to show above the Immediate Need panel.",
         DefaultValue = "This group has an immediate need for volunteers. If you're able to assist we would greatly appreciate your help.",
         Category = AttributeCategory.AdditionalTimeSignUp,
-        Order = 10,
+        Order = 9,
         IsRequired = false )]
 
     [IntegerField( "Immediate Need Window (Hours)",
@@ -147,7 +136,7 @@ namespace Rock.Blocks.Group.Scheduling
         Description = "The hour range to determine which schedules are in the immediate window. This works with the cutoff setting so ensure that you reduce the cutoff setting to include schedules you will want shown in the Immediate Need panel.",
         DefaultIntegerValue = 0,
         Category = AttributeCategory.AdditionalTimeSignUp,
-        Order = 11,
+        Order = 10,
         IsRequired = false )]
 
     #endregion Additional Time Sign-Up
@@ -329,7 +318,6 @@ namespace Rock.Blocks.Group.Scheduling
             public const string AdditionalTimeSignUpButtonText = "AdditionalTimeSignUpButtonText";
             public const string AdditionalTimeSignUpHeader = "SignupforAdditionalTimesHeader";
             public const string AdditionalTimeSignUpDateRange = "FutureWeekDateRange";
-            public const string AdditionalTimeSignUpInstructions = "SignupInstructions";
             public const string AdditionalTimeSignUpRequireLocation = "RequireLocationForAdditionalSignups";
             public const string AdditionalTimeSignUpScheduleExclusions = "AdditionalTimeSignUpScheduleExclusions";
             public const string AdditionalTimeSignUpCutoffTime = "AdditionalTimeSignUpCutoffTime";
@@ -376,23 +364,6 @@ namespace Rock.Blocks.Group.Scheduling
 
         private static class AttributeDefault
         {
-            public const string SignUpInstructionsLavaTemplate = @"{% comment %}
-Available Lava Fields:
-    + IsSchedulesAvailable (whether or not there are any schedules available for sign up)
-    + Person (the selected Person)
-{% endcomment %}
-<div class=""alert alert-info"">
-    {% if IsSchedulesAvailable %}
-        {% if CurrentPerson.Id == Person.Id %}
-            Sign up to attend a group and location on a given date.
-        {% else %}
-            Sign up {{ Person.FullName }} to attend a group and location on a given date.
-        {% endif %}
-    {% else %}
-        No sign-ups available.
-    {% endif %}
-</div>";
-
             public const string ActionHeaderLavaTemplate = "<h4>Actions</h4>";
         }
 
@@ -1425,6 +1396,15 @@ Available Lava Fields:
                 return;
             }
 
+            var today = RockDateTime.Today;
+            var startDate = bag.StartDate.Value.LocalDateTime;
+            var endDate = bag.EndDate.Value.LocalDateTime;
+            if ( startDate < today && endDate < today )
+            {
+                errorMessage = "Please enter a current or future date range.";
+                return;
+            }
+
             var config = new GetToolboxDataConfig
             {
                 SelectedPersonGuidOverride = bag.SelectedPersonGuid,
@@ -1463,8 +1443,8 @@ Available Lava Fields:
                 var personScheduleExclusion = new PersonScheduleExclusion
                 {
                     PersonAliasId = personAliasId,
-                    StartDate = bag.StartDate.Value.LocalDateTime,
-                    EndDate = bag.EndDate.Value.LocalDateTime,
+                    StartDate = startDate,
+                    EndDate = endDate,
                     GroupId = groupId,
                     Title = bag.Notes,
                     ParentPersonScheduleExclusionId = parentId
@@ -2141,11 +2121,6 @@ Available Lava Fields:
             response.signUps.Occurrences = occurrences;
             response.scheduleIdsByGuid = scheduleIdsByGuid;
             response.locationIdsByGuid = locationIdsByGuid;
-
-            var mergeFields = this.RequestContext.GetCommonMergeFields();
-            mergeFields.Add( "IsSchedulesAvailable", response.signUps.Occurrences?.Any() == true );
-            mergeFields.Add( "Person", toolboxData.SelectedPerson );
-            response.signUps.InstructionsHtml = GetAttributeValue( AttributeKey.AdditionalTimeSignUpInstructions ).ResolveMergeFields( mergeFields );
 
             return response;
         }
