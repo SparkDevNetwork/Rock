@@ -24,7 +24,6 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageShortLinkClickList;
-using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
 {
@@ -41,7 +40,7 @@ namespace Rock.Blocks.Cms
     [Rock.SystemGuid.EntityTypeGuid( "aa860dc7-d590-4d0e-bbb3-16990f2cd680" )]
     [Rock.SystemGuid.BlockTypeGuid( "e44cac85-346f-41a4-884b-a6fb5fc64de1" )]
     [CustomizedGrid]
-    public class PageShortLinkClick : RockListBlockType<PageShortLinkClickList>
+    public class PageShortLinkClickList : RockListBlockType<PageShortLinkClick>
     {
         #region Methods
 
@@ -70,12 +69,12 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<PageShortLinkClickList> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<PageShortLinkClick> GetListQueryable( RockContext rockContext )
         {
             int shortLinkId = RequestContext?.PageParameters?["ShortLinkId"]?.AsInteger() ?? 0;
             if ( shortLinkId == 0 )
             {
-                return Enumerable.Empty<PageShortLinkClickList>().AsQueryable();
+                return Enumerable.Empty<PageShortLinkClick>().AsQueryable();
             }
 
             var interactions = new InteractionService( rockContext )
@@ -85,7 +84,7 @@ namespace Rock.Blocks.Cms
                 .Where( i => i.InteractionComponent.EntityId == shortLinkId && i.PersonAlias != null )
                 .ToList();
 
-            var result = interactions.Select( i => new PageShortLinkClickList
+            var result = interactions.Select( i => new PageShortLinkClick
             {
                 PageShortLinkId = shortLinkId,
                 PersonAlias = i.PersonAlias,
@@ -102,9 +101,9 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<PageShortLinkClickList> GetGridBuilder()
+        protected override GridBuilder<PageShortLinkClick> GetGridBuilder()
         {
-            return new GridBuilder<PageShortLinkClickList>()
+            return new GridBuilder<PageShortLinkClick>()
                 .WithBlock( this )
                 .AddField( "id", a => a.PageShortLinkId )
                 .AddField( "interactionDateTime", a => a.InteractionDateTime )

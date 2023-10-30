@@ -29,7 +29,7 @@ namespace Rock.Model
     [RockDomain("CMS")]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid("339EA577-0532-4402-A78C-F4D4267AECBF")]
-    public class PageShortLinkClickList
+    public class PageShortLinkClick
     {
         #region Entity Properties
 

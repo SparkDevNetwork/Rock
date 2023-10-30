@@ -1,6 +1,7 @@
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
+          :entityTypeGuid="EntityType.PageShortLinkClick"
           keyField="id"
           itemTerm="Clicks"
           stickyHeader
@@ -53,6 +54,7 @@
     import { PageShortLinkClickListBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkClickList/pageShortLinkClickListBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { reactive, ref } from "vue";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
     const config = useConfigurationValues<ListBlockBox<PageShortLinkClickListBag>>();
     const invokeBlockAction = useInvokeBlockAction();
