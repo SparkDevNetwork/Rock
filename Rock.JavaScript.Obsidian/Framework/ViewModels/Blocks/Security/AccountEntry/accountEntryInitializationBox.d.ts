@@ -21,11 +21,15 @@
 // </copyright>
 //
 
+import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
 import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
 import { AccountEntryRegisterResponseBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterResponseBox";
 
 /** A box that contains the required information to render an account entry block. */
 export type AccountEntryInitializationBox = {
+    /** Gets or sets the person details if there is an identified user. */
+    accountEntryPersonInfoBag?: AccountEntryPersonInfoBag | null;
+
     /** Gets or sets the account entry step box. */
     accountEntryRegisterStepBox?: AccountEntryRegisterResponseBox | null;
 

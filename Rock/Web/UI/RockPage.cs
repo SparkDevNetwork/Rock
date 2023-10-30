@@ -2212,7 +2212,20 @@ Obsidian.onReady(() => {{
             {
                 Authorization.SignOut();
                 UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
-                Rock.Security.Authorization.SetAuthCookie( impersonatedByUser.UserName, false, false );
+
+                /*
+                    10/23/2023 - JMH
+
+                    Bypass two-factor authentication when restoring the "impersonated by" user's session;
+                    otherwise, they would have to use two-factor authentication again.
+
+                    Reason: Two-Factor Authentication
+                 */
+                Rock.Security.Authorization.SetAuthCookie(
+                    impersonatedByUser.UserName,
+                    isPersisted: false,
+                    isImpersonated: false,
+                    isTwoFactorAuthenticated: true );
                 Response.Redirect( PageReference.BuildUrl( true ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }

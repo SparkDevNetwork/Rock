@@ -286,7 +286,7 @@ export const EditComponent = defineComponent({
         name="definedvalue"
         #default="{uniqueId}"
         :rules="computedRules">
-        <div :id="uniqueId" class="form-control-group">
+        <div :id="uniqueId">
         <template v-if="allowAdd && isShowingAddForm">
         <RockLabel :help="help">{{ label }}</RockLabel>
         <Loading :isLoading="isLoading" class="well">

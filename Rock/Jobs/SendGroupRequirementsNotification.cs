@@ -35,14 +35,52 @@ namespace Rock.Jobs
     [DisplayName( "Send Group Requirements Notification" )]
     [Description( "This job sends out reminders to group leaders when group members do not meet all requirements." )]
 
-    [SystemCommunicationField( "Notification Email Template", required: true, order: 0 )]
-    [GroupTypesField( "Group Types", "Group types use to check the group requirements on.", order: 1 )]
-    [EnumField( "Notify Parent Leaders", "", typeof( NotificationOption ), true, "None", order: 2 )]
-    [GroupField( "Accountability Group", "Optional group that will receive a list of all group members that do not meet requirements.", false, order: 3 )]
+    #region Attributes
+
+    [SystemCommunicationField( "Notification Email Template",
+        Description = "The system communication to use for the Group Requirements Notification.",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.NotificationEmailTemplate )]
+    [GroupTypesField( "Group Types",
+        Key = AttributeKey.GroupTypes,
+        Description = "Group types use to check the group requirements on.",
+        Order = 1 )]
+    [EnumField( "Notify Parent Group's Notification-Roles",
+        Key = AttributeKey.NotifyParentGroups,
+        Description = "Depending on the setting, members of the parent groups whose role has 'Receive Requirements Notifications' enabled will also be notified.",
+        EnumSourceType = typeof( NotificationOption ),
+        IsRequired = true,
+        DefaultEnumValue = ( int ) NotificationOption.None,
+        Order = 2 )]
+    [GroupField( "Accountability Group",
+        Key = AttributeKey.AccountabilityGroup,
+        Description = "Optional group that will receive a list of all group members that do not meet requirements.",
+        IsRequired = false,
+        Order = 3 )]
+
+    #endregion
+
     public class SendGroupRequirementsNotification : RockJob
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string NotificationEmailTemplate = "NotificationEmailTemplate";
+            public const string GroupTypes = "GroupTypes";
+            public const string NotifyParentGroups = "NotifyParentLeaders";
+            public const string AccountabilityGroup = "AccountabilityGroup";
+        }
+
+        #endregion Attribute Keys
+
+        #region Fields
+
         List<NotificationItem> _notificationList = new List<NotificationItem>();
         List<GroupsMissingRequirements> _groupsMissingRequirements = new List<GroupsMissingRequirements>();
+
+        #endregion
 
         /// <summary> 
         /// Empty constructor for job initialization
@@ -58,7 +96,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-            Guid? systemEmailGuid = GetAttributeValue( "NotificationEmailTemplate" ).AsGuidOrNull();
+            Guid? systemEmailGuid = GetAttributeValue( AttributeKey.NotificationEmailTemplate ).AsGuidOrNull();
             if ( !systemEmailGuid.HasValue )
             {
                 this.Result = "Warning: No NotificationEmailTemplate found";
@@ -69,13 +107,13 @@ namespace Rock.Jobs
             var rockContext = new RockContext();
             var selectedGroupTypes = new List<Guid>();
 
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "GroupTypes" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.GroupTypes ) ) )
             {
-                selectedGroupTypes = GetAttributeValue( "GroupTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
+                selectedGroupTypes = GetAttributeValue( AttributeKey.GroupTypes ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
 
-            var notificationOption = GetAttributeValue( "NotifyParentLeaders" ).ConvertToEnum<NotificationOption>( NotificationOption.None );
-            var accountAbilityGroupGuid = GetAttributeValue( "AccountabilityGroup" ).AsGuid();
+            var notificationOption = GetAttributeValue( AttributeKey.NotifyParentGroups ).ConvertToEnum<NotificationOption>( NotificationOption.None );
+            var accountAbilityGroupGuid = GetAttributeValue( AttributeKey.AccountabilityGroup ).AsGuid();
 
             var groupRequirementsQry = new GroupRequirementService( rockContext ).Queryable();
 
@@ -259,7 +297,8 @@ namespace Rock.Jobs
             if ( !accountAbilityGroupGuid.IsEmpty() )
             {
                 var accountabilityGroupMembers = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                                                    .Where( m => m.Group.Guid == accountAbilityGroupGuid )
+                                                    .Where( m => m.Group.Guid == accountAbilityGroupGuid
+                                                        && m.GroupMemberStatus == GroupMemberStatus.Active )
                                                     .Select( m => m.Person );
 
                 var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
@@ -271,9 +310,13 @@ namespace Rock.Jobs
                     emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                     recipients++;
                 }
-                var emailErrors = new List<string>();
-                emailMessage.Send( out emailErrors );
-                errors.AddRange( emailErrors );
+
+                if ( accountabilityGroupMembers != null && accountabilityGroupMembers.Count() > 0 )
+                { 
+                    var emailErrors = new List<string>();
+                    emailMessage.Send( out emailErrors );
+                    errors.AddRange( emailErrors );
+                }
             }
 
             this.Result = string.Format( "{0} requirement notification {1} sent", recipients, "email".PluralizeIf( recipients != 1 ) );

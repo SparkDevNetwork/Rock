@@ -188,12 +188,14 @@ namespace Rock.Blocks.Core
                 if ( GetAttributeValue( AttributeKey.DisplayOrder ) == "Descending" )
                 {
                     notes = notes.OrderByDescending( n => n.IsAlert == true )
+                        .ThenByDescending( n => n.IsPinned == true )
                         .ThenByDescending( n => n.CreatedDateTime )
                         .ToList();
                 }
                 else
                 {
                     notes = notes.OrderByDescending( n => n.IsAlert == true )
+                        .ThenByDescending( n => n.IsPinned == true )
                         .ThenBy( n => n.CreatedDateTime )
                         .ToList();
                 }
@@ -305,6 +307,7 @@ namespace Rock.Blocks.Core
                 Text = note.Text,
                 AnchorId = note.NoteAnchorId,
                 IsAlert = note.IsAlert ?? false,
+                IsPinned = note.IsPinned ?? false,
                 IsPrivate = note.IsPrivateNote,
                 IsWatching = noteType.AllowsWatching && watchedNoteIds.Contains( note.Id ),
                 IsEditable = note.IsAuthorized( Authorization.EDIT, currentPerson ),
@@ -449,6 +452,7 @@ namespace Rock.Blocks.Core
                     Text = note.Text,
                     IsAlert = note.IsAlert ?? false,
                     IsPrivate = note.IsPrivateNote,
+                    IsPinned = note.IsPinned ?? false,
                     CreatedDateTime = note.CreatedDateTime?.ToRockDateTimeOffset(),
                     AttributeValues = note.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
                 };
@@ -566,6 +570,11 @@ namespace Rock.Blocks.Core
                     note.IsPrivateNote = request.Bag.IsPrivate;
 
                     note.UpdateCaption();
+                } );
+
+                request.IfValidProperty( nameof( request.Bag.IsPinned ), () =>
+                {
+                    note.IsPinned = request.Bag.IsPinned;
                 } );
 
                 if ( GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean() )

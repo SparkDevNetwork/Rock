@@ -195,7 +195,19 @@ namespace RockWeb.Blocks.Core
                 int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
                 if ( documentTypeId.HasValue )
                 {
-                    var isLegacyTemplate = new SignatureDocumentTemplateService( new RockContext() ).GetSelect( documentTypeId.Value, s => s.ProviderEntityTypeId.HasValue );
+                    var signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );
+                    var signatureDocumentTemplate = signatureDocumentTemplateService.Get( documentTypeId.Value );
+
+                    // Following the same logic as the Signature Document Detail to hide the Block if the Current Person is not authorized to view.
+                    bool canEdit = UserCanEdit && signatureDocumentTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                    bool canView = canEdit || signatureDocumentTemplate.IsAuthorized( Authorization.VIEW, CurrentPerson );
+
+                    if ( !canView )
+                    {
+                        pnlContent.Visible = false;
+                    }
+
+                    var isLegacyTemplate = signatureDocumentTemplateService.GetSelect( documentTypeId.Value, s => s.ProviderEntityTypeId.HasValue );
                     gSignatureDocuments.Actions.ShowAdd = isLegacyTemplate;
 
                     qry = qry.Where( d =>
@@ -229,7 +241,7 @@ namespace RockWeb.Blocks.Core
                 d.SignedDateTime,
                 d.SignatureDocumentTemplate,
                 FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "",
-                FileId = d.BinaryFileId ?? 0
+                FileGuid = d.BinaryFile.Guid,
             } ).ToList();
 
             gSignatureDocuments.DataBind();

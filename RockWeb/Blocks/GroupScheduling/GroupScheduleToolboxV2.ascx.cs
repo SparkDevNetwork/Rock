@@ -1142,7 +1142,7 @@ $('#{0}').tooltip();
 
             if ( groupScheduleRowInfo.PersonAlias != null && groupScheduleRowInfo.PersonAlias.Person != null && groupScheduleRowInfo.PersonAlias.PersonId != this.SelectedPersonId )
             {
-                occurenceDetail = $"{groupScheduleRowInfo.PersonAlias.Person.FullName} - ";
+                occurenceDetail += $"{groupScheduleRowInfo.PersonAlias.Person.FullName} - ";
             }
 
             if ( groupScheduleRowInfo.Group != null )

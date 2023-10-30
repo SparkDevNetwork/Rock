@@ -45,6 +45,36 @@ namespace Rock.Blocks.Finance
         Description = "The page that will show the financial pledge details.",
         Key = AttributeKey.DetailPage )]
 
+    [BooleanField( "Show Accounts Column",
+        Description = "Should the accounts column be displayed.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.ShowAccountsColumn,
+        Order = 2 )]
+
+    [BooleanField( "Show Last Modified Date Column",
+        Description = "Allows the Last Modified Date column to be hidden.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.ShowLastModifiedDateColumn,
+        Order = 2 )]
+
+    [BooleanField( "Show Group Column",
+        Description = "Allows the group column to be hidden.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.ShowGroupColumn,
+        Order = 3 )]
+
+    [BooleanField( "Limit Pledges To Current Person",
+        Description = "Limit the results to pledges for the current person.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.LimitPledgesToCurrentPerson,
+        Order = 4 )]
+
+    [BooleanField( "Show Account Summary",
+        Description = "Should the account summary be displayed at the bottom of the list?",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.ShowAccountSummary,
+        Order = 5 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "8b1663eb-b5cb-4c78-b0c6-ed14e173e4c0" )]
     [Rock.SystemGuid.BlockTypeGuid( "31fb8c39-80bd-4ea9-a1cb-bf6c4667929b" )]
     [CustomizedGrid]
@@ -55,6 +85,12 @@ namespace Rock.Blocks.Finance
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string ShowAccountsColumn = "ShowAccountsColumn";
+            public const string ShowLastModifiedDateColumn = "ShowLastModifiedDateColumn";
+            public const string ShowGroupColumn = "ShowGroupColumn";
+            public const string LimitPledgesToCurrentPerson = "LimitPledgesToCurrentPerson";
+            public const string ShowAccountSummary = "ShowAccountSummary";
+            public const string Accounts = "Accounts";
         }
 
         private static class NavigationUrlKey
@@ -88,8 +124,14 @@ namespace Rock.Blocks.Finance
         /// <returns>The options that provide additional details to the block.</returns>
         private FinancialPledgeListOptionsBag GetBoxOptions()
         {
-            var options = new FinancialPledgeListOptionsBag();
-
+            var options = new FinancialPledgeListOptionsBag()
+            {
+                ShowAccountsColumn = GetAttributeValue(AttributeKey.ShowAccountsColumn).AsBoolean(),
+                ShowLastModifiedDateColumn = GetAttributeValue(AttributeKey.ShowLastModifiedDateColumn).AsBoolean(),
+                ShowGroupColumn = GetAttributeValue(AttributeKey.ShowGroupColumn).AsBoolean(),
+                LimitPledgesToCurrentPerson = GetAttributeValue(AttributeKey.LimitPledgesToCurrentPerson).AsBoolean(),
+                ShowAccountSummary = GetAttributeValue(AttributeKey.ShowAccountSummary).AsBoolean(),
+            };
             return options;
         }
 
@@ -110,17 +152,31 @@ namespace Rock.Blocks.Finance
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "FinancialPledgeId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "PledgeId", "((Key))" )
             };
         }
 
         /// <inheritdoc/>
         protected override IQueryable<FinancialPledge> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext )
-                .Include( a => a.PersonAlias )
-                .Include( a => a.Account )
-                .Include( a => a.PledgeFrequencyValue );
+            var query = base.GetListQueryable( rockContext )
+                    .Include( a => a.PersonAlias )
+                    .Include( a => a.Account )
+                    .Include( a => a.PledgeFrequencyValue )
+                    .Include( a => a.Group );
+
+            /// If the 'LimitPledgesToCurrentPerson' option is enabled, filter by current person
+            if ( GetAttributeValue( AttributeKey.LimitPledgesToCurrentPerson ).AsBoolean() )
+            {
+                var currentPersonId = RequestContext.CurrentPerson?.Id;
+
+                if ( currentPersonId.HasValue )
+                {
+                    query = query.Where(a => a.PersonAlias.PersonId == currentPersonId.Value);
+                }
+            }
+
+            return query;
         }
 
         /// <inheritdoc/>
@@ -129,13 +185,14 @@ namespace Rock.Blocks.Finance
             return new GridBuilder<FinancialPledge>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
+                .AddField( "id", a => a.Id )
                 .AddPersonField( "person", a => a.PersonAlias?.Person )
                 .AddTextField( "account", a => a.Account?.Name )
+                .AddTextField( "group", a => a.Group?.Name ?? "" )
                 .AddField( "totalAmount", a => a.TotalAmount )
                 .AddTextField( "pledgeFrequency", a => a.PledgeFrequencyValue?.Value )
                 .AddField( "startDate", a => a.StartDate )
                 .AddField( "endDate", a => a.EndDate )
-                // Added modified date
                 .AddField( "modifiedDate", a => a.ModifiedDateTime )
                 .AddAttributeFields( GetGridAttributes() );
         }
@@ -190,7 +247,7 @@ namespace Rock.Blocks.Finance
             {
                 var entityService = new FinancialPledgeService( rockContext );
                 var count = entityService.Queryable().Count();
-                return ActionOk(count);
+                return ActionOk( count );
             }
         }
 

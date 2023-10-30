@@ -39,8 +39,8 @@ using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
 using Rock.ViewModels.Utility;
-using Rock.Web.Cache;
 using Rock.Web;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event
 {
@@ -262,7 +262,7 @@ namespace Rock.Blocks.Event
                         }
 
                         // Check if the registration meets the discount's minimum required registrants
-                        if (  discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value )
+                        if ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value )
                         {
                             continue;
                         }
@@ -287,7 +287,7 @@ namespace Rock.Blocks.Event
                     return ActionOk( new
                     {
                         DiscountCode = registration.DiscountCode,
-                        RegistrationUsagesRemaining = (int?) null,
+                        RegistrationUsagesRemaining = ( int? ) null,
                         DiscountAmount = registration.DiscountAmount,
                         DiscountPercentage = registration.DiscountPercentage,
                         DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants.Value
@@ -340,7 +340,7 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
-                if ( PageParameter( PageParameterKey.GroupId).AsIntegerOrNull() == null )
+                if ( PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() == null )
                 {
                     var groupId = GetRegistrationGroupId( rockContext );
                     if ( groupId.HasValue )
@@ -591,7 +591,7 @@ namespace Rock.Blocks.Event
 
                 // Prepare the merge fields.
                 var campusCache = campusId.HasValue ? CampusCache.Get( campusId.Value ) : null;
-               
+
                 var mergeFields = new Dictionary<string, object>
                 {
                     { "Registration", new LavaSignatureRegistration( registrationInstance, groupId, args.Registrants.Count ) },
@@ -765,6 +765,22 @@ namespace Rock.Blocks.Event
             return null;
         }
 
+        /// <inheritdoc/>
+        protected override string GetPlaceholderContent( RockClientType clientType )
+        {
+            if ( clientType == RockClientType.Web )
+            {
+                return @"
+   <div class=""skeleton skeleton-block w-lg mx-auto mb-4""></div>
+   <div class=""skeleton skeleton-heading w-md mx-auto""></div>
+   <div class=""skeleton skeleton-block w-sm mx-auto mt-5""></div>
+   <div class=""skeleton skeleton-button ml-auto""></div>
+";
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Updates or Inserts the session.
         /// </summary>
@@ -854,7 +870,7 @@ namespace Rock.Blocks.Event
             var logCurrentPersonDetails = $"Current Person Name: {this.RequestContext.CurrentPerson?.FullName} (Person ID: {this.RequestContext.CurrentPerson?.Id});";
             var logMsgPrefix = $"Obsidian{( logInstanceOrTemplateName.IsNotNullOrWhiteSpace() ? $@" ""{logInstanceOrTemplateName}""" : string.Empty )} Registration; {logCurrentPersonDetails}{Environment.NewLine}";
 
-            var ( wereFieldsMissing, missingFieldsDetails ) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( context?.RegistrationSettings?.Forms );
+            var (wereFieldsMissing, missingFieldsDetails) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( context?.RegistrationSettings?.Forms );
             if ( wereFieldsMissing )
             {
                 var logMissingFieldsMsg = $"{logMsgPrefix}RegistrationTemplateForm(s) missing Fields data when trying to save Registration.{Environment.NewLine}{missingFieldsDetails}";
@@ -1079,7 +1095,7 @@ namespace Rock.Blocks.Event
             if ( campusId.HasValue )
             {
                 context.Registration.CampusId = campusId;
-                History.EvaluateChange( registrationChanges, "Campus", string.Empty, CampusCache.Get( (int) campusId ).Name );
+                History.EvaluateChange( registrationChanges, "Campus", string.Empty, CampusCache.Get( ( int ) campusId ).Name );
             }
 
             // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
@@ -1629,7 +1645,7 @@ namespace Rock.Blocks.Event
                     }
 
                     return mobilePhone?.Number;
-                    
+
             }
 
             return null;
@@ -1832,7 +1848,7 @@ namespace Rock.Blocks.Event
                 phoneNumber = phoneData.Number;
                 isMessagingEnabled = phoneData.IsMessagingEnabled;
             }
-            else if( fieldValue is string )
+            else if ( fieldValue is string )
             {
                 // Only got the number, so leave IsMessagingEnabled null so it isn't changed
                 phoneNumber = fieldValue.ToStringSafe();
@@ -1842,7 +1858,7 @@ namespace Rock.Blocks.Event
                 // No usable data, just return without doing anything.
                 return;
             }
-            
+
             string cleanNumber = PhoneNumber.CleanNumber( phoneNumber );
             var numberType = DefinedValueCache.Get( phoneTypeGuid );
 
@@ -1873,7 +1889,7 @@ namespace Rock.Blocks.Event
             phone.Number = cleanNumber;
             History.EvaluateChange( changes, $"{numberType.Value} Phone", oldPhoneNumber, phone.NumberFormattedWithCountryCode );
 
-            if( isMessagingEnabled != null )
+            if ( isMessagingEnabled != null )
             {
                 phone.IsMessagingEnabled = isMessagingEnabled.Value;
                 History.EvaluateChange( changes, $"{numberType.Value} IsMessagingEnabled", oldIsMessagingEnabled, phone.IsMessagingEnabled );
@@ -2526,7 +2542,7 @@ namespace Rock.Blocks.Event
                 var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
                 var signedBy = RequestContext.CurrentPerson ?? registrar;
 
-                var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.PersonAlias?.Person?.FullName ?? person.FullName, context.RegistrationSettings.Name);
+                var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.PersonAlias?.Person?.FullName ?? person.FullName, context.RegistrationSettings.Name );
 
                 new SignatureDocumentService( rockContext ).Add( document );
                 rockContext.SaveChanges();
@@ -2562,12 +2578,12 @@ namespace Rock.Blocks.Event
             registrantInfo.PersonGuid = person.Guid;
         }
 
-        private static ( Dictionary<string, AttributeCache>, Dictionary<string, AttributeValueCache> ) GetRegistrantAttributesFromRegistration( ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationTemplate template )
+        private static (Dictionary<string, AttributeCache>, Dictionary<string, AttributeValueCache>) GetRegistrantAttributesFromRegistration( ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationTemplate template )
         {
             var attributes = new Dictionary<string, AttributeCache>();
             var attributeValues = new Dictionary<string, AttributeValueCache>();
             var registrantAttributeFields = template.Forms
-                .SelectMany( f => f.Fields.Where(ff => ff.AttributeId.HasValue && ff.FieldSource == RegistrationFieldSource.RegistrantAttribute ) )
+                .SelectMany( f => f.Fields.Where( ff => ff.AttributeId.HasValue && ff.FieldSource == RegistrationFieldSource.RegistrantAttribute ) )
                 .ToList();
 
             foreach ( var field in registrantAttributeFields )
@@ -2585,7 +2601,7 @@ namespace Rock.Blocks.Event
                 attributeValues.Add( attribute.Key, attributeValue );
             }
 
-            return ( attributes, attributeValues );
+            return (attributes, attributeValues);
         }
 
         /// <summary>
@@ -4338,6 +4354,8 @@ namespace Rock.Blocks.Event
                 }
 
                 signatureDocument.BinaryFile = pdfGenerator.GetAsBinaryFileFromHtml( binaryFileTypeId ?? 0, signatureDocument.Name, signedSignatureDocumentHtml );
+                signatureDocument.BinaryFile.ParentEntityId = signatureDocumentTemplate.Id;
+                signatureDocument.BinaryFile.ParentEntityTypeId = EntityTypeCache.Get<SignatureDocumentTemplate>().Id;
                 signatureDocument.BinaryFile.IsTemporary = false;
             }
 
@@ -4394,7 +4412,7 @@ namespace Rock.Blocks.Event
             public CampusCache Campus { get; }
 
             public DefinedValueCache ConnectionStatus { get; }
-            
+
             public DateTime? AnniversaryDate { get; }
 
             public DateTime? BirthDate { get; }
@@ -4429,7 +4447,7 @@ namespace Rock.Blocks.Event
 
             public LavaSignatureRegistrant( Person person, Location homeLocation, CampusCache campus, GroupMember groupMember, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationInstance registrationInstance )
             {
-                var ( registrantAttributes, registrantAttributeValues) = GetRegistrantAttributesFromRegistration(registrantInfo, registrationInstance.RegistrationTemplate );
+                var (registrantAttributes, registrantAttributeValues) = GetRegistrantAttributesFromRegistration( registrantInfo, registrationInstance.RegistrationTemplate );
 
                 Address = homeLocation;
                 Campus = campus;
