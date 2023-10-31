@@ -251,7 +251,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var givingId = Person.GivingId;
 
             var threeYearsAgo = RockDateTime.Now.AddMonths( -35 ).StartOfMonth();
-            List<MonthlyAccountGivingHistory> threeYearsOfMonthlyAccountGiving = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistory( givingId, threeYearsAgo );
+            List<MonthlyAccountGivingHistory> threeYearsOfMonthlyAccountGiving = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistoryWithNegativeTransactions( givingId, threeYearsAgo );
 
             if ( threeYearsOfMonthlyAccountGiving.Any() )
             {
@@ -684,7 +684,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                     startDate = null;
                 }
 
-                var monthlyAccountGivingHistoryList = new FinancialTransactionService( rockContext ).GetGivingAutomationMonthlyAccountGivingHistory( givingId, startDate );
+                var monthlyAccountGivingHistoryList = new FinancialTransactionService( rockContext ).GetGivingAutomationMonthlyAccountGivingHistoryWithNegativeTransactions( givingId, startDate );
 
                 var financialAccounts = new FinancialAccountService( rockContext ).Queryable()
                     .AsNoTracking()
