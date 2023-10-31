@@ -673,7 +673,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
                 // We also need to send the shell a list of child groups
                 // that they can filter by.
-                var childGroups = group.Groups.Where( g => g.IsActive && g.IsPublic && !g.IsArchived )
+                var childGroups = group.Groups.Where( g => g.IsActive && !g.IsArchived )
                     .Select( g => new ListItemViewModel
                     {
                         Text = g.Name,
