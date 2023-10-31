@@ -268,7 +268,7 @@ export default defineComponent({
             </div>
         </div>
         <div v-for="lineItem in augmentedLineItems" class="row" :class="lineItem.isFee ? 'fee-row-fee' : 'fee-row-cost'">
-            <div class="fee-caption" :class="{ 'col-sm-6': hasDiscount, 'col-sm-9': !hasDiscount }">
+            <div :class="{ 'col-sm-6 fee-caption': hasDiscount, 'col-sm-9 fee-caption': !hasDiscount }">
                 {{lineItem.description}}
             </div>
             <div class="col-sm-3 fee-value">
@@ -282,7 +282,7 @@ export default defineComponent({
             </div>
         </div>
         <div class="row fee-row-total">
-            <div class="fee-caption" :class="{ 'col-sm-6': hasDiscount, 'col-sm-9': !hasDiscount }">
+            <div :class="{ 'col-sm-6 fee-caption': hasDiscount, 'col-sm-9 fee-caption': !hasDiscount }">
                 Total
             </div>
             <div class="col-sm-3 fee-value">
