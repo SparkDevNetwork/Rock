@@ -70,29 +70,29 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<Interaction> GetListQueryable(RockContext rockContext)
+        protected override IQueryable<Interaction> GetListQueryable( RockContext rockContext )
         {
             int shortLinkId = RequestContext?.PageParameters?["ShortLinkId"]?.AsInteger() ?? 0;
-            if (shortLinkId == 0)
+            if ( shortLinkId == 0 )
             {
                 return Enumerable.Empty<Interaction>().AsQueryable();
             }
 
-            var dv = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER);
-            if (dv == null)
+            var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER );
+            if ( dv == null )
             {
                 return Enumerable.Empty<Interaction>().AsQueryable();
             }
 
-            var interactions = new InteractionService(rockContext)
+            var interactions = new InteractionService( rockContext )
                 .Queryable().AsNoTracking()
-                .Include(i => i.PersonAlias)
-                .Include(i => i.PersonAlias.Person)
-                .Include(i => i.InteractionSession.DeviceType)
-                .Where(i =>
+                .Include( i => i.PersonAlias )
+                .Include( i => i.PersonAlias.Person )
+                .Include( i => i.InteractionSession.DeviceType )
+                .Where( i =>
                    i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == dv.Id &&
                    i.InteractionComponent.EntityId == shortLinkId &&
-                   i.PersonAlias != null);
+                   i.PersonAlias != null );
 
             return interactions;
         }
@@ -101,7 +101,7 @@ namespace Rock.Blocks.Cms
         protected override GridBuilder<Interaction> GetGridBuilder()
         {
             return new GridBuilder<Interaction>()
-                .WithBlock( this)
+                .WithBlock( this )
                 .AddField( "id", a => a.InteractionComponent.EntityId )
                 .AddField( "interactionDateTime", a => a.InteractionDateTime )
                 .AddPersonField( "person", a => a.PersonAlias?.Person )
