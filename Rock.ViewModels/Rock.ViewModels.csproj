@@ -422,6 +422,8 @@
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Controls\RockCacheabilityBag.cs" />
+    <Compile Include="Rest\Controls\CaptchaControlValidateTokenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CaptchaControlTokenValidateTokenResultBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />
     <Compile Include="Core\Grid\CustomActionBag.cs" />
     <Compile Include="Core\Grid\CustomColumnDefinitionBag.cs" />
@@ -462,6 +464,7 @@
     <Compile Include="Rest\Controls\BlockTemplatePickerGetBlockTemplatesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsResultItemBag.cs" />
     <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CaptchaControlConfigurationBag.cs" />
     <Compile Include="Rest\Controls\EntityPickerGetFieldTypeConfigurationResultsBag.cs" />
     <Compile Include="Rest\Controls\EntityPickerGetFieldTypeConfigurationOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityPickerGetEntityTypeGuidsOptionsBag.cs" />
