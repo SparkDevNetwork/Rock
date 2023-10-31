@@ -328,7 +328,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var oneYearAgo = RockDateTime.Now.AddMonths( -12 );
 
             var twelveMonthsTransactionsQry = financialTransactionService
-                    .GetGivingAutomationSourceTransactionQueryByGivingId( givingId )
+                    .GetGivingAutomationSourceTransactionQueryWithNegativeTransactionsByGivingId( givingId )
                     .Where( t => t.TransactionDateTime >= oneYearAgo );
 
             var twelveMonthTransactions = twelveMonthsTransactionsQry

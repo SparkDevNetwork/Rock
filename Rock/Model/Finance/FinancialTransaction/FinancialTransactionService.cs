@@ -361,6 +361,33 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQuery()
         {
+            var query = GetGivingAutomationSourceTransactionQueryWithNegativeTransactions();
+
+            // Remove transactions with $0 or negative amounts. If those are refunds, they have already been factored in.
+            query = query.Where( t => t.TransactionDetails.Any( d => d.Amount > 0M ) );
+
+            return query;
+        }
+
+        /// <summary>
+        /// Gets the giving automation source transaction query by giving identifier.
+        /// </summary>
+        /// <param name="givingId">The giving identifier.</param>
+        /// <returns>IQueryable&lt;FinancialTransaction&gt;.</returns>
+        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryWithNegativeTransactionsByGivingId( string givingId )
+        {
+            var givingIdPersonAliasIdQuery = new PersonAliasService( this.Context as RockContext ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id );
+
+            return GetGivingAutomationSourceTransactionQueryWithNegativeTransactions().Where( a => a.AuthorizedPersonAliasId.HasValue && givingIdPersonAliasIdQuery.Contains( a.AuthorizedPersonAliasId.Value ) );
+        }
+
+        /// <summary>
+        /// Gets the giving automation source transaction query with negative transactions included..
+        /// This is used by <see cref="Rock.Jobs.GivingAutomation"/>.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryWithNegativeTransactions()
+        {
             var query = Queryable().AsNoTracking();
 
             /*  10/10/2022 MDP
@@ -459,9 +486,6 @@ namespace Rock.Model
                         != 0.00M
                     )
                 );
-
-            // Remove transactions with $0 or negative amounts. If those are refunds, those will factored in above
-            query = query.Where( t => t.TransactionDetails.Any( d => d.Amount > 0M ) );
 
             return query;
         }
