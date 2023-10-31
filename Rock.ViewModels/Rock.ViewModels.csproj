@@ -422,6 +422,9 @@
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Controls\RockCacheabilityBag.cs" />
+    <Compile Include="Rest\Controls\AttributeMatrixEditorPublicItemBag.cs" />
+    <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueResultsBag.cs" />
+    <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueOptionsBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />
     <Compile Include="Core\Grid\CustomActionBag.cs" />
     <Compile Include="Core\Grid\CustomColumnDefinitionBag.cs" />

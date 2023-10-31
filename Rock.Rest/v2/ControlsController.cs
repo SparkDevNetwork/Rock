@@ -631,12 +631,6 @@ namespace Rock.Rest.v2
                     tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = templateData.Id };
                     tempAttributeMatrixItem.LoadAttributes();
 
-
-                    // Configure Validation (minRows & maxRows & required)
-                    // Configure Validation (minRows & maxRows & required)
-                    // Configure Validation (minRows & maxRows & required)
-
-
                     var attributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid );
                     if ( attributeMatrix == null )
                     {
@@ -666,7 +660,9 @@ namespace Rock.Rest.v2
 
                     return Ok( new
                     {
-                        Attributes = MakePublicAttributeBags( tempAttributeMatrixItem.Attributes ),
+                        Attributes = tempAttributeMatrixItem.Attributes.ToDictionary(
+                            a => a.Key, a => PublicAttributeHelper.GetPublicAttributeForEdit( a.Value )
+                        ),
                         MatrixItems = matrixItems,
                         MinRows = templateData.MinimumRows.GetValueOrDefault( 0 ),
                         MaxRows = templateData.MaximumRows.GetValueOrDefault( 0 )
@@ -678,21 +674,33 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// Convert a dictionary of attributes into a dictionary of PublicAttributeBags.
+        /// TODO
         /// </summary>
-        private Dictionary<string, PublicAttributeBag> MakePublicAttributeBags( Dictionary<string, AttributeCache> attributes )
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the asset storage providers.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AttributeMatrixEditorNormalizeEditValue" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1B7BA1CB-6D3F-4DE7-AC02-EAAADF89C7ED" )]
+        public IHttpActionResult AttributeMatrixEditorNormalizeEditValue( [FromBody] AttributeMatrixEditorNormalizeEditValueOptionsBag options )
         {
-            return attributes.ToDictionary( a => a.Key, a => new PublicAttributeBag
+            using ( var rockContext = new RockContext() )
             {
-                AttributeGuid = a.Value.Guid,
-                ConfigurationValues = a.Value.ConfigurationValues,
-                Description = a.Value.Description,
-                FieldTypeGuid = a.Value.FieldType.Guid,
-                IsRequired = a.Value.IsRequired,
-                Key = a.Value.Key,
-                Name = a.Value.Name,
-                Order = a.Value.Order
-            } );
+                var publicValues = options.Attributes.ToDictionary( a => a.Key, a =>
+                {
+                    var attr = AttributeCache.Get( a.Value.AttributeGuid );
+
+                    var privateValue = PublicAttributeHelper.GetPrivateValue( attr, options.AttributeValues.GetValueOrDefault( a.Key, "" ) );
+                    var publicValue = PublicAttributeHelper.GetPublicValueForView( attr, privateValue );
+                    return publicValue;
+                } );
+
+                return Ok( new
+                {
+                    ViewValues = publicValues,
+                    EditValues = options.AttributeValues
+                } );
+            }
         }
 
         #endregion
@@ -1043,7 +1051,7 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                IQueryable<FinancialAccount> accountsQry;
+                IQueryable<Rock.Model.FinancialAccount> accountsQry;
                 var financialAccountService = new FinancialAccountService( rockContext );
 
                 if ( options.SelectableAccountGuids.Any() )
@@ -1096,7 +1104,7 @@ namespace Rock.Rest.v2
             }
         }
 
-        private Dictionary<Guid, ListItemBag> getCampusAccounts( FinancialAccount baseAccount, List<CampusCache> campuses )
+        private Dictionary<Guid, ListItemBag> getCampusAccounts( Rock.Model.FinancialAccount baseAccount, List<CampusCache> campuses )
         {
             var results = new Dictionary<Guid, ListItemBag>();
 
@@ -1108,7 +1116,7 @@ namespace Rock.Rest.v2
             return results;
         }
 
-        private ListItemBag GetBestMatchingAccountForCampusFromDisplayedAccount( int campusId, FinancialAccount baseAccount )
+        private ListItemBag GetBestMatchingAccountForCampusFromDisplayedAccount( int campusId, Rock.Model.FinancialAccount baseAccount )
         {
             if ( baseAccount.CampusId.HasValue && baseAccount.CampusId == campusId )
             {
@@ -1132,7 +1140,7 @@ namespace Rock.Rest.v2
             }
         }
 
-        private ListItemBag GetAccountListItemBag( FinancialAccount account )
+        private ListItemBag GetAccountListItemBag( Rock.Model.FinancialAccount account )
         {
             return new ListItemBag
             {

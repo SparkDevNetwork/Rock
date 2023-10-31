@@ -1179,6 +1179,10 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\addressControlValidateAddressResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\assessmentTypePickerGetAssessmentTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\assetStorageProviderPickerGetAssetStorageProvidersOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\attributeMatrixEditorNormalizeEditValueOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\attributeMatrixEditorNormalizeEditValueResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\attributeMatrixEditorNormalizeNewValueResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\attributeMatrixEditorPublicItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\auditDetailGetAuditDetailsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\achievementTypePickerGetAchievementTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\badgeComponentPickerGetBadgeComponentsOptionsBag.d.ts" />

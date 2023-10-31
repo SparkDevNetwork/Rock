@@ -95,8 +95,14 @@
         {
             "guid": "ac0dd30f-6ec3-4254-9362-cfee0141c69e",
             "order": 0,
-            "attributeValues": {
-                "ArticleImage": "{\"value\":\"1ed83aa0-ab8b-4d3d-af71-9fea3cfae8b0\",\"text\":\"someimage.jpg\"}",
+            "editValues": {
+                "ArticleImage": "{\"value\":\"1ed83aa0-ab8b-4d3d-af71-9fea3cfae8b0\",\"text\":\"wp5562339.jpg\"}",
+                "ArticleTitle": "Another",
+                "ArticleContent": "<p>Thing</p>",
+                "ArticleLink": "/foryou"
+            },
+            "viewValues": {
+                "ArticleImage": "{\"value\":\"1ed83aa0-ab8b-4d3d-af71-9fea3cfae8b0\",\"text\":\"wp5562339.jpg\"}",
                 "ArticleTitle": "Another",
                 "ArticleContent": "<p>Thing</p>",
                 "ArticleLink": "/foryou"
@@ -105,7 +111,13 @@
         {
             "guid": "6b2ed1cf-5e51-4b13-a59f-f19d55db8479",
             "order": 1,
-            "attributeValues": {
+            "editValues": {
+                "ArticleImage": "",
+                "ArticleTitle": "Hello",
+                "ArticleContent": "<p>There</p>",
+                "ArticleLink": ""
+            },
+            "viewValues": {
                 "ArticleImage": "",
                 "ArticleTitle": "Hello",
                 "ArticleContent": "<p>There</p>",
@@ -115,7 +127,13 @@
         {
             "guid": "296c0144-e58e-4eb9-8f42-5b5587b26f09",
             "order": 2,
-            "attributeValues": {
+            "editValues": {
+                "ArticleImage": "",
+                "ArticleTitle": "Some Title",
+                "ArticleContent": "<p>Some Content</p>",
+                "ArticleLink": "/some-url"
+            },
+            "viewValues": {
                 "ArticleImage": "",
                 "ArticleTitle": "Some Title",
                 "ArticleContent": "<p>Some Content</p>",

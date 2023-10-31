@@ -1,22 +1,24 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="items" v-bind="fieldProps" name="TODO-field">
+    <RockFormField :modelValue="items" v-bind="fieldProps" name="attribute-matrix-editor">
         <Grid v-show="mode == 'grid'" :data="gridData" itemTerm="Item" keyField="key" liveUpdates light @addItem="onAddItem" @selectItem="onSelectItem">
-            <ReorderColumn @orderChanged="orderChanged" />
+            <ReorderColumn @orderChanged="onOrderChanged" />
             <FieldColumn v-for="attr in attributeList" :key="attr.fieldTypeGuid ?? ''" :field="attr.field ?? ''" :name="attr.field ?? ''" :title="attr.title ?? ''" :attribute="attributes[attr.field ?? '']" />
             <DeleteColumn @click="onDelete" disableConfirmation />
         </Grid>
 
         <RockForm v-if="mode == 'add'" class="well" @submit="onSubmitAddItem" novalidate>
             <AttributeValuesContainer v-model="newValue" :attributes="attributes" isEditMode />
-            <RockButton type="submit" btnSize="sm" btnType="primary">Add</RockButton>
-            <RockButton btnType="link" @click="onCancelAddOrEditItem">Cancel</RockButton>
+            <NotificationBox v-if="error == 'add'" alertType="danger" dismissible @dismiss="error = null" />
+            <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Add</RockButton>
+            <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
         </RockForm>
 
         <RockForm v-if="mode == 'edit'" class="well" @submit="onSubmitEditItem" novalidate>
             <AttributeValuesContainer v-model="editValue" :attributes="attributes" isEditMode />
-            <RockButton type="submit" btnSize="sm" btnType="primary">Save</RockButton>
-            <RockButton btnType="link" @click="onCancelAddOrEditItem">Cancel</RockButton>
+            <NotificationBox v-if="error == 'add'" alertType="danger" dismissible @dismiss="error = null" />
+            <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Save</RockButton>
+            <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
         </RockForm>
     </RockFormField>
 </template>
@@ -28,18 +30,21 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import Grid, { AttributeColumns, DeleteColumn, FieldColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import NotificationBox from "./notificationBox.obs";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { clone } from "@Obsidian/Utility/objectUtils";
-    import { provideSecurityGrant } from "@Obsidian/Utility/block";
-    import { Props } from "ant-design-vue/lib/form/useForm";
+    import { AttributeMatrixEditorNormalizeEditValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorNormalizeEditValueOptionsBag.d";
+    import { AttributeMatrixEditorNormalizeEditValueResultsBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorNormalizeEditValueResultsBag.d";
+    import { AttributeMatrixEditorPublicItemBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorPublicItemBag.d";
+    import { useHttp } from "@Obsidian/Utility/http";
 
     const props = defineProps({
         modelValue: {
-            type: Array as PropType<Record<string, unknown>[]>, // TODO: Define type
+            type: Array as PropType<AttributeMatrixEditorPublicItemBag[]>, // TODO: Define type
             default: []
         },
 
@@ -68,6 +73,7 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: Record<string, unknown>[]): void
+        (e: "newItem", value: Record<string, unknown>): void
     }>();
 
 
@@ -89,10 +95,14 @@
 
     const fieldProps = useStandardRockFormFieldProps(props);
 
+    const http = useHttp();
     const mode = ref<"grid" | "edit" | "add">("grid");
     const newValue = ref({});
     const editValue = ref({});
     const editKey = ref("");
+    const isLoading = ref(false);
+    const error = ref<"add" | "edit" | null>(null);
+    const keySeparator = "##";
 
     // This increments every time a new item is added. It is used to ensure a unique key for new items
     // since they all have an empty guid.
@@ -103,9 +113,9 @@
         () => ({
             rows: props.modelValue.map(item => {
                 const row = {
-                    key: (item.guid as string) + "##" + (item.key ?? ""),
+                    key: item.guid + keySeparator + (item.key ?? ""),
                     order: item.order,
-                    ...(item.attributeValues as Record<string, string>)
+                    ...(item.viewValues)
                 };
 
                 return row;
@@ -130,48 +140,73 @@
         mode.value = "add";
     }
 
-    function onSubmitAddItem(): void {
+    async function onSubmitAddItem(): Promise<void> {
+        error.value = null;
+
+        const data = await normalizeEditValue(newValue.value);
+
+        if (!data) {
+            error.value = "add";
+            return;
+        }
+
         items.value.push({
             guid: emptyGuid,
-            order: items.value.length,
             key: ++itemsAdded,
-            attributeValues: clone(newValue.value)
+            order: items.value.length,
+            ...data
         });
 
+        newValue.value = {};
         mode.value = "grid";
     }
 
     function onCancelAddOrEditItem(): void {
+        editKey.value = "";
+        editValue.value = {};
+        newValue.value = {};
         mode.value = "grid";
     }
 
     function onSelectItem(key: string): void {
-        const [itemGuid, itemKey] = key.split("##");
+        const [itemGuid, itemKey] = key.split(keySeparator);
         const item = items.value.find(i => i.guid == itemGuid && i.key == (itemKey || undefined));
 
         if (item != undefined) {
-            editValue.value = clone(item.attributeValues as Record<string, unknown>);
+            editValue.value = clone(item.editValues ?? {});
             editKey.value = key;
             mode.value = "edit";
         }
     }
 
-    function onSubmitEditItem(): void {
-        const [itemGuid, itemKey] = editKey.value.split("##");
+    async function onSubmitEditItem(): Promise<void> {
+        error.value = null;
+
+        const [itemGuid, itemKey] = editKey.value.split(keySeparator);
         const index = items.value.findIndex(i => i.guid == itemGuid && i.key == (itemKey || undefined));
 
-        if (index >= 0) {
-            items.value[index].attributeValues = editValue.value;
+        if (index < 0) {
+            mode.value = "grid";
+            return;
         }
+
+        const data = await normalizeEditValue(editValue.value);
+
+        if (!data) {
+            error.value = "edit";
+            return;
+        }
+
+        items.value[index].editValues = data.editValues;
+        items.value[index].viewValues = data.viewValues;
 
         editKey.value = "";
         editValue.value = {};
-
         mode.value = "grid";
     }
 
     function onDelete(key: string): void {
-        const [itemGuid, itemKey] = key.split("##");
+        const [itemGuid, itemKey] = key.split(keySeparator);
         const index = items.value.findIndex(i => i.guid == itemGuid && i.key == (itemKey || undefined));
         if (index !== -1) {
             items.value.splice(index, 1);
@@ -182,9 +217,9 @@
      * When the order of the items in the matrix is changed via drag and drop, rearrange the items in the
      * array and update the `order` property to match the array order.
      */
-    function orderChanged(movedItem: Record<string, unknown>, beforeItem: Record<string, unknown> | null): void {
-        const [movedItemGuid, movedItemKey] = (movedItem.key as string).split("##");
-        const [beforeItemGuid, beforeItemKey] = beforeItem == null ? [null, null] : (beforeItem.key as string).split("##");
+    function onOrderChanged(movedItem: Record<string, unknown>, beforeItem: Record<string, unknown> | null): void {
+        const [movedItemGuid, movedItemKey] = (movedItem.key as string).split(keySeparator);
+        const [beforeItemGuid, beforeItemKey] = beforeItem == null ? [null, null] : (beforeItem.key as string).split(keySeparator);
 
         const movedIndex = items.value.findIndex(i => i.guid == movedItemGuid && i.key == (movedItemKey || undefined));
 
@@ -206,6 +241,26 @@
         items.value.forEach((item, index) => {
             item.order = index;
         });
+    }
+
+    async function normalizeEditValue(editValue: Record<string, string>): Promise<false | AttributeMatrixEditorNormalizeEditValueResultsBag> {
+        isLoading.value = true;
+
+        const options: AttributeMatrixEditorNormalizeEditValueOptionsBag = {
+            attributes: props.attributes,
+            attributeValues: editValue
+        };
+        const response = await http.post<AttributeMatrixEditorNormalizeEditValueResultsBag>("/api/v2/Controls/AttributeMatrixEditorNormalizeEditValue", undefined, options);
+
+        isLoading.value = false;
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.error("Error adding item.", response.errorMessage);
+            return false;
+        }
     }
 
 

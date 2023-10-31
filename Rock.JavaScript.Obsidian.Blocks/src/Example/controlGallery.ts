@@ -4751,7 +4751,7 @@ const notificationBoxGallery = defineComponent({
             options,
             alertType: ref(AlertType.Default),
             importCode: getSfcControlImportPath("notificationBox"),
-            exampleCode: `<NotificationBox dismissable alertType="AlertType.Info" @dismiss="onDismiss" heading="Heading Text">
+            exampleCode: `<NotificationBox dismissible :alertType="AlertType.Info" @dismiss="onDismiss" heading="Heading Text">
     This is an alert!
     <template #details>
         Here's a place where you can place details that show up when you click "Show Details".
@@ -4783,7 +4783,7 @@ const notificationBoxGallery = defineComponent({
                 <TextBox v-model="details" label="Details Text" />
             </div>
             <div class="col-md-3">
-                <CheckBox label="Dismissable" v-model="isDismissible" />
+                <CheckBox label="Dismissible" v-model="isDismissible" />
             </div>
         </div>
     </template>

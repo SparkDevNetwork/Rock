@@ -23,7 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -76,6 +76,27 @@ namespace Rock.Field.Types
                 var imageName = new BinaryFileService( rockContext ).GetSelect( imageGuid.Value, bf => bf.FileName );
 
                 return imageName ?? string.Empty;
+            }
+        }
+
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var imageGuid = privateValue.AsGuidOrNull();
+
+            if ( !imageGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var imageName = new BinaryFileService( rockContext ).GetSelect( imageGuid.Value, bf => bf.FileName );
+
+                return new ListItemBag()
+                {
+                    Value = imageGuid.ToString(),
+                    Text = imageName,
+                }.ToCamelCaseJson( false, true );
             }
         }
 
