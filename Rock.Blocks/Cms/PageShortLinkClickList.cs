@@ -40,7 +40,7 @@ namespace Rock.Blocks.Cms
     [Rock.SystemGuid.EntityTypeGuid( "aa860dc7-d590-4d0e-bbb3-16990f2cd680" )]
     [Rock.SystemGuid.BlockTypeGuid( "e44cac85-346f-41a4-884b-a6fb5fc64de1" )]
     [CustomizedGrid]
-    public class PageShortLinkClickList : RockListBlockType<PageShortLinkClick>
+    public class PageShortLinkClickList : RockListBlockType<Interaction>
     {
         #region Methods
 
@@ -69,48 +69,34 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<PageShortLinkClick> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<Interaction> GetListQueryable( RockContext rockContext )
         {
             int shortLinkId = RequestContext?.PageParameters?["ShortLinkId"]?.AsInteger() ?? 0;
             if ( shortLinkId == 0 )
             {
-                return Enumerable.Empty<PageShortLinkClick>().AsQueryable();
+                return Enumerable.Empty<Interaction>().AsQueryable();
             }
 
-            var interactions = new InteractionService( rockContext )
+            var interactions = new InteractionService(rockContext)
                 .Queryable().AsNoTracking()
                 .Include( i => i.PersonAlias )
                 .Include( i => i.PersonAlias.Person )
-                .Where( i => i.InteractionComponent.EntityId == shortLinkId && i.PersonAlias != null )
-                .ToList();
+                .Where( i => i.InteractionComponent.EntityId == shortLinkId && i.PersonAlias != null );
 
-            var result = interactions.Select( i => new PageShortLinkClick
-            {
-                PageShortLinkId = shortLinkId,
-                PersonAlias = i.PersonAlias,
-                InteractionDateTime = i.InteractionDateTime,
-                PersonId = i.PersonAlias.PersonId,
-                Application = i.InteractionSession.DeviceType.Application,
-                ClientType = i.InteractionSession.DeviceType.ClientType,
-                OperatingSystem = i.InteractionSession.DeviceType.OperatingSystem,
-                Source = i.Source
-            } )
-            .AsQueryable();
-
-            return result;
+            return interactions;
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<PageShortLinkClick> GetGridBuilder()
+        protected override GridBuilder<Interaction> GetGridBuilder()
         {
-            return new GridBuilder<PageShortLinkClick>()
-                .WithBlock( this )
-                .AddField( "id", a => a.PageShortLinkId )
+            return new GridBuilder<Interaction>()
+                .WithBlock( this)
+                .AddField( "id", a => a.InteractionComponent.EntityId )
                 .AddField( "interactionDateTime", a => a.InteractionDateTime )
                 .AddPersonField( "person", a => a.PersonAlias?.Person )
-                .AddTextField( "application", a => a.Application )
-                .AddTextField( "clientType", a => a.ClientType )
-                .AddTextField( "operatingSystem", a => a.OperatingSystem )
+                .AddTextField( "application", a => a.InteractionSession.DeviceType.Application )
+                .AddTextField( "clientType", a => a.InteractionSession.DeviceType.ClientType )
+                .AddTextField( "operatingSystem", a => a.InteractionSession.DeviceType.OperatingSystem )
                 .AddTextField( "source", a => a.Source );
         }
 
