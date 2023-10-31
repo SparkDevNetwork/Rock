@@ -24,6 +24,7 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageShortLinkClickList;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
 {
@@ -69,19 +70,29 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<Interaction> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<Interaction> GetListQueryable(RockContext rockContext)
         {
             int shortLinkId = RequestContext?.PageParameters?["ShortLinkId"]?.AsInteger() ?? 0;
-            if ( shortLinkId == 0 )
+            if (shortLinkId == 0)
+            {
+                return Enumerable.Empty<Interaction>().AsQueryable();
+            }
+
+            var dv = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER);
+            if (dv == null)
             {
                 return Enumerable.Empty<Interaction>().AsQueryable();
             }
 
             var interactions = new InteractionService(rockContext)
                 .Queryable().AsNoTracking()
-                .Include( i => i.PersonAlias )
-                .Include( i => i.PersonAlias.Person )
-                .Where( i => i.InteractionComponent.EntityId == shortLinkId && i.PersonAlias != null );
+                .Include(i => i.PersonAlias)
+                .Include(i => i.PersonAlias.Person)
+                .Include(i => i.InteractionSession.DeviceType)
+                .Where(i =>
+                   i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == dv.Id &&
+                   i.InteractionComponent.EntityId == shortLinkId &&
+                   i.PersonAlias != null);
 
             return interactions;
         }
