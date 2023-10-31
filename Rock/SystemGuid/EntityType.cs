@@ -1521,6 +1521,11 @@ namespace Rock.SystemGuid
         public const string PAGE_SHORT_LINK = "83D8C6DF-1D53-438B-93B2-75A2038BBEE6";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.PageShortLinkClick"/> 
+        /// </summary>
+        public const string PAGE_SHORT_LINK_CLICK = "339EA577-0532-4402-A78C-F4D4267AECBF";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.PersonalDevice"/> 
         /// </summary>
         public const string PERSONAL_DEVICE = "E9CD3369-E087-4809-9952-F2DCD6B8816B";

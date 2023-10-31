@@ -555,6 +555,8 @@ export const EntityType = {
     PageRoute: "42C14361-67B2-472C-95BE-EA8A9C511837",
     /** The EntityType Guid for Rock.Model.PageShortLink  */
     PageShortLink: "83D8C6DF-1D53-438B-93B2-75A2038BBEE6",
+    /** The EntityType Guid for Rock.Model.PageShortLink  */
+    PageShortLinkClick: "339EA577-0532-4402-A78C-F4D4267AECBF",
     /** The EntityType Guid for Rock.Model.PersistedDataset  */
     PersistedDataset: "9C3064C0-CF9C-4549-9A80-022514B7FF83",
     /** The guid for the Rock.Model.Person entity */
