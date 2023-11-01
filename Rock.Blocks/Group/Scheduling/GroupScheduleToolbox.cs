@@ -465,8 +465,8 @@ namespace Rock.Blocks.Group.Scheduling
             box.IsScheduleUnavailabilityEnabled = toolboxData.IsScheduleUnavailabilityEnabled;
             box.IsAdditionalTimeSignUpsEnabled = toolboxData.IsAdditionalTimeSignUpEnabled;
 
-            SetButtonText( box, toolboxData );
-            SetDynamicContentText( box, toolboxData );
+            SetButtonText( box );
+            SetDynamicContentText( box );
 
             box.ToolboxActionType = toolboxData.ToolboxActionType;
             box.SchedulableFamilyMembers = toolboxData.SchedulableFamilyMemberPeople.Select( fmp => fmp.Person ).ToListItemBagList();
@@ -765,59 +765,31 @@ namespace Rock.Blocks.Group.Scheduling
         /// Sets button text for the sub-features of the group schedule toolbox.
         /// </summary>
         /// <param name="box">The group schedule toolbox initialization box onto which to set the button text.</param>
-        /// <param name="toolboxData">The toolbox data indicating which sub-features are enabled.</param>
-        private void SetButtonText( InitializationBox box, ToolboxData toolboxData )
+        private void SetButtonText( InitializationBox box )
         {
             box.CurrentScheduleButtonText = GetAttributeValue( AttributeKey.CurrentScheduleButtonText );
-
-            box.SchedulePreferencesButtonText = toolboxData.IsSchedulePreferencesEnabled
-                ? GetAttributeValue( AttributeKey.UpdateSchedulePreferencesButtonText )
-                : null;
-
-            box.ScheduleUnavailabilityButtonText = toolboxData.IsScheduleUnavailabilityEnabled
-                ? GetAttributeValue( AttributeKey.ScheduleUnavailabilityButtonText )
-                : null;
-
-            box.AdditionalTimeSignUpsButtonText = toolboxData.IsAdditionalTimeSignUpEnabled
-                ? GetAttributeValue( AttributeKey.AdditionalTimeSignUpButtonText )
-                : null;
+            box.SchedulePreferencesButtonText = GetAttributeValue( AttributeKey.UpdateSchedulePreferencesButtonText );
+            box.ScheduleUnavailabilityButtonText = GetAttributeValue( AttributeKey.ScheduleUnavailabilityButtonText );
+            box.AdditionalTimeSignUpsButtonText = GetAttributeValue( AttributeKey.AdditionalTimeSignUpButtonText );
         }
 
         /// <summary>
         /// Sets dynamic content text using Lava templates, Etc.
         /// </summary>
         /// <param name="box">The group schedule toolbox initialization box onto which to set the dynamic content text.</param>
-        /// <param name="toolboxData">The toolbox data indicating which sub-features are enabled.</param>
-        private void SetDynamicContentText( InitializationBox box, ToolboxData toolboxData )
+        private void SetDynamicContentText( InitializationBox box )
         {
             var commonMergeFields = this.RequestContext.GetCommonMergeFields();
 
             box.ActionHeaderHtml = GetAttributeValue( AttributeKey.ActionHeaderLavaTemplate ).ResolveMergeFields( commonMergeFields );
             box.CurrentScheduleHeaderHtml = GetAttributeValue( AttributeKey.CurrentScheduleHeader ).ResolveMergeFields( commonMergeFields );
-
-            box.SchedulePreferencesHeaderHtml = toolboxData.IsSchedulePreferencesEnabled
-                ? GetAttributeValue( AttributeKey.UpdateSchedulePreferencesHeader ).ResolveMergeFields( commonMergeFields )
-                : null;
-
-            box.ScheduleUnavailabilityHeaderHtml = toolboxData.IsScheduleUnavailabilityEnabled
-                ? GetAttributeValue( AttributeKey.ScheduleUnavailabilityHeader ).ResolveMergeFields( commonMergeFields )
-                : null;
-
-            box.AdditionalTimeSignUpsHeaderHtml = toolboxData.IsAdditionalTimeSignUpEnabled
-                ? GetAttributeValue( AttributeKey.AdditionalTimeSignUpHeader ).ResolveMergeFields( commonMergeFields )
-                : null;
+            box.SchedulePreferencesHeaderHtml = GetAttributeValue( AttributeKey.UpdateSchedulePreferencesHeader ).ResolveMergeFields( commonMergeFields );
+            box.ScheduleUnavailabilityHeaderHtml = GetAttributeValue( AttributeKey.ScheduleUnavailabilityHeader ).ResolveMergeFields( commonMergeFields );
+            box.AdditionalTimeSignUpsHeaderHtml = GetAttributeValue( AttributeKey.AdditionalTimeSignUpHeader ).ResolveMergeFields( commonMergeFields );
 
             // Non-Lava-enabled dynamic content:
-            if ( toolboxData.IsImmediateNeedsEnabled )
-            {
-                box.ImmediateNeedsTitle = GetAttributeValue( AttributeKey.ImmediateNeedTitle );
-                box.ImmediateNeedsIntroduction = GetAttributeValue( AttributeKey.ImmediateNeedIntroduction );
-            }
-            else
-            {
-                box.ImmediateNeedsTitle = null;
-                box.ImmediateNeedsIntroduction = null;
-            }
+            box.ImmediateNeedsTitle = GetAttributeValue( AttributeKey.ImmediateNeedTitle );
+            box.ImmediateNeedsIntroduction = GetAttributeValue( AttributeKey.ImmediateNeedIntroduction );
         }
 
         /// <summary>
