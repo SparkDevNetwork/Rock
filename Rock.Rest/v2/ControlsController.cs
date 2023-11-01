@@ -604,80 +604,10 @@ namespace Rock.Rest.v2
         #region Attribute Matrix Editor
 
         /// <summary>
-        /// TODO
+        /// Take the public edit values for a given matrix item and convert them to public viewing values.
         /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the asset storage providers.</returns>
-        [HttpPost]
-        [System.Web.Http.Route( "AttributeMatrixEditorGetAttributes" )]
-        [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "99B4FDB8-128C-4A8C-AFDB-C8F9BCE0A666" )]
-        public IHttpActionResult AttributeMatrixEditorGetAttributes( /*[FromBody] AttributeMatrixEditorGetAttributesOptionsBag options*/ )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                Guid attributeMatrixTemplateGuid = new Guid( "1d24694e-445c-4852-b5bc-64cdea6f7175" );
-                Guid attributeMatrixGuid = new Guid( "66468021-39f0-4727-8156-8abf1067781c" );
-                AttributeMatrixItem tempAttributeMatrixItem = null;
-
-                if ( attributeMatrixTemplateGuid != null && !attributeMatrixTemplateGuid.IsEmpty() )
-                {
-                    var attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
-                    //var template = attributeMatrixTemplateService.Get( attributeMatrixTemplateGuid );
-                    var templateData = attributeMatrixTemplateService.GetSelect( attributeMatrixTemplateGuid, s => new { s.Id, s.MinimumRows, s.MaximumRows } );
-
-
-                    tempAttributeMatrixItem = new AttributeMatrixItem();
-                    tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = templateData.Id };
-                    tempAttributeMatrixItem.LoadAttributes();
-
-                    var attributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid );
-                    if ( attributeMatrix == null )
-                    {
-                        return NotFound();
-                    }
-
-                    var attributeMatrixItemList = attributeMatrix.AttributeMatrixItems
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Id )
-                        .ToList();
-
-                    foreach ( var attributeMatrixItem in attributeMatrixItemList )
-                    {
-                        attributeMatrixItem.LoadAttributes();
-                    }
-
-                    var matrixItems = attributeMatrixItemList
-                        .Select( a => new
-                        {
-                            a.Guid,
-                            a.Order,
-                            //Attributes = MakePublicAttributeBags( a.Attributes ),
-                            AttributeValues = a.AttributeValues.ToDictionary( v => v.Key, v => v.Value.Value ),
-                            Other = a.Attributes.ToDictionary( v => v.Key, v => v.Value.FieldType.Field.GetPublicValue( a.AttributeValues.GetValueOrNull( v.Key )?.Value, v.Value.ConfigurationValues ) )
-                        } )
-                        .ToList();
-
-                    return Ok( new
-                    {
-                        Attributes = tempAttributeMatrixItem.Attributes.ToDictionary(
-                            a => a.Key, a => PublicAttributeHelper.GetPublicAttributeForEdit( a.Value )
-                        ),
-                        MatrixItems = matrixItems,
-                        MinRows = templateData.MinimumRows.GetValueOrDefault( 0 ),
-                        MaxRows = templateData.MaximumRows.GetValueOrDefault( 0 )
-                    } );
-                }
-
-                return NotFound();
-            }
-        }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the asset storage providers.</returns>
+        /// <param name="options">The options that describe the attributes and their public edit values.</param>
+        /// <returns>The public edit values and the public viewing values.</returns>
         [HttpPost]
         [System.Web.Http.Route( "AttributeMatrixEditorNormalizeEditValue" )]
         [Authenticate]

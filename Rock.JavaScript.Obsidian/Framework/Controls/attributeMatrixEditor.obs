@@ -1,10 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="items" v-bind="fieldProps" name="attribute-matrix-editor">
+    <RockFormField :modelValue="items" v-bind="fieldProps" name="attribute-matrix-editor" :rules="matrixRules">
+        <NotificationBox v-if="maxRows < Infinity && items.length > maxRows && !maxRowNotificationDismissed" alertType="warning" dismissible @dismiss="maxRowNotificationDismissed = true">{{ maxRowInvalidMessage }}</NotificationBox>
+        <NotificationBox v-if="minRows > 0 && items.length < minRows && !minRowNotificationDismissed" alertType="warning" dismissible @dismiss="minRowNotificationDismissed = true">{{ minRowInvalidMessage }}</NotificationBox>
+
         <Grid v-show="mode == 'grid'" :data="gridData" itemTerm="Item" keyField="key" liveUpdates light @addItem="onAddItem" @selectItem="onSelectItem">
             <ReorderColumn @orderChanged="onOrderChanged" />
             <FieldColumn v-for="attr in attributeList" :key="attr.fieldTypeGuid ?? ''" :field="attr.field ?? ''" :name="attr.field ?? ''" :title="attr.title ?? ''" :attribute="attributes[attr.field ?? '']" />
-            <DeleteColumn @click="onDelete" disableConfirmation />
+            <DeleteColumn @click="onDelete" />
         </Grid>
 
         <RockForm v-if="mode == 'add'" class="well" @submit="onSubmitAddItem" novalidate>
@@ -29,40 +32,59 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import Grid, { AttributeColumns, DeleteColumn, FieldColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Grid, { DeleteColumn, FieldColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import NotificationBox from "./notificationBox.obs";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { clone } from "@Obsidian/Utility/objectUtils";
     import { AttributeMatrixEditorNormalizeEditValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorNormalizeEditValueOptionsBag.d";
     import { AttributeMatrixEditorNormalizeEditValueResultsBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorNormalizeEditValueResultsBag.d";
     import { AttributeMatrixEditorPublicItemBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorPublicItemBag.d";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
+        /**
+         * The list of items in the matrix and both their values for editing and their values for viewing.
+         */
         modelValue: {
-            type: Array as PropType<AttributeMatrixEditorPublicItemBag[]>, // TODO: Define type
+            type: Array as PropType<AttributeMatrixEditorPublicItemBag[]>,
             default: []
         },
 
+        /**
+         * Definitions for each attribute of the items.
+         * Key is the name of the attribute and the value is a PublicAttributeBag describing the attribute.
+         */
         attributes: {
             type: Object as PropType<Record<string, PublicAttributeBag>>,
             required: true
         },
 
+        /**
+         * Record of the default values for the row item attributes.
+         * Key is the name of the attribute and the value is the default value.
+         * This is used to initially fill the form for adding a new item.
+         */
         defaultAttributeValues: {
             type: Object as PropType<Record<string, string>>,
             default: {}
         },
 
+        /**
+         * Minimum number of items that should be created to validate.
+         */
         minRows: {
             type: Number,
             default: 0
         },
 
+        /**
+         * Maximum number of items that should be created to validate.
+         */
         maxRows: {
             type: Number,
             default: Infinity
@@ -77,7 +99,7 @@
     }>();
 
 
-    // Main V-Model Binding
+    //#region Main Model
     const items = ref(clone(props.modelValue));
 
     watch(() => props.modelValue, () => {
@@ -92,6 +114,9 @@
         }
     }, { deep: true });
 
+    //#endregion
+
+    //#region State
 
     const fieldProps = useStandardRockFormFieldProps(props);
 
@@ -104,11 +129,82 @@
     const error = ref<"add" | "edit" | null>(null);
     const keySeparator = "##";
 
+    const maxRowNotificationDismissed = ref(false);
+    const minRowNotificationDismissed = ref(false);
+
     // This increments every time a new item is added. It is used to ensure a unique key for new items
     // since they all have an empty guid.
     let itemsAdded = 0;
 
+    //#endregion
 
+    //#region Computeds
+
+    //#region Validation
+    const isRequired = computed(() => {
+        return containsRequiredRule(props.rules);
+    });
+
+    const minRows = computed(() => {
+        return isRequired.value ? Math.max(1, props.minRows) : props.minRows;
+    });
+
+    const minRowInvalidMessage = computed(() => {
+        if (minRows.value == 1) {
+            return "At least 1 item is required.";
+        }
+
+        return `At least ${minRows.value} items are required.`;
+    });
+
+    const maxRowInvalidMessage = computed(() => {
+        if (props.maxRows == 1) {
+            return "No more than 1 item is allowed.";
+        }
+
+        return `No more than ${props.maxRows} items are allowed.`;
+    });
+
+    const matrixRules = computed(() => {
+        const rules = normalizeRules(props.rules);
+
+        if (minRows.value > 0) {
+            rules.push((val: unknown) => {
+                if (Array.isArray(val)) {
+                    if (val.length >= minRows.value) {
+                        return true;
+                    }
+
+                    return minRowInvalidMessage.value;
+                }
+
+                // Not sure how it's not an array... so I wouldn't be able to give an accurate error message.
+                return true;
+            });
+        }
+
+        // For some reason we don't actually validate max rows, but if that changes, just uncomment the lines below
+        // if (props.maxRows < Infinity) {
+        //     rules.push((val: unknown) => {
+        //         if (Array.isArray(val)) {
+        //             if (val.length <= props.maxRows) {
+        //                 return true;
+        //             }
+
+        //             return maxRowInvalidMessage.value;
+        //         }
+
+        //         // Not sure how it's not an array... so I wouldn't be able to give an accurate error message.
+        //         return true;
+        //     });
+        // }
+
+        return rules;
+    });
+
+    //#endregion
+
+    //#region Grid Data
     const gridData = computed<GridDataBag>(
         () => ({
             rows: props.modelValue.map(item => {
@@ -131,6 +227,23 @@
         }))
     );
 
+    //#endregion
+
+    //#endregion
+
+    //#region Watchers
+
+    // Re-enable the notifications when the data changes if they were previously dismissed
+    watch(items.value, () => {
+        maxRowNotificationDismissed.value = false;
+        minRowNotificationDismissed.value = false;
+    });
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Show the form to add a new row item */
     function onAddItem(): void {
         newValue.value = Object.keys(props.attributes).reduce((obj, key) => {
             obj[key] = props.defaultAttributeValues[key] ?? "";
@@ -140,6 +253,7 @@
         mode.value = "add";
     }
 
+    /** Add a newly created row item */
     async function onSubmitAddItem(): Promise<void> {
         error.value = null;
 
@@ -161,6 +275,7 @@
         mode.value = "grid";
     }
 
+    /** Clear out any form and show the grid when a form is cancelled */
     function onCancelAddOrEditItem(): void {
         editKey.value = "";
         editValue.value = {};
@@ -168,6 +283,7 @@
         mode.value = "grid";
     }
 
+    /** Open the form to edit a selected row item */
     function onSelectItem(key: string): void {
         const [itemGuid, itemKey] = key.split(keySeparator);
         const item = items.value.find(i => i.guid == itemGuid && i.key == (itemKey || undefined));
@@ -179,6 +295,7 @@
         }
     }
 
+    /** Apply edits to a row item */
     async function onSubmitEditItem(): Promise<void> {
         error.value = null;
 
@@ -205,7 +322,8 @@
         mode.value = "grid";
     }
 
-    function onDelete(key: string): void {
+    /** Delete a row item */
+    async function onDelete(key: string): Promise<void> {
         const [itemGuid, itemKey] = key.split(keySeparator);
         const index = items.value.findIndex(i => i.guid == itemGuid && i.key == (itemKey || undefined));
         if (index !== -1) {
@@ -243,6 +361,10 @@
         });
     }
 
+    //#endregion
+
+    //#region Functions
+
     async function normalizeEditValue(editValue: Record<string, string>): Promise<false | AttributeMatrixEditorNormalizeEditValueResultsBag> {
         isLoading.value = true;
 
@@ -263,5 +385,5 @@
         }
     }
 
-
+    //#endregion
 </script>

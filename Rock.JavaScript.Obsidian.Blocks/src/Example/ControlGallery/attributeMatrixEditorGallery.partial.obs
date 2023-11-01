@@ -1,7 +1,7 @@
 <template>
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
-        <AttributeMatrixEditor v-model="items" :attributes="attributes" :defaultAttributeValues="defaults" />
+        <AttributeMatrixEditor v-model="items" :attributes="attributes" :defaultAttributeValues="defaults" :minRows="4" :maxRows="4" />
 
         <template #settings>
             <div class="row">
