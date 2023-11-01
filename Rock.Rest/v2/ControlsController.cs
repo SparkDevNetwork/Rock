@@ -981,7 +981,7 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                IQueryable<Rock.Model.FinancialAccount> accountsQry;
+                IQueryable<FinancialAccount> accountsQry;
                 var financialAccountService = new FinancialAccountService( rockContext );
 
                 if ( options.SelectableAccountGuids.Any() )
@@ -1034,7 +1034,7 @@ namespace Rock.Rest.v2
             }
         }
 
-        private Dictionary<Guid, ListItemBag> getCampusAccounts( Rock.Model.FinancialAccount baseAccount, List<CampusCache> campuses )
+        private Dictionary<Guid, ListItemBag> getCampusAccounts( FinancialAccount baseAccount, List<CampusCache> campuses )
         {
             var results = new Dictionary<Guid, ListItemBag>();
 
@@ -1046,7 +1046,7 @@ namespace Rock.Rest.v2
             return results;
         }
 
-        private ListItemBag GetBestMatchingAccountForCampusFromDisplayedAccount( int campusId, Rock.Model.FinancialAccount baseAccount )
+        private ListItemBag GetBestMatchingAccountForCampusFromDisplayedAccount( int campusId, FinancialAccount baseAccount )
         {
             if ( baseAccount.CampusId.HasValue && baseAccount.CampusId == campusId )
             {
@@ -1070,7 +1070,7 @@ namespace Rock.Rest.v2
             }
         }
 
-        private ListItemBag GetAccountListItemBag( Rock.Model.FinancialAccount account )
+        private ListItemBag GetAccountListItemBag( FinancialAccount account )
         {
             return new ListItemBag
             {
