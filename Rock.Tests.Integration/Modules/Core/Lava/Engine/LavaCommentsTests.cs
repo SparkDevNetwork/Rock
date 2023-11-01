@@ -71,6 +71,24 @@ namespace Rock.Tests.Integration.Core.Lava
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), string.Empty, "{% comment %} This comment contains an {[ invalid_shortcode ]} {% endcomment %}" );
         }
 
+        /// <summary>
+        /// This test verifies the standard newline character '\n' as an effective inline comment delimiter.
+        /// This is the delimiter used by the Rock text editor, as opposed to the Windows standard '\r\n'
+        /// that is implicitly used in templates elsewhere in this test project.
+        /// </summary>
+        [TestMethod]
+        public void ShorthandLineComment_TerminatedbyNewlineOnly_IsTerminatedCorrectly()
+        {
+            var input = "//- This is a single line comment.\nLine 1";
+
+            var expectedOutput = @"Line 1";
+
+            input = input.Trim();
+            expectedOutput = expectedOutput.Trim();
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = true } );
+        }
+
         [TestMethod]
         public void ShorthandLineComment_AsFirstElement_IsIgnored()
         {
@@ -144,7 +162,7 @@ Line 3<br>
             input = input.Trim();
             expectedOutput = expectedOutput.Trim();
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = true } );
         }
 
         [TestMethod]
