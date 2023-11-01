@@ -1093,13 +1093,15 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a The <see cref="ConnectionRequest"/> from the provided input. If for some reason, the Connection Request was not able to be created, null would be returned.
+        /// Creates a The <see cref="ConnectionRequest"/> from the provided input. If for some reason, the Connection Request
+        /// was not able to be created, null would be returned.
         /// </summary>
         /// <param name="connectionOpportunityId">The Connection Opportunity Id of the Connection Request.</param>
         /// <param name="personAliasId">The Person Alias Id of the Connection Request.</param>
-        /// <param name="campusId">The optional Campus Id which would determine which campus the Connection Request should be linked to
-        /// If no campus is provided, then it defaults to the Main campus of the person linked to the personAliasId /></param>
-        /// /// <param name="status">The optional Status of the Connection Request. If not provided, it will default to the provided Connection Opportunity's default status.  /></param>
+        /// <param name="campusId">The optional Campus Id which would determine which campus the Connection Request should be
+        /// linked to. If no campus is provided, then it defaults to the Main campus of the person linked to the personAliasId.</param>
+        /// <param name="status">The optional Status of the Connection Request. If not provided, it will default to the
+        /// provided Connection Opportunity's default status.</param>
         /// <param name="rockContext">An optional <see cref="RockContext" />. A new context would be created if not provided.</param>
         /// <returns></returns>
         internal ConnectionRequest CreateConnectionRequestWithDefaultConnector( int connectionOpportunityId, int personAliasId, int? campusId = null, ConnectionStatus status = null, RockContext rockContext = null )
