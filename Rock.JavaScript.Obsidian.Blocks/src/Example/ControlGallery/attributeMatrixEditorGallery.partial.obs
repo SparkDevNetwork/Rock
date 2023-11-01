@@ -1,13 +1,20 @@
 <template>
-    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+    <GalleryAndResult :value="{ value: items, attributes, defaultAttributeValues: defaults }" hasMultipleValues :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
-        <AttributeMatrixEditor v-model="items" :attributes="attributes" :defaultAttributeValues="defaults" :minRows="4" :maxRows="4" />
+        <NotificationBox v-if="showNotification" dismissible @dismiss="showNotification = false" alertType="warning">This control is meant for internal use only.</NotificationBox>
+
+        <AttributeMatrixEditor v-model="items" :attributes="attributes" :defaultAttributeValues="defaults" :minRows="minRows" :maxRows="maxRows ?? Infinity" />
 
         <template #settings>
             <div class="row">
                 <div class="col-md-3">
+                    <NumberBox v-model="minRows" label="Minimum Number of Rows" />
+                </div>
+                <div class="col-md-3">
+                    <NumberBox v-model="maxRows" label="Maximum Number of Rows" />
                 </div>
             </div>
+            <NotificationBox v-if="showNotification" dismissible @dismiss="showNotification = false" alertType="warning">This control is meant for internal use only.</NotificationBox>
         </template>
     </GalleryAndResult>
 </template>
@@ -16,12 +23,12 @@
     import { computed, ref } from "vue";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
     import AttributeMatrixEditor from "@Obsidian/Controls/attributeMatrixEditor.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { getSfcControlImportPath } from "./utils.partial";
 
-    const value = ref("");
-    const someBool = ref(false);
-    const someVal = ref("hi");
-
+    const minRows = ref(0);
+    const maxRows = ref(999);
 
     const attributes = ref({
         "ArticleImage": {
@@ -149,11 +156,13 @@
         "ArticleLink": "/blog/"
     };
 
+    const showNotification = ref(true);
+
 
     const importCode = getSfcControlImportPath("attributeMatrixEditor");
     const exampleCode = computed(() => {
-        const someBoolProp = someBool.value ? " someBool" : "";
-        const someValProp = someVal.value ? ` someVal="${someVal.value}"` : "";
-        return `<AttributeMatrixEditor v-model="value"${someBoolProp}${someValProp} />`;
+        const minRowsProp = minRows.value != 0 ? ` :minRows="${minRows.value}"` : "";
+        const maxRowsProp = maxRows.value != null ? ` :maxRows="${maxRows.value}"` : "";
+        return `<AttributeMatrixEditor v-model="value" :attributes="attributes" :defaultAttributeValues="defaultAttributeValues" v-model="value"${minRowsProp}${maxRowsProp} />`;
     });
 </script>
