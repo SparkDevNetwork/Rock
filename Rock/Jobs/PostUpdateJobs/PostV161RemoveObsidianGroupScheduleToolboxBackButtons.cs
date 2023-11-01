@@ -51,9 +51,7 @@ namespace Rock.Jobs.PostUpdateJobs
             using ( var rockContext = new RockContext() )
             {
                 RemoveBackButtons( rockContext );
-
                 FlushAttributesFromCache( rockContext );
-
                 DeleteJob( rockContext );
             }
         }
@@ -76,29 +74,31 @@ namespace Rock.Jobs.PostUpdateJobs
             string newLavaTemplate = string.Empty;
 
             jobMigration.Sql( $@"
+DECLARE @BlockTypeEntityTypeId [int] = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block');
 DECLARE @ObsidianGrpSchedToolboxBlockTypeId [int] = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '{BLOCK_TYPE_GUID}');
 
 UPDATE [Attribute]
 SET [DefaultValue] = ''
-    , [DefaultPersistedTextValue] = ''
-    , [DefaultPersistedHtmlValue] = ''
-    , [DefaultPersistedCondensedTextValue] = ''
-    , [DefaultPersistedCondensedHtmlValue] = ''
+    , [DefaultPersistedTextValue] = NULL
+    , [DefaultPersistedHtmlValue] = NULL
+    , [DefaultPersistedCondensedTextValue] = NULL
+    , [DefaultPersistedCondensedHtmlValue] = NULL
     , [IsDefaultPersistedValueDirty] = 1
 WHERE [Key] IN (
         'ScheduleUnavailabilityHeader'
         , 'UpdateSchedulePreferencesHeader'
         , 'SignupforAdditionalTimesHeader'
     )
+    AND [EntityTypeId] = @BlockTypeEntityTypeId
     AND [EntityTypeQualifierColumn] = 'BlockTypeId'
     AND [EntityTypeQualifierValue] = @ObsidianGrpSchedToolboxBlockTypeId;
 
 UPDATE [AttributeValue]
 SET [Value] = REPLACE({targetColumn} ,'{lavaTemplate}','{newLavaTemplate}')
-    , [PersistedTextValue] = ''
-    , [PersistedHtmlValue] = ''
-    , [PersistedCondensedTextValue] = ''
-    , [PersistedCondensedHtmlValue] = ''
+    , [PersistedTextValue] = NULL
+    , [PersistedHtmlValue] = NULL
+    , [PersistedCondensedTextValue] = NULL
+    , [PersistedCondensedHtmlValue] = NULL
     , [IsPersistedValueDirty] = 1
 WHERE [AttributeId] IN
 (
@@ -109,6 +109,7 @@ WHERE [AttributeId] IN
             , 'UpdateSchedulePreferencesHeader'
             , 'SignupforAdditionalTimesHeader'
         )
+        AND [EntityTypeId] = @BlockTypeEntityTypeId
         AND [EntityTypeQualifierColumn] = 'BlockTypeId'
         AND [EntityTypeQualifierValue] = @ObsidianGrpSchedToolboxBlockTypeId
 );"
