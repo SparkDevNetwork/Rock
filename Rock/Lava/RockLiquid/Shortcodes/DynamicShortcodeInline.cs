@@ -29,8 +29,9 @@ using Rock.Web.Cache;
 namespace Rock.Lava.Shortcodes
 {
     /// <summary>
-    ///
+    /// Provides the implementation of a Rock dynamic tag shortcode in DotLiquid.
     /// </summary>
+    /// <seealso cref="global::DotLiquid.Block" />
     public class DynamicShortcodeInline : RockLavaShortcodeBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );

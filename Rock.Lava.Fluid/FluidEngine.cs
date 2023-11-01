@@ -728,6 +728,16 @@ namespace Rock.Lava.Fluid
             return LavaFluidParser.ParseToTokens( lavaTemplate );
         }
 
+        /// <summary>
+        /// Process a template and return the list of statements identified by the parser.
+        /// </summary>
+        /// <param name="lavaTemplate"></param>
+        /// <returns></returns>
+        public List<string> ParseTemplateToStatements( string lavaTemplate )
+        {
+            return LavaFluidParser.ParseToStatements( lavaTemplate );
+        }
+
         protected override ILavaTemplate OnParseTemplate( string lavaTemplate )
         {
             var fluidTemplate = CreateNewFluidTemplate( lavaTemplate );
