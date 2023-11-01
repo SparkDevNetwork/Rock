@@ -170,7 +170,7 @@ namespace Rock.Lava.Fluid
         private static Parser<LavaTagResult> _lavaInlineCommentStart = new LavaTagStartParser( LavaTagFormatSpecifier.InlineComment );
 
         /// <summary>
-        /// A parser that detects the end of a Lava inline comment: '\r\n'
+        /// A parser that detects the end of a Lava inline comment: '\n'
         /// </summary>
         public static Parser<LavaTagResult> LavaInlineCommentEnd => _lavaInlineCommentEnd;
         private static Parser<LavaTagResult> _lavaInlineCommentEnd = new LavaTagEndParser( LavaTagFormatSpecifier.InlineComment );
@@ -602,8 +602,8 @@ namespace Rock.Lava.Fluid
                 }
                 else if ( _format == LavaTagFormatSpecifier.InlineComment )
                 {
-                    _tagChar1 = '\r';
-                    _tagChar2 = '\n';
+                    _tagChar1 = '\n';
+                    _tagChar2 = '\0';
 
                     // The EOL characters form the tag, but they should remain in the output.
                     _skipWhiteSpace = false;
@@ -675,7 +675,8 @@ namespace Rock.Lava.Fluid
                     // Find an explicit tag close token.
                     trim = _autoTrim || context.Scanner.ReadChar( '-' );
 
-                    var endTagFound = context.Scanner.ReadChar( _tagChar1 ) && context.Scanner.ReadChar( _tagChar2 );
+                    var endTagFound = context.Scanner.ReadChar( _tagChar1 )
+                        && ( _tagChar2 == '\0' || context.Scanner.ReadChar( _tagChar2 ) );
                     if ( !endTagFound )
                     {
                         // Not found, so return the scanner to the start position.
@@ -722,7 +723,8 @@ namespace Rock.Lava.Fluid
                     // Find the tag close token.
                     trim = _autoTrim || context.Scanner.ReadChar( '-' );
 
-                    var endTagFound = context.Scanner.ReadChar( _tagChar1 ) && context.Scanner.ReadChar( _tagChar2 );
+                    var endTagFound = context.Scanner.ReadChar( _tagChar1 )
+                        && ( _tagChar2 == '\0' || context.Scanner.ReadChar( _tagChar2 ) );
                     if ( !endTagFound )
                     {
                         // Not found, so return the scanner to the start position.
