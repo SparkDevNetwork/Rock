@@ -52,6 +52,8 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntryInitializationBox.cs" />
