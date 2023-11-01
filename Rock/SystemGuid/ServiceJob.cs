@@ -306,5 +306,20 @@ namespace Rock.SystemGuid
         /// The post update data migration job to chop the Group Registration block
         /// </summary>
         public const string DATA_MIGRATIONS_160_CHOP_BLOCKS_GROUP_REGISTRATION = "72D9EC04-517A-4CA0-B631-9F9A41F1790D";
+
+        /// <summary>
+        /// The post update data migration job to swap the Group Schedule Toolbox V1.
+        /// </summary>
+        public const string DATA_MIGRATIONS_161_SWAP_BLOCK_GROUP_SCHEDULE_TOOLBOX_V1 = "22DBD648-79C0-40C7-B561-094E4E7637E5";
+
+        /// <summary>
+        /// The post update data migration job to chop the Group Schedule Toolbox V2.
+        /// </summary>
+        public const string DATA_MIGRATIONS_161_CHOP_BLOCK_GROUP_SCHEDULE_TOOLBOX_V2 = "7F989E9F-913C-45E4-9EB1-EC70AC220939";
+
+        /// <summary>
+        /// The post update data migration job to remove obsidian group schedule toolbox back buttons.
+        /// </summary>
+        public const string DATA_MIGRATIONS_161_REMOVE_OBSIDIAN_GROUP_SCHEDULE_TOOLBOX_BACK_BUTTONS = "781F2D3B-E5E4-41D5-9145-1D70DDB3EE04";
     }
 }
