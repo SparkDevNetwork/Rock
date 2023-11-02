@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Diagnostics;
 using Fluid.Parser;
 using Parlot;
 using Parlot.Fluent;
@@ -27,6 +26,33 @@ namespace Rock.Lava.Fluid
     /// </summary>
     public static class LavaFluidTagParsers
     {
+        /// <summary>
+        /// Creates a parser for a Lava shortcode open tag: "{[ shortcodeName param1 param2 ]}"
+        /// </summary>
+        /// <param name="tagName"></param>
+        /// <returns></returns>
+        public static Parser<TagResult> NewLavaStartTag( string tagName, LavaTagFormatSpecifier format )
+        {
+            var tagStart = new LavaTagParsers.LavaTagWithAttributesParser( tagName, format );
+
+            var parser = tagStart.AsFluidTagResultParser();
+            return parser;
+        }
+
+        /// <summary>
+        /// Creates a parser for a Lava shortcode close tag: "{[ endShortcodeName ]}"
+        /// </summary>
+        /// <param name="tagName"></param>
+        /// <returns></returns>
+        public static Parser<TagResult> NewLavaEndTag( string tagName, LavaTagFormatSpecifier format )
+        {
+            var tagStart = new LavaTagParsers.LavaTagStartParser( format );
+            var tagEnd = new LavaTagParsers.LavaTagEndParser( format );
+            var parser = tagStart.SkipAnd( Terms.Text( "end" + tagName ) ).AndSkip( tagEnd )
+                .Then( x => TagResult.TagClose );
+            return parser;
+        }
+
         private static Parser<TagResult> _lavaBlockCommentStart = null;
         public static Parser<TagResult> LavaBlockCommentStart
         {
@@ -101,27 +127,51 @@ namespace Rock.Lava.Fluid
             return new LavaTagWithAttributesParser( tagName, format );
         }
 
-        public static Parser<LavaTagResult> LavaTagStart => _lavaTagStart;
-        private static Parser<LavaTagResult> _lavaTagStart = new LavaTagStartParser( LavaTagFormatSpecifier.LiquidTag );
+        /// <summary>
+        /// A parser that detects the start of a Liquid tag: '{%'
+        /// </summary>
+        public static Parser<LavaTagResult> LiquidTagStart => _liquidTagStart;
+        private static Parser<LavaTagResult> _liquidTagStart = new LavaTagStartParser( LavaTagFormatSpecifier.LiquidTag );
 
-        public static Parser<LavaTagResult> LavaTagEnd => _lavaTagEnd;
-        private static Parser<LavaTagResult> _lavaTagEnd = new LavaTagEndParser( LavaTagFormatSpecifier.LiquidTag );
+        /// <summary>
+        /// A parser that detects the end of a Liquid tag: '%}'
+        /// </summary>
+        public static Parser<LavaTagResult> LiquidTagEnd => _liquidTagEnd;
+        private static Parser<LavaTagResult> _liquidTagEnd = new LavaTagEndParser( LavaTagFormatSpecifier.LiquidTag );
 
+        /// <summary>
+        /// A parser that detects the start of a shortcode tag: '{['
+        /// </summary>
         public static Parser<LavaTagResult> LavaShortcodeStart => _lavaShortcodeStart;
         private static Parser<LavaTagResult> _lavaShortcodeStart = new LavaTagStartParser( LavaTagFormatSpecifier.LavaShortcode );
 
+        /// <summary>
+        /// A parser that detects the end of a shortcode tag: ']}'
+        /// </summary>
         public static Parser<LavaTagResult> LavaShortcodeEnd => _lavaShortcodeEnd;
         private static Parser<LavaTagResult> _lavaShortcodeEnd = new LavaTagEndParser( LavaTagFormatSpecifier.LavaShortcode );
 
+        /// <summary>
+        /// A parser that detects the start of a Lava block comment: '/-'
+        /// </summary>
         public static Parser<LavaTagResult> LavaBlockCommentStart => _lavaBlockCommentStart;
         private static Parser<LavaTagResult> _lavaBlockCommentStart = new LavaTagStartParser( LavaTagFormatSpecifier.BlockComment );
 
+        /// <summary>
+        /// A parser that detects the end of a Lava block comment: '-/'
+        /// </summary>
         public static Parser<LavaTagResult> LavaBlockCommentEnd => _lavaBlockCommentEnd;
         private static Parser<LavaTagResult> _lavaBlockCommentEnd = new LavaTagEndParser( LavaTagFormatSpecifier.BlockComment );
 
+        /// <summary>
+        /// A parser that detects the start of a Lava inline comment: '//-'
+        /// </summary>
         public static Parser<LavaTagResult> LavaInlineCommentStart => _lavaInlineCommentStart;
         private static Parser<LavaTagResult> _lavaInlineCommentStart = new LavaTagStartParser( LavaTagFormatSpecifier.InlineComment );
 
+        /// <summary>
+        /// A parser that detects the end of a Lava inline comment: '\n'
+        /// </summary>
         public static Parser<LavaTagResult> LavaInlineCommentEnd => _lavaInlineCommentEnd;
         private static Parser<LavaTagResult> _lavaInlineCommentEnd = new LavaTagEndParser( LavaTagFormatSpecifier.InlineComment );
 
@@ -203,82 +253,98 @@ namespace Rock.Lava.Fluid
                     context.SkipWhiteSpace();
                 }
 
-                // This block is invoked when the scanner is positioned at the start of the block content, after the open tag.
+                // This parser is invoked when the scanner is positioned at the start of the block content, after the open tag.
                 var openTags = 1;
                 var start = context.Scanner.Cursor.Position;
 
                 // Define parsers that can identify opening and closing tags for this block type, to track nested blocks of the same type if necessary.
-                var openTagOnlyParser = LavaTagWithAttributes( _tagName, _tagFormat );
 
-                var openTagParser = AnyCharBefore( openTagOnlyParser, canBeEmpty: true )
-                    .SkipAnd( openTagOnlyParser );
+                //
+                // Lava blocks must be processed differently from standard Liquid tags, because they may require additional pre-processing
+                // of non-standard tags before being processed by the Liquid parser.
+                // To correctly capture the content of the block, we need to skip over embedded raw and comment tags because they may include
+                // some invalid Liquid syntax.
+                // For example, the following Lava template will throw an error in the standard Fluid parser
+                // due to the unpaired shortcode open tag embedded in the raw tag:
+                //
+                // {[ panel title:'Important Stuff' icon:'fa fa-star' ]}
+                //    This is a super simple panel.
+                //    {% raw %}
+                //        This is some literal text containing an invalid shortcode: {[ panel title:'Example' ]}
+                //    {% endraw %}
+                // {[ endpanel ]}
+                //
 
-                var closeTagOnlyParser = LavaTagWithAttributes( "end" + _tagName, _tagFormat );
+                var openTagParser = LavaFluidTagParsers.NewLavaStartTag( _tagName, _tagFormat );
+                var closeTagParser = LavaFluidTagParsers.NewLavaEndTag( _tagName, _tagFormat );
 
-                var closeTagParser = AnyCharBefore( closeTagOnlyParser, canBeEmpty: true )
-                    .SkipAnd( closeTagOnlyParser );
+                var rawTagParser = LavaFluidParser.CreateTag( "raw" )
+                    .SkipAnd( AnyCharBefore( LavaFluidParser.CreateTag( "endraw" ), canBeEmpty: true )
+                    .AndSkip( LavaFluidParser.CreateTag( "endraw" ) ) );
 
-                TextPosition nextStartTagPos = TextPosition.Start;
-                TextPosition nextEndTagPos;
+                var inlineCommentParser = LavaTagParsers.LavaInlineCommentStart
+                    .SkipAnd( AnyCharBefore( LavaTagParsers.LavaInlineCommentEnd, canBeEmpty: true )
+                    .AndSkip( LavaTagParsers.LavaInlineCommentEnd ) );
 
-                TextPosition currentSearchStart = start;
-                var resultStartTag = new ParseResult<LavaTagResult>();
-                var resultEndTag = new ParseResult<LavaTagResult>();
-                var startTagFound = true;
-                var endTagFound = false;
-
+                var parseTagResult = new ParseResult<TagResult>();
+                var parseTextResult = new ParseResult<TextSpan>();
                 var cursor = context.Scanner.Cursor;
 
-                int startIndex = start.Offset;
-                int endTagStartIndex = -1;
-                int endTagEndIndex = -1;
+                var currentSearchStart = start;
+                var startIndex = start.Offset;
+                var endTagStartIndex = -1;
+                var endTagEndIndex = -1;
+                bool isMatch;
 
-                while ( openTags > 0 && ( startTagFound || endTagFound ) )
+                while ( openTags > 0 && !cursor.Eof )
                 {
-                    // Find the next instances of start and end tags.
-                    startTagFound = openTagParser.Parse( context, ref resultStartTag );
-                    if ( startTagFound )
-                    {
-                        nextStartTagPos = startTagFound ? new TextPosition( resultStartTag.Value.Text.Offset, cursor.Position.Line, cursor.Position.Column ) : TextPosition.Start;
-                    }
-
+                    // Find the next open tag for this block type.
                     cursor.ResetPosition( currentSearchStart );
-                    endTagFound = closeTagParser.Parse( context, ref resultEndTag );
 
-                    if ( endTagFound )
+                    // Skip whitespace.
+                    context.SkipWhiteSpace();
+
+                    // Skip over comment.
+                    isMatch = inlineCommentParser.Parse( context, ref parseTextResult );
+                    if ( isMatch )
                     {
-                        endTagStartIndex = resultEndTag.Value.Text.Offset;
-                        endTagEndIndex = resultEndTag.End;
-
-                        nextEndTagPos = endTagFound ? new TextPosition( endTagStartIndex, cursor.Position.Line, cursor.Position.Column ) : TextPosition.Start;
-
-                        if ( startTagFound
-                             && nextStartTagPos.Offset < nextEndTagPos.Offset )
-                        {
-                            // A start tag was found that precedes the next end tag.
-                            // Increment the open tag counter and continue searching.
-                            openTags++;
-                            context.Scanner.Cursor.ResetPosition( nextStartTagPos );
-                        }
-                        else
-                        {
-                            openTags--;
-                            context.Scanner.Cursor.ResetPosition( nextEndTagPos );
-                        }
-                    }
-                    else
-                    {
-                        if ( startTagFound )
-                        {
-                            openTags++;
-                            context.Scanner.Cursor.ResetPosition( nextStartTagPos );
-                        }
+                        currentSearchStart = cursor.Position;
+                        continue;
                     }
 
-                    // Move to the next search position.
-                    context.Scanner.Cursor.Advance();
+                    // Skip over raw tag.
+                    isMatch = rawTagParser.Parse( context, ref parseTextResult );
+                    if ( isMatch )
+                    {
+                        currentSearchStart = cursor.Position;
+                        continue;
+                    }
 
-                    currentSearchStart = context.Scanner.Cursor.Position;
+                    // Count open tag.
+                    isMatch = openTagParser.Parse( context, ref parseTagResult );
+                    if ( isMatch )
+                    {
+                        openTags++;
+                        currentSearchStart = cursor.Position;
+                        continue;
+                    }
+
+                    // Count close tag.
+                    isMatch = closeTagParser.Parse( context, ref parseTagResult );
+                    if ( isMatch )
+                    {
+                        openTags--;
+                        currentSearchStart = cursor.Position;
+
+                        // Capture the tag position.
+                        endTagStartIndex = parseTagResult.Start;
+                        endTagEndIndex = parseTagResult.End;
+                        continue;
+                    }
+
+                    // No matched tokens, so advance the cursor to the next character.
+                    cursor.Advance();
+                    currentSearchStart = cursor.Position;
                 }
 
                 // If the number of start and end tags do not match, the block is invalid.
@@ -339,7 +405,7 @@ namespace Rock.Lava.Fluid
                 }
                 else
                 {
-                    tagParser = LavaTagStart
+                    tagParser = LiquidTagStart
                         .And( Terms.Text( _tagName ) ).
                         And( AnyCharBefore( LavaFluidParser.LavaTokenEndParser, canBeEmpty: true ) )
                         .And( LavaFluidParser.LavaTokenEndParser );
@@ -536,8 +602,8 @@ namespace Rock.Lava.Fluid
                 }
                 else if ( _format == LavaTagFormatSpecifier.InlineComment )
                 {
-                    _tagChar1 = '\r';
-                    _tagChar2 = '\n';
+                    _tagChar1 = '\n';
+                    _tagChar2 = '\0';
 
                     // The EOL characters form the tag, but they should remain in the output.
                     _skipWhiteSpace = false;
@@ -609,7 +675,8 @@ namespace Rock.Lava.Fluid
                     // Find an explicit tag close token.
                     trim = _autoTrim || context.Scanner.ReadChar( '-' );
 
-                    var endTagFound = context.Scanner.ReadChar( _tagChar1 ) && context.Scanner.ReadChar( _tagChar2 );
+                    var endTagFound = context.Scanner.ReadChar( _tagChar1 )
+                        && ( _tagChar2 == '\0' || context.Scanner.ReadChar( _tagChar2 ) );
                     if ( !endTagFound )
                     {
                         // Not found, so return the scanner to the start position.
@@ -656,7 +723,8 @@ namespace Rock.Lava.Fluid
                     // Find the tag close token.
                     trim = _autoTrim || context.Scanner.ReadChar( '-' );
 
-                    var endTagFound = context.Scanner.ReadChar( _tagChar1 ) && context.Scanner.ReadChar( _tagChar2 );
+                    var endTagFound = context.Scanner.ReadChar( _tagChar1 )
+                        && ( _tagChar2 == '\0' || context.Scanner.ReadChar( _tagChar2 ) );
                     if ( !endTagFound )
                     {
                         // Not found, so return the scanner to the start position.
