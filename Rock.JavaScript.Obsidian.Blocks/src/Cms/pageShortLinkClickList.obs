@@ -1,7 +1,6 @@
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          :entityTypeGuid="EntityType.PageShortLinkClick"
           keyField="id"
           itemTerm="Clicks"
           stickyHeader
@@ -51,12 +50,11 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import Grid, { DateTimeColumn, PersonColumn, TextColumn, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { PageShortLinkClickListBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkClickList/pageShortLinkClickListBag";
+    import { PageShortLinkClickListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkClickList/pageShortLinkClickListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { reactive, ref } from "vue";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
-    const config = useConfigurationValues<ListBlockBox<PageShortLinkClickListBag>>();
+    const config = useConfigurationValues<ListBlockBox<PageShortLinkClickListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values

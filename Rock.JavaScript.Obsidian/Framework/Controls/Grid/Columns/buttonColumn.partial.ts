@@ -17,7 +17,7 @@
 
 import { Component, defineComponent, PropType } from "vue";
 import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
-import ButtonCell from "../Cells/ButtonCell.partial.obs";
+import ButtonCell from "../Cells/buttonCell.partial.obs";
 
 export default defineComponent({
 

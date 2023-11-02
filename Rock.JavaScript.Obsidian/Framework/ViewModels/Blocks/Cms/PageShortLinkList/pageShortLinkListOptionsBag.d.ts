@@ -22,5 +22,4 @@
 //
 
 /** The additional configuration options for the Page Short Link List block. */
-export type PageShortLinkListOptionsBag = {
-};
+export type PageShortLinkListOptionsBag = {};
