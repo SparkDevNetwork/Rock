@@ -2,7 +2,7 @@
 <template>
     <div>
         <RockButton
-            @click="actionFunction(row.id)"
+            @click="actionFunction(props.grid.getRowKey(row))"
             :title="column.props.title">
             <i :class="column.props.iconClass"></i>
         </RockButton>
@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed } from "vue";
+import { computed } from "vue";
 import { standardCellProps } from "@Obsidian/Core/Controls/grid";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
 

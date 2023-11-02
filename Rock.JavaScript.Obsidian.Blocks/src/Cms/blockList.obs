@@ -104,8 +104,11 @@
         }
     }
 
-    const handleClick = (rowId: number) => {
-        Rock.controls.modal.show($(this), `/BlockProperties/${rowId}?t=Block Properties`);
+    const handleClick = (key: string) => {
+        const rowId = gridData?.rows?.find(r => r["idKey"] === key)?.id;
+        if (rowId) {
+            Rock.controls.modal.show($(this), `/BlockProperties/${rowId}?t=Block Properties`);
+        }
     };
 
     // #endregion
