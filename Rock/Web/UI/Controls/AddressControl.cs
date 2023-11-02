@@ -862,8 +862,6 @@ namespace Rock.Web.UI.Controls
                 return;
             }
 
-            var validator = source as CustomValidator;
-
             // Get the edited Location, and include any default values to avoid incorrect validation messages for the fields
             // to which they apply.
             if ( this.PartialAddressIsAllowed )
@@ -879,7 +877,11 @@ namespace Rock.Web.UI.Controls
 
             if ( !isValid )
             {
-                validator.ErrorMessage = validationMessage;
+                var addressRequirementsValidator = source as CustomValidator;
+                if ( addressRequirementsValidator != null )
+                {
+                    addressRequirementsValidator.ErrorMessage = validationMessage;
+                }
 
                 args.IsValid = false;
 
