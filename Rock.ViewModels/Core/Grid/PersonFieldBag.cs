@@ -40,5 +40,11 @@ namespace Rock.ViewModels.Core.Grid
         /// </summary>
         /// <value>The photo URL.</value>
         public string PhotoUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person's IdKey.
+        /// </summary>
+        /// <value>The IdKey.</value>
+        public string IdKey { get; set; }
     }
 }

@@ -33,6 +33,7 @@ import ReorderColumn from "./Grid/Columns/reorderColumn.partial";
 import SecurityColumn from "./Grid/Columns/securityColumn.partial";
 import SelectColumn from "./Grid/Columns/selectColumn.partial";
 import TextColumn from "./Grid/Columns/textColumn.partial";
+import CopyColumn from "./Grid/Columns/copyColumn.partial";
 import ButtonColumn from "./Grid/Columns/buttonColumn.partial";
 
 import BooleanCell from "./Grid/Cells/booleanCell.partial.obs";
@@ -50,6 +51,7 @@ import SecurityCell from "./Grid/Cells/securityCell.partial.obs";
 import SelectCell from "./Grid/Cells/selectCell.partial.obs";
 import SelectHeaderCell from "./Grid/Cells/selectHeaderCell.partial.obs";
 import TextCell from "./Grid/Cells/textCell.partial";
+import CopyCell from "./Grid/Cells/copyCell.partial.obs";
 import ButtonCell from "./Grid/Cells/buttonCell.partial.obs";
 
 import BooleanFilter from "./Grid/Filters/booleanFilter.partial.obs";
@@ -82,6 +84,7 @@ export {
     SecurityColumn,
     SelectColumn,
     TextColumn,
+    CopyColumn,
     ButtonColumn
 };
 
@@ -102,6 +105,7 @@ export {
     SelectCell,
     SelectHeaderCell,
     TextCell,
+    CopyCell,
     ButtonCell
 };
 
