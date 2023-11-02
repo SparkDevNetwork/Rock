@@ -21,17 +21,6 @@
 // </copyright>
 //
 
-/**
- * The data bag that contains all the information required to display
- * a PersonColumn in a Grid.
- */
-export type PersonFieldBag = {
-    /** Gets or sets the last name. */
-    lastName?: string | null;
-
-    /** Gets or sets the nick name. */
-    nickName?: string | null;
-
-    /** Gets or sets the photo URL. */
-    photoUrl?: string | null;
+/** The additional configuration options for the Layout List block. */
+export type LayoutListOptionsBag = {
 };
