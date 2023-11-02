@@ -17,6 +17,9 @@
         <asp:Panel ID="pnlPromptForChanges" runat="server">
             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
 
+            <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label=" "
+                DataTextField="PublicName" DataValueField="Guid" OnSelectionChanged="btnAddAccount_SelectionChanged" />
+
             <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency" FormGroupCssClass="margin-t-md" />
 
             <div class="margin-t-md">

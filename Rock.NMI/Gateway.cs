@@ -43,7 +43,7 @@ namespace Rock.NMI
     /// <summary>
     /// NMI Payment Gateway
     /// </summary>
-    [DisplayName( "NMI Gateway" )]
+    [DisplayName( "Celero/TransNational NMI Gateway" )]
     [Description( "" )]
 
     [Export( typeof( GatewayComponent ) )]
