@@ -25,7 +25,7 @@ import DateColumn from "./Grid/Columns/dateColumn.partial";
 import DateTimeColumn from "./Grid/Columns/dateTimeColumn.partial";
 import DeleteColumn from "./Grid/Columns/deleteColumn.partial";
 import EditColumn from "./Grid/Columns/editColumn.partial";
-import FieldColumn from "./Grid/Columns/fieldColumn.partial";
+import RockFieldColumn from "./Grid/Columns/rockFieldColumn.partial";
 import LabelColumn from "./Grid/Columns/labelColumn.partial";
 import NumberBadgeColumn from "./Grid/Columns/numberBadgeColumn.partial";
 import NumberColumn from "./Grid/Columns/numberColumn.partial";
@@ -41,7 +41,7 @@ import DateCell from "./Grid/Cells/dateCell.partial.obs";
 import DateTimeCell from "./Grid/Cells/dateTimeCell.partial.obs";
 import DeleteCell from "./Grid/Cells/deleteCell.partial.obs";
 import EditCell from "./Grid/Cells/editCell.partial.obs";
-import FieldCell from "./Grid/Cells/fieldCell.partial.obs";
+import RockFieldCell from "./Grid/Cells/rockFieldCell.partial.obs";
 import LabelCell from "./Grid/Cells/labelCell.partial.obs";
 import NumberBadgeCell from "./Grid/Cells/numberBadgeCell.partial.obs";
 import NumberCell from "./Grid/Cells/numberCell.partial.obs";
@@ -74,7 +74,7 @@ export {
     DateTimeColumn,
     DeleteColumn,
     EditColumn,
-    FieldColumn,
+    RockFieldColumn,
     LabelColumn,
     NumberBadgeColumn,
     NumberColumn,
@@ -93,7 +93,7 @@ export {
     DateTimeCell,
     DeleteCell,
     EditCell,
-    FieldCell,
+    RockFieldCell,
     LabelCell,
     NumberBadgeCell,
     NumberCell,
@@ -136,9 +136,9 @@ export const numberValueFilter: ColumnFilter = {
 
 /** A column filter that performs simple substring matching. */
 export const textValueFilter: ColumnFilter = {
-     component: TextFilter,
+    component: TextFilter,
 
-     matches: textFilterMatches
+    matches: textFilterMatches
 };
 
 /**

@@ -6,7 +6,7 @@
 
         <Grid v-show="mode == 'grid'" :data="gridData" itemTerm="Item" keyField="key" liveUpdates light @addItem="onAddItem" @selectItem="onSelectItem">
             <ReorderColumn @orderChanged="onOrderChanged" />
-            <FieldColumn v-for="attr in attributeList" :key="attr.fieldTypeGuid ?? ''" :field="attr.field ?? ''" :name="attr.field ?? ''" :title="attr.title ?? ''" :attribute="attributes[attr.field ?? '']" />
+            <RockFieldColumn v-for="attr in attributeList" :key="attr.fieldTypeGuid ?? ''" :field="attr.field ?? ''" :name="attr.field ?? ''" :title="attr.title ?? ''" :attribute="attributes[attr.field ?? '']" />
             <DeleteColumn @click="onDelete" />
         </Grid>
 
@@ -23,17 +23,18 @@
             <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Save</RockButton>
             <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
         </RockForm>
+        <pre>{{ JSON.stringify(attributeList, null, 4) }}</pre>
     </RockFormField>
 </template>
 
 <script setup lang="ts">
     import { PropType, computed, ref, watch } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
-    import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import Grid, { DeleteColumn, FieldColumn, ReorderColumn } from "@Obsidian/Controls/grid";
-    import NotificationBox from "./notificationBox.obs";
+    import RockFormField from "../rockFormField.obs";
+    import RockForm from "../rockForm.obs";
+    import RockButton from "../rockButton.obs";
+    import AttributeValuesContainer from "../attributeValuesContainer.obs";
+    import Grid, { DeleteColumn, RockFieldColumn, ReorderColumn } from "../grid";
+    import NotificationBox from "../notificationBox.obs";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
@@ -220,7 +221,9 @@
     );
 
     const attributeList = computed(
-        () => Object.values(props.attributes).map(attr => ({
+        () => Object.values(props.attributes).sort((a, b) => {
+            return (a.order ?? 0) - (b.order ?? 0);
+        }).map(attr => ({
             fieldTypeGuid: attr.fieldTypeGuid,
             field: attr.key,
             title: attr.name

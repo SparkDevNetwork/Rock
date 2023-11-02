@@ -14,7 +14,7 @@
 
     const configurationValues = computed(() => {
         const attribute = props.column.props.attribute as PublicAttributeBag;
-        return attribute.configurationValues ?? {};
+        return attribute?.configurationValues ?? {};
     });
 
     const fieldComponent = computed(() => {

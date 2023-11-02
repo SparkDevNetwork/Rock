@@ -17,7 +17,7 @@
 
 import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import { Component, PropType, defineComponent } from "vue";
-import FieldCell from "../Cells/fieldCell.partial.obs";
+import RockFieldCell from "../Cells/rockFieldCell.partial.obs";
 import { ColumnDefinition, ExportValueFunction } from "@Obsidian/Types/Controls/grid";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -49,7 +49,7 @@ export default defineComponent({
 
         formatComponent: {
             type: Object as PropType<Component>,
-            default: FieldCell
+            default: RockFieldCell
         },
 
         exportValue: {
