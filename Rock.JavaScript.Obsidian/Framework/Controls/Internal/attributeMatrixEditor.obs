@@ -23,7 +23,6 @@
             <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Save</RockButton>
             <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
         </RockForm>
-        <pre>{{ JSON.stringify(attributeList, null, 4) }}</pre>
     </RockFormField>
 </template>
 
