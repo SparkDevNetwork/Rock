@@ -84,6 +84,18 @@
     <Compile Include="Migrations\202310191751018_CodeGenerated_20231019.designer.cs">
       <DependentUpon>202310191751018_CodeGenerated_20231019.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202310231631563_AddAdaptiveMessage.cs" />
+    <Compile Include="Migrations\202310231631563_AddAdaptiveMessage.designer.cs">
+      <DependentUpon>202310231631563_AddAdaptiveMessage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202310241831421_AddPinTopTopFlagForNotes.cs" />
+    <Compile Include="Migrations\202310241831421_AddPinTopTopFlagForNotes.designer.cs">
+      <DependentUpon>202310241831421_AddPinTopTopFlagForNotes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.cs" />
+    <Compile Include="Migrations\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.designer.cs">
+      <DependentUpon>202310272113028_AssignSignatureDocumentToRegistrationRegistrant.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.designer.cs">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>
@@ -1864,6 +1876,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202310191751018_CodeGenerated_20231019.resx">
       <DependentUpon>202310191751018_CodeGenerated_20231019.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202310231631563_AddAdaptiveMessage.resx">
+      <DependentUpon>202310231631563_AddAdaptiveMessage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202310241831421_AddPinTopTopFlagForNotes.resx">
+      <DependentUpon>202310241831421_AddPinTopTopFlagForNotes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.resx">
+      <DependentUpon>202310272113028_AssignSignatureDocumentToRegistrationRegistrant.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.resx">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>

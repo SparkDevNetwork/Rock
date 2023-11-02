@@ -15,9 +15,9 @@
         </div>
 
         <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
-        <Panel title="Workflows" :hasCollapse="true" :isDrawerOpen="true">
-            <h2>Adaptations</h2>
-            <p>The messages below are personalized for the configured segments and are in order by the priority.</p>
+        <Panel title="Adaptations" :hasCollapse="true" :isDrawerOpen="true">
+            <SectionHeader title="Adaptations"
+                       description="The messages below are personalized for the configured segments and are in order by the priority." />
             <Grid :definition="props.modelValue?.adaptationsGridDefinition ?? undefined"
                   :data="adaptationsGridDataSource"
                   :entityTypeGuid="EntityType.AdaptiveMessageAdaptation"
@@ -69,6 +69,7 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { AdaptiveMessageBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageDetail/adaptiveMessageBag";

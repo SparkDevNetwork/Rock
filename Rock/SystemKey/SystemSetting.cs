@@ -342,5 +342,10 @@ namespace Rock.SystemKey
         /// The content library data (JSON).
         /// </summary>
         public const string CONTENT_LIBRARY_DATA_JSON = "core_ContentLibraryDataJson";
+
+        /// <summary>
+        /// Determine if Same Sex Couples are allowed.
+        /// </summary>
+        public const string BIBLE_STRICT_SPOUSE = "core_BibleStrictSpouse";
     }
 }

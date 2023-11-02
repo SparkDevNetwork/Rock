@@ -49,6 +49,9 @@
     <Compile Include="AI\ModerationFlags.cs" />
     <Compile Include="AI\ChatMessageRole.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
+    <Compile Include="Blocks\Group\Scheduling\ToolboxActionType.cs" />
+    <Compile Include="Blocks\Group\Scheduling\ToolboxScheduleRowActionType.cs" />
+    <Compile Include="Blocks\Group\Scheduling\ToolboxScheduleRowConfirmationStatus.cs" />
     <Compile Include="Blocks\Security\ForgotUserName\SendInstructionsResultType.cs" />
     <Compile Include="Blocks\Engagement\SignUp\RegisterMode.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailScheduleSelectionMode.cs" />

@@ -36,6 +36,7 @@
 
                     <InlineCheckBox v-if="showAlert" v-model="isAlert" label="Alert" />
                     <InlineCheckBox v-if="showPrivate" v-model="isPrivate" label="Private" />
+                    <InlineCheckBox v-model="isPinned" label="Pin to Top" />
 
                     <div class="commands">
                         <button v-if="showSecurity && modelValue?.idKey"
@@ -185,6 +186,7 @@
     const noteTypeIdKey = ref(props.modelValue?.noteTypeIdKey ?? "");
     const noteText = ref(props.modelValue?.text ?? "");
     const isAlert = ref(props.modelValue?.isAlert ?? false);
+    const isPinned = ref(props.modelValue?.isPinned ?? false);
     const isPrivate = ref(props.modelValue?.isPrivate ?? false);
     const createdDateTime = ref(props.modelValue?.createdDateTime ?? "");
     const attributes = ref<Record<string, PublicAttributeBag>>({});
@@ -237,8 +239,17 @@
      * Contains the {@link ListItemBag} objects that represent the note types
      * to be displayed in the drop down list.
      */
-    const noteTypeItems = computed((): ListItemBag[] => {
+    const selectableNoteTypes = computed((): NoteTypeBag[] => {
         return props.noteTypes
+            .filter(nt => nt.userSelectable);
+    });
+
+    /**
+     * Contains the {@link ListItemBag} objects that represent the note types
+     * to be displayed in the drop down list.
+     */
+    const noteTypeItems = computed((): ListItemBag[] => {
+        return selectableNoteTypes.value
             .map(nt => {
                 return {
                     value: nt.idKey,
@@ -252,7 +263,7 @@
      * be determined which one is selected.
      */
     const selectedNoteType = computed((): NoteTypeBag | undefined => {
-        return props.noteTypes.find(nt => nt.idKey === noteTypeIdKey.value);
+        return selectableNoteTypes.value.find(nt => nt.idKey === noteTypeIdKey.value);
     });
 
     /** Determines if the currently selected note type supports mentions. */
@@ -262,7 +273,7 @@
 
     /** The default note type to select. */
     const defaultNoteTypeIdKey = computed((): string => {
-        return props.noteTypes.length > 0 ? props.noteTypes[0].idKey ?? "" : "";
+        return selectableNoteTypes.value.length > 0 ? selectableNoteTypes.value[0].idKey ?? "" : "";
     });
 
     // #endregion
@@ -418,18 +429,20 @@
         updateRefValue(noteTypeIdKey, props.modelValue?.noteTypeIdKey ?? noteTypeIdKey.value ?? defaultNoteTypeIdKey.value);
         updateRefValue(noteText, props.modelValue?.text ?? "");
         updateRefValue(isAlert, props.modelValue?.isAlert ?? false);
+        updateRefValue(isPinned, props.modelValue?.isPinned ?? false);
         updateRefValue(isPrivate, props.modelValue?.isPrivate ?? false);
         updateRefValue(createdDateTime, props.modelValue?.createdDateTime ?? "");
         updateRefValue(attributeValues, props.modelValue?.attributeValues ?? {});
     });
 
     // Watch for changes in the UI and update the model value.
-    watch([noteTypeIdKey, noteText, isAlert, isPrivate, createdDateTime, attributeValues], () => {
+    watch([noteTypeIdKey, noteText, isAlert, isPinned, isPrivate, createdDateTime, attributeValues], () => {
         const newBag: NoteEditBag = {
             ...(props.modelValue ?? {}),
             noteTypeIdKey: noteTypeIdKey.value,
             text: noteText.value,
             isAlert: isAlert.value,
+            isPinned: isPinned.value,
             isPrivate: isPrivate.value,
             createdDateTime: createdDateTime.value || null,
             attributeValues: attributeValues.value

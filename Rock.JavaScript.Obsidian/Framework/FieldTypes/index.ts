@@ -251,6 +251,12 @@ registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
 import { MergeTemplateFieldType } from "./mergeTemplateField.partial";
 registerFieldType(FieldTypeGuids.MergeTemplate, new MergeTemplateFieldType());
 
+import { MetricCategoriesFieldType } from "./metricCategoriesField.partial";
+registerFieldType(FieldTypeGuids.MetricCategories, new MetricCategoriesFieldType());
+
+import { MetricFieldType } from "./metricField.partial";
+registerFieldType(FieldTypeGuids.Metric, new MetricFieldType());
+
 import { MultiSelectFieldType } from "./multiSelectField.partial";
 registerFieldType(FieldTypeGuids.MultiSelect, new MultiSelectFieldType());
 
