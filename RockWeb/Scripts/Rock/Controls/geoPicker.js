@@ -578,6 +578,8 @@
                 $(this).closest('.picker-menu').slideUp(function () {
                     Rock.dialogs.updateModalScrollBar(controlId);
                 });
+
+                $(this).closest('form').submit();
             });
 
 

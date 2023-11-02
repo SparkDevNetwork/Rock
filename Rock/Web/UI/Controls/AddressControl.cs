@@ -666,6 +666,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether validation is disabled for this control.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if validation is disabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool ValidationIsDisabled
+        {
+            get
+            {
+                return ViewState["ValidationIsDisabled"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["ValidationIsDisabled"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating if the entry must satisfy the address requirements for the selected country to be considered valid.
         /// </summary>
         /// <value>
@@ -824,17 +843,17 @@ namespace Rock.Web.UI.Controls
             CustomValidator.ID = this.ID + "_cfv";
             CustomValidator.ClientValidationFunction = "Rock.controls.addressControl.clientValidate";
             CustomValidator.CssClass = "validation-error";
-            CustomValidator.Enabled = true;
             CustomValidator.ServerValidate += _CustomValidator_ServerValidate;
-
-            // Disable required field validation if partial address input is enabled.
-            CustomValidator.Enabled = !this.PartialAddressIsAllowed;
 
             Controls.Add( CustomValidator );
         }
 
         private void _CustomValidator_ServerValidate( object source, ServerValidateEventArgs args )
         {
+            if ( this.ValidationIsDisabled )
+            {
+                return;
+            }
             if ( !this.HasValue
                  && !this.Required )
             {
@@ -866,6 +885,15 @@ namespace Rock.Web.UI.Controls
 
                 return;
             }
+        }
+
+        /// <inheritdoc />
+        protected override void OnPreRender( EventArgs e )
+        {
+            // Disable required field validation if partial address input is enabled.
+            CustomValidator.Enabled = !( this.ValidationIsDisabled || this.PartialAddressIsAllowed );
+
+            base.OnPreRender( e );
         }
 
         /// <summary>
