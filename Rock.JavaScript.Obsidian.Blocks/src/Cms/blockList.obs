@@ -44,7 +44,8 @@
         <BooleanColumn name="isSystem"
                        title="Is System"
                        field="isSystem"
-                       visiblePriority="xs" />
+                       visiblePriority="xs"
+                       width="5%" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -71,7 +72,6 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { BlockListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/BlockList/blockListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./BlockList/types.partial";
     import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<BlockListOptionsBag>>();

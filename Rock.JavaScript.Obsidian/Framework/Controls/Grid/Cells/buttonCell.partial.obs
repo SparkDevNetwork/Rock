@@ -2,27 +2,27 @@
 <template>
     <div>
         <RockButton
-           @click="column.props.action?.(row.id)"
-           :title="column.props.title">
+            @click="actionFunction(row.id)"
+            :title="column.props.title">
             <i :class="column.props.iconClass"></i>
         </RockButton>
     </div>
 </template>
 
 <script setup lang="ts">
-import { defineProps } from "vue";
+import { defineProps, computed } from "vue";
 import { standardCellProps } from "@Obsidian/Core/Controls/grid";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
 
 const props = defineProps({
-    ...standardCellProps,
-    iconClass: {
-        type: String,
-        default: "fa fa-facebook"
-    },
-    title: {
-        type: String,
-        default: "Properties"
-    }
+    ...standardCellProps
 });
+
+const column = props.column;
+
+const actionFunction = computed(() => {
+    return typeof column.props.action === "function" ? column.props.action : () => {};
+});
+
 </script>
+
