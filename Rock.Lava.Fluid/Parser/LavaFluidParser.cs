@@ -705,14 +705,6 @@ namespace Rock.Lava.Fluid
             {
                 return "{[" + Content + "]}";
             }
-            else if ( ElementType == LavaDocumentTokenTypeSpecifier.InlineComment )
-            {
-                return "//-" + Content;
-            }
-            else if ( ElementType == LavaDocumentTokenTypeSpecifier.BlockComment )
-            {
-                return "/-" + Content + "-/";
-            }
             else if ( ElementType == LavaDocumentTokenTypeSpecifier.Comment )
             {
                 return "/- " + Content + " -/";
