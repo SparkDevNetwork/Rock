@@ -66,6 +66,7 @@ namespace RockWeb.Blocks.Store
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink(  "~/Styles/Blocks/Store/Store.css", true );
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -108,7 +109,7 @@ namespace RockWeb.Blocks.Store
         private void LoadCategories()
         {
             string errorResponse = string.Empty;
-            
+
             PackageCategoryService packageCategoryService = new PackageCategoryService();
             var categories = packageCategoryService.GetCategories(out errorResponse).OrderBy(c => c.Name);
 

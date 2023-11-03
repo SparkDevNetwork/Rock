@@ -32,7 +32,7 @@ export type GroupAttendanceDetailAttendanceBag = {
     campusGuid?: Guid | null;
 
     /** Indicates whether the Person has attended. */
-    didAttend: boolean;
+    didAttend?: boolean | null;
 
     /** Gets or sets the item template used for rendering the Attendance in the Group Attendance Detail block. */
     itemTemplate?: string | null;

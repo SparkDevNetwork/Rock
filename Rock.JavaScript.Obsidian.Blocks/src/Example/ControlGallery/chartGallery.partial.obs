@@ -1,0 +1,93 @@
+<template>
+    <GalleryAndResult :value="{ 'input:data': data, 'input:options': options }" hasMultipleValues :importCode="importCode" :exampleCode="exampleCode">
+
+        <Chart :type="type" :data="data" :options="options" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <DropDownList v-model="type" :items="types" :showBlankItem="false" label="Chart Type" help="There are many other types. The options are just slimmed down for the sake of examples." />
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-default" @click="randomData" type="button">Randomize Data</button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-default" @click="randomOptions" type="button">Randomize Options</button>
+                </div>
+            </div>
+            <p class="mt-3">This control is a wrapper around the <a href="https://www.chartjs.org/" target="_blank" rel="noreferrer noopener">Chart.js library</a>. The <code>type</code>, <code>data</code>, <code>options</code>, and <code>plugins</code> props match up directly with the <a href="https://www.chartjs.org/docs/latest/api/interfaces/ChartConfiguration.html" target="_blank" rel="noreferrer noopener">configuration options' properties</a> passed into Chart.js. To learn more about what options are available, please read the <a href="https://www.chartjs.org/docs/latest/" target="_blank" rel="noreferrer noopener">Chart.js documentation</a>.</p>
+            <p>This demo doesn't get even close to showing all of the ways you can use this control. Chart.js has an immense amount of control. It just wasn't practical to show most of it in this demo.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { ChartType, ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+
+    const type = ref<ChartType>("bar");
+    const data = ref<ChartData>({
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        datasets: [{
+            data: generateData(),
+        }]
+    });
+    const options = ref<ChartOptions>({
+        plugins: { legend: { display: false } },
+        elements: {
+            bar: {
+                backgroundColor: ["#369", "#396", "#639", "#693", "#936", "#963"],
+                borderColor: ["#146", "#164", "#416", "#461", "#614", "#641"],
+                borderWidth: 2
+            },
+
+            line: {
+                borderColor: "#e93",
+                borderWidth: 9,
+                tension: .5
+            },
+
+            point: {
+                backgroundColor: ["#369", "#396", "#639", "#693", "#936", "#963"],
+                borderColor: ["#146", "#164", "#416", "#461", "#614", "#641"],
+                radius: 5,
+                hoverRadius: 8,
+            }
+        }
+    });
+
+    function generateData(): number[] {
+        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0].map(() => Math.floor(Math.random() * 200) - 100);
+    }
+
+    function randomData(): void {
+        data.value.datasets[0].data = generateData();
+    }
+
+    function randomOptions(): void {
+        if (options.value?.elements?.bar && options.value?.elements?.line && options.value?.elements?.point) {
+            options.value.elements.bar.backgroundColor = (options.value.elements.bar?.backgroundColor as [])?.reverse?.();
+            options.value.elements.bar.borderColor = (options.value.elements.bar?.borderColor as [])?.reverse?.();
+            options.value.elements.point.backgroundColor = (options.value.elements.point?.backgroundColor as [])?.reverse?.();
+            options.value.elements.point.borderColor = (options.value.elements.point?.borderColor as [])?.reverse?.();
+            options.value.elements.line.borderColor = ["#39e", "#3e9", "#93e", "#9e3", "#e39", "#e93"][Math.floor(Math.random() * 6)];
+            let sizeBasis = Math.floor(Math.random() * 8) + 2;
+            options.value.elements.line.borderWidth = sizeBasis;
+            options.value.elements.point.radius = sizeBasis * 1.25;
+            options.value.elements.point.hoverRadius = sizeBasis * 1.5;
+            options.value.elements.line.tension = Math.floor(Math.random() * 10) / 10;
+        }
+    }
+
+    const types = [
+        { text: "Bar Chart", value: "bar" },
+        { text: "Line Chart", value: "line" }
+    ];
+
+    const importCode = getSfcControlImportPath("chart");
+    const exampleCode = computed(() => `<Chart type="${type.value}" :data="data" :options="options" />`);
+</script>

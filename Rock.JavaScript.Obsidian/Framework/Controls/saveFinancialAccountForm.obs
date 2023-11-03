@@ -1,0 +1,134 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <NotificationBox v-if="successMessage" alertType="success" class="m-0">
+            <strong v-if="successTitle">{{ successTitle }}:</strong>
+            {{ successMessage }}
+        </NotificationBox>
+        <template v-else>
+            <slot name="header">
+                <h3>Make Giving Even Easier</h3>
+            </slot>
+            <NotificationBox v-if="errorMessage" alertType="danger">
+                <strong v-if="errorTitle">{{ errorTitle }}:</strong>
+                {{ errorMessage }}
+            </NotificationBox>
+            <InlineCheckBox label="Save account information for future gifts" v-model="doSave" />
+            <RockForm v-if="doSave" @submit="onSubmit">
+                <TextBox label="Name for the account" rules="required" v-model="savedAccountName" />
+                <template v-if="isLoginCreationNeeded">
+                    <NotificationBox alertType="info">
+                        <strong>Note:</strong>
+                        For security purposes you will need to login to use your saved account information. To create
+                        a login account please provide a user name and password below. You will be sent an email with
+                        the account information above as a reminder.
+                    </NotificationBox>
+                    <TextBox label="Username" v-model="username" rules="required" />
+                    <TextBox label="Password" v-model="password" type="password" rules="required" />
+                    <TextBox label="Confirm Password" v-model="confirmPassword" type="password" rules="required" />
+                </template>
+                <RockButton :isLoading="isLoading" btnType="primary" type="submit">Save Account</RockButton>
+            </RockForm>
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { computed, PropType, ref } from "vue";
+    import NotificationBox from "./notificationBox.obs";
+    import InlineCheckBox from "./inlineCheckBox.obs";
+    import RockButton from "./rockButton.obs";
+    import TextBox from "./textBox.obs";
+    import RockForm from "./rockForm.obs";
+    import { useStore } from "@Obsidian/PageState";
+    import { SaveFinancialAccountFormSaveAccountOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountOptionsBag";
+    import { SaveFinancialAccountFormSaveAccountResultBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountResultBag";
+    import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
+    import { useHttp } from "@Obsidian/Utility/http";
+
+    const store = useStore();
+
+    const props = defineProps({
+        gatewayGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+        transactionCode: {
+            type: String as PropType<string>,
+            required: true
+        },
+        gatewayPersonIdentifier: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const http = useHttp();
+
+    /** Will the payment token be saved for future use? */
+    const doSave = ref(false);
+
+    /** The username to create a login with */
+    const username = ref("");
+
+    /** The password to create a login with */
+    const password = ref("");
+
+    /** The confirmed password to create a login with */
+    const confirmPassword = ref("");
+
+    /** What the account will be named once created */
+    const savedAccountName = ref("");
+
+    /** Is an AJAX call currently in-flight? */
+    const isLoading = ref(false);
+
+    const successTitle = ref("");
+    const successMessage = ref("");
+    const errorTitle = ref("");
+    const errorMessage = ref("");
+
+
+    const currentPerson = computed((): CurrentPersonBag | null => {
+        return store.state.currentPerson;
+    });
+
+    const isLoginCreationNeeded = computed((): boolean => {
+        return !currentPerson.value;
+    });
+
+    async function onSubmit(): Promise<void> {
+        errorTitle.value = "";
+        errorMessage.value = "";
+
+        if (password.value !== confirmPassword.value) {
+            errorTitle.value = "Password";
+            errorMessage.value = "The password fields do not match.";
+            return;
+        }
+
+        isLoading.value = true;
+
+        const options: Partial<SaveFinancialAccountFormSaveAccountOptionsBag> = {
+            gatewayGuid: props.gatewayGuid,
+            password: password.value,
+            savedAccountName: savedAccountName.value,
+            transactionCode: props.transactionCode,
+            username: username.value,
+            gatewayPersonIdentifier: props.gatewayPersonIdentifier
+        };
+        const result = await http.post<SaveFinancialAccountFormSaveAccountResultBag>("/api/v2/Controls/SaveFinancialAccountFormSaveAccount", null, options);
+
+        if (result.isSuccess && result.data?.isSuccess) {
+            successTitle.value = result.data.title || "";
+            successMessage.value = result.data.detail || "Success";
+        }
+        else {
+            errorTitle.value = result.data?.title || "";
+            errorMessage.value = result.data?.detail || "Error";
+        }
+
+        isLoading.value = false;
+    }
+</script>

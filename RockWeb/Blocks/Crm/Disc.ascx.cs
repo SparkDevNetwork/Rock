@@ -218,6 +218,9 @@ namespace Rockweb.Blocks.Crm
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            RockPage.AddCSSLink( "~/Styles/Blocks/Crm/Disc.css" );
+
             SetPanelTitleAndIcon();
 
             _assessmentId = PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
@@ -514,7 +517,7 @@ namespace Rockweb.Blocks.Crm
                 .Queryable()
                 .AsNoTracking()
                 .Where( a => a.PersonAlias != null
-                             && a.PersonAlias.PersonId == _targetPerson.Id 
+                             && a.PersonAlias.PersonId == _targetPerson.Id
                              && a.AssessmentTypeId == assessmentType.Id )
                 .OrderByDescending( a => a.CompletedDateTime ?? a.RequestedDateTime )
                 .ToList();
@@ -740,7 +743,7 @@ namespace Rockweb.Blocks.Crm
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = false;
             pnlResult.Visible = true;
-            
+
             if ( isPrevious )
             {
                 ShowNotification( "A more recent assessment request has been made but has not been taken. Displaying the most recently completed test.", NotificationBoxType.Info );

@@ -1,0 +1,298 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+        <Panel type="block" :title="panelName">
+            <template #default>
+                <ViewPanel v-if="panelMode == DetailPanelMode.View" :modelValue="achievementTypeViewBag" :options="options" :rebuildActionSuccessMessage="rebuildActionSuccessMessage" />
+                <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit" v-model="achievementTypeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            </template>
+            <template #footerActions>
+                <div v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add">
+                    <RockButton v-if="isEditable"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onStartSubmitForm">
+                        Save
+                    </RockButton>
+                    <RockButton v-if="isEditable"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onCancelEdit">
+                        Cancel
+                    </RockButton>
+                </div>
+
+                <div v-if="panelMode === DetailPanelMode.View && isEditable">
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onEdit">
+                        Edit
+                    </RockButton>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onDelete">
+                        Delete
+                    </RockButton>
+                </div>
+            </template>
+            <template #footerSecondaryActions>
+                <RockButton v-if="panelMode == DetailPanelMode.View"
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Danger"
+                            @click="onRebuild">
+                        Rebuild
+                    </RockButton>
+            </template>
+        </Panel>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import EditPanel from "./AchievementTypeDetail/editPanel.partial.obs";
+    import ViewPanel from "./AchievementTypeDetail/viewPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { NavigationUrlKey } from "./AchievementTypeDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { AchievementTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementTypeDetail/achievementTypeBag";
+    import { AchievementTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementTypeDetail/achievementTypeDetailOptionsBag";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { confirmDelete } from "@Obsidian/Utility/dialogs";
+
+    const config = useConfigurationValues<DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+    const rebuildActionSuccessMessage = ref("");
+    const submitForm = ref(false);
+    const resetKey = ref("");
+
+    const achievementTypeViewBag = ref(config.entity);
+    const achievementTypeEditBag = ref<AchievementTypeBag>({} as AchievementTypeBag);
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    // The properties that are being edited in the UI. This is used to
+    // inform the server which incoming values have valid data in them.
+    const validProperties = [
+        "attributeValues",
+        "achievementEntityType",
+        "achievementFailureWorkflowType",
+        "achievementIconCssClass",
+        "achievementStartWorkflowType",
+        "achievementStepStatus",
+        "achievementStepType",
+        "achievementSuccessWorkflowType",
+        "allowOverAchievement",
+        "alternateImageBinaryFile",
+        "badgeLavaTemplate",
+        "category",
+        "customSummaryLavaTemplate",
+        "description",
+        "highlightColor",
+        "imageBinaryFile",
+        "isActive",
+        "isPublic",
+        "maxAccomplishmentsAllowed",
+        "name",
+        "prerequisites",
+        "resultsLavaTemplate"
+    ];
+
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(achievementTypeEditBag, validProperties, invokeBlockAction), undefined, true);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return panelMode.value === DetailPanelMode.Add ? "Add Achievement Type" : achievementTypeViewBag.value?.name ?? "";
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): AchievementTypeDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+    * Event handler for the Rebuild button being clicked. Sends the
+    * rebuild request to the server and then redirects to the target page.
+    *
+    * @returns false if it should stay on the page; or a string containing a redirect URL.
+    */
+    async function onRebuild(): Promise<void> {
+        errorMessage.value = "";
+        rebuildActionSuccessMessage.value = "";
+        if (!await confirm("Are you sure you want to delete this data? Attempt data that occurs after a person's most recent successful attempt will be deleted and rebuilt from streak data. This process occurs real-time (not in a job).")) {
+            return;
+        }
+
+        const result = await invokeBlockAction<string>("Rebuild", {
+            idKey: achievementTypeViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            rebuildActionSuccessMessage.value = result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to rebuild streak.";
+        }
+    }
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<void> {
+        if (!achievementTypeEditBag.value?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+            }
+        }
+        else {
+            panelMode.value = DetailPanelMode.View;
+        }
+    }
+
+    /**
+     * Event handler for the Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    async function onDelete(): Promise<void> {
+        errorMessage.value = "";
+
+        if (!await confirmDelete("Achievement Type", "All associated achievement attempts will also be deleted!")) {
+            return;
+        }
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: achievementTypeViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            window.location.href = makeUrlRedirectSafe(result.data);
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete group member schedule template.";
+        }
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<void> {
+        const result = await invokeBlockAction<DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag>>("Edit", {
+            key: achievementTypeViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.entity) {
+            achievementTypeEditBag.value = result.data.entity;
+            panelMode.value = DetailPanelMode.Edit;
+        }
+    }
+
+    /**
+     * Event handler for when a value has changed that has an associated
+     * C# property name. This is used to detect changes to values that
+     * might cause qualified attributes to either show up or not show up.
+     *
+     * @param propertyName The name of the C# property that was changed.
+     */
+    function onPropertyChanged(propertyName: string): void {
+        // If we don't have any qualified attribute properties or this property
+        // is not one of them then do nothing.
+        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+            return;
+        }
+
+        refreshAttributesDebounce();
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+
+        const data: DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> = {
+            entity: achievementTypeEditBag.value,
+            isEditable: true,
+            validProperties: validProperties
+        };
+
+        const result = await invokeBlockAction<AchievementTypeBag | string>("Save", {
+            box: data
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                achievementTypeViewBag.value = result.data;
+                panelMode.value = DetailPanelMode.View;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                window.location.href = makeUrlRedirectSafe(result.data);
+            }
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save achievement type.";
+        }
+
+    }
+
+    const onStartSubmitForm = (): void => {
+        submitForm.value = true;
+    };
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified achievement type could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        achievementTypeEditBag.value = config.entity;
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

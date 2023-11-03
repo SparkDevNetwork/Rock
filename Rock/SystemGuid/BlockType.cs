@@ -305,6 +305,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL = "EF537CC9-5E53-4832-A473-0D5EA439C296";
 
         /// <summary>
+        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest">Add Connection Request</see> block type.
+        /// </summary>
+        public const string MOBILE_CONNECTION_ADD_CONNECTION_REQUEST = "1380115A-B3F0-49BC-A6BC-432A59DC27A2";
+
+        /// <summary>
         /// The mobile Core &gt; <see cref="Rock.Blocks.Types.Mobile.Core.Search"/> block type.
         /// </summary>
         public const string MOBILE_CORE_SEARCH = "41174BEA-6567-430C-AAD4-A89A5CF70FB0";
@@ -343,6 +348,36 @@ namespace Rock.SystemGuid
         /// The mobile Prayer &gt; Prayer Card View block type.
         /// </summary>
         public const string MOBILE_PRAYER_PRAYER_CARD_VIEW = "CA75C558-9345-47E7-99AF-D8191D31D00D";
+
+        /// <summary>
+        /// The mobile Reminders &gt; <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderList">Reminder List</see> block type.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_LIST = "E3FD3E7B-BF9D-4008-B71D-DF857DC20D7B";
+
+        /// <summary>
+        /// The mobile Reminders &gt; <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderList">Reminder Dashboard</see> block type.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_DASHBOARD = "223F5122-C93A-44CD-BFB7-AF990A2B6B65";
+
+        /// <summary>
+        /// The mobile Reminders &gt; <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderList">Reminder Edit</see> block type.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_EDIT = "BA26C29E-660C-470D-9FEA-5830DB15E935";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Crm.PersonProfile"/>.
+        /// </summary>
+        public const string MOBILE_CRM_PERSON_PROFILE = "F97E2359-BB2D-4534-821D-870F853CA5CC";
+
+        /// <summary>
+        /// The mobile attribute values &gt; <see cref="Rock.Blocks.Types.Mobile.Core.AttributeValues">Attribute Values</see> block type.
+        /// </summary>
+        public const string MOBILE_CORE_ATTRIBUTE_VALUES = "DF110543-C295-4DD9-B06E-82640AC63610";
+
+        /// <summary>
+        /// The mobile group members &gt; <see cref="Rock.Blocks.Types.Mobile.Crm.GroupMembers">Group Members</see> block type.
+        /// </summary>
+        public const string MOBILE_CRM_GROUP_MEMBERS  = "1F1E7598-8D51-4750-8D61-E5791A226FDB";
 
         #endregion
 

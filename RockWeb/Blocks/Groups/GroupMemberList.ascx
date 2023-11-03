@@ -6,6 +6,13 @@
 
         // data view sync list popover
         $('.js-sync-popover').popover()
+            .on('mouseenter', function () {
+                // the sync-button in the popover would use the lbGroupSync asp control as a proxy to invoke the postback call
+                // Motive: there was no other way to make a postback call to the C# method from the javascript in the frontend.
+                $('#sync-button').click(function (e) {
+                    $("#<%= lbGroupSync.ClientID %>")[0].click();
+                })
+            })
     });
 </script>
 
@@ -27,7 +34,12 @@
                         </h1>
 
                         <div class="panel-labels">
-                            <span runat="server" ID="spanSyncLink" Visible="false" data-toggle="popover" class="label label-info js-sync-popover" data-trigger="hover click focus" data-html="true" data-placement="left" data-delay="{&quot;hide&quot;: 1500}" ><i class='fa fa-exchange'></i></span> &nbsp;
+                            <span runat="server" ID="spanSyncLink" Visible="false" data-toggle="hover" class="label label-info js-sync-popover" data-trigger="hover click focus" data-html="true" data-placement="left" data-delay="{&quot;hide&quot;: 1500}">
+
+                                <%-- Motive: get the postback url to the group sync method ---%>
+                                <%-- This button is to be hidden from the frontend as it's sole purpose is to be used as a proxy by the #sync-button in the popover ---%>
+                                <asp:LinkButton ID="lbGroupSync" style="display:none" runat="server" OnClick="lbGroupSync_Click" />
+                                <i class='fa fa-exchange' ></i></span> &nbsp;
                         </div>
                     </div>
 
@@ -192,6 +204,12 @@
                             }
                         }, 100);
                     });
+
+                    $(document).ready(function () {
+                        $("#<%= spanSyncLink.ClientID %>").attr("data-content", function (i, val) {
+                            return val + "<br /> <a id=\"sync-button\" href=\"#\" class='btn btn-default btn-xs'>Sync Now</a>"
+                        }); 
+                    })
 
                    // $('.js-person-popover').popover('show'); // uncomment for styling
 

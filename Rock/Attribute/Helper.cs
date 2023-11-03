@@ -112,16 +112,23 @@ namespace Rock.Attribute
             rockContext = rockContext ?? new RockContext();
 
 #if REVIEW_WEBFORMS
+            var customizedGrid = type.GetCustomAttribute<Blocks.CustomizedGridAttribute>();
+
             bool customGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
-            if ( customGridColumnsBlock )
+            if ( customGridColumnsBlock || customizedGrid?.IsCustomColumnsSupported == true )
             {
                 entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" ) );
             }
 
             bool customGridOptionsBlock = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( type );
-            if ( customGridOptionsBlock )
+
+            if ( customGridOptionsBlock || customizedGrid?.IsStickyHeaderSupported == true )
             {
                 entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
+            }
+
+            if ( customGridOptionsBlock || customizedGrid?.IsCustomActionsSupported == true )
+            {
                 entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, category: "CustomSetting" ) );
                 entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
             }
@@ -624,9 +631,42 @@ This can be due to multiple threads updating the same attribute at the same time
                         var predicate = LinqPredicateBuilder.False<AttributeValue>();
                         foreach ( var inheritedAttribute in inheritedAttributes )
                         {
-                            predicate = predicate.Or( v => v.Attribute.EntityTypeId == inheritedAttribute.Key
-                                     && v.EntityId.HasValue
-                                     && inheritedAttribute.Value.Contains( v.EntityId.Value ) );
+                            // a Linq query that uses 'Contains' can't be cached
+                            // in the EF Plan Cache, so instead of doing a
+                            // Contains, build a List of OR conditions. This can
+                            // save 15-20ms per call (and still ends up with the
+                            // exact same SQL).
+                            // https://learn.microsoft.com/en-us/ef/ef6/fundamentals/performance/perf-whitepaper?redirectedfrom=MSDN#41-using-ienumerabletcontainstt-value
+                            var attributeValueParameterExpression = Expression.Parameter( typeof( AttributeValue ), "v" );
+                            var entityIdPropertyExpression = Expression.Property( attributeValueParameterExpression, "EntityId" );
+                            entityIdPropertyExpression = Expression.Property( entityIdPropertyExpression, "Value" );
+                            Expression<Func<AttributeValue, bool>> inheritedEntityIdExpression = null;
+
+                            foreach ( var alternateEntityId in inheritedAttribute.Value )
+                            {
+                                var alternateEntityIdConstant = Expression.Constant( alternateEntityId );
+                                var equalityExpression = Expression.Equal( entityIdPropertyExpression, alternateEntityIdConstant );
+                                var expr = Expression.Lambda<Func<AttributeValue, bool>>( equalityExpression, attributeValueParameterExpression );
+
+                                if ( inheritedEntityIdExpression != null )
+                                {
+                                    inheritedEntityIdExpression = inheritedEntityIdExpression.Or( expr );
+                                }
+                                else
+                                {
+                                    inheritedEntityIdExpression = expr;
+                                }
+                            }
+
+                            // Build the expression for this attribute. This is effectively:
+                            // .Where( v => v.Attribute.EntityTypeId == inheritedAttribute.Key
+                            //    && v.EntityId.HasValue
+                            //    && inheritedAttribute.Value.Contains( v.EntityId.Value ) );
+                            var expression = LinqPredicateBuilder.Create<AttributeValue>( v => v.Attribute.EntityTypeId == inheritedAttribute.Key
+                                     && v.EntityId.HasValue );
+                            expression = expression.And( inheritedEntityIdExpression );
+
+                            predicate = predicate.Or( expression );
                         }
 
                         attributeValueQuery = attributeValueService.Queryable().AsNoTracking().Where( predicate );
@@ -1094,7 +1134,7 @@ This can be due to multiple threads updating the same attribute at the same time
             var entityIdsTable = new DataTable();
             entityIdsTable.Columns.Add( "EntityTypeId", typeof( int ) );
             entityIdsTable.Columns.Add( "EntityId", typeof( int ) );
-            entityIdsTable.Columns.Add( "RealTypeId", typeof( int ) );
+            entityIdsTable.Columns.Add( "RealEntityId", typeof( int ) );
 
             for ( int i = 0; i < entityKeys.Count; i++ )
             {

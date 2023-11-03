@@ -62,8 +62,9 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
     }
 
     const rootElement = document.getElementById(config.rootElementId);
+    const wrapperElement = rootElement?.querySelector<HTMLElement>(".obsidian-block-wrapper");
 
-    if (!rootElement) {
+    if (!rootElement || !wrapperElement) {
         throw "Could not initialize Obsidian block because the root element was not found.";
     }
 
@@ -109,6 +110,21 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
                 }
 
                 isLoaded = true;
+
+                if (rootElement.classList.contains("obsidian-block-has-placeholder")) {
+                    wrapperElement.style.padding = "1px 0px";
+                    const realHeight = wrapperElement.getBoundingClientRect().height - 2;
+                    wrapperElement.style.padding = "";
+
+                    rootElement.style.height = `${realHeight}px`;
+                    setTimeout(() => {
+                        rootElement.querySelector(".obsidian-block-placeholder")?.remove();
+                        rootElement.style.height = "";
+                        rootElement.classList.remove("obsidian-block-has-placeholder");
+                    }, 200);
+                }
+
+                rootElement.classList.remove("obsidian-block-loading");
 
                 // Get the number of pending blocks. If this is the last one
                 // then signal the page that all blocks are loaded and ready.
@@ -158,7 +174,7 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
     });
 
     app.component("v-style", developerStyle);
-    app.mount(rootElement);
+    app.mount(wrapperElement);
 
     return app;
 }
@@ -184,7 +200,7 @@ export async function initializePageTimings(config: DebugTimingConfig): Promise<
         return;
     }
 
-    const pageDebugTimings = (await import("@Obsidian/Controls/pageDebugTimings")).default;
+    const pageDebugTimings = (await import("@Obsidian/Controls/Internal/pageDebugTimings.obs")).default;
 
     const app = createApp({
         name: "PageDebugTimingsRoot",

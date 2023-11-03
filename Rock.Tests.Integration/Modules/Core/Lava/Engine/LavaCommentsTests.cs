@@ -13,10 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
+using Rock.Lava.RockLiquid;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
@@ -37,16 +38,114 @@ namespace Rock.Tests.Integration.Core.Lava
             TestHelper.AssertTemplateOutput( string.Empty, "{% comment %}{% endcomment %}" );
         }
 
+        /// <summary>
+        /// Verify that a comment block containing another comment block is parsed as a single comment.
+        /// This test validates a Rock-specific change to the Fluid Parser.
+        /// </summary>
+        [Ignore( "This is a known issue, but it is documented here for reference and may be fixed in the future." )]
         [TestMethod]
-        public void RemoveLavaCommentsReturnsEmptyStringForNullInput()
+        public void CommentBlock_WithNestedCommentBlock_ParsesCorrectly()
         {
-            var actualResult = LavaHelper.RemoveLavaComments( null );
+            // This Lava template would throw an error in the default Fluid parser, but should process successfully here.
+            TestHelper.AssertTemplateOutput( string.Empty, "{% comment %} outer comment {% comment %} inner comment {% endcomment %} {% endcomment %}" );
+        }
 
-            Assert.That.AreEqual( string.Empty, actualResult );
+        /// <summary>
+        /// Verify that a comment containing an invalid tag does not cause a parser error.
+        /// This test validates a Rock-specific change to the Fluid Parser.
+        /// </summary>
+        [TestMethod]
+        public void CommentBlock_ContainingInvalidTag_IsIgnored()
+        {
+            // This Lava template would throw an error in the default Fluid parser, but should process successfully here.
+            TestHelper.AssertTemplateOutput( typeof(FluidEngine), string.Empty, "{% comment %} This comment contains an {% unknown_tag %} {% endcomment %}" );
+        }
+
+        /// <summary>
+        /// Verify that a comment containing an invalid shortcode does not cause a parser error.
+        /// This test validates a Rock-specific change to the Fluid Parser.
+        /// </summary>
+        [TestMethod]
+        public void CommentBlock_ContainingInvalidShortcode_IsIgnored()
+        {
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), string.Empty, "{% comment %} This comment contains an {[ invalid_shortcode ]} {% endcomment %}" );
+        }
+
+        /// <summary>
+        /// This test verifies the standard newline character '\n' as an effective inline comment delimiter.
+        /// This is the delimiter used by the Rock text editor, as opposed to the Windows standard '\r\n'
+        /// that is implicitly used in templates elsewhere in this test project.
+        /// </summary>
+        [TestMethod]
+        public void ShorthandLineComment_TerminatedbyNewlineOnly_IsTerminatedCorrectly()
+        {
+            var input = "//- This is a single line comment.\nLine 1";
+
+            var expectedOutput = @"Line 1";
+
+            input = input.Trim();
+            expectedOutput = expectedOutput.Trim();
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = true } );
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_LineCommentAfterContent_ReturnsContent()
+        public void ShorthandLineComment_AsFirstElement_IsIgnored()
+        {
+            var input = @"
+//- This is a single line comment.
+Line 1
+";
+
+            var expectedOutput = @"
+Line 1
+";
+
+            input = input.Trim();
+            expectedOutput = expectedOutput.Trim();
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = true } );
+        }
+
+        [TestMethod]
+        public void ShorthandLineComment_InShortcodeItem_IsIgnored()
+        {
+            var input = @"
+{[ accordion ]}
+    [[ item title:'Item 1' ]]
+        <p>This is an item.</p>
+        //- this is a single line comment in a block shortcode item
+    [[ enditem ]]
+{[ endaccordion ]}
+";
+
+            var expectedOutput = @"
+<div class=`panel-group` id=`accordion-id-<guid>` role=`tablist` aria-multiselectable=`true`>
+    <div class=`panel panel-default`>
+    <div class=`panel-heading` role=`tab` id=`heading1-id-<guid>`>
+        <h4 class=`panel-title`>
+        <a role=`button` data-toggle=`collapse` data-parent=`#accordion-id-<guid>` href=`#collapse1-id-<guid>` aria-expanded=`true` aria-controls=`collapse1`>
+            Item 1
+        </a>
+        </h4>
+    </div>
+    <div id=`collapse1-id-<guid>` class=`panel-collapse collapse in` role=`tabpanel` aria-labelledby=`heading1-id-<guid>`>
+        <div class=`panel-body`>
+        <p>This is an item.</p>
+        </div>
+    </div>
+    </div>
+</div>
+";
+
+            input = input.Replace("`", @"""");
+            expectedOutput = expectedOutput.Replace( "`", @"""" );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = true, Wildcards = new List<string> { "<guid>" } } );
+        }
+
+        [TestMethod]
+        public void ShorthandLineComment_AfterContent_ReturnsContent()
         {
             var input = @"
 Line 1<br>
@@ -60,11 +159,14 @@ Line 2<br>
 Line 3<br>
 ";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            input = input.Trim();
+            expectedOutput = expectedOutput.Trim();
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = true } );
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_CommentInStringLiteral_IsNotRemoved()
+        public void ShorthandComment_CommentInStringLiteral_IsNotRemoved()
         {
             var input = @"
 -- Begin Example --
@@ -88,11 +190,14 @@ or '/- Block Comment 2...
 -- End Example --
 ";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            input = input.Trim();
+            expectedOutput = expectedOutput.Trim();
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_LineCommentContainingQuotedString_IsRemoved()
+        public void ShorthandLineComment_ContainingQuotedString_IsRemoved()
         {
             var input = @"
 Line 1<br>
@@ -109,7 +214,7 @@ Line 3<br>
             TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
-        public void LavaHelperRemoveComments_BlockCommentContainingQuotedString_IsRemoved()
+        public void ShorthandBlockComment_ContainingQuotedString_IsRemoved()
         {
             var input = @"
 Line 1<br>
@@ -131,7 +236,7 @@ Line 3<br>
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_CommentInRawTag_IsNotRemoved()
+        public void ShorthandComment_CommentInRawTag_IsNotRemoved()
         {
             var input = @"
 Example Start<br>
@@ -157,7 +262,7 @@ Example End<br>
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_BlockCommentSpanningMultipleLines_RemovesNewLinesContainedInComment()
+        public void ShorthandBlockComment_SpanningMultipleLines_RemovesNewLinesContainedInComment()
         {
             var input = @"
 Line 1<br>
@@ -178,7 +283,7 @@ Line 3<br>
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_CommentsInIncludeFile_AreRemoved()
+        public void ShorthandComment_CommentsInIncludeFile_AreRemoved()
         {
             var fileProvider = GetFileProviderWithComments();
 
@@ -209,7 +314,7 @@ Line 4<br>
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_BlockCommentInline_RendersCorrectLineContent()
+        public void ShorthandBlockComment_Inline_RendersCorrectLineContent()
         {
             var input = @"
 Line 1<br>
@@ -227,7 +332,7 @@ Line 3<br>
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_SingleLineCommentAsFinalElement_RendersCorrectLineContent()
+        public void ShorthandLineComment_AsFinalElement_RendersCorrectLineContent()
         {
             // Input template terminating with a comment, no new line character.
             var input = @"
@@ -236,11 +341,11 @@ Line 1<br>
 
             var expectedOutput = @"Line 1<br>";
 
-            TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, input );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input );
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_BlockCommentAsFinalElement_RendersCorrectLineContent()
+        public void ShorthandBlockComment_AsFinalElement_RendersCorrectLineContent()
         {
             // Input template terminating with a comment, no new line character.
             var input = @"
@@ -250,6 +355,17 @@ Line 1<br>
             var expectedOutput = @"Line 1<br>";
 
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input );
+        }
+
+        /// <summary>
+        /// Verify that a comment containing an invalid tag does not cause a parser error.
+        /// This test validates a Rock-specific change to the Fluid Parser.
+        /// </summary>
+        [TestMethod]
+        public void ShorthandBlockComment_ContainingInvalidTag_IsIgnored()
+        {
+            // This Lava template would throw an error in the default Fluid parser, but should process successfully here.
+            TestHelper.AssertTemplateOutput( string.Empty, "/- This comment contains an {% unknown_tag %} -/" );
         }
 
         private MockFileProvider GetFileProviderWithComments()
@@ -271,6 +387,68 @@ Line 4<br>
             fileProvider.Add( "_comments.lava", commentsTemplate );
 
             return fileProvider;
+        }
+
+        [TestMethod]
+        public void ShorthandBlockComment_InShortcode_DoesNotRender()
+        {
+            var input = @"
+{[ panel title:'Test' ]}
+Line 1<br>
+Line 2 Start<br>/- This is an inline block comment -/Line 2 End<br>
+Line 3<br>
+{[ endpanel ]}
+";
+
+            var expectedOutput = @"
+<div class=`panel panel-default`>
+    <div class=`panel-heading`>
+      <h3 class=`panel-title`>
+          Test
+      </h3>
+    </div>
+    <div class=`panel-body`>
+        Line 1<br>
+        Line 2 Start<br>Line 2 End<br>
+        Line 3<br>
+    </div>
+</div>
+";
+            expectedOutput = expectedOutput.Trim().Replace( "`", @"""" );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        [TestMethod]
+        public void ShorthandLineComment_InShortcode_DoesNotRender()
+        {
+            var input = @"
+{[ panel title:'Test' ]}
+Line 1<br>
+Line 2<br>//- This is a single line comment.
+Line 3<br>
+{[ endpanel ]}
+";
+
+            var expectedOutput = @"
+<div class=`panel panel-default`>
+    <div class=`panel-heading`>
+      <h3 class=`panel-title`>
+          Test
+      </h3>
+    </div>
+    <div class=`panel-body`>
+        Line 1<br>
+        Line 2<br>
+        Line 3<br>
+    </div>
+</div>
+";
+
+            input = input.Trim();
+            expectedOutput = expectedOutput.Trim().Replace( "`", @"""" );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
     }
 }

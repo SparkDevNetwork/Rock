@@ -67,7 +67,7 @@ namespace Rock.Model
         /// <summary>
         /// The reminder type.
         /// </summary>
-        public string ReminderTypeName { get { return this.Reminder.ReminderType.EntityType.FriendlyName; } }
+        public string ReminderTypeName { get { return this.Reminder.ReminderType.Name; } }
 
         /// <summary>
         /// The highlight color.
@@ -85,9 +85,9 @@ namespace Rock.Model
         public string Note { get { return this.Reminder.Note; } }
 
         /// <summary>
-        /// A value indicating whether or not this reminder is attached to a Person entity.
+        /// A value indicating whether or not this reminder is attached to a PersonAlais entity.
         /// </summary>
-        public bool IsPersonReminder { get { return ( this.Reminder.ReminderType.EntityType.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid() ); } }
+        public bool IsPersonReminder { get { return ( this.Reminder.ReminderType.EntityType.Guid == Rock.SystemGuid.EntityType.PERSON_ALIAS.AsGuid() ); } }
 
         /// <summary>
         /// A value indicating whether or not this reminder is attached to a Group entity.
@@ -121,8 +121,15 @@ namespace Rock.Model
         private string GetEntityUrl()
         {
             string entityUrl = string.Empty;
+            var reminderEntityType = EntityTypeCache.Get( this.Reminder.ReminderType.EntityType );
 
-            var entityUrlPattern = this.Reminder.ReminderType.EntityType.LinkUrlLavaTemplate;
+            if ( reminderEntityType.Id == EntityTypeCache.GetId<PersonAlias>() )
+            {
+                // Get the entity URL pattern from Person instead of PersonAlias.
+                reminderEntityType = EntityTypeCache.Get<Person>();
+            }
+
+            var entityUrlPattern = reminderEntityType.LinkUrlLavaTemplate;
             if ( !string.IsNullOrWhiteSpace( entityUrlPattern ) )
             {
                 var entityUrlMergeFields = new Dictionary<string, object>
@@ -134,7 +141,7 @@ namespace Rock.Model
 
                 if ( entityUrl.StartsWith( "~/" ) )
                 {
-                    var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+                    var baseUrl = GlobalAttributesCache.Value( "InternalApplicationRoot" );
                     entityUrl = entityUrl.Replace( "~/", baseUrl.EnsureTrailingForwardslash() );
                 }
             }

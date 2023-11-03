@@ -150,7 +150,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="countryCode">The country code.</param>
         /// <param name="number">A <see cref="System.String" /> containing the number to format.</param>
-        /// <param name="includeCountryCode">if set to <c>true</c> [include country code].</param>
+        /// <param name="includeCountryCode">if set to <c>true</c>, include the country code prefix.</param>
         /// <returns>
         /// A <see cref="System.String" /> containing the formatted number.
         /// </returns>
@@ -161,6 +161,7 @@ namespace Rock.Model
                 return string.Empty;
             }
 
+            // Reformat the number using the format string specified for the country code.
             number = CleanNumber( number );
 
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
@@ -186,21 +187,83 @@ namespace Rock.Model
                 }
             }
 
+            // If the output should include the country code, add the prefix if it is not already present in the formatted number.
+            // If the output should exclude the country code, remove the prefix if it is present in the formatted number.
+            if ( string.IsNullOrWhiteSpace( countryCode ) )
+            {
+                countryCode = DefaultCountryCode();
+            }
+
+            var countryCodePrefix = $"+{countryCode}";
             if ( includeCountryCode )
             {
-                if ( string.IsNullOrWhiteSpace( countryCode ) )
+                if ( !number.StartsWith( countryCodePrefix ) )
                 {
-                    countryCode = "1";
+                    number = string.Format( "+{0} {1}", countryCode, number );
                 }
-
-                number = string.Format( "+{0} {1}", countryCode, number );
+            }
+            else
+            {
+                if ( number.StartsWith( countryCodePrefix ) )
+                {
+                    number = number.Substring( countryCodePrefix.Length ).Trim();
+                }
             }
 
             return number;
         }
 
         /// <summary>
-        /// Removes non-numeric characters from a provided number
+        /// Parses a formatted PhoneNumber to the Country Code and a Number parts.
+        /// </summary>
+        /// <param name="number">A <see cref="System.String" /> containing the number to format.</param>
+        /// <param name="countryCodePart">The country code.</param>
+        /// <param name="numberPart">A <see cref="System.String" /> containing the number to format.</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> flag indicating if the parse was successful.
+        /// </returns>
+        /// <remarks>
+        /// If it is specified, the country code must be prefixed with a "+" and terminated by a non-digit character.
+        /// </remarks>
+
+        public static bool TryParseNumber( string number, out string countryCodePart, out string numberPart )
+        {
+            countryCodePart = string.Empty;
+            numberPart = string.Empty;
+
+            if ( string.IsNullOrWhiteSpace( number ) )
+            {
+                return false;
+            }
+
+            number = number.Trim();
+
+            if ( number.StartsWith("+") )
+            {
+                // The number starts with a "+", so extract the country code.
+                var matches = Regex.Match( number, @"\+(\d+)[^\d]+(.*)" );
+                if ( matches.Groups.Count > 1 )
+                {
+                    countryCodePart = CleanNumber( matches.Groups[1].Value );
+                }
+                if ( matches.Groups.Count > 2 )
+                {
+                    numberPart = CleanNumber( matches.Groups[2].Value );
+                }
+            }
+            else
+            {
+                // The number does not start with a "+", so assume it uses the default country code.
+                countryCodePart = DefaultCountryCode();
+                numberPart = CleanNumber( number );
+            }
+
+            var isValid = ( countryCodePart != null && numberPart != null );
+            return isValid;
+        }
+
+        /// <summary>
+        /// Removes non-numeric characters from a provided number.
         /// </summary>
         /// <param name="number">A <see cref="System.String"/> containing the phone number to clean.</param>
         /// <returns>A <see cref="System.String"/> containing the phone number with all non numeric characters removed. </returns>

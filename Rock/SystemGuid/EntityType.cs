@@ -119,7 +119,7 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_MEDIUM_PUSH_NOTIFICATION = "3638C6DF-4FF3-4A52-B4B8-AFB754991597";
 
         /// <summary>
-        /// The guid for the email communication medium
+        /// The guid for the SMS communication medium
         /// </summary>
         public const string COMMUNICATION_MEDIUM_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
 
@@ -399,6 +399,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE = "6C9B8E2A-A0B1-4E52-B419-250A77AFBCBF";
 
         /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest"/>.
+        /// </summary>
+        public const string MOBILE_CONNECTION_ADD_CONNECTION_REQUEST = "F41E7BE3-2854-40FF-82C8-1FDEA12B8B2F";
+
+        /// <summary>
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Prayer.MyPrayerRequests"/>.
         /// </summary>
         public const string MOBILE_MY_PRAYER_REQUESTS_BLOCK_TYPE = "E644DE6A-44CA-48AC-BF33-5429DA8052C6";
@@ -564,6 +569,36 @@ namespace Rock.SystemGuid
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Security.OnboardPerson"/>.
         /// </summary>
         public const string MOBILE_SECURITY_ONBOARD_PERSON = "C9B7F36A-F70A-4ABF-9422-B18E579F927F";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderList"/>.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_LIST = "35B1CA9F-DCD9-453F-892E-33E0E09E7CB3";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderDashboard"/>.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_DASHBOARD = "AD29BE7E-00B2-4AE3-8DA4-756C348E7AFA";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Reminders.ReminderEdit"/>.
+        /// </summary>
+        public const string MOBILE_REMINDERS_REMINDER_EDIT = "A07DA3CE-4598-4177-AD47-B0D1EBFB1E7A";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Crm.PersonProfile"/>.
+        /// </summary>
+        public const string MOBILE_CRM_PERSON_PROFILE = "A1EEA3BD-7B40-47A9-82D4-7187290C917C";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Core.AttributeValues"/>.
+        /// </summary>
+        public const string MOBILE_CORE_ATTRIBUTE_VALUES = "6751AC1E-C467-4416-9F02-0B9A0D1FAC2D";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Crm.GroupMembers"/>.
+        /// </summary>
+        public const string MOBILE_CRM_GROUP_MEMBERS = "592242ED-7536-49EA-94DE-7B4EBA7E87A6";
 
         /// <summary>
         /// The obsidian event registration entry
@@ -1809,5 +1844,25 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.NotificationMessageType"/> 
         /// </summary>
         public const string NOTIFICATION_MESSAGE_TYPE = "36FB1038-8836-429F-BAD4-04D32892D6D0";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.Observability"/> 
+        /// </summary>
+        public const string HTTP_MODULE_OBSERVABILITY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessage"/> 
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE = "63D98F58-DA81-46AE-AE0C-662A7BFAA7D0";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessageAdaptation"/> 
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE_ADAPTATION = "39753CCE-184A-4F14-AE80-08241DE8FC2E";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessageAdaptationSegment"/> 
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE_ADAPTATION_SEGMENT = "40EDF82B-EFF5-4253-A129-965F7BC90033";
     }
 }

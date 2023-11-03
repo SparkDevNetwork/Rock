@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -350,7 +350,7 @@ function() {
             }
 
             // Get all of the Group Members of the qualifying Families.
-            var groupMemberServiceQry = new GroupMemberService( context ).Queryable()
+            var groupMemberServiceQry = new GroupMemberService( context ).Queryable( true )
                                                                          .Where( gm => groupLocationsQuery.Any( gl => gl.GroupId == gm.GroupId ) );
 
             // Get all of the People corresponding to the qualifying Group Members.

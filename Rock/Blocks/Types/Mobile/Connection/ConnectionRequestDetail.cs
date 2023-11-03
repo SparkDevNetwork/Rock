@@ -23,15 +23,13 @@ using Microsoft.EntityFrameworkCore;
 using System.Data.Entity;
 #endif
 using System.Linq;
-
-#if REVIEW_WEBFORMS
-using OpenXmlPowerTools;
-#endif
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
+using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -47,12 +45,13 @@ namespace Rock.Blocks.Types.Mobile.Connection
     /// <summary>
     /// Displays the details of the given connection request for editing state, status, etc.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Connection Request Detail" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
     [IconCssClass( "fa fa-id-card" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -92,11 +91,18 @@ namespace Rock.Blocks.Types.Mobile.Connection
         Key = AttributeKey.WorkflowPage,
         Order = 4 )]
 
+    [LinkedPage(
+        "Reminder Page",
+        Description = "Page to link to when the reminder button is tapped.",
+        IsRequired = false,
+        Key = AttributeKey.ReminderPage,
+        Order = 5 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL )]
-    public class ConnectionRequestDetail : RockMobileBlockType
+    public class ConnectionRequestDetail : RockBlockType
     {
         #region Block Attributes
 
@@ -114,6 +120,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
             public const string GroupDetailPage = "GroupDetailPage";
 
             public const string WorkflowPage = "WorkflowPage";
+
+            public const string ReminderPage = "ReminderPage";
         }
 
         /// <summary>
@@ -156,30 +164,53 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// </value>
         protected Guid? WorkflowPageGuid => GetAttributeValue( AttributeKey.WorkflowPage ).AsGuidOrNull();
 
-        #endregion
+        /// <summary>
+        /// Gets the reminder page unique identifier.
+        /// </summary>
+        protected Guid? ReminderPageGuid => GetAttributeValue( AttributeKey.ReminderPage ).AsGuidOrNull();
+
+
+       #endregion
 
         #region IRockMobileBlockType Implementation
 
         /// <inheritdoc/>
-        public override int RequiredMobileAbiVersion => 3;
-
-        /// <inheritdoc/>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Connection.ConnectionRequestDetail";
+        public override Version RequiredMobileVersion => new Version( 1, 3 );
 
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()
         {
-            return new
+            return new Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.Configuration
             {
-                PersonProfilePageGuid,
-                GroupDetailPageGuid,
-                WorkflowPageGuid
+                PersonProfilePageGuid = PersonProfilePageGuid,
+                GroupDetailPageGuid = GroupDetailPageGuid,
+                WorkflowPageGuid = WorkflowPageGuid,
+                ReminderPageGuid = ReminderPageGuid,
+                AreRemindersConfigured = CheckReminderConfiguration()
             };
         }
 
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Checks if there's any reminder with the ConnectionRequest entity type.
+        /// </summary>
+        private static bool CheckReminderConfiguration()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequestEntityTypeId = EntityTypeCache.Get( typeof( ConnectionRequest ) ).Id;
+
+                var reminderTypesExist = new ReminderTypeService( rockContext )
+                    .Queryable()
+                    .Where( rt => rt.EntityTypeId == connectionRequestEntityTypeId )
+                    .Any();
+
+                return reminderTypesExist;
+            }
+        }
 
         /// <summary>
         /// Determines whether the connection request is critical.
@@ -350,6 +381,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             // Get all the workflows that can be manually triggered by the person.
             var connectionWorkflows = GetConnectionOpportunityManualWorkflowTypes( request.ConnectionOpportunity, RequestContext.CurrentPerson )
+                .Where( w => w.ManualTriggerFilterConnectionStatusId == null || w.ManualTriggerFilterConnectionStatusId == request.ConnectionStatusId )
                 .Select( w => new WorkflowTypeItemViewModel
                 {
                     Guid = w.Guid,
@@ -361,22 +393,25 @@ namespace Rock.Blocks.Types.Mobile.Connection
             var isEditable = request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             var activitiesViewModel = activities.ToList()
-            .Select( a => new ActivityViewModel
-            {
-                ActivityTypeGuid = a.ConnectionActivityType.Guid,
-                ConnectorGuid = a.ConnectorPersonAlias.Person.Guid,
-                CreatedDateTime = ( DateTimeOffset ) a.CreatedDateTime,
-                IsModifiable = IsActivityModifiable(a),
-                Note = a.Note,
-                Guid = a.Guid,
-                ActivityType = a.ConnectionActivityType.ToString(),
-                Connector = new ConnectorItemViewModel
+                .Select( a => new ActivityViewModel
                 {
-                    FirstName = a.ConnectorPersonAlias.Person.FirstName,
-                    LastName = a.ConnectorPersonAlias.Person.LastName,
-                    PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( a.ConnectorPersonAlias.Person.PhotoUrl )
-                }
-            } ).ToList();
+                    ActivityTypeGuid = a.ConnectionActivityType.Guid,
+                    ConnectorGuid = a.ConnectorPersonAlias?.Person.Guid,
+                    CreatedDateTime = ( DateTimeOffset ) a.CreatedDateTime,
+                    IsModifiable = IsActivityModifiable(a),
+                    Note = a.Note.StripHtml(),
+                    Guid = a.Guid,
+                    ActivityType = a.ConnectionActivityType.ToString(),
+                    Connector = a.ConnectorPersonAlias?.Person != null ?
+                        new ConnectorItemViewModel
+                        {
+                            FirstName = a.ConnectorPersonAlias.Person.FirstName,
+                            LastName = a.ConnectorPersonAlias.Person.LastName,
+                            PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( a.ConnectorPersonAlias.Person.PhotoUrl )
+                        }
+                        : null
+                } )
+                .ToList();
 
             var viewModel = new RequestViewModel
             {
@@ -406,7 +441,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 StatusGuid = request.ConnectionStatus.Guid,
                 StatusName = request.ConnectionStatus.Name,
                 WorkflowTypes = connectionWorkflows,
-                Activities = activitiesViewModel
+                Activities = activitiesViewModel,
+                ConnectionRequestGuid = request.Guid
             };
 
             if ( isEditable )
@@ -1167,21 +1203,20 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// This gets a specific set of information about a connection activity that is ultimately passed down to the mobile shell.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
+        /// <param name="connectionRequestIdKey">The connection request unique identifier.</param>
         /// <param name="activityGuid">The activity unique identifier.</param>
         /// <param name="readOnly">if set to <c>true</c> [read only].</param>
         /// <returns>System.ValueTuple&lt;ConnectionRequestActivity, List&lt;ConnectorItemViewModel&gt;, List&lt;Common.Mobile.ViewModel.ListItemViewModel&gt;, BlockActionResult&gt;.</returns>
-        private (ConnectionRequestActivity Activity, List<ConnectorItemViewModel> Connectors, List<Common.Mobile.ViewModel.ListItemViewModel> ActivityTypes, BlockActionResult Error) GetConnectionRequestActivityBag( RockContext rockContext, Guid connectionRequestGuid, Guid? activityGuid, bool readOnly )
+        private (ConnectionRequestActivity Activity, List<ConnectorItemViewModel> Connectors, List<Common.Mobile.ViewModel.ListItemViewModel> ActivityTypes, BlockActionResult Error) GetConnectionRequestActivityBag( RockContext rockContext, string connectionRequestIdKey, Guid? activityGuid, bool readOnly )
         {
             var connectionRequestService = new ConnectionRequestService( rockContext );
             var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
 
             // Load the connection request and include the opportunity and type
             // to speed up the security check.
-            var request = connectionRequestService.Queryable()
+            var request = connectionRequestService.GetQueryableByKey( connectionRequestIdKey )
                 .Include( r => r.ConnectionOpportunity.ConnectionType )
                 .AsNoTracking()
-                .Where( r => r.Guid == connectionRequestGuid )
                 .FirstOrDefault();
 
             if ( request == null )
@@ -1230,24 +1265,24 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <summary>
         /// Gets the request details that should be displayed to the user.
         /// </summary>
-        /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
+        /// <param name="connectionRequestGuid">The connection request as either an IdKey, Guid or depending on site configuration integer Id.</param>
         /// <returns>A model that contains the connection request details.</returns>
         [BlockAction]
-        public BlockActionResult GetRequestDetails( Guid connectionRequestGuid )
+        public BlockActionResult GetRequestDetails( string connectionRequestGuid )
         {
             using ( var rockContext = new RockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
+                var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
 
                 // Load the connection request and include the opportunity and type
                 // to speed up the security check.
-                var request = connectionRequestService.Queryable()
+                var request = connectionRequestService.GetQueryableByKey( connectionRequestGuid, !disablePredictableIds )
                     .Include( r => r.ConnectionOpportunity.ConnectionType )
                     .Include( r => r.Campus )
                     .Include( r => r.ConnectorPersonAlias.Person )
                     .Include( r => r.ConnectionStatus )
                     .AsNoTracking()
-                    .Where( r => r.Guid == connectionRequestGuid )
                     .FirstOrDefault();
 
                 if ( request == null )
@@ -1271,22 +1306,21 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
         /// <returns>The edit view model for the connection request.</returns>
         [BlockAction]
-        public BlockActionResult GetRequestEditDetails( Guid connectionRequestGuid )
+        public BlockActionResult GetRequestEditDetails( string connectionRequestGuid )
         {
             using ( var rockContext = new RockContext() )
             {
-
                 var connectionRequestService = new ConnectionRequestService( rockContext );
+                var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
 
                 // Load the connection request and include the opportunity and type
                 // to speed up the security check.
-                var request = connectionRequestService.Queryable()
+                var request = connectionRequestService.GetQueryableByKey( connectionRequestGuid, !disablePredictableIds )
                     .Include( r => r.ConnectionOpportunity.ConnectionType )
                     .Include( r => r.Campus )
                     .Include( r => r.ConnectorPersonAlias.Person )
                     .Include( r => r.ConnectionStatus )
                     .AsNoTracking()
-                    .Where( r => r.Guid == connectionRequestGuid )
                     .FirstOrDefault();
 
                 if ( request == null )
@@ -1311,7 +1345,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="requestDetails">The details that will be updated on the connection request.</param>
         /// <returns>A model that contains the updated connection request details to be displayed.</returns>
         [BlockAction]
-        public BlockActionResult UpdateRequest( Guid connectionRequestGuid, RequestSaveViewModel requestDetails )
+        public BlockActionResult UpdateRequest( string connectionRequestGuid, RequestSaveViewModel requestDetails )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1319,11 +1353,12 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var connectionStatusService = new ConnectionStatusService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
 
+                var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
+
                 // Load the connection request and include the opportunity and type
                 // to speed up the security check.
-                var request = connectionRequestService.Queryable()
+                var request = connectionRequestService.GetQueryableByKey( connectionRequestGuid, !disablePredictableIds )
                     .Include( r => r.ConnectionOpportunity.ConnectionType )
-                    .Where( r => r.Guid == connectionRequestGuid )
                     .FirstOrDefault();
 
                 if ( request == null )
@@ -1522,7 +1557,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
         /// <returns>A description of options available when adding a new activity.</returns>
         [BlockAction]
-        public BlockActionResult GetActivityOptions( Guid connectionRequestGuid )
+        public BlockActionResult GetActivityOptions( string connectionRequestGuid )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1549,7 +1584,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="readOnly">if set to <c>true</c> [read only].</param>
         /// <returns>BlockActionResult.</returns>
         [BlockAction]
-        public BlockActionResult GetExistingActivityOptions( Guid connectionRequestGuid, Guid activityGuid, bool readOnly )
+        public BlockActionResult GetExistingActivityOptions( string connectionRequestGuid, Guid activityGuid, bool readOnly )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1604,7 +1639,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="activity">The activity details.</param>
         /// <returns>The view model data that should be displayed.</returns>
         [BlockAction]
-        public BlockActionResult AddActivity( Guid connectionRequestGuid, ActivityViewModel activity )
+        public BlockActionResult AddActivity( string connectionRequestGuid, ActivityViewModel activity )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1612,12 +1647,12 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
                 var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
+                var noteService = new NoteService( rockContext );
                 int? connectorAliasId = null;
 
                 // Load the connection request. Include the connection opportunity
                 // and type for security check.
-                var request = connectionRequestService.Queryable()
-                    .Where( r => r.Guid == connectionRequestGuid )
+                var request = connectionRequestService.GetQueryableByKey( connectionRequestGuid )
                     .Include( r => r.ConnectionOpportunity.ConnectionType )
                     .FirstOrDefault();
 
@@ -1679,6 +1714,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 requestActivity.ConnectionOpportunityId = request.ConnectionOpportunityId;
                 requestActivity.ConnectionActivityTypeId = activityTypeId;
                 requestActivity.ConnectorPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                var mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( activity.Note, requestActivity.Note );
                 requestActivity.Note = activity.Note;
                 requestActivity.ConnectorPersonAliasId = connectorAliasId;
 
@@ -1686,6 +1722,19 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 connectionRequestActivityService.Add( requestActivity );
 
                 rockContext.SaveChanges();
+
+                // If we have any new mentioned person ids, start a background
+                // task to create the notifications.
+                if ( mentionedPersonIds.Any() )
+                {
+                    Task.Run( () =>
+                    {
+                        foreach ( var personId in mentionedPersonIds )
+                        {
+                            ConnectionRequestMention.CreateNotificationMessage( request, personId, RequestContext.CurrentPerson.Id, PageCache.Id, RequestContext.GetPageParameters() );
+                        }
+                    } );
+                }
 
                 return ActionOk( GetRequestViewModel( request, rockContext ) );
             }
@@ -1699,7 +1748,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="activity">The activity.</param>
         /// <returns>The view model data that should be displayed.</returns>
         [BlockAction]
-        public BlockActionResult UpdateActivity( Guid activityGuid, Guid connectionRequestGuid, ActivityViewModel activity )
+        public BlockActionResult UpdateActivity( Guid activityGuid, string connectionRequestGuid, ActivityViewModel activity )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1707,6 +1756,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
                 var connectionRequestService = new ConnectionRequestService( rockContext );
+                var noteService = new NoteService( rockContext );
 
                 var activityToUpdate = activityService.Get( activityGuid );
 
@@ -1715,10 +1765,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return ActionNotFound();
                 }
 
+                var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
+
                 // Load the connection request. Include the connection opportunity
                 // and type for security check.
-                var request = connectionRequestService.Queryable()
-                    .Where( r => r.Guid == connectionRequestGuid )
+                var request = connectionRequestService.GetQueryableByKey( connectionRequestGuid, !disablePredictableIds )
                     .Include( r => r.ConnectionOpportunity.ConnectionType )
                     .FirstOrDefault();
 
@@ -1739,6 +1790,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return ActionBadRequest( "Unable to find that connection activity type." );
                 }
 
+                if( !activity.ConnectorGuid.HasValue )
+                {
+                    return ActionBadRequest( "Invalid connector was specified." );
+
+                }
                 var connectorAliasId = personAliasService.GetPrimaryAliasId( activity.ConnectorGuid.Value );
 
                 if ( !connectorAliasId.HasValue )
@@ -1748,10 +1804,25 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 activityToUpdate.ConnectionActivityTypeId = connectionActivityType.Id;
                 activityToUpdate.ConnectorPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                var mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( activity.Note, activityToUpdate.Note );
                 activityToUpdate.Note = activity.Note;
                 activityToUpdate.ConnectorPersonAliasId = connectorAliasId;
 
                 rockContext.SaveChanges();
+
+                // If we have any new mentioned person ids, start a background
+                // task to create the notifications.
+                if ( mentionedPersonIds.Any() )
+                {
+                    Task.Run( () =>
+                    {
+                        foreach ( var personId in mentionedPersonIds )
+                        {
+                            ConnectionRequestMention.CreateNotificationMessage( request, personId, RequestContext.CurrentPerson.Id, PageCache.Id, RequestContext.GetPageParameters() );
+                        }
+                    } );
+                }
+
                 return ActionOk( GetRequestViewModel( request, rockContext ) );
             }
         }
@@ -1764,7 +1835,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="currentPersonAliasId">The current person alias identifier.</param>
         /// <returns>The view model data that should be displayed.</returns>
         [BlockAction]
-        public BlockActionResult DeleteActivity( Guid activityGuid, Guid connectionRequestGuid, int currentPersonAliasId )
+        public BlockActionResult DeleteActivity( Guid activityGuid, string connectionRequestGuid, int currentPersonAliasId )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1773,7 +1844,9 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var connectionRequestService = new ConnectionRequestService( rockContext );
 
                 var activity = connectionRequestActivityService.Get( activityGuid );
-                var request = connectionRequestService.Get( connectionRequestGuid );
+
+                var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
+                var request = connectionRequestService.Get( connectionRequestGuid, !disablePredictableIds );
 
                 if( activity == null )
                 {
@@ -1810,14 +1883,15 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="connectionWorkflowGuid">The connection workflow unique identifier, the value from <see cref="WorkflowTypeItemViewModel.Guid"/>.</param>
         /// <returns>A response that determines if the workflow launched and if the user needs to be directed to the workflow entry page.</returns>
         [BlockAction]
-        public BlockActionResult LaunchWorkflow( Guid connectionRequestGuid, Guid connectionWorkflowGuid )
+        public BlockActionResult LaunchWorkflow( string connectionRequestGuid, Guid connectionWorkflowGuid )
         {
             using ( var rockContext = new RockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionWorkflowService = new ConnectionWorkflowService( rockContext );
 
-                var connectionRequest = connectionRequestService.Get( connectionRequestGuid );
+                var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
+                var connectionRequest = connectionRequestService.Get( connectionRequestGuid, !disablePredictableIds );
                 var connectionWorkflow = connectionWorkflowService.Get( connectionWorkflowGuid );
 
                 // Make sure we found the connection request and then check if they
@@ -1860,7 +1934,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <returns>The attributes that can be filled in by the individual.</returns>
         [BlockAction]
         [RockObsolete( "1.13.3" )]
-        public BlockActionResult GetPlacementGroupMemberAttributes( Guid connectionRequestGuid, Guid groupGuid, Guid groupMemberRoleGuid )
+        public BlockActionResult GetPlacementGroupMemberAttributes( string connectionRequestGuid, Guid groupGuid, Guid groupMemberRoleGuid )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1869,8 +1943,9 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 // Load the connection request. Include the connection opportunity
                 // and type for security check.
-                var request = connectionRequestService.Queryable()
-                    .Where( r => r.Guid == connectionRequestGuid )
+                var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
+
+                var request = connectionRequestService.GetQueryableByKey( connectionRequestGuid, !disablePredictableIds )
                     .Include( r => r.ConnectionOpportunity.ConnectionType )
                     .FirstOrDefault();
 
@@ -1960,7 +2035,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="groupMemberRoleGuid">The unique identifier of the role the person will be assigned.</param>
         /// <returns>The attributes that can be filled in by the individual.</returns>
         [BlockAction]
-        public BlockActionResult GetPlacementGroupMemberAttributesAndValues( Guid connectionRequestGuid, Guid groupGuid, Guid groupMemberRoleGuid )
+        public BlockActionResult GetPlacementGroupMemberAttributesAndValues( string connectionRequestGuid, Guid groupGuid, Guid groupMemberRoleGuid )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1969,8 +2044,9 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 // Load the connection request. Include the connection opportunity
                 // and type for security check.
-                var request = connectionRequestService.Queryable()
-                    .Where( r => r.Guid == connectionRequestGuid )
+                var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
+
+                var request = connectionRequestService.GetQueryableByKey( connectionRequestGuid, !disablePredictableIds )
                     .Include( r => r.ConnectionOpportunity.ConnectionType )
                     .FirstOrDefault();
 
@@ -2062,7 +2138,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="manualRequirements"></param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult MarkRequestConnected( Guid connectionRequestGuid, Dictionary<Guid, bool> manualRequirements )
+        public BlockActionResult MarkRequestConnected( string connectionRequestGuid, Dictionary<Guid, bool> manualRequirements )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -2072,9 +2148,10 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 // Load the connection request and include the opportunity and type
                 // to speed up the security check.
-                var request = connectionRequestService.Queryable()
+                var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
+
+                var request = connectionRequestService.GetQueryableByKey( connectionRequestGuid, !disablePredictableIds )
                     .Include( r => r.ConnectionOpportunity.ConnectionType )
-                    .Where( r => r.Guid == connectionRequestGuid )
                     .FirstOrDefault();
 
                 if ( request == null )
@@ -2335,6 +2412,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// </summary>
             /// <value>The activities.</value>
             public List<ActivityViewModel> Activities { get; set; }
+
+            /// <summary>
+            /// Gets or sets the connection request guid.
+            /// </summary>
+            public Guid ConnectionRequestGuid { get; set; }
         }
 
         /// <summary>

@@ -1,0 +1,207 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="grid-title-heading">
+        <div class="grid-title">
+            {{ props.grid.itemTerm }} List
+        </div>
+
+        <div class="grid-badges mr-3">
+            <span v-if="countMessage" class="label label-default">{{ countMessage }}</span>
+        </div>
+
+        <!-- This causes a break on extra small and small devices. -->
+        <div style="height: 0; border-bottom: 1px solid #dfe0e1; flex-basis: 100%;" class="d-md-none"></div>
+        <div class="flex-grow-1 d-md-none" style="min-width: 1px;"></div>
+
+        <div class="grid-quick-filter grid-actions" :class="{ 'active': isSearchVisible }">
+            <button type="button" class="btn btn-grid-action" title="Search" @click.stop.prevent="onSearchClick">
+                <i class="fa fa-search fa-fw"></i>
+            </button>
+
+            <div ref="quickFilterContainerElement" class="grid-quick-filter-search" :class="{ 'open': isSearchVisible }">
+                <TextBox v-model="quickFilterValue" placeholder="Search" />
+            </div>
+        </div>
+
+        <ActionGroup :gridActions="primaryGridActions"
+                     :grid="grid" />
+
+        <PopupActionGroup v-if="hasSecondaryActions"
+                          :gridActions="secondaryGridActions"
+                          :grid="grid" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { PropType, computed, nextTick, ref, onMounted, onBeforeUnmount } from "vue";
+    import ActionGroup from "./actionGroup.partial.obs";
+    import PopupActionGroup from "./popupActionGroup.partial.obs";
+    import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
+
+    const props = defineProps({
+        /** The current text being used for the quick filter feature. */
+        quickFilterValue: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The array of grid actions that will be displayed. */
+        gridActions: {
+            type: Array as PropType<(GridAction & { isPrimary?: boolean })[]>,
+            default: []
+        },
+
+        /** The state object for the entire grid. */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        },
+
+        /**
+         * The number of columns currently visible in the grid. This is used
+         * as the colspan for this row so that we span the entire grid width.
+         */
+        visibleColumnCount: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        /** The text to display inside the row count badge. */
+        countMessage: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:quickFilterValue", value: string): void
+    }>();
+
+    // #region Values
+
+    const quickFilterContainerElement = ref<HTMLElement>();
+    const isSearchVisible = ref(false);
+    const quickFilterValue = useVModelPassthrough(props, "quickFilterValue", emit);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const primaryGridActions = computed((): GridAction[] => {
+        return props.gridActions.filter(a => a.isPrimary === true);
+    });
+
+    const secondaryGridActions = computed((): GridAction[] => {
+        return props.gridActions.filter(a => a.isPrimary !== true);
+    });
+
+    const hasSecondaryActions = computed((): boolean => {
+        return secondaryGridActions.value.length > 0;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Checks if the element or any ancestor can be focused. This is a rough
+     * guess and not 100% accurate, but should be good enough for our uses.
+     *
+     * @param element The element whose ancestor tree is to be checked for focusability.
+     *
+     * @returns `true` if the element or any ancestor is focusable, otherwise `false`.
+     */
+    function isTreeFocusable(element: HTMLElement | null): boolean {
+        while (element != null) {
+            if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+                return true;
+            }
+
+            if (element.isContentEditable) {
+                return true;
+            }
+
+            element = element.parentElement;
+        }
+
+        return false;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the quick filter search button is clicked. Toggle the
+     * visible state of the search box.
+     */
+    function onSearchClick(): void {
+        // Don't allow hiding the search box if there is content in it.
+        if (isSearchVisible.value && quickFilterValue.value) {
+            return;
+        }
+
+        isSearchVisible.value = !isSearchVisible.value;
+
+        // Focus the search box if it is visible.
+        if (isSearchVisible.value) {
+            nextTick(() => {
+                const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
+                searchBox?.focus();
+            });
+        }
+    }
+
+    /**
+     * Event handler for when a key down event occurs anywhere in the document.
+     *
+     * @param event The keyboard event.
+     */
+    function onDocumentKeyDown(event: KeyboardEvent): void {
+        // If it's not any kind of HTML Element, then just ignore it.
+        if (!(event.target instanceof HTMLElement)) {
+            return;
+        }
+
+        // If the quick filter has the focus and the escape key is pressed
+        // then clear the search.
+        if (quickFilterContainerElement.value?.contains(event.target)) {
+            if (event.key === "Escape") {
+                if (quickFilterValue.value === "") {
+                    const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
+
+                    searchBox?.blur();
+                    isSearchVisible.value = false;
+                }
+                else {
+                    quickFilterValue.value = "";
+                }
+            }
+        }
+
+        // If no other input type element has focus and they hit the hotkey
+        // for searching, open the search bar and focus the search box.
+        if (!isTreeFocusable(event.target)) {
+            if (event.key === "F" && event.ctrlKey && event.shiftKey) {
+                isSearchVisible.value = true;
+
+                nextTick(() => {
+                    const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
+                    searchBox?.focus();
+                });
+            }
+        }
+    }
+
+    // #endregion
+
+    onMounted(() => {
+        document.addEventListener("keydown", onDocumentKeyDown);
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("keydown", onDocumentKeyDown);
+    });
+</script>

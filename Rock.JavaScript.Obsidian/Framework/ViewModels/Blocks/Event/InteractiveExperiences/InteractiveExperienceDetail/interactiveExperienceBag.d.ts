@@ -102,6 +102,9 @@ export type InteractiveExperienceBag = {
     /** Gets or sets the Description of the Rock.Model.InteractiveExperience */
     description?: string | null;
 
+    /** Gets or sets the lava template to use after the experience has ended. */
+    experienceEndedTemplate?: string | null;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
@@ -134,6 +137,9 @@ export type InteractiveExperienceBag = {
 
     /** Gets or sets the push notification type. */
     pushNotificationType: InteractiveExperiencePushNotificationType;
+
+    /** Gets or sets the schedule attributes. */
+    scheduleAttributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the schedules associated with this interactive experience. */
     schedules?: InteractiveExperienceScheduleBag[] | null;

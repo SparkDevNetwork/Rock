@@ -4,257 +4,268 @@
         {{ blockErrorMessage }}
     </NotificationBox>
 
-    <Panel v-if="!blockErrorMessage"
-           title="Group Scheduler"
-           class="new-group-scheduler"
-           :hasZoom="true"
-           :hasFullscreen="true"
-           :headerSecondaryActions="secondaryActions">
+    <div class="new-group-scheduler">
+        <Panel v-if="!blockErrorMessage"
+               type="block"
+               title="Group Scheduler"
+               class="styled-scroll"
+               :hasZoom="true"
+               :hasFullscreen="true"
+               :headerSecondaryActions="secondaryActions">
 
-        <template #helpContent>
-            <div class="p-3 bg-white">
-                <div>
-                    <h5 class="mt-0 mb-4">Group Scheduler Help</h5>
-                    <p><strong>Scheduling Basics</strong></p>
-                    <p>This screen allows you to schedule individuals into groups. Individuals can be added to a schedule by clicking the ‘Plus’ icon in the lower right corner of each location.</p>
-                </div>
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <p><strong>Scheduled Individual Legend</strong></p>
-                        <p>Each scheduled individual has one of three invite statuses:</p>
-                        <ul>
-                            <li><i class="fa fa-circle text-success"></i> Accepted Invite</li>
-                            <li><i class="fa fa-circle text-muted"></i> Pending Invite</li>
-                            <li><i class="fa fa-circle text-danger"></i> Declined Invite</li>
-                        </ul>
-                        <p>The invite status is shown by a border around the individual's avatar.</p>
-                        <p>Some scheduled individuals may also have notification icons that alert you to issues with their schedule.</p>
-                        <ul>
-                            <li><i class="fa fa-exclamation-triangle"></i> Indicates a conflict; which can can happen if an individual is unavailable due to a blackout, they do not meet the group requirements, or because they have a scheduling conflict.</li>
-                            <li><i class="fa fa-minus-circle"></i> Indicates that the schedule does not match this person's scheduling preference.</li>
-                        </ul>
-                        <p>For both notification icon types, additional details can be viewed by hovering over the icon.</p>
+            <template #helpContent>
+                <div class="p-3 bg-white">
+                    <div>
+                        <h5 class="mt-0 mb-4">Group Scheduler Help</h5>
+                        <p><strong>Scheduling Basics</strong></p>
+                        <p>This screen allows you to schedule individuals into groups. Individuals can be added to a schedule by clicking the ‘Plus’ icon in the lower right corner of each location.</p>
                     </div>
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <p><strong>Scheduled Individual Legend</strong></p>
+                            <p>Each scheduled individual has one of three invite statuses:</p>
+                            <ul>
+                                <li><i class="fa fa-circle text-success"></i> Accepted Invite</li>
+                                <li><i class="fa fa-circle text-muted"></i> Pending Invite</li>
+                                <li><i class="fa fa-circle text-danger"></i> Declined Invite</li>
+                            </ul>
+                            <p>The invite status is shown by a border around the individual's avatar.</p>
+                            <p>Some scheduled individuals may also have notification icons that alert you to issues with their schedule.</p>
+                            <ul>
+                                <li><i class="fa fa-exclamation-triangle"></i> Indicates a conflict; which can can happen if an individual is unavailable due to a blackout, they do not meet the group requirements, or because they have a scheduling conflict.</li>
+                                <li><i class="fa fa-minus-circle"></i> Indicates that the schedule does not match this person's scheduling preference.</li>
+                            </ul>
+                            <p>For both notification icon types, additional details can be viewed by hovering over the icon.</p>
+                        </div>
 
-                    <div class="col-md-6">
-                        <p><strong>Group Location Schedule Status</strong></p>
-                        <p>Each group location has a status bar at the bottom that shows the overall status of the schedule.</p>
-                        <ul>
-                            <li><i class="fa fa-square text-danger"></i> A red bar means there are not enough accepted invites to reach the minimum number of individuals needed.</li>
-                            <li><i class="fa fa-square text-warning"></i> A yellow bar means there are enough accepted invites to reach the minimum number, but not the desired number.</li>
-                            <li><i class="fa fa-square text-success"></i> A green bar means there are enough accepted invites to reach or exceed the desired number.</li>
-                            <li><i class="fa fa-square text-critical"></i> An orange bar means there are too many accepted invites and the maximum number is exceeded.</li>
-                        </ul>
-                        <p>Each status bar will show a solid bar representing the accepted invites, and a semi-transparent bar representing pending invites.</p>
-                        <p>Bars include ticks, that mark the thresholds (minimum, desired and maximum) for each schedule. You can hover over each tick to see a tooltip with the threshold and the number of individuals required.</p>
+                        <div class="col-md-6">
+                            <p><strong>Group Location Schedule Status</strong></p>
+                            <p>Each group location has a status bar at the bottom that shows the overall status of the schedule.</p>
+                            <ul>
+                                <li><i class="fa fa-square text-danger"></i> A red bar means there are not enough accepted invites to reach the minimum number of individuals needed.</li>
+                                <li><i class="fa fa-square text-warning"></i> A yellow bar means there are enough accepted invites to reach the minimum number, but not the desired number.</li>
+                                <li><i class="fa fa-square text-success"></i> A green bar means there are enough accepted invites to reach or exceed the desired number.</li>
+                                <li><i class="fa fa-square text-critical"></i> An orange bar means there are too many accepted invites and the maximum number is exceeded.</li>
+                            </ul>
+                            <p>Each status bar will show a solid bar representing the accepted invites, and a semi-transparent bar representing pending invites.</p>
+                            <p>Bars include ticks, that mark the thresholds (minimum, desired and maximum) for each schedule. You can hover over each tick to see a tooltip with the threshold and the number of individuals required.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </template>
+            </template>
 
-        <!-- Toolbar: Desktop -->
-        <div class="panel-toolbar d-none d-md-flex flex-wrap flex-sm-nowrap justify-content-between">
-            <div :class="filtersCssClass"
-                 :disabled="isBusy"
-                 @click="onSelectFiltersClick"><i class="fa fa-sliders-h"></i> {{ filtersText }}</div>
+            <template #preBody>
+                <div class="panel-collapsable">
+                    <!-- Toolbar: Desktop -->
+                    <div class="panel-toolbar d-none d-md-flex flex-wrap flex-sm-nowrap justify-content-between">
+                        <div :class="filtersCssClass"
+                             :disabled="isBusy"
+                             @click="onSelectFiltersClick"><i class="fa fa-sliders-h"></i> {{ filtersText }}</div>
 
-            <div class="d-block flex-shrink-0">
-                <RockButton :btnSize="BtnSize.ExtraSmall"
-                            :disabled="isSchedulingDisabled"
-                            @click="onCloneSchedulesClick">
-                    <i class="fa fa-clone"></i> Clone Schedules
-                    <Loading :isLoading="isCloningSchedules" :isSmall="true" class="d-inline-block" />
-                </RockButton>
-
-                <RockButton v-if="rosterUrl"
-                            :btnSize="BtnSize.ExtraSmall"
-                            :disabled="isSchedulingDisabled"
-                            class="ml-1"
-                            @click="onRosterClick">
-                    <i class="fa fa-calendar-check"></i> Rosters
-                </RockButton>
-
-                <RockButton :btnSize="BtnSize.ExtraSmall"
-                            :disabled="isSchedulingDisabled"
-                            class="ml-1"
-                            @click="onAutoScheduleClick">
-                    <i class="fa fa-magic"></i> Auto Schedule
-                    <Loading :isLoading="isAutoScheduling" :isSmall="true" class="d-inline-block" />
-                </RockButton>
-
-                <RockButton :btnSize="BtnSize.ExtraSmall"
-                            :disabled="isSchedulingDisabled"
-                            class="ml-1"
-                            @click="onSendNowClick">
-                    <i class="fa fa-envelope-o"></i> Send Now
-                    <Loading :isLoading="isSendingNow" :isSmall="true" class="d-inline-block" />
-                </RockButton>
-            </div>
-        </div>
-
-        <!-- Toolbar: Mobile -->
-        <div class="panel-toolbar panel-toolbar-mobile d-flex d-md-none justify-content-between">
-            <RockButton :btnSize="BtnSize.Small"
-                        :disabled="isBusy"
-                        @click="onSelectFiltersClick"><i class="fa fa-sliders-h"></i> Filters</RockButton>
-
-            <div class="d-flex">
-                <div class="dropdown">
-                    <button type="button"
-                            class="btn btn-default btn-square btn-sm"
-                            data-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                            :disabled="isSchedulingDisabled">
-                        <Loading :isLoading="isCloningSchedules || isAutoScheduling || isSendingNow" :isSmall="true">
-                            <i class="fa fa-ellipsis-v"></i>
-                        </Loading>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-right">
-                        <li>
-                            <button type="button"
-                                    class="dropdown-item btn-link text-nowrap"
-                                    :disabled="isSchedulingDisabled"
-                                    @click="onSendNowClick">
-                                <i class="fa fa-envelope-o"></i> Send Now
-                            </button>
-                        </li>
-                        <li>
-                            <button type="button"
-                                    class="dropdown-item btn-link text-nowrap"
-                                    :disabled="isSchedulingDisabled"
-                                    @click="onCloneSchedulesClick">
+                        <div class="d-block flex-shrink-0">
+                            <RockButton :btnSize="BtnSize.ExtraSmall"
+                                        :disabled="isSchedulingDisabled"
+                                        @click="onCloneSchedulesClick">
                                 <i class="fa fa-clone"></i> Clone Schedules
-                            </button>
-                        </li>
-                        <li>
-                            <button v-if="rosterUrl"
-                                    type="button"
-                                    class="dropdown-item btn-link text-nowrap"
-                                    :disabled="isSchedulingDisabled"
-                                    @click="onRosterClick">
+                                <Loading :isLoading="isCloningSchedules" :isSmall="true" class="d-inline-block" />
+                            </RockButton>
+
+                            <RockButton v-if="rosterUrl"
+                                        :btnSize="BtnSize.ExtraSmall"
+                                        :disabled="isSchedulingDisabled"
+                                        class="ml-1"
+                                        @click="onRosterClick">
                                 <i class="fa fa-calendar-check"></i> Rosters
-                            </button>
-                        </li>
-                        <li>
-                            <button type="button"
-                                    class="dropdown-item btn-link text-nowrap"
-                                    :disabled="isSchedulingDisabled"
-                                    @click="onAutoScheduleClick">
+                            </RockButton>
+
+                            <RockButton :btnSize="BtnSize.ExtraSmall"
+                                        :disabled="isSchedulingDisabled"
+                                        class="ml-1"
+                                        @click="onAutoScheduleClick">
                                 <i class="fa fa-magic"></i> Auto Schedule
-                            </button>
+                                <Loading :isLoading="isAutoScheduling" :isSmall="true" class="d-inline-block" />
+                            </RockButton>
+
+                            <RockButton :btnSize="BtnSize.ExtraSmall"
+                                        :disabled="isSchedulingDisabled"
+                                        class="ml-1"
+                                        @click="onSendNowClick">
+                                <i class="fa fa-envelope-o"></i> Send Now
+                                <Loading :isLoading="isSendingNow" :isSmall="true" class="d-inline-block" />
+                            </RockButton>
+                        </div>
+                    </div>
+
+                    <!-- Toolbar: Mobile -->
+                    <div class="panel-toolbar panel-toolbar-mobile d-flex d-md-none justify-content-between">
+                        <RockButton :btnSize="BtnSize.Small"
+                                    :disabled="isBusy"
+                                    @click="onSelectFiltersClick"><i class="fa fa-sliders-h"></i> Filters</RockButton>
+
+                        <div class="d-flex">
+                            <div class="dropdown">
+                                <button type="button"
+                                        class="btn btn-default btn-square btn-sm"
+                                        data-toggle="dropdown"
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
+                                        :disabled="isSchedulingDisabled">
+                                    <Loading :isLoading="isCloningSchedules || isAutoScheduling || isSendingNow" :isSmall="true">
+                                        <i class="fa fa-ellipsis-v"></i>
+                                    </Loading>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-right">
+                                    <li>
+                                        <button type="button"
+                                                class="dropdown-item btn-link text-nowrap"
+                                                :disabled="isSchedulingDisabled"
+                                                @click="onSendNowClick">
+                                            <i class="fa fa-envelope-o"></i> Send Now
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button"
+                                                class="dropdown-item btn-link text-nowrap"
+                                                :disabled="isSchedulingDisabled"
+                                                @click="onCloneSchedulesClick">
+                                            <i class="fa fa-clone"></i> Clone Schedules
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button v-if="rosterUrl"
+                                                type="button"
+                                                class="dropdown-item btn-link text-nowrap"
+                                                :disabled="isSchedulingDisabled"
+                                                @click="onRosterClick">
+                                            <i class="fa fa-calendar-check"></i> Rosters
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button"
+                                                class="dropdown-item btn-link text-nowrap"
+                                                :disabled="isSchedulingDisabled"
+                                                @click="onAutoScheduleClick">
+                                            <i class="fa fa-magic"></i> Auto Schedule
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Body -->
+            <div v-if="!anyOccurrences" class="panel-body-alert">
+
+                <NotificationBox v-if="!anyGroupsSelected" :alertType="AlertType.Info">
+                    Please select at least one group.
+                </NotificationBox>
+
+                <NotificationBox v-else :alertType="AlertType.Info">
+                    No schedule occurrences match the selected filters.
+                </NotificationBox>
+
+            </div>
+
+            <div v-else v-drag-scroll.left="{ id: newGuid() }" ref="snapContainerElement" class="snap-container">
+
+                <OccurrenceDate v-for="(occurrences, index) in sortedOccurrencesByDate" :key="getOccurrenceDateKey(occurrences)"
+                                :occurrences="occurrences"
+                                :showPrevNextButtons="showPrevNextButtons"
+                                :ref="(comp) => addOccurrenceDateComponent(comp, index)"
+                                :disabled="isSchedulingDisabled"
+                                @scheduleComponentsCreated="onScheduleComponentsCreated(index, $event)"
+                                @goPrevious="onGoPrevious(index, $event)"
+                                @goNext="onGoNext(index, $event)"
+                                @preferenceUpdated="onPreferenceUpdated"></OccurrenceDate>
+
+            </div>
+
+            <SelectFilters v-model:isVisible="isSelectingFilters"
+                           :filters="filters"
+                           :disallowGroupSelection="disallowGroupSelection"
+                           @filtersApplied="onFiltersApplied" />
+
+            <CloneSchedules v-model:isVisible="isSelectingCloneSettings"
+                            :filters="filters"
+                            @cloneSchedules="onCloneSchedules" />
+
+            <ModalAlert v-model="isCloneSchedulesModalVisible"
+                        :type="ModalAlertType.Information">
+
+                <p v-if="cloneSchedulesResponse?.anyOccurrencesToClone === false">
+                    No schedules were cloned.
+                </p>
+
+                <p v-else-if="clonedSchedulesMessage">
+                    {{ clonedSchedulesMessage }}
+                </p>
+
+                <p>
+                    <strong>Source: </strong>Week of {{ clonedSchedulesSourceDateRange }}
+                    <br>
+                    <strong>Destination: </strong>Week of {{ clonedSchedulesDestinationDateRange }}
+                </p>
+
+                <p v-if="cloneSchedulesResponse?.skippedIndividualsExplanation">
+                    {{ cloneSchedulesResponse.skippedIndividualsExplanation }}
+                </p>
+
+            </ModalAlert>
+
+            <ModalAlert v-model="isSendNowModalVisible"
+                        :type="sendNowModalAlertType">
+
+                <div v-if="sendNowResponse?.errors?.length">
+                    One or more errors occurred when sending confirmations:
+                    <ul>
+                        <li v-for="error in sendNowResponse.errors">
+                            {{ error }}
                         </li>
                     </ul>
                 </div>
-            </div>
-        </div>
 
-        <!-- Body -->
-        <div v-if="!anyOccurrences" class="panel-body-alert">
+                <div v-if="sendNowResponse?.warnings?.length">
+                    One or more warnings occurred when sending confirmations:
+                    <ul>
+                        <li v-for="warning in sendNowResponse.warnings">
+                            {{ warning }}
+                        </li>
+                    </ul>
+                </div>
 
-            <NotificationBox v-if="!anyGroupsSelected" :alertType="AlertType.Info">
-                Please select at least one group.
-            </NotificationBox>
+                <p v-if="sendNowResponse?.anyCommunicationsToSend === false">
+                    Everybody has already been sent a confirmation. No additional confirmations sent.
+                </p>
 
-            <NotificationBox v-else :alertType="AlertType.Info">
-                No schedule occurrences match the selected filters.
-            </NotificationBox>
+                <p v-else-if="sentConfirmationsMessage">
+                    {{ sentConfirmationsMessage }}
+                </p>
 
-        </div>
-
-        <div v-else ref="snapContainer" class="snap-container">
-
-            <OccurrenceDate v-for="(occurrences, index) in sortedOccurrencesByDate" :key="getOccurrenceDateKey(occurrences)"
-                            :occurrences="occurrences"
-                            :showPrevNextButtons="showPrevNextButtons"
-                            :disabled="isSchedulingDisabled"
-                            @scheduleComponentsCreated="onScheduleComponentsCreated(index, $event)"
-                            @goPrevious="onGoPrevious(index, $event)"
-                            @goNext="onGoNext(index, $event)"
-                            @preferenceUpdated="onPreferenceUpdated"></OccurrenceDate>
-
-        </div>
-
-        <SelectFilters v-model:isVisible="isSelectingFilters"
-                       :filters="filters"
-                       @filtersApplied="onFiltersApplied" />
-
-        <CloneSchedules v-model:isVisible="isSelectingCloneSettings"
-                        :filters="filters"
-                        @cloneSchedules="onCloneSchedules" />
-
-        <ModalAlert v-model="isCloneSchedulesModalVisible"
-                    :type="ModalAlertType.Information">
-
-            <p v-if="cloneSchedulesResponse?.anyOccurrencesToClone === false">
-                No schedules were cloned.
-            </p>
-
-            <p v-else-if="clonedSchedulesMessage">
-                {{ clonedSchedulesMessage }}
-            </p>
-
-            <p>
-                <strong>Source: </strong>Week of {{ clonedSchedulesSourceDateRange }}
-                <br>
-                <strong>Destination: </strong>Week of {{ clonedSchedulesDestinationDateRange }}
-            </p>
-
-            <p v-if="cloneSchedulesResponse?.skippedIndividualsExplanation">
-                {{ cloneSchedulesResponse.skippedIndividualsExplanation }}
-            </p>
-
-        </ModalAlert>
-
-        <ModalAlert v-model="isSendNowModalVisible"
-                    :type="sendNowModalAlertType">
-
-            <div v-if="sendNowResponse?.errors?.length">
-                One or more errors occurred when sending confirmations:
-                <ul>
-                    <li v-for="error in sendNowResponse.errors">
-                        {{ error }}
-                    </li>
-                </ul>
-            </div>
-
-            <div v-if="sendNowResponse?.warnings?.length">
-                One or more warnings occurred when sending confirmations:
-                <ul>
-                    <li v-for="warning in sendNowResponse.warnings">
-                        {{ warning }}
-                    </li>
-                </ul>
-            </div>
-
-            <p v-if="sendNowResponse?.anyCommunicationsToSend === false">
-                Everybody has already been sent a confirmation. No additional confirmations sent.
-            </p>
-
-            <p v-else-if="sentConfirmationsMessage">
-                {{ sentConfirmationsMessage }}
-            </p>
-
-        </ModalAlert>
-    </Panel>
+            </ModalAlert>
+        </Panel>
+    </div>
 </template>
 
 <script setup lang="ts">
-    import { ComponentPublicInstance, computed, nextTick, provide, ref } from "vue";
+    import { ComponentPublicInstance, computed, nextTick, onUnmounted, provide, ref } from "vue";
     import CloneSchedules from "./GroupScheduler/cloneSchedules.partial.obs";
     import OccurrenceDate from "./GroupScheduler/occurrenceDate.partial.obs";
     import SelectFilters from "./GroupScheduler/selectFilters.partial.obs";
     import { NavigationUrlKey, ReloadAllOccurrences, ReloadOccurrencesContainingResource } from "./GroupScheduler/types.partial";
-    import Loading from "@Obsidian/Controls/loading";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import Panel from "@Obsidian/Controls/panel";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { DragScroll as vDragScroll } from "@Obsidian/Directives/dragScroll";
     import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import { GroupSchedulerAppliedFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerAppliedFiltersBag";
     import { GroupSchedulerCloneSchedulesResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerCloneSchedulesResponseBag";
     import { GroupSchedulerCloneSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerCloneSettingsBag";
@@ -275,16 +286,20 @@
         Next
     }
 
+    let schedulesResizeObserver: ResizeObserver | undefined;
+
     // #region Values
 
     const blockActionErrorMessage = ref("");
 
-    const snapContainer = ref<HTMLElement | null>(null);
+    const snapContainerElement = ref<HTMLElement | null>(null);
+    const occurrenceDateComponents = ref<(ComponentPublicInstance | null)[]>([]);
     const scheduleComponentsByOccurrenceDate = ref<Record<number, (ComponentPublicInstance | null)[]>>({});
 
     const filters = ref<GroupSchedulerFiltersBag | null | undefined>(config.appliedFilters?.filters);
     const scheduleOccurrences = ref<GroupSchedulerOccurrenceBag[] | null | undefined>(config.appliedFilters?.scheduleOccurrences);
     const navigationUrls = ref<Record<string, string> | null | undefined>(config.appliedFilters?.navigationUrls);
+    const disallowGroupSelection = ref<boolean>(config.disallowGroupSelection);
 
     const isSelectingFilters = ref(false);
 
@@ -327,7 +342,7 @@
                 iconCssClass: "fa fa-clipboard",
                 type: "default",
                 handler: onCopyToClipboardClick,
-                disabled: isSchedulingDisabled.value
+                disabled: isBusy.value || !anyGroupsSelected.value
             });
         }
 
@@ -490,6 +505,87 @@
     }
 
     /**
+     * Adds the component to the array of occurrence date components.
+     *
+     * @param component The occurrence date component to add.
+     * @param index The index of the component's corresponding occurrence date within the grouped occurrences.
+     *  Per Vue docs: "It should be noted that the ref array does not guarantee the same order as the source array."
+     *  Hence the need to provide this component's index to know which occurrence date it represents.
+     */
+    function addOccurrenceDateComponent(component: Element | ComponentPublicInstance | null, index: number): void {
+        if (!component) {
+            return;
+        }
+
+        occurrenceDateComponents.value[index] = component as ComponentPublicInstance;
+
+        // Once all occurrence date components have been added, begin observing their descendent schedule elements' sizes.
+        if (occurrenceDateComponents.value.length === occurrenceDateCount.value) {
+            observeScheduleSizes();
+        }
+    }
+
+    /**
+     * Observes this group scheduler's descendent schedule elements' sizes.
+     */
+    function observeScheduleSizes(): void {
+        if (!window.ResizeObserver || !snapContainerElement.value) {
+            return;
+        }
+
+        if (schedulesResizeObserver) {
+            // Stop observing any previous schedule elements.
+            schedulesResizeObserver.disconnect();
+        }
+        else {
+            schedulesResizeObserver = new ResizeObserver((_: ResizeObserverEntry[]) => {
+                setEqualOccurrenceDateHeights();
+            });
+        }
+
+        // Start observing any current schedule elements.
+        snapContainerElement.value.querySelectorAll(".js-schedule-column").forEach((schedule: Element) => {
+            schedulesResizeObserver?.observe(schedule);
+        });
+    }
+
+    /**
+     * Sets this group scheduler's descendent occurrence date elements to have a minimum height equal to
+     * their tallest sibling occurrence date element.
+     */
+    function setEqualOccurrenceDateHeights(): void {
+        if (!snapContainerElement.value) {
+            return;
+        }
+
+        const occurrenceDates = snapContainerElement.value.querySelectorAll<HTMLElement>(".js-occurrence-date");
+
+        // Start by setting all occurrence dates back to "auto" minimum height. This will do two things:
+        //  1. Reclaim any vertical space that is no longer needed (if an individual was removed).
+        //  2. Set up the UI for mobile widths (as we won't synchronize heights in that case).
+        occurrenceDates.forEach((occurrenceDate: HTMLElement) => {
+            occurrenceDate.style.minHeight = "auto";
+        });
+
+        // For non-mobile widths, synchronize heights.
+        nextTick(() => {
+            let maxHeight = 0;
+
+            // Loop through all occurrence dates to find the tallest one.
+            occurrenceDates.forEach((occurrenceDate: HTMLElement) => {
+                if (maxHeight < occurrenceDate.offsetHeight) {
+                    maxHeight = occurrenceDate.offsetHeight;
+                }
+            });
+
+            // Loop through all occurrence dates again to set each minimum height to match their tallest sibling.
+            occurrenceDates.forEach((occurrenceDate: HTMLElement) => {
+                occurrenceDate.style.minHeight = `${maxHeight}px`;
+            });
+        });
+    }
+
+    /**
      * Scrolls to the previous or next schedule component.
      *
      * @param currentDateIndex The index of the occurrenceDate component currently within view.
@@ -556,14 +652,14 @@
      * @param component The component to scroll to.
      */
     function scrollTo(component: ComponentPublicInstance | null): void {
-        if (!component?.$el || !snapContainer.value) {
+        if (!component?.$el || !snapContainerElement.value) {
             return;
         }
 
         const elementLeft: number = component.$el.getBoundingClientRect()?.left ?? 0;
-        const snapContainerScrollLeft: number = snapContainer.value?.scrollLeft ?? 0;
+        const snapContainerScrollLeft: number = snapContainerElement.value?.scrollLeft ?? 0;
 
-        snapContainer.value.scrollTo({
+        snapContainerElement.value.scrollTo({
             left: elementLeft + snapContainerScrollLeft,
             behavior: "smooth"
         });
@@ -707,6 +803,7 @@
      * @param appliedFilters The filters to apply.
      */
     function onFiltersApplied(appliedFilters: GroupSchedulerAppliedFiltersBag | null): void {
+        occurrenceDateComponents.value = [];
         scheduleComponentsByOccurrenceDate.value = {};
 
         filters.value = appliedFilters?.filters;
@@ -714,8 +811,8 @@
         navigationUrls.value = appliedFilters?.navigationUrls;
 
         nextTick(() => {
-            if (snapContainer.value) {
-                snapContainer.value.scrollTo({
+            if (snapContainerElement.value) {
+                snapContainerElement.value.scrollTo({
                     left: 0,
                     behavior: "smooth"
                 });
@@ -773,4 +870,10 @@
     provideSecurityGrant(securityGrant);
 
     onConfigurationValuesChanged(reloadBlock);
+
+    onUnmounted(() => {
+        if (schedulesResizeObserver) {
+            schedulesResizeObserver.disconnect();
+        }
+    });
 </script>

@@ -4,30 +4,6 @@
 @badge-icon-height: 45px;
 @badge-count-width: 18px;
 
-.personprofilebar-badge {
-  .rockbadge-container {
-
-    .badge {
-      display: inline-block; // fixes issue in default browser on Android
-      padding: 3px 6px 0;
-      background-color: inherit;
-
-      &:empty {
-        display: none;
-      }
-
-      .tooltip-inner {
-        max-width: 300px;
-        padding: 12px;
-      }
-    }
-
-    .badge-grid {
-      margin: -5px 0;
-    }
-  }
-}
-
 .badge-grid {
   font-size: 0;
 
@@ -74,7 +50,6 @@
   position: relative;
   padding: 0 !important;
   margin: 0 4px;
-  font-size: 45px;
   font-size: var(--badge-size, 45px);
 
   &::before {
@@ -112,7 +87,6 @@
 
 .badge-era {
   position: relative;
-  font-size: 45px;
   font-size: var(--badge-size, 45px);
   color: @brand-success;
 
@@ -402,7 +376,6 @@
 .badge-personaldevice {
   .badge-content {
     position: relative;
-    font-size: 40px;
     font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
     color: @badge-personaldevice-color;
 
@@ -424,6 +397,5 @@
 
 .badge-attendance {
   width: 220px;
-  height: 40px;
   height: var(--badge-size, 40px);
 }

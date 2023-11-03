@@ -16,11 +16,11 @@
 //
 import { computed, defineComponent, inject, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import NumberBox from "@Obsidian/Controls/numberBox";
-import RadioButtonList from "@Obsidian/Controls/radioButtonList";
-import TextBox from "@Obsidian/Controls/textBox";
+import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
+import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ConfigurationValueKey } from "./singleSelectField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -241,7 +241,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

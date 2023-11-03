@@ -1,0 +1,55 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="error" alertType="danger">{{ error }}</NotificationBox>
+    <LoadingIndicator v-else-if="loading" />
+    <component v-else :is="control" />
+</template>
+
+<script setup lang="ts">
+    import { Component, markRaw, PropType, ref } from "vue";
+    import NotificationBox from "./notificationBox.obs";
+    import LoadingIndicator from "./loadingIndicator.obs";
+
+    const props = defineProps({
+        url: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const control = ref<Component | null>(null);
+    const loading = ref(true);
+    const error = ref("");
+
+    async function loadComponent(): Promise<void> {
+        if (!props.url) {
+            error.value = `Could not load the control because no URL was provided`;
+            loading.value = false;
+            return;
+        }
+
+        try {
+            const controlComponentModule = await import(props.url);
+            const controlModule = controlComponentModule
+                ? (controlComponentModule.default || controlComponentModule)
+                : null;
+
+            if (controlModule) {
+                control.value = markRaw(controlModule);
+            }
+        }
+        catch (e) {
+            console.error(e);
+            error.value = `Could not load the control for '${props.url}'`;
+        }
+        finally {
+            loading.value = false;
+
+            if (!control) {
+                error.value = `Could not load the control for '${props.url}'`;
+            }
+        }
+    }
+
+    loadComponent();
+</script>

@@ -1,0 +1,77 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <button class="btn btn-danger btn-sm"
+            title="Delete"
+            :disabled="isDisabled"
+            @click.prevent="onClick">
+        <i class="fa fa-times"></i>
+    </button>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { computed, ref } from "vue";
+
+    const props = defineProps(standardCellProps);
+    const isDeleting = ref(false);
+
+    const isDisabled = computed((): boolean => {
+        if (isDeleting.value) {
+            return true;
+        }
+
+        if (props.row["isSystem"] === true) {
+            return true;
+        }
+
+        if (typeof props.column.props.rowDisabled === "function") {
+            if (props.column.props.rowDisabled(props.row, props.grid)) {
+                return true;
+            }
+        }
+
+        return false;
+    });
+
+    async function onClick(event: Event): Promise<void> {
+        const key = props.grid.getRowKey(props.row);
+
+        // Remove focus from the button.
+        if (event.target instanceof HTMLElement) {
+            event.target.blur();
+        }
+
+        // Make sure we have valid data to work with.
+        if (!key || typeof props.column.props.onClick !== "function") {
+            return;
+        }
+
+        // Disable the button until the action completes.
+        isDeleting.value = true;
+
+        try {
+            // Unless we have been requested to disable confirmation, show
+            // a standard delete confirmation.
+            if (props.column.props.disableConfirmation !== true) {
+                const result = await confirmDelete(props.grid.itemTerm);
+
+                if (!result) {
+                    return;
+                }
+            }
+
+            const result = props.column.props.onClick(key, props.grid);
+
+            // If the onClick function is asynchronous, wait for it.
+            if (isPromise(result)) {
+                await result;
+            }
+        }
+        finally {
+            // Re-enable the button at the end.
+            isDeleting.value = false;
+        }
+    }
+</script>

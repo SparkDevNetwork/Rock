@@ -16,10 +16,10 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosProgressEvent, AxiosResponse } from "axios";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { HttpBodyData, HttpMethod, HttpFunctions, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
-import { inject, provide } from "vue";
+import { inject, provide, getCurrentInstance } from "vue";
 
 
 // #region HTTP Requests
@@ -139,7 +139,15 @@ export function provideHttp(functions: HttpFunctions): void {
  * @returns An object that contains the functions which can be called.
  */
 export function useHttp(): HttpFunctions {
-    return inject<HttpFunctions>(httpFunctionsSymbol) || {
+    let http: HttpFunctions | undefined;
+
+    // Check if we are inside a setup instance. This prevents warnings
+    // from being displayed if being called outside a setup() function.
+    if (getCurrentInstance()) {
+        http = inject<HttpFunctions>(httpFunctionsSymbol);
+    }
+
+    return http || {
         doApiCall: doApiCall,
         get: get,
         post: post
@@ -194,8 +202,8 @@ async function uploadFile(url: string, data: FormData, progress: UploadProgressC
         headers: {
             "Content-Type": "multipart/form-data"
         },
-        onUploadProgress: (event: ProgressEvent) => {
-            if (progress) {
+        onUploadProgress: (event: AxiosProgressEvent) => {
+            if (progress && event.total !== undefined) {
                 progress(event.loaded, event.total, Math.floor(event.loaded * 100 / event.total));
             }
         }

@@ -31,6 +31,12 @@ export const EntityType = {
     AchievementType: "0E99356C-0DEA-4F24-944E-21CD5FA83B9E",
     /** The achievement type prerequisite */
     AchievementTypePrerequisite: "5362DB19-B8E1-4378-A66A-FB097CE3AB90",
+    /** The EntityType Guid for Rock.Model.AdaptiveMessage  */
+    AdaptiveMessage: "63D98F58-DA81-46AE-AE0C-662A7BFAA7D0",
+    /** The EntityType Guid for Rock.Model.AdaptiveMessageAdaptation  */
+    AdaptiveMessageAdaptation: "39753CCE-184A-4F14-AE80-08241DE8FC2E",
+    /** The EntityType Guid for Rock.Model.AdaptiveMessageAdaptationSegment  */
+    AdaptiveMessageAdaptationSegment: "40EDF82B-EFF5-4253-A129-965F7BC90033",
     /** The EntityType Guid for Rock.Model.AnalyticsDimCampus  */
     AnalyticsDimCampus: "DCEB0575-1351-4CFF-BA4F-410BA2D638CB",
     /** The EntityType Guid for Rock.Model.AnalyticsDimFamilyCurrent  */
@@ -153,7 +159,7 @@ export const EntityType = {
     CommunicationMediumEmail: "5A653EBE-6803-44B4-85D2-FB7B8146D55D",
     /** The guid for the push notification communication medium */
     CommunicationMediumPushNotification: "3638C6DF-4FF3-4A52-B4B8-AFB754991597",
-    /** The guid for the email communication medium */
+    /** The guid for the SMS communication medium */
     CommunicationMediumSms: "4BC02764-512A-4A10-ACDE-586F71D8A8BD",
     /** The EntityType Guid for Rock.Model.CommunicationRecipient  */
     CommunicationRecipient: "3EC89B90-6692-451E-A48F-0D2ADEBA05BC",
@@ -343,6 +349,8 @@ export const EntityType = {
     HtmlContent: "FB30EC4C-7DCC-41A4-94AB-E728A8CE537B",
     /** The HTTP module component */
     HttpModuleComponent: "EDE69F48-5E05-4260-B360-DA37DFD1AB83",
+    /** The EntityType Guid for Rock.Web.HttpModules.Observability  */
+    HttpModuleObservability: "FE7A8295-9383-4FD8-9FB2-FF77A8042462",
     /** The EntityType Guid for Rock.Model.IdentityVerification  */
     IdentityVerification: "C76071B0-0C2F-4A3F-88BF-08B2E006C614",
     /** The EntityType Guid for Rock.Model.IdentityVerificationCode  */
@@ -417,6 +425,8 @@ export const EntityType = {
     MobileCommunicationCommunicationentryBlockType: "9A952F9F-F619-4063-B1BB-CFB2E6983C01",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView */
     MobileCommunicationCommunicationviewBlockType: "4AF5FCEF-CBF6-486B-A04D-920E31356B7F",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest. */
+    MobileConnectionAddConnectionRequest: "F41E7BE3-2854-40FF-82C8-1FDEA12B8B2F",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList. */
     MobileConnectionConnectionOpportunityListBlockType: "CB151D80-DBEF-4A1E-A816-3DF4CD2DE45A",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail. */
@@ -431,10 +441,16 @@ export const EntityType = {
     MobileContentChannelItemListBlockType: "6DBF59D6-EB40-43C8-8859-F38254EC3F6D",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.ContentChannelItemView */
     MobileContentChannelItemViewBlockType: "44A8B647-E0A7-42E7-9A75-276310F7E7BB",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.AttributeValues. */
+    MobileCoreAttributeValues: "6751AC1E-C467-4416-9F02-0B9A0D1FAC2D",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Notes */
     MobileCoreNotesBlockType: "2FED71D1-4A60-4EB5-B971-530B5D1FC041",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Search. */
     MobileCoreSearchBlockType: "F81015CD-EBA9-4358-B930-4F1AB29AF879",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.GroupMembers. */
+    MobileCrmGroupMembers: "592242ED-7536-49EA-94DE-7B4EBA7E87A6",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.PersonProfile. */
+    MobileCrmPersonProfile: "A1EEA3BD-7B40-47A9-82D4-7187290C917C",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventItemOccurrenceView */
     MobileEventsCalendareventitemoccurrenceviewBlockType: "04C43693-C524-4679-9F65-047F94A74CAB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList */
@@ -491,6 +507,12 @@ export const EntityType = {
     MobileProfileDetailsBlockType: "A1ED4948-0778-4E13-B434-E97795DDB68B",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Register */
     MobileRegisterBlockType: "4459357F-E422-45D1-855D-C4681101F848",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Reminders.ReminderDashboard. */
+    MobileRemindersReminderDashboard: "AD29BE7E-00B2-4AE3-8DA4-756C348E7AFA",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Reminders.ReminderEdit. */
+    MobileRemindersReminderEdit: "A07DA3CE-4598-4177-AD47-B0D1EBFB1E7A",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Reminders.ReminderList. */
+    MobileRemindersReminderList: "35B1CA9F-DCD9-453F-892E-33E0E09E7CB3",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Security.OnboardPerson. */
     MobileSecurityOnboardPerson: "C9B7F36A-F70A-4ABF-9422-B18E579F927F",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.WorkflowEntry */

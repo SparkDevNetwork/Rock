@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,10 +35,16 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Content Channel Types
     /// Stored as ContentChannelType.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONTENT_CHANNEL_TYPE )]
     public class ContentChannelTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
+        #region Configuration
+
+        private const string CLIENT_VALUES = "values";
+
+        #endregion
+
         #region Formatting
 
         /// <inheritdoc/>
@@ -61,6 +68,30 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            var contentChannelTypes = ContentChannelTypeCache.All()
+                .OrderBy( cc => cc.Name )
+                .ToListItemBagList();
+
+            configurationValues[CLIENT_VALUES] = contentChannelTypes.ToCamelCaseJson( false, true );
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            configurationValues.Remove( CLIENT_VALUES );
+
+            return configurationValues;
+        }
 
         #endregion
 

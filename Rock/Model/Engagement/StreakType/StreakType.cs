@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Utility;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -121,7 +122,6 @@ namespace Rock.Model
         /// representative of the StartDate. More significant bits (going left) are more recent dates.
         /// </summary>
         [DataMember]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] OccurrenceMap { get; set; }
 
         /// <summary>
@@ -182,5 +182,11 @@ namespace Rock.Model
         private ICollection<StreakTypeExclusion> _streakTypeExclusions;
 
         #endregion Navigation Properties
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

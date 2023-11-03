@@ -111,6 +111,16 @@ namespace RockWeb.Blocks.Security
             _securitySettingsService.SecuritySettings.DisableTokensForAccountProtectionProfiles =
                 cblDisableTokensForAccountProtectionProfiles.SelectedValuesAsInt.Select( a => ( AccountProtectionProfile ) a ).ToList();
 
+            if ( IsTwoFactorAuthenticationSupported() )
+            {
+                _securitySettingsService.SecuritySettings.RequireTwoFactorAuthenticationForAccountProtectionProfiles =
+                    cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.SelectedValuesAsInt.Select( a => ( AccountProtectionProfile ) a ).ToList();
+            }
+            else
+            {
+                _securitySettingsService.SecuritySettings.RequireTwoFactorAuthenticationForAccountProtectionProfiles = new System.Collections.Generic.List<AccountProtectionProfile>();
+            }
+
             _securitySettingsService.SecuritySettings.AccountProtectionProfileSecurityGroup.AddOrReplace( AccountProtectionProfile.Extreme, extremeProfile );
             _securitySettingsService.SecuritySettings.AccountProtectionProfileSecurityGroup.AddOrReplace( AccountProtectionProfile.High, highProfile );
 
@@ -160,11 +170,13 @@ namespace RockWeb.Blocks.Security
         {
             cblIgnoredAccountProtectionProfiles.Items.Clear();
             cblDisableTokensForAccountProtectionProfiles.Items.Clear();
+            cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.Items.Clear();
 
             foreach ( AccountProtectionProfile item in Enum.GetValues( typeof( AccountProtectionProfile ) ) )
             {
                 cblIgnoredAccountProtectionProfiles.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
                 cblDisableTokensForAccountProtectionProfiles.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
+                cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
                 cblDisablePasswordlessSignInForAccountProtectionProfiles.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
             }
         }
@@ -194,6 +206,27 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
+        /// Determines whether two-factor authentication is supported.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if two-factor authentication is supported; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsTwoFactorAuthenticationSupported()
+        {
+            var obsidianLoginBlockTypeId = BlockTypeCache.GetId( "5437C991-536D-4D9C-BE58-CBDB59D1BBB3".AsGuid() );
+
+            if ( obsidianLoginBlockTypeId.HasValue )
+            {
+                var blockService = new BlockService( new RockContext() );
+                return blockService.GetByBlockTypeId( obsidianLoginBlockTypeId.Value ).Any();
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Loads the security settings.
         /// </summary>
         private void LoadSecuritySettings()
@@ -209,6 +242,26 @@ namespace RockWeb.Blocks.Security
                     .SecuritySettings
                     .DisableTokensForAccountProtectionProfiles
                     .Select( a => a.ConvertToInt().ToString() ) );
+
+
+            // Clear the 2FA settings when it is not supported.
+            if ( !IsTwoFactorAuthenticationSupported() )
+            {
+                nbTwoFactorAuthenticationDisabled.Visible = true;
+                cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.ClearSelection();
+                cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.Enabled = false;
+            }
+            else
+            {
+                nbTwoFactorAuthenticationDisabled.Visible = false;
+                cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.Enabled = true;
+
+                cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.SetValues(
+                    _securitySettingsService
+                        .SecuritySettings
+                        .RequireTwoFactorAuthenticationForAccountProtectionProfiles
+                        .Select( a => a.ConvertToInt().ToString() ) );
+            }
         }
 
         /// <summary>

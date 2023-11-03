@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
             get
             {
 
-                return (T)ViewState["ArrayKey"];
+                return ( T ) ViewState["ArrayKey"];
             }
             set
             {

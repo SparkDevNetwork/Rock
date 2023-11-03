@@ -1,0 +1,92 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TreeItemPicker v-model="internalValue"
+                    v-bind="standardProps"
+                    :formGroupClasses="'category-picker ' + formGroupClasses"
+                    iconCssClass="fa fa-cogs"
+                    :provider="itemProvider"
+                    :multiple="multiple"
+                    :disabled="disabled"
+                    disableFolderSelection />
+</template>
+
+<script setup lang="ts">
+
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { updateRefValue, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, ref, watch } from "vue";
+    import { WorkflowTypeTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import TreeItemPicker from "./treeItemPicker.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        includeInactiveItems: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        multiple: {
+            type: Boolean,
+            default: false
+        },
+
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", _value: ListItemBag | ListItemBag[] | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = ref(props.modelValue ?? null);
+    const securityGrantToken = useSecurityGrantToken();
+    const standardProps = useStandardRockFormFieldProps(props);
+
+    const itemProvider = ref(new WorkflowTypeTreeItemProvider());
+    itemProvider.value.includeInactiveItems = props.includeInactiveItems;
+    itemProvider.value.securityGrantToken = securityGrantToken.value;
+
+    // #endregion
+
+    // #region Watchers
+
+    // Keep security token up to date, but don't need refetch data
+    watch(securityGrantToken, () => {
+        itemProvider.value.securityGrantToken = securityGrantToken.value;
+    });
+
+    // When this changes, we need to refetch the data, so reset the whole itemProvider
+    watch(() => props.includeInactiveItems, () => {
+        const oldProvider = itemProvider.value;
+        const newProvider = new WorkflowTypeTreeItemProvider();
+
+        // copy old provider's properties
+        newProvider.securityGrantToken = oldProvider.securityGrantToken;
+        // Use new value
+        newProvider.includeInactiveItems = props.includeInactiveItems;
+
+        // Set the provider to the new one
+        itemProvider.value = newProvider;
+    });
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(internalValue, props.modelValue ?? null);
+    });
+
+                            // #endregion
+</script>

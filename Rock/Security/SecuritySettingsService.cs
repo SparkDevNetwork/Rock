@@ -142,6 +142,7 @@ namespace Rock.Security
                 {
                     AccountProtectionProfile.Extreme
                 },
+                RequireTwoFactorAuthenticationForAccountProtectionProfiles = new List<AccountProtectionProfile>(),
                 PasswordlessSignInDailyIpThrottle = SecuritySettings.PasswordlessSignInDailyIpThrottleDefaultValue,
                 PasswordlessConfirmationCommunicationTemplateGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_LOGIN_PASSWORDLESS.AsGuid(),
                 PasswordlessSignInSessionDuration = SecuritySettings.PasswordlessSignInSessionDurationDefaultValue,

@@ -57,7 +57,6 @@ namespace Rock.RealTime.AspNet
             }
             catch ( RealTimeException ex )
             {
-                Rock.Model.ExceptionLogService.LogException( ex );
                 throw new HubException( ex.Message );
             }
             catch ( Exception ex )

@@ -20,14 +20,16 @@ using Rock.Data;
 namespace Rock.Model
 {
     /*
-     * 3/20/2023 - DSH
-     * 
-     * The following areas of Rock bypass the pre and post save actions
-     * for PersonAlias. Be aware that any code you put in here might not
-     * execute under these situations:
-     * 
-     * The Stale Anonymous Visitor stage of the RockCleanup job.
-     */
+         3/20/2023 - DSH
+
+         The following areas of Rock bypass the pre and post save actions
+         for PersonAlias. Be aware that any code you put in here might not
+         execute under these situations:
+
+            - The Stale Anonymous Visitor stage of the RockCleanup job.
+
+         Reason: Performance
+    */
 
     public partial class PersonAlias
     {

@@ -444,15 +444,14 @@ namespace RockWeb.Blocks.Finance
             if ( person == null )
             {
                 person = new Person { FirstName = firstName, LastName = lastName, Email = emailAddress, RaceValueId = rpRace.SelectedValueAsId(), EthnicityValueId = epEthnicity.SelectedValueAsId() };
-                var group = PersonService.SaveNewPerson( person, rockContext );
 
-                SavePhoneNumbers( person.Id, homePhone, mobilePhone, workPhone, rockContext );
-
-                if ( group != null )
+                // set the person's connection status using the form fields
+                if ( person.ConnectionStatusValueId == null || !person.ConnectionStatusValueId.HasValue )
                 {
-                    SaveHomeAddress( rockContext, lapEditAddress.Location, group );
+                    person.ConnectionStatusValueId = dvpEditConnectionStatus.SelectedValue.AsIntegerOrNull();
                 }
 
+                // set the person's record status to active.
                 if ( person.RecordStatusValueId == null || !person.RecordStatusValueId.HasValue )
                 {
                     var newRecordStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
@@ -460,6 +459,15 @@ namespace RockWeb.Blocks.Finance
                     {
                         person.RecordStatusValueId = newRecordStatus.Id;
                     }
+                }
+
+                var group = PersonService.SaveNewPerson( person, rockContext );
+
+                SavePhoneNumbers( person.Id, homePhone, mobilePhone, workPhone, rockContext );
+
+                if ( group != null )
+                {
+                    SaveHomeAddress( rockContext, lapEditAddress.Location, group );
                 }
 
                 ppEditPerson.SetValue( person );
@@ -1627,7 +1635,7 @@ namespace RockWeb.Blocks.Finance
                 var benevolenceTypeTemplate = benevolenceRequest.BenevolenceType.RequestLavaTemplate;
                 if ( benevolenceTypeTemplate.IsNotNullOrWhiteSpace() )
                 {
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions() );
                     mergeFields.Add( "BenevolenceRequest", benevolenceRequest );
                     lViewBenevolenceTypeLava.Text = benevolenceTypeTemplate.ResolveMergeFields( mergeFields );
                 }

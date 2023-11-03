@@ -154,7 +154,8 @@ namespace Rock.Model
                     return null;
                 }
 
-                // Validate the date range
+                // Validate the date range. The StartDate and EndDate values are inclusive.
+                // Meaning, if the discount starts today or ends today, it is still valid.
                 var today = RockDateTime.Today;
 
                 if ( discount.StartDate.HasValue && today < discount.StartDate.Value )
@@ -163,13 +164,13 @@ namespace Rock.Model
                     return null;
                 }
 
-                if ( discount.EndDate.HasValue && today.AddDays( 1 ) > discount.EndDate.Value )
+                if ( discount.EndDate.HasValue && today > discount.EndDate.Value )
                 {
                     // Discount has expired
                     return null;
                 }
 
-                int? usagesRemaining = null;
+                int? registrationUsagesRemaining = null;
 
                 if ( discount.MaxUsage.HasValue )
                 {
@@ -181,9 +182,9 @@ namespace Rock.Model
                             r.RegistrationInstanceId == registrationInstanceId &&
                             r.DiscountCode.Equals( code, StringComparison.OrdinalIgnoreCase ) );
 
-                    usagesRemaining = discount.MaxUsage.Value - usageCount;
+                    registrationUsagesRemaining = discount.MaxUsage.Value - usageCount;
 
-                    if ( usagesRemaining <= 0 )
+                    if ( registrationUsagesRemaining <= 0 )
                     {
                         // Discount has been used up
                         return null;
@@ -193,7 +194,7 @@ namespace Rock.Model
                 return new RegistrationTemplateDiscountWithUsage
                 {
                     RegistrationTemplateDiscount = discount,
-                    UsagesRemaining = usagesRemaining
+                    RegistrationUsagesRemaining = registrationUsagesRemaining
                 };
             }
         }
@@ -336,11 +337,11 @@ namespace Rock.Model
         public RegistrationTemplateDiscount RegistrationTemplateDiscount { get; set; }
 
         /// <summary>
-        /// Gets or sets the usages remaining. If the discount has a cap on usages, then this property will be set to the number of usages remaining.
+        /// Gets or sets the remaining number of Registrations that can use the discount. This corrasponds to the value in RegistrationTemplateDiscount.MaxUsage - [Number of Registrations Using Discount]
         /// </summary>
         /// <value>
         /// The usages remaining.
         /// </value>
-        public int? UsagesRemaining { get; set; }
+        public int? RegistrationUsagesRemaining { get; set; }
     }
 }

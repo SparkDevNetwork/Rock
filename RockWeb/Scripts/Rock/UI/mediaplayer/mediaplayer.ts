@@ -362,7 +362,10 @@ namespace Rock.UI {
                 volume: this.options.volume,
                 muted: this.options.muted,
                 clickToPlay: this.options.clickToPlay,
-                hideControls: this.options.hideControls
+                hideControls: this.options.hideControls,
+                fullscreen: {
+                    iosNative: true
+                }
             };
 
             if (!this.isHls(this.options.mediaUrl)) {
@@ -432,6 +435,25 @@ namespace Rock.UI {
          */
         private initializePlayer(mediaElement: HTMLMediaElement, plyrOptions: Plyr.Options) {
             this.player = new Plyr(mediaElement, plyrOptions);
+
+            // This is a hack to get playback events for youtube videos. Plyr has a bug
+            // where it does not initialize the media event listers unless a custom UI
+            // is present.
+            // Issue: https://github.com/sampotts/plyr/issues/2378
+            if (this.isYouTubeEmbed(this.options.mediaUrl)) {
+                let listenrsready = false;
+                this.player.on("statechange", () => {
+                    if (!listenrsready) {
+                        listenrsready = true;
+
+                        (this.player as unknown as {
+                            listeners: {
+                                media: () => void
+                            }
+                        }).listeners.media();
+                    }
+                });
+            }
 
             this.writeDebugMessage(`Setting media URL to ${this.options.mediaUrl}`);
 
@@ -818,9 +840,8 @@ namespace Rock.UI {
             // Define pause event
             this.player.on("pause", () => {
                 // Clear timer
-                if ( this.timerId )
-                {
-                    clearInterval( this.timerId );
+                if (this.timerId) {
+                    clearInterval(this.timerId);
                 }
 
                 // Check if we need to write a watch bit. Not checking here can
@@ -850,6 +871,17 @@ namespace Rock.UI {
             // Define ready event
             this.player.on("ready", () => {
                 this.writeDebugMessage(`Event 'ready' called: ${this.player.duration}`);
+
+                // If a download url wasn't figured out automatically then set
+                // it manually. Issue #5426
+                if (!this.player.download) {
+                    const canDownload = !this.isYouTubeEmbed(this.options.mediaUrl)
+                        && !this.isVimeoEmbed(this.options.mediaUrl)
+                        && !this.isHls(this.options.mediaUrl);
+                    if (canDownload) {
+                        this.player.download = this.options.mediaUrl;
+                    }
+                }
 
                 if (this.player.duration > 0) {
                     this.prepareForPlay();
@@ -896,6 +928,13 @@ namespace Rock.UI {
                 SessionGuid: this.options.sessionGuid,
                 OriginalUrl: window.location.href,
                 PageId: (Rock as any).settings.get("pageId")
+            }
+
+            if (typeof navigator.sendBeacon !== "undefined" && !async) {
+                var beaconData = new Blob([JSON.stringify(data)], { type: 'application/json; charset=UTF-8' });
+
+                navigator.sendBeacon("/api/MediaElements/WatchInteraction", beaconData);
+                return;
             }
 
             // Initialize the API request.

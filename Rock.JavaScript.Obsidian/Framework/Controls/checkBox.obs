@@ -1,0 +1,62 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="modelValue"
+                   :label="label"
+                   formGroupClasses="rock-check-box"
+                   name="checkbox">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="checkbox">
+                    <label class="rock-checkbox-icon">
+                        <input type="checkbox" v-bind="field" v-model="internalValue" :id="uniqueId" />
+                        <span class="label-text">&nbsp;{{ text }}
+                            <slot name="textAppend" />
+                        </span>
+                    </label>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import RockFormField from "./rockFormField.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        rules: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        text: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const internalValue = ref(props.modelValue);
+
+    watch(() => props.modelValue, () => {
+        internalValue.value = props.modelValue;
+    });
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+</script>

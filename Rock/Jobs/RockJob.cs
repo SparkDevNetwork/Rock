@@ -23,6 +23,7 @@ using Quartz;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Observability;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -60,13 +61,19 @@ namespace Rock.Jobs
         /// Gets the service job.
         /// </summary>
         /// <value>The service job.</value>
-        private Rock.Model.ServiceJob ServiceJob { get; set; }
+        protected Rock.Model.ServiceJob ServiceJob { get; set; }
 
         /// <summary>
         /// Gets the scheduler.
         /// </summary>
         /// <value>The scheduler.</value>
         internal Quartz.IScheduler Scheduler { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the logger used to capture output messages.
+        /// If not set, the default logger is used.
+        /// </summary>
+        internal IRockLogger Logger { get; set; }
 
         /// <summary>
         /// Executes this instance.
@@ -99,10 +106,13 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Updates the last status message.
+        /// NOTE: This method has a read and a write database operation and also writes to the Rock Logger with DEBUG level logging.
         /// </summary>
         /// <param name="statusMessage">The status message.</param>
         public void UpdateLastStatusMessage( string statusMessage )
         {
+            Log( RockLogLevel.Debug, statusMessage );
+
             Result = statusMessage;
             using ( var rockContext = new RockContext() )
             {
@@ -129,8 +139,34 @@ namespace Rock.Jobs
         /// <param name="context"></param>
         internal void ExecuteInternal( IJobExecutionContext context )
         {
-            InitializeFromJobContext( context );
-            Execute();
+            using ( var activity = ObservabilityHelper.StartActivity( $"JOB: {GetType().FullName.Replace( "Rock.Jobs.", "" )} - {context.JobDetail.Key?.Group}" ) )
+            {
+                InitializeFromJobContext( context );
+
+                activity?.AddTag( "rock-otel-type", "rock-job" );
+                activity?.AddTag( "rock-job-id", ServiceJob.Id );
+                activity?.AddTag( "rock-job-type", GetType().FullName.Replace( "Rock.Jobs.", "" ) );
+                activity?.AddTag( "rock-job-description", ServiceJob.Description );
+
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+
+                try
+                {
+                    Execute();
+                    activity?.AddTag( "rock-job-result", "Success" );
+                }
+                catch
+                {
+                    activity?.AddTag( "rock-job-result", "Failed" );
+                    // the exception needs to be thrown so that the Scheduler catches it and passes it to the <see cref="Rock.Jobs.RockJobListener.JobWasExecuted" /> for logging to the front end
+                    throw;
+                }
+                finally
+                {
+                    activity?.AddTag( "rock-job-duration", sw.Elapsed.TotalSeconds );
+                    activity?.AddTag( "rock-job-message", Result );
+                }
+            }
         }
 
         /// <summary>
@@ -236,13 +272,18 @@ namespace Rock.Jobs
                 return;
             }
 
-            var messageTemplateSb = new StringBuilder( "Job ID: {jobId}, Job Name: {jobName}" );
+            var messageTemplateSb = new StringBuilder( "Job ID: {jobId}" );
 
             var propValues = new List<object>
             {
                 this.ServiceJobId,
-                this.ServiceJobName
             };
+
+            if (!string.IsNullOrWhiteSpace( this.ServiceJobName ) )
+            {
+                messageTemplateSb.Append( ", Job Name: {jobName}" );
+                propValues.Add( this.ServiceJobName );
+            }
 
             if ( start.HasValue )
             {
@@ -261,7 +302,8 @@ namespace Rock.Jobs
                 .Concat( propertyValues ?? new object[0] )
                 .ToArray();
 
-            RockLogger.Log.WriteToLog(
+            var logger = this.Logger ?? RockLogger.Log;
+             logger.WriteToLog(
                 logLevel,
                 exception,
                 RockLogDomains.Jobs,

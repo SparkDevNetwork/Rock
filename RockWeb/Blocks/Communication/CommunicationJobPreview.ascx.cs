@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Communication
                                     class='email-preview js-email-preview overflow-auto' style='position: relative; height: 720px;'>
                                     <iframe name='emailPreview' src='javascript: window.frameElement.getAttribute('srcdoc');'
                                         id='ifEmailPreview' name='emailpreview-iframe'
-                                        class='emaileditor-iframe js-emailpreview-iframe email-wrapper email-content-desktop styled-scroll' frameborder='0' border='0' cellspacing='0'
+                                        class='emaileditor-iframe inset-0 w-100 js-emailpreview-iframe email-wrapper email-content-desktop styled-scroll' frameborder='0' border='0' cellspacing='0'
                                         scrolling='no' srcdoc='[SOURCE_REPLACEMENT]''></iframe>
                                     <div class='resize-sensor'
                                         style='position: absolute; inset: 0px; overflow: scroll; z-index: -1; visibility: hidden;'>

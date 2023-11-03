@@ -24,6 +24,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
+using System.Web;
 
 namespace Rock.Drawing.Avatar
 {
@@ -146,7 +147,7 @@ namespace Rock.Drawing.Avatar
                 avatar = RockImage.GetPersonImageFromBinaryFileService( settings.PhotoId.Value );
 
                 // Resize image
-                avatar.CropResize( settings.Size, settings.Size );
+                avatar?.CropResize( settings.Size, settings.Size );
             }
 
             // If not photo was provided then we'll create a fallback

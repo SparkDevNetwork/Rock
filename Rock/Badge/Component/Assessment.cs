@@ -128,7 +128,7 @@ namespace Rock.Badge.Component
                              && a.PersonAlias.PersonId == person.Id
                              && availableTypes.Contains( a.AssessmentTypeId ) )
                 .OrderByDescending( a => a.CompletedDateTime ?? a.RequestedDateTime )
-                .Select( a => new PersonBadgeAssessment { AssessmentTypeId = a.AssessmentTypeId, RequestedDateTime = a.RequestedDateTime, Status = a.Status } )
+                .Select( a => new PersonBadgeAssessment { AssessmentTypeId = a.AssessmentTypeId, CompletedDateTime = a.CompletedDateTime, RequestedDateTime = a.RequestedDateTime, Status = a.Status } )
                 .ToList();
 
             StringBuilder toolTipText = new StringBuilder();
@@ -214,6 +214,7 @@ namespace Rock.Badge.Component
                         badgeIcons.AppendLine( $@"<div {badgeColorHtml} class='rockbadge {assessmentTypeClass} {assessmentStatusClass}'>" );
                         badgeIcons.AppendLine( $@"<a href='{resultsPageUrl}' target='_blank' rel='noopener noreferrer'>" );
 
+                        mergeFields.Add( "CompletedDateTime", assessmentTest.CompletedDateTime );
                         mergeFields.Add( "Person", person );
                         mergedBadgeSummaryLava = assessmentType.BadgeSummaryLava.ResolveMergeFields( mergeFields );
                     }
@@ -288,6 +289,8 @@ namespace Rock.Badge.Component
             public int AssessmentTypeId { get; set; }
 
             public DateTime? RequestedDateTime { get; set; }
+
+            public DateTime? CompletedDateTime { get; set; }
 
             public AssessmentRequestStatus Status { get; set; }
         }

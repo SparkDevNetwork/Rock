@@ -103,6 +103,13 @@ namespace Rock.Lava
 #if REVIEW_NET5_0_OR_GREATER
             throw new NotImplementedException();
 #else
+            // If the input is not a virtual path, return it unchanged.
+            if ( string.IsNullOrWhiteSpace( virtualPath )
+                 || !virtualPath.StartsWith( "~" ) )
+            {
+                return virtualPath;
+            }
+
             var path = System.Web.VirtualPathUtility.ToAbsolute( virtualPath );
             return path;
 #endif

@@ -30,6 +30,7 @@ using System.Runtime.Serialization;
 
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
@@ -177,9 +178,72 @@ namespace Rock.Model
         /// <value>
         /// The item global key.
         /// </value>
-        [MaxLength( 100 )]
+        [MaxLength( 200 )]
         [DataMember]
         public string ItemGlobalKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this item is an owned content library item.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this item is an owned content library item; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool? IsContentLibraryOwner { get; set; }
+
+        /// <summary>
+        /// Gets the content library source identifier.
+        /// </summary>
+        /// <value>
+        /// The content library source identifier.
+        /// </value>
+        [DataMember]
+        public Guid? ContentLibrarySourceIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets the content library license type defined value identifier.
+        /// </summary>
+        /// <value>
+        /// The content library license type defined value identifier.
+        /// </value>
+        [DataMember]
+        public int? ContentLibraryLicenseTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets the content library content topic identifier.
+        /// </summary>
+        /// <value>
+        /// The content library content topic identifier.
+        /// </value>
+        [DataMember]
+        public int? ContentLibraryContentTopicId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content library uploaded by person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The content library uploaded by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? ContentLibraryUploadedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content library uploaded date time.
+        /// </summary>
+        /// <value>
+        /// The content library uploaded date time.
+        /// </value>
+        [DataMember]
+        public DateTime? ContentLibraryUploadedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the experience level.
+        /// </summary>
+        /// <value>
+        /// The experience level.
+        /// </value>
+        [DataMember]
+        public ContentLibraryItemExperienceLevel? ExperienceLevel { get; set; }
 
         #endregion Entity Properties
 
@@ -211,6 +275,35 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content library uploaded by person alias.
+        /// </summary>
+        /// <value>
+        /// The content library uploaded by person alias.
+        /// </value>
+        [LavaVisible]
+        public virtual PersonAlias ContentLibraryUploadedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets the name of the content library uploaded by person.
+        /// </summary>
+        /// <value>
+        /// The name of the content library uploaded by person.
+        /// </value>
+        [LavaVisible]
+        [HideFromReporting]
+        public virtual string ContentLibraryUploadedByPersonName
+        {
+            get
+            {
+                if ( ContentLibraryUploadedByPersonAlias != null && ContentLibraryUploadedByPersonAlias.Person != null )
+                {
+                    return ContentLibraryUploadedByPersonAlias.Person.FullName;
+                }
+                return string.Empty;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the content channel item slugs.

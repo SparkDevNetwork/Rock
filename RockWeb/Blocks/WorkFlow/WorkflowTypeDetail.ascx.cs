@@ -456,6 +456,25 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                             {
                                 newWorkflowForm.ActionAttributeGuid = guidXref[actionType.WorkflowForm.ActionAttributeGuid.Value];
                             }
+
+                            if ( actionType.WorkflowForm.PersonEntryFamilyAttributeGuid.HasValue &&
+                                guidXref.ContainsKey( actionType.WorkflowForm.PersonEntryFamilyAttributeGuid.Value ) )
+                            {
+                                newWorkflowForm.PersonEntryFamilyAttributeGuid = guidXref[actionType.WorkflowForm.PersonEntryFamilyAttributeGuid.Value];
+                            }
+
+                            if ( actionType.WorkflowForm.PersonEntryPersonAttributeGuid.HasValue &&
+                                guidXref.ContainsKey( actionType.WorkflowForm.PersonEntryPersonAttributeGuid.Value ) )
+                            {
+                                newWorkflowForm.PersonEntryPersonAttributeGuid = guidXref[actionType.WorkflowForm.PersonEntryPersonAttributeGuid.Value];
+                            }
+
+                            if ( actionType.WorkflowForm.PersonEntrySpouseAttributeGuid.HasValue &&
+                                guidXref.ContainsKey( actionType.WorkflowForm.PersonEntrySpouseAttributeGuid.Value ) )
+                            {
+                                newWorkflowForm.PersonEntrySpouseAttributeGuid = guidXref[actionType.WorkflowForm.PersonEntrySpouseAttributeGuid.Value];
+                            }
+
                             newActionType.WorkflowForm = newWorkflowForm;
 
                             foreach ( var formAttribute in actionType.WorkflowForm.FormAttributes )
@@ -1457,7 +1476,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             if ( workflowType.ProcessingIntervalSeconds.HasValue )
             {
                 int mins = workflowType.ProcessingIntervalSeconds.Value / 60;
-                tbProcessingInterval.Text = mins.ToString( "N0" );
+                tbProcessingInterval.Text = mins.ToString();
             }
             else
             {

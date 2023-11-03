@@ -155,6 +155,7 @@ namespace Rock.Communication
 
             var message = new RockSMSMessage( systemCommunication );
             message.SetRecipients( recipients );
+            message.AdditionalMergeFields = mergeObjects;
             createMessageResult.Message = message;
             return createMessageResult;
 #endif
@@ -195,6 +196,7 @@ namespace Rock.Communication
 
             var message = new RockEmailMessage( systemCommunication );
             message.SetRecipients( recipients );
+            message.AdditionalMergeFields = mergeObjects;
             createMessageResult.Message = message;
             return createMessageResult;
         }

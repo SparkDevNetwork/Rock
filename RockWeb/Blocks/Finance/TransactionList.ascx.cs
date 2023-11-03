@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Utility;
+using System.Web.Util;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -148,6 +149,13 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.ShowDaysSinceLastTransaction
         )]
 
+    [BooleanField( "Hide Transactions in Pending Batches",
+        Description = "When enabled, transactions in a batch whose status is 'Pending' will be filtered out from the list.",
+        DefaultBooleanValue = false,
+        Order = 13,
+        Key = AttributeKey.HideTransactionsInPendingBatches
+        )]
+
     [Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
@@ -232,6 +240,11 @@ namespace RockWeb.Blocks.Finance
             /// The show days since last transaction
             /// </summary>
             public const string ShowDaysSinceLastTransaction = "ShowDaysSinceLastTransaction";
+
+            /// <summary>
+            /// The hide transactions in pending batches
+            /// </summary>
+            public const string HideTransactionsInPendingBatches = "HideTransactionsInPendingBatches";
         }
 
         #endregion Keys
@@ -516,9 +529,9 @@ namespace RockWeb.Blocks.Finance
                     _ddlMove.Visible = true;
                 }
 
-                // If the batch is closed, do not allow any editing of the transactions
+                // If the batch is closed or is automated, do not allow any editing of the transactions
                 // NOTE that gTransactions_Delete click will also check if the transaction is part of a closed batch
-                if ( _batch.Status != BatchStatus.Closed && _canEdit )
+                if ( _batch.Status != BatchStatus.Closed && !_batch.IsAutomated && _canEdit )
                 {
                     gTransactions.Actions.ShowAdd = _canEdit;
                     gTransactions.IsDeleteEnabled = _canEdit;
@@ -962,12 +975,18 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
-                // prevent deleting a Transaction that is in closed batch
+                // prevent deleting a Transaction that is in a closed or an automated batch
                 if ( transaction.Batch != null )
                 {
                     if ( transaction.Batch.Status == BatchStatus.Closed )
                     {
                         mdGridWarning.Show( string.Format( "This {0} is assigned to a closed {1}", FinancialTransaction.FriendlyTypeName, FinancialBatch.FriendlyTypeName ), ModalAlertType.Information );
+                        return;
+                    }
+
+                    if ( transaction.Batch.IsAutomated )
+                    {
+                        mdGridWarning.Show( string.Format( "This {0} is assigned to an automated {1}", FinancialTransaction.FriendlyTypeName, FinancialBatch.FriendlyTypeName ), ModalAlertType.Information );
                         return;
                     }
                 }
@@ -1246,6 +1265,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindFilter()
         {
+            gfTransactions.PreferenceKeyPrefix = hfTransactionViewMode.Value;
             drpDates.DelimitedValues = gfTransactions.GetFilterPreference( "Date Range" );
             nreAmount.DelimitedValues = gfTransactions.GetFilterPreference( "Amount Range" );
 
@@ -1339,7 +1359,16 @@ namespace RockWeb.Blocks.Finance
             // Parse the attribute filters
             _availableAttributes = new List<AttributeCache>();
 
-            int entityTypeId = new FinancialTransaction().TypeId;
+            int entityTypeId;
+            if ( hfTransactionViewMode.Value == "Transactions" )
+            {
+                entityTypeId = new FinancialTransaction().TypeId;
+            }
+            else
+            {
+                entityTypeId = new FinancialTransactionDetail().TypeId;
+            }
+
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -1540,6 +1569,7 @@ namespace RockWeb.Blocks.Finance
                 lDaysSinceLastTransactionGridField.Visible = GetAttributeValue( AttributeKey.ShowDaysSinceLastTransaction ).AsBoolean();
             }
 
+            var hideTransactionsInPendingBatches = GetAttributeValue( AttributeKey.HideTransactionsInPendingBatches ).AsBoolean();
             var rockContext = new RockContext();
 
             SortProperty sortProperty = gTransactions.SortProperty;
@@ -1562,6 +1592,11 @@ namespace RockWeb.Blocks.Finance
                 else
                 {
                     financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.TransactionDateTime.HasValue );
+                }
+               
+                if ( hideTransactionsInPendingBatches )
+                {
+                    financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.Batch == null || a.Transaction.Batch.Status != BatchStatus.Pending );
                 }
 
                 if ( _availableAttributes != null && _availableAttributes.Any() )
@@ -1655,6 +1690,11 @@ namespace RockWeb.Blocks.Finance
                     financialTransactionQry = financialTransactionQry.Where( a => a.TransactionDateTime.HasValue );
                 }
 
+                if ( hideTransactionsInPendingBatches )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( a => a.Batch == null || a.Batch.Status != BatchStatus.Pending );
+                }
+
                 // Filter to configured accounts.
                 var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
                 if ( accountGuids.Any() )
@@ -1697,6 +1737,8 @@ namespace RockWeb.Blocks.Finance
                         TransactionDateTime = a.TransactionDateTime ?? a.FutureProcessingDateTime.Value,
                         FutureProcessingDateTime = a.FutureProcessingDateTime,
                         TransactionDetails = a.TransactionDetails.Select( d => new DetailInfo { AccountId = d.AccountId, Amount = d.Amount, EntityId = d.EntityId, EntityTypeId = d.EntityTypeId } ),
+                        Refunds = a.Refunds.Select( r => new RefundInfo { TransactionId = r.Id, TransactionCode = r.FinancialTransaction.TransactionCode } ),
+                        RefundForTransactionId = ( a.RefundDetails == null ) ? null : a.RefundDetails.OriginalTransactionId,
                         SourceTypeValueId = a.SourceTypeValueId,
                         TotalAmount = a.TransactionDetails.Sum( d => ( decimal? ) d.Amount ),
                         TransactionCode = a.TransactionCode,
@@ -1740,7 +1782,7 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
 
                 // If the batch is closed, do not allow any editing of the transactions
-                if ( _batch.Status != BatchStatus.Closed && _canEdit )
+                if ( _batch.Status != BatchStatus.Closed && !_batch.IsAutomated && _canEdit )
                 {
                     gTransactions.IsDeleteEnabled = _canEdit;
                 }
@@ -1977,8 +2019,9 @@ namespace RockWeb.Blocks.Finance
             if ( showImages )
             {
                 _imageBinaryFileIdLookupByTransactionId = new FinancialTransactionImageService( rockContext ).Queryable().Where( a => qry.Any( q => q.Id == a.TransactionId ) )
-                    .Select( a => new { a.TransactionId, a.BinaryFileId } ).GroupBy( a => a.TransactionId ).ToList()
-                    .ToDictionary( k => k.Key, v => v.Select( x => x.BinaryFileId ).ToList() );
+                    .Select( a => new { a.TransactionId, a.BinaryFileId, a.Order } )
+                    .GroupBy( a => a.TransactionId )
+                    .ToDictionary( k => k.Key, v => v.OrderBy( x => x.Order ).Select( x => x.BinaryFileId ).ToList() );
             }
             else
             {
@@ -2223,6 +2266,7 @@ namespace RockWeb.Blocks.Finance
             preferences.SetValue( "TransactionViewMode", hfTransactionViewMode.Value );
             preferences.Save();
 
+            BindFilter();
             BindGrid();
         }
 
@@ -2271,6 +2315,10 @@ namespace RockWeb.Blocks.Finance
             /// </value>
             public IEnumerable<DetailInfo> TransactionDetails { get; set; }
             public int? ForeignCurrencyCodeValueId { get; set; }
+
+            public IEnumerable<RefundInfo> Refunds { get; set; }
+
+            public int? RefundForTransactionId { get; set; }
         }
 
         private class DetailInfo : RockDynamic
@@ -2293,6 +2341,12 @@ namespace RockWeb.Blocks.Finance
             public int PersonAliasId { get; set; }
             public int PersonId { get; set; }
             public string FullName { get; set; }
+        }
+
+        private class RefundInfo : RockDynamic
+        {
+            public int TransactionId { get; set; }
+            public string TransactionCode { get; set; }
         }
     }
 }

@@ -17,27 +17,52 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, inject, PropType, ref } from "vue";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
-import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
+import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
 import { getRegistrantBasicInfo } from "./utils.partial";
 import StringFilter from "@Obsidian/Utility/stringUtils";
-import RockButton from "@Obsidian/Controls/rockButton";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
+import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
-import RockForm from "@Obsidian/Controls/rockForm";
-import FeeField from "./feeField.partial";
-import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "@Obsidian/Controls/itemsWithPreAndPostHtml";
+import RockForm from "@Obsidian/Controls/rockForm.obs";
+import FeeField from "./feeField.partial.obs";
+import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
+import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
 import { useStore } from "@Obsidian/PageState";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
+import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { smoothScrollToTop } from "@Obsidian/Utility/page";
 
 const store = useStore();
+
+function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryBlockFormFieldViewModel[]): boolean {
+    const value = fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
+
+    if (typeof value !== "string") {
+        return false;
+    }
+
+    const comparedToFormField = formFields.find(ff => areEqual(ff.guid, rule.comparedToRegistrationTemplateFormFieldGuid));
+    if (!comparedToFormField?.attribute?.fieldTypeGuid) {
+        return false;
+    }
+
+    const fieldType = getFieldType(comparedToFormField.attribute.fieldTypeGuid);
+
+    if (!fieldType) {
+        return false;
+    }
+
+    return fieldType.doesValueMatchFilter(value, rule.comparisonValue, comparedToFormField.attribute.configurationValues ?? {});
+}
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Registrant",
@@ -63,7 +88,7 @@ export default defineComponent({
             required: true
         }
     },
-    setup() {
+    setup(props) {
         const invokeBlockAction = useInvokeBlockAction();
         const registrationEntryState = inject("registrationEntryState") as RegistrationEntryState;
         const getRegistrationEntryBlockArgs = inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs;
@@ -72,10 +97,16 @@ export default defineComponent({
         const signatureSource = ref("");
         const signatureToken = ref("");
         const formResetKey = ref("");
-
         const isNextDisabled = ref(false);
-
         const isSignatureDrawn = computed((): boolean => registrationEntryState.viewModel.isSignatureDrawn);
+
+        for (const fee of registrationEntryState.viewModel.fees) {
+            for (const feeItem of fee.items) {
+                if (typeof props.currentRegistrant.feeItemQuantities[feeItem.guid] !== "number") {
+                    props.currentRegistrant.feeItemQuantities[feeItem.guid] = 0;
+                }
+            }
+        }
 
         return {
             formResetKey,
@@ -89,6 +120,9 @@ export default defineComponent({
             signatureToken
         };
     },
+    updated() {
+        this.updateFeeItemsRemaining();
+    },
     data() {
         return {
             fieldSources: {
@@ -101,7 +135,22 @@ export default defineComponent({
     },
     computed: {
         showPrevious(): boolean {
-            return this.registrationEntryState.firstStep !== this.registrationEntryState.steps.perRegistrantForms;
+            // Allow to navigate to other registrants
+            if(this.registrationEntryState.currentRegistrantIndex > 0) {
+                return true;
+            }
+
+            // Allow to navigate to registration attributes
+            if(this.registrationEntryState.viewModel?.registrationAttributesStart?.length > 0) {
+                return true;
+            }
+
+            // Allow back to intro page if this is not an existing registration
+            if(!this.registrationEntryState.viewModel.isExistingRegistration) {
+                return true;
+            }
+
+            return false;
         },
         viewModel(): RegistrationEntryBlockViewModel {
             return this.registrationEntryState.viewModel;
@@ -141,16 +190,55 @@ export default defineComponent({
                 .filter(f => !this.isWaitList || f.showOnWaitList);
         },
 
+        /** The filtered fields to show on the current form augmented to remove pre/post HTML from non-visible fields */
+        currentFormFieldsAugmented(): RegistrationEntryBlockFormFieldViewModel[] {
+            const fields = JSON.parse(JSON.stringify(this.currentFormFields)) as RegistrationEntryBlockFormFieldViewModel[];
+
+            fields.forEach(value => {
+                if (value.fieldSource != this.fieldSources.personField) {
+                    let isVisible = true;
+                    switch (value.visibilityRuleType) {
+                        case FilterExpressionType.GroupAll:
+                            isVisible = value.visibilityRules.every(vr => isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAllFalse:
+                            isVisible = value.visibilityRules.every(vr => !isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAny:
+                            isVisible = value.visibilityRules.some(vr => isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        case FilterExpressionType.GroupAnyFalse:
+                            isVisible = value.visibilityRules.some(vr => !isRuleMet(vr, this.currentRegistrant.fieldValues, fields));
+                            break;
+
+                        default:
+                            isVisible = true;
+                            break;
+                    }
+
+                    if (isVisible === false) {
+                        value.preHtml = "";
+                        value.postHtml = "";
+                    }
+                }
+            });
+
+            return fields;
+        },
+
         /** The current fields as pre-post items to allow pre-post HTML to be rendered */
         prePostHtmlItems(): ItemWithPreAndPostHtml[] {
-            return this.currentFormFields
+            return this.currentFormFieldsAugmented
                 .map(f => ({
                     preHtml: f.preHtml,
                     postHtml: f.postHtml,
                     slotName: f.guid
                 }));
         },
-        currentPerson(): PersonBag | null {
+        currentPerson(): CurrentPersonBag | null {
             return store.state.currentPerson;
         },
         pluralFeeTerm(): string {
@@ -183,11 +271,11 @@ export default defineComponent({
             }
 
             // Add the current person (registrant) if not already added
-            if (this.currentPerson?.primaryFamilyGuid && this.currentPerson.fullName && !usedFamilyGuids[this.currentPerson.primaryFamilyGuid]) {
-                usedFamilyGuids[this.currentPerson.primaryFamilyGuid] = true;
+            if (this.viewModel.currentPersonFamilyGuid && this.currentPerson?.fullName && !usedFamilyGuids[this.viewModel.currentPersonFamilyGuid]) {
+                usedFamilyGuids[this.viewModel.currentPersonFamilyGuid] = true;
                 options.push({
                     text: this.currentPerson.fullName,
-                    value: this.currentPerson.primaryFamilyGuid
+                    value: this.viewModel.currentPersonFamilyGuid
                 });
             }
 
@@ -205,20 +293,13 @@ export default defineComponent({
 
         /** The people that can be picked from because they are members of the same family. */
         familyMemberOptions(): ListItemBag[] {
-            const selectedFamily = this.currentRegistrant.familyGuid;
-
-            if (!selectedFamily) {
-                return [];
-            }
 
             const usedFamilyMemberGuids = this.registrationEntryState.registrants
                 .filter(r => r.personGuid && r.personGuid !== this.currentRegistrant.personGuid)
                 .map(r => r.personGuid);
 
             return this.viewModel.familyMembers
-                .filter(fm =>
-                    areEqual(fm.familyGuid, selectedFamily) &&
-                    !usedFamilyMemberGuids.includes(fm.guid))
+                .filter(fm => !usedFamilyMemberGuids.includes(fm.guid))
                 .map(fm => ({
                     text: fm.fullName,
                     value: fm.guid
@@ -246,12 +327,16 @@ export default defineComponent({
     methods: {
         onPrevious(): void {
             this.clearFormErrors();
+
             if (this.currentFormIndex <= 0) {
                 this.$emit("previous");
                 return;
             }
 
             this.registrationEntryState.currentRegistrantFormIndex--;
+
+            // Wait for the previous form to be rendered and then scroll to the top
+            setTimeout(() => smoothScrollToTop(), 10);
         },
         async onNext(): Promise<void> {
             this.clearFormErrors();
@@ -275,6 +360,9 @@ export default defineComponent({
 
                         lastFormIndex += 1;
                     }
+                    // If the response is successful but the backend does not return a data, then the Signature Document is not required for the current
+                    // registrant. We may continue execution.
+                    else if (result.isSuccess) { }
                     else {
                         console.error(result.data);
                         return;
@@ -291,6 +379,50 @@ export default defineComponent({
             }
 
             this.registrationEntryState.currentRegistrantFormIndex++;
+
+            // Wait for the next form to be rendered and then scroll to the top
+            setTimeout(() => smoothScrollToTop(), 10);
+        },
+        updateFeeItemsRemaining(): void {
+            // calculate fee items remaining
+            const combinedFeeItemQuantities: Record<Guid, number> = {};
+
+            /* eslint-disable-next-line */
+            const self = this;
+
+            // Get all of the fee items in use for all registrants and add them to the combinedFeeItemQuantities Record
+            for(const registrant of self.registrationEntryState.registrants) {
+                for (const feeItemGuid in registrant.feeItemQuantities) {
+
+                    if (registrant.feeItemQuantities[feeItemGuid] > 0) {
+                        const feeItemsUsed = registrant.feeItemQuantities[feeItemGuid];
+                        if(combinedFeeItemQuantities[feeItemGuid] === undefined || combinedFeeItemQuantities[feeItemGuid] === null) {
+                            combinedFeeItemQuantities[feeItemGuid] = feeItemsUsed;
+                        }
+                        else {
+                            combinedFeeItemQuantities[feeItemGuid] = combinedFeeItemQuantities[feeItemGuid] + feeItemsUsed;
+                        }
+                    }
+                }
+            }
+
+            // No go through all of the fee items and update the usage by subtracting the the total in combinedFeeItemQuantities from the originalCountRemaining
+            const fees = self.registrationEntryState.viewModel.fees;
+            for(const fee of fees){
+                const selfFee = fee;
+                if(selfFee !== undefined && selfFee !== null && selfFee.items !== undefined && selfFee.items !== null && selfFee.items.length > 0) {
+                    for(const feeItem of selfFee.items) {
+                        if(feeItem.countRemaining === null || feeItem.countRemaining === undefined || feeItem.originalCountRemaining === undefined || feeItem.originalCountRemaining === null) {
+                            continue;
+                        }
+
+                        const usedFeeItemCount = combinedFeeItemQuantities[feeItem.guid] ?? 0;
+                        if(usedFeeItemCount !== undefined && usedFeeItemCount !== null) {
+                            feeItem.countRemaining = feeItem.originalCountRemaining - usedFeeItemCount;
+                        }
+                    }
+                }
+            }
         },
 
         /**
@@ -327,7 +459,7 @@ export default defineComponent({
 
         /** Copy the values that are to have current values used */
         copyValuesFromFamilyMember(): void {
-            if (!this.familyMember || this.registrationEntryState.navBack) {
+            if (!this.familyMember || this.registrationEntryState.navBack || this.registrationEntryState.viewModel.isExistingRegistration) {
                 // Nothing to copy
                 return;
             }
@@ -335,6 +467,13 @@ export default defineComponent({
             // If the family member selection is made then set all form fields where use existing value is enabled
             for (const form of this.viewModel.registrantForms) {
                 for (const field of form.fields) {
+                    // Do not set common fields if they are of type
+                    // Registrant Attribute since there is no value to set.
+                    // Fixes issue #5610.
+                    if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                        continue;
+                    }
+
                     if (field.guid in this.familyMember.fieldValues) {
                         const familyMemberValue = this.familyMember.fieldValues[field.guid];
 
@@ -353,6 +492,47 @@ export default defineComponent({
                     }
                 }
             }
+        },
+
+        async getFieldValues(): Promise<void> {
+            const result = await this.invokeBlockAction<Record<Guid, unknown>>("GetDefaultAttributeFieldValues", {
+                args: this.getRegistrationEntryBlockArgs(),
+                forms: this.viewModel.registrantForms,
+                registrantGuid: this.currentRegistrant.guid
+            });
+
+            if (result.isSuccess && result.data) {
+                for (const form of this.viewModel.registrantForms) {
+                    for (const field of form.fields) {
+                        // Check if we gota value for the attribute
+                        if (field.guid in result.data) {
+                            const formFieldValue = result.data[field.guid];
+                            const currentFormFieldValue = this.currentRegistrant.fieldValues[field.guid];
+
+                            if(currentFormFieldValue === undefined || currentFormFieldValue === null || currentFormFieldValue === "") {
+                                if (typeof formFieldValue === "object" && typeof currentFormFieldValue === "object") {
+                                    this.currentRegistrant.fieldValues[field.guid] = { ...formFieldValue };
+                                }
+                                else {
+                                    this.currentRegistrant.fieldValues[field.guid] = formFieldValue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        onUpdateRegistrantFee(values: Record<string, number>): void {
+            const newValue = {...this.currentRegistrant.feeItemQuantities};
+
+            for (const key of Object.keys(values)) {
+                newValue[key] = values[key];
+            }
+
+            this.currentRegistrant.feeItemQuantities = newValue;
+
+            this.updateFeeItemsRemaining();
         }
     },
     watch: {
@@ -366,6 +546,14 @@ export default defineComponent({
                     // If the family member selection is cleared then clear all form fields
                     for (const form of this.viewModel.registrantForms) {
                         for (const field of form.fields) {
+                            // Do not touch common fields if they are of type
+                            // Registrant Attribute since we don't set them when
+                            // selecting a family member either.
+                            // Fixes issue #5610.
+                            if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                                continue;
+                            }
+
                             delete this.currentRegistrant.fieldValues[field.guid];
                         }
                     }
@@ -378,10 +566,11 @@ export default defineComponent({
         }
     },
     created() {
+        this.getFieldValues();
         this.copyValuesFromFamilyMember();
     },
     template: `
-<div>
+<div class="registrationentry-registrant-details" >
     <RockForm @submit="onNext" :formResetKey="formResetKey">
         <template v-if="isDataForm">
             <template v-if="currentFormIndex === 0">
@@ -406,7 +595,7 @@ export default defineComponent({
             <div v-if="!isWaitList && isLastForm && viewModel.fees.length" class="well registration-additional-options">
                 <h4>{{pluralFeeTerm}}</h4>
                 <template v-for="fee in viewModel.fees" :key="fee.guid">
-                    <FeeField :fee="fee" v-model="currentRegistrant.feeItemQuantities" />
+                    <FeeField :modelValue="currentRegistrant.feeItemQuantities" :fee="fee" @update:modelValue="onUpdateRegistrantFee" />
                 </template>
             </div>
         </template>

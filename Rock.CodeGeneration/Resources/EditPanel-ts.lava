@@ -24,10 +24,10 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";{% if UseAttributeValues == true %}
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";{% endif %}{% if UseIsActive == true %}
-    import CheckBox from "@Obsidian/Controls/checkBox";{% endif %}{% if UseDescription == true or UseName == true %}
-    import TextBox from "@Obsidian/Controls/textBox";{% endif %}
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";{% endif %}{% if UseIsActive == true %}
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";{% endif %}{% if UseDescription == true or UseName == true %}
+    import TextBox from "@Obsidian/Controls/textBox.obs";{% endif %}{% if UseAttributeValues == true %}
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";{% endif %}
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
     import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
@@ -103,9 +103,9 @@
         };
 
         emit("update:modelValue", newValue);
-    });
+    });{% if UseAttributeValues == true %}
 
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
-    watchPropertyChanges(propRefs, emit);
+    watchPropertyChanges(propRefs, emit);{% endif %}
 </script>

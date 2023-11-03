@@ -562,6 +562,16 @@ $('#{0}').tooltip();
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancelConfirmAttend_Click( object sender, EventArgs e )
         {
+            /*
+                9/25/2023 - JPH
+
+                We are no longer calling this handler when canceling a previously-accepted attendance.
+                Instead, we'll call the `btnDeclineAttend_Click` handler, so the attendance will be
+                declined rather than putting it back into the "pending" state, which leads to confusion.
+
+                Reason: Group Schedule Toolbox - 'Cancel' Behavior
+                (https://app.asana.com/0/1174768427585341/1205304349766829/f)
+             */
             var btnCancelConfirmAttend = sender as LinkButton;
             int? attendanceId = btnCancelConfirmAttend.CommandArgument.AsIntegerOrNull();
             if ( attendanceId.HasValue )
@@ -1132,7 +1142,7 @@ $('#{0}').tooltip();
 
             if ( groupScheduleRowInfo.PersonAlias != null && groupScheduleRowInfo.PersonAlias.Person != null && groupScheduleRowInfo.PersonAlias.PersonId != this.SelectedPersonId )
             {
-                occurenceDetail = $"{groupScheduleRowInfo.PersonAlias.Person.FullName} - ";
+                occurenceDetail += $"{groupScheduleRowInfo.PersonAlias.Person.FullName} - ";
             }
 
             if ( groupScheduleRowInfo.Group != null )
@@ -1721,8 +1731,7 @@ $('#{0}').tooltip();
             // give this a specific ID so that Postback to cbSignupSchedule works consistently
             scheduleSignUpRowItem.ID = $"scheduleSignUpRowItem_{groupScheduleSignup.GroupId}_{groupScheduleSignup.ScheduleId}_{groupScheduleSignup.ScheduledDateTime.Date.ToString( "yyyyMMdd" )}";
 
-            scheduleSignUpRowItem.Attributes.Add( "class", "row d-flex flex-wrap align-items-center" );
-            scheduleSignUpRowItem.AddCssClass( "js-person-schedule-signup-row" );
+            scheduleSignUpRowItem.Attributes.Add( "class", "d-flex flex-column flex-sm-row flex-wrap align-items-sm-center js-person-schedule-signup-row" );
             phSignUpSchedules.Controls.Add( scheduleSignUpRowItem );
 
             var hfGroupId = new HiddenField { ID = "hfGroupId", Value = groupScheduleSignup.GroupId.ToString() };
@@ -1736,7 +1745,7 @@ $('#{0}').tooltip();
 
             var pnlCheckboxCol = new DynamicControlsPanel();
             pnlCheckboxCol.ID = "pnlCheckboxCol";
-            pnlCheckboxCol.Attributes.Add( "class", "col-xs-12 col-sm-5 col-md-4" );
+            pnlCheckboxCol.Attributes.Add( "class", "flex-fill" );
 
             var cbSignupSchedule = new RockCheckBox();
             cbSignupSchedule.ID = "cbSignupSchedule";
@@ -1803,7 +1812,7 @@ $('#{0}').tooltip();
             }
 
             var pnlLocationCol = new Panel();
-            pnlLocationCol.Attributes.Add( "class", "col-xs-12 col-sm-7 col-md-8 col-lg-6 mb-3 mb-md-0" );
+            pnlLocationCol.Attributes.Add( "class", "flex-fill mb-3 mb-md-0 ml-sm-3" );
             pnlLocationCol.Controls.Add( ddlSignupLocations );
 
             var hlSignUpSaved = new HighlightLabel { ID = "hlSignUpSaved", LabelType = LabelType.Success, Text = "<i class='fa fa-check-square'></i> Saved" };

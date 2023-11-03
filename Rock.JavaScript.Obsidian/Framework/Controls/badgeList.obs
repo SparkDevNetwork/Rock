@@ -1,0 +1,106 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="containerRef" style="display: flex;">
+        <div v-for="badge in badges" v-html="badge" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { popover } from "@Obsidian/Utility/popover";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { BadgeListGetBadgesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/badgeListGetBadgesOptionsBag";
+    import { RenderedBadgeBag } from "@Obsidian/ViewModels/Crm/renderedBadgeBag";
+    import { nextTick, PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        /** The unique identifier of the type of entity to be rendered. */
+        entityTypeGuid: {
+            type: String as PropType<Guid>,
+            required: false
+        },
+
+        /** The identifier key of the entity to be rendered. */
+        entityKey: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * The list of badge type unique identifiers to be rendered. If null
+         * or empty array then all available badge types are rendered.
+         */
+        badgeTypeGuids: {
+            type: Array as PropType<Guid[]>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const http = useHttp();
+    const badges = ref<string[]>([]);
+    const containerRef = ref<HTMLElement | null>(null);
+
+    // #endregion
+
+    // #region Functions
+
+    /** Load the badges from our property data and render the output to the DOM. */
+    async function loadBadges(): Promise<void> {
+        const data: BadgeListGetBadgesOptionsBag = {
+            badgeTypeGuids: props.badgeTypeGuids,
+            entityTypeGuid: props.entityTypeGuid,
+            entityKey: props.entityKey
+        };
+
+        const result = await http.post<RenderedBadgeBag[]>("/api/v2/Controls/BadgeListGetBadges", undefined, data);
+
+        if (result.isSuccess && result.data) {
+            // Get all the HTML content to be rendered.
+            badges.value = result.data.map(b => b.html ?? "");
+
+            let script = "";
+
+            for (const badge of result.data) {
+                if (badge.javaScript) {
+                    script += badge.javaScript;
+                }
+            }
+
+            if (script !== "") {
+                // Add the script on the next tick to ensure the HTML has been rendered.
+                nextTick(() => {
+                    const scriptNode = document.createElement("script");
+                    scriptNode.type = "text/javascript";
+                    scriptNode.innerText = script;
+                    document.body.appendChild(scriptNode);
+                });
+            }
+
+            // Enable tooltips and popovers.
+            nextTick(() => {
+                if (!containerRef.value) {
+                    return;
+                }
+
+                tooltip(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"tooltip\"]")));
+                popover(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"popover\"]")));
+            });
+        }
+        else {
+            console.error(`Error loading badges: ${result.errorMessage || "Unknown error"}`);
+            badges.value = [];
+        }
+    }
+
+    // #endregion
+
+    watch([() => props.badgeTypeGuids, () => props.entityKey, () => props.entityTypeGuid], () => {
+        loadBadges();
+    });
+
+    // Start loading the badges immediately.
+    loadBadges();
+</script>

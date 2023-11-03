@@ -196,7 +196,7 @@
                                 <div class="flex-grow-0">
                                     <asp:LinkButton ID="btnComplete" runat="server" class="success-on-hover" CommandArgument='<%# Eval("Id") %>' OnClick="btnComplete_Click">
                                         <asp:Literal ID="lCheckIcon_Complete" runat="server" Visible='<%# Eval("IsComplete") %>'><i class="fa fa-lg fa-check-circle text-success"></i></asp:Literal>
-                                        <asp:Literal ID="lCheckIcon_Incomplete" runat="server" Visible='<%# (bool) Eval("IsComplete") == true ? false : true %>'><i class="fa fa-lg fa-check-circle-o"></i></asp:Literal>
+                                        <asp:Literal ID="lCheckIcon_Incomplete" runat="server" Visible='<%# (bool) Eval("IsComplete") == true ? false : true %>'><i class="fa fa-lg fa-circle-o"></i></asp:Literal>
                                     </asp:LinkButton>
                                 </div>
                                 <div class="d-flex flex-wrap flex-eq">

@@ -3609,6 +3609,19 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns the list of campuses closest to the target person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">A Person entity object or identifier.</param>
+        /// <param name="maximumCount">The maximum number of campuses to return.</param>
+        /// <returns>A single Campus, or a list of Campuses in ascending order of distance from the target Person.</returns>
+        public static object NearestCampus( Context context, object input, object maximumCount = null )
+        {
+            // Call the newer Lava Filter implementation, and inject a null Lava context.
+            return LavaFilters.NearestCampus( null, input, maximumCount );
+        }
+
+        /// <summary>
         /// Returns the Campus (or Campuses) that the Person belongs to
         /// </summary>
         /// <param name="context">The context.</param>
@@ -5158,7 +5171,7 @@ namespace Rock.Lava
             {
                 return null;
             }
-            return (int?)input.ToString().AsDecimalOrNull();
+            return ( int? ) input.ToString().AsDecimalOrNull();
         }
 
         /// <summary>
@@ -6268,6 +6281,49 @@ namespace Rock.Lava
             var entityType = cache.GetType().GetGenericArgumentsOfBaseType( entityCacheType )[1];
 
             return Rock.Reflection.GetIEntityForEntityType( entityType, cache.Id );
+        }
+
+        /// <summary>
+        /// Gets the IdKey hash from IEntity or an integer Id value.
+        /// </summary>
+        /// <param name="input">The input object.</param>
+        /// <returns>An <see cref="IEntity"/> object or the original <paramref name="input"/>.</returns>
+        public static string ToIdHash( object input )
+        {
+            int? entityId = null;
+
+            if ( input is int )
+            {
+                entityId = Convert.ToInt32( input );
+            }
+
+            if ( input is IEntity )
+            {
+                IEntity entity = input as IEntity;
+                entityId = entity.Id;
+            }
+
+            if ( !entityId.HasValue )
+            {
+                return null;
+            }
+
+            return IdHasher.Instance.GetHash( entityId.Value );
+        }
+
+        /// <summary>
+        /// Gets the integer value from from a key-hash string.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static int? FromIdHash( string input )
+        {
+            if ( string.IsNullOrWhiteSpace( input ) )
+            {
+                return null;
+            }
+
+            return IdHasher.Instance.GetId( input );
         }
 
         /// <summary>

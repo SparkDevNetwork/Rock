@@ -442,7 +442,7 @@ namespace Rock.Web.UI.Controls
                         var sm = ScriptManager.GetCurrent( mergeField.ParentGrid.Page );
                         sm.RegisterAsyncPostBackControl( lbDelete );
 
-                        HtmlGenericContainer headerSummary = new HtmlGenericContainer( "div", "merge-header-summary js-merge-header-summary" );
+                        HtmlGenericContainer headerSummary = new HtmlGenericContainer( "div", "merge-header-summary cursor-pointer js-merge-header-summary" );
                         headerSummary.Attributes.Add( "data-person-id", mergeField.PersonId.ToString() );
 
                         var i = new HtmlGenericControl( "i" );

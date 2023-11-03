@@ -722,10 +722,7 @@ namespace Rock.Model
                 .Where( t => t.TransactionDateTime >= streakType.StartDate );
 
             // Set the streak type occurrence map according to the dates returned
-            var firstOccurrenceDate = transactionQuery
-                .Select( t => t.TransactionDateTime )
-                .Min();
-
+            var firstOccurrenceDate = transactionQuery.Select( t => t.TransactionDateTime ).Min();
             if ( !firstOccurrenceDate.HasValue )
             {
                 // No data to work with
@@ -757,10 +754,7 @@ namespace Rock.Model
             streakTypeCache = StreakTypeCache.Get( streakTypeCache.Id );
 
             // Get all of the attendees for the streak type
-            var personIds = transactionQuery
-                .Select( t => t.AuthorizedPersonAlias.PersonId )
-                .Distinct()
-                .ToList();
+            var personIds = transactionQuery.Select( t => t.AuthorizedPersonAlias.PersonId ).Distinct().ToList();
 
             var totalCount = personIds.LongCount();
             var batchCounter = 0;
@@ -768,6 +762,7 @@ namespace Rock.Model
 
             foreach ( var personId in personIds )
             {
+                // Create a new context every 100 persons to keep the change tracker from getting bogged down.
                 if ( batchCounter == 0 )
                 {
                     rockContext = new RockContext();
@@ -776,22 +771,33 @@ namespace Rock.Model
                 // Get the Person's Giving ID
                 var givingId = new PersonService( rockContext ).GetSelect( personId, p => p.GivingId );
 
-                // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
-                var givingPersonIds = new PersonAliasService( rockContext )
+                // fetch all of the Person.Id that use the givingId of the current person
+                var givingPersonIds = new PersonService( rockContext )
                     .Queryable()
                     .AsNoTracking()
-                    .Where( a => a.Person.GivingId == givingId )
-                    .Select( a => a.PersonId )
+                    .Where( p => p.GivingId == givingId )
+                    .Select( a => a.Id )
                     .ToList();
 
                 foreach ( var pId in givingPersonIds )
                 {
                     RebuildStreak( rockContext, streakTypeCache, streakType, streakType.StartDate, pId, out errorMessage );
+
+                    /*
+                    * 2023-05-30 ETD
+                    * Save changes here in case the this person has not inserted a row into Streak yet.
+                    * Otherwise the Context could try to insert the same person for the same StreakType multiple times which will violate unique key index "IX_StreakTypeId_PersonAliasId".
+                    * This can happen when a new StreakType is created for a past date where one or more persons has multiple streaks to process (e.g. weekly giving starting 3 weeks ago)
+                    */
+                    if ( errorMessage.IsNullOrWhiteSpace() )
+                    {
+                        rockContext.SaveChanges();
+                    }
                 }
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    return;
+                    continue;
                 }
 
                 batchCounter++;
@@ -799,18 +805,10 @@ namespace Rock.Model
 
                 if ( batchCounter == 100 )
                 {
-                    rockContext.SaveChanges();
-                    rockContext.Dispose();
                     batchCounter = 0;
-
+                    rockContext.Dispose();
                     progress?.Report( ( int ) ( decimal.Divide( totalCounter, totalCount ) * 100 ) );
                 }
-            }
-
-            if ( batchCounter > 0 )
-            {
-                rockContext.SaveChanges();
-                rockContext.Dispose();
             }
         }
 

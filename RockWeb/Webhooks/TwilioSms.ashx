@@ -20,10 +20,13 @@ using System;
 using System.Web;
 using System.Linq;
 using System.Net;
+using System.Text;
 using Rock;
 using Rock.Communication.SmsActions;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.SystemKey;
 
 /// <summary>
 /// This the Twilio Webwook that processes incoming SMS messages thru the SMS Pipeline. See https://community.rockrms.com/Rock/BookContent/8#smstwilio
@@ -55,6 +58,34 @@ public class TwilioSmsAsync : IHttpAsyncHandler
 
 class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
 {
+    private TransportComponent _component;
+
+    /// <summary>
+    /// Gets the Twilio transport component from the container.
+    /// </summary>
+    private TransportComponent TwilioTransportComponent
+    {
+        get
+        {
+            if ( _component == null )
+            {
+                var entityTypeGuid = new Guid( "CF9FD146-8623-4D9A-98E6-4BD710F071A4" );
+                foreach ( var serviceEntry in TransportContainer.Instance.Components )
+                {
+                    var component = serviceEntry.Value.Value;
+                    var entityType = Rock.Web.Cache.EntityTypeCache.Get( component.GetType() );
+                    if ( entityType != null && entityType.Guid.Equals( entityTypeGuid ) )
+                    {
+                        _component = component;
+                        break;
+                    }
+                }
+            }
+
+            return _component;
+        }
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TwilioSmsResponseAsync"/> class.
     /// </summary>
@@ -90,29 +121,36 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
 
                 int? numberOfAttachments = request.Params["NumMedia"].IsNotNullOrWhiteSpace() ? request.Params["NumMedia"].AsIntegerOrNull() : null;
 
-                if ( numberOfAttachments != null )
+                if ( numberOfAttachments != null && this.TwilioTransportComponent != null )
                 {
-                    Guid imageGuid;
-                    for ( int i = 0; i < numberOfAttachments.Value; i++ )
+                    var accountSid = this.TwilioTransportComponent.GetAttributeValue( TwilioAttributeKey.Sid );
+                    var authToken = this.TwilioTransportComponent.GetAttributeValue( TwilioAttributeKey.AuthToken );
+
+                    if ( accountSid.IsNotNullOrWhiteSpace() && authToken.IsNotNullOrWhiteSpace() )
                     {
-                        string imageUrl = request.Params[string.Format( "MediaUrl{0}", i )];
-                        string mimeType = request.Params[string.Format( "MediaContentType{0}", i )];
-                        imageGuid = Guid.NewGuid();
-
-                        System.IO.Stream stream = null;
-                        var httpWebRequest = ( HttpWebRequest ) HttpWebRequest.Create( imageUrl );
-                        var httpWebResponse = ( HttpWebResponse ) httpWebRequest.GetResponse();
-
-                        if ( httpWebResponse.ContentLength == 0 )
+                        Guid imageGuid;
+                        for ( int i = 0; i < numberOfAttachments.Value; i++ )
                         {
-                            continue;
-                        }
+                            string imageUrl = request.Params[string.Format( "MediaUrl{0}", i )];
+                            string mimeType = request.Params[string.Format( "MediaContentType{0}", i )];
+                            imageGuid = Guid.NewGuid();
 
-                        string fileExtension = Rock.Utility.FileUtilities.GetFileExtensionFromContentType( mimeType );
-                        string fileName = string.Format( "SMS-Attachment-{0}-{1}.{2}", imageGuid, i, fileExtension );
-                        stream = httpWebResponse.GetResponseStream();
-                        var binaryFile = new BinaryFileService( rockContext ).AddFileFromStream( stream, mimeType, httpWebResponse.ContentLength, fileName, Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT, imageGuid );
-                        message.Attachments.Add( binaryFile );
+                            var httpWebRequest = ( HttpWebRequest ) HttpWebRequest.Create( imageUrl );
+                            httpWebRequest.Headers["Authorization"] = "Basic " + Convert.ToBase64String(Encoding.Default.GetBytes(accountSid + ":" + authToken));
+
+                            var httpWebResponse = ( HttpWebResponse ) httpWebRequest.GetResponse();
+
+                            if ( httpWebResponse.ContentLength == 0 )
+                            {
+                                continue;
+                            }
+
+                            string fileExtension = Rock.Utility.FileUtilities.GetFileExtensionFromContentType( mimeType );
+                            string fileName = string.Format( "SMS-Attachment-{0}-{1}.{2}", imageGuid, i, fileExtension );
+                            var stream = httpWebResponse.GetResponseStream();
+                            var binaryFile = new BinaryFileService( rockContext ).AddFileFromStream( stream, mimeType, httpWebResponse.ContentLength, fileName, Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT, imageGuid );
+                            message.Attachments.Add( binaryFile );
+                        }
                     }
                 }
 

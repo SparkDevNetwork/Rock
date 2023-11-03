@@ -1,22 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="external-logins">
-        <p v-if="hasExternalLogins" v-html="caption"></p>
+    <p v-if="hasExternalLogins && isCaptionNotEmpty" v-html="caption"></p>
 
-        <RockButton
-            v-for="login in externalLogins"
-            :btnType="BtnType.Authentication"
-            :class="login.cssClass + ' btn-authentication-v2' || ''"
-            :disabled="disabled"
-            @click="onExternalLoginClick(login)">
-            {{ login.text }}
-        </RockButton>
-    </div>
+    <RockButton v-for="login in externalLogins"
+                :btnType="BtnType.Authentication"
+                :class="login.cssClass + ' btn-authentication-v2'"
+                :disabled="disabled"
+                @click="onExternalLoginClick(login)">{{ login.text }}</RockButton>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ExternalAuthenticationButtonBag } from "@Obsidian/ViewModels/Blocks/Security/Login/externalAuthenticationButtonBag";
 
@@ -34,7 +29,7 @@
         caption: {
             type: String as PropType<string>,
             required: false,
-            default: "Log in with social account"
+            default: ""
         }
     });
 
@@ -44,10 +39,6 @@
 
     // #endregion
 
-    //#region Values
-
-    //#endregion
-
     // #region Computed Values
 
     const externalLogins = computed<ExternalAuthenticationButtonBag[]>(() => {
@@ -55,6 +46,8 @@
     });
 
     const hasExternalLogins = computed<boolean>(() => !!externalLogins.value.length);
+
+    const isCaptionNotEmpty = computed<boolean>(() => !!props.caption);
 
     // #endregion
 
@@ -68,5 +61,4 @@
     }
 
     // #endregion
-
 </script>

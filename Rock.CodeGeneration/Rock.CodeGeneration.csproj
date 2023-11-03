@@ -83,6 +83,7 @@
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -96,6 +97,9 @@
   <ItemGroup>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ObsidianListBlockPage.xaml.cs">
+      <DependentUpon>ObsidianListBlockPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utility\CodeGenHelpers.cs" />
     <Compile Include="Controls\Alert.xaml.cs">
@@ -141,6 +145,7 @@
       <DependentUpon>ObsidianViewModelsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility\EntityColumn.cs" />
     <Compile Include="Utility\GeneratedFileSaveState.cs" />
     <Compile Include="Utility\RockGuidCodeGenerator.cs" />
     <Compile Include="Utility\AlertType.cs" />
@@ -182,6 +187,8 @@
     <EmbeddedResource Include="Resources\EntityDetailBlock-cs.lava" />
     <EmbeddedResource Include="Resources\EntityDetailBlock-ts.lava" />
     <EmbeddedResource Include="Resources\ViewPanel-ts.lava" />
+    <EmbeddedResource Include="Resources\EntityListBlock-cs.lava" />
+    <EmbeddedResource Include="Resources\EntityListBlock-ts.lava" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
@@ -213,6 +220,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop">
       <Version>17.1.32210.191</Version>
+    </PackageReference>
+    <PackageReference Include="System.Memory">
+      <Version>4.5.5</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -255,6 +265,10 @@
     <Page Include="Pages\ObsidianEnumsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\ObsidianListBlockPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\ObsidianSystemGuidsPage.xaml">
       <SubType>Designer</SubType>

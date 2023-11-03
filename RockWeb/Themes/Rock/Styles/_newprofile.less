@@ -99,12 +99,15 @@
 @media (min-width: 647px) {
   .person-profile {
     flex-wrap: nowrap;
+    margin: 24px 8px 0;
+    gap: 8px;
   }
 }
 
 @media (min-width: @screen-sm) {
   .person-profile {
     margin: 24px 15px 0;
+    gap: 0;
   }
 
   .profile-content + .main-footer {
@@ -391,11 +394,12 @@
 .family-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(60px, 78px));
-  gap: 6px;
+  gap: 8px;
   justify-content: space-evenly;
+  margin-bottom: 8px;
 
   @media screen and (min-width: 480px) {
-    gap: 6px 18px;
+    gap: 8px 18px;
   }
 }
 
@@ -733,7 +737,7 @@
     }
 
     .settings {
-      padding: 3px 24px 6px;
+      padding: 3px 12px 6px;
     }
   }
 

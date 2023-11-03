@@ -23,15 +23,16 @@ import { ConfigurationValueKey } from "./dateField.partial";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
 import DatePicker from "@Obsidian/Controls/datePicker.obs";
-import DatePartsPicker, { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import TextBox from "@Obsidian/Controls/textBox";
-import NumberBox from "@Obsidian/Controls/numberBox";
-import CheckBox from "@Obsidian/Controls/checkBox";
+import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import TextBox from "@Obsidian/Controls/textBox.obs";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { PropType } from "vue";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 import { updateRefValue } from "@Obsidian/Utility/component";
+import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
 
 export const EditComponent = defineComponent({
     name: "DateField.Edit",
@@ -46,7 +47,7 @@ export const EditComponent = defineComponent({
     data() {
         return {
             internalValue: "",
-            internalDateParts: getDefaultDatePartsPickerModel(),
+            internalDateParts: undefined as DatePartsPickerValue | undefined,
             formattedString: ""
         };
     },
@@ -95,14 +96,14 @@ export const EditComponent = defineComponent({
             const dateParts = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(this.modelValue ?? "");
 
             if (dateParts != null) {
-                this.internalDateParts.year = toNumber(dateParts[1]);
-                this.internalDateParts.month = toNumber(dateParts[2]);
-                this.internalDateParts.day = toNumber(dateParts[3]);
+                this.internalDateParts = {
+                    year: toNumber(dateParts[1]),
+                    month: toNumber(dateParts[2]),
+                    day: toNumber(dateParts[3])
+                };
             }
             else {
-                this.internalDateParts.year = 0;
-                this.internalDateParts.month = 0;
-                this.internalDateParts.day = 0;
+                this.internalDateParts = undefined;
             }
         }
     },

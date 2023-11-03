@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -42,6 +42,7 @@
       <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
@@ -59,23 +60,101 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
+    <Compile Include="Cms\AdaptiveMessageDetail.cs" />
+    <Compile Include="Cms\AdaptiveMessageList.cs" />
+    <Compile Include="Cms\PageShortLinkClickList.cs" />
+    <Compile Include="Cms\PageShortLinkList.cs" />
+    <Compile Include="Cms\BlockList.cs" />
+    <Compile Include="Cms\LayoutList.cs" />
+    <Compile Include="Cms\SiteList.cs" />
+    <Compile Include="Core\BinaryFileDetail.cs" />
+    <Compile Include="Core\BinaryFileTypeDetail.cs" />
+    <Compile Include="Core\CampusList.cs" />
+    <Compile Include="Communication\EmailPreferenceEntry.cs" />
+    <Compile Include="Core\DeviceDetail.cs" />
+    <Compile Include="Core\Notes.cs" />
+    <Compile Include="Core\NoteWatchDetail.cs" />
+    <Compile Include="Core\NotificationMessageList.cs" />
+    <Compile Include="Cms\BlockTypeDetail.cs" />
+    <Compile Include="Core\InteractionChannelDetail.cs" />
+    <Compile Include="Crm\SignalTypeDetail.cs" />
+    <Compile Include="Core\SuggestionDetail.cs" />
+    <Compile Include="Cms\LavaShortcodeDetail.cs" />
+    <Compile Include="Engagement\AchievementAttemptDetail.cs" />
+    <Compile Include="Engagement\AchievementTypeDetail.cs" />
+    <Compile Include="Finance\BenevolenceTypeDetail.cs" />
+    <Compile Include="Finance\FinancialAccountDetail.cs" />
+    <Compile Include="Finance\FinancialBatchList.cs" />
+    <Compile Include="Finance\FinancialGatewayDetail.cs" />
+    <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
+    <Compile Include="Finance\FinancialPledgeDetail.cs" />
+    <Compile Include="Finance\FinancialPledgeList.cs" />
+    <Compile Include="Finance\FinancialStatementTemplateDetail.cs" />
+    <Compile Include="Mobile\MobileLayoutDetail.cs" />
+    <Compile Include="Group\GroupMemberScheduleTemplateDetail.cs" />
+    <Compile Include="Group\GroupRequirementTypeDetail.cs" />
+    <Compile Include="Reporting\InteractionDetail.cs" />
+    <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
+    <Compile Include="Tv\AppleTvPageDetail.cs" />
+    <Compile Include="Engagement\StepTypeDetail.cs" />
+    <Compile Include="Tv\AppleTvAppDetail.cs" />
+    <Compile Include="Event\EventItemDetail.cs" />
+    <Compile Include="Event\EventCalendarDetail.cs" />
+    <Compile Include="Event\RegistrationListLava.cs" />
+    <Compile Include="Finance\BusinessDetail.cs" />
+    <Compile Include="Engagement\StreakTypeDetail.cs" />
+    <Compile Include="Prayer\PrayerRequestDetail.cs" />
+    <Compile Include="Core\FollowingEventTypeDetail.cs" />
+    <Compile Include="Core\ScheduleDetail.cs" />
+    <Compile Include="Crm\AssessmentList.cs" />
+    <Compile Include="Crm\FamilyPreRegistration.cs" />
+    <Compile Include="Crm\PhotoOptOutDetail.cs" />
+    <Compile Include="Engagement\StreakDetail.cs" />
+    <Compile Include="Prayer\PrayerRequestEntry.cs" />
+    <Compile Include="Cms\LibraryViewer.cs" />
     <Compile Include="Engagement\SignUp\SignUpDetail.cs" />
+    <Compile Include="Example\ObsidianGalleryList.cs" />
     <Compile Include="Group\GroupAttendanceDetail.cs" />
+    <Compile Include="RockDetailBlockType.cs" />
+    <Compile Include="RockEntityListBlockType.cs" />
+    <Compile Include="RockListBlockType.cs" />
+    <Compile Include="Reporting\ServiceMetricsEntry.cs" />
     <Compile Include="Group\Scheduling\GroupScheduler.cs" />
+    <Compile Include="Finance\FinancialBatchDetail.cs" />
+    <Compile Include="Finance\FinancialPledgeEntry.cs" />
+    <Compile Include="Group\GroupRegistration.cs" />
     <Compile Include="Security\AccountEntry.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />
     <Compile Include="Cms\ContentCollectionView.cs" />
+    <Compile Include="Cms\LayoutDetail.cs" />
     <Compile Include="Cms\MediaAccountDetail.cs" />
     <Compile Include="Cms\MediaFolderDetail.cs" />
+    <Compile Include="Cms\PageShortLinkDetail.cs" />
     <Compile Include="Cms\PersistedDatasetDetail.cs" />
+    <Compile Include="Cms\PageRouteDetail.cs" />
     <Compile Include="Cms\PersonalLinkSectionDetail.cs" />
+    <Compile Include="Cms\SiteDetail.cs" />
+    <Compile Include="Core\AssetStorageProviderDetail.cs" />
     <Compile Include="Communication\SnippetDetail.cs" />
     <Compile Include="Communication\SnippetTypeDetail.cs" />
     <Compile Include="Communication\SystemPhoneNumberDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
+    <Compile Include="Core\CategoryDetail.cs" />
+    <Compile Include="Core\LocationDetail.cs" />
+    <Compile Include="Crm\DocumentTypeDetail.cs" />
+    <Compile Include="Core\NoteTypeDetail.cs" />
+    <Compile Include="Core\ServiceJobDetail.cs" />
+    <Compile Include="Core\SignatureDocumentTemplateDetail.cs" />
+    <Compile Include="Core\TagDetail.cs" />
     <Compile Include="Crm\AssessmentTypeDetail.cs" />
+    <Compile Include="Crm\BadgeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
+    <Compile Include="Bus\QueueDetail.cs" />
+    <Compile Include="Security\ForgotUserName.cs" />
+    <Compile Include="Security\ConfirmAccount.cs" />
+    <Compile Include="Security\RestKeyDetail.cs" />
     <Compile Include="Engagement\SignUp\SignUpAttendanceDetail.cs" />
     <Compile Include="Engagement\SignUp\SignUpFinder.cs" />
     <Compile Include="Engagement\SignUp\SignUpRegister.cs" />
@@ -88,14 +167,15 @@
     <Compile Include="Event\RegistrationEntry.cs" />
     <Compile Include="Example\FieldTypeGallery.cs" />
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
-    <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="ExtensionMethods\SettingsExtensions.cs" />
-    <Compile Include="IHasCustomActions.cs" />
+    <Compile Include="Reporting\MergeTemplateDetail.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
     <Compile Include="Example\ControlGallery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RockObsidianDetailBlockType.cs" />
     <Compile Include="Engagement\Steps\StepFlow.cs" />
+    <Compile Include="WebFarm\WebFarmNodeDetail.cs" />
+    <Compile Include="WebFarm\WebFarmSettings.cs" />
     <Compile Include="Security\Login.cs" />
     <Compile Include="Utility\RealTimeDebugger.cs" />
     <Compile Include="Utility\RealTimeVisualizer.cs" />
@@ -104,6 +184,7 @@
     <Compile Include="WorkFlow\FormBuilder\FormBuilderDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\Utility.cs" />
+    <Compile Include="WorkFlow\WorkflowTriggerDetail.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
@@ -139,9 +220,7 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Finance\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="DefaultTvApplication.js" />
   </ItemGroup>

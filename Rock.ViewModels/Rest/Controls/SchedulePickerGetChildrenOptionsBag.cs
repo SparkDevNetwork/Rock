@@ -16,7 +16,6 @@
 //
 
 using System;
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Rest.Controls
 {
@@ -36,6 +35,11 @@ namespace Rock.ViewModels.Rest.Controls
         /// Whether to include schedules marked as inactive in the results.
         /// </summary>
         public bool IncludeInactiveItems { get; set; } = false;
+
+        /// <summary>
+        /// Whether to include schedules marked as private in the results.
+        /// </summary>
+        public bool includePublicItemsOnly { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the security grant token to use when performing

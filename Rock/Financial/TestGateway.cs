@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -82,7 +83,7 @@ namespace Rock.Financial
         Description = "Select the gateway mode",
         Key = AttributeKey.GatewayMode,
         EnumSourceType = typeof( HostedGatewayMode ),
-        DefaultValue = "Unhosted",
+        DefaultValue = "1", // Unhosted
         Order = 6 )]
 
     [DecimalField(
@@ -101,11 +102,19 @@ namespace Rock.Financial
         DefaultValue = null,
         Order = 8 )]
 
+    [BooleanField(
+        "Enable Settlement Mode",
+        Key = AttributeKey.EnableSettlementMode,
+        Description = "Makes the gateway act like a settlement gateway where it keeps all transactions in a single holding batch.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Order = 9 )]
+
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY )]
 #if REVIEW_NET5_0_OR_GREATER
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IFeeCoverageGatewayComponent
 #else
-    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent
+    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, ISettlementGateway
 #endif
     {
         #region Attribute Keys
@@ -122,6 +131,7 @@ namespace Rock.Financial
             public const string DeclinedCVV = "DeclinedCVV";
             public const string PromptForNameOnCard = "PromptForNameOnCard";
             public const string GatewayMode = "GatewayMode";
+            public const string EnableSettlementMode = "EnableSettlementMode";
 
             /// <summary>
             /// The credit card fee coverage percentage
@@ -158,7 +168,7 @@ namespace Rock.Financial
         /// <returns></returns>
         public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
         {
-            return "/Obsidian/Controls/TestGatewayControl.js";
+            return "/Obsidian/Controls/Internal/testGatewayControl.obs.js";
         }
 
         /// <inheritdoc/>
@@ -431,7 +441,7 @@ namespace Rock.Financial
             errorMessage = string.Empty;
             var referencePaymentInfo = paymentInfo as ReferencePaymentInfo;
 
-            if ( referencePaymentInfo != null )
+            if ( referencePaymentInfo != null && referencePaymentInfo.TransactionCode.IsNotNullOrWhiteSpace() )
             {
                 transaction.TransactionCode = referencePaymentInfo.TransactionCode;
             }
@@ -534,7 +544,7 @@ namespace Rock.Financial
         public override string GetReferenceNumber( FinancialTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-            return string.Empty;
+            return transaction.TransactionCode;
         }
 
         /// <summary>
@@ -739,6 +749,59 @@ namespace Rock.Financial
         }
 
         #endregion IFeeCoverageGatewayComponent
+
+        #region ISettlementGateway
+
+        private static readonly Guid SettlementBatchGuid = new Guid( "3cf3913f-20cd-4d34-8af6-4af54c85fe4a" );
+
+        /// <inheritdoc/>
+        public int? GetSettlementBatchId( FinancialGateway financialGateway, FinancialTransaction financialTransaction )
+        {
+            if ( !GetAttributeValue( financialGateway, AttributeKey.EnableSettlementMode ).AsBoolean() )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var batchService = new FinancialBatchService( rockContext );
+                var batchId = batchService.GetId( SettlementBatchGuid );
+
+                if ( batchId.HasValue )
+                {
+                    return batchId;
+                }
+
+                var batch = new FinancialBatch
+                {
+                    Name = "Test Gateway Settlement",
+                    BatchStartDateTime = RockDateTime.Now,
+                    Status = BatchStatus.Open,
+                    Guid = SettlementBatchGuid,
+                    IsAutomated = true
+                };
+
+                batchService.Add( batch );
+
+                var batchChanges = new History.HistoryChangeList();
+                FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
+
+                rockContext.SaveChanges();
+
+                // Save the changes history for the batch
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( FinancialBatch ),
+                    SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                    batch.Id,
+                    batchChanges
+                );
+
+                return batch.Id;
+            }
+        }
+
+        #endregion
     }
 
 #if REVIEW_WEBFORMS
@@ -861,7 +924,7 @@ namespace Rock.Financial
         {
             base.CreateChildControls();
 
-            var pnlRow1 = new Panel { CssClass = "row margin-t-md margin-b-lg" };
+            var pnlRow1 = new Panel { CssClass = "row form-row margin-t-md margin-b-lg" };
             this.Controls.Add( pnlRow1 );
 
             var pnlRow1Col1 = new Panel { CssClass = "col-md-6" };

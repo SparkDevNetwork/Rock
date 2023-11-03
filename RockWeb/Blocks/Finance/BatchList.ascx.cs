@@ -34,30 +34,30 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    [DisplayName( "Batch List" )]
+    [DisplayName( "Batch List (Legacy)" )]
     [Category( "Finance" )]
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]
     [BooleanField( "Show Accounts Column", "Should the accounts column be displayed.", true, "", 2 )]
     [CodeEditorField( "Summary Lava Template", "The lava template for display the content for summary", CodeEditorMode.Lava, CodeEditorTheme.Rock, order: 3, defaultValue: @"
-         <div class='panel panel-block'>
-            <div class='panel-heading'>
-                <h1 class='panel-title'>Total Results</h1>
+         <div class=""panel panel-block"">
+            <div class=""panel-heading"">
+                <h1 class=""panel-title"">Total Results</h1>
             </div>
-            <div class='panel-body'>
+            <div class=""panel-body"">
                 {% assign totalAmount = 0 %}
                 {% for batchSummary in BatchSummary %}
-                <div class='row'>
-                    <div class='col-xs-8'>{{ batchSummary.FinancialAccount.Name }}</div>
-                    <div class='col-xs-4 text-right'>{{ batchSummary.TotalAmount | FormatAsCurrency }}</div>
+                <div class=""row"">
+                    <div class=""col-xs-8"">{{ batchSummary.FinancialAccount.Name }}</div>
+                    <div class=""col-xs-4 text-right"">{{ batchSummary.TotalAmount | FormatAsCurrency }}</div>
                 </div>
-                {% assign totalAmount = totalAmount | Plus: batchSummary.TotalAmount %}
+                {% assign totalAmount = totalAmount | Plus:batchSummary.TotalAmount %}
                 {% endfor %}
-                <div class='row'>
-                    <div class='col-xs-8'><b>Total: </div>
-                    <div class='col-xs-4 text-right'>
-                        {{ totalAmount | FormatAsCurrency }}
+                <div class=""row"">
+                    <div class=""col-xs-8""><b>Total:</b></div>
+                    <div class=""col-xs-4 text-right"">
+                        <b>{{ totalAmount | FormatAsCurrency }}</b>
                     </div>
                 </div>
             </div>
@@ -460,10 +460,10 @@ namespace RockWeb.Blocks.Finance
                         e.Row.AddCssClass( "js-has-transactions" );
                     }
 
-                    // Hide delete button if the batch is closed.
+                    // Hide delete button if the batch is closed or if the batch is automated
                     var deleteField = gBatchList.Columns.OfType<DeleteField>().First();
                     var cell = ( e.Row.Cells[gBatchList.GetColumnIndex( deleteField )] as DataControlFieldCell ).Controls[0];
-                    if ( batchRow.Status == BatchStatus.Closed && cell != null )
+                    if ( ( batchRow.Status == BatchStatus.Closed || batchRow.IsAutomated ) && cell != null )
                     {
                         cell.Visible = false;
                     }
@@ -769,6 +769,7 @@ namespace RockWeb.Blocks.Finance
                     Status = b.Status,
                     UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue ),
                     BatchNote = b.Note,
+                    IsAutomated = b.IsAutomated,
                     AccountSummaryList = b.Transactions
                         .SelectMany( t => t.TransactionDetails )
                         .GroupBy( d => d.AccountId )
@@ -1122,6 +1123,8 @@ namespace RockWeb.Blocks.Finance
                     return notes.ToString();
                 }
             }
+
+            public bool IsAutomated;
         }
 
         #endregion

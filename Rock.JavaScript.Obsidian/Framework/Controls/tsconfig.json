@@ -11,11 +11,12 @@
     ]
   },
   "include": [
-    "./*.ts",
-    "./*.obs"
+    "./**/*.ts",
+    "./**/*.obs"
   ],
   "references": [
     { "path": "../Core" },
+    { "path": "../Directives" },
     { "path": "../Enums" },
     { "path": "../Libs" },
     { "path": "../SystemGuids" }

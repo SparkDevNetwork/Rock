@@ -28,6 +28,7 @@ export const enum ConfigurationValueKey {
     IncludeInactive = "includeInactive",
     FilterCampusTypes = "filterCampusTypes",
     FilterCampusStatus = "filterCampusStatus",
+    ForceVisible = "forceVisible",
     SelectableCampuses = "selectableCampuses"
 }
 

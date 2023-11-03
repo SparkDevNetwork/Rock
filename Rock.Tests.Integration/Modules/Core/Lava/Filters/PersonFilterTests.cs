@@ -22,9 +22,10 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tests.Integration.Organization;
 using Rock.Tests.Shared;
 using Rock.Utility.Enums;
-using Rock.Tests.Integration;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
@@ -118,6 +119,131 @@ namespace Rock.Tests.Integration.Core.Lava
             TestHelper.AssertTemplateOutput( outputExpected,
                 template );
         }
+
+        #region Filter: NearestCampus
+
+        [TestMethod]
+        public void PersonNearestCampus_WithDefaultOptions_ReturnsSingleCampus()
+        {
+            var campusManager = CampusDataManager.Instance;
+            campusManager.AddCampusTestDataSet();
+
+            //var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+            var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
+
+            var template = @"
+{% person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' %}
+{% assign campus = person | NearestCampus %}
+Ted's Nearest Campus: {{ campus.Name }}
+{% endperson %}";
+            var outputExpected = "Ted's Nearest Campus: Main Campus";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        /// <summary>
+        /// Documentation Example: Nearest Campus.
+        /// </summary>
+        [TestMethod]
+        public void PersonNearestCampus_ReturningMultipleResults_ReturnsClosestCampusFirst()
+        {
+            var campusManager = CampusDataManager.Instance;
+            campusManager.AddCampusTestDataSet();
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
+
+            var template = @"
+{% person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' %}
+{% assign campus = person | NearestCampus %}
+The nearest campus to {{ person.NickName }} is: {{ campus.Name }}.
+<hr>
+{% assign campusList = person | NearestCampus:2 %}
+The two nearest campuses to {{ person.NickName }} are: {{ campusList | Select:'Name' | Join:',' }}.
+{% endperson %}
+";
+            var outputExpected = @"
+The nearest campus to Ted is: Main Campus.
+<hr>
+The two nearest campuses to Ted are: Main Campus, North Campus.
+";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        [TestMethod]
+        public void PersonNearestCampus_ReturningMultipleResults_ExcludesCampusWithUnknownGeoCode()
+        {
+            var campusManager = CampusDataManager.Instance;
+            campusManager.AddCampusTestDataSet();
+
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+            var options = new LavaTestRenderOptions { MergeFields = values, EnabledCommands = "RockEntity" };
+
+            // Request all campuses, and verify that the Online campus is excluded from the result
+            // because it has no GeoCode information.
+            var template = @"
+{% person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' %}
+{% assign campusList = person | NearestCampus:99 %}
+Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
+{% endperson %}";
+
+            var outputExpected = "Ted's Nearest Campuses: Main Campus, North Campus, South Campus";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        [TestMethod]
+        public void PersonNearestCampus_ForPersonWithNoMappedLocation_ReturnsEmptyResultSet()
+        {
+            var campusManager = CampusDataManager.Instance;
+            campusManager.AddCampusTestDataSet();
+
+            // Add a new Person with no Location.
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            var testPersonGuidString = "0875D029-FE06-409F-A7D0-CEDBE18D454F";
+
+            var person = personService.Get( testPersonGuidString );
+            if ( person != null )
+            {
+                TestDataHelper.DeletePersonByGuid( new List<Guid> { testPersonGuidString.AsGuid() } );
+            }
+
+            person = new Person()
+            {
+                Guid = testPersonGuidString.AsGuid(),
+                RecordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ),
+                FirstName = "John",
+                LastName = "Smith"
+            };
+
+            PersonService.SaveNewPerson( person, rockContext );
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
+
+            var template = @"
+{% person where:'[Guid] == ""<testPersonGuid>""' %}
+{% assign campus = person | NearestCampus %}
+{{ person.NickName }}'s Nearest Campus: {% if campus == null %}Unknown{% endif %}
+{% endperson %}";
+
+            template = template.Replace( "<testPersonGuid>", testPersonGuidString );
+
+            var outputExpected = "John's Nearest Campus: Unknown";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        #endregion
 
         [TestMethod]
         public void PersonChildren_ForParent_ReturnsAllChildren()
@@ -484,7 +610,10 @@ User is in Role = {{ isInRole }}
                 GroupTypeIdentifier = SystemGuid.GroupType.GROUPTYPE_GENERAL,
             };
 
-            var group = TestDataHelper.Crm.AddGroup( rockContext, addGroupArgs );
+            TestDataHelper.Crm.AddGroup( addGroupArgs );
+
+            var groupService = new GroupService( rockContext );
+            var group = groupService.Queryable().GetByIdentifierOrThrow( _TestSecurityGroupGuid );
 
             group.IsSecurityRole = true;
             rockContext.SaveChanges();
@@ -493,10 +622,11 @@ User is in Role = {{ isInRole }}
             var addGroupMemberArgs = new TestDataHelper.Crm.AddGroupMemberArgs
             {
                 GroupIdentifier = _TestSecurityGroupGuid,
-                PersonIdentifier = TestGuids.TestPeople.AlishaMarble,
+                PersonIdentifiers = TestGuids.TestPeople.AlishaMarble,
                 GroupRoleIdentifier = "Member"
             };
-            TestDataHelper.Crm.AddGroupMember( rockContext, addGroupMemberArgs );
+            TestDataHelper.Crm.AddGroupMembers( rockContext, addGroupMemberArgs );
+            rockContext.SaveChanges();
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.AlishaMarble.AsGuid() );
             values.AddOrReplace( "GroupId", group.Id );

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -203,7 +203,7 @@ namespace Rock.Rest.Controllers
             parameters.Add( "PersonId", personId );
             parameters.Add( "WeekDuration", weekCount );
 
-            var result = DbService.ExecuteScaler( "spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters );
+            var result = DbService.ExecuteScalar( "spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters );
             if ( result != null )
             {
                 return ( int ) result;
@@ -277,19 +277,22 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="personId">The person id.</param>
         /// <param name="monthCount">The month count.</param>
+        /// <param name="showAsIndividual">An optional parameter which if set to true, the attendance badge shows only the attendacne for the individual.
+        /// By default the attendance badge shows the attendance for family of the individual incase they happen to be an adult.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/Badges/FamilyAttendance/{personId}/{monthCount}" )]
-        [System.Web.Http.Route( "api/PersonBadges/FamilyAttendance/{personId}/{monthCount}" )]
+        [System.Web.Http.Route( "api/Badges/FamilyAttendance/{personId}/{monthCount}/{showAsIndividual?}" )]
+        [System.Web.Http.Route( "api/PersonBadges/FamilyAttendance/{personId}/{monthCount}/{showAsIndividual?}" )]
         [Rock.SystemGuid.RestActionGuid( "B4D861ED-1B7A-49F8-BEFF-79A8886DC1DB" )]
-        public IQueryable<MonthlyAttendanceSummary> GetFamilyAttendance( int personId, int monthCount )
+        public IQueryable<MonthlyAttendanceSummary> GetFamilyAttendance( int personId, int monthCount, bool showAsIndividual = false )
         {
             List<MonthlyAttendanceSummary> attendanceSummary = new List<MonthlyAttendanceSummary>();
 
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add( "PersonId", personId );
             parameters.Add( "MonthCount", monthCount );
+            parameters.Add( "ShowAsIndividual", showAsIndividual );
 
             var table = DbService.GetDataTable( "spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters );
 

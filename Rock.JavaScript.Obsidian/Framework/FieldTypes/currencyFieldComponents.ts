@@ -17,7 +17,7 @@
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import CurrencyBox from "@Obsidian/Controls/currencyBox";
+import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
 
 export const EditComponent = defineComponent({
     name: "CurrencyField.Edit",

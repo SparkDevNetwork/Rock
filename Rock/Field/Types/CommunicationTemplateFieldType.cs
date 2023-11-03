@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 #if WEBFORMS
@@ -23,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -31,11 +33,45 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a <see cref="CommunicationTemplate" />. Stored as the CommunicationTemplate's Guid.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.COMMUNICATION_TEMPLATE )]
     public class CommunicationTemplateFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
+        private const string ClientValues = "clientValues";
+
         #region Edit Control
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configuration = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( !configuration.ContainsKey( ClientValues ) )
+            {
+                var templates = new CommunicationTemplateService( new RockContext() ).Queryable().OrderBy( t => t.Name ).Select( a => new ListItemBag()
+                {
+                    Value = a.Guid.ToString(),
+                    Text = a.Name
+                } ).ToList();
+
+                if ( templates.Any() )
+                {
+                    configuration[ClientValues] = templates.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return configuration;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configuration = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            configuration.Remove( ClientValues );
+
+            return configuration;
+        }
 
         #endregion
 

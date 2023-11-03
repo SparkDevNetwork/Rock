@@ -113,7 +113,7 @@
                             <div class="navigation actions">
                                 <asp:LinkButton ID="btnGetPaymentInfoBack" runat="server" CssClass="btn btn-default" Text="Back" OnClick="btnGetPaymentInfoBack_Click" />
 
-
+                                <Rock:HiddenFieldWithClass ID="hfHostPaymentInfoSubmitScript" runat="server" CssClass="js-hosted-payment-script" />
                                 <%-- NOTE: btnGetPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
                                		Even though this is a LinkButton, btnGetPaymentInfoNext won't autopostback  (see $('.js-submit-hostedpaymentinfo').off().on('click').. )
                                 --%>
@@ -184,7 +184,7 @@
                             <Rock:NotificationBox ID="nbProcessTransactionError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
                             <div class="navigation actions margin-t-md">
-                                <asp:LinkButton ID="btnPersonalInformationBack" runat="server" CssClass="btn btn-default" Text="Back" OnClick="btnPersonalInformationBack_Click" />
+                                <asp:LinkButton ID="btnPersonalInformationBack" runat="server" CssClass="btn btn-default" Text="Back" CausesValidation="false" OnClick="btnPersonalInformationBack_Click" />
                                 <Rock:BootstrapButton ID="btnPersonalInformationNext" runat="server" CssClass="btn btn-primary pull-right" Text="Finish" OnClick="btnPersonalInformationNext_Click" />
                             </div>
                         </asp:Panel>
@@ -320,7 +320,8 @@
                     // Prevent the btnGetPaymentInfoNext autopostback event from firing by doing stopImmediatePropagation and returning false
                     e.stopImmediatePropagation();
 
-                    <%=HostPaymentInfoSubmitScript%>
+                    const hfHostedPaymentScript = document.querySelector(".js-hosted-payment-script");
+                    window.location = "javascript: " + hfHostedPaymentScript.value;
 
                     return false;
                 });

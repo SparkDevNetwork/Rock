@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Rock.RealTime.Client.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.1" />
+    <PackageReference Include="RestSharp" Version="110.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Rock.Enums">
+      <HintPath>..\..\..\Rock.Enums\bin\Debug\Rock.Enums.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock.RealTime.Client">
+      <HintPath>Rock.RealTime.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock.ViewModels">
+      <HintPath>..\..\..\Rock.ViewModels\bin\Debug\Rock.ViewModels.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

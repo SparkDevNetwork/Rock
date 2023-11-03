@@ -27,7 +27,9 @@ using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
+using Rock.Enums.Core;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
@@ -40,12 +42,13 @@ namespace Rock.Blocks.Types.Mobile.Core
     /// <summary>
     /// Displays entity notes to the user and allows adding new notes.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Notes" )]
     [Category( "Mobile > Core" )]
     [Description( "Displays entity notes to the user and allows adding new notes." )]
     [IconCssClass( "fa fa-sticky-note" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -78,14 +81,14 @@ namespace Rock.Blocks.Types.Mobile.Core
         Order = 3 )]
 
     [BooleanField( "Enable Group Notification",
-        Description = "If a Group is available through page context, this will send a communication to every person in a group (using their `CommunicationPreference`, and the `GroupNotificationCommunicationTemplate`), when a Note is added.",
+        Description = "If a Group is available through page context, this will send a communication to every person in a group (using the Member 'CommunicationPreference', and the 'GroupNotificationCommunicationTemplate'), when a Note is added.",
         IsRequired = true,
         DefaultBooleanValue = false,
         Key = AttributeKey.EnableGroupNotification,
         Order = 4 )]
 
     [CommunicationTemplateField( "Group Notification Communication Template",
-        Description = "The template to use to send the communication.Note  will be passed as a merge field.",
+        Description = "The template to use to send the communication. Note will be passed as an additional merge field.",
         IsRequired = false,
         Key = AttributeKey.GroupNotificationCommunicationTemplate,
         Order = 5 )]
@@ -145,7 +148,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [ContextAware]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_NOTES_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "5B337D89-A298-4620-A0BE-078A41BC054B" )]
-    public class Notes : RockMobileBlockType
+    public class Notes : RockBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileContent block.
@@ -290,21 +293,8 @@ namespace Rock.Blocks.Types.Mobile.Core
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 2;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Core.Notes";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 2 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -510,7 +500,6 @@ namespace Rock.Blocks.Types.Mobile.Core
                 }
 
                 var noteData = viewableNotes
-                    .OrderByDescending( n => n.CreatedDateTime )
                     .Select( a => GetNoteObject( a ) )
                     .ToList();
 
@@ -636,7 +625,8 @@ namespace Rock.Blocks.Types.Mobile.Core
                 {
                     a.Guid,
                     a.Name,
-                    a.UserSelectable
+                    a.UserSelectable,
+                    IsMentionEnabled = a.FormatType != Enums.Core.NoteFormatType.Unstructured && a.IsMentionEnabled
                 } );
 
             return ActionOk( new
@@ -696,7 +686,8 @@ namespace Rock.Blocks.Types.Mobile.Core
                     NoteTypeName = note.NoteType.Name,
                     NoteTypeGuid = note.NoteType.Guid,
                     IsAlert = note.IsAlert ?? false,
-                    IsPrivate = note.IsPrivateNote
+                    IsPrivate = note.IsPrivateNote,
+                    Date = note.CreatedDateTime.HasValue ? ( DateTimeOffset? ) new DateTimeOffset( note.CreatedDateTime.Value ) : null
                 } );
             }
         }
@@ -796,29 +787,21 @@ namespace Rock.Blocks.Types.Mobile.Core
                     }
                 }
 
+                var mentionedPersonIds = noteType.FormatType != NoteFormatType.Unstructured && noteType.IsMentionEnabled
+                    ? noteService.GetNewPersonIdsMentionedInContent( text, note.Text )
+                    : new List<int>();
+
                 note.Text = text;
                 note.IsAlert = isAlert;
 
                 note.EditedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
                 note.EditedDateTime = RockDateTime.Now;
 
-                if ( noteType.RequiresApprovals )
-                {
-                    if ( note.IsAuthorized( Authorization.APPROVE, RequestContext.CurrentPerson ) )
-                    {
-                        note.ApprovalStatus = NoteApprovalStatus.Approved;
-                        note.ApprovedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
-                        note.ApprovedDateTime = RockDateTime.Now;
-                    }
-                    else
-                    {
-                        note.ApprovalStatus = NoteApprovalStatus.PendingApproval;
-                    }
-                }
-                else
-                {
-                    note.ApprovalStatus = NoteApprovalStatus.Approved;
-                }
+#pragma warning disable CS0618 // Type or member is obsolete
+                // Set this so anything doing direct SQL queries will still find
+                // the right set of notes.
+                note.ApprovalStatus = NoteApprovalStatus.Approved;
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 rockContext.SaveChanges();
 
@@ -834,6 +817,19 @@ namespace Rock.Blocks.Types.Mobile.Core
                             SendNoteAddedCommunicationToGroup( contextGroupEntity.Value as Group, text );
                         } );
                     }
+                }
+
+                // If we have any new mentioned person ids, start a background
+                // task to create the notifications.
+                if ( mentionedPersonIds.Any() )
+                {
+                    Task.Run( () =>
+                    {
+                        foreach ( var personId in mentionedPersonIds )
+                        {
+                            NoteMention.CreateNotificationMessage( note, personId, RequestContext.CurrentPerson.Id, PageCache.Id, RequestContext.GetPageParameters() );
+                        }
+                    } );
                 }
 
                 return ActionOk( GetNoteObject( note ) );
@@ -905,7 +901,8 @@ namespace Rock.Blocks.Types.Mobile.Core
                     {
                         a.Guid,
                         a.Name,
-                        a.UserSelectable
+                        a.UserSelectable,
+                        IsMentionEnabled = a.FormatType != Enums.Core.NoteFormatType.Unstructured && a.IsMentionEnabled
                     } );
 
                 return ActionOk( new

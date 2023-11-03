@@ -1,10 +1,24 @@
 # The Integration Tests Project
 The goal of this project is to be a permanent place to store tests that require things such as a database context to fetch data, configuration settings, save data, etc.  At the moment, you (the developer) will run these tests when needed, but ultimately our automated build system (AppVeyor) will automatically run all these tests after every commit (or push to a particular branch). 
 
-** For general information about the Rock Test projects, refer to the README file in the Rock.Tests.UnitTests project.
+**For general information about the Rock Test projects, refer to the README file in the Rock.Tests.UnitTests project.**
 
 ## Configuring the Test Environment
-Configuration settings for the test environment are stored in the `integrationtests.runsettings` file.
+Settings for the test environment are configured in local `*.config` files.
+The `app.TestSettings.config` file stores file locations, test account details, and other configuration parameters relevant to executing tests.
+The `app.ConnectionStrings.config` file stores connection strings for the test databases.
+
+These files are not subject to source control, and they must be created manually on the local filesystem.
+To create the files, copy the corresponding `*.config.example` template file and modify the configuration settings for your local environment.
+
+### Test Environment Configuration
+
+**DataEncryptionKey**
+Sets the key used to encrypt/decrypt data in the Rock test database.
+The key must match the value used to create the database.
+**PasswordKey**
+Sets the key used to encrypt/decrypt passwords stored in the Rock test database.
+The key must match the value used to create the database.
 
 ### Test Database Configuration
 

@@ -128,6 +128,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlContent.Visible = isVisible;
             if ( isVisible )
             {
+                RockPage.AddCSSLink( "~/Styles/Blocks/Crm/GivingOverview.css", true );
                 ShowDetail();
             }
         }
@@ -200,11 +201,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void ShowMessageIfStale()
         {
-            /* 2021-09-30 MDP 
-              
-             Rules for when giving characteristics are considered stale 
+            /* 2021-09-30 MDP
 
-            Show the ‘stale’ message when the last gift was over { TypicalFrequency + 2* Frequency Standard Deviation }   days. 
+             Rules for when giving characteristics are considered stale
+
+            Show the ‘stale’ message when the last gift was over { TypicalFrequency + 2* Frequency Standard Deviation }   days.
 
             Message should be worded as:
 
@@ -250,7 +251,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var givingId = Person.GivingId;
 
             var threeYearsAgo = RockDateTime.Now.AddMonths( -35 ).StartOfMonth();
-            List<MonthlyAccountGivingHistory> threeYearsOfMonthlyAccountGiving = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistory( givingId, threeYearsAgo );
+            List<MonthlyAccountGivingHistory> threeYearsOfMonthlyAccountGiving = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistoryWithNegativeTransactions( givingId, threeYearsAgo );
 
             if ( threeYearsOfMonthlyAccountGiving.Any() )
             {
@@ -327,7 +328,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var oneYearAgo = RockDateTime.Now.AddMonths( -12 );
 
             var twelveMonthsTransactionsQry = financialTransactionService
-                    .GetGivingAutomationSourceTransactionQueryByGivingId( givingId )
+                    .GetGivingAutomationSourceTransactionQueryWithNegativeTransactionsByGivingId( givingId )
                     .Where( t => t.TransactionDateTime >= oneYearAgo );
 
             var twelveMonthTransactions = twelveMonthsTransactionsQry
@@ -380,7 +381,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             string growthPercentDisplay;
 
             // Show growth Percent
-            // If more than 1000% show HIGH or LOW 
+            // If more than 1000% show HIGH or LOW
             if ( growthPercent > 1000 )
             {
                 growthPercentDisplay = "HIGH";
@@ -525,7 +526,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                 $"{giftAmountIqr}",
                 "fa-fw fa-money-bill",
                 "left",
-                $"A typical gift amount has a median value of ${giftAmountMedian} with an IQR variance of ${giftAmountIqr}." );
+                $"A typical gift amount has a median value of ${giftAmountMedian} with a variability of ${giftAmountIqr}." );
 
             stringBuilder.Append( typicalGiftKpi );
 
@@ -540,7 +541,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                 giftFrequencyDaysMean + "d",
                 $"{PlusOrMinus}{giftFrequencyDaysStdDev}d",
                 "fa-fw fa-clock",
-                description: $"A typical gift frequency has a mean value of {giftFrequencyDaysMean} {giftFrequencyDaysMeanUnits} with a standard deviation variance of {giftFrequencyDaysStdDev} {giftFrequencyDaysStdDevUnits}." );
+                description: $"A typical gift frequency has a mean value of {giftFrequencyDaysMean} {giftFrequencyDaysMeanUnits} with a variability of {giftFrequencyDaysStdDev} {giftFrequencyDaysStdDevUnits}." );
 
             stringBuilder.Append( typicalFrequencyKpi );
 
@@ -683,7 +684,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                     startDate = null;
                 }
 
-                var monthlyAccountGivingHistoryList = new FinancialTransactionService( rockContext ).GetGivingAutomationMonthlyAccountGivingHistory( givingId, startDate );
+                var monthlyAccountGivingHistoryList = new FinancialTransactionService( rockContext ).GetGivingAutomationMonthlyAccountGivingHistoryWithNegativeTransactions( givingId, startDate );
 
                 var financialAccounts = new FinancialAccountService( rockContext ).Queryable()
                     .AsNoTracking()

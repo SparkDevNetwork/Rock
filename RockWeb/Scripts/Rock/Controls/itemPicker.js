@@ -105,7 +105,7 @@
                         self.scrollToSelectedItem();
                     });
 
-                $control.find('a.picker-label').on('click', function (e) {
+                $control.find('.picker-label').on('click', function (e) {
                     e.preventDefault();
                     $(this).toggleClass("active");
                     $control.find('.picker-menu').first().toggle(0, function () {
@@ -118,7 +118,7 @@
                     $(this).closest('.picker-menu').toggle(0, function () {
                         self.updateScrollbar();
                     });
-                    $(this).closest('a.picker-label').toggleClass("active");
+                    $(this).closest('.picker-label').toggleClass("active");
                 });
 
                 // have the X appear on hover if something is selected
@@ -151,11 +151,12 @@
                     $spanNames.text(selectedNames.join(', '));
                     $spanNames.attr('title', $spanNames.text());
 
-                    $(this).closest('a.picker-label').toggleClass("active");
+                    $(this).closest('.picker-label').toggleClass("active");
                     $(this).closest('.picker-menu').toggle(0, function () {
                         self.updateScrollbar();
                     });
 
+                    $(this).trigger('onclick');
                     if (!(el && el.originalEvent && el.originalEvent.srcElement == this)) {
                         // if this event was called by something other than the button itself, make sure the execute the href (which is probably javascript)
                         var jsPostback = $(this).attr('href');
@@ -166,20 +167,22 @@
                 });
 
                 $control.find('.picker-select-none').on("click", function (e) {
+                    e.preventDefault();
                     e.stopImmediatePropagation();
+
                     var rockTree = $control.find('.treeview').data('rockTree');
                     rockTree.clear();
                     $hfItemIds.val('0').trigger('change'); // .trigger('change') is used to cause jQuery to fire any "onchange" event handlers for this hidden field.
                     $hfItemNames.val('');
 
                     // don't have the X appear on hover. nothing is selected
-                    $control.find('.picker-select-none').removeClass('rollover-item');
-                    $control.find('.picker-select-none').hide();
+                    $control.find('.picker-select-none').removeClass('rollover-item').hide();
 
                     $control.siblings('.js-hide-on-select-none').hide();
 
                     $spanNames.text(self.options.defaultText);
                     $spanNames.attr('title', $spanNames.text());
+                    $(this).trigger('onclick');
                 });
 
                 // clicking on the 'select all' btn

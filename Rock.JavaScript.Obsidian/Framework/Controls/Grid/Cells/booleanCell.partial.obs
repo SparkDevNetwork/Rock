@@ -1,0 +1,20 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <i v-if="isTrue" class="fa fa-check"></i>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { computed } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    const isTrue = computed(() => {
+        if (props.column.field) {
+            return props.row[props.column.field] === true;
+        }
+        else {
+            return false;
+        }
+    });
+</script>

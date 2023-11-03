@@ -1,0 +1,244 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <input :value="modelValue"
+           autocomplete="one-time-code"
+           :autofocus="boxIndex === 0"
+           :class="`rock-code-box-${boxIndex + 1} form-control flex-grow-1 flex-sm-grow-0 flex-shrink-1 ${boxIndex > 0 ? 'ml-1' : ''}`"
+           :disabled="disabled"
+           :id="`${uniqueId}-${boxIndex + 1}`"
+           :maxlength="maxLength"
+           ref="inputElement"
+           type="text"
+           @paste="onPaste"
+           @keydown="onKeydown" />
+</template>
+
+<style scoped>
+.rock-code-box input {
+    width: 47px;
+    height: 64px;
+    text-align: center;
+    font-size: 24px;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, PropType, onMounted } from "vue";
+    import { CodeBoxCharacterController } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: false,
+            default: null
+        },
+
+        boxIndex: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        uniqueId: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        allowedChars: {
+            type: Object as PropType<RegExp>,
+            required: false,
+            default: /^[a-zA-Z0-9]$/
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
+        maxLength: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void,
+        (e: "pasteValues", value: string): void,
+        (e: "clear", boxIndex: number): void,
+        (e: "move", boxIndex: number): void,
+        (e: "complete"): void,
+        (e: "ready", value: CodeBoxCharacterController): void
+    }>();
+
+    //#region Values
+
+    const inputElement = ref();
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Event handler for the "paste" event. */
+    function onPaste(_event: Event): void {
+        // The "paste" event is handled before the input is updated with the pasted value.
+        // Temporarily store the original input value
+        // and clear it so the pasted content overwrites the previous content.
+        const originalValue = inputElement.value.value;
+        inputElement.value.value = "";
+
+        // Wait for the "paste" event to result in an input change,
+        // then process the pasted value.
+        onNextInput((event: InputEvent): void => {
+            // Revert the pasted value to the original value (stored above),
+            // and let the parent codeBox handle the pasted value
+            // so it can update the individual codeBoxCharacter components.
+            const pastedValue: string = inputElement.value.value;
+            inputElement.value.value = originalValue;
+
+            // If the full code was pasted into any code box,
+            // and if the characters are all valid,
+            // then paste the values across all code boxes.
+            if (pastedValue.length === props.maxLength && pastedValue.split("").every(pastedCharacter => props.allowedChars.test(pastedCharacter))) {
+                // This will leave the pasted value in the current text box.
+                emit("pasteValues", pastedValue);
+                emit("complete");
+            }
+
+            // If an invalid or incomplete code is pasted into the field,
+            // then prevent the event from bubbling up.
+            event.preventDefault();
+            return;
+        });
+    }
+
+    /** Event handler for the "keydown" event. */
+    function onKeydown(event: KeyboardEvent): void {
+        const value = inputElement.value.value;
+        // KeyboardEvent.key values can be found at - https://www.w3.org/TR/uievents-key/#named-key-attribute-values.
+        const key = {
+            backspace: "Backspace",
+            delete: "Delete",
+            enter: "Enter"
+        } as const;
+        // Legacy KeyboardEvent.keyCode documentation can be found at - https://www.w3.org/TR/uievents/#dom-keyboardevent-keycode.
+        // Some KeyboardEvent.keyCode values can be found at - https://www.w3.org/TR/uievents/#fixed-virtual-key-codes.
+        const keyCode = {
+            backspace: 8,
+            delete: 46,
+            enter: 13
+        } as const;
+
+        // First check the `key` property.
+        // If this is an older supported browser,
+        // then fallback to checking the `keyCode` then `charCode` properties.
+        const isBackspace = event.key === key.backspace || event.keyCode === keyCode.backspace || event.charCode === keyCode.backspace;
+        const isDelete = event.key === key.delete || event.keyCode === keyCode.delete || event.charCode === keyCode.delete;
+        const isEnter = event.key === key.enter || event.keyCode === keyCode.enter || event.charCode === keyCode.enter;
+
+        // Allow Backspace and Delete if the input has a value.
+        if ((isBackspace || isDelete) && value.length >= 1) {
+            // Update the model value on the next "input" event.
+            onNextInput(() => {
+                emit("update:modelValue", inputElement.value.value);
+            });
+
+            return;
+        }
+
+        // If Backspace was pressed and this input is empty,
+        // then clear the previous code box and set focus to it.
+        if (isBackspace) {
+            if (props.boxIndex > 0) {
+                emit("clear", props.boxIndex - 1);
+                emit("move", props.boxIndex - 1);
+            }
+
+            event.preventDefault();
+            return;
+        }
+
+        // Allow the Enter key to submit a form if this is a child element of a form with a submit button.
+        if (isEnter) {
+            return;
+        }
+
+        // Prevent more than one character from being entered manually into the box.
+        if (value.length >= 1 && !event.ctrlKey) {
+            event.preventDefault();
+            return;
+        }
+
+        // If the input is empty and a valid key was pressed,
+        // then update the input and either move to the next input
+        // or emit a "complete" event.
+        if (!event.ctrlKey) {
+            // Process the value after the keypress results in an input change.
+            onNextInput(() => {
+                // Emit the "update:modelValue" update event before the "complete" event below.
+                emit("update:modelValue", inputElement.value.value);
+
+                // Move to the next box if this isn't the last one.
+                if (props.boxIndex < props.maxLength - 1) {
+                    emit("move", props.boxIndex + 1);
+                }
+                // Complete if this is the last one.
+                else if (props.boxIndex === props.maxLength - 1) {
+                    emit("complete");
+                }
+            });
+        }
+    }
+
+    /**
+     * Event handler when for when the input value changes.
+     * @param event
+     */
+    function onInputChanged(event): void {
+        const pastedValue: string = event.target.value;
+
+        // If the full code was pasted into any code box,
+        // and if the characters are all valid,
+        // then paste the values across all code boxes.
+        if (pastedValue.length === props.maxLength && pastedValue.split("").every(pastedCharacter => props.allowedChars.test(pastedCharacter))) {
+            // This will leave the pasted value in the current text box.
+            emit("pasteValues", pastedValue);
+            emit("complete");
+        }
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    /** Adds a one-time "input" event handler that will be executed before the `onInputChanged` event handler. */
+    function onNextInput(inputEventListener: (event: InputEvent) => void): void {
+        function deregisteringInputEventHandler(event: InputEvent): void {
+            inputElement.value.removeEventListener("input", deregisteringInputEventHandler);
+            inputEventListener(event);
+        }
+
+        // Configure the callback to preprocess the "input" event.
+        inputElement.value.removeEventListener("input", onInputChanged);
+        inputElement.value.addEventListener("input", deregisteringInputEventHandler);
+        inputElement.value.addEventListener("input", onInputChanged);
+    }
+
+    //#endregion
+
+    onMounted(() => {
+        // Add the "input" event handler here instead of in the template
+        // so that it is clear that we manually manage the "input" event handlers.
+        inputElement.value.addEventListener("input", onInputChanged);
+
+        // Emit the codeBoxCharacter controller object once this component is ready.
+        emit("ready", {
+            focus(): void {
+                inputElement.value.focus();
+            },
+            clear(): void {
+                emit("update:modelValue", "");
+            },
+            boxIndex: props.boxIndex
+        });
+    });
+</script>

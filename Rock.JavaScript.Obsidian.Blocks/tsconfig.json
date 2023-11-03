@@ -20,14 +20,16 @@
     "jsx": "preserve",
     "lib": [
       "DOM",
+      "DOM.Iterable",
       "ES2016",
-      "ES2020.Symbol.WellKnown" /* Fixes compile issue in Vue declaration files, not actually in use. */
+      "ES2020.Symbol.WellKnown"
     ],
     "paths": {
       "@Obsidian/Controls/*": [ "../Rock.JavaScript.Obsidian/Framework/Controls/*" ],
       "@Obsidian/Core/*": [ "../Rock.JavaScript.Obsidian/Framework/Core/*" ],
       "@Obsidian/Directives/*": [ "../Rock.JavaScript.Obsidian/Framework/Directives/*" ],
       "@Obsidian/Enums/*": [ "../Rock.JavaScript.Obsidian/Framework/Enums/*" ],
+      "@Obsidian/FieldTypes/*": [ "../Rock.JavaScript.Obsidian/Framework/FieldTypes/*" ],
       "@Obsidian/Libs/*": [ "../Rock.JavaScript.Obsidian/Framework/Libs/*" ],
       "@Obsidian/PageState": [ "../Rock.JavaScript.Obsidian/Framework/PageState" ],
       "@Obsidian/SystemGuids/*": [ "../Rock.JavaScript.Obsidian/Framework/SystemGuids/*" ],
@@ -45,6 +47,7 @@
     { "path": "../Rock.JavaScript.Obsidian/Framework/Core" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/Directives" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/Enums" },
+    { "path": "../Rock.JavaScript.Obsidian/Framework/FieldTypes" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/Libs" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/PageState" },
     { "path": "../Rock.JavaScript.Obsidian/Framework/SystemGuids" },

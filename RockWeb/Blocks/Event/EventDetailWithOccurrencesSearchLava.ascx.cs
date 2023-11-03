@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Event
 
             var eventItem = new EventItemService( new RockContext() ).Get( eventItemId );
             string eventLavaTemplate = this.GetAttributeValue( "EventLavaTemplate" );
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "Event", eventItem );
 
             lEventDetails.Text = eventLavaTemplate.ResolveMergeFields( mergeFields );

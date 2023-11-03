@@ -36,9 +36,10 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Engagement.SignUp
 {
     [DisplayName( "Sign-Up Detail" )]
-    [Category( "Obsidian > Engagement > Sign-Up" )]
+    [Category( "Engagement > Sign-Up" )]
     [Description( "Block used to show the details of a sign-up group/project." )]
     [IconCssClass( "fa fa-clipboard-check" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -68,7 +69,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [Rock.SystemGuid.EntityTypeGuid( "3B92EA37-579A-4928-88C4-6A6808116D40" )]
     [Rock.SystemGuid.BlockTypeGuid( "432123B4-8FDD-4A2E-BAF7-927C2B049CAB" )]
-    public class SignUpDetail : RockObsidianBlockType
+    public class SignUpDetail : RockBlockType
     {
         #region Keys & Constants
 
@@ -130,12 +131,6 @@ namespace Rock.Blocks.Engagement.SignUp
     </div>
 {% endif %}";
         }
-
-        #endregion
-
-        #region Properties
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         #endregion
 

@@ -1,0 +1,83 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="filterBodyElement" class="grid-filter-popup-body">
+        <DropDownList v-model="searchMethod"
+                      inputClasses="mb-2"
+                      :showBlankItem="false"
+                      :items="searchTypeItems" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BooleanFilterMethod, BooleanFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/booleanFilterMethod";
+    import { standardFilterProps } from "@Obsidian/Core/Controls/grid";
+    import { BooleanSearchBag } from "@Obsidian/Types/Controls/grid";
+
+    const props = defineProps(standardFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: BooleanSearchBag | undefined): void
+    }>();
+
+    // #region Values
+
+    const searchMethod = ref(BooleanFilterMethod.All.toString());
+    const filterBodyElement = ref<HTMLElement | null>(null);
+
+    const searchTypeItems: ListItemBag[] = Object.keys(BooleanFilterMethodDescription).map(n => {
+        return {
+            value: n,
+            text: BooleanFilterMethodDescription[n]
+        };
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Constructs and emits the new modelValue for the component.
+     */
+    function updateModelValue(): void {
+        if (Number(searchMethod.value) === BooleanFilterMethod.All) {
+            return emit("update:modelValue", undefined);
+        }
+
+        const searchBag: BooleanSearchBag = {
+            method: Number(searchMethod.value) as BooleanFilterMethod
+        };
+
+        emit("update:modelValue", searchBag);
+    }
+
+    /**
+     * Updates our internal values based on the current modelValue property.
+     */
+    function updateSearchValues(): void {
+        if (props.modelValue && typeof props.modelValue === "object") {
+            const modelSearchBag = props.modelValue as Partial<BooleanSearchBag>;
+
+            if (modelSearchBag.method !== undefined) {
+                searchMethod.value = modelSearchBag.method.toString();
+
+                return;
+            }
+        }
+
+        searchMethod.value = BooleanFilterMethod.All.toString();
+    }
+
+    // #endregion
+
+    watch(() => props.modelValue, () => updateSearchValues());
+    watch([searchMethod], () => updateModelValue());
+
+    updateSearchValues();
+</script>

@@ -1,0 +1,345 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="tabbed-bar" :class="{ 'pills': props.type === 'pills' }">
+        <ul class="toolbar-nav" ref="toolbarNavElement">
+            <li v-for="tab in tabs" :class="{ active: isTabActive(tab) }">
+                <span class="title" @click.prevent="onSelectTab(tab)">
+                    {{ getTabText(tab) }}
+                </span>
+            </li>
+
+            <li class="more-items">
+                <DropDownMenu :items="overflowTabActions" align="right">
+                    <span class="title text-muted">More <i class="fa fa-chevron-down"></i></span>
+                </DropDownMenu>
+            </li>
+        </ul>
+    </div>
+</template>
+
+<style scoped>
+.tabbed-bar {
+    border-bottom: 6px solid #dedede;
+    padding: 0 24px;
+}
+
+.tabbed-bar > .toolbar-nav {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    margin-bottom: -6px;
+    list-style-type: none;
+}
+
+.tabbed-bar > .toolbar-nav > li {
+    display: inline-block;
+    padding: 8px 12px;
+    border-bottom: 6px solid transparent;
+    white-space: nowrap;
+    transition: border-bottom-color 0.25s ease;
+}
+
+.tabbed-bar > .toolbar-nav > li:hover {
+    border-bottom-color: #cecece;
+}
+
+.tabbed-bar > .toolbar-nav > li.active {
+    border-bottom-color: var(--color-primary, #a8a8a8);
+}
+
+.tabbed-bar > .toolbar-nav > li .title {
+    display: inline-block;
+    padding: 4px 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.tabbed-bar > .toolbar-nav > li > a {
+    color: #000;
+}
+
+.tabbed-bar > .toolbar-nav > li.more-items {
+    font-weight: initial;
+}
+
+.tabbed-bar > .toolbar-nav > li.more-items .fa {
+    margin-left: 8px;
+}
+
+/* Pills overrides. */
+.tabbed-bar.pills {
+    margin-bottom: 0;
+    border-bottom: 0;
+}
+
+.tabbed-bar.pills > .toolbar-nav > li {
+    padding: 0 6px;
+    border-bottom: 0;
+}
+
+.tabbed-bar.pills > .toolbar-nav > li .title {
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.tabbed-bar.pills > .toolbar-nav > li:hover .title {
+    background-color: #f5f5f5;
+}
+
+.tabbed-bar.pills > .toolbar-nav > li.active .title {
+    background-color: var(--color-primary, #a8a8a8);
+    color: #fff;
+}
+
+/* Drop Down Menu button overrides. */
+.tabbed-bar > .toolbar-nav > li.more-items :deep(.btn-overflow) {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        /** The currently selected tab. */
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The list of tab names to be displayed. */
+        tabs: {
+            type: Array as PropType<string[] | ListItemBag[]>,
+            required: true
+        },
+
+        /** The type of tab bar to display. */
+        type: {
+            type: String as PropType<"tabs" | "pills">,
+            default: "tabs"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void
+    }>();
+
+    const toolbarNavElement = ref<HTMLElement>();
+    const selectedTab = useVModelPassthrough(props, "modelValue", emit);
+    const overflowTabs = ref<ListItemBag[]>([]);
+    let resizeObserver: ResizeObserver | undefined;
+    let resizeTimer: number | undefined;
+
+    // #region Computed Values
+
+    /**
+     * Contains a list of menu actions that represent all the tabs that have
+     * overflown the container and are not directly visible.
+     */
+    const overflowTabActions = computed((): MenuAction[] => {
+        return overflowTabs.value.map((tab: ListItemBag) => {
+            return {
+                type: "default",
+                title: getTabText(tab),
+                handler: () => {
+                    selectedTab.value = getTabValue(tab);
+                }
+            };
+        });
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the provided tab's value.
+     *
+     * @param tab The tab, which could be a string or list item bag.
+     */
+    function getTabValue(tab: string | ListItemBag): string {
+        return typeof tab === "object" ? tab.value ?? "" : tab;
+    }
+
+    /**
+     * Gets the provided tab's [friendly] text.
+     *
+     * @param tab The tab, which could be a string or list item bag.
+     */
+    function getTabText(tab: string | ListItemBag): string {
+        return typeof tab === "object" ? tab.text ?? "" : tab;
+    }
+
+    /**
+     * Gets whether provided tab is currently active.
+     *
+     * @param tab The tab, which could be a string or a list item bag.
+     */
+    function isTabActive(tab: string | ListItemBag): boolean {
+        return getTabValue(tab) === selectedTab.value;
+    }
+
+    /**
+     * Install or remove the overflow observer. If we are on a recent browser
+     * then we use the ResizeObserver. Otherwise use a timer.
+     */
+    function updateOverflowObserver(): void {
+        if (window.ResizeObserver) {
+            if (toolbarNavElement.value && !resizeObserver) {
+                resizeObserver = new ResizeObserver(updateOverflowTabs);
+                resizeObserver.observe(toolbarNavElement.value);
+            }
+            else if (!toolbarNavElement.value && resizeObserver) {
+                resizeObserver.disconnect();
+                resizeObserver = undefined;
+            }
+        }
+        else {
+            if (toolbarNavElement.value && resizeTimer === undefined) {
+                resizeTimer = window.setInterval(updateOverflowTabs, 1000);
+            }
+            else if (!toolbarNavElement.value && resizeTimer !== undefined) {
+                clearInterval(resizeTimer);
+                resizeTimer = undefined;
+            }
+        }
+    }
+
+    /**
+     * Updates which tabs are overflowing and adjusts which tabs are visible.
+     */
+    function updateOverflowTabs(): void {
+        // With 12 tabs when all are visible and fit, this function takes
+        // <1ms.
+        //
+        // With 12 tabs when nearly all are hidden because of a small screen,
+        // this function takes about 4ms. This is due to the clone operation
+        // and having to add/remove the clone from the DOM.
+
+        if (!toolbarNavElement.value) {
+            return;
+        }
+
+        const elementWidths: number[] = [];
+        const barWidth = toolbarNavElement.value.getBoundingClientRect().width;
+        let requiredWidth = 0;
+
+        for (let i = 0; i < toolbarNavElement.value.children.length; i++) {
+            let child = toolbarNavElement.value.children[i];
+            let box = child.getBoundingClientRect();
+
+            // If the item is hidden, clone it so we can get the actual size.
+            if (box.width === 0) {
+                const clone = child.cloneNode(true) as HTMLElement;
+                clone.style.display = "";
+                clone.style.visibility = "hidden";
+                clone.style.position = "absolute";
+                toolbarNavElement.value.appendChild(clone);
+                box = clone.getBoundingClientRect();
+                clone.remove();
+            }
+
+            elementWidths.push(box.width);
+        }
+
+        // Get the width of each tab, except the "More" tab.
+        for (let i = 0; i < elementWidths.length - 1; i++) {
+            requiredWidth += elementWidths[i];
+        }
+
+        if (requiredWidth < barWidth) {
+            // Everything fits so make everything except the "More" tab visible.
+            for (let i = 0; i < toolbarNavElement.value.children.length; i++) {
+                const child = toolbarNavElement.value.children[i] as HTMLElement;
+
+                child.style.display = i < toolbarNavElement.value.children.length - 1
+                    ? ""
+                    : "none";
+            }
+        }
+        else {
+            // Get the total width of all tabs, including the "More" tab.
+            let totalWidth = requiredWidth + elementWidths[elementWidths.length - 1];
+            const tabsToOverflow: number[] = [];
+            const selectedTabIndex = props.tabs
+                .findIndex((tab: string | ListItemBag) => getTabValue(tab) === selectedTab.value);
+
+            // Start hiding tabs from the end.
+            for (let i = elementWidths.length - 1; i >= 0; i--) {
+                const child = toolbarNavElement.value.children[i] as HTMLElement;
+
+                // The "More" tab should always be visible.
+                if (i === elementWidths.length - 1) {
+                    child.style.display = "";
+                    continue;
+                }
+
+                // The currently selected tab should always be visible.
+                if (i === selectedTabIndex) {
+                    child.style.display = "";
+                    continue;
+                }
+
+                // If we have room for all the remaining tabs then display
+                // this tab, otherwise hide it.
+                if (totalWidth <= barWidth) {
+                    child.style.display = "";
+                }
+                else {
+                    tabsToOverflow.push(i);
+                    child.style.display = "none";
+                    totalWidth -= elementWidths[i];
+                }
+            }
+
+            overflowTabs.value = props.tabs
+                .filter((_, idx) => tabsToOverflow.includes(idx))
+                .map((tab: string | ListItemBag) => {
+                    return typeof tab === "object"
+                        ? tab
+                        : {
+                            text: tab,
+                            value: tab
+                        };
+                });
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when a tab has been selected in the UI.
+     *
+     * @param tab The tab that was selected.
+     */
+    function onSelectTab(tab: string | ListItemBag): void {
+        selectedTab.value = getTabValue(tab);
+    }
+
+    // #endregion
+
+    // Make sure we have a valid selection.
+    if (!props.tabs.some((tab: string | ListItemBag) => getTabValue(tab) === selectedTab.value)) {
+        // Select the first tab (if any were provided).
+        selectedTab.value = props.tabs.length
+            ? getTabValue(props.tabs[0])
+            : "";
+    }
+
+    watch(toolbarNavElement, updateOverflowObserver);
+
+    // Any time the selected tab changes or our list of tabs change then we
+    // need to recalculate the overflow tabs.
+    watch([selectedTab, () => props.tabs], () => {
+        nextTick(updateOverflowTabs);
+    });
+</script>

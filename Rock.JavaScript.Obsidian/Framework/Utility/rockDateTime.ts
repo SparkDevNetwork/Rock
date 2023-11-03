@@ -306,7 +306,7 @@ export class RockDateTime {
      * The day of the year represented by this instance.
      */
     public get dayOfYear(): number {
-        return this.dateTime.year;
+        return this.dateTime.ordinal;
     }
 
     /**
@@ -565,7 +565,9 @@ export class RockDateTime {
      * @returns An ISO8601 formatted string.
      */
     public toISOString(): string {
-        return this.dateTime.toISO();
+        // We never create an instance of RockDateTime if dateTime is not valid
+        // and that is the only time toISO() would return null.
+        return <string>this.dateTime.toISO();
     }
 
     /**
@@ -634,7 +636,9 @@ export class RockDateTime {
      * @returns A new string that conforms to RFC 1123
      */
     public toHTTPString(): string {
-        return this.dateTime.toHTTP();
+        // We never create an instance of RockDateTime if dateTime is not valid
+        // and that is the only time toHTTP() would return null.
+        return <string>this.dateTime.toHTTP();
     }
 
     /**
@@ -690,6 +694,39 @@ export class RockDateTime {
      */
     public isEarlierThan(otherDateTime: RockDateTime): boolean {
         return this.dateTime.toMillis() < otherDateTime.dateTime.toMillis();
+    }
+
+    /**
+     * Calculates the elapsed time between this date and the reference date and
+     * returns that difference in a human friendly way.
+     *
+     * @param otherDateTime The reference date and time. If not specified then 'now' is used.
+     *
+     * @returns A string that represents the elapsed time.
+     */
+    public humanizeElapsed(otherDateTime?: RockDateTime): string {
+        otherDateTime = otherDateTime ?? RockDateTime.now();
+
+        const totalSeconds = Math.floor((otherDateTime.dateTime.toMillis() - this.dateTime.toMillis()) / 1000);
+
+        if (totalSeconds <= 1) {
+            return "right now";
+        }
+        else if (totalSeconds < 60) { // 1 minute
+            return `${totalSeconds} seconds ago`;
+        }
+        else if (totalSeconds < 3600) { // 1 hour
+            return `${Math.floor(totalSeconds / 60)} minutes ago`;
+        }
+        else if (totalSeconds < 86400) { // 1 day
+            return `${Math.floor(totalSeconds / 3600)} hours ago`;
+        }
+        else if (totalSeconds < 31536000) { // 1 year
+            return `${Math.floor(totalSeconds / 86400)} days ago`;
+        }
+        else {
+            return `${Math.floor(totalSeconds / 31536000)} years ago`;
+        }
     }
 
     // #endregion

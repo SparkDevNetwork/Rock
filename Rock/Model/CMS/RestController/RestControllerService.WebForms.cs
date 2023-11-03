@@ -95,6 +95,33 @@ namespace Rock.Model
                 return;
             }
 
+            // Look for any duplicate rest action unique identifiers and log
+            // them for the developer to look into.
+            var duplicateActionIdentifiers = explorer.ApiDescriptions
+                .Select( d => d.ActionDescriptor as ReflectedHttpActionDescriptor )
+                .Where( d => d != null )
+                .Select( d => new
+                {
+                    d.MethodInfo,
+                    d.MethodInfo?.GetCustomAttribute<Rock.SystemGuid.RestActionGuidAttribute>( inherit: false )?.Guid,
+                    d.ControllerDescriptor.ControllerType,
+                    d.MethodInfo.Name
+                } )
+                .Where( d => d.Guid.HasValue )
+                .GroupBy( d => d.Guid.Value )
+                // Only include groups with duplicate guids.
+                .Where( g => g.Count() > 1 )
+                // Only include groups where the duplicates aren't the same method.
+                .Where( g => g.GroupBy( d => d.MethodInfo ).Count() > 1 )
+                .ToList();
+
+            foreach ( var duplicateIdentifier in duplicateActionIdentifiers )
+            {
+                var methods = duplicateIdentifier.Select( d => $"{d.ControllerType.FullName}.{d.Name}" ).JoinStrings( " and " );
+
+                ExceptionLogService.LogException( new Exception( $"Found duplicate rest action guid '{duplicateIdentifier.Key}' on {methods}" ) );
+            }
+
             foreach ( var apiDescription in explorer.ApiDescriptions )
             {
                 var reflectedHttpActionDescriptor = ( ReflectedHttpActionDescriptor ) apiDescription.ActionDescriptor;

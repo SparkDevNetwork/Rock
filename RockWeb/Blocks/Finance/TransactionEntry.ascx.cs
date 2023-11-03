@@ -42,9 +42,9 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Add a new one-time or scheduled transaction
     /// </summary>
-    [DisplayName( "Transaction Entry" )]
+    [DisplayName( "Transaction Entry (Legacy)" )]
     [Category( "Finance" )]
-    [Description( "Creates a new financial transaction or scheduled transaction." )]
+    [Description( "Creates a new financial transaction or scheduled transaction. This block has been replaced with the Utility Payment Entry block." )]
 
     #region Block Attributes
 
@@ -489,7 +489,7 @@ namespace RockWeb.Blocks.Finance
             public const string SuccessHeader = "SuccessHeader";
             public const string SuccessFooter = "SuccessFooter";
 
-            // Keep this as "PaymentComment" for backwords compatibility 
+            // Keep this as "PaymentComment" for backwords compatibility
             public const string PaymentCommentTemplate = "PaymentComment";
 
             public const string AnonymousGivingTooltip = "AnonymousGivingTooltip";
@@ -2392,7 +2392,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Person should never be null at this point.
-            if ( person != null ) 
+            if ( person != null )
             {
                 person.Email = txtBusinessContactEmail.Text;
 
@@ -3402,23 +3402,10 @@ namespace RockWeb.Blocks.Finance
             var batchService = new FinancialBatchService( rockContext );
 
             // Get the batch
-            var batch = batchService.Get(
-                GetAttributeValue( AttributeKey.BatchNamePrefix ),
-                paymentInfo.CurrencyTypeValue,
-                paymentInfo.CreditCardTypeValue,
-                transaction.TransactionDateTime.Value,
-                financialGateway.GetBatchTimeOffset() );
+            var batch = batchService.GetForNewTransaction( transaction, GetAttributeValue( AttributeKey.BatchNamePrefix ) );
 
             var batchChanges = new History.HistoryChangeList();
-
-            if ( batch.Id == 0 )
-            {
-                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-            }
+            FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
 
             transaction.LoadAttributes( rockContext );
 
@@ -3623,6 +3610,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void RegisterScript()
         {
+            RockPage.AddCSSLink( "~/Styles/Blocks/Shared/CardSprites.css", true );
             RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
 
             int oneTimeFrequencyId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
@@ -3759,7 +3747,7 @@ namespace RockWeb.Blocks.Finance
             if ( accountItem != null && txtAccountAmount != null )
             {
                 string accountHeaderTemplate = this.GetAttributeValue( AttributeKey.AccountHeaderTemplate );
-                var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
                 var account = FinancialAccountCache.Get( accountItem.Id );
                 mergeFields.Add( "Account", account );
                 txtAccountAmount.Label = accountHeaderTemplate.ResolveMergeFields( mergeFields );

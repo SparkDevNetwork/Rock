@@ -453,6 +453,32 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             }
         }
 
+        internal static FormFieldShowHide ToFormFieldShowHide( this WorkflowActionFormShowHideOption value )
+        {
+            switch ( value )
+            {
+                case WorkflowActionFormShowHideOption.Show:
+                    return FormFieldShowHide.Show;
+
+                case WorkflowActionFormShowHideOption.Hide:
+                default:
+                    return FormFieldShowHide.Hide;
+            }
+        }
+
+        internal static WorkflowActionFormShowHideOption ToShowHideOption( this FormFieldShowHide viewModel )
+        {
+            switch( viewModel )
+            {
+                case FormFieldShowHide.Show:
+                    return WorkflowActionFormShowHideOption.Show;
+
+                case FormFieldShowHide.Hide:
+                default:
+                    return WorkflowActionFormShowHideOption.Hide;
+            }
+        }
+
         /// <summary>
         /// Creates a view model representation of a <see cref="Rock.Field.FieldVisibilityRules"/> object.
         /// </summary>

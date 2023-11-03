@@ -33,12 +33,13 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <summary>
     /// Displays a list of interactive experience occurrences for the individual to pick from.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Experience Manager Occurrences" )]
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays a list of interactive experience occurrences for the individual to pick from." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -51,7 +52,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
     [Rock.SystemGuid.EntityTypeGuid( "08c31c15-7328-4759-b530-49c9d342cdb7" )]
     [Rock.SystemGuid.BlockTypeGuid( "b8be65ec-04cc-4423-944e-b6b30f6eb38c" )]
-    public class ExperienceManagerOccurrences : RockObsidianBlockType
+    public class ExperienceManagerOccurrences : RockBlockType
     {
         #region Keys
 
@@ -73,8 +74,6 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         }
 
         #endregion
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         #region Methods
 

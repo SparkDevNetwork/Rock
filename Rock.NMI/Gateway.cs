@@ -43,7 +43,7 @@ namespace Rock.NMI
     /// <summary>
     /// NMI Payment Gateway
     /// </summary>
-    [DisplayName( "NMI Gateway" )]
+    [DisplayName( "Celero/TransNational NMI Gateway" )]
     [Description( "" )]
 
     [Export( typeof( GatewayComponent ) )]
@@ -308,10 +308,16 @@ namespace Rock.NMI
 
                 var rootElement = CreateThreeStepRootDoc( financialGateway, "sale" );
 
+                // Fixes issue #5461 - NMI gateway expects currency amount in en-US/USD format.
+                // If this executes during a browser request and the browser was set to a difference
+                // locale then Amount.ToString() would output the value in that locale which could
+                // then be not recognized by NMI.
+                var englishCulture = System.Globalization.CultureInfo.CreateSpecificCulture( "en-US" );
+
                 rootElement.Add(
                     new XElement( "ip-address", paymentInfo.IPAddress ),
                     new XElement( "currency", "USD" ),
-                    new XElement( "amount", paymentInfo.Amount.ToString() ),
+                    new XElement( "amount", paymentInfo.Amount.ToString( englishCulture ) ),
                     new XElement( "order-description", paymentInfo.Description ),
                     new XElement( "tax-amount", "0.00" ),
                     new XElement( "shipping-amount", "0.00" ) );
@@ -2309,7 +2315,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         /// <inheritdoc/>
         public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
         {
-            return "/Obsidian/Controls/nmiGatewayControl.js";
+            return "/Obsidian/Controls/Internal/nmiGatewayControl.obs.js";
         }
 
         /// <inheritdoc/>

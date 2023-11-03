@@ -35,5 +35,10 @@ namespace Rock.ViewModels.Event.InteractiveExperiences
         /// campus could be determined.
         /// </summary>
         public int? DefaultCampusId { get; set; }
+
+        /// <summary>
+        /// The lava template to use when the experience has ended.
+        /// </summary>
+        public string ExperienceEndedTemplate { get; set; }
     }
 }

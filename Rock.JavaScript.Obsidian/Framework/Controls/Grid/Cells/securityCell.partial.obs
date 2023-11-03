@@ -1,0 +1,71 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <button class="btn btn-security btn-sm"
+            title="Secure"
+            :disabled="isDisabled"
+            @click.prevent="onClick">
+        <i class="fa fa-lock"></i>
+    </button>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { showSecurity } from "@Obsidian/Utility/dialogs";
+    import { computed } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    /** Contains the title that will be used for the modal window. */
+    const itemTitle = computed((): string => {
+        const itemTitleProp = props.column.props.itemTitle as ((row: Record<string, unknown>, grid: IGridState) => string) | string;
+
+        // Check if the itemTitle property was defined on the column, if not
+        // use an empty string. Otherwise use the value.
+        if (!itemTitleProp) {
+            return "";
+        }
+        else if (typeof itemTitleProp === "string") {
+            // They provided a plain string, use it as a field name.
+            const titleValue = props.row[itemTitleProp];
+
+            return typeof titleValue === "string" ? titleValue : "";
+        }
+        else {
+            // They provided a function we should call to determine the title.
+            return itemTitleProp(props.row, props.grid);
+        }
+    });
+
+    /** Will be `true` if the button should be disabled. */
+    const isDisabled = computed((): boolean => {
+        const field = props.column.props.disabledField;
+
+        if (typeof field === "string" && props.row[field] === true) {
+            return true;
+        }
+
+        return false;
+    });
+
+    /**
+     * Called when the individual clicks on the security icon.
+     *
+     * @param event The event that triggered us.
+     */
+    async function onClick(event: Event): Promise<void> {
+        const key = props.grid.getRowKey(props.row);
+
+        // Remove focus from the button.
+        if (event.target instanceof HTMLElement) {
+            event.target.blur();
+        }
+
+        // Make sure we have enough information to open the dialog.
+        if (!key || !props.grid.entityTypeGuid) {
+            return;
+        }
+
+        showSecurity(props.grid.entityTypeGuid, key, itemTitle.value);
+    }
+</script>

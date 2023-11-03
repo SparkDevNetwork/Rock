@@ -24,7 +24,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -55,6 +57,44 @@ namespace Rock.Model
             }
 
             return updatedReminderCount;
+        }
+
+        /// <summary>
+        /// Gets the reminders.
+        /// </summary>
+        /// <param name="personGuid">The person unique identifier.</param>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <param name="reminderTypeGuid">The reminder type unique identifier.</param>
+        /// <returns>IQueryable&lt;Reminder&gt;.</returns>
+        public IQueryable<Reminder> GetReminders( Guid personGuid, Guid? entityTypeGuid, Guid? entityGuid, Guid? reminderTypeGuid )
+        {
+            var rockContext = ( RockContext ) this.Context;
+
+            // Get the person ID.
+            var personId = new PersonService( rockContext ).GetId( personGuid );
+
+            int? entityTypeId = null, entityId = null, reminderTypeId = null;
+
+            // Get the Entity Type ID and Entity Id.
+            if( entityTypeGuid.HasValue )
+            {
+                entityTypeId = EntityTypeCache.GetId( entityTypeGuid.Value );
+
+                if( entityGuid.HasValue )
+                {
+                    entityId = Reflection.GetEntityIdForEntityType( entityTypeGuid.Value, entityGuid.Value, rockContext );
+                }
+            }
+
+            // Get the reminder type Id.
+            // This should be updated to use the cache at some point.
+            if( reminderTypeGuid.HasValue )
+            {
+                reminderTypeId = new ReminderTypeService( rockContext ).GetId( reminderTypeGuid.Value );
+            }
+
+            return this.GetReminders( personId.Value, entityTypeId, entityId, reminderTypeId );
         }
 
         /// <summary>
@@ -292,7 +332,7 @@ namespace Rock.Model
             {
                 var systemType = Rock.Web.Cache.EntityTypeCache.Get( entityTypeId ).GetEntityType();
                 var serviceInstance = Reflection.GetServiceForEntityType( systemType, rockContext );
-                var remindersByEntity = reminders.Where( r => r.ReminderType.EntityTypeId == entityTypeId);
+                var remindersByEntity = reminders.Where( r => r.ReminderType.EntityTypeId == entityTypeId );
                 var reminderEntityIds = remindersByEntity.Select( r => r.EntityId );
 
                 MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );

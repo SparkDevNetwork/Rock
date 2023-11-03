@@ -16,6 +16,7 @@
 //
 
 import { JoinExperienceResponseBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/joinExperienceResponseBag";
+import { PingExperienceResponseBag } from "@Obsidian/ViewModels/Event/InteractiveExperiences/pingExperienceResponseBag";
 
 export interface IParticipantTopic {
     joinExperience(experienceToken: string): Promise<JoinExperienceResponseBag>;
@@ -27,7 +28,7 @@ export interface IParticipantTopic {
     showVisualizer(occurrenceIdKey: string, actionId: string): Promise<void>;
     clearVisualizer(occurrenceIdKey: string): Promise<void>;
 
-    pingExperience(occurrenceIdKey: string): Promise<void>;
+    pingExperience(occurrenceIdKey: string): Promise<PingExperienceResponseBag>;
 
     postResponse(occurrenceIdKey: string, actionId: string, answer: string): Promise<number>;
 

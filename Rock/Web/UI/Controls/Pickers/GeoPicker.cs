@@ -36,7 +36,7 @@ namespace Rock.Web.UI.Controls
     /// This control will create a Google map with drawing tools that
     /// allows the user to define a single point or a polygon which forms a geo-fence
     /// depending on the <see cref="Rock.Web.UI.Controls.GeoPicker.ManagerDrawingMode.Point"/>.
-    /// 
+    ///
     /// To use on a page or usercontrol:
     /// <example>
     /// <code>
@@ -55,7 +55,7 @@ namespace Rock.Web.UI.Controls
     ///    DbGeography point = gpGeoPoint.SelectedValue;
     /// </code>
     /// </example>
-    /// 
+    ///
     /// If you wish to set an appropriate, initial center point you can use the <see cref="CenterPoint"/> property.
     /// </summary>
     public class GeoPicker : CompositeControl, IRockControl, IDisplayRequiredIndicator
@@ -217,7 +217,6 @@ namespace Rock.Web.UI.Controls
             set { ViewState["ValidationDisplay"] = value; }
         }
 
-
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
@@ -265,8 +264,8 @@ namespace Rock.Web.UI.Controls
 
         private HiddenField _hfGeoDisplayName;
         private HiddenFieldWithClass _hfGeoPath;
-        private HtmlAnchor _btnSelect;
-        private HtmlAnchor _btnSelectNone;
+        private HtmlButton _btnSelect;
+        private HtmlButton _btnSelectNone;
 
         #endregion
 
@@ -302,8 +301,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public DbGeography CenterPoint
         {
-            get 
-            { 
+            get
+            {
                 string centerLat = ViewState["CenterLat"] as string;
                 string centerLong = ViewState["CenterLong"] as string;
                 if (!string.IsNullOrWhiteSpace(centerLat) && !string.IsNullOrWhiteSpace(centerLong))
@@ -488,7 +487,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <value>
         ///   A style guid as found in the defined values (e.g., Rock, Retro, Old Timey, etc.) for the Map Styles
-        ///   defined type (<see cref="Rock.SystemGuid.DefinedType.MAP_STYLES" />). 
+        ///   defined type (<see cref="Rock.SystemGuid.DefinedType.MAP_STYLES" />).
         /// </value>
         [
         Bindable( true ),
@@ -501,7 +500,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 string guid = ViewState["MapStyleValueGuid"] as string;
-                return (guid == null) ? Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK.AsGuid() :  guid.AsGuid();
+                return ( guid == null ) ? Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK.AsGuid() : guid.AsGuid();
             }
             set { ViewState["MapStyleValueGuid"] = value.ToString(); }
         }
@@ -550,8 +549,8 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.Init( this );
 
             RequiredFieldValidator = new HiddenFieldValidator();
-            _btnSelect = new HtmlAnchor();
-            _btnSelectNone = new HtmlAnchor();
+            _btnSelect = new HtmlButton();
+            _btnSelectNone = new HtmlButton();
 
             // Default validation display mode to use the ValidationSummary control rather than inline.
             ValidationDisplay = ValidatorDisplay.None;
@@ -597,6 +596,8 @@ namespace Rock.Web.UI.Controls
             }
 
             _btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            _btnSelect.Attributes["role"] = "button";
+            _btnSelect.Attributes["type"] = "button";
             _btnSelect.Attributes["class"] = "btn btn-xs btn-primary js-geopicker-select";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ClientID );
             _btnSelect.InnerText = "Done";
@@ -609,7 +610,10 @@ namespace Rock.Web.UI.Controls
             }
 
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
-            _btnSelectNone.Attributes["class"] = "picker-select-none";
+            _btnSelectNone.Attributes["role"] = "button";
+            _btnSelectNone.Attributes["type"] = "button";
+            _btnSelectNone.Attributes["aria-label"] = "Clear selection";
+            _btnSelectNone.Attributes["class"] = "btn picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ClientID );
             _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
@@ -630,7 +634,7 @@ namespace Rock.Web.UI.Controls
             RequiredFieldValidator.ControlToValidate = _hfGeoPath.ID;
 
             _validator = new CustomValidator();
-            _validator.ID = this.ID + "_CV";
+            _validator.ID = this.ClientID + "_CV";
             _validator.Display = ValidatorDisplay.None;
             _validator.CssClass = "validation-error help-inline";
             _validator.EnableClientScript = false;
@@ -685,12 +689,16 @@ namespace Rock.Web.UI.Controls
                 writer.Write( string.Format( @"
                     <a class='picker-label' href='#'>
                         <i class='fa fa-map-marker'></i>
-                        <span id='selectedGeographyLabel_{0}'>{1}</span>
-                        <b class='fa fa-caret-down pull-right'></b>
-                    </a>", this.ClientID, this.GeoDisplayName ) );
+                        <span id='selectedGeographyLabel_{0}'>{1}</span>", this.ClientID, this.GeoDisplayName ) );
                 writer.WriteLine();
-                
+
                 _btnSelectNone.RenderControl( writer );
+
+                writer.Write( @"
+                        <b class='fa fa-caret-down'></b>
+                    </a>" );
+                writer.WriteLine();
+
 
                 // picker menu
                 writer.AddAttribute( "class", "picker-menu dropdown-menu" );
@@ -785,7 +793,7 @@ namespace Rock.Web.UI.Controls
                 GeoDisplayName = Rock.Constants.None.TextHtml;
             }
         }
-        
+
         /// <summary>
         /// Registers the java script.
         /// </summary>
@@ -947,7 +955,7 @@ if ($('#{1}').length > 0)
 
         /// <summary>
         /// Attempt to determine if the polygon is clockwise or counter-clockwise.
-        /// Thank you dominoc!  
+        /// Thank you dominoc!
         /// http://dominoc925.blogspot.com/2012/03/c-code-to-determine-if-polygon-vertices.html
         /// </summary>
         /// <param name="polygon"></param>
@@ -999,7 +1007,7 @@ if ($('#{1}').length > 0)
                     errorMessage = "The selected geo-fence path is invalid.";
                     return false;
                 }
-                
+
                 if ( sqlGeography.STNumGeometries() > 1 )
                 {
                     errorMessage=  "The geo-fence has overlapping lines or is made up of multiple polygons. Only one polygon is allowed.";

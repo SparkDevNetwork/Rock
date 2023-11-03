@@ -1,0 +1,33 @@
+.checkin-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    border: 1px solid var(--input-border);
+    border-top-width: 3px;
+}
+.checkin-item .fa-bars {
+    cursor: grab;
+    padding: 0 12px 0 6px;
+    opacity: .5;
+}
+.checkin-item-selected {
+    background-color: var(--theme-lightest);
+}
+.checkin-list {
+    padding-left: 40px;
+    list-style-type: none;
+}
+.checkin-list-first {
+    padding-left: 0;
+}
+.checkin-group,
+.panel.panel-widget.checkin-group {
+    border-top-color: #afd074;
+}
+.checkin-area,
+.panel.panel-widget.checkin-grouptype {
+    border-top-color: #5593a4;
+}

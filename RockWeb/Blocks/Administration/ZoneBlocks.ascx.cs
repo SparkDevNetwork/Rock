@@ -15,14 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -125,7 +128,7 @@ namespace RockWeb.Blocks.Administration
                 gPageBlocks.GridReorder += gPageBlocks_GridReorder;
                 gPageBlocks.GridRebind += gPageBlocks_GridRebind;
 
-                LoadBlockTypes( !Page.IsPostBack );
+                LoadBlockTypes( !Page.IsPostBack, _Page.Layout.Site.SiteType );
 
                 string script = string.Format(
                     @"Sys.Application.add_load(function () {{
@@ -187,7 +190,7 @@ namespace RockWeb.Blocks.Administration
                 liSite.RemoveCssClass( "active" );
                 divSite.RemoveCssClass( "active" );
             }
-            else if( hfOption.Value == "Layout" )
+            else if ( hfOption.Value == "Layout" )
             {
                 liPage.RemoveCssClass( "active" );
                 divPage.RemoveCssClass( "active" );
@@ -581,48 +584,105 @@ namespace RockWeb.Blocks.Administration
             {
                 BlockService blockService = new BlockService( rockContext );
 
-                gSiteBlocks.DataSource = blockService.GetBySiteAndZone( _Page.SiteId, _ZoneName )
+                var siteBlocks = blockService.GetBySiteAndZone( _Page.SiteId, _ZoneName )
                     .Select( b => new
                     {
                         b.Id,
                         b.Name,
+                        EntityTypeId = b.BlockType.EntityTypeId ?? 0,
                         BlockTypeName = b.BlockType.Name,
                         BlockTypePath = b.BlockType.Path,
                         BlockTypeCategory = b.BlockType.Category
                     } )
+                    .AsEnumerable();
+
+                gSiteBlocks.DataSource = siteBlocks.Select( b => new
+                    {
+                        b.Id,
+                        b.Name,
+                        BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
+                        b.BlockTypePath,
+                        b.BlockTypeCategory
+                    } )
                     .ToList();
+
                 gSiteBlocks.DataBind();
 
-                gLayoutBlocks.DataSource = blockService.GetByLayoutAndZone( _Page.LayoutId, _ZoneName )
+                var layoutBlocks = blockService.GetByLayoutAndZone( _Page.LayoutId, _ZoneName )
                     .Select( b => new
                     {
                         b.Id,
                         b.Name,
+                        EntityTypeId = b.BlockType.EntityTypeId ?? 0,
                         BlockTypeName = b.BlockType.Name,
                         BlockTypePath = b.BlockType.Path,
                         BlockTypeCategory = b.BlockType.Category
                     } )
+                    .AsEnumerable();
+
+                gLayoutBlocks.DataSource = layoutBlocks.Select( b => new
+                    {
+                        b.Id,
+                        b.Name,
+                        BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
+                        b.BlockTypePath,
+                        b.BlockTypeCategory
+                    } )
                     .ToList();
+
                 gLayoutBlocks.DataBind();
 
-                gPageBlocks.DataSource = blockService.GetByPageAndZone( _Page.Id, _ZoneName )
+                var pageBlocks = blockService.GetByPageAndZone( _Page.Id, _ZoneName )
                 .Select( b => new
                 {
                     b.Id,
                     b.Name,
+                    EntityTypeId = b.BlockType.EntityTypeId ?? 0,
                     BlockTypeName = b.BlockType.Name,
                     BlockTypePath = b.BlockType.Path,
                     BlockTypeCategory = b.BlockType.Category
                 } )
+                .AsEnumerable();
+
+                gPageBlocks.DataSource = pageBlocks.Select( b => new
+                {
+                    b.Id,
+                    b.Name,
+                    BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
+                    b.BlockTypePath,
+                    b.BlockTypeCategory
+                } )
                 .ToList();
+
                 gPageBlocks.DataBind();
+            }
+        }
+
+        /// <summary>
+        /// Adds the "party popper" emoji to the block name if it is an Obsidian block type
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        private string AddIconIfObsidianBlock( int entityTypeId, string name )
+        {
+            var entityType = EntityTypeCache.Get( entityTypeId )?.GetEntityType();
+            if ( entityType != null && typeof( IRockObsidianBlockType ).IsAssignableFrom( entityType ) )
+            {
+                return name + " \U0001f389";
+            }
+            else
+            {
+                return name;
             }
         }
 
         /// <summary>
         /// Loads the block types.
         /// </summary>
-        private void LoadBlockTypes( bool registerBlockTypes )
+        /// <param name="registerBlockTypes">If <c>true</c> then a search for unregistered blocks will be performed.</param>
+        /// <param name="siteType">The type of site the to use when filtering supported block types.</param>
+        private void LoadBlockTypes( bool registerBlockTypes, SiteType siteType )
         {
             if ( registerBlockTypes )
             {
@@ -639,31 +699,15 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            // Get a list of BlockTypes that does not include Mobile block types.
-            var allExceptMobileBlockTypes = BlockTypeCache.All();
-            foreach ( var cachedBlockType in BlockTypeCache.All().Where( b => string.IsNullOrEmpty( b.Path ) ) )
+            List<BlockTypeCache> blockTypesToDisplay = BlockTypeService.BlockTypesToDisplay( siteType );
+
+            var blockTypes = blockTypesToDisplay.Select( b => new
             {
-                try
-                {
-                    var blockCompiledType = cachedBlockType.GetCompiledType();
-
-                    if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
-                    {
-                        allExceptMobileBlockTypes.Remove( cachedBlockType );
-                    }
-                }
-                catch ( Exception )
-                {
-                    // Intentionally ignored
-                }
-            }
-
-            var blockTypes = allExceptMobileBlockTypes.Select( b => new {
                 b.Id,
                 b.Name,
                 b.Category,
                 b.Description,
-                IsObsidian = typeof( Rock.Blocks.IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() )
+                IsObsidian = typeof( IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() )
             } ).ToList();
 
             ddlBlockType.Items.Clear();

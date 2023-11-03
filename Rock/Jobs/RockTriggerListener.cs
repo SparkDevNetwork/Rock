@@ -19,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Quartz;
+using Rock.Logging;
 
 namespace Rock.Jobs
 {
@@ -82,9 +83,14 @@ namespace Rock.Jobs
 #endif
                 {
                     System.Diagnostics.Debug.WriteLine( RockDateTime.Now.ToString() + $" VETOED! Scheduler '{scheduler.SchedulerName}' is already executing job Id '{context.JobDetail.Description}' (key: {context.JobDetail.Key})" );
+
+                    RockLogger.Log.Debug( RockLogDomains.Jobs, $"Job ID: {{jobId}}, Job Key: {{jobKey}}, Job trigger was vetoed because scheduler '{scheduler.SchedulerName}' is already executing job.", jobId, context.JobDetail?.Key );
+
                     return true;
                 }
             }
+
+            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job trigger was not vetoed.", jobId, context.JobDetail?.Key );
 
             return false;
         }
@@ -99,7 +105,8 @@ namespace Rock.Jobs
         /// <param name="triggerInstructionCode">The trigger instruction code.</param>
         public void TriggerComplete( ITrigger trigger, IJobExecutionContext context, SchedulerInstruction triggerInstructionCode )
         {
-            // do nothing
+            // Do nothing but log a message.
+            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job trigger completed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
         }
 #endif
 
@@ -119,8 +126,8 @@ namespace Rock.Jobs
         /// <returns>Task.</returns>
         public void TriggerFired( ITrigger trigger, IJobExecutionContext context )
         {
-            // do nothing
-            return;
+            // Do nothing but log a message.
+            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job trigger fired.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
         }
 #endif
 
@@ -139,7 +146,8 @@ namespace Rock.Jobs
         /// <returns>Task.</returns>
         public void TriggerMisfired( ITrigger trigger )
         {
-            // do nothing
+            // Do nothing but log a message.
+            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job Key: {jobKey}, Job trigger misfired.", trigger.Key );
             return;
         }
 #endif
@@ -158,6 +166,7 @@ namespace Rock.Jobs
         /// <returns>Task.</returns>
         public Task TriggerComplete( ITrigger trigger, IJobExecutionContext context, SchedulerInstruction triggerInstructionCode, CancellationToken cancellationToken = default )
         {
+            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job trigger completed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
             return Task.CompletedTask;
         }
     }

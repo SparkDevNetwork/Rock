@@ -34,6 +34,7 @@ using Rock.Attribute;
 using Rock.BulkExport;
 using Rock.Data;
 using Rock.Security;
+using Rock.SystemKey;
 using Rock.Utility;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
@@ -2940,11 +2941,13 @@ namespace Rock.Model
         /// </returns>
         public TResult GetSpouse<TResult>( Person person, System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector )
         {
+            // Note this logic is duplicated in SpouseNameSelect and SpouseTransform.
             //// Spouse is determined if all these conditions are met
             //// 1) Both Persons are adults in the same family (GroupType = Family, GroupRole = Adult, and in same Group)
-            //// 2) Opposite Gender as Person, if Gender of both Persons is known
+            //// 2) Opposite Gender as Person, if Gender of both Persons is known. This condition won't hold true if the church sets the Bible Strict Spouse setting to false.
             //// 3) Both Persons are Married
             int marriedDefinedValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+            var isBibleStrictSpouse = Rock.Web.SystemSettings.GetValue( SystemSetting.BIBLE_STRICT_SPOUSE ).AsBoolean( true );
 
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
             {
@@ -2965,15 +2968,13 @@ namespace Rock.Model
 
             return GetFamilyMembers( person.Id )
                 .Where( m => m.GroupRoleId == adultRoleId )
-
-                // In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic: 
-                .Where( m => m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
+                .Where( m => !isBibleStrictSpouse || m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
                 .OrderBy( m => groupOrderQuery.FirstOrDefault( x => x.GroupId == m.GroupId && x.PersonId == person.Id ).GroupOrder ?? int.MaxValue )
 #if REVIEW_NET5_0_OR_GREATER
-                .ThenBy( m => EF.Functions.DateDiffDay( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
+                .ThenBy( m => Math.Abs( EF.Functions.DateDiffDay( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) ?? 0 ) )
 #else
-                .ThenBy( m => DbFunctions.DiffDays( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
+                .ThenBy( m => Math.Abs( DbFunctions.DiffDays( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) ?? 0 ) )
 #endif
                 .ThenBy( m => m.PersonId )
                 .Select( selector )
@@ -3467,10 +3468,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Removes duplicate and empty number phone numbers from a person
+        /// Removes duplicate and empty number phone numbers from a person.
+        /// NOTE: This method deletes the all the Person's phone numbers which have a phone number type not present in the provided
+        /// phoneNumberTypeIds list of phone number types.
         /// </summary>
         /// <param name="person">The Person.</param>
-        /// <param name="phoneNumberTypeIds">The list of phone number type ids.</param>
+        /// <param name="phoneNumberTypeIds">The list of phone number type ids. The phone numbers with a phone number type not in this list would be deleted.</param>
         /// <param name="rockContext">The rock context.</param>
         public void RemoveEmptyAndDuplicatePhoneNumbers( Person person, List<int> phoneNumberTypeIds, RockContext rockContext )
         {
@@ -3671,6 +3674,7 @@ namespace Rock.Model
                     var groupMember = new GroupMember();
                     groupMember.Person = person;
                     groupMember.GroupRoleId = ownerRole.Id;
+                    groupMember.GroupTypeId = knownRelationshipGroupType.Id;
 
                     var group = new Group();
                     group.Name = knownRelationshipGroupType.Name;
@@ -3694,6 +3698,7 @@ namespace Rock.Model
                     var groupMember = new GroupMember();
                     groupMember.Person = person;
                     groupMember.GroupRoleId = ownerRole.Id;
+                    groupMember.GroupTypeId = impliedRelationshipGroupType.Id;
 
                     var group = new Group();
                     group.Name = impliedRelationshipGroupType.Name;
@@ -3726,6 +3731,7 @@ namespace Rock.Model
                     var groupMember = new GroupMember();
                     groupMember.Person = person;
                     groupMember.GroupRoleId = familyRole.Id;
+                    groupMember.GroupTypeId = familyGroupType.Id;
 
                     var groupMembers = new List<GroupMember>();
                     groupMembers.Add( groupMember );
@@ -4485,15 +4491,15 @@ FROM (
         public static void UpdateGivingId( int personId, RockContext rockContext )
         {
             var person = new PersonService( rockContext ).Get( personId );
-            var correctGivingId = person.GivingGroupId.HasValue ? $"G{ person.GivingGroupId.Value }" : $"P{ person.Id }";
+            var correctGivingId = person.GivingGroupId.HasValue ? $"G{person.GivingGroupId.Value}" : $"P{person.Id}";
 
             // Make sure the GivingId is correct.
             if ( person.GivingId != correctGivingId )
             {
 #if REVIEW_NET5_0_OR_GREATER
-                rockContext.Database.ExecuteSqlRaw( $"UPDATE [Person] SET [GivingId] = '{ correctGivingId }' WHERE [Id] = { personId }" );
+                rockContext.Database.ExecuteSqlRaw( $"UPDATE [Person] SET [GivingId] = '{correctGivingId}' WHERE [Id] = {personId}" );
 #else
-                rockContext.Database.ExecuteSqlCommand( $"UPDATE [Person] SET [GivingId] = '{ correctGivingId }' WHERE [Id] = { personId }" );
+                rockContext.Database.ExecuteSqlCommand( $"UPDATE [Person] SET [GivingId] = '{correctGivingId}' WHERE [Id] = {personId}" );
 #endif
             }
         }
@@ -4537,6 +4543,13 @@ WHERE GivingId IS NULL OR GivingId != (
         private static int UpdatePersonGivingLeaderId( int? personId, RockContext rockContext )
         {
             var sqlUpdateBuilder = new StringBuilder();
+
+            /* 
+                JME 9/25/2023
+                Updated this logic to not filter out deceased, but to sort by IsDeceased (living before deceased).
+                So that if both adults are deceased the Giving Leader goes back to being the adult male vs it
+                becoming different for both individuals. (Issue #2848).
+            */
             sqlUpdateBuilder.Append( @"
 UPDATE x
 SET x.GivingLeaderId = x.CalculatedGivingLeaderId
@@ -4553,9 +4566,10 @@ FROM (
 		INNER JOIN [GroupTypeRole] r ON r.[Id] = gm.[GroupRoleId]
 		INNER JOIN [Person] p2 ON p2.[Id] = gm.[PersonId]
 		WHERE gm.[GroupId] = p.GivingGroupId
-			AND p2.[IsDeceased] = 0
 			AND p2.[GivingGroupId] = p.GivingGroupId
-		ORDER BY r.[Order]
+		ORDER BY
+            p2.[IsDeceased]
+            , r.[Order]
 			,p2.[Gender]
 			,p2.[BirthYear]
 			,p2.[BirthMonth]
@@ -4799,6 +4813,58 @@ FROM (
             return rowsUpdated;
         }
 
+        /// <summary>
+        /// Sets the PrimaryAliasId for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="primaryAliasId">The PrimaryAlias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdatePrimaryAlias( int personId, int primaryAliasId, RockContext rockContext )
+        {
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE Person
+SET PrimaryAliasId = @primaryAliasId
+WHERE Id = @personId",
+        new System.Data.SqlClient.SqlParameter( "@personId", personId ), new System.Data.SqlClient.SqlParameter( "@primaryAliasId", primaryAliasId ) );
+        }
+
+        /// <summary>
+        /// Updates the person's group member role (whether Adult/Child) for the specified person.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="age">The age.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdateFamilyMemberRoleByAge( int personId, int age, RockContext rockContext )
+        {
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+
+            int? roleId;
+            int result = 0;
+
+            if ( age >= 18 )
+            {
+                roleId = familyGroupType.Roles?.Find( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )?.Id;
+            }
+            else
+            {
+                roleId = familyGroupType.Roles?.Find( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() )?.Id;
+            }
+
+            if ( roleId.HasValue )
+            {
+                result = rockContext.Database.ExecuteSqlCommand( $@"
+UPDATE GroupMember
+SET GroupRoleId = {roleId}
+WHERE PersonId = ${personId}
+AND GroupTypeId = ${familyGroupType.Id}
+" );
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region Anonymous Visitor
@@ -4965,35 +5031,6 @@ FROM (
                 .Where( es => es.ExpireDateTime == null || es.ExpireDateTime > expirationDate );
 
             return mergeRequestQry;
-        }
-
-        /// <summary>
-        /// This function will take a person, and if they're a child return a queryable of all
-        /// of the adults in their primary family. The term 'Parents' is iffy, we know.
-        /// </summary>
-        /// <param name="people">The people.</param>
-        /// <param name="filterByGender">The filter by gender.</param>
-        /// <returns>IQueryable&lt;Person&gt;.</returns>
-        [RockInternal( "1.15" )]
-        internal IQueryable<Person> GetParentsForChildren( List<Person> people, Gender? filterByGender = null )
-        {
-            var personFamilyIds = people.Where( p => p.AgeClassification == AgeClassification.Child )
-                .Select( p => p.PrimaryFamilyId );
-
-            var groupMemberService = new GroupMemberService( Context as RockContext );
-
-            var parentsQry = groupMemberService
-                .Queryable()
-                .Where( gm => personFamilyIds.Contains( gm.GroupId )
-                    && gm.Person.AgeClassification == AgeClassification.Adult
-                    && gm.GroupMemberStatus == GroupMemberStatus.Active );
-
-            if ( filterByGender != null )
-            {
-                parentsQry = parentsQry.Where( x => x.Person.Gender == filterByGender );
-            }
-
-            return parentsQry.Select( gm => gm.Person );
         }
 
         #region Configuration Settings

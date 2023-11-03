@@ -18,7 +18,17 @@ using System;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.TestData;
 using Rock.Web.Cache;
+
+using System.Collections.Generic;
+
+using Ical.Net;
+using Ical.Net.DataTypes;
+using Ical.Net.Serialization;
+using Ical.Net.CalendarComponents;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration
 {
@@ -26,131 +36,669 @@ namespace Rock.Tests.Integration
     {
         public static class Events
         {
-            private const string TestDataForeignKey = "test_data";
-            private const string EventFinancesClassGuid = "6EFC00B0-F5D3-4352-BC3B-F09852FB5788";
-            private const string ScheduleSat1630Guid = "7883CAC8-6E30-482B-95A7-2F0DEE859BE1";
-            private const string ScheduleSun1200Guid = "1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45";
-            private const string FinancesClassOccurrenceSat1630Guid = "E7116C5A-9FEE-42D4-A0DB-7FEBFCCB6B8B";
-            private const string FinancesClassOccurrenceSun1200Guid = "3F3EA420-E3F0-435A-9401-C2D058EF37DE";
-            private static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
 
-            public class CreateEventItemActionArgs
+        }
+    }
+}
+
+namespace Rock.Tests.Integration.Events
+{
+    /// <summary>
+    /// Provides actions to manage Event data.
+    /// </summary>
+    public class EventsDataManager
+    {
+        private static Lazy<EventsDataManager> _dataManager = new Lazy<EventsDataManager>();
+        public static EventsDataManager Instance => _dataManager.Value;
+
+        private const string TestDataForeignKey = "test_data";
+        private const string ScheduleSat1630Guid = "7883CAC8-6E30-482B-95A7-2F0DEE859BE1";
+        private const string ScheduleSun1200Guid = "1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45";
+        private const string FinancesClassOccurrenceSat1630Guid = "E7116C5A-9FEE-42D4-A0DB-7FEBFCCB6B8B";
+        private const string FinancesClassOccurrenceSun1200Guid = "3F3EA420-E3F0-435A-9401-C2D058EF37DE";
+
+        #region Event Item
+
+        public class EventItemInfo
+        {
+            public string EventName;
+            public bool? IsActive;
+            public bool? IsApproved;
+
+            public List<string> CalendarIdentifiers = new List<string>();
+        }
+
+        public class CreateEventItemActionArgs : CreateEntityActionArgsBase<EventItemInfo>
+        {
+        }
+
+        public class UpdateEventItemActionArgs : UpdateEntityActionArgsBase<EventItemInfo>
+        {
+        }
+
+        public bool DeleteEventItem( string eventItemIdentifier, RockContext context )
+        {
+            var eventItemService = new EventItemService( context );
+            var eventItem = eventItemService.Get( eventItemIdentifier );
+
+            if ( eventItem == null )
             {
-                public Guid? Guid;
-                public Schedule Schedule;
-                public string EventName;
-                public string MeetingLocation;
+                return false;
             }
 
-            public static bool DeleteEventItem( string eventItemIdentifier, RockContext context )
+            return eventItemService.Delete( eventItem );
+        }
+
+        /// <summary>
+        /// Add a new EventItem.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public int AddEventItem( CreateEventItemActionArgs args )
+        {
+            EventItem newEventItem = null;
+
+            var rockContext = new RockContext();
+
+            rockContext.WrapTransaction( () =>
             {
-                var eventItemService = new EventItemService( context );
-                var eventItem = eventItemService.Get( eventItemIdentifier );
-
-                if ( eventItem == null )
-                {
-                    return false;
-                }
-
-                return eventItemService.Delete( eventItem );
-            }
-
-            public static EventItem CreateEventItem( CreateEventItemActionArgs actionInfo, RockContext rockContext )
-            {
-                rockContext = rockContext ?? new RockContext();
-
-                // Get Event "Rock Solid Finances".
-                // This event is associated with both the Internal and Public calendars.
                 var eventItemService = new EventItemService( rockContext );
-
-                var newEvent = new EventItem();
-
-                eventItemService.Add( newEvent );
-
-                newEvent.Guid = actionInfo.Guid ?? Guid.NewGuid();
-                newEvent.Name = actionInfo.EventName;
-                newEvent.IsActive = true;
-                newEvent.IsApproved = true;
-
-                var eventCalendarService = new EventCalendarService( rockContext );
-                var eventCalendarInternal = EventCalendarCache.All().FirstOrDefault( ec => ec.Name == "Internal" );
-
-                var calendar = new EventCalendarItem();
-                calendar.EventCalendarId = eventCalendarInternal.Id;
-                calendar.EventItem = newEvent;
-
-                newEvent.EventCalendarItems.Add( calendar );
-
-                var newEvent1 = new EventItemOccurrence();
-                newEvent.EventItemOccurrences.Add( newEvent1 );
-
-                var mainCampusId = CampusCache.GetId( MainCampusGuidString.AsGuid() );
-
-                newEvent1.Location = actionInfo.MeetingLocation;
-                newEvent1.ForeignKey = TestDataForeignKey;
-                newEvent1.Schedule = actionInfo.Schedule;
-                newEvent1.CampusId = mainCampusId;
-
-                return newEvent;
-            }
-
-            /// <summary>
-            /// Modifies the Rock Solid Finances Class to add multiple schedules and campuses.
-            /// </summary>
-            public static void AddDataForRockSolidFinancesClass()
-            {
-                var rockContext = new RockContext();
-
-                // Get Campus 2.
-                var campus2 = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
-
-                // Get existing schedules.
-                var scheduleService = new ScheduleService( rockContext );
-
-                var scheduleSat1630Id = scheduleService.GetId( ScheduleSat1630Guid.AsGuid() );
-                var scheduleSat1800Id = scheduleService.GetId( ScheduleSun1200Guid.AsGuid() );
-
-                // Get Event "Rock Solid Finances".
-                // This event is associated with both the Internal and Public calendars.
-                var eventItemService = new EventItemService( rockContext );
-                var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
-
-                var financeEvent = eventItemService.Get( EventFinancesClassGuid.AsGuid() );
-
-                // Add an occurrence of this event for each Schedule.
-                var financeEvent1 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSat1630Guid.AsGuid() );
-
-                if ( financeEvent1 == null )
+                if ( args.Guid != null )
                 {
-                    financeEvent1 = new EventItemOccurrence();
-                    financeEvent.EventItemOccurrences.Add( financeEvent1 );
+                    newEventItem = eventItemService.Get( args.Guid.Value );
+                    if ( newEventItem != null )
+                    {
+                        if ( args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Fail )
+                        {
+                            throw new Exception( "Item exists." );
+                        }
+                        else if ( args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Replace )
+                        {
+                            var isDeleted = DeleteEventItem( args.Guid.Value.ToString(), rockContext );
+
+                            if ( !isDeleted )
+                            {
+                                throw new Exception( "Could not replace existing item." );
+                            }
+
+                            newEventItem = null;
+                        }
+                    }
                 }
 
-                var mainCampusId = CampusCache.GetId( MainCampusGuidString.AsGuid() );
-                var secondCampusId = campus2.Id;
-
-                financeEvent1.Location = "Meeting Room 1";
-                financeEvent1.ForeignKey = TestDataForeignKey;
-                financeEvent1.ScheduleId = scheduleSat1630Id;
-                financeEvent1.Guid = FinancesClassOccurrenceSat1630Guid.AsGuid();
-                financeEvent1.CampusId = mainCampusId;
-
-                var financeEvent2 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSun1200Guid.AsGuid() );
-
-                if ( financeEvent2 == null )
+                if ( newEventItem == null )
                 {
-                    financeEvent2 = new EventItemOccurrence();
-                    financeEvent.EventItemOccurrences.Add( financeEvent2 );
+                    newEventItem = new EventItem();
+                    newEventItem.Guid = args.Guid.Value;
+                    newEventItem.IsActive = true;
+                    newEventItem.IsApproved = true;
+
+                    eventItemService.Add( newEventItem );
                 }
 
-                financeEvent2.Location = "Meeting Room 2";
-                financeEvent2.ForeignKey = TestDataForeignKey;
-                financeEvent2.ScheduleId = scheduleSat1800Id;
-                financeEvent2.Guid = FinancesClassOccurrenceSun1200Guid.AsGuid();
-                financeEvent2.CampusId = secondCampusId;
+                UpdateEventItemPropertiesFromInfo( newEventItem, args.Properties, rockContext );
 
                 rockContext.SaveChanges();
+            } );
+
+            return newEventItem.Id;
+        }
+
+        /// <summary>
+        /// Update an existing EventItem.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public void UpdateEventItem( UpdateEventItemActionArgs args )
+        {
+            var rockContext = new RockContext();
+
+            rockContext.WrapTransaction( () =>
+            {
+                var eventItemService = new EventItemService( rockContext );
+                var eventItem = eventItemService.GetByIdentifierOrThrow( args.UpdateTargetIdentifier );
+
+                UpdateEventItemPropertiesFromInfo( eventItem, args.Properties, rockContext );
+
+                rockContext.SaveChanges();
+            } );
+        }
+
+        private void UpdateEventItemPropertiesFromInfo( EventItem newEvent, EventItemInfo actionInfo, RockContext rockContext )
+        {
+            if ( actionInfo.EventName != null )
+            {
+                newEvent.Name = actionInfo.EventName;
+            }
+            if ( actionInfo.IsActive != null )
+            {
+                newEvent.IsActive = actionInfo.IsActive.Value;
+            }
+            if ( actionInfo.IsApproved != null )
+            {
+                newEvent.IsApproved = actionInfo.IsApproved.Value;
+            }
+
+            // Assign the Calendars to which the Event can be added.
+            // If no calendars are specified, default to the Internal calendar.
+            if ( actionInfo.CalendarIdentifiers != null )
+            {
+                var calendarIdentifiers = actionInfo.CalendarIdentifiers;
+                if ( !calendarIdentifiers.Any() )
+                {
+                    calendarIdentifiers.Add( "Internal" );
+                }
+
+                var eventCalendarService = new EventCalendarService( rockContext );
+                foreach ( var calendarIdentifier in calendarIdentifiers )
+                {
+                    var eventCalendar = eventCalendarService.GetByIdentifierOrThrow( calendarIdentifier );
+
+                    var calendar = new EventCalendarItem();
+                    calendar.EventCalendarId = eventCalendar.Id;
+                    calendar.EventItem = newEvent;
+
+                    newEvent.EventCalendarItems.Add( calendar );
+                }
             }
         }
+
+
+        #endregion
+
+        #region Event Item Occurrence
+
+        public class EventItemOccurrenceInfo
+        {
+            public string ForeignKey { get; set; }
+            public string EventIdentifier { get; set; }
+            public string ScheduleIdentifier { get; set; }
+            public string CampusIdentifier { get; set; }
+
+            public string MeetingLocationDescription { get; set; }
+        }
+
+        public class CreateEventItemOccurrenceActionArgs : CreateEntityActionArgsBase<EventItemOccurrenceInfo>
+        {
+            //public string EventIdentifier;
+            //public string ScheduleIdentifier;
+            //public string CampusIdentifier;
+
+            //public string MeetingLocationDescription;
+        }
+
+        public class UpdateEventItemOccurrenceActionArgs : UpdateEntityActionArgsBase<EventItemOccurrenceInfo>
+        {
+            //public string EventIdentifier;
+            //public string ScheduleIdentifier;
+            //public string CampusIdentifier;
+
+            //public string MeetingLocationDescription;
+        }
+
+        public bool DeleteEventItemOccurrence( string occurrenceIdentifier, RockContext context )
+        {
+            var occurrenceService = new EventItemOccurrenceService( context );
+            var occurrence = occurrenceService.Get( occurrenceIdentifier );
+
+            if ( occurrence == null )
+            {
+                return false;
+            }
+
+            return occurrenceService.Delete( occurrence );
+        }
+
+        /// <summary>
+        /// Adds a new Event Item Occurrence - an actual set of one or more instances of an EventItem.
+        /// The EventItem defines the template for the actual scheduled events represented by the EventItemOccurrence.
+        /// </summary>
+        public EventItemOccurrence AddEventItemOccurrence( CreateEventItemOccurrenceActionArgs args )
+        {
+            var rockContext = new RockContext();
+            var occurrenceService = new EventItemOccurrenceService( rockContext );
+
+            EventItemOccurrence occurrence = null;
+            if ( args.Guid != null )
+            {
+                occurrence = occurrenceService.Get( args.Guid.Value );
+                if ( occurrence != null )
+                {
+                    if ( args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Fail )
+                    {
+                        throw new Exception( "Item exists." );
+                    }
+                    else if ( args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Ignore )
+                    {
+                        return occurrence;
+                    }
+                    else if ( args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Replace )
+                    {
+                        var isDeleted = DeleteEventItemOccurrence( args.Guid.ToString(), rockContext );
+                        if ( !isDeleted )
+                        {
+                            throw new Exception( "Could not replace existing item." );
+                        }
+                        occurrence = null;
+                    }
+                }
+            }
+
+            if ( occurrence == null )
+            {
+                occurrence = new EventItemOccurrence();
+                occurrenceService.Add( occurrence );
+            }
+
+            occurrence.Guid = args.Guid ?? Guid.NewGuid();
+            occurrence.ForeignKey = args.ForeignKey;
+
+            // Get Event
+            var eventItemService = new EventItemService( rockContext );
+            var eventItem = eventItemService.Queryable().GetByIdentifierOrThrow( args.Properties.EventIdentifier );
+
+            occurrence.EventItemId = eventItem.Id;
+
+            // Get Schedule
+            var scheduleService = new ScheduleService( rockContext );
+            var schedule = scheduleService.Queryable().GetByIdentifierOrThrow( args.Properties.ScheduleIdentifier );
+
+            occurrence.ScheduleId = schedule.Id;
+
+            // Get Campus
+            if ( !string.IsNullOrWhiteSpace( args.Properties.CampusIdentifier ) )
+            {
+                var campusService = new CampusService( rockContext );
+                var campus = campusService.Queryable().GetByIdentifierOrThrow( args.Properties.CampusIdentifier );
+
+                occurrence.CampusId = campus.Id;
+            }
+
+            // Set properties.
+            occurrence.Location = args.Properties.MeetingLocationDescription;
+
+            rockContext.SaveChanges();
+
+            return occurrence;
+        }
+
+        /// <summary>
+        /// Adds a new Event Item Occurrence - an actual set of one or more instances of an EventItem.
+        /// The EventItem defines the template for the actual scheduled events represented by the EventItemOccurrence.
+        /// </summary>
+        public EventItemOccurrence UpdateEventItemOccurrence( UpdateEventItemOccurrenceActionArgs args )
+        {
+            var rockContext = new RockContext();
+            var occurrenceService = new EventItemOccurrenceService( rockContext );
+
+            var occurrence = occurrenceService.GetByIdentifierOrThrow( args.UpdateTargetIdentifier );
+
+            UpdateEventItemOccurrencePropertiesFromInfo( occurrence, args.Properties, rockContext );
+
+            rockContext.SaveChanges();
+
+            return occurrence;
+        }
+
+        private void UpdateEventItemOccurrencePropertiesFromInfo( EventItemOccurrence occurrence, EventItemOccurrenceInfo actionInfo, RockContext rockContext )
+        {
+            // Get Event
+            var eventItemService = new EventItemService( rockContext );
+
+            // Update ForeignKey.
+            if ( actionInfo.ForeignKey != null )
+            {
+                occurrence.ForeignKey = actionInfo.ForeignKey;
+            }
+
+            // Update Parent Event Item.
+            if ( actionInfo.EventIdentifier != null )
+            {
+                var eventItem = eventItemService.Queryable().GetByIdentifierOrThrow( actionInfo.EventIdentifier );
+
+                occurrence.EventItemId = eventItem.Id;
+            }
+
+            // Update Schedule
+            if ( actionInfo.ScheduleIdentifier != null )
+            {
+                var scheduleService = new ScheduleService( rockContext );
+                var schedule = scheduleService.Queryable().GetByIdentifierOrThrow( actionInfo.ScheduleIdentifier );
+
+                occurrence.ScheduleId = schedule.Id;
+            }
+
+            // Get Campus
+            if ( actionInfo.CampusIdentifier != null )
+            {
+                var campusService = new CampusService( rockContext );
+                var campus = campusService.Queryable().GetByIdentifierOrThrow( actionInfo.CampusIdentifier );
+
+                occurrence.CampusId = campus.Id;
+            }
+
+            // Set properties.
+            if ( actionInfo.MeetingLocationDescription != null )
+            {
+                occurrence.Location = actionInfo.MeetingLocationDescription;
+            }
+        }
+
+        #endregion
+
+        #region Schedules
+
+        public class AddScheduleDailyRecurrenceActionArgs : CreateEntityActionArgsBase
+        {
+            public DateTime? StartDateTime;
+            public DateTime? EndDateTime;
+            public TimeSpan? EventDuration;
+            public int? OccurrenceCount;
+        }
+
+        public Schedule AddScheduleWithDailyRecurrence( AddScheduleDailyRecurrenceActionArgs args )
+        {
+            var rockContext = new RockContext();
+
+            var startDateTime = args.StartDateTime ?? new DateTime( RockDateTime.Today.Ticks, DateTimeKind.Unspecified );
+            var calendarEvent = GetICalCalendarEvent( startDateTime, args.EventDuration );
+
+            var recurrence = GetICalDailyRecurrencePattern( args.EndDateTime, args.OccurrenceCount );
+            var calendar = GetICalCalendar( calendarEvent, recurrence );
+            var schedule = CreateSchedule( calendar );
+
+            if ( args.Guid != null )
+            {
+                schedule.Guid = args.Guid.Value;
+            }
+
+            rockContext = rockContext ?? new RockContext();
+
+            var scheduleService = new ScheduleService( rockContext );
+            scheduleService.Add( schedule );
+
+            rockContext.SaveChanges();
+
+            return schedule;
+        }
+
+        public class AddScheduleSpecificDatesActionArgs : CreateEntityActionArgsBase
+        {
+            public List<DateTime> dates;
+            public TimeSpan? startTime;
+            public TimeSpan? eventDuration;
+        }
+
+        public Schedule AddScheduleWithSpecificDates( AddScheduleSpecificDatesActionArgs args )
+        {
+            if ( args.dates == null || !args.dates.Any() )
+            {
+                throw new ArgumentException( nameof( args.dates ) );
+            }
+
+            // Get the template calendar event.
+            var firstDate = args.dates.First().Date.Add( args.startTime.GetValueOrDefault() );
+            firstDate = DateTime.SpecifyKind( firstDate, DateTimeKind.Unspecified );
+
+            var calendarEvent = GetICalCalendarEvent( firstDate, args.eventDuration );
+
+            var recurrenceDates = new PeriodList();
+            foreach ( var datetime in args.dates )
+            {
+                recurrenceDates.Add( new CalDateTime( datetime ) );
+            }
+
+            calendarEvent.RecurrenceDates.Add( recurrenceDates );
+
+            var calendar = GetICalCalendar( calendarEvent );
+            var schedule = CreateSchedule( calendar );
+
+            var rockContext = new RockContext();
+
+            var scheduleService = new ScheduleService( rockContext );
+            scheduleService.Add( schedule );
+
+            rockContext.SaveChanges();
+
+            return schedule;
+        }
+
+        private static Schedule CreateSchedule( Calendar calendar )
+        {
+            var schedule = new Schedule();
+
+            var serializer = new CalendarSerializer( calendar );
+
+            schedule.iCalendarContent = serializer.SerializeToString();
+
+            schedule.EnsureEffectiveStartEndDates();
+
+            return schedule;
+        }
+
+        public Calendar GetICalCalendar( CalendarEvent calendarEvent, RecurrencePattern recurrencePattern = null )
+        {
+            if ( recurrencePattern != null )
+            {
+                calendarEvent.RecurrenceRules = new List<RecurrencePattern> { recurrencePattern };
+            }
+
+            var calendar = new Calendar();
+
+            calendar.Events.Add( calendarEvent );
+
+            return calendar;
+        }
+
+        public CalendarEvent GetICalCalendarEvent( DateTime eventStartDate, TimeSpan? eventDuration )
+        {
+            if ( eventStartDate.Kind != DateTimeKind.Unspecified )
+            {
+                throw new Exception( "The Event Start Date must have a Kind of Unspecified. Calendar Events do not store timezone information." );
+            }
+
+            var calendarEvent = new CalendarEvent
+            {
+                DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day )
+            };
+
+            var dtStart = new CalDateTime( eventStartDate );
+            dtStart.HasTime = true;
+            calendarEvent.DtStart = dtStart;
+
+            if ( eventDuration != null )
+            {
+                var dtEnd = dtStart.Add( eventDuration.Value );
+                dtEnd.HasTime = true;
+                calendarEvent.DtEnd = dtEnd;
+            }
+
+            return calendarEvent;
+        }
+
+        public CalendarEvent GetICalCalendarEvent( DateTimeOffset eventStartDate, TimeSpan? eventDuration )
+        {
+            // Convert the start date to Rock time.
+            var startDate = TimeZoneInfo.ConvertTime( eventStartDate, RockDateTime.OrgTimeZoneInfo );
+            eventDuration = eventDuration ?? new TimeSpan( 1, 0, 0 );
+
+            var dtStart = new CalDateTime( startDate.DateTime );
+            dtStart.HasTime = true;
+
+            var dtEnd = dtStart.Add( eventDuration.Value );
+            dtEnd.HasTime = true;
+
+            var calendarEvent = new CalendarEvent
+            {
+                DtStart = dtStart,
+                DtEnd = dtEnd,
+                DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day ),
+            };
+
+            return calendarEvent;
+        }
+
+        public RecurrencePattern GetICalDailyRecurrencePattern( DateTimeOffset? recurrenceEndDate = null, int? occurrenceCount = null, int? interval = 1 )
+        {
+            // Repeat daily from the start date until the specified end date or a set number of recurrences, at the specified interval.
+            var pattern = $"RRULE:FREQ=DAILY;INTERVAL={interval}";
+
+            if ( recurrenceEndDate != null )
+            {
+                pattern += $";UNTIL={recurrenceEndDate:yyyyMMdd}";
+            }
+
+            if ( occurrenceCount != null )
+            {
+                pattern += $";COUNT={occurrenceCount}";
+            }
+
+            var recurrencePattern = new RecurrencePattern( pattern );
+
+            return recurrencePattern;
+        }
+
+        #endregion
+
+        #region ICalendar Feed
+
+        public class GetICalendarEventFeedActionArgs
+        {
+            public string calendarName = null;
+            public string campusName = null;
+            public DateTime? startDate = null;
+            public DateTime? endDate = null;
+            public string eventIdentifier = null;
+        }
+
+        public string GetICalendarEventFeed( GetICalendarEventFeedActionArgs actionArgs )
+        {
+            var rockContext = new RockContext();
+            var calendarService = new EventCalendarService( rockContext );
+
+            var args = new GetCalendarEventFeedArgs();
+
+            if ( !string.IsNullOrWhiteSpace( actionArgs.calendarName ) )
+            {
+                var calendarId = EventCalendarCache.All()
+                .Where( x => x.Name == actionArgs.calendarName )
+                .Select( x => x.Id )
+                .FirstOrDefault();
+
+                args.CalendarId = calendarId;
+            }
+
+            args.StartDate = actionArgs.startDate ?? RockDateTime.New( 2015, 1, 1 ).Value;
+            args.EndDate = actionArgs.endDate ?? RockDateTime.New( 2020, 1, 1 ).Value;
+
+            if ( !string.IsNullOrWhiteSpace( actionArgs.campusName ) )
+            {
+                var campusId = CampusCache.All()
+                    .Where( x => x.Name == actionArgs.campusName )
+                    .Select( x => x.Id )
+                    .FirstOrDefault();
+
+                Assert.IsTrue( campusId != 0, "Invalid Campus." );
+
+                args.CampusIds = new List<int> { campusId };
+            }
+
+            if ( !string.IsNullOrWhiteSpace( actionArgs.eventIdentifier ) )
+            {
+                var eventItemService = new EventItemService( rockContext );
+                var eventItemId = eventItemService.Queryable()
+                    .GetByIdentifierOrThrow( actionArgs.eventIdentifier )?.Id ?? 0;
+
+                args.EventItemIds = new List<int> { eventItemId };
+            }
+
+            var calendarString1 = calendarService.CreateICalendar( args );
+            return calendarString1;
+        }
+
+        #endregion
+
+        #region Test Data
+
+        /// <summary>
+        /// Modifies the Rock Solid Finances Class to add multiple schedules and campuses.
+        /// </summary>
+        public void AddDataForRockSolidFinancesClass()
+        {
+            var rockContext = new RockContext();
+
+            // Create Campus "Stepping Stone".
+            var campusNew = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
+            rockContext.SaveChanges();
+
+            // Add an occurrence of this event for each Campus.
+            var event1Args = new CreateEventItemOccurrenceActionArgs()
+            {
+                Guid = FinancesClassOccurrenceSat1630Guid.AsGuid(),
+                ForeignKey = TestDataForeignKey,
+                Properties = new EventItemOccurrenceInfo
+                {
+                    EventIdentifier = TestGuids.Events.EventIdentifierRockSolidFinancesClass,
+                    MeetingLocationDescription = "Meeting Room 1",
+                    ScheduleIdentifier = ScheduleSat1630Guid,
+                    CampusIdentifier = TestGuids.Crm.CampusMain
+                },
+                ExistingItemStrategy = CreateExistingItemStrategySpecifier.Update
+            };
+
+            var financeEvent1 = AddEventItemOccurrence( event1Args );
+
+            var event2Args = new CreateEventItemOccurrenceActionArgs()
+            {
+                Guid = FinancesClassOccurrenceSun1200Guid.AsGuid(),
+                ForeignKey = TestDataForeignKey,
+                Properties = new EventItemOccurrenceInfo
+                {
+                    EventIdentifier = TestGuids.Events.EventIdentifierRockSolidFinancesClass,
+                    MeetingLocationDescription = "Meeting Room 2",
+                    ScheduleIdentifier = ScheduleSun1200Guid,
+                    CampusIdentifier = TestGuids.Crm.CampusSteppingStone,
+                },
+                ExistingItemStrategy = CreateExistingItemStrategySpecifier.Update
+            };
+
+            var financeEvent2 = AddEventItemOccurrence( event2Args );
+        }
+
+        /// <summary>
+        /// Modifies the Rock Solid Finances Class to remove additional test data.
+        /// </summary>
+        public void DeleteDataForRockSolidFinancesClass()
+        {
+            var rockContext = new RockContext();
+
+            // Delete event occurrences.
+            var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
+
+            var financeEvent1 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSat1630Guid.AsGuid() );
+            if ( financeEvent1 != null )
+            {
+                eventItemOccurrenceService.Delete( financeEvent1 );
+            }
+
+            var financeEvent2 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSun1200Guid.AsGuid() );
+            if ( financeEvent2 != null )
+            {
+                eventItemOccurrenceService.Delete( financeEvent2 );
+            }
+
+            // Remove campus.
+            var campusService = new CampusService( rockContext );
+
+            var campus2 = campusService.Get( TestGuids.Crm.CampusSteppingStone.AsGuid() );
+            if ( campus2 != null )
+            {
+                campusService.Delete( campus2 );
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        #endregion
     }
 }

@@ -130,7 +130,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The object cache key references.
         /// </value>
-        [Obsolete("Use thread safe StringConcurrentCacheKeyReferences instead.")]
+        [Obsolete("Use thread safe ObjectConcurrentCacheKeyReferences instead.")]
         [RockObsolete("1.14")]
         public static List<CacheKeyReference> ObjectCacheKeyReferences
         {
@@ -451,28 +451,33 @@ namespace Rock.Web.Cache
                 AddOrUpdateObjectCacheKey( region, key );
             }
 
-            if ( cacheTags.IsNotNullOrWhiteSpace() )
+            if ( cacheTags.IsNullOrWhiteSpace() )
             {
-                // trim the results since the tag name could come from lava and not from a prevalidated value stored in DefinedValue.
-                var cacheTagList = cacheTags.Split( ',' ).Select( t => t.Trim() );
-                foreach ( var cacheTag in cacheTagList )
-                {
-                    // Don't save the tag if it is not valid.
-                    int cacheTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
-                    Rock.Model.DefinedValueService definedValueService = new Rock.Model.DefinedValueService( new Rock.Data.RockContext() );
-                    var validCacheTags = definedValueService.Queryable().Where( v => v.DefinedTypeId == cacheTagDefinedTypeId && v.Value == cacheTag ).ToList();
-                    if ( validCacheTags.Count == 0 )
-                    {
-                        return;
-                    }
+                return;
+            }
 
-                    var value = RockCacheManager<List<string>>.Instance.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
-                    if ( !value.Contains( key ) )
-                    {
-                        value.Add( key );
-                        RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
-                        _stringConcurrentCacheKeyReferences.AddOrIgnore( $"{cacheTag}{region}", new CacheKeyReference { Key = cacheTag, Region = region } );
-                    }
+            // trim the results since the tag name could come from lava and not from a prevalidated value stored in DefinedValue.
+            var cacheTagList = cacheTags.Split( ',' ).Select( t => t.Trim() );
+            if ( !cacheTagList.Any() )
+            {
+                return;
+            }
+
+            // Track the keys associated with defined cache tags, and ignore undefined tags.
+            var cacheTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
+            var definedValueService = new Rock.Model.DefinedValueService( new Rock.Data.RockContext() );
+            var validCacheTags = definedValueService.Queryable().Where( v => v.DefinedTypeId == cacheTagDefinedTypeId && cacheTagList.Contains( v.Value ) ).ToList();
+
+            foreach ( var cacheTag in validCacheTags )
+            {
+                var cacheTagKey = cacheTag.Value;
+                var value = RockCacheManager<List<string>>.Instance.Get( cacheTagKey, CACHE_TAG_REGION_NAME ) ?? new List<string>();
+                if ( !value.Contains( key ) )
+                {
+                    // Add the key to the list of keys associated with this tag.
+                    value.Add( key );
+                    RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTagKey, CACHE_TAG_REGION_NAME, value );
+                    _stringConcurrentCacheKeyReferences.AddOrIgnore( $"{cacheTag}{region}", new CacheKeyReference { Key = cacheTagKey, Region = region } );
                 }
             }
         }
@@ -524,11 +529,21 @@ namespace Rock.Web.Cache
             var cacheTagList = cacheTags.Split( ',' );
             foreach ( var cacheTag in cacheTagList )
             {
-                var cachedItemKeys = RockCacheManager<List<string>>.Instance.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
+                // Get the collection of keys associated with this tag.
+                var cachedItemKeys = RockCacheManager<List<string>>.Instance.Get( cacheTag, CACHE_TAG_REGION_NAME );
+                if ( cachedItemKeys == null )
+                {
+                    continue;
+                }
+
+                // Remove the keys from the cache.
                 foreach ( var key in cachedItemKeys )
                 {
                     Remove( key );
                 }
+
+                // Reset the collection of keys associated with this tag.
+                RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, new List<string>() );
             }
         }
 

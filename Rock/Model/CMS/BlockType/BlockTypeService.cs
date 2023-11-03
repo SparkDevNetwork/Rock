@@ -27,6 +27,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -372,6 +373,53 @@ namespace Rock.Model
             }
         }
 #endif
+
+        /// <summary>
+        /// Get the list of BlockTypes that may be added to the Page Zone for the given site type
+        /// </summary>
+        /// <param name="siteType">The site type of the blocks to be added.</param>
+        /// <returns></returns>
+        public static List<BlockTypeCache> BlockTypesToDisplay( SiteType siteType )
+        {
+            return BlockTypeCache.All()
+                .Where( bt =>
+                {
+                    var type = bt.GetCompiledType();
+                    if ( siteType == SiteType.Web )
+                    {
+                        if ( typeof( RockBlock ).IsAssignableFrom( type ) )
+                        {
+                            return true;
+                        }
+
+                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                        {
+                            // if no site type is specified, then it likely is an obsidian block which is yet to be released.
+                            // So show it only if it is the develop environment.
+                            if ( type.GetCustomAttribute<SupportedSiteTypesAttribute>() == null )
+                            {
+                                return System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
+                            }
+                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                        }
+
+                        // Failsafe for any blocks that implement this directly.
+                        return typeof( IRockObsidianBlockType ).IsAssignableFrom( type );
+                    }
+                    else if ( siteType == SiteType.Mobile )
+                    {
+                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                        {
+                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                        }
+
+                        // Failsafe for any blocks that implement this directly.
+                        return typeof( IRockMobileBlockType ).IsAssignableFrom( type );
+                    }
+                    return false;
+                } )
+                .ToList();
+        }
 
         // Stores the list of block type files that have been processed in this application session.
         private static List<string> _processedBlockPaths = new List<string>();

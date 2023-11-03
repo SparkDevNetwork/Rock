@@ -19,6 +19,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -382,8 +383,12 @@ namespace Rock
             {
                 var cacheType = Type.GetType( $"Rock.Web.Cache.{type.Name}Cache" );
 
-                // Make sure the base type inherits from ModelCache<,>
-                if ( cacheType != null && cacheType.BaseType.IsGenericType && cacheType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) )
+                // Make sure the base type inherits from ModelCache<,> or EntityCache<,>
+                var isValidCacheType = cacheType != null
+                    && cacheType.BaseType.IsGenericType
+                    && ( cacheType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) || cacheType.BaseType.GetGenericTypeDefinition() == typeof( EntityCache<,> ) );
+
+                if ( isValidCacheType )
                 {
                     // Make sure the base type is the expected type, e.g. ModelCache<CampusCache, Campus>
                     if ( cacheType.BaseType.GenericTypeArguments[1] == type )
@@ -519,6 +524,128 @@ namespace Rock
             }
 
             return entityGuid;
+        }
+
+        /// <summary>
+        /// Gets the entity ids for a entity type from a list of entity guids, idkeys or ids as strings.
+        /// </summary>
+        /// <param name="entityType">The entity type cache, this represents the model to use when mapping the <paramref name="entityKeys"/> to a identifiers.</param>
+        /// <param name="entityKeys">The entity identifier keys to be converted to integer identifiers.</param>
+        /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise the integer identifier will not be returned.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns>A dictionary whose key is the original entityKey and value is the integer identifier. If an identifier was not found then its key will not be present in this dictionary.</returns>
+        internal static Dictionary<string, int> GetEntityIdsForEntityType( EntityTypeCache entityType, List<string> entityKeys, bool allowIntegerIdentifier = true, Data.DbContext dbContext = null )
+        {
+            if ( entityType == null )
+            {
+                throw new ArgumentNullException( nameof( entityType ) );
+            }
+
+            if ( entityKeys == null )
+            {
+                throw new ArgumentNullException( nameof( entityKeys ) );
+            }
+
+            if ( entityKeys.Count == 0 )
+            {
+                return new Dictionary<string, int>();
+            }
+
+            var guidsToLookup = new List<Guid>();
+            var entityIds = new Dictionary<string, int>();
+
+            // Go over each entity key and check if it is already an integer or
+            // a hashed integer. Otherwise add it to a list of guids to lookup.
+            foreach ( var entityKey in entityKeys )
+            {
+                var entityId = allowIntegerIdentifier ? entityKey.AsIntegerOrNull() : null;
+
+                if ( !entityId.HasValue )
+                {
+                    entityId = Rock.Utility.IdHasher.Instance.GetId( entityKey );
+                }
+
+                if ( entityId.HasValue )
+                {
+                    entityIds.AddOrIgnore( entityKey, entityId.Value );
+                }
+                else if ( Guid.TryParse( entityKey, out var guid ) )
+                {
+                    guidsToLookup.Add( guid );
+                }
+            }
+
+            // If we have any guids to look up in the database, then do so in bulk.
+            if ( guidsToLookup.Any() )
+            {
+                var disposeOfContext = false;
+
+                if ( dbContext == null )
+                {
+                    dbContext = new RockContext();
+                    disposeOfContext = true;
+                }
+
+                // Get a queryable for the IEntity type.
+                var entityQry = GetQueryableForEntityType( entityType.GetEntityType(), dbContext );
+
+                while ( guidsToLookup.Any() )
+                {
+                    // Load at most 1,000 entities at a time since it performs better than loading all of them at once.
+                    var guidsToProcess = guidsToLookup.Take( 1_000 ).ToList();
+                    guidsToLookup = guidsToLookup.Skip( 1_000 ).ToList();
+
+                    // Load all the entities from the GUIDs.
+                    var ids = entityQry
+                        .AsNoTracking()
+                        .Where( e => guidsToProcess.Contains( e.Guid ) )
+                        .Select( e => new
+                        {
+                            e.Id,
+                            e.Guid
+                        } )
+                        .ToList();
+
+                    foreach ( var id in ids )
+                    {
+                        var key = entityKeys.FirstOrDefault( k => k.ToLower() == id.Guid.ToString().ToLower() );
+
+                        if ( key != null )
+                        {
+                            entityIds.AddOrIgnore( key, id.Id );
+                        }
+                    }
+                }
+
+                if ( disposeOfContext )
+                {
+                    dbContext.Dispose();
+                }
+            }
+
+            return entityIds;
+        }
+
+        /// <summary>
+        /// Gets the queryable for the entity type.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns>An <see cref="IQueryable{IEntity}"/> that can be used to load entities; or <c>null</c> if the operation was not supported.</returns>
+        internal static IQueryable<IEntity> GetQueryableForEntityType( Type entityType, Data.DbContext dbContext )
+        {
+            // Dynamically get the IService for the entity type and then get a queryable to load the entities.
+            var entityService = Rock.Reflection.GetServiceForEntityType( entityType, dbContext );
+            var asQueryableMethod = entityService?.GetType().GetMethod( "Queryable", Array.Empty<Type>() );
+
+            // If the entity service is null, then the entity type is not a valid IEntity type.
+            if ( asQueryableMethod == null )
+            {
+                return null;
+            }
+
+            // Get a queryable for the IEntity type.
+            return ( IQueryable<IEntity> ) asQueryableMethod.Invoke( entityService, Array.Empty<object>() );
         }
 
         // Cache the ServiceType that we found when doing reflection. Doing reflection each time could take a few milliseconds,

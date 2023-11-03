@@ -50,7 +50,6 @@ namespace Rock.Data
         [Key]
         [DataMember]
         [IncludeForReporting]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )] // Excluded because the ViewModelBase provides this through inheritance
         public int Id { get; set; }
 
         /// <summary>
@@ -97,7 +96,6 @@ namespace Rock.Data
         [DataMember]
         [IncludeForReporting]
         [NotEmptyGuidAttribute]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )] // Excluded because the ViewModelBase provides this through inheritance
         public Guid Guid
         {
             get { return _guid; }
@@ -116,7 +114,6 @@ namespace Rock.Data
         /// </value>
         [DataMember]
         [HideFromReporting]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public int? ForeignId { get; set; }
 
         /// <summary>
@@ -127,7 +124,6 @@ namespace Rock.Data
         /// </value>
         [DataMember]
         [HideFromReporting]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public Guid? ForeignGuid { get; set; }
 
         /// <summary>
@@ -139,7 +135,6 @@ namespace Rock.Data
         [MaxLength( 100 )]
         [DataMember]
         [HideFromReporting]
-        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public string ForeignKey { get; set; }
 
         #endregion
@@ -474,7 +469,7 @@ namespace Rock.Data
 
                     if ( propValue is Guid )
                     {
-                        return ( (Guid)propValue ).ToString();
+                        return ( ( Guid ) propValue ).ToString();
                     }
                     else
                     {

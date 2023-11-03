@@ -114,19 +114,6 @@ namespace Rock.Lava
 #endif
             }
 
-            if ( options.GetLegacyGlobalMergeFields )
-            {
-                var globalAttributes = GlobalAttributesCache.Get();
-                if ( globalAttributes.LavaSupportLevel != Lava.LavaSupportLevel.NoLegacy )
-                {
-                    var legacyGlobalAttributeMergeFields = GlobalAttributesCache.GetLegacyMergeFields( currentPerson );
-                    foreach ( var legacyGlobalAttributeMergeField in legacyGlobalAttributeMergeFields )
-                    {
-                        mergeFields.Add( legacyGlobalAttributeMergeField.Key, legacyGlobalAttributeMergeField.Value );
-                    }
-                }
-            }
-
 #if REVIEW_WEBFORMS
             if ( options.GetPageContext && rockPage != null )
             {

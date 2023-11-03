@@ -47,7 +47,7 @@
                                                             </button>
                                                             <ul class="dropdown-menu">
                                                                 <li>
-                                                                    <asp:LinkButton ID="btnCancelConfirmAttend" runat="server" CommandName="AttendanceId" CssClass="text-danger" Text="Cancel Confirmation" OnClick="btnCancelConfirmAttend_Click" />
+                                                                    <asp:LinkButton ID="btnCancelConfirmAttend" runat="server" CommandName="AttendanceId" CssClass="text-danger" Text="Cancel Confirmation" OnClick="btnDeclineAttend_Click" />
                                                                     <asp:LinkButton ID="btnDeleteScheduleExclusion" runat="server" CommandName="ScheduleExclusionId" CssClass="text-danger" Text="Delete" OnClick="btnDeleteScheduleExclusion_Click" />
                                                                 </li>
                                                             </ul>

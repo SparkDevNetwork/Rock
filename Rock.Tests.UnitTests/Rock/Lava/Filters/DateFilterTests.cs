@@ -46,38 +46,32 @@ namespace Rock.Tests.UnitTests.Lava
         private static RecurrencePattern _weeklyRecurrence = new RecurrencePattern( "RRULE:FREQ=WEEKLY;BYDAY=SA" );
         private static RecurrencePattern _monthlyRecurrence = new RecurrencePattern( "RRULE:FREQ=MONTHLY;BYDAY=1SA" );
 
-        private static string _tzId;
-        private static DateTime _today;
-        private static DateTime _nextSaturday;
-        private static DateTime _firstSaturdayOfMonth;
+        private static DateTime _now;
 
-        private static Calendar _weeklySaturday430;
-        private static Calendar _monthlyFirstSaturday;
-
-        private static string _iCalStringSaturday430;
-        private static string _iCalStringFirstSaturdayOfMonth;
-
-        [ClassInitialize]
-        public static void Initialize( TestContext context )
+        [TestInitialize()]
+        public void SetDefaultTestTimezone()
         {
-            // Set the test timezone.
+            // Prior to each test, ensure that the Lava Engine is synchronized with the test timezone.
             LavaTestHelper.SetRockDateTimeToUtcPositiveTimezone();
 
             // Initialize the test calendar data.
-            _tzId = RockDateTime.OrgTimeZoneInfo.Id;
-            _today = RockDateTime.Today;
-            _nextSaturday = RockDateTime.Today.GetNextWeekday( DayOfWeek.Saturday );
-            _firstSaturdayOfMonth = RockDateTime.Now.StartOfMonth().GetNextWeekday( DayOfWeek.Saturday );
+            _now = RockDateTime.Now;
+        }
 
-            _weeklySaturday430 = new Calendar()
+        private static string GetCalendarWeeklySaturday1630FromDate( DateTime startDate, TimeZoneInfo tz )
+        {
+            var today = startDate.Date;
+            var nextSaturday = today.GetNextWeekday( DayOfWeek.Saturday );
+
+            var weeklySaturday430 = new Calendar()
             {
                 Events =
                 {
                     new CalendarEvent
                     {
-                        DtStart = new CalDateTime( _nextSaturday.Year, _nextSaturday.Month, _nextSaturday.Day, 16, 30, 0, _tzId ),
-                        DtEnd = new CalDateTime( _nextSaturday.Year, _nextSaturday.Month, _nextSaturday.Day, 17, 30, 0 , _tzId ),
-                        DtStamp = new CalDateTime( _today.Year, _today.Month, _today.Day, _tzId ),
+                        DtStart = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0, tz.Id ),
+                        DtEnd = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 17, 30, 0 , tz.Id ),
+                        DtStamp = new CalDateTime( today.Year, today.Month, today.Day, tz.Id ),
                         RecurrenceRules = new List<RecurrencePattern> { _weeklyRecurrence },
                         Sequence = 0,
                         Uid = @"d74561ac-c0f9-4dce-a610-c39ca14b0d6e"
@@ -85,25 +79,34 @@ namespace Rock.Tests.UnitTests.Lava
                 }
             };
 
-            _monthlyFirstSaturday = new Calendar()
+            var iCalString = _serializer.SerializeToString( weeklySaturday430 );
+            return iCalString;
+        }
+
+        private static string GetCalendarMonthlyFirstSaturday1800FromDate( DateTime startDate, TimeZoneInfo tz )
+        {
+            var firstSaturdayOfMonth = startDate.StartOfMonth().GetNextWeekday( DayOfWeek.Saturday );
+
+            var monthlyFirstSaturday = new Calendar()
             {
                 Events =
                 {
-                    new CalendarEvent
-                    {
-                        DtStart = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day, 8, 0, 0 ),
-                        DtEnd = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day, 10, 0, 0 ),
-                        DtStamp = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day ),
-                        RecurrenceRules = new List<RecurrencePattern> { _monthlyRecurrence },
-                        Sequence = 0,
-                        Uid = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
-                    }
+                new CalendarEvent
+                {
+                    DtStart = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 8, 0, 0, tz.Id ),
+                    DtEnd = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 10, 0, 0, tz.Id ),
+                    DtStamp = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, tz.Id ),
+                    RecurrenceRules = new List<RecurrencePattern> { _monthlyRecurrence },
+                    Sequence = 0,
+                    Uid = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
+                }
                 }
             };
 
-            _iCalStringSaturday430 = _serializer.SerializeToString( _weeklySaturday430 );
-            _iCalStringFirstSaturdayOfMonth = _serializer.SerializeToString( _monthlyFirstSaturday );
+            var iCalString = _serializer.SerializeToString( monthlyFirstSaturday );
+            return iCalString;
         }
+
 
         [ClassCleanup]
         public static void Cleanup()
@@ -290,7 +293,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void Date_NowWithNoFormatStringAsInput_ResolvesToCurrentDateTimeWithGeneralFormat()
         {
             // Expect the general format: short date/long time.
-            TestHelper.AssertTemplateOutput( RockDateTime.Now.ToString( "G" ), "{{ 'Now' | Date }}" );
+            TestHelper.AssertTemplateOutputDate( _now.ToString( "G" ), "{{ 'Now' | Date }}", new TimeSpan( 0, 0, 10 ) );
         }
 
         /// <summary>
@@ -299,7 +302,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void Date_NowWithFormatStringAsInput_ResolvesToCurrentDateTimeWithSpecifiedFormat()
         {
-            TestHelper.AssertTemplateOutputDate( RockDateTime.Now.ToString( "yyyy-MM-dd" ), "{{ 'Now' | Date:'yyyy-MM-dd' }}" );
+            TestHelper.AssertTemplateOutputDate( _now.ToString( "yyyy-MM-dd" ), "{{ 'Now' | Date:'yyyy-MM-dd' }}" );
         }
 
         /// <summary>
@@ -789,7 +792,7 @@ namespace Rock.Tests.UnitTests.Lava
 
                     if ( !output.Contains( $"<li>{ rockDateTimeString }</li>" ) )
                     {
-                        Assert.That.Fail( $"Lava Output '{ output }' does not contain date string '{ rockDateTimeString }'.\n[SystemDateTime = {DateTime.Now:O}, RockDateTime = {RockDateTime.Now:O}]" );
+                        Assert.That.Fail( $"Lava Output '{ output }' does not contain date string '{ rockDateTimeString }'.\n[SystemDateTime = {DateTime.Now:O}, RockDateTime = {_now:O}]" );
                     }
                 }
             } );
@@ -820,8 +823,7 @@ namespace Rock.Tests.UnitTests.Lava
             LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
                 // Create a new schedule starting at 11am today Rock time.
-                var now = RockDateTime.Now;
-            var startDateTime = LavaDateTime.NewDateTime( now.Year, now.Month, now.Day, 22, 0, 0 );
+                var startDateTime = LavaDateTime.NewDateTime( _now.Year, _now.Month, _now.Day, 22, 0, 0 );
 
                 var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime,
                     eventDuration: new TimeSpan( 1, 0, 0 ) );
@@ -903,9 +905,12 @@ namespace Rock.Tests.UnitTests.Lava
         {
             LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
-                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( RockDateTime.Now, DayOfWeek.Saturday, new TimeSpan( 16, 30, 0 ) );
+                // Get the iCalendar and expected datetime for the test time zone.
+                var testDateTime = new DateTime( 2021, 3, 15, 13, 0, 0 );
+                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( testDateTime, DayOfWeek.Saturday, new TimeSpan( 16, 30, 0 ) );
+                var iCalString = GetCalendarWeeklySaturday1630FromDate( testDateTime, timeZone );
 
-                VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
+                VerifyDatesExistInDatesFromICalResult( iCalString,
                     new List<DateTime> { expectedDateTime },
                     $"1,'','{expectedDateTime.Date:u}'" );
             } );
@@ -919,9 +924,12 @@ namespace Rock.Tests.UnitTests.Lava
         {
             LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
-                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( RockDateTime.Now, DayOfWeek.Saturday, new TimeSpan(17,30,0) );
+                // Get the iCalendar and expected datetime for the test time zone.
+                var testDateTime = new DateTime( 2021, 3, 15, 13, 0, 0 );
+                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( testDateTime, DayOfWeek.Saturday, new TimeSpan(17,30,0) );
+                var iCalString = GetCalendarWeeklySaturday1630FromDate( testDateTime, timeZone );
 
-                VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
+                VerifyDatesExistInDatesFromICalResult( iCalString,
                     new List<DateTime> { expectedDateTime },
                     $"1,'enddatetime','{expectedDateTime.Date:u}'" );
             } );
@@ -957,7 +965,7 @@ namespace Rock.Tests.UnitTests.Lava
 
                 // Get a Rock datetime for 10am on the first Saturday 11 months from now.
                 // The GetDatesFromiCal filter can only retrieve 12 months of data, including the current month.
-                var expectedDateTime = RockDateTime.Now
+                var expectedDateTime = _now
                     .AddMonths( -1 )
                     .StartOfMonth()
                     .AddYears( 1 )
@@ -965,7 +973,9 @@ namespace Rock.Tests.UnitTests.Lava
 
                 expectedDateTime = LavaDateTime.NewDateTime( expectedDateTime.Year, expectedDateTime.Month, expectedDateTime.Day, 10, 0, 0 );
 
-                VerifyDatesExistInDatesFromICalResult( _iCalStringFirstSaturdayOfMonth,
+                var iCalendar = GetCalendarMonthlyFirstSaturday1800FromDate( _now, timeZone );
+
+                VerifyDatesExistInDatesFromICalResult( iCalendar,
                     new List<DateTime> { expectedDateTime },
                     "12,'enddatetime'" );
             } );
@@ -1025,7 +1035,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysFromNow }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -14 ).ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( -14 ).ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "14 days ago", template );
         }
@@ -1038,7 +1048,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysFromNow }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -1 ).ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( -1 ).ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "yesterday", template );
         }
@@ -1051,7 +1061,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysFromNow }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", _now.ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "today", template );
         }
@@ -1064,7 +1074,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysFromNow }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( 1 ).ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( 1 ).ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "tomorrow", template );
         }
@@ -1077,7 +1087,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysFromNow }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( 14 ).ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( 14 ).ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "in 14 days", template );
         }
@@ -1089,7 +1099,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void DaysFromNow_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
         {
             // Get a Rock time of 1:00am tomorrow.
-            var tomorrow = RockDateTime.Now.Date.AddDays( 1 ).AddHours( 1 );
+            var tomorrow = _now.Date.AddDays( 1 ).AddHours( 1 );
             var localOffset = RockDateTime.OrgTimeZoneInfo.BaseUtcOffset;
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
@@ -1161,9 +1171,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void DaysInMonth_InputKeywordNow_YieldsDaysInCurrentMonth()
         {
-            var currentDateTime = RockDateTime.Now;
-
-            var targetDate = new DateTime( currentDateTime.Year, currentDateTime.Month, 1 ).AddMonths( 1 );
+            var targetDate = new DateTime( _now.Year, _now.Month, 1 ).AddMonths( 1 );
 
             targetDate = targetDate.AddDays( -1 );
 
@@ -1207,7 +1215,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysSince }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -3 ).ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( -3 ).ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "3", template );
         }
@@ -1220,7 +1228,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysSince }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", _now.ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "0", template );
         }
@@ -1233,7 +1241,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysSince }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.Date.AddMinutes( -1 ).ToString( "dd-MMM-yyyy HH:mm:ss" ) );
+            template = template.Replace( "<compareDate>", _now.Date.AddMinutes( -1 ).ToString( "dd-MMM-yyyy HH:mm:ss" ) );
 
             TestHelper.AssertTemplateOutput( "1", template );
         }
@@ -1246,7 +1254,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysSince }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( 3 ).ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( 3 ).ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "-3", template );
         }
@@ -1258,7 +1266,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void DaysSince_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
         {
             // Get a Rock time of 14 days prior to today at 1:00am.
-            var priorRockDate = RockDateTime.Now.Date.AddDays( -14 ).AddHours( 1 );
+            var priorRockDate = _now.Date.AddDays( -14 ).AddHours( 1 );
             var rockOffset = RockDateTime.OrgTimeZoneInfo.BaseUtcOffset;
 
             // First, verify that the Lava filter returns "14" when the DateTimeOffset resolves to Rock time 1:00am two weeks from today.
@@ -1288,7 +1296,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysUntil }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( 3 ).ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( 3 ).ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "3", template );
         }
@@ -1301,7 +1309,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysUntil }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", _now.ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "0", template );
         }
@@ -1314,7 +1322,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysUntil }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.Date.AddDays( 1 ).AddMinutes( 1 ).ToString( "dd-MMM-yyyy HH:mm:ss" ) );
+            template = template.Replace( "<compareDate>", _now.Date.AddDays( 1 ).AddMinutes( 1 ).ToString( "dd-MMM-yyyy HH:mm:ss" ) );
 
             TestHelper.AssertTemplateOutput( "1", template );
         }
@@ -1327,7 +1335,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | DaysUntil }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -3 ).ToString( "dd-MMM-yyyy" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( -3 ).ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "-3", template );
         }
@@ -1343,7 +1351,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void HumanizeDateTime_CompareDayEarlier_YieldsYesterday()
         {
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -1 ).ToString( "dd-MMM-yyyy tt" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( -1 ).ToString( "dd-MMM-yyyy tt" ) );
 
             TestHelper.AssertTemplateOutput( "yesterday", template );
         }
@@ -1356,7 +1364,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
 
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddHours( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
+            template = template.Replace( "<compareDate>", _now.AddHours( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
 
             TestHelper.AssertTemplateOutput( "2 hours ago", template );
         }
@@ -1368,7 +1376,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void HumanizeDateTime_CompareDaysEarlier_YieldsDaysAgo()
         {
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
 
             TestHelper.AssertTemplateOutput( "2 days ago", template );
         }
@@ -1380,7 +1388,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void HumanizeDateTime_CompareMonthsEarlier_YieldsMonthsAgo()
         {
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddMonths( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
+            template = template.Replace( "<compareDate>", _now.AddMonths( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
 
             TestHelper.AssertTemplateOutput( "2 months ago", template );
         }
@@ -1542,7 +1550,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void HumanizeTimeSpan_NowAsInput_YieldsResult()
         {
             var template = "{{ 'Now' | HumanizeTimeSpan:'<compareDate>' }}";
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( 3 ).ToString( "yyyy-MM-dd hh:mm:ss" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( 3 ).ToString( "yyyy-MM-dd hh:mm:ss" ) );
 
             TestHelper.AssertTemplateOutputRegex( "[23] days", template );
         }
@@ -1554,7 +1562,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void HumanizeTimeSpan_NowAsReferenceDate_YieldsResult()
         {
             var template = "{{ '<compareDate>' | HumanizeTimeSpan:'Now' }}";
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( 3 ).ToString( "yyyy-MM-dd hh:mm:ss" ) );
+            template = template.Replace( "<compareDate>", _now.AddDays( 3 ).ToString( "yyyy-MM-dd hh:mm:ss" ) );
 
             TestHelper.AssertTemplateOutputRegex( "[23] days", template );
 
@@ -1566,7 +1574,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void HumanizeTimeSpan_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
         {
-            var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
+            var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( _now );
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
@@ -1706,7 +1714,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void NextDayOfTheWeek_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
         {
-            var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
+            var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( _now );
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {

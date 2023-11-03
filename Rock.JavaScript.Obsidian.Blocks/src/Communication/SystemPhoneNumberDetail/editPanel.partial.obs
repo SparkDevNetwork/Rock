@@ -78,13 +78,13 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-    import CheckBox from "@Obsidian/Controls/checkBox";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import GroupPicker from "@Obsidian/Controls/groupPicker";
-    import PersonPicker from "@Obsidian/Controls/personPicker";
-    import TextBox from "@Obsidian/Controls/textBox";
-    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { SystemPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Communication/SystemPhoneNumberDetail/systemPhoneNumberBag";

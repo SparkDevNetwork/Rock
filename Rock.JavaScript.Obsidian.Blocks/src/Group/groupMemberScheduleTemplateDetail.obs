@@ -1,0 +1,242 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+
+    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+        <Panel type="block" :title="panelName" :headerSecondaryActions="headerSecondaryActions">
+            <template #default>
+                <ViewPanel v-if="panelMode == DetailPanelMode.View"
+                           :modelValue="groupMemberScheduleTemplateViewBag" />
+                <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
+                           v-model="groupMemberScheduleTemplateEditBag"
+                           :isEditable="isEditable" />
+
+                <Modal v-model="showAuditDetailsModal" title="Audit Details">
+                    <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+                </Modal>
+            </template>
+            <template #footerActions>
+                <div v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add">
+                    <RockButton v-if="isEditable"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onStartSubmitForm">
+                        Save
+                    </RockButton>
+                    <RockButton v-if="isEditable"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onCancelEdit">
+                        Cancel
+                    </RockButton>
+                    <RockButton v-if="!isEditable"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onCloseClick">
+                        Close
+                    </RockButton>
+                </div>
+
+                <div v-if="panelMode === DetailPanelMode.View && isEditable">
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onEdit">
+                        Edit
+                    </RockButton>
+                </div>
+            </template>
+        </Panel>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./GroupMemberScheduleTemplateDetail/editPanel.partial.obs";
+    import ViewPanel from "./GroupMemberScheduleTemplateDetail/viewPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./GroupMemberScheduleTemplateDetail/types.partial";
+    import { GroupMemberScheduleTemplateBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberScheduleTemplateDetail/groupMemberScheduleTemplateBag";
+    import { GroupMemberScheduleTemplateBox } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberScheduleTemplateDetail/groupMemberScheduleTemplateBox";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+
+    const config = useConfigurationValues<GroupMemberScheduleTemplateBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const groupMemberScheduleTemplateViewBag = ref(config.entity);
+    const groupMemberScheduleTemplateEditBag = ref<GroupMemberScheduleTemplateBag>(config.entity ?? {} as GroupMemberScheduleTemplateBag);
+    const submitForm = ref(false);
+    const resetKey = ref("");
+    const showAuditDetailsModal = ref(false);
+    const params = new URLSearchParams(window.location.search);
+    const isAutoEditMode = ref(asBooleanOrNull(params.get("autoEdit")) ?? false);
+
+    const entityTypeGuid = EntityType.GroupMemberScheduleTemplate;
+
+    const panelMode = ref<DetailPanelMode>(isAutoEditMode.value === true ? DetailPanelMode.Edit : DetailPanelMode.View);
+
+    // The properties that are being edited in the UI. This is used to
+    // inform the server which incoming values have valid data in them.
+    const validProperties = [
+        "name",
+        "schedule"
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const headerSecondaryActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [];
+
+        if (groupMemberScheduleTemplateViewBag?.value?.idKey) {
+            actions.push({
+                type: "default",
+                title: "Audit Details",
+                handler: onAuditClick
+            });
+        }
+
+        return actions;
+    });
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        if (config.isEditable === false) {
+            return "View Group Member Schedule Template";
+        }
+
+        if (panelMode.value === DetailPanelMode.View) {
+            return groupMemberScheduleTemplateViewBag.value?.name ?? "";
+        }
+        else {
+            const action = panelMode.value === DetailPanelMode.Add ? "Add" : "Edit";
+            return `${action} Group Member Schedule Template`;
+        }
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return groupMemberScheduleTemplateViewBag.value?.idKey ?? "";
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    const onAuditClick = (): void => {
+        showAuditDetailsModal.value = true;
+    };
+
+    function onCloseClick(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+        }
+    }
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    function onCancelEdit(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+        }
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<void> {
+        const result = await invokeBlockAction<GroupMemberScheduleTemplateBox>("Edit", {
+            key: groupMemberScheduleTemplateViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.entity) {
+            groupMemberScheduleTemplateEditBag.value = result.data.entity;
+            panelMode.value = DetailPanelMode.Edit;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+
+        const data: GroupMemberScheduleTemplateBox = {
+            entity: groupMemberScheduleTemplateEditBag.value,
+            isEditable: true,
+            validProperties: validProperties
+        };
+
+        const result = await invokeBlockAction<string>("Save", {
+            box: data
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && result.data) {
+                window.location.href = makeUrlRedirectSafe(result.data);
+            }
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save group member schedule template.";
+        }
+
+    }
+
+    const onStartSubmitForm = (): void => {
+        submitForm.value = true;
+    };
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified group member schedule template could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        groupMemberScheduleTemplateEditBag.value = config.entity;
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

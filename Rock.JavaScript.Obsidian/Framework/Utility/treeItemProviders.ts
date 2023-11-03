@@ -210,6 +210,11 @@ export class DataViewTreeItemProvider implements ITreeItemProvider {
     public securityGrantToken?: string | null;
 
     /**
+     * The flag sets whether only persisted data view should be shown by the picker
+     */
+    public displayPersistedOnly: boolean = false;
+
+    /**
      * Gets the child items from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
@@ -224,6 +229,7 @@ export class DataViewTreeItemProvider implements ITreeItemProvider {
             entityTypeGuidFilter: this.entityTypeGuid,
             lazyLoad: false,
             securityGrantToken: this.securityGrantToken,
+            displayPersistedOnly: this.displayPersistedOnly
         };
 
         const response = await post<TreeItemBag[]>("/api/v2/Controls/DataViewPickerGetDataViews", {}, options);
@@ -820,6 +826,9 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
     /** Whether to include inactive schedules in the results. */
     public includeInactive: boolean = false;
 
+    /** Whether to exclude private schedules in the results. */
+    public includePublicOnly: boolean = false;
+
     /**
      * Gets the child items from the server.
      *
@@ -831,7 +840,8 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
         const options: Partial<SchedulePickerGetChildrenOptionsBag> = {
             parentGuid,
             includeInactiveItems: this.includeInactive,
-            securityGrantToken: this.securityGrantToken
+            includePublicItemsOnly: this.includePublicOnly,
+            securityGrantToken: this.securityGrantToken,
         };
         const url = "/api/v2/Controls/SchedulePickerGetChildren";
         const response = await post<TreeItemBag[]>(url, undefined, options);

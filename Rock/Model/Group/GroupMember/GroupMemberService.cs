@@ -1002,11 +1002,12 @@ namespace Rock.Model
         /// x number of weeks.
         /// </summary>
         /// <param name="members">The members.</param>
+        /// <param name="groupId"></param>
         /// <param name="amtOfWeeks">The amt of weeks.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
         [RockInternal( "1.15" )]
-        internal static IQueryable<GroupMember> WhereMembersWithNoAttendanceForNumberOfWeeks( IQueryable<GroupMember> members, int amtOfWeeks, RockContext rockContext )
+        internal static IQueryable<GroupMember> WhereMembersWithNoAttendanceForNumberOfWeeks( IQueryable<GroupMember> members, int groupId, int amtOfWeeks, RockContext rockContext )
         {
             var attendanceOccurenceService = new AttendanceService( rockContext );
             var limitDate = RockDateTime.Now.AddDays( amtOfWeeks * -7 );
@@ -1014,7 +1015,9 @@ namespace Rock.Model
             // Pull the attendance occurrences for this group.
             var attendedPersonIds = attendanceOccurenceService
                 .Queryable()
-                .Where( x => x.Occurrence.OccurrenceDate >= limitDate && x.DidAttend == true )
+                .Where( x => x.Occurrence.OccurrenceDate >= limitDate
+                && x.DidAttend == true
+                && x.Occurrence.GroupId == groupId )
                 .Select( a => a.PersonAlias.PersonId );
 
             return members.Where( m => !attendedPersonIds.Contains( m.PersonId ) );
@@ -1026,11 +1029,12 @@ namespace Rock.Model
         /// x number of weeks.
         /// </summary>
         /// <param name="members">The members.</param>
+        /// <param name="groupId"></param>
         /// <param name="amtOfWeeks">The amt of weeks.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
         [RockInternal( "1.15" )]
-        internal static IQueryable<GroupMember> WhereMembersWhoFirstAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int amtOfWeeks, RockContext rockContext = null )
+        internal static IQueryable<GroupMember> WhereMembersWhoFirstAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int groupId, int amtOfWeeks, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
 
@@ -1041,13 +1045,17 @@ namespace Rock.Model
             // we're filtering out).
             var previousAttendancesPersonIds = attendanceOccurenceService
                 .Queryable()
-                .Where( x => x.Occurrence.OccurrenceDate < limitDate && x.DidAttend == true )
+                .Where( x => x.Occurrence.OccurrenceDate < limitDate
+                && x.DidAttend == true
+                && x.Occurrence.GroupId == groupId )
                 .Select( a => a.PersonAlias.PersonId );
 
             // Pull all of our attendances within our cut-off.
             var attendedPersonIds = attendanceOccurenceService
                 .Queryable()
-                .Where( x => x.Occurrence.OccurrenceDate >= limitDate && x.DidAttend == true )
+                .Where( x => x.Occurrence.OccurrenceDate >= limitDate
+                && x.DidAttend == true
+                && x.Occurrence.GroupId == groupId )
                 .Select( a => a.PersonAlias.PersonId );
 
             // Filter the data to where the group member has no previous attendance, but has an attendance within x number of weeks.
@@ -1058,11 +1066,12 @@ namespace Rock.Model
         /// Gets the members who attended within number of weeks.
         /// </summary>
         /// <param name="members">The members.</param>
+        /// <param name="groupId"></param>
         /// <param name="amtOfWeeks">The amt of weeks.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
         [RockInternal( "1.15" )]
-        internal static IQueryable<GroupMember> WhereMembersWhoAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int amtOfWeeks, RockContext rockContext = null )
+        internal static IQueryable<GroupMember> WhereMembersWhoAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int groupId, int amtOfWeeks, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
 
@@ -1072,7 +1081,9 @@ namespace Rock.Model
             // Pull the attendance occurrences for this group.
             var attendedPersonIds = attendanceOccurenceService
                 .Queryable()
-                .Where( x => x.Occurrence.OccurrenceDate >= limitDate && x.DidAttend == true )
+                .Where( x => x.Occurrence.OccurrenceDate >= limitDate
+                && x.DidAttend == true
+                && x.Occurrence.GroupId == groupId )
                 .Select( a => a.PersonAlias.PersonId );
 
             return members.Where( m => attendedPersonIds.Contains( m.PersonId ) );

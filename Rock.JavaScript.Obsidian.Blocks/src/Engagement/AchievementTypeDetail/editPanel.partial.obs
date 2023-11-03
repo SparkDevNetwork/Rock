@@ -1,0 +1,375 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isPublic"
+                          label="Public" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <CategoryPicker label="Category"
+                                v-model="category"
+                                :multiple="false"
+                                :entityTypeGuid="EntityType.AchievementType" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="allowOverAchievement"
+                          text="Yes"
+                          label="Allow Overachievement"
+                          help="When enabled, achievement beyond the defined goal will be tracked so it is possible for progress to be greater than 100%. Only one achievement is allowed when this is enabled." />
+            </div>
+
+            <div class="col-md-3">
+                <NumberBox v-if="!allowOverAchievement"
+                           label="Max Accomplishments Allowed"
+                           v-model="maxAccomplishmentsAllowed"
+                           :minimumValue="1"
+                           help="How many times are people allowed to earn this achievement. This must be 1 in order to track overachievement." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="achievementIconCssClass"
+                         label="Icon CSS Class"
+                         help="The font awesome icon class to use for this achievement." />
+            </div>
+
+            <div class="col-md-3">
+                <ColorPicker label="Hightlight Color"
+                             v-model="highlightColor"
+                             help="The color to use when displaying achievements of this type." />
+            </div>
+        </div>
+
+        <div class="well">
+            <div class="row">
+                <div class="col-md-6">
+                    <ComponentPicker label="Achievement Event"
+                                     v-model="achievementEntityType"
+                                     containerType="Rock.Achievement.AchievementContainer"
+                                     help="The achievement events allow different methods for calculating a successful achievement."
+                                     rules="required" />
+                </div>
+                <div class="col-md-6 mt-4">
+                    <p>{{ componentDescription }}</p>
+                </div>
+            </div>
+
+            <AttributeValuesContainer v-model="attributeValues"
+                                      :showCategoryLabel="false"
+                                      :attributes="entityAttributes"
+                                      isEditMode
+                                      showEmptyValues
+                                      :numberOfColumns="2"
+                                      :entityTypeName="entityTypeName" />
+        </div>
+
+        <Panel :hasCollapse="true" title="Step Configuration">
+            <CheckBox v-model="addStepOnSuccess"
+                      label="Add Step on Success" />
+            <div v-if="addStepOnSuccess" class="row">
+                <div class="col-md-6 col-sm-12">
+                    <StepProgramPicker v-model="achievementStepProgram"
+                                       label="Step Program"
+                                       help="When this achievement is earned, a step can be added for the person if you choose that step program, step type, and then a status."
+                                       :multiple="false"
+                                       showBlankItem
+                                       formGroupClasses="mt-0"
+                                       :displayStyle="PickerDisplayStyle.Condensed" />
+
+                    <StepTypePicker v-if="isStepTypeAndStepStatusVisibile"
+                                    v-model="achievementStepType"
+                                    label="Step Type"
+                                    :stepProgramGuid="stepProgramGuid"
+                                    :multiple="false"
+                                    rules="required"
+                                    showBlankItem
+                                    :displayStyle="PickerDisplayStyle.Condensed" />
+                </div>
+                <div class="col-md-6 col-sm-12">
+                    <StepStatusPicker v-if="isStepTypeAndStepStatusVisibile"
+                                      label="Step Status"
+                                      v-model="achievementStepStatus"
+                                      :stepProgramGuid="stepProgramGuid"
+                                      help="When this achievement is earned, a step can be added for the person if you choose that step program, step type, and then a status."
+                                      rules="required" />
+                </div>
+            </div>
+        </Panel>
+
+        <Panel :hasCollapse="true" title="Advanced Settings">
+            <CheckBoxList label="Prerequisite Achievements"
+                          v-model="prerequisites"
+                          help="The achievements that must be earned prior to this achievement."
+                          :items="availablePrerequisites"
+                          :horizontal="false"
+                          :repeatColumns="0" />
+
+            <div class="row">
+                <div class="col-md-4">
+                    <WorkflowTypePicker label="Start Workflow Type"
+                                        v-model="achievementStartWorkflowType"
+                                        help="The type of workflow to trigger when a person begins an attempt at this achievement" />
+                </div>
+                <div class="col-md-4">
+                    <WorkflowTypePicker label="Success Workflow Type"
+                                        v-model="achievementSuccessWorkflowType"
+                                        help="The type of workflow to trigger when a person successfully finishes an attempt at this achievement" />
+                </div>
+                <div class="col-md-4">
+                    <WorkflowTypePicker label="Failure Workflow Type"
+                                        v-model="achievementFailureWorkflowType"
+                                        help="The type of workflow to trigger when a person unsuccessfully finishes an attempt at this achievement" />
+                </div>
+            </div>
+
+            <CodeEditor v-model="badgeLavaTemplate"
+                        label="Badge Lava Template"
+                        theme="rock"
+                        mode="lava"
+                        :editorHeight="200"
+                        help="The template to use when displaying a badge for this achievement." />
+
+            <CodeEditor v-model="resultsLavaTemplate"
+                        label="Results Lava Template"
+                        theme="rock"
+                        mode="lava"
+                        :editorHeight="200"
+                        help="The template to use when displaying the results for this achievement." />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <ImageUploader v-model="imageBinaryFile"
+                                   label="Image"
+                                   help="The image that will be used in the summary. For example, a trophy icon."
+                                   :uploadAsTemporary="true"
+                                   uploadButtonText="Upload"
+                                   :showDeleteButton="true" />
+                </div>
+                <div class="col-md-6">
+                    <ImageUploader v-model="alternateImageBinaryFile"
+                                   label="Alternate Image"
+                                   help="An alternate image that can be used for custom purposes."
+                                   :uploadAsTemporary="true"
+                                   uploadButtonText="Upload"
+                                   :showDeleteButton="true" />
+                </div>
+            </div>
+
+            <CodeEditor v-model="customSummaryLavaTemplate"
+                        label="Custom Summary Lava Template"
+                        theme="rock"
+                        mode="lava"
+                        :editorHeight="200"
+                        help="The lava template used to render the status summary of the achievement. If this is blank, a default will be used." />
+        </Panel>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker.obs";
+    import StepTypePicker from "@Obsidian/Controls/stepTypePicker.obs";
+    import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker.obs";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AchievementTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementTypeDetail/achievementTypeBag";
+    import { AchievementTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementTypeDetail/achievementTypeDetailOptionsBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AchievementTypeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AchievementTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AchievementTypeBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const isPublic = propertyRef(props.modelValue.isPublic ?? false, "IsPublic");
+    const category = propertyRef(props.modelValue.category ?? {}, "Category");
+    const allowOverAchievement = propertyRef(props.modelValue.allowOverAchievement ?? false, "AllowOverAchievement");
+    const maxAccomplishmentsAllowed = propertyRef(props.modelValue.maxAccomplishmentsAllowed, "MaxAccomplishmentsAllowed");
+    const achievementIconCssClass = propertyRef(props.modelValue.achievementIconCssClass ?? "", "AchievementIconCssClass");
+    const highlightColor = propertyRef(props.modelValue.highlightColor ?? "", "HighlightColor");
+    const achievementEntityType = propertyRef(props.modelValue.achievementEntityType ?? {}, "ComponentEntityTypeId");
+    const addStepOnSuccess = ref(props.modelValue.addStepOnSuccess ?? false);
+    const achievementStepProgram = ref(props.modelValue.stepProgram ?? {});
+    const achievementStepType = propertyRef(props.modelValue.achievementStepType ?? {}, "AchievementStepType");
+    const achievementStepStatus = propertyRef(props.modelValue.achievementStepStatus ?? {}, "AchievementStepStatus");
+    const prerequisites = ref(props.modelValue.prerequisites ?? []);
+    const availablePrerequisites = ref(props.modelValue.availablePrerequisites ?? []);
+    const achievementStartWorkflowType = propertyRef(props.modelValue.achievementStartWorkflowType ?? {}, "AchievementStartWorkflowType");
+    const achievementFailureWorkflowType = propertyRef(props.modelValue.achievementFailureWorkflowType ?? {}, "AchievementFailureWorkflowType");
+    const achievementSuccessWorkflowType = propertyRef(props.modelValue.achievementSuccessWorkflowType ?? {}, "AchievementSuccessWorkflowType");
+    const badgeLavaTemplate = propertyRef(props.modelValue.badgeLavaTemplate ?? "", "BadgeLavaTemplate");
+    const resultsLavaTemplate = propertyRef(props.modelValue.resultsLavaTemplate ?? "", "ResultsLavaTemplate");
+    const imageBinaryFile = propertyRef(props.modelValue.imageBinaryFile ?? {}, "ImageBinaryFileId");
+    const alternateImageBinaryFile = propertyRef(props.modelValue.alternateImageBinaryFile ?? {}, "AlternateImageBinaryFileId");
+    const customSummaryLavaTemplate = propertyRef(props.modelValue.customSummaryLavaTemplate ?? "", "CustomSummaryLavaTemplate");
+    const entityAttributes = ref<Record<string, PublicAttributeBag>>({});
+    const componentDescription = ref(props.modelValue.achievementEventDescription ?? "");
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, isPublic, category, allowOverAchievement, maxAccomplishmentsAllowed, achievementIconCssClass,
+        highlightColor, achievementEntityType, achievementStepType, achievementStepStatus, achievementStartWorkflowType, achievementFailureWorkflowType,
+        achievementSuccessWorkflowType, badgeLavaTemplate, resultsLavaTemplate, customSummaryLavaTemplate, imageBinaryFile, alternateImageBinaryFile];
+
+    // #endregion
+
+    // #region Computed Values
+    const stepProgramGuid = computed(() => {
+        return achievementStepProgram.value?.value ?? "";
+    });
+
+    const entityTypeName = computed((): string => {
+        return achievementEntityType.value.text ?? "";
+    });
+
+    const isStepTypeAndStepStatusVisibile = computed((): boolean => {
+        return achievementStepProgram.value?.value ? true : false;
+    });
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch(() => achievementEntityType.value, async () => {
+
+        const entityTypeGuid = achievementEntityType.value.value;
+        if (!entityTypeGuid) {
+            return;
+        }
+
+        const result = await invokeBlockAction<AchievementTypeBag>("GetEntityAttributes", {
+            entityTypeGuid: entityTypeGuid,
+            IdKey: props.modelValue.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            entityAttributes.value = result.data.attributes ?? {};
+            attributeValues.value = result.data.attributeValues ?? {};
+            componentDescription.value = result.data.achievementEventDescription ?? "";
+        }
+    }, { immediate: true });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(isPublic, props.modelValue.isPublic ?? false);
+        updateRefValue(category, props.modelValue.category ?? {});
+        updateRefValue(allowOverAchievement, props.modelValue.allowOverAchievement ?? false);
+        updateRefValue(maxAccomplishmentsAllowed, props.modelValue.maxAccomplishmentsAllowed);
+        updateRefValue(achievementIconCssClass, props.modelValue.achievementIconCssClass ?? "");
+        updateRefValue(highlightColor, props.modelValue.highlightColor ?? "");
+        updateRefValue(achievementEntityType, props.modelValue.achievementEntityType ?? {});
+        updateRefValue(achievementStepType, props.modelValue.achievementStepType ?? {});
+        updateRefValue(achievementStepStatus, props.modelValue.achievementStepStatus ?? {});
+        updateRefValue(achievementStartWorkflowType, props.modelValue.achievementStartWorkflowType ?? {});
+        updateRefValue(achievementFailureWorkflowType, props.modelValue.achievementFailureWorkflowType ?? {});
+        updateRefValue(achievementSuccessWorkflowType, props.modelValue.achievementSuccessWorkflowType ?? {});
+        updateRefValue(badgeLavaTemplate, props.modelValue.badgeLavaTemplate ?? "");
+        updateRefValue(resultsLavaTemplate, props.modelValue.resultsLavaTemplate ?? "");
+        updateRefValue(customSummaryLavaTemplate, props.modelValue.customSummaryLavaTemplate ?? "");
+        updateRefValue(imageBinaryFile, props.modelValue.imageBinaryFile ?? {});
+        updateRefValue(alternateImageBinaryFile, props.modelValue.alternateImageBinaryFile ?? {});
+        updateRefValue(prerequisites, props.modelValue.prerequisites ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, prerequisites, ...propRefs], () => {
+        const newValue: AchievementTypeBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            isPublic: isPublic.value,
+            category: category.value,
+            allowOverAchievement: allowOverAchievement.value,
+            maxAccomplishmentsAllowed: maxAccomplishmentsAllowed.value,
+            achievementIconCssClass: achievementIconCssClass.value,
+            highlightColor: highlightColor.value,
+            achievementEntityType: achievementEntityType.value,
+            achievementStepType: achievementStepType.value,
+            achievementStepStatus: achievementStepStatus.value,
+            achievementStartWorkflowType: achievementStartWorkflowType.value,
+            achievementFailureWorkflowType: achievementFailureWorkflowType.value,
+            achievementSuccessWorkflowType: achievementSuccessWorkflowType.value,
+            badgeLavaTemplate: badgeLavaTemplate.value,
+            resultsLavaTemplate: resultsLavaTemplate.value,
+            customSummaryLavaTemplate: customSummaryLavaTemplate.value,
+            imageBinaryFile: imageBinaryFile.value,
+            alternateImageBinaryFile: alternateImageBinaryFile.value,
+            prerequisites: prerequisites.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

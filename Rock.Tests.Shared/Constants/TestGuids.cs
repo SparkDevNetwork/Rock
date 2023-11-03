@@ -32,6 +32,7 @@ namespace Rock.Tests.Shared
         {
             public const string CampusMain = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
             public const string CampusSouth = "5434F90B-BB91-4A34-8B09-8C117A9E5D95";
+            public const string CampusSteppingStone = "089844AF-6310-4C20-9434-A845F982B0C5";
         }
 
         public static class Category
@@ -69,9 +70,20 @@ namespace Rock.Tests.Shared
 
         public static class DataViews
         {
+
             // A DataView that returns all of the locations outside the state of Arizona.
             public static string LocationsOutsideArizona = "14B1854D-4F45-4F4D-AFFF-C0A1E06353DF";
             public static string LocationsInsideArizona = "C39B353E-3E44-42C0-9D85-2107FB5E8C04";
+
+            public static string MembersAndAttendees = "CB4BB264-A1F4-4EDB-908F-2CCF3A534BC7";
+            public static string AdultMembersAndAttendees = "0da5f82f-cffe-45af-b725-49b3899a1f72";
+            public static string AdultMembersAndAttendeesMales = "D0846DB2-7AE8-4897-867F-1AF5CC1DE95A";
+            public static string AdultMembersAndAttendeesFemales = "1D144B43-F985-4122-B2E3-D548CC3B2A82";
+        }
+
+        public static class Events
+        {
+            public const string EventIdentifierRockSolidFinancesClass = "Rock Solid Finances Class";
         }
 
         public static class Groups
@@ -89,16 +101,19 @@ namespace Rock.Tests.Shared
             public static string TedDecker = "8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4";
             public static string CindyDecker = "B71494DB-D809-451A-A950-28898D0FD92C";
             public static string AlexDecker = "27919690-3CCE-4FA6-95C4-CD21419EB51F";
+            public static string NoahDecker = "32aab9e4-970d-4551-a17e-385e66113bd5";
 
             public static string BillMarble = "1EA811BB-3118-42D1-B020-32A82BC8081A";
             public static string AlishaMarble = "69DC0FDC-B451-4303-BD91-EF17C0015D23";
+            public static string ThomasMiller = "955bf3e9-d38a-4dcb-a6f2-edf5ec2571c5";
 
             public static string SarahSimmons = "FC6B9819-EF2E-44C9-93DB-05571B39E58F";
-            public static string BrianJones = "3D7F6605-3666-4AB5-9F4E-D7FEBF93278E";
 
             public static string BenJones = "3C402382-3BD2-4337-A996-9E62F1BAB09D";
-
+            public static string BrianJones = "3D7F6605-3666-4AB5-9F4E-D7FEBF93278E";
             public static string MariahJackson = "9C2A020B-CF34-403E-A948-3E91FDFB958B";
+
+            public static string CraigLowe = "b701e5d2-adbd-4c66-91e8-3d6cd298d9a0";
             public static string MaddieLowe = "C398A8E3-C9BC-4017-A3F6-7C2BFF654056";
 
             public static string SamHanks = "1E6E66C7-A487-48E6-B064-7F9F4DDE6680";

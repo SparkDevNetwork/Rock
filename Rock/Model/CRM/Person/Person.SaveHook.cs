@@ -17,6 +17,7 @@
 
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -144,6 +145,12 @@ namespace Rock.Model
                     this.Entity.FirstName = this.Entity.FirstName.StandardizeQuotes();
                     this.Entity.LastName = this.Entity.LastName.StandardizeQuotes();
                     this.Entity.NickName = this.Entity.NickName.StandardizeQuotes();
+
+                    // Remove extra spaces between words (Issue #2990)
+                    this.Entity.FirstName = this.Entity.FirstName != null ? Regex.Replace( this.Entity.FirstName, @"\s+", " " ).Trim() : null;
+                    this.Entity.LastName = this.Entity.LastName != null ? Regex.Replace( this.Entity.LastName, @"\s+", " " ).Trim() : null;
+                    this.Entity.NickName = this.Entity.NickName != null ? Regex.Replace( this.Entity.NickName, @"\s+", " " ).Trim() : null;
+                    this.Entity.MiddleName = this.Entity.MiddleName != null ? Regex.Replace( this.Entity.MiddleName, @"\s+", " " ).Trim() : null;
                 }
 
                 if ( this.Entity.AnniversaryDate.HasValue )
@@ -287,7 +294,7 @@ namespace Rock.Model
                                 HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Property, "Photo" );
                             }
 
-                            if ( Entry.OriginalValues[nameof( Person.Email)].ToStringSafe() != Entity.Email )
+                            if ( Entry.OriginalValues[nameof( Person.Email )].ToStringSafe() != Entity.Email )
                             {
                                 var currentEmail = Entry.OriginalValues[nameof( Person.Email )].ToStringSafe();
                                 if ( !string.IsNullOrEmpty( currentEmail ) )
@@ -308,7 +315,7 @@ namespace Rock.Model
                                 }
                             }
 
-                            if ( Entry.OriginalValues[nameof(Person.RecordStatusValueId)].ToStringSafe().AsIntegerOrNull() != Entity.RecordStatusValueId )
+                            if ( Entry.OriginalValues[nameof( Person.RecordStatusValueId )].ToStringSafe().AsIntegerOrNull() != Entity.RecordStatusValueId )
                             {
                                 Entity.RecordStatusLastModifiedDateTime = RockDateTime.Now;
 
@@ -363,6 +370,18 @@ namespace Rock.Model
                 if ( this.Entity.GivingId == "P0" )
                 {
                     PersonService.UpdateGivingId( this.Entity.Id, RockContext );
+                }
+
+                // If the person was just added then the _primaryAliasId will be null ergo the value will be null
+                // in the database so update.
+                if ( !this.Entity._primaryAliasId.HasValue )
+                {
+                    PersonService.UpdatePrimaryAlias( this.Entity.Id, this.Entity.PrimaryAliasId.Value, RockContext );
+                }
+
+                if ( this.Entity.Age.HasValue && ( this.PreSaveState == EntityContextState.Added || this.Entity.Age != Entry.OriginalValues[nameof( Person.Age )].ToStringSafe().AsIntegerOrNull() ) )
+                {
+                    PersonService.UpdateFamilyMemberRoleByAge( this.Entity.Id, this.Entity.Age.Value, RockContext );
                 }
 
                 // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes

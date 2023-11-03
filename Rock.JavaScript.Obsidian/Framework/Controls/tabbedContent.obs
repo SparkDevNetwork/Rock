@@ -1,0 +1,55 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <TabbedBar  v-model="selectedTab" :tabs="tabs" />
+
+        <div class="tab-content mt-4">
+            <div v-for="(item, i) in tabs" :key="i" :class="classes[i]">
+                <slot name="tabpane" :item="item" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import { PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        tabs: {
+            type: Array as PropType<string[]>,
+            required: true
+        }
+    });
+
+    const selectedTab = ref(props.tabs.length > 0 ? props.tabs[0] : "");
+    const classes = ref<string[]>([]);
+    let timeout: number;
+
+    watch(() => props.tabs, () => {
+        selectedTab.value = props.tabs.length > 0 ? props.tabs[0] : "";
+
+        classes.value = props.tabs.map(item => {
+            let list = "tab-pane fade";
+
+            if (item === selectedTab.value) {
+                list += " active in";
+            }
+
+            return list;
+        });
+    }, { immediate: true });
+
+    watch(selectedTab, (current, previous) => {
+        const previousIndex = props.tabs.indexOf(previous);
+        const currentIndex = props.tabs.indexOf(current);
+
+        classes.value[previousIndex] = "tab-pane fade active";
+
+        clearTimeout(timeout);
+        timeout = window.setTimeout(() => {
+            classes.value[previousIndex] = "tab-pane fade";
+            classes.value[currentIndex] = "tab-pane fade active in";
+        }, 150);
+    });
+</script>

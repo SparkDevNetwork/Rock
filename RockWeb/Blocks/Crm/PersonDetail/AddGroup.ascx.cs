@@ -461,6 +461,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Crm/AddGroup.css", true );
+
             // Tell the browsers to not cache. This will help prevent browser using a stale person guid when the user uses the Back button
             Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
             Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
@@ -1052,7 +1054,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         attributeControl.ID = "groupAttributes_" + category.Id.ToString();
                         attributeControl.CategoryId = category.Id;
 
-                        foreach ( var attribute in attributeService.GetByCategoryId( category.Id, false ) )
+                        foreach ( var attribute in attributeService.GetByCategoryId( category.Id, false ).OrderBy( a => a.Order) )
                         {
                             if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {

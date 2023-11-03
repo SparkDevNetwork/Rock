@@ -1,0 +1,112 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { FollowingEventTypeBag } from "@Obsidian/ViewModels/Blocks/Core/FollowingEventTypeDetail/followingEventTypeBag";
+    import { FollowingEventTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/FollowingEventTypeDetail/followingEventTypeDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FollowingEventTypeBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<FollowingEventTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = computed(() => {
+        if(!props.modelValue?.attributes) {
+            return {};
+        }
+        const attributes = props.modelValue.attributes;
+        delete attributes["Active"];
+        delete attributes["Order"];
+        return attributes;
+    });
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addTextValue("Event Type", props.modelValue.entityType?.text ?? "");
+        valueBuilder.addTextValue("Require Notification", props.modelValue.isNoticeRequired ? "Yes" : "No");
+        valueBuilder.addTextValue("Send Weekend Notices on Friday", !props.modelValue.sendOnWeekends ? "Yes" : "No");
+        if(props.modelValue.entityType?.value?.toUpperCase() == EntityType.PersonPrayerRequest) {
+            valueBuilder.addTextValue("Include Non-Public Requests", props.modelValue.includeNonPublicRequests ? "Yes" : "No");
+        }
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

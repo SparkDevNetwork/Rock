@@ -98,9 +98,9 @@ namespace Rock.Model
                 if ( paddedNumber > 0 )
                 {
                     string paddedString = string.Format( "-{0}", paddedNumber );
-                    if ( intialSlugLength + paddedString.Length > 75 )
+                    if ( intialSlugLength + paddedString.Length > 200 )
                     {
-                        customSlug = slug.Left( intialSlugLength + paddedString.Length - 75 ) + paddedString;
+                        customSlug = slug.Left( intialSlugLength + paddedString.Length - 200 ) + paddedString;
                     }
                     else
                     {
@@ -232,7 +232,7 @@ namespace Rock.Model
             slug = Regex.Replace( slug, @"[^a-zA-Z0-9 -]", string.Empty );
 
             return slug
-                    .Left( 75 )
+                    .Left( 200 )
                     .TrimEnd( '-' );
         }
     }

@@ -2,7 +2,7 @@
   This is the lava template for all of occurrences for the GroupScheduleRoster block
    Available Lava Fields:
 
-   + DisplayRole (boolean on whether the members role should be displayed)
+   + DisplayRole (boolean on whether the members role(s) should be displayed)
    + OccurrenceDate - the date that this Roster is for, which would be the current date
    + OccurrenceList
      + Group
@@ -12,7 +12,9 @@
 
      + ScheduledIndividuals (list of each scheduled individual), which includes
           + Person
-          + GroupMember (nullable. This would be the person"s member record in the Group, if they are member of the group )
+          + GroupMember (nullable. This would be the person's member record in the Group, if they are member of the group)
+              + GroupRole (the Role)
+          + GroupMembers (nullable. This would be the person's member records in the Group, if they are a member of the group)
               + GroupRole (the Role)
           + CurrentlyCheckedIn (bool. True if the person is checked in)
           + ScheduledAttendanceItemStatus (Pending, Confirmed, or Declined).
@@ -123,8 +125,9 @@
                       {%- endif -%}
                     {{ scheduledIndividual.Person.FullName }}
                     {%- if DisplayRole -%}
-                      {%- if scheduledIndividual.GroupMember -%}
-                        ({{ scheduledIndividual.GroupMember.GroupRole.Name }})
+                      {%- assign groupMemberCount = scheduledIndividual.GroupMembers | Size -%}
+                      {%- if groupMemberCount > 0 -%}
+                        ({%- for groupMember in scheduledIndividual.GroupMembers -%}{{ groupMember.GroupRole.Name }}{% unless forloop.last %}, {% endunless %}{%- endfor -%})
                       {%- endif -%}
                     {%- endif -%}
                     </div>

@@ -1,0 +1,254 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <Panel title="Transaction Settings" :isDrawerOpen="false" :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-6">
+                    <RadioButtonList label="Accounts" v-model="accountOption" :items="accountOptions" :horizontal="true" :repeatColumns="0" />
+                </div>
+
+                <div class="col-md-6" v-if="accountOption == '1'">
+                    <AccountPicker v-model="selectedAccounts" label="Selected Accounts" rules="required" multiple />
+                    <CheckBox v-model="includeChildAccountsCustom" label="" text="Include children of selected accounts" />
+                </div>
+            </div>
+            <CheckBoxList v-model="currencyTypesForCashGifts" :items="currencyTypeOptions" label="Currency Types for Cash Gifts" horizontal :repeatColumns="5" />
+            <CheckBoxList v-model="currencyTypesForNonCashGifts" :items="currencyTypeOptions" label="Currency Types for Non-Cash Gifts" horizontal :repeatColumns="5" />
+            <label>Filter Settings</label>
+            <div class="row">
+                <div class="col-md-6">
+                    <CheckBox v-model="hideRefundedTransactions" label="" text="Hide Refunded Transactions" />
+                    <CheckBox v-model="hideCorrectedTransactionOnSameData" label="" text="Hide Transactions that are corrected on the same date. Transactions that have a matching negative amount on the same date and same account will not be shown." />
+                </div>
+                <div class="col-md-6">
+                    <CheckBoxList v-model="transactionTypes" :items="transactionTypeOptions" label="Transaction Types" :horizontal="false" rules="required" />
+                </div>
+            </div>
+        </Panel>
+
+        <Panel title="Pledge Settings" :isDrawerOpen="false" :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-6">
+                    <AccountPicker v-model="pledgeAccounts" multiple label="Accounts for Pledges" />
+                </div>
+            </div>
+            <label>Filter Settings</label>
+            <div class="row">
+                <div class="col-md-6">
+                    <CheckBox v-model="includeChildAccountsPledges" label="" text="Include gifts to child accounts as a part of pledge" />
+                    <CheckBox v-model="includeNonCashGiftsPledge" label="" text="Include non-cash gifts." />
+                </div>
+            </div>
+        </Panel>
+        <Panel title="Report Settings" :isDrawerOpen="false" :hasCollapse="true">
+            <CodeEditor v-model="reportTemplate" theme="rock" mode="lava" :editorHeight="400" label="Report Template" />
+            <CodeEditor v-model="footerTemplateHtmlFragment"
+                        theme="rock"
+                        mode="lava"
+                        label="Footer Template"
+                        help="PDF Merge fields include: <code>{date} {title} {url} {pageNumber} {totalPages}</code> Specify these as a span class to include them in the footer. For example: <code>&lt;span class='totalPages'&gt;&lt;span&gt;</code>" />
+
+
+            <ImageUploader v-model="logoBinaryFile" label="Logo" showDeleteButton />
+
+        </Panel>
+
+        <Panel title="PDF Settings" :isDrawerOpen="false" :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-3">
+                    <NumberBox v-model="marginTopMillimeters" label="Top Margin (mm)" />
+                </div>
+                <div class="col-md-3">
+                    <NumberBox v-model="marginBottomMillimeters" label="Bottom Margin (mm)" />
+                </div>
+                <div class="col-md-3">
+                    <NumberBox v-model="marginLeftMillimeters" label="Left Margin (mm)" />
+                </div>
+                <div class="col-md-3">
+                    <NumberBox v-model="marginRightMillimeters" label="Right Margin (mm)" />
+                </div>
+            </div>
+
+            <DropDownList v-model="paperSize" :items="paperSizeOptions" :showBlankItem="true" label="Page Size" />
+        </Panel>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { FinancialStatementTemplateBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialStatementTemplateDetail/financialStatementTemplateBag";
+    import { FinancialStatementTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialStatementTemplateDetail/financialStatementTemplateDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FinancialStatementTemplateBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<FinancialStatementTemplateDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FinancialStatementTemplateBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    // Transaction Settings
+    const accountOption = ref(props.modelValue.accountSelectionOption ?? "");
+    const selectedAccounts = ref(props.modelValue.selectedAccounts ?? []);
+    const includeChildAccountsCustom = ref(props.modelValue.includeChildAccountsCustom);
+    const currencyTypesForCashGifts = ref(props.modelValue.currencyTypesForCashGifts ?? []);
+    const currencyTypesForNonCashGifts = ref(props.modelValue.currencyTypesForNonCashGifts ?? []);
+    const hideRefundedTransactions = ref(props.modelValue.hideRefundedTransactions);
+    const hideCorrectedTransactionOnSameData = ref(props.modelValue.hideCorrectedTransactionOnSameData);
+    const transactionTypes = ref(props.modelValue.transactionTypes ?? []);
+    // Pledge Settings
+    const pledgeAccounts = ref(props.modelValue.pledgeAccounts ?? []);
+    const includeChildAccountsPledges = ref(props.modelValue.includeChildAccountsPledges);
+    const includeNonCashGiftsPledge = ref(props.modelValue.includeNonCashGiftsPledge);
+    // Report Settings
+    const reportTemplate = ref(props.modelValue.reportTemplate ?? "");
+    const footerTemplateHtmlFragment = ref(props.modelValue.footerTemplateHtmlFragment ?? "");
+    const logoBinaryFile = ref(props.modelValue.logoBinaryFile ?? {});
+    // PDF Settings
+    const marginTopMillimeters = ref(props.modelValue.marginTopMillimeters);
+    const marginBottomMillimeters = ref(props.modelValue.marginBottomMillimeters);
+    const marginRightMillimeters = ref(props.modelValue.marginRightMillimeters);
+    const marginLeftMillimeters = ref(props.modelValue.marginLeftMillimeters);
+    const paperSize = ref(props.modelValue.paperSize ?? "");
+    // Options
+    const transactionTypeOptions = ref(props.options.transactionTypeOptions ?? []);
+    const currencyTypeOptions = ref(props.options.currencyTypeOptions ?? []);
+    const paperSizeOptions = ref(props.options.paperSizeOptions ?? []);
+    const accountOptions = [
+        { text: "All Tax Deductible Account", value: "0" },
+        { text: "Custom", value: "1" },
+    ] as ListItemBag[];
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name];
+    const transactionSettingsRefs = [accountOption, selectedAccounts, includeChildAccountsCustom, currencyTypesForCashGifts, currencyTypesForNonCashGifts, hideRefundedTransactions,
+        hideCorrectedTransactionOnSameData, transactionTypes];
+    const pledgeSettingsRefs = [pledgeAccounts, includeChildAccountsPledges, includeNonCashGiftsPledge];
+    const reportSettingsRefs = [reportTemplate, footerTemplateHtmlFragment, logoBinaryFile];
+    const pdfSettingsRefs = [marginTopMillimeters, marginBottomMillimeters, marginRightMillimeters, marginLeftMillimeters, paperSize];
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+
+        updateRefValue(accountOption, props.modelValue.accountSelectionOption ?? "");
+        updateRefValue(selectedAccounts, props.modelValue.selectedAccounts ?? []);
+        updateRefValue(includeChildAccountsCustom, props.modelValue.includeChildAccountsCustom);
+        updateRefValue(currencyTypesForCashGifts, props.modelValue.currencyTypesForCashGifts ?? []);
+        updateRefValue(currencyTypesForNonCashGifts, props.modelValue.currencyTypesForNonCashGifts ?? []);
+        updateRefValue(hideRefundedTransactions, props.modelValue.hideRefundedTransactions);
+        updateRefValue(hideCorrectedTransactionOnSameData, props.modelValue.hideCorrectedTransactionOnSameData);
+        updateRefValue(transactionTypes, props.modelValue.transactionTypes ?? []);
+
+        updateRefValue(pledgeAccounts, props.modelValue.pledgeAccounts ?? []);
+        updateRefValue(includeChildAccountsPledges, props.modelValue.includeChildAccountsPledges);
+        updateRefValue(includeNonCashGiftsPledge, props.modelValue.includeNonCashGiftsPledge);
+
+        updateRefValue(reportTemplate, props.modelValue.reportTemplate ?? "");
+        updateRefValue(footerTemplateHtmlFragment, props.modelValue.footerTemplateHtmlFragment ?? "");
+        updateRefValue(logoBinaryFile, props.modelValue.logoBinaryFile ?? {});
+
+        updateRefValue(marginTopMillimeters, props.modelValue.marginTopMillimeters);
+        updateRefValue(marginBottomMillimeters, props.modelValue.marginBottomMillimeters);
+        updateRefValue(marginRightMillimeters, props.modelValue.marginRightMillimeters);
+        updateRefValue(marginLeftMillimeters, props.modelValue.marginLeftMillimeters);
+        updateRefValue(paperSize, props.modelValue.paperSize ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...transactionSettingsRefs, ...pledgeSettingsRefs, ...reportSettingsRefs, ...pdfSettingsRefs, ...propRefs], () => {
+        const newValue: FinancialStatementTemplateBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+
+            accountSelectionOption: accountOption.value,
+            selectedAccounts: selectedAccounts.value,
+            includeChildAccountsCustom: includeChildAccountsCustom.value,
+            currencyTypesForCashGifts: currencyTypesForCashGifts.value,
+            currencyTypesForNonCashGifts: currencyTypesForNonCashGifts.value,
+            hideRefundedTransactions: hideRefundedTransactions.value,
+            hideCorrectedTransactionOnSameData: hideCorrectedTransactionOnSameData.value,
+            transactionTypes: transactionTypes.value,
+
+            pledgeAccounts: pledgeAccounts.value,
+            includeChildAccountsPledges: includeChildAccountsPledges.value,
+            includeNonCashGiftsPledge: includeNonCashGiftsPledge.value,
+
+            reportTemplate: reportTemplate.value,
+            footerTemplateHtmlFragment: footerTemplateHtmlFragment.value,
+            logoBinaryFile: logoBinaryFile.value,
+
+            marginTopMillimeters: marginTopMillimeters.value,
+            marginBottomMillimeters: marginBottomMillimeters.value,
+            marginRightMillimeters: marginRightMillimeters.value,
+            marginLeftMillimeters: marginLeftMillimeters.value,
+            paperSize: paperSize.value,
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

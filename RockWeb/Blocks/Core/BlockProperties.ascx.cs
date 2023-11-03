@@ -18,10 +18,12 @@ using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Blocks;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -31,7 +33,6 @@ using System.Web;
 using Rock.Web.UI.Controls;
 using System.Text;
 using Rock.Web;
-using Rock.Attribute;
 using Rock.Lava;
 
 namespace RockWeb.Blocks.Core
@@ -86,20 +87,28 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the blocktype implements ICustomGridColumns
+        /// Gets or sets a value indicating whether the blocktype supports custom columns.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is custom grid columns block; otherwise, <c>false</c>.
+        ///   <c>true</c> if this custom grid columns should be shown; otherwise, <c>false</c>.
         /// </value>
         private bool ShowCustomGridColumns { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this blocktype implements ICustomGridOptions
+        /// Gets or sets a value indicating whether this blocktype supports custom sticky header option.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is custom columns columns block; otherwise, <c>false</c>.
+        ///   <c>true</c> if sticky header option should be shown; otherwise, <c>false</c>.
         /// </value>
-        private bool ShowCustomGridOptions { get; set; }
+        private bool ShowCustomGridStickyHeader { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this blocktype implements custom grid actions
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if custom grid actions should be shown; otherwise, <c>false</c>.
+        /// </value>
+        private bool ShowCustomGridActions { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this blocktype has any 'custommobile' category attributes.
@@ -221,7 +230,7 @@ namespace RockWeb.Blocks.Core
                 result.Insert( 1, "Mobile Local Settings" );
             }
 
-            if ( this.ShowCustomGridOptions || this.ShowCustomGridColumns )
+            if ( this.ShowCustomGridActions || this.ShowCustomGridColumns || this.ShowCustomGridStickyHeader )
             {
                 result.Add( "Custom Grid Options" );
             }
@@ -284,8 +293,14 @@ namespace RockWeb.Blocks.Core
 
             var blockControlType = _block.BlockType.GetCompiledType();
 
-            this.ShowCustomGridColumns = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( blockControlType );
-            this.ShowCustomGridOptions = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( blockControlType );
+            var customizedGrid = blockControlType.GetCustomAttribute<CustomizedGridAttribute>();
+
+            this.ShowCustomGridActions = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( blockControlType )
+                || customizedGrid?.IsCustomActionsSupported == true;
+            this.ShowCustomGridColumns = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( blockControlType )
+                || customizedGrid?.IsCustomColumnsSupported == true;
+            this.ShowCustomGridStickyHeader = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( blockControlType )
+                || customizedGrid?.IsStickyHeaderSupported == true;
             this.ShowMobileOptions = _block.Attributes.Any( a => a.Value.Categories.Any( c => c.Name == "custommobile" ) );
 
             if ( !Page.IsPostBack && _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
@@ -319,8 +334,9 @@ namespace RockWeb.Blocks.Core
                 tbCacheDuration.Visible = false;
                 //tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
 
+                pwCustomActions.Visible = this.ShowCustomGridActions;
                 pwCustomGridColumns.Visible = this.ShowCustomGridColumns;
-                tglEnableStickyHeader.Visible = this.ShowCustomGridOptions;
+                tglEnableStickyHeader.Visible = this.ShowCustomGridStickyHeader;
 
                 if ( this.ShowCustomGridColumns )
                 {
@@ -332,9 +348,13 @@ namespace RockWeb.Blocks.Core
                     CustomGridColumnsConfigState = null;
                 }
 
-                if ( this.ShowCustomGridOptions )
+                if ( this.ShowCustomGridStickyHeader )
                 {
                     tglEnableStickyHeader.Checked = _block.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean();
+                }
+
+                if ( this.ShowCustomGridActions )
+                {
                     tglEnableDefaultWorkflowLauncher.Checked = _block.GetAttributeValue( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey ).AsBoolean();
 
                     CustomActionsConfigState = _block.GetAttributeValue( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey ).FromJsonOrNull<List<CustomActionConfig>>();
@@ -578,10 +598,19 @@ namespace RockWeb.Blocks.Core
         {
             int blockId = PageParameter( "BlockId" ).AsInteger();
             var block = BlockCache.Get( blockId );
+            var site = block.Site ?? block.Layout?.Site ?? block.Page?.Layout?.Site;
 
             CustomSettingsProviders = new Dictionary<RockCustomSettingsProvider, Control>();
 
-            var providers = RockCustomSettingsProvider.GetProvidersForType( block.BlockType.GetCompiledType() ).Reverse();
+            // Site really shouldn't ever be null, but just in case we somehow
+            // get here if the block configuration is bad, bail out with an
+            // empty set of custom setting providers.
+            if ( site == null )
+            {
+                return;
+            }
+
+            var providers = RockCustomSettingsProvider.GetProvidersForType( block.BlockType.GetCompiledType(), site.SiteType ).Reverse();
             foreach ( var provider in providers )
             {
                 // Place the custom controls in a naming container to avoid
@@ -783,11 +812,14 @@ namespace RockWeb.Blocks.Core
 
             foreach ( var item in rptCustomActions.Items.OfType<RepeaterItem>() )
             {
+                var rtbName = item.FindControl( "rtbName" ) as RockTextBox;
                 var rtbRoute = item.FindControl( "rtbRoute" ) as RockTextBox;
                 var rtbIcon = item.FindControl( "rtbIcon" ) as RockTextBox;
                 var rtbHelp = item.FindControl( "rtbHelp" ) as RockTextBox;
 
-                var config = new CustomActionConfig {
+                var config = new CustomActionConfig
+                {
+                    Name = rtbName.Text,
                     Route = rtbRoute.Text,
                     IconCssClass = rtbIcon.Text,
                     HelpText = rtbHelp.Text
@@ -840,6 +872,9 @@ namespace RockWeb.Blocks.Core
             {
                 return;
             }
+
+            var rtbName = e.Item.FindControl( "rtbName" ) as RockTextBox;
+            rtbName.Text = config.Name;
 
             var rtbRoute = e.Item.FindControl( "rtbRoute" ) as RockTextBox;
             rtbRoute.Text = config.Route;

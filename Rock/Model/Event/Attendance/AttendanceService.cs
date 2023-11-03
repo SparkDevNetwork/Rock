@@ -27,6 +27,7 @@ using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 using Rock.Attribute;
 using Rock.BulkImport;
 using Rock.Chart;
@@ -234,6 +235,20 @@ namespace Rock.Model
         /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/></param>
         /// <returns>The first <see cref="Rock.Model.Attendance"/> entity that matches the provided values.</returns>
         public Attendance Get( DateTime date, int locationId, int scheduleId, int groupId, int personId )
+        {
+            return Get( date, ( int? ) locationId, scheduleId, groupId, personId );
+        }
+
+        /// <summary>
+        /// Returns a specific <see cref="Rock.Model.Attendance"/> record.
+        /// </summary>
+        /// <param name="date">A <see cref="System.DateTime"/> representing the date attended.</param>
+        /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/>If you pass null here, the LocationId property on the occurrence must also be null.</param>
+        /// <param name="scheduleId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Schedule"/></param>
+        /// <param name="groupId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/>.</param>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/></param>
+        /// <returns>The first <see cref="Rock.Model.Attendance"/> entity that matches the provided values.</returns>
+        public Attendance Get( DateTime date, int? locationId, int scheduleId, int groupId, int personId )
         {
             return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias.Person" )
                 .FirstOrDefault( a =>
@@ -877,7 +892,7 @@ namespace Rock.Model
                     }
                     catch ( Exception ex )
                     {
-                        var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to { attendancesByPerson.Person }", ex );
+                        var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to {attendancesByPerson.Person}", ex );
                         errorMessages.Add( emailException.Message );
                         exceptionList.Add( emailException );
                     }
@@ -949,7 +964,7 @@ namespace Rock.Model
                     }
                     catch ( Exception ex )
                     {
-                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to send SendScheduleReminderSystemEmails to { attendancesByPerson.Person }", ex ) );
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to send SendScheduleReminderSystemEmails to {attendancesByPerson.Person}", ex ) );
                     }
                 }
             }
@@ -1143,7 +1158,7 @@ namespace Rock.Model
                 }
                 catch ( Exception ex )
                 {
-                    var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to { individualNotification.Individual }", ex );
+                    var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to {individualNotification.Individual}", ex );
                     sendMessageResults.Errors.Add( emailException.Message );
                     sendMessageResults.Exceptions.Add( emailException );
                 }
@@ -1920,7 +1935,7 @@ namespace Rock.Model
                     var personExclusionDateRange = new DateRange( a.BlackoutDateRanges.Min( d => d.StartDate ), a.BlackoutDateRanges.Max( d => d.EndDate ) );
                     personBlackoutDates = scheduleOccurrenceDateList.Where( d => personExclusionDateRange.Contains( d ) ).ToList();
                 }
-                
+
                 var groupMemberLookupValues = attendanceOccurrenceGroupMemberLookup
                     ?.GetValueOrNull( a.Person.Id )
                     ?.OrderBy( x => x.GroupRole?.Order ?? int.MaxValue );
@@ -2537,7 +2552,7 @@ namespace Rock.Model
         {
             var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
             var recipientPerson = attendance.ScheduledByPersonAlias?.Person;
-            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+            SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
         }
 
         /// <summary>
@@ -2550,7 +2565,7 @@ namespace Rock.Model
         {
             var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
             var recipientPerson = attendance.Occurrence?.Group?.ScheduleCancellationPersonAlias?.Person;
-            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+            SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
         }
 
         /// <summary>
@@ -2559,7 +2574,8 @@ namespace Rock.Model
         /// <param name="attendance">The attendance.</param>
         /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
         /// <param name="recipientPerson">The recipient person.</param>
-        private void SendSendScheduledPersonResponseEmail( Attendance attendance, Guid? schedulingResponseEmailGuid, Person recipientPerson )
+        [RockInternal( "1.16.1" )]
+        public void SendScheduledPersonResponseEmail( Attendance attendance, Guid? schedulingResponseEmailGuid, Person recipientPerson )
         {
             if ( !schedulingResponseEmailGuid.HasValue )
             {
@@ -3198,8 +3214,8 @@ namespace Rock.Model
                     a.Guid,
                     OccurrenceGuid = a.Occurrence.Guid,
                     GroupGuid = ( Guid? ) a.Occurrence.Group.Guid,
-                    GroupTypeGuid = (Guid?) a.Occurrence.Group.GroupType.Guid,
-                    LocationGuid = (Guid?) a.Occurrence.Location.Guid,
+                    GroupTypeGuid = ( Guid? ) a.Occurrence.Group.GroupType.Guid,
+                    LocationGuid = ( Guid? ) a.Occurrence.Location.Guid,
                     a.DidAttend,
                     a.EndDateTime,
                     a.PresentDateTime,

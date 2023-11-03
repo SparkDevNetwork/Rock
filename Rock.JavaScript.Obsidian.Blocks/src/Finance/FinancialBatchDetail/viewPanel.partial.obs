@@ -1,0 +1,152 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-12">
+                <NotificationBox alert-type="info" v-if="modelValue?.isAutomated">{{ options.automatedToolTip }}</NotificationBox>
+                <NotificationBox alert-type="info" v-else-if="options.isStatusChangeDisabled">{{ options.editModeMessage }}</NotificationBox>
+            </div>
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { FinancialBatchBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchBag";
+    import { FinancialBatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchDetailOptionsBag";
+    import { toNumber, toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FinancialBatchBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<FinancialBatchDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if(props.modelValue?.batchStartDateTime && props.modelValue?.batchEndDateTime) {
+            valueBuilder.addTextValue("Date Range", `${RockDateTime.parseISO(props.modelValue.batchStartDateTime)?.toASPString("g") ?? ""} to
+            ${RockDateTime.parseISO(props.modelValue.batchEndDateTime)?.toASPString("g") ?? ""}`);
+        }
+
+        let controlAmount = toNumber(props.modelValue?.controlAmount);
+        let transactionAmount = toNumber(props.options.transactionAmount);
+        let transactionVariance = transactionAmount - controlAmount;
+        if(transactionVariance == 0) {
+            valueBuilder.addHtmlValue("Transaction Amount / Control / Variance", `${toCurrencyOrNull(transactionAmount)} / ${toCurrencyOrNull(controlAmount)} / ${toCurrencyOrNull(transactionVariance)}`);
+        }
+        else {
+            valueBuilder.addHtmlValue("Transaction Amount / Control / Variance", `${toCurrencyOrNull(transactionAmount)} / ${toCurrencyOrNull(controlAmount)} / <span class='label label-danger'> ${toCurrencyOrNull(transactionVariance)} </span>`);
+        }
+
+        let transactionItemCount = toNumber(props.options.transactionItemCount);
+        let controlItemCount = toNumber(props.modelValue.controlItemCount);
+        let itemVariance = transactionItemCount - controlItemCount;
+
+        if(props.modelValue.controlItemCount) {
+            if(itemVariance == 0) {
+                valueBuilder.addHtmlValue("Transaction Item Count / Control / Variance", `${transactionItemCount} / ${controlItemCount} / ${itemVariance}`);
+            }
+            else {
+                valueBuilder.addHtmlValue("Transaction Item Count / Control / Variance", `${transactionItemCount} / ${controlItemCount} / <span class='label label-danger'> ${itemVariance} </span>`);
+            }
+        }
+
+        if(props.modelValue?.accountingSystemCode) {
+            valueBuilder.addTextValue("Accounting Code", props.modelValue.accountingSystemCode);
+        }
+
+        if(props.modelValue?.note) {
+            valueBuilder.addTextValue("Notes", props.modelValue.note);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        var accountsTotalTable = `<table class="grid-table table table-auto">
+                <tbody>
+                    ${props.options.accounts?.map(a => "<tr> <td align='left'>" + a.name + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
+                </tbody>
+            </table>`;
+
+        var currencyTotalTable = `<table class="grid-table table table-auto">
+            <tbody>
+                ${props.options.currencyTypes?.map(a => "<tr> <td align='left'>" + a.name + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
+            </tbody>
+        </table>`;
+
+        valueBuilder.addHtmlValue("Account Totals", props.options.accounts?.length == 0 ? "No Accounts Found" : accountsTotalTable);
+
+        valueBuilder.addHtmlValue("Currency Totals", props.options.accounts?.length == 0 ? "No CurrencyTypes Found" : currencyTotalTable);
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

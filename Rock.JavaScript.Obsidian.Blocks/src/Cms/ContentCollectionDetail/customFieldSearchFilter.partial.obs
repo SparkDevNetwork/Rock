@@ -12,7 +12,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ContentCollectionFilterControl } from "@Obsidian/Enums/Cms/contentCollectionFilterControl";
     import { CustomFieldFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/customFieldFilterBag";
-    import SearchFilter from "./searchFilter.partial";
+    import SearchFilter from "./searchFilter.partial.obs";
 
     const props = defineProps({
         /** The custom field filter to be displayed. */

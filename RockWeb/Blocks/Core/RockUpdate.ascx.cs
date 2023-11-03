@@ -33,6 +33,7 @@ using Rock.Update.Exceptions;
 using Rock.Update.Helpers;
 using Rock.Update.Models;
 using Rock.Update.Services;
+using Rock.Utility.Settings;
 using Rock.VersionInfo;
 using Rock.Web.Cache;
 
@@ -111,7 +112,10 @@ namespace RockWeb.Blocks.Core
                 nbCompileThreadsIssue.Visible = false;
             }
 
+            HasPendingRunOnceJobs();
+
             DisplayRockVersion();
+
             if ( !IsPostBack )
             {
                 btnIssues.NavigateUrl = rockUpdateService.GetRockEarlyAccessRequestUrl();
@@ -143,21 +147,19 @@ namespace RockWeb.Blocks.Core
                     nbBackupMessage.Visible = false;
                 }
 
-                var hasMinimumSqlServerOrHigher = VersionValidationHelper.CheckSqlServerVersion( VersionValidationHelper.SqlServerVersion.v2016 );
+                var hasMinimumCompatibilityLevelOrHigher = VersionValidationHelper.CheckSqlServerCompatibilityLevel( VersionValidationHelper.SqlServerCompatibilityLevel.v2016 );
 
-                if ( !hasMinimumSqlServerOrHigher )
+                if ( !hasMinimumCompatibilityLevelOrHigher )
                 {
                     nbSqlServerVersionIssue.Visible = true;
                 }
 
-                var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel;
-
-                if ( lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy )
-                {
-                    nbLegacyLavaIssue.Visible = true;
-                }
-
                 _releases = GetOrderedReleaseList( rockUpdateService, _installedVersion );
+
+                if ( _releases.Exists( r => new Version( r.SemanticVersion ) >= new Version( "1.17.0" ) ) && RockInstanceConfig.LavaEngineName != "Fluid" )
+                {
+                    nbLavaEngineIssue.Visible = true;
+                }
 
                 if ( _releases.Count > 0 )
                 {
@@ -170,15 +172,9 @@ namespace RockWeb.Blocks.Core
                     if ( new Version( _releases.Last().SemanticVersion ) >= new Version( "1.16.0" ) )
                     {
                         // if SqlServer2016Issue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
-                        if ( !hasMinimumSqlServerOrHigher )
+                        if ( !hasMinimumCompatibilityLevelOrHigher )
                         {
                             nbSqlServerVersionIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
-                        }
-
-                        // if LegacyLavaIssue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
-                        if ( lavaSupportLevel != Rock.Lava.LavaSupportLevel.NoLegacy )
-                        {
-                            nbLegacyLavaIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                         }
                     }
 
@@ -510,16 +506,82 @@ namespace RockWeb.Blocks.Core
         protected void mdConfirmInstall_SaveClick( object sender, EventArgs e )
         {
             nbCompileThreadsIssue.Visible = false;
+            nbPendingMigrationJobs.Visible = false;
 
             if ( Global.CompileThemesThread.IsAlive || Global.BlockTypeCompilationThread.IsAlive )
             {
                 // Show message here and return
                 nbCompileThreadsIssue.Visible = true;
+                mdConfirmInstall.Hide();
+                return;
+            }
+
+            if ( HasPendingRunOnceJobs() )
+            {
+                mdConfirmInstall.Hide();
                 return;
             }
 
             mdConfirmInstall.Hide();
             Update( hdnInstallVersion.Value );
+        }
+
+        private Boolean HasPendingRunOnceJobs()
+        {
+            var pendingStartupRunOnceJobs = new Rock.Model.ServiceJobService( new Rock.Data.RockContext() )
+                .Queryable()
+                .Where( j => Rock.Migrations.RockStartup.DataMigrationsStartup.startupRunOnceJobGuids.Contains( j.Guid ) )
+                .Select( j => j.Name )
+                .ToList();
+
+            var pendingScheduledRunOnceJobs = new Rock.Model.ServiceJobService( new Rock.Data.RockContext() )
+                .Queryable()
+                .Where( j => Rock.Migrations.RockStartup.DataMigrationsStartup.scheduledRunOnceJobGuids.Contains( j.Guid)  )
+                .Select( j => j.Name )
+                .ToList();
+
+            if ( pendingStartupRunOnceJobs.Any() || pendingScheduledRunOnceJobs.Any() )
+            {
+                // Show message and return without updating
+                nbPendingMigrationJobs.Text = CreatePendingRunOnceJobsMessage( pendingStartupRunOnceJobs, pendingScheduledRunOnceJobs );
+                nbPendingMigrationJobs.Visible = true;
+                return true;
+            }
+
+            nbPendingMigrationJobs.Visible = false;
+            return false;
+        }
+
+        private string CreatePendingRunOnceJobsMessage( List<string> pendingStartupRunOnceJobs, List<string> pendingScheduledRunOnceJobs )
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine( "<strong><i class=\"fa fa-exclamation-triangle\"></i> Cannot Update Rock: Migration Jobs Pending</strong>" );
+            stringBuilder.AppendLine( "<p>" );
+            stringBuilder.AppendLine( "The following jobs need to complete before updating to the latest version of Rock.<br>" );
+
+            if ( pendingStartupRunOnceJobs.Any() )
+            {
+                stringBuilder.AppendLine( "These jobs run automatically when Rock starts after an update and should finish soon.<br>" );
+                stringBuilder.AppendLine( "<ul>" );
+
+                pendingStartupRunOnceJobs.ForEach( j => stringBuilder.AppendLine( $"<li>{j}</li>" ) );
+
+                stringBuilder.AppendLine( "</ul>" );
+            }
+
+            if ( pendingScheduledRunOnceJobs.Any() )
+            {
+                stringBuilder.AppendLine( "These jobs are scheduled to run at 2 AM when usage is low because they could affect performance. If needed they can be run manually by going to Admin Tools --> System Settings --> Jobs Administration.<br>" );
+                stringBuilder.AppendLine( "<ul>" );
+
+                pendingScheduledRunOnceJobs.ForEach( j => stringBuilder.AppendLine( $"<li>{j}</li>" ) );
+
+                stringBuilder.AppendLine( "</ul>" );
+            }
+
+            stringBuilder.AppendLine( "</p>" );
+
+            return stringBuilder.ToString();
         }
     }
 }

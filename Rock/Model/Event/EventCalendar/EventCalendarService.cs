@@ -51,9 +51,15 @@ namespace Rock.Model
             var timeZoneId = TZConvert.WindowsToIana( RockDateTime.OrgTimeZoneInfo.Id );
             icalendar.AddTimeZone( VTimeZone.FromDateTimeZone( timeZoneId ) );
 
-            // Create each of the events for the calendar(s)
+            var startDate = new CalDateTime( args.StartDate, timeZoneId );
+            var endDate = new CalDateTime( args.EndDate, timeZoneId );
+
+            // Add the ICalendar events.
             foreach ( EventItem eventItem in eventItems )
             {
+                // Calculate a sequence number for the Event Item.
+                var eventItemSequenceNo = GetSequenceNumber( eventItem.CreatedDateTime, eventItem.ModifiedDateTime );
+
                 foreach ( EventItemOccurrence occurrence in eventItem.EventItemOccurrences )
                 {
                     if ( occurrence.Schedule == null )
@@ -61,19 +67,60 @@ namespace Rock.Model
                         continue;
                     }
 
+                    //
+                    // Calculate a Sequence Number for the calendar event.
+                    // The iCalendar.SEQUENCE represents the revision number of a specific event occurrence.
+                    // Many calendaring applications will not update an existing event with the same iCalendar.Uid
+                    // unless the sequence number is greater.
+                    // We assign a Sequence Number based on the number of seconds difference between the dates on which the Rock
+                    // event components were first created and last modified. The sequence number is an Int32, which allows a valid
+                    // range of sequences for 60+ years from the date the event components were created.
+                    // There are multiple Rock components that affect the final calendar entries, and the sequence number assigned
+                    // to the iCalendar event should be the highest of the sequence numbers calculated for each of these components.
+                    // For more information, refer https://icalendar.org/iCalendar-RFC-5545/3-8-7-4-sequence-number.html
+                    //
+                    var sequenceNo = eventItemSequenceNo;
+
+                    var occurrenceSequenceNo = GetSequenceNumber( occurrence.CreatedDateTime, occurrence.ModifiedDateTime );
+                    if ( sequenceNo < occurrenceSequenceNo )
+                    {
+                        sequenceNo = occurrenceSequenceNo;
+                    }
+
+                    var scheduleSequenceNo = GetSequenceNumber( occurrence.Schedule.CreatedDateTime, occurrence.Schedule.ModifiedDateTime );
+                    if ( sequenceNo < scheduleSequenceNo )
+                    {
+                        sequenceNo = scheduleSequenceNo;
+                    }
+
+                    // Read the scheduling information from the Event Occurrence Schedule iCalendar data.
                     var ical = CalendarCollection.Load( occurrence.Schedule.iCalendarContent.ToStreamReader() );
+
                     foreach ( var icalEvent in ical[0].Events )
                     {
-                        // We get all of the schedule info from Schedule.iCalendarContent
+                        // If the event is not within the requested date range, discard it.
+                        // This may occur if the template event has date values that are not aligned with the recurrence schedule.
+                        if ( icalEvent.Start.LessThan( startDate ) || icalEvent.Start.GreaterThan( endDate ) )
+                        {
+                            continue;
+                        }
+
                         var ievent = icalEvent.Copy<CalendarEvent>();
+                        ievent.Uid = occurrence.Guid.ToString();
+                        ievent.Sequence = sequenceNo;
+
                         ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
                         ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
-                        ievent.Uid = occurrence.Guid.ToString();
 
                         // Determine the start and end time for the event.
                         // For an all-day event, omit the End date.
                         // see https://stackoverflow.com/questions/1716237/single-day-all-day-appointments-in-ics-files
                         ievent.Start = new CalDateTime( icalEvent.Start.Value, timeZoneId );
+
+                        if ( ievent.Start.LessThan( startDate ) || ievent.Start.GreaterThan( endDate ) )
+                        {
+                            continue;
+                        }
 
                         if ( !ievent.Start.HasTime
                             && ( ievent.End != null && !ievent.End.HasTime )
@@ -298,6 +345,18 @@ namespace Rock.Model
         {
             var rockContext = new RockContext();
 
+            var eventCalendarService = new EventCalendarService( rockContext );
+            var eventCalendar = eventCalendarService.Get( calendarProps.CalendarId );
+            if ( eventCalendar == null )
+            {
+                throw new Exception( $"Invalid Calendar reference. [CalendarId={ calendarProps.CalendarId }]" );
+            }
+
+            if ( calendarProps.StartDate > calendarProps.EndDate )
+            {
+                throw new Exception( $"Invalid Date Range. Start Date must be prior to End Date [StartDate={ calendarProps.StartDate }, EndDate={ calendarProps.EndDate }]" );
+            }
+
             var eventCalendarItemService = new EventCalendarItemService( rockContext );
             var eventItemQuery = eventCalendarItemService
                 .Queryable()
@@ -336,6 +395,32 @@ namespace Rock.Model
             }
 
             return eventQueryable.ToList();
+        }
+
+        /// <summary>
+        /// Create a sequence number that indicates the age of an item based on when it was created and last modified.
+        /// </summary>
+        /// <param name="createdDateTime"></param>
+        /// <param name="modifiedDateTime"></param>
+        /// <returns></returns>
+        private int GetSequenceNumber( DateTime? createdDateTime, DateTime? modifiedDateTime )
+        {
+            var minCreatedDateTime = RockDateTime.New( 2020, 1, 1 ).Value;
+
+            createdDateTime = createdDateTime ?? minCreatedDateTime;
+            if ( createdDateTime < minCreatedDateTime )
+            {
+                createdDateTime = minCreatedDateTime;
+            }
+
+            modifiedDateTime = modifiedDateTime ?? createdDateTime;
+            if ( modifiedDateTime < createdDateTime )
+            {
+                modifiedDateTime = createdDateTime;
+            }
+
+            var sequenceNo = ( int ) modifiedDateTime.Value.Subtract( createdDateTime.Value ).TotalSeconds;
+            return sequenceNo;
         }
     }
 

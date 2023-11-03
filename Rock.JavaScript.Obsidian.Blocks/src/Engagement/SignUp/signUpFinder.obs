@@ -8,56 +8,56 @@
         {{ errorMessage }}
     </NotificationBox>
 
-    <div v-if="!blockErrorMessage">
-        <RockForm @submit="onSearch">
+    <div v-if="!blockErrorMessage" class="sign-up-finder">
+        <RockForm v-if="isSearchFormVisible" @submit="onSearch" class="filters">
             <div class="row d-flex flex-wrap">
-                <div v-if="projectTypes.length" :class="columnClass">
-                    <SignUpFilter v-model="selectedProjectTypes"
-                                  :label="config.projectTypeFilterLabel"
-                                  :items="projectTypes"
-                                  :displayAs="displayAs"
-                                  @update:modelValue="onProjectTypesUpdated" />
-                </div>
-                <div v-if="campuses.length" :class="columnClass">
+                <div v-if="campuses.length" :class="columnClass" class="filters-campus">
                     <SignUpFilter v-model="selectedCampuses"
                                   label="Campus"
                                   :items="campuses"
                                   :displayAs="displayAs" />
                 </div>
-                <div v-if="namedSchedules.length" :class="columnClass">
+                <div v-if="namedSchedules.length" :class="columnClass" class="filters-namedschedule">
                     <SignUpFilter v-model="selectedNamedSchedules"
                                   :label="config.namedScheduleFilterLabel"
                                   :items="namedSchedules"
                                   :displayAs="displayAs" />
                 </div>
-                <div v-for="a in attributeFilters" :key="a.key" :class="columnClass">
-                    <div class="form-group">
-                        <RockLabel>{{ a.attribute.name }}</RockLabel>
-                        <RockAttributeFilter v-model="comparisonValuesByAttributeGuid[a.key]"
-                                             :attribute="a.attribute" />
-                    </div>
-                </div>
-                <div v-if="config.displayDateRange" :class="columnClass">
+                <div v-if="config.displayDateRange" :class="columnClass" class="filters-daterange">
                     <DateRangePicker v-model="selectedDateRange"
                                      label="Date Range"
                                      :disallowPastDateSelection="true" />
                 </div>
-                <div v-if="config.displayLocationSort" :class="columnClass">
+                <div v-if="config.displayLocationSort" :class="columnClass" class="filters-locationsort">
                     <TextBox v-model="selectedLocationSort" :label="config.locationSortLabel" class="input-max-w-xl" />
                 </div>
-                <div v-if="config.displayLocationRangeFilter" :class="columnClass">
+                <div v-if="config.displayLocationRangeFilter" :class="columnClass" class="filters-locationrange">
                     <NumberBox v-model="selectedLocationRange" label="Within" formGroupClasses="input-max-w-md">
                         <template #inputGroupAppend>
                             <span class="input-group-addon">Miles</span>
                         </template>
                     </NumberBox>
                 </div>
-                <div v-if="config.displaySlotsAvailableFilter" :class="columnClass">
+                <div v-if="config.displaySlotsAvailableFilter" :class="columnClass" class="filters-slots">
                     <NumberBox v-model="selectedSlotsAvailable" class="input-max-w-md" label="Spots Available">
                         <template #inputGroupPrepend>
                             <InputGroupDropDown :items="slotsAvailableComparisonTypes" v-model="selectedSlotsAvailableComparisonType" />
                         </template>
                     </NumberBox>
+                </div>
+                <div v-if="projectTypes.length" :class="columnClass" class="filters-projecttype">
+                    <SignUpFilter v-model="selectedProjectTypes"
+                                  :label="config.projectTypeFilterLabel"
+                                  :items="projectTypes"
+                                  :displayAs="displayAs"
+                                  @update:modelValue="onProjectTypesUpdated" />
+                </div>
+                <div v-for="a in attributeFilters" :key="a.key" :class="`${columnClass} filters-attribute-${a.attribute?.key?.toLowerCase()}`">
+                    <div class="form-group">
+                        <RockLabel>{{ a.attribute?.name }}</RockLabel>
+                        <RockAttributeFilter v-model="comparisonValuesByAttributeGuid[a.key]"
+                                             :attribute="a.attribute" />
+                    </div>
                 </div>
             </div>
             <div class="actions">
@@ -66,9 +66,9 @@
             </div>
         </RockForm>
 
-        <Loading :isLoading="isSearching">
-            <div ref="resultsHeaderElement"></div>
-            <div ref="resultsElement"></div>
+        <Loading :isLoading="isSearching" class="results">
+            <div ref="resultsHeaderElement" class="results-header"></div>
+            <div ref="resultsElement" class="results-body"></div>
         </Loading>
     </div>
 </template>
@@ -77,17 +77,17 @@
     import { computed, nextTick, ref } from "vue";
     import SignUpFilter from "./SignUpFinder/signUpFilter.partial.obs";
     import { SignUpFilterType } from "./SignUpFinder/signUpFilterType.partial";
-    import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
-    import { DateRangeParts } from "@Obsidian/Controls/dateRangePicker";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
     import InputGroupDropDown from "@Obsidian/Controls/inputGroupDropDown.obs";
-    import Loading from "@Obsidian/Controls/loading";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox";
-    import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockLabel from "@Obsidian/Controls/rockLabel";
-    import RockForm from "@Obsidian/Controls/rockForm";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
@@ -131,9 +131,9 @@
     const comparisonValuesByAttributeGuid: Record<string, ComparisonValue> = {};
 
     const selectedProjectTypes = ref<string[]>([]);
-    const selectedCampuses = ref<string[]>(config.pageCampusContext?.value ? [...config.pageCampusContext.value] : []);
+    const selectedCampuses = ref<string[]>(config.pageCampusContext?.value ? [config.pageCampusContext.value] : []);
     const selectedNamedSchedules = ref<string[]>([]);
-    const selectedDateRange = ref<DateRangeParts>({});
+    const selectedDateRange = ref<DateRangeParts | undefined>();
     const selectedLocationSort = ref<string>("");
     const selectedLocationRange = ref<number | null>(null);
     const selectedSlotsAvailableComparisonType = ref<SlotsAvailableComparisonType>("AtLeast");
@@ -222,6 +222,19 @@
         return filters;
     });
 
+    const isSearchFormVisible = computed((): boolean => {
+        return !!(
+            projectTypes.value.length
+            || campuses.value.length
+            || namedSchedules.value.length
+            || attributeFilters.value.length
+            || config.displayDateRange
+            || config.displayLocationSort
+            || config.displayLocationRangeFilter
+            || config.displaySlotsAvailableFilter
+        );
+    });
+
     // #endregion
 
     // #region Functions
@@ -291,8 +304,8 @@
             campuses: selectedCampuses.value,
             namedSchedules: selectedNamedSchedules.value,
             attributeFiltersByProjectType: getActiveAttributeFiltersByProjectType(),
-            startDate: selectedDateRange.value.lowerValue,
-            endDate: selectedDateRange.value.upperValue,
+            startDate: selectedDateRange.value?.lowerValue,
+            endDate: selectedDateRange.value?.upperValue,
             locationSort: selectedLocationSort.value,
             locationRange: selectedLocationRange.value,
             slotsAvailableComparisonType: selectedSlotsAvailableComparisonType.value,
@@ -325,7 +338,7 @@
         selectedProjectTypes.value = [];
         selectedCampuses.value = [];
         selectedNamedSchedules.value = [];
-        selectedDateRange.value = {};
+        selectedDateRange.value = undefined;
         selectedLocationSort.value = "";
         selectedLocationRange.value = null;
         selectedSlotsAvailableComparisonType.value = "AtLeast";

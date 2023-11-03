@@ -554,7 +554,14 @@ FROM (
                                 rockContextForMetricValues.SaveChanges( true );
                             }
 
-                            rockContextForMetricEntity.SaveChanges();
+                            /*
+                                5/11/2023 - KA
+                                We are calling the SaveChanges( true ) overload that disables pre/post processing hooks
+                                because the LastRunDateTime property of the Metric is updated above. If we don't disable
+                                these hooks, the [ModifiedDateTime] value will also be updated every time a metric is
+                                calculated, which is not what we want here.
+                            */
+                            rockContextForMetricEntity.SaveChanges( true );
                         }
                     }
                 }

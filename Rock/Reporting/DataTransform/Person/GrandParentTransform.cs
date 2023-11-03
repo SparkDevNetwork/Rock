@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -102,7 +102,7 @@ namespace Rock.Reporting.DataTransform.Person
                 .FirstOrDefault();
 
             var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
-                .Where( p => p.Members.Where( a => a.GroupRoleId == grandParentRoleId )
+                .Where( p => p.Members.Where( a => a.GroupRoleId == grandParentRoleId && a.IsArchived == false )
                     .Any( a => a.Group.Members
                     .Any( c => c.GroupRoleId == ownerRoleId && idQuery.Contains( c.PersonId ) ) ) );
 

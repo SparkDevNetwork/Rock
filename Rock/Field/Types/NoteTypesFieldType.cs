@@ -20,12 +20,14 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,13 +36,123 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.NOTE_TYPES )]
     public class NoteTypesFieldType : CategoryFieldType, IEntityReferenceFieldType
     {
         private const string REPEAT_COLUMNS = "repeatColumns";
+        private const string VALUES_PUBLIC_KEY = "values";
+        private const string ENTITY_TYPES = "entityTypes";
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            // Commenting out the below call to the super class as currently, Note Types Field Type is inheriting from Category Field Type. This was causing errors.
+            // this may be changed in future if needed.
+            // var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            var publicConfigurationValues = new Dictionary<string, string>( privateConfigurationValues );
+            if ( usage == ConfigurationValueUsage.Configure )
+            {
+                // Put all the entities under the to be displayed in EntityPicker Dropdown in the Attribute Configuration Modal.
+                publicConfigurationValues[ENTITY_TYPES] = new EntityTypeService( new RockContext() )
+                    .GetEntities()
+                    .OrderBy( e => e.FriendlyName )
+                    .ThenBy( e => e.Name )
+                    .ToList()
+                    .Select( e => e.ToListItemBag() )
+                    .ToCamelCaseJson( false, true );
+            }
+
+            var entityTypeName = privateConfigurationValues.GetValueOrDefault( ENTITY_TYPE_NAME_KEY, None.IdValue );
+            var entityType = EntityTypeCache.Get( entityTypeName );
+            // The value of the Entity Type Name is set from either the Webforms or the Obsidian Attributes Configuration Modal.
+            // The Entity Type Name to represent NO_ENTITY could be either "0" or an empty string based on which modal it is set from.
+            // We are trying to cater to both as of now.
+            if ( !string.IsNullOrWhiteSpace( entityType?.Name ) && entityTypeName != None.IdValue )
+            {
+                publicConfigurationValues[ENTITY_TYPE_NAME_KEY] = entityType.Guid.ToString();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                if ( !string.IsNullOrWhiteSpace( entityType?.Name ) && entityTypeName != None.IdValue )
+                {
+                    string qualifierColumn = publicConfigurationValues.GetValueOrDefault( QUALIFIER_COLUMN_KEY, string.Empty );
+                    string qualifierValue = publicConfigurationValues.GetValueOrDefault( QUALIFIER_VALUE_KEY, string.Empty );
+
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = new NoteTypeService( rockContext )
+                        .Get( entityType.Id, qualifierColumn, qualifierValue )
+                        .OrderBy( n => n.Name )
+                        .Select( n => new ListItemBag
+                        {
+                            Text = n.Name,
+                            Value = n.Guid.ToString().ToUpper()
+                        } )
+                        .ToList()
+                        .ToCamelCaseJson( false, true );
+                }
+                // Show all the notes types if no entity is specified.
+                else
+                {
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = new NoteTypeService( rockContext )
+                        .Queryable()
+                        .OrderBy( n => n.EntityType.Name )
+                        .ThenBy( n => n.Name )
+                        .Select( n => new
+                        {
+                            EntityTypeFriendlyName = n.EntityType.FriendlyName,
+                            n.Name,
+                            n.Guid
+                        } ) // creating this anonymous object to prevent further calls database
+                        .ToList() // getting the results to the memory so that the subsequent operations do not throw InvalidOperationException
+                        .Select( n => new ListItemBag
+                        {
+                            Text = $"{n.EntityTypeFriendlyName}: {n.Name}",
+                            Value = n.Guid.ToString().ToUpper()
+                        } )
+                        .ToCamelCaseJson( false, true );
+                }
+            }
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = new Dictionary<string, string>( publicConfigurationValues );
+            // Remove the values which should not be stored in the database.
+            privateConfigurationValues.Remove( ENTITY_TYPES );
+            privateConfigurationValues.Remove( VALUES_PUBLIC_KEY );
+
+            privateConfigurationValues[ENTITY_TYPE_NAME_KEY] = string.Empty;
+            var entityTypeGuid = publicConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY );
+            if ( entityTypeGuid != null )
+            {
+                var entityType = EntityTypeCache.Get( entityTypeGuid.AsGuid() );
+
+                if ( !string.IsNullOrWhiteSpace( entityType?.Name ) && entityType.Name != None.IdValue )
+                {
+                    privateConfigurationValues[ENTITY_TYPE_NAME_KEY] = entityType.Name;
+                }
+            }
+
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return publicValue;
+        }
 
         #endregion Configuration
 

@@ -47,12 +47,23 @@ function BindNavEvents() {
       }
     });
 
-    // watch the .rock-top-header element for changes in height and write the new height to the body element as a css variable
+    // Because the header naturally closes addClass navbar-side-open when a modal is open
+    if ($('#fixed-header').length) {
+      if ( $('#fixed-header').find('.modal.in').length ) {
+        bodyElement.addClass('navbar-side-open');
+        // Listen for modal close
+        $('#fixed-header').find('.modal.in').on('hidden.bs.modal', function (e) {
+          bodyElement.removeClass('navbar-side-open');
+        })
+      }
+    }
+
+    topHeaderOffset()
+
     var topHeader = $('.rock-top-header');
-    bodyElement.css('--top-header-height', topHeader.outerHeight() + 'px');
     // create a new resize observer to watch for changes in the top header height
     var topHeaderResizeObserver = new ResizeObserver(function(entries) {
-      bodyElement.css('--top-header-height', topHeader.outerHeight() + 'px');
+      topHeaderOffset()
     });
     // start observing the top header element
     topHeaderResizeObserver.observe(topHeader[0]);
@@ -60,6 +71,19 @@ function BindNavEvents() {
   });
 }
 
+function topHeaderOffset() {
+  // watch the .rock-top-header element for changes in height and write the new height to the body element as a css variable
+  var topHeader = document.querySelector('.rock-top-header');
+  document.body.style.setProperty('--top-header-height', topHeader.offsetHeight + 'px');
+  // if the top header is a fixed header, and is not position relative, then also set the --top-header-fixed-height css variable
+  // get computed topHeader style and check if position is relative
+  var topHeaderStyle = window.getComputedStyle(topHeader);
+  if (topHeaderStyle.position !== 'relative') {
+    document.body.style.setProperty('--sticky-element-offset', topHeader.offsetHeight + 'px');
+  } else {
+    document.body.style.setProperty('--sticky-element-offset', '0px');
+  }
+}
 
 function navMouseEvents() {
   var hoverDelay = 200,
@@ -70,7 +94,7 @@ function navMouseEvents() {
   const navbarStaticSide = $('.navbar-static-side');
   const navbarFixedTop = $('.navbar-fixed-top');
   const bodyElement = $('body');
-  
+
   if ($(window).width() > 768) {
     navbarSideLi.on("mouseenter.sidenav", function() {
       const $this = $(this);
@@ -91,7 +115,7 @@ function navMouseEvents() {
               bodyElement.css('padding-right', scrollWidth);
               navbarFixedTop.css('right', scrollWidth);
             }
-            
+
             $this.addClass('open');
             navbarStaticSide.addClass('open-secondary-nav');
             bodyElement.addClass('nav-open');
@@ -100,7 +124,7 @@ function navMouseEvents() {
         }
       }
     });
-    
+
     navbarSideLi.on("mouseleave.sidenav", function() {
       const $this = $(this);
       if ($this.data('navHoverTimeout')) {
@@ -119,7 +143,6 @@ function navMouseEvents() {
       }
     });
   } else {
-    console.log("remove mouseenter mouseleave");
     navbarSideLi.off(".sidenav");
   }
 }
@@ -148,8 +171,8 @@ function PreventNumberScroll() {
     // calculate height of noteBody
     var height = noteBody.prop('scrollHeight');
     noteBody.addClass("focus-within").css('height', height);
-    
-    
+
+
     noteBody.on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function(e) {
       if ($(this).hasClass("focus-within")) {
         noteBody.addClass("overflow-visible");
@@ -188,15 +211,19 @@ function ResizeTextarea() {
 
 // Fixes an issue with the wait spinner caused by browser Back/Forward caching.
 function HandleBackForwardCache() {
-
-    // Forcibly hide the wait spinner if the page is being reloaded from cache.
-    // Browsers that implement back/forward caching may otherwise continue to display the wait spinner when the page is restored.
-    // This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
-    // (https://bugs.webkit.org/show_bug.cgi?id=156356)
-    $(window).bind('pageshow', function (e) {
-        if ( e.originalEvent.persisted )
-        {
-            $('#updateProgress').hide();
-        }
-    });
+	// Forcibly hide the wait spinner, and clear the pending request if the page is being reloaded from bfcache. (Currently WebKit only)
+	// Browsers that implement bfcache will otherwise trigger updateprogress because the pending request is still in the PageRequestManager state.
+	// This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
+	// (https://bugs.webkit.org/show_bug.cgi?id=156356)
+	window.addEventListener('pageshow', function (e) {
+		if ( e.persisted ) {
+			document.querySelector('#updateProgress').style.display = 'none';
+			// Check if the page is in postback, and if so, reset the PageRequestManager state.
+			if (Sys.WebForms.PageRequestManager.getInstance().get_isInAsyncPostBack()) {
+				// Reset the PageRequestManager state. & Manually clear the request object
+				Sys.WebForms.PageRequestManager.getInstance()._processingRequest = false;
+				Sys.WebForms.PageRequestManager.getInstance()._request = null;
+			}
+		}
+	});
 }

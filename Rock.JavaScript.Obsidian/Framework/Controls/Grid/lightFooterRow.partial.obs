@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="d-flex grid-light-action-row">
+        <ActionGroup :gridActions="primaryGridActions"
+                     :grid="grid" />
+
+        <PopupActionGroup v-if="hasSecondaryActions"
+                          :gridActions="secondaryGridActions"
+                          :grid="grid" />
+    </div>
+</template>
+
+<style>
+    .grid-light-action-row {
+        justify-content: flex-end;
+    }
+
+    .grid-light-action-row .grid-actions {
+        background-color: inherit;
+        padding: calc(var(--table-cell-padding-y) * .25) 0;
+    }
+
+    .grid-light-action-row .grid-actions:last-child {
+        padding-right: var(--table-cell-padding-x);
+    }
+</style>
+
+<script setup lang="ts">
+    import ActionGroup from "./actionGroup.partial.obs";
+    import PopupActionGroup from "./popupActionGroup.partial.obs";
+    import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { PropType, computed } from "vue";
+
+    const props = defineProps({
+        /** The state object for the entire grid. */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        },
+
+        /** The array of grid actions that will be displayed. */
+        gridActions: {
+            type: Array as PropType<(GridAction & { isPrimary?: boolean })[]>,
+            default: []
+        }
+    });
+
+    // #region Computed Values
+
+    const primaryGridActions = computed((): GridAction[] => {
+        return props.gridActions.filter(a => a.isPrimary === true);
+    });
+
+    const secondaryGridActions = computed((): GridAction[] => {
+        return props.gridActions.filter(a => a.isPrimary !== true);
+    });
+
+    const hasSecondaryActions = computed((): boolean => {
+        return secondaryGridActions.value.length > 0;
+    });
+
+    // #endregion
+</script>

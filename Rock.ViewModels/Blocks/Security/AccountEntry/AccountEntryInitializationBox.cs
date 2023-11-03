@@ -135,5 +135,26 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         /// Indicates whether username availability checking is disabled.
         /// </summary>
         public bool IsUsernameAvailabilityCheckDisabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the account entry step box.
+        /// </summary>
+        /// <value>
+        /// The  account entry step box.
+        /// </value>
+        public AccountEntryRegisterResponseBox AccountEntryRegisterStepBox { get; set; }
+
+        /// <summary>
+        /// Indicating whether the Gender dropdown is shown.
+        /// </summary>
+        public bool IsGenderPickerShown { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person details if there is an identified user.
+        /// </summary>
+        /// <value>
+        /// The account entry person information bag.
+        /// </value>
+        public AccountEntryPersonInfoBag AccountEntryPersonInfoBag { get; set; }
     }
 }

@@ -1,0 +1,284 @@
+<template>
+    <div class="upAdd">
+        <Panel title="Add Prayer Request" titleIconCssClass="fa fa-praying-hands" type="block">
+            <template #default>
+                <RockForm v-if="!isEntryHidden" @submit="onSubmitted">
+                    <NotificationBox v-if="errors.length" id="nbWarningMessage" alertType="warning" label="Warning">
+                        <ul>
+                            <li v-for="error in errors">{{ error }}</li>
+                        </ul>
+                    </NotificationBox>
+
+                    <fieldset>
+
+                        <div v-if="config.isRequesterInfoShown" class="prayer-requester">
+                            <TextBox v-model="firstName"
+                                autocomplete="given-name"
+                                :disabled="isSaving || isNavigating"
+                                label="First Name"
+                                rules="required" />
+
+                            <TextBox v-model="lastName"
+                                autocomplete="family-name"
+                                :disabled="isSaving || isNavigating"
+                                label="Last Name"
+                                :rules="config.isLastNameRequired ? 'required' : ''" />
+
+                            <EmailBox v-model="email"
+                                autocomplete="email"
+                                :disabled="isSaving || isNavigating"
+                                label="Email" />
+
+                            <PhoneNumberBox v-if="config.isMobilePhoneShown"
+                                v-model="mobilePhoneNumber"
+                                v-model:countryCode="mobilePhoneNumberCountryCode"
+                                autocomplete="mobile"
+                                :disabled="isSaving || isNavigating"
+                                label="Mobile Phone" />
+
+                            <CampusPicker v-if="config.isCampusShown"
+                                v-model="campusListItemBag"
+                                :disabled="isSaving || isNavigating"
+                                :includeInactive="false"
+                                label="Campus"
+                                :rules="config.isCampusRequired ? 'required' : ''" />
+                        </div>
+
+                        <DropDownList v-if="categories.length"
+                            v-model="categoryGuid"
+                            :disabled="isSaving || isNavigating"
+                            :items="categories"
+                            label="Category" />
+
+                        <AttributeValuesContainer v-if="attributes != null"
+                            v-model="attributeValues"
+                            :attributes="attributes"
+                            isEditMode
+                            :showCategoryLabel="false" />
+
+                        <div ref="requestInputWrapper">
+                            <TextBox v-model="request"
+                                autocomplete="off"
+                                :disabled="isSaving || isNavigating"
+                                label="Request"
+                                :maxLength="requestCharacterLimit"
+                                :placeholder="requestPlaceholder"
+                                :rows="3"
+                                rules="required"
+                                :showCountDown="!!requestCharacterLimit"
+                                textMode="multiline" />
+                        </div>
+
+                        <CheckBox v-if="config.isUrgentShown"
+                            v-model="internalIsUrgent"
+                            :disabled="isSaving || isNavigating"
+                            help="If 'Yes' is checked, the request will be flagged as urgent in need of attention quickly."
+                            label="Urgent?"
+                            text="Yes" />
+
+                        <CheckBox v-if="config.isAllowCommentsShown"
+                            v-model="internalAllowComments"
+                            :disabled="isSaving || isNavigating"
+                            help="If 'Yes' is checked, the prayer team can offer encouraging comments on the request."
+                            label="Allow Encouraging Comments?"
+                            text="Yes" />
+
+                        <CheckBox v-if="config.isIsPublicShown"
+                            v-model="internalIsPublic"
+                            :disabled="isSaving || isNavigating"
+                            help="If 'Yes' is checked, you give permission to show the request on the public website."
+                            label="Allow Publication?"
+                            text="Yes" />
+                    </fieldset>
+
+                    <RockButton accesskey="s"
+                        btnType="primary"
+                        :disabled="isSaving || isNavigating"
+                        type="submit">{{ saveButtonText }}</RockButton>
+                </RockForm>
+                <template v-else>
+                    <h2>Request Submitted</h2>
+
+                    <NotificationBox v-if="successMessage" alertType="success" v-html="successMessage" />
+
+                    <RockButton btnType="link" @click="onAddAnotherRequestClicked">Add Another Request</RockButton>
+                </template>
+            </template>
+        </Panel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PrayerRequestEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveResponseBag";
+    import { PrayerRequestEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveRequestBag";
+    import { PrayerRequestEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntryInitializationBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const config = useConfigurationValues<PrayerRequestEntryInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    //#region Values
+
+    const firstName = ref<string>(config.defaultFirstName ?? "");
+    const lastName = ref<string>(config.defaultLastName ?? "");
+    const email = ref<string>(config.defaultEmail ?? "");
+    const mobilePhoneNumber = ref<string>("");
+    const mobilePhoneNumberCountryCode = ref<string>("");
+    const campusListItemBag = ref<ListItemBag | null | undefined>(config.defaultCampus);
+    const categoryGuid = ref<string>(config.defaultCategoryGuid || "");
+    const categories = ref<ListItemBag[]>(config.categories || []);
+    const request = ref<string>(config.defaultRequest ?? "");
+    const requestCharacterLimit = ref<number | undefined>(config.characterLimit > 0 ? config.characterLimit : undefined);
+    const requestPlaceholder = ref<string>(config.characterLimit > 0 ? `Please pray that… (up to ${config.characterLimit} characters)` : "Please pray that…");
+    const internalIsUrgent = ref<boolean>(false);
+    const internalAllowComments = ref<boolean>(config.allowCommentsDefaultValue);
+    const internalIsPublic = ref<boolean>(config.isPublicDefaultValue);
+    const isEntryHidden = ref<boolean>(false);
+    const successMessage = ref<string | null>(null);
+    const errors = ref<string[]>([]);
+    const requestInputWrapper = ref<HTMLElement | null>(null);
+    const isSaving = ref<boolean>(false);
+    const isNavigating = ref<boolean>(false);
+    const attributes = ref<Record<string, PublicAttributeBag> | null>(config.attributes || null);
+    const attributeValues = ref<Record<string, string>>({});
+
+    //#endregion
+
+    //#region Computed Values
+
+    const isUrgent = computed<boolean>(() => config.isUrgentShown ? internalIsUrgent.value : false);
+    const allowComments = computed<boolean>(() => config.isAllowCommentsShown ? internalAllowComments.value : config.allowCommentsDefaultValue);
+    const isPublic = computed<boolean>(() => config.isIsPublicShown ? internalIsPublic.value : config.isPublicDefaultValue);
+    const requestInput = computed<HTMLTextAreaElement | null>(() => {
+        if (!requestInputWrapper.value) {
+            return null;
+        }
+        return requestInputWrapper.value.querySelector("textarea");
+    });
+    const saveButtonText = computed<string>(() => isSaving.value ? "Saving…" : "Save Request");
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the "Add Another Request" button being clicked.
+     */
+    function onAddAnotherRequestClicked(): void {
+        resetToAddAnotherRequest();
+    }
+
+    /**
+     * Event handler for the request entry form being submitted.
+     */
+    function onSubmitted(): Promise<void> {
+        return save();
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Navigates to a URL.
+     *
+     * @param url The URL to navigate to.
+     * @returns an unresolving promise so the page/form remains disabled until the redirect is complete.
+     */
+    async function navigate(url: string): Promise<void> {
+        try {
+            isNavigating.value = true;
+            window.location.href = url;
+            return new Promise((_resolve, _reject) => {
+                // Return an unresolving promise so the page/form remains disabled until the redirect is complete.
+            });
+        }
+        finally {
+            // Never set isNavigating back to false since the browser is supposed to be changing routes.
+        }
+    }
+
+    /**
+     * Resets the block to handle another prayer request entry.
+     */
+    function resetToAddAnotherRequest(): void {
+        // Only reset values that the individual may want to change for the next request.
+        request.value = "";
+        internalIsUrgent.value = false;
+        internalIsPublic.value = config.isPublicDefaultValue;
+        internalAllowComments.value = config.allowCommentsDefaultValue;
+        attributeValues.value = {};
+        isEntryHidden.value = false;
+
+        // Automatically set focus to the Request textarea after the template is rendered.
+        nextTick(() => {
+            if (requestInput.value) {
+                requestInput.value.focus();
+            }
+        });
+    }
+
+    /**
+     * Saves the current values as a new prayer request.
+     */
+    async function save(): Promise<void> {
+        try {
+            isSaving.value = true;
+
+            const bag: PrayerRequestEntrySaveRequestBag = {
+                allowComments: allowComments.value,
+                campusGuid: campusListItemBag.value?.value,
+                categoryGuid: categoryGuid.value,
+                email: email.value,
+                firstName: firstName.value,
+                isPublic: isPublic.value,
+                isUrgent: isUrgent.value,
+                lastName: lastName.value,
+                mobilePhoneNumber: mobilePhoneNumber.value,
+                mobilePhoneNumberCountryCode: mobilePhoneNumberCountryCode.value,
+                request: request.value,
+                attributeValues: attributeValues.value
+            };
+
+            const result = await invokeBlockAction<PrayerRequestEntrySaveResponseBag>("Save", { bag });
+
+            if (!result?.isSuccess || !result.data) {
+                errors.value = [result.errorMessage || "An unexpected error occurred."];
+            }
+            else if (result.data.errors) {
+                errors.value = result.data.errors;
+            }
+            else if (config.isPageRedirectedToParentOnSave && config.parentPageUrl) {
+                return await navigate(config.parentPageUrl);
+            }
+            else if (config.isPageRefreshedOnSave) {
+                return await navigate(window.location.href);
+            }
+            else {
+                isEntryHidden.value = true;
+                successMessage.value = result.data.successMessage || null;
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    //#endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

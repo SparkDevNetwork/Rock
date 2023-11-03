@@ -128,7 +128,7 @@
                                                     DataTextField="Value" DataValueField="Id" AutoPostBack="true" OnSelectionChanged="btnFrequency_SelectionChanged" />
                                                 <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" AutoPostBack="true" AllowPastDateSelection="false" OnTextChanged="btnFrequency_SelectionChanged" />
                                             </div>
-
+                                            
                                             <Rock:RockTextBox ID="txtCommentEntry" runat="server" Required="true" Label="Comment" />
 
                                         </fieldset>
@@ -155,8 +155,6 @@
                                     </asp:Panel>
                                     <div class="panel-body">
                                         <fieldset>
-                                            <%-- Special input with rock-fullname class --%>
-                                            <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" autocomplete="new-password" />
 
                                             <asp:PlaceHolder ID="phGiveAsPerson" runat="server">
                                                 <div class="row">
@@ -169,18 +167,31 @@
                                                     </div>
                                                 </div>
                                             </asp:PlaceHolder>
+
                                             <asp:PlaceHolder ID="phGiveAsBusiness" runat="server" Visible="false">
                                                 <asp:HiddenField ID="hfBusinessesLoaded" runat="server" />
                                                 <Rock:RockRadioButtonList ID="cblBusiness" runat="server" Label="Business" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="cblBusinessOption_SelectedIndexChanged" />
                                                 <Rock:RockTextBox ID="txtBusinessName" runat="server" Label="Business Name" />
                                             </asp:PlaceHolder>
+
                                             <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="Address" />
-                                            <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
-                                            <Rock:EmailBox ID="txtEmail" runat="server" Label="Email"></Rock:EmailBox>
+
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <Rock:EmailBox ID="txtEmail" runat="server" Label="Email"></Rock:EmailBox>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
+                                                </div>
+                                            </div>
+                                            
+                                            <Rock:RockCheckBox ID="cbSmsOptIn" runat="server" Visible="false"/>
                                             <Rock:RockCheckBox ID="cbGiveAnonymously" runat="server" Text="Give Anonymously" />
+
                                             <asp:PlaceHolder ID="phBusinessContact" runat="server" Visible="false">
                                                 <hr />
                                                 <h4>Business Contact</h4>
+
                                                 <div class="row">
                                                     <div class="col-sm-6">
                                                         <Rock:RockTextBox ID="txtBusinessContactFirstName" runat="server" Label="First Name" />
@@ -189,8 +200,18 @@
                                                         <Rock:RockTextBox ID="txtBusinessContactLastName" runat="server" Label="Last Name" />
                                                     </div>
                                                 </div>
-                                                <Rock:PhoneNumberBox ID="pnbBusinessContactPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
-                                                <Rock:RockTextBox ID="txtBusinessContactEmail" runat="server" Label="Email"></Rock:RockTextBox>
+
+                                                <div class="row">
+                                                    <div class="col-sm-6">
+                                                        <Rock:RockTextBox ID="txtBusinessContactEmail" runat="server" Label="Email"></Rock:RockTextBox>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <Rock:PhoneNumberBox ID="pnbBusinessContactPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
+                                                    </div>
+                                                </div>
+
+                                                <Rock:RockCheckBox ID="cbBusinessContactSmsOptIn" runat="server" Visible="false" />
+
                                             </asp:PlaceHolder>
                                         </fieldset>
                                     </div>
@@ -237,7 +258,7 @@
                                     { %>
                             </div>
                         </div>
-                        <% } %>
+                        <% } %>                      
 
                     </asp:Panel>
 
@@ -246,10 +267,12 @@
                 <div class="panel panel-default no-border">
                     <div class="panel-body">
                         <Rock:NotificationBox ID="nbSelectionMessage" runat="server" Visible="false"></Rock:NotificationBox>
-
+                        
                         <div class="actions clearfix">
                             <a id="lHistoryBackButton" runat="server" class="btn btn-link" href="javascript: window.history.back();">Previous</a>
-                             
+
+                            <Rock:Captcha ID="cpCaptcha" runat="server" CssClass="pull-left" />
+                            <Rock:HiddenFieldWithClass ID="hfHostPaymentInfoSubmitScript" runat="server" CssClass="js-hosted-payment-script" />
                             <Rock:BootstrapButton ID="btnSavedAccountPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" DataLoadingText="Processing..." Visible="false" OnClick="btnSavedAccountPaymentInfoNext_Click" />
 
                             <%-- NOTE: btnHostedPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
@@ -316,8 +339,6 @@
                     </div>
                 </div>
 
-
-
             </asp:Panel>
 
             <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
@@ -376,7 +397,8 @@
                     // Prevent the btnHostedPaymentInfoNext autopostback event from firing by doing stopImmediatePropagation and returning false
                     e.stopImmediatePropagation();
 
-                    <%=HostPaymentInfoSubmitScript%>
+                    const hfHostedPaymentScript = document.querySelector(".js-hosted-payment-script");
+                    window.location = "javascript: " + hfHostedPaymentScript.value;
 
                     return false;
                 });

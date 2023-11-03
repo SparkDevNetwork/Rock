@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncComponent as vueDefineAsyncComponent, ExtractPropTypes, PropType, reactive, ref, Ref, watch, WatchOptions } from "vue";
+import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncComponent as vueDefineAsyncComponent, ExtractPropTypes, PropType, reactive, ref, Ref, VNode, watch, WatchOptions, render, isVNode, createVNode } from "vue";
 import { deepEqual } from "./util";
 import { useSuspense } from "./suspense";
 import { newGuid } from "./guid";
@@ -22,6 +22,7 @@ import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 import { ExtendedRef, ExtendedRefContext } from "@Obsidian/Types/Utility/component";
 import type { RulesPropType, ValidationRule } from "@Obsidian/Types/validationRules";
+import { toNumberOrNull } from "./numberUtils";
 
 type Prop = { [key: string]: unknown };
 type PropKey<T extends Prop> = Extract<keyof T, string>;
@@ -41,7 +42,11 @@ export function useVModelPassthrough<T extends Prop, K extends PropKey<T>, E ext
     const internalValue = ref(props[modelName]) as Ref<T[K]>;
 
     watch(() => props[modelName], val => updateRefValue(internalValue, val), options);
-    watch(internalValue, val => emit(`update:${modelName}`, val), options);
+    watch(internalValue, val => {
+        if (val !== props[modelName]) {
+            emit(`update:${modelName}`, val);
+        }
+    }, options);
 
     return internalValue;
 }
@@ -406,3 +411,140 @@ export function propertyRef<T>(value: T, propertyName: string): ExtendedRef<T> {
 }
 
 // #endregion Extended Refs
+
+// #region VNode Helpers
+
+/**
+ * Retrieves a single prop value from a VNode object. If the prop is explicitely
+ * specified in the DOM then it will be returned. Otherwise the component's
+ * prop default values are checked. If there is a default value it will be
+ * returned.
+ *
+ * @param node The node whose property value is being requested.
+ * @param propName The name of the property whose value is being requested.
+ *
+ * @returns The value of the property or `undefined` if it was not set.
+ */
+export function getVNodeProp<T>(node: VNode, propName: string): T | undefined {
+    // Check if the prop was specified in the DOM declaration.
+    if (node.props && node.props[propName] !== undefined) {
+        return node.props[propName] as T;
+    }
+
+    // Now look to see if the backing component has defined a prop with that
+    // name and provided a default value.
+    if (typeof node.type === "object" && typeof node.type["props"] === "object") {
+        const defaultProps = node.type["props"] as Record<string, unknown>;
+        const defaultProp = defaultProps[propName];
+
+        if (defaultProp && typeof defaultProp === "object" && defaultProp["default"] !== undefined) {
+            return defaultProp["default"] as T;
+        }
+    }
+
+    return undefined;
+}
+
+/**
+ * Retrieves all prop values from a VNode object. First all default values
+ * from the component are retrieved. Then any specified on the DOM will be used
+ * to override those default values.
+ *
+ * @param node The node whose property values are being requested.
+ *
+ * @returns An object that contains all props and values for the node.
+ */
+export function getVNodeProps(node: VNode): Record<string, unknown> {
+    const props: Record<string, unknown> = {};
+
+    // Get all default values from the backing component's defined props.
+    if (typeof node.type === "object" && typeof node.type["props"] === "object") {
+        const defaultProps = node.type["props"] as Record<string, unknown>;
+
+        for (const p in defaultProps) {
+            const defaultProp = defaultProps[p];
+
+            if (defaultProp && typeof defaultProp === "object" && defaultProp["default"] !== undefined) {
+                props[p] = defaultProp["default"];
+            }
+        }
+    }
+
+    // Override with any values specified on the DOM declaration.
+    if (node.props) {
+        for (const p in node.props) {
+            if (typeof node.type === "object" && typeof node.type["props"] === "object") {
+                const propType = node.type["props"][p]?.type;
+
+                if (propType === Boolean) {
+                    props[p] = node.props[p] === true || node.props[p] === "";
+                }
+                else if (propType === Number) {
+                    props[p] = toNumberOrNull(node.props[p]) ?? undefined;
+                }
+                else {
+                    props[p] = node.props[p];
+                }
+            }
+            else {
+                props[p] = node.props[p];
+            }
+        }
+    }
+
+    return props;
+}
+
+/**
+ * Renders the node into an off-screen div and then extracts the text content
+ * by way of the innerText property of the div.
+ *
+ * @param node The node or component to be rendered.
+ * @param props The properties to be passed to the component when it is mounted.
+ *
+ * @returns The text content of the node after it has rendered.
+ */
+export function extractText(node: VNode | Component, props?: Record<string, unknown>): string {
+    const el = document.createElement("div");
+
+    // Create a new virtual node with the specified properties.
+    const vnode = createVNode(node, props);
+
+    // Mount the node in our off-screen container.
+    render(vnode, el);
+
+    const text = el.innerText;
+
+    // Unmount it.
+    render(null, el);
+
+    return text.trim();
+}
+
+/**
+ * Renders the node into an off-screen div and then extracts the HTML content
+ * by way of the innerHTML property of the div.
+ *
+ * @param node The node or component to be rendered.
+ * @param props The properties to be passed to the component when it is mounted.
+ *
+ * @returns The HTML content of the node after it has rendered.
+ */
+export function extractHtml(node: VNode | Component, props?: Record<string, unknown>): string {
+    const el = document.createElement("div");
+
+    // Create a new virtual node with the specified properties.
+    const vnode = createVNode(node, props);
+
+    // Mount the node in our off-screen container.
+    render(vnode, el);
+
+    const html = el.innerHTML;
+
+    // Unmount it.
+    render(null, el);
+
+    return html;
+}
+
+// #endregion

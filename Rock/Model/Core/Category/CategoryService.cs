@@ -23,7 +23,7 @@ using System.Data.Entity;
 #endif
 using System.Linq;
 using System.Linq.Expressions;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model.Core.Category.Options;
 using Rock.Web.Cache;
@@ -171,6 +171,30 @@ namespace Rock.Model
         {
             var childCategory = this.Get( childCategoryGuid );
             return GetAllAncestors( childCategory != null ? childCategory.Id : 0 );
+        }
+
+        /// <summary>
+        /// Gets the ancestors for the provided Category IDs.
+        /// </summary>
+        /// <param name="level">The level of ancestors to retrieve (1 = parent, 2 = grandparent, etc.)</param>
+        /// <param name="childCategoryIds">The child category identifiers.</param>
+        /// <returns></returns>
+        [RockInternal( "1.15.2" )]
+        internal IEnumerable<Category> GetAncestors( int level, params int[] childCategoryIds )
+        {
+            return ExecuteQuery( $@"
+                WITH CTE AS (
+	                SELECT *, 0 AS [DepthLevel]
+	                FROM [Category]
+	                WHERE [Id] IN ({string.Join( ", ", childCategoryIds )})
+	                UNION ALL
+	                SELECT c.*, CTE.[DepthLevel] + 1 AS [DepthLevel]
+	                FROM [Category] c
+	                JOIN CTE on c.[Id] = CTE.[ParentCategoryId]
+                    WHERE CTE.[DepthLevel] < {level}
+                )
+                SELECT * FROM CTE
+                ORDER BY [DepthLevel] DESC" );
         }
 
         /// <summary>
@@ -396,6 +420,10 @@ namespace Rock.Model
                         else if ( itemFilterPropertyNameExpression.Type == typeof( Guid? ) || itemFilterPropertyNameExpression.Type == typeof( Guid ) )
                         {
                             itemFilterPropertyValueExpression = Expression.Constant( options.ItemFilterPropertyValue.AsGuidOrNull(), typeof( Guid? ) );
+                        }
+                        else if ( itemFilterPropertyNameExpression.Type == typeof( bool? ) || itemFilterPropertyNameExpression.Type == typeof( bool ) )
+                        {
+                            itemFilterPropertyValueExpression = Expression.Constant( options.ItemFilterPropertyValue.AsBooleanOrNull(), typeof( bool? ) );
                         }
                         else
                         {

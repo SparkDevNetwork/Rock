@@ -178,7 +178,8 @@ namespace Rock.Model
             }
 
             var historyChangeList = new History.HistoryChangeList();
-            var historyChange = historyChangeList.AddChange( History.HistoryVerb.Login, History.HistoryChangeType.Record, userName );
+            var cleanUserName = PersonToken.ObfuscateRockMagicToken( userName );
+            var historyChange = historyChangeList.AddChange( History.HistoryVerb.Login, History.HistoryChangeType.Record, cleanUserName );
 
             if ( relatedDataBuilder.Length > 0 )
             {

@@ -117,6 +117,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public WorkflowActionFormPersonEntryOption PersonEntryMobilePhoneEntryOption { get; private set; }
 
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntrySmsOptInEntryOption" />
+        [DataMember]
+        public WorkflowActionFormShowHideOption PersonEntrySmsOptInEntryOption { get; private set; }
+
         /// <inheritdoc cref="WorkflowActionForm.PersonEntryBirthdateEntryOption"/>
         [DataMember]
         public WorkflowActionFormPersonEntryOption PersonEntryBirthdateEntryOption { get; private set; }
@@ -346,6 +350,7 @@ namespace Rock.Web.Cache
                     HideIfCurrentPersonKnown = actionForm.PersonEntryHideIfCurrentPersonKnown,
                     MaritalStatus = actionForm.PersonEntryMaritalStatusEntryOption,
                     MobilePhone = actionForm.PersonEntryMobilePhoneEntryOption,
+                    SmsOptIn = actionForm.PersonEntrySmsOptInEntryOption,
                     RecordStatusValueId = actionForm.PersonEntryRecordStatusValueId,
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption,
@@ -418,6 +423,7 @@ namespace Rock.Web.Cache
             this.PersonEntryRaceEntryOption = workflowActionForm.PersonEntryRaceEntryOption;
             this.PersonEntryEthnicityEntryOption = workflowActionForm.PersonEntryEthnicityEntryOption;
             this.PersonEntryMobilePhoneEntryOption = workflowActionForm.PersonEntryMobilePhoneEntryOption;
+            this.PersonEntrySmsOptInEntryOption = workflowActionForm.PersonEntrySmsOptInEntryOption;
             this.PersonEntryPersonAttributeGuid = workflowActionForm.PersonEntryPersonAttributeGuid;
             this.PersonEntryPostHtml = workflowActionForm.PersonEntryPostHtml;
             this.PersonEntryPreHtml = workflowActionForm.PersonEntryPreHtml;

@@ -36,12 +36,13 @@ namespace Rock.Blocks.Types.Mobile.Communication
     /// <summary>
     /// Displays a list of SMS conversations that the individual can interact with.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "SMS Conversation List" )]
     [Category( "Mobile > Communication" )]
     [Description( "Displays a list of SMS conversations that the individual can interact with." )]
     [IconCssClass( "fa fa-sms" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -90,11 +91,18 @@ namespace Rock.Blocks.Types.Mobile.Communication
         Key = AttributeKey.ConversationPage,
         Order = 6 )]
 
+    [IntegerField( "Person Search Stopped Typing Behavior Threshold",
+        Description = "Changes the amount of time (in milliseconds) that a user must stop typing for the search command to execute. Set to 0 to disable entirely.",
+        IsRequired = true,
+        DefaultIntegerValue = 200,
+        Key = AttributeKey.StoppedTypingBehaviorThreshold,
+        Order = 7 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "77701BE2-1335-45F3-93B3-F06466CA391F" )]
     [Rock.SystemGuid.BlockTypeGuid( "E16DC868-101F-4944-BE6C-29D858D9821D" )]
-    public class SmsConversationList : RockMobileBlockType
+    public class SmsConversationList : RockBlockType
     {
         #region Block Attributes
 
@@ -110,27 +118,15 @@ namespace Rock.Blocks.Types.Mobile.Communication
             public const string MaxConversations = "MaxConversations";
             public const string DatabaseTimeoutSeconds = "DatabaseTimeoutSeconds";
             public const string ConversationPage = "ConversationPage";
+            public const string StoppedTypingBehaviorThreshold = "StoppedTypingBehaviorThreshold";
         }
 
         #endregion
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 5;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Communication.SmsConversationList";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 5 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -142,7 +138,8 @@ namespace Rock.Blocks.Types.Mobile.Communication
         {
             return new
             {
-                ConversationPageGuid = GetAttributeValue( AttributeKey.ConversationPage ).AsGuidOrNull()
+                ConversationPageGuid = GetAttributeValue( AttributeKey.ConversationPage ).AsGuidOrNull(),
+                StoppedTypingBehaviorThreshold = GetAttributeValue( AttributeKey.StoppedTypingBehaviorThreshold ).AsIntegerOrNull()
             };
         }
 
@@ -157,11 +154,11 @@ namespace Rock.Blocks.Types.Mobile.Communication
         private IEnumerable<PhoneNumberBag> LoadPhoneNumbers()
         {
             // First load up all of the available numbers
-            var smsNumbers = SystemPhoneNumberCache.All()
+            var smsNumbers = SystemPhoneNumberCache.All( false )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
                 .ThenBy( spn => spn.Id )
-                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) );
+                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) && spn.IsSmsEnabled );
 
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
             if ( selectedNumberGuids.Any() )

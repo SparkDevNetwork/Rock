@@ -49,5 +49,11 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.LiveExperience
         /// </summary>
         /// <value><c>true</c> if this experience is inactive; otherwise, <c>false</c>.</value>
         public bool IsExperienceInactive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content to display when the experience has ended.
+        /// </summary>
+        /// <value>The content to display when the experience has ended.</value>
+        public string ExperienceEndedContent { get; set; }
     }
 }

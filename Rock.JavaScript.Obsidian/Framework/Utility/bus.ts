@@ -52,9 +52,9 @@ function publish<T>(eventName: string, payload: T): void {
 */
 function subscribe<T>(eventName: string, callback: (payload: T) => void): void {
     writeLog(`Subscribed to ${eventName}`);
-    bus.on<T>(eventName, payload => {
+    bus.on(eventName, payload => {
         if (payload) {
-            callback(payload);
+            callback(payload as T);
         }
     });
 }

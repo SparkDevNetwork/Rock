@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -60,58 +56,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// Note View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( Note ) )]
-    public partial class NoteViewModelHelper : ViewModelHelper<Note, NoteBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override NoteBag CreateViewModel( Note model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new NoteBag
-            {
-                IdKey = model.IdKey,
-                ApprovalsSent = model.ApprovalsSent,
-                ApprovalStatus = ( int ) model.ApprovalStatus,
-                ApprovedByPersonAliasId = model.ApprovedByPersonAliasId,
-                ApprovedDateTime = model.ApprovedDateTime,
-                Caption = model.Caption,
-                EditedByPersonAliasId = model.EditedByPersonAliasId,
-                EditedDateTime = model.EditedDateTime,
-                EntityId = model.EntityId,
-                IsAlert = model.IsAlert,
-                IsPrivateNote = model.IsPrivateNote,
-                IsSystem = model.IsSystem,
-                NoteTypeId = model.NoteTypeId,
-                NoteUrl = model.NoteUrl,
-                NotificationsSent = model.NotificationsSent,
-                ParentNoteId = model.ParentNoteId,
-                Text = model.Text,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -169,10 +113,18 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Note target, Note source )
         {
             target.Id = source.Id;
+            #pragma warning disable 612, 618
             target.ApprovalsSent = source.ApprovalsSent;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
             target.ApprovalStatus = source.ApprovalStatus;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
             target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
+            #pragma warning restore 612, 618
+            #pragma warning disable 612, 618
             target.ApprovedDateTime = source.ApprovedDateTime;
+            #pragma warning restore 612, 618
             target.Caption = source.Caption;
             target.EditedByPersonAliasId = source.EditedByPersonAliasId;
             target.EditedDateTime = source.EditedDateTime;
@@ -180,6 +132,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsAlert = source.IsAlert;
+            target.IsPinned = source.IsPinned;
             target.IsPrivateNote = source.IsPrivateNote;
             target.IsSystem = source.IsSystem;
             target.NoteTypeId = source.NoteTypeId;
@@ -195,20 +148,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static NoteBag ToViewModel( this Note model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new NoteViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

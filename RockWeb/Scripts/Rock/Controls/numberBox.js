@@ -26,7 +26,7 @@
                 var value = args.Value;
 
                 // Check for a valid number - allow a signed or unsigned decimal with or without digit separators.
-                var floatRegex = /(?=.*?\d)^[-,+]?(([1-9]\d{0,2}(,\d{3})*)|\d+)?(\.\d{1,2})?$/s;
+                var floatRegex = /(?=.*?\d)^[-,+]?(([1-9]\d{0,2}(,\d{3})*)|\d+)?(\.\d{1,9})?$/s;
                 validationMessage = label + " must be a valid number.";
                 isValid = floatRegex.test(value);
 

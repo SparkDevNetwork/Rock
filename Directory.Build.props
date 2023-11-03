@@ -1,4 +1,8 @@
+<?xml version="1.0"?>
 <Project>
+  <PropertyGroup Label="Normalise stack trace file locations">
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=\</PathMap>
+  </PropertyGroup>
   <PropertyGroup Condition="$(MSBuildProjectFile.EndsWith('.NG.csproj'))">
     <BaseOutputPath>bin\NG\</BaseOutputPath>
     <BaseIntermediateOutputPath>obj\NG\</BaseIntermediateOutputPath>

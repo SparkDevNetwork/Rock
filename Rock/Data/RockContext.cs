@@ -128,6 +128,30 @@ namespace Rock.Data
         public DbSet<AchievementTypePrerequisite> AchievementTypePrerequisites { get; set; }
 
         /// <summary>
+        /// Gets or sets the adaptive messages.
+        /// </summary>
+        /// <value>
+        /// The adaptive messages.
+        /// </value>
+        public DbSet<AdaptiveMessage> AdaptiveMessages { get; set; }
+
+        /// <summary>
+        /// Gets or sets the adaptive message adaptations.
+        /// </summary>
+        /// <value>
+        /// The adaptive message adaptations.
+        /// </value>
+        public DbSet<AdaptiveMessageAdaptation> AdaptiveMessageAdaptations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the adaptive message adaptation segments.
+        /// </summary>
+        /// <value>
+        /// The adaptive message adaptation segments.
+        /// </value>
+        public DbSet<AdaptiveMessageAdaptationSegment> AdaptiveMessageAdaptationSegments { get; set; }
+
+        /// <summary>
         /// Gets or sets the analytics dim attendance locations.
         /// </summary>
         /// <value>

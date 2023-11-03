@@ -72,7 +72,7 @@ namespace Rock.CodeGeneration.FileGenerators
 
                 AppendCommentBlock( sb, property, 4 );
 
-                sb.Append( $"    {property.Name.CamelCase()}" );
+                sb.Append( $"    {property.Name.ToCamelCase()}" );
 
                 // If its nullable that means it could also be undefined.
                 if ( isNullable )
@@ -329,6 +329,46 @@ namespace Rock.CodeGeneration.FileGenerators
         }
 
         /// <summary>
+        /// Generates the detail block type definition file for any declared types.
+        /// </summary>
+        /// <param name="navigationUrlKeys">The navigation URL keys to include.</param>
+        /// <returns>A string that contains the file contents.</returns>
+        public string GenerateListBlockTypeDefinitionFile( Dictionary<string, string> navigationUrlKeys )
+        {
+            var imports = new List<TypeScriptImport>();
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine( $"export const enum NavigationUrlKey {{" );
+
+            var sortedItems = navigationUrlKeys.OrderBy( k => k.Key ).ToList();
+
+            // Loop through each navigation key and emit the declaration.
+            for ( int i = 0; i < sortedItems.Count; i++ )
+            {
+                var item = sortedItems[i];
+
+                if ( i > 0 )
+                {
+                    sb.AppendLine();
+                }
+
+                sb.Append( $"    {item.Key} = \"{item.Value}\"" );
+
+                if ( i + 1 < sortedItems.Count )
+                {
+                    sb.Append( "," );
+                }
+
+                sb.AppendLine();
+            }
+
+            sb.AppendLine( "}" );
+
+            return GenerateTypeScriptFile( imports, sb.ToString(), false );
+        }
+
+        /// <summary>
         /// Appends the comment block for the member to the StringBuilder.
         /// </summary>
         /// <param name="sb">The StringBuilder to append the comment to.</param>
@@ -477,7 +517,7 @@ namespace Rock.CodeGeneration.FileGenerators
             }
             else if ( type.Namespace.StartsWith( "Rock.ViewModels" ) && ( type.Name.EndsWith( "Bag" ) || type.Name.EndsWith( "Box" ) ) )
             {
-                var path = $"{type.Namespace.Substring( 15 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.CamelCase()}";
+                var path = $"{type.Namespace.Substring( 15 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.ToCamelCase()}";
                 tsType = type.Name;
                 imports.Add( new TypeScriptImport
                 {
@@ -488,7 +528,18 @@ namespace Rock.CodeGeneration.FileGenerators
             }
             else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Enums" ) )
             {
-                var path = $"{type.Namespace.Substring( 10 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.CamelCase()}";
+                var path = $"{type.Namespace.Substring( 10 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.ToCamelCase()}";
+                tsType = type.Name;
+                imports.Add( new TypeScriptImport
+                {
+                    SourcePath = $"@Obsidian/Enums/{path}",
+                    NamedImport = type.Name
+                } );
+            }
+            else if ( type.IsEnum && type.GetCustomAttribute<Rock.Enums.EnumDomainAttribute>() != null )
+            {
+                var domain = type.GetCustomAttribute<Rock.Enums.EnumDomainAttribute>().Domain;
+                var path = $"{SupportTools.GetDomainFolderName( domain )}/{type.Name.ToCamelCase()}";
                 tsType = type.Name;
                 imports.Add( new TypeScriptImport
                 {

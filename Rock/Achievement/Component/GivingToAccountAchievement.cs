@@ -146,13 +146,23 @@ namespace Rock.Achievement.Component
 
             var accountId = GetFinancialAccountId( achievementTypeCache );
             var details = financialTransaction.TransactionDetails;
-
             if ( details == null || !accountId.HasValue )
             {
                 return false;
             }
 
-            return details.Any( t => t.AccountId == accountId.Value );
+            List<int> financialAccountIds = new List<int>
+            {
+                accountId.Value
+            };
+
+            var includeChildAccounts = GetAttributeValue( achievementTypeCache, AttributeKey.IncludeChildFinancialAccounts ).AsBoolean();
+            if ( includeChildAccounts )
+            {
+                financialAccountIds.AddRange( FinancialAccountCache.Get( accountId.Value ).GetDescendentFinancialAccountIds() );
+            }
+
+            return details.Any( t => financialAccountIds.Contains( t.AccountId ) );
         }
 
         /// <summary>

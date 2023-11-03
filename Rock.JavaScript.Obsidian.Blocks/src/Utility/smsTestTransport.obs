@@ -99,7 +99,7 @@
 }
 
 .message-container {
-    margin: 0px 0px 12px 0px;
+    margin: 0 0 12px 0;
     display: flex;
 }
 
@@ -132,10 +132,10 @@
     import Attachment from "./SmsTestTransport/attachment.partial.obs";
     import Block from "@Obsidian/Templates/block";
     import ConnectionStatus from "@Obsidian/Controls/connectionStatus.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import TextBox from "@Obsidian/Controls/textBox";
-    import RockButton from "@Obsidian/Controls/rockButton";
-    import RockForm from "@Obsidian/Controls/rockForm";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { computed, nextTick, ref } from "vue";
     import { getTopic, ITopic } from "@Obsidian/Utility/realTime";

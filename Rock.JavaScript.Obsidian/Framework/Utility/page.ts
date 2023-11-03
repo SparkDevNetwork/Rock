@@ -16,17 +16,15 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
-import { IEntity } from "@Obsidian/ViewModels/entity";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 
 export type PageConfig = {
     executionStartTime: number;
     pageId: number;
     pageGuid: Guid;
     pageParameters: Record<string, unknown>;
-    currentPerson: PersonBag | null;
+    currentPerson: CurrentPersonBag | null;
     isAnonymousVisitor: boolean;
-    contextEntities: Record<string, IEntity>;
     loginUrlWithReturnUrl: string;
 };
 
@@ -96,7 +94,7 @@ export async function loadJavaScriptAsync(source: string, isScriptLoaded?: () =>
     let src = source;
 
     // Add the cache busting fingerprint if we have one.
-    if (fingerprint !== false && Obsidian.options.fingerprint) {
+    if (fingerprint !== false && typeof Obsidian !== "undefined" && Obsidian?.options?.fingerprint) {
         if (src.indexOf("?") === -1) {
             src += `?${Obsidian.options.fingerprint}`;
         }

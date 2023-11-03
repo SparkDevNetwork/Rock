@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,12 +31,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
     /// <summary>
     /// Allows the user to register a new account on a mobile application.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Register" )]
     [Category( "Mobile > Cms" )]
     [Description( "Allows the user to register a new account on a mobile application." )]
     [IconCssClass( "fa fa-user-plus" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -167,7 +168,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_REGISTER_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "2A71FDA2-5204-418F-858E-693A1F4E9A49")]
-    public class Register : RockMobileBlockType
+    public class Register : RockBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileRegister block.
@@ -247,21 +248,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.RegisterAccount";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

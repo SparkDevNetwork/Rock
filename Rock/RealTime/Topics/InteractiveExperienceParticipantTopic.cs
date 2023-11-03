@@ -33,6 +33,7 @@ using Rock.Event.InteractiveExperiences;
 using Rock.Model;
 using Rock.Utility;
 using Rock.ViewModels.Event.InteractiveExperiences;
+using Rock.Web.Cache;
 
 /*
  * All "Id" values sent over RealTime messages should be the IdKey values unless
@@ -93,6 +94,7 @@ namespace Rock.RealTime.Topics
 
             var occurrenceState = new ExperienceOccurrenceState
             {
+                InteractiveExperienceOccurrenceId = occurrenceId.Value,
                 InteractionGuid = token.InteractionGuid,
                 CampusId = token.CampusId,
                 IsModerator = token.IsModerator,
@@ -107,6 +109,7 @@ namespace Rock.RealTime.Topics
                 var occurrence = new InteractiveExperienceOccurrenceService( rockContext )
                     .Queryable()
                     .Include( o => o.CurrentlyShownAction )
+                    .Include( o => o.InteractiveExperienceSchedule )
                     .Where( o => o.Id == occurrenceId.Value )
                     .SingleOrDefault();
 
@@ -114,6 +117,8 @@ namespace Rock.RealTime.Topics
                 {
                     throw new RealTimeException( "Requested occurrence was not found." );
                 }
+
+                occurrenceState.InteractiveExperienceId = occurrence.InteractiveExperienceSchedule.InteractiveExperienceId;
 
                 response.OccurrenceIdKey = occurrence.IdKey;
                 response.CurrentActionIdKey = occurrence.CurrentlyShownAction?.IdKey;
@@ -308,7 +313,7 @@ namespace Rock.RealTime.Topics
         /// still online and active.
         /// </summary>
         /// <param name="occurrenceIdKey">The identifier of the event as returned by <see cref="JoinExperience(string, CancellationToken)"/>.</param>
-        public Task PingExperience( string occurrenceIdKey )
+        public Task<PingExperienceResponseBag> PingExperience( string occurrenceIdKey )
         {
             var state = GetOccurrenceState( occurrenceIdKey );
 
@@ -317,7 +322,15 @@ namespace Rock.RealTime.Topics
                 InteractiveExperienceOccurrenceService.UpdateInteractionDuration( state.InteractionGuid.Value );
             }
 
-            return Task.CompletedTask;
+            var experience = InteractiveExperienceCache.Get( state.InteractiveExperienceId );
+            var activeOccurrenceIds = experience.GetOrCreateAllCurrentOccurrenceIds();
+
+            var response = new PingExperienceResponseBag
+            {
+                IsActive = activeOccurrenceIds.Contains( state.InteractiveExperienceOccurrenceId )
+            };
+
+            return Task.FromResult( response );
         }
 
         /// <summary>
@@ -457,6 +470,18 @@ namespace Rock.RealTime.Topics
         /// </summary>
         private class ExperienceOccurrenceState
         {
+            /// <summary>
+            /// Gets or sets the interactive experience identifier.
+            /// </summary>
+            /// <value>The interactive experience identifier.</value>
+            public int InteractiveExperienceId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the interactive experience occurrence identifier.
+            /// </summary>
+            /// <value>The interactive experience occurrence identifier.</value>
+            public int InteractiveExperienceOccurrenceId { get; set; }
+
             /// <summary>
             /// Gets or sets the interaction unique identifier. If this has a
             /// value then participant should be recorded in the Interaction

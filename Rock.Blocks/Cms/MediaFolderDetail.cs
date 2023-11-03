@@ -28,6 +28,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaFolderDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -35,12 +36,13 @@ namespace Rock.Blocks.Cms
     /// <summary>
     /// Displays the details of a particular media folder.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Media Folder Detail" )]
-    [Category( "Cms" )]
+    [Category( "CMS" )]
     [Description( "Displays the details of a particular media folder." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -48,7 +50,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "29cf7521-2dcd-467a-98fa-1c28c16c8b69" )]
     [Rock.SystemGuid.BlockTypeGuid( "662af7bb-5b61-43c6-bda6-a6e7aab8fc00" )]
-    public class MediaFolderDetail : RockObsidianDetailBlockType
+    public class MediaFolderDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -78,7 +80,7 @@ namespace Rock.Blocks.Cms
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<MediaFolder>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<MediaFolder>();
 
                 return box;
             }
@@ -102,7 +104,7 @@ namespace Rock.Blocks.Cms
                 foreach ( var item in ContentChannelCache.All().OrderBy( a => a.Name ) )
                 {
                     options.ContentChannels.Add( new ViewModels.Utility.ListItemBag() { Text = item.Name, Value = item.Guid.ToString() } );
-                    options.ContentChannelAttributes.Add( item.Guid, GetContentChannelItemAttributes( item.Guid, rockContext ) );
+                    options.ContentChannelAttributes.Add( item.Guid, GetContentChannelItemAttributes( item, rockContext ) );
                 }
             }
 
@@ -200,7 +202,7 @@ namespace Rock.Blocks.Cms
             {
                 IdKey = entity.IdKey,
                 ContentChannel = entity.ContentChannel.ToListItemBag(),
-                ContentChannelAttribute = entity.ContentChannelAttribute.ToListItemBag(),
+                ContentChannelAttribute = new ListItemBag() { Text = entity.ContentChannelAttribute?.Name, Value = entity.ContentChannelAttribute?.Guid.ToString() },
                 MediaAccount = entity.MediaAccount.ToListItemBag(),
                 Description = entity.Description,
                 IsContentChannelSyncEnabled = entity.IsContentChannelSyncEnabled,
@@ -226,6 +228,7 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
+            bag.MetricData = entity.MediaAccount.GetMediaAccountComponent()?.GetFolderHtmlSummary( entity );
 
             if ( loadAttributes )
             {
@@ -250,10 +253,10 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            var contentChannelGuid = entity.ContentChannel?.Guid;
-            if ( contentChannelGuid.HasValue )
+            if ( entity.ContentChannelId.HasValue )
             {
-                bag.ContentChannelItemAttributes = GetContentChannelItemAttributes( contentChannelGuid.Value, new RockContext() );
+                var channel = ContentChannelCache.Get( entity.ContentChannelId.Value );
+                bag.ContentChannelItemAttributes = GetContentChannelItemAttributes( channel, new RockContext() );
             }
 
             if ( loadAttributes )
@@ -408,40 +411,69 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Gets the content channel attributes for the specified content channel
+        /// Gets the content channel attributes for the specified content channel.
         /// </summary>
-        /// <param name="channelGuid"></param>
-        /// <param name="rockContext"></param>
-        /// <returns></returns>
-        private static List<ListItemBag> GetContentChannelItemAttributes( Guid channelGuid, RockContext rockContext )
+        /// <param name="channel">The cached content channel object.</param>
+        /// <param name="rockContext">The database context.</param>
+        /// <returns>A list of attribute definitions.</returns>
+        private static List<ListItemBag> GetContentChannelItemAttributes( ContentChannelCache channel, RockContext rockContext )
         {
-            var channel = new ContentChannelService( rockContext ).GetNoTracking( channelGuid );
             List<ListItemBag> mediaElementAttributes = new List<ListItemBag>();
 
-            if ( channel != null )
+            // Fake in-memory content channel item so we can properly
+            // load all the attributes.
+            var contentChannelItem = new ContentChannelItem
             {
-                // Fake in-memory content channel item so we can properly
-                // load all the attributes.
-                var contentChannelItem = new ContentChannelItem
-                {
-                    ContentChannelId = channel.Id,
-                    ContentChannelTypeId = channel.ContentChannelTypeId
-                };
+                ContentChannelId = channel.Id,
+                ContentChannelTypeId = channel.ContentChannelTypeId
+            };
 
-                // add content channel item attributes
-                contentChannelItem.LoadAttributes( rockContext );
-                var channelAttributes = contentChannelItem.Attributes.Select( a => a.Value ).ToList();
+            // add content channel item attributes
+            contentChannelItem.LoadAttributes( rockContext );
+            var channelAttributes = contentChannelItem.Attributes.Select( a => a.Value ).ToList();
 
-                foreach ( var attribute in channelAttributes )
+            foreach ( var attribute in channelAttributes )
+            {
+                if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MediaElementFieldType ).FullName )
                 {
-                    if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MediaElementFieldType ).FullName )
-                    {
-                        mediaElementAttributes.Add( new ListItemBag() { Text = attribute.Name, Value = attribute.Guid.ToStringSafe() } );
-                    }
+                    mediaElementAttributes.Add( new ListItemBag() { Text = attribute.Name, Value = attribute.Guid.ToStringSafe() } );
                 }
             }
 
             return mediaElementAttributes;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaFolderKey = pageReference.GetPageParameter( PageParameterKey.MediaFolderId );
+                var pageParameters = new Dictionary<string, string>();
+                var additionalParameters = new Dictionary<string, string>();
+
+                var data = new MediaFolderService( rockContext )
+                    .GetSelect( mediaFolderKey, mf => new
+                    {
+                        mf.Name,
+                        mf.MediaAccountId
+                    } );
+
+                if ( data != null )
+                {
+                    pageParameters.Add( PageParameterKey.MediaFolderId, mediaFolderKey );
+                    additionalParameters.Add( PageParameterKey.MediaAccountId, data.MediaAccountId.ToString() );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( data?.Name ?? "New Media Folder", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb },
+                    AdditionalParameters = additionalParameters
+                };
+            }
         }
 
         #endregion
@@ -627,7 +659,9 @@ namespace Rock.Blocks.Cms
         {
             using ( var rockContext = new RockContext() )
             {
-                List<ListItemBag> mediaElementAttributes = GetContentChannelItemAttributes( channelGuid, rockContext );
+                var channel = ContentChannelCache.Get( channelGuid );
+
+                List<ListItemBag> mediaElementAttributes = GetContentChannelItemAttributes( channel, rockContext );
 
                 return ActionOk( new { mediaElementAttributes } );
             }

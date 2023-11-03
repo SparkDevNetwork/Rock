@@ -28,9 +28,12 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * the GroupMemberPicker control.
  */
 export type GroupRolePickerGetAllForGroupRoleResultsBag = {
+    /** List of group roles to include in the group role picker. */
     groupRoles?: ListItemBag[] | null;
 
+    /** Data for the selected group role, used by the group role picker. */
     selectedGroupRole?: ListItemBag | null;
 
+    /** Data for the selected group type, used by the group type picker. */
     selectedGroupType?: ListItemBag | null;
 };

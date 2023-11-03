@@ -32,6 +32,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Security.Authentication.OneTimePasscode;
 using Rock.Security.Authentication.Passwordless;
+using Rock.Utility.Enums;
 
 namespace Rock.Security.Authentication
 {
@@ -218,6 +219,16 @@ namespace Rock.Security.Authentication
 
             var passwordlessSystemCommunication = new SystemCommunicationService( rockContext ).Get( securitySettings.PasswordlessConfirmationCommunicationTemplateGuid );
 
+            if ( passwordlessSystemCommunication.IsActive == false )
+            {
+                return new SendOneTimePasscodeResult
+                {
+                    IsSuccessful = false,
+                    ErrorMessage = "The Passwordless Login Confirmation system communication needs to be active to use passwordless login.",
+                    State = null
+                };
+            }
+
             var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
 
             if ( sendOneTimePasscodeOptions.ShouldSendSmsCode )
@@ -271,7 +282,7 @@ namespace Rock.Security.Authentication
                     return new SendOneTimePasscodeResult()
                     {
                         IsSuccessful = false,
-                        ErrorMessage = $"{passwordlessSystemCommunication.Title} System Communication is not configured for SMS",
+                        ErrorMessage = "Unable to send confirmation code. Make sure to use a mobile phone that can receive text messages.",
                         State = null
                     };
                 }
@@ -382,12 +393,11 @@ namespace Rock.Security.Authentication
 
             CompleteRemoteAuthenticationSession( rockContext, remoteAuthenticationSession, user.Person );
 
-            AuthenticatePasswordlessUser( user );
-
             return new OneTimePasscodeAuthenticationResult
             {
                 IsAuthenticated = true,
-                State = options.State
+                State = options.State,
+                AuthenticatedUser = user,
             };
         }
 
@@ -479,13 +489,14 @@ namespace Rock.Security.Authentication
 
                 return new OneTimePasscodeAuthenticationResult
                 {
-                    ErrorMessage = $"The {( providedValues.Any() ? string.Join( " or ", providedValues ) : "data" )} you provided is matched to several different individuals. Please select the one that is you.",
                     IsPersonSelectionRequired = true,
                     MatchingPeopleResults = matchingPersonResults
                 };
             }
 
             // If we made it here, we know who is attempting to authenticate.
+
+            // Check if passwordless authentication is allowed.
             if ( !IsPasswordlessAuthenticationAllowedForProtectionProfile( person ) )
             {
                 return new OneTimePasscodeAuthenticationResult
@@ -503,26 +514,12 @@ namespace Rock.Security.Authentication
 
             CompleteRemoteAuthenticationSession( rockContext, remoteAuthenticationSession, person );
 
-            AuthenticatePasswordlessUser( user );
-
             return new OneTimePasscodeAuthenticationResult
             {
                 IsAuthenticated = true,
-                State = options.State
+                State = options.State,
+                AuthenticatedUser = user,
             };
-        }
-
-        /// <summary>
-        /// Authenticates the passwordless user.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        private static void AuthenticatePasswordlessUser( UserLogin user )
-        {
-            var securitySettings = new SecuritySettingsService().SecuritySettings;
-            UserLoginService.UpdateLastLogin( user.UserName );
-#if REVIEW_WEBFORMS
-            Authorization.SetAuthCookie( user.UserName, true, false, TimeSpan.FromMinutes( securitySettings.PasswordlessSignInSessionDuration ) );
-#endif
         }
 
         /// <summary>
@@ -756,6 +753,31 @@ namespace Rock.Security.Authentication
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether two-factor authentication is required for <paramref name="person"/>.
+        /// </summary>
+        /// <param name="person">The person to check.</param>
+        private static bool IsTwoFactorAuthenticationRequiredForProtectionProfile( Person person )
+        {
+            if ( person == null )
+            {
+                return false;
+            }
+
+            return IsTwoFactorAuthenticationRequiredForProtectionProfile( person.AccountProtectionProfile );
+        }
+
+        /// <summary>
+        /// Determines whether two-factor authentication is required for <paramref name="protectionProfile"/>.
+        /// </summary>
+        /// <param name="protectionProfile">The protection profile to check.</param>
+        private static bool IsTwoFactorAuthenticationRequiredForProtectionProfile( AccountProtectionProfile protectionProfile )
+        {
+            var securitySettings = new SecuritySettingsService().SecuritySettings;
+
+            return securitySettings?.RequireTwoFactorAuthenticationForAccountProtectionProfiles?.Contains( protectionProfile ) == true;
         }
 
         #endregion

@@ -189,14 +189,9 @@ namespace Rock.Workflow.Action
             Reminder reminder = new Reminder
             {
                 ReminderTypeId = reminderType.Id,
-
                 PersonAliasId = person.PrimaryAliasId.Value
             };
 
-            if ( reminder.PersonAlias == null )
-            {
-                reminder.PersonAlias = new PersonAliasService( rockContext ).Get( person.PrimaryAliasId.Value );
-            }
 
             reminder.EntityId = entityObject.Id;
 

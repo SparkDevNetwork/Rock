@@ -1,0 +1,152 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isVisible" class="grid-column-heading">
+        <ColumnHeaderCell v-for="column in columns"
+                          :column="column"
+                          :filterValue="columnFilters[column.name]"
+                          :sortDirection="columnSortLookup[column.name]"
+                          :grid="grid"
+                          :light="light"
+                          @update:filterValue="onUpdateFilterValue(column.name, $event)"
+                          @update:sortDirection="onUpdateSortDirection(column.name, $event)" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PropType, computed, ref } from "vue";
+    import ColumnHeaderCell from "./columnHeaderCell.partial.obs";
+    import { ColumnSort, ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
+
+    const props = defineProps({
+        /**
+         * The array of columns that should be displayed in the header row.
+         * This may be different than the columns defined in the grid but
+         * must be a subset of them.
+         */
+        columns: {
+            type: Array as PropType<ReadonlyArray<ColumnDefinition>>,
+            default: []
+        },
+
+        /**
+         * The filters for all columns currently in effect. The object key is
+         * the column name and the value is the current filter value for the
+         * column.
+         */
+        columnFilters: {
+            type: Object as PropType<Record<string, unknown | undefined>>,
+            default: {}
+        },
+
+        /**
+         * The current column being used as the source of the sorting for the
+         * grid.
+         */
+        columnSort: {
+            type: Object as PropType<ColumnSort>,
+            required: false
+        },
+
+        /** The grid this header row is being displayed for. */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        },
+
+        /** Indicates if the grid is operating in light mode. */
+        light: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:columnFilters", value: Record<string, unknown | undefined>): void,
+        (event: "update:columnSort", value: { column: string, isDescending: boolean } | undefined): void
+    }>();
+
+    // #region Values
+
+    const columnFilters = useVModelPassthrough(props, "columnFilters", emit);
+    const columnSort = useVModelPassthrough(props, "columnSort", emit);
+    const columnSortLookup = ref<Record<string, number>>({});
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return props.columns.some(c => c.title);
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * This builds an object used to track the current sort value for each
+     * column. The key is the column name and the value is an integer indicating
+     * the current sort direction. 0 for none, 1 for ascending, -1 for descending.
+     */
+    const updateSortLookup = (): void => {
+        const lookup: Record<string, number> = {};
+
+        for (const column of props.columns) {
+            if (columnSort.value && columnSort.value.column === column.name) {
+                lookup[column.name] = columnSort.value.isDescending ? -1 : 1;
+            }
+            else {
+                lookup[column.name] = 0;
+            }
+        }
+
+        columnSortLookup.value = lookup;
+    };
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the filter value for a specific column has changed. Update
+     * the whole dictionary of filter values and emit.
+     *
+     * @param columnName The name of the column whose filter value has changed.
+     * @param filterValue The new filter value for the column.
+     */
+    const onUpdateFilterValue = (columnName: string, filterValue: unknown | undefined): void => {
+        const newFilters = { ...columnFilters.value };
+
+        newFilters[columnName] = filterValue;
+
+        columnFilters.value = newFilters;
+    };
+
+    /**
+     * Called when the sort direction for a specific column has changed. Update
+     * the currently sorted column and emit.
+     *
+     * @param columnName The name of the column whose sort direction has changed.
+     * @param direction The new sort direction for the column.
+     */
+    const onUpdateSortDirection = (columnName: string, direction: number): void => {
+        if (direction !== 0) {
+            columnSort.value = {
+                column: columnName,
+                isDescending: direction < 0
+            };
+
+            updateSortLookup();
+        }
+        else {
+            columnSort.value = undefined;
+
+            updateSortLookup();
+        }
+    };
+
+    // #endregion
+
+    updateSortLookup();
+</script>

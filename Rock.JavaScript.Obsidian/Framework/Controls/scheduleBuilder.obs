@@ -33,14 +33,14 @@
                 <div class="form-control-group">
                     <NumberBox v-model="durationInHours"
                                inputGroupClasses="input-width-md">
-                        <template #append>
+                        <template #inputGroupAppend>
                             <span class="input-group-addon">hrs</span>
                         </template>
                     </NumberBox>
 
                     <NumberBox v-model="durationInMinutes"
                                inputGroupClasses="input-width-md">
-                        <template #append>
+                        <template #inputGroupAppend>
                             <span class="input-group-addon">mins</span>
                         </template>
                     </NumberBox>
@@ -106,7 +106,7 @@
                         </label>
                         <NumberBox v-model="recurringDailyDays"
                                    inputGroupClasses="input-width-md">
-                            <template #append>
+                            <template #inputGroupAppend>
                                 <span class="input-group-addon">days</span>
                             </template>
                         </NumberBox>
@@ -133,7 +133,7 @@
                         <span>Every&ThinSpace;</span>
                         <NumberBox v-model="recurringWeeklyWeeks"
                                    inputGroupClasses="input-width-md">
-                            <template #append>
+                            <template #inputGroupAppend>
                                 <span class="input-group-addon">week(s)</span>
                             </template>
                         </NumberBox>
@@ -222,7 +222,7 @@
 
                             <NumberBox v-model="recurringContinueUntilCount"
                                        inputGroupClasses="input-width-lg">
-                                <template #append>
+                                <template #inputGroupAppend>
                                     <span class="input-group-addon">occurrences</span>
                                 </template>
                             </NumberBox>
@@ -287,17 +287,18 @@
 
 <script setup lang="ts">
     import { PropType, computed, ref, shallowRef, watch } from "vue";
-    import CheckBoxList from "./checkBoxList";
+    import CheckBoxList from "./checkBoxList.obs";
     import DatePickerBase from "./datePickerBase.obs";
     import DatePicker from "./datePicker.obs";
-    import DateRangePicker, { DateRangeParts } from "./dateRangePicker";
-    import DateTimePicker from "./dateTimePicker";
-    import DropDownList from "./dropDownList";
-    import Modal from "./modal";
-    import NumberBox from "./numberBox";
-    import RadioButtonList from "./radioButtonList";
-    import RockFormField from "./rockFormField";
-    import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+    import DateRangePicker from "./dateRangePicker.obs";
+    import DateTimePicker from "./dateTimePicker.obs";
+    import DropDownList from "./dropDownList.obs";
+    import Modal from "./modal.obs";
+    import NumberBox from "./numberBox.obs";
+    import RadioButtonList from "./radioButtonList.obs";
+    import RockFormField from "./rockFormField.obs";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
+    import type { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
     import type { ValidationRule } from "@Obsidian/Types/validationRules";
     import { Event, Calendar, RecurrenceRule } from "@Obsidian/Utility/internetCalendar";
     import { containsRequiredRule } from "@Obsidian/ValidationRules";
@@ -311,8 +312,8 @@
     const props = defineProps({
         /** The ICS contents that represents the schedule. */
         modelValue: {
-            type: String as PropType<string>,
-            default: ""
+            type: String as PropType<string | null>,
+            required: false
         },
 
         ...standardRockFormFieldProps
@@ -522,7 +523,7 @@
     // #region Functions
 
     function updateValuesFromModel(): void {
-        const calendar = getCalendarFromString(props.modelValue);
+        const calendar = getCalendarFromString(props.modelValue ?? "");
         const event = calendar?.events && calendar.events.length > 0 ? calendar.events[0] : null;
         const rrule = event?.recurrenceRules && event.recurrenceRules.length > 0 ? event.recurrenceRules[0] : null;
 
@@ -946,7 +947,7 @@
     }
 
     function onAddExclusionDateRange(): void {
-        addExclusionDateRangeValue.value = {};
+        addExclusionDateRangeValue.value = undefined;
         isAddExclusionDateRangeVisible.value = true;
     }
 

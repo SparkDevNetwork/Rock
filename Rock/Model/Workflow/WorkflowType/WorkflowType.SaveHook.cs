@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Tasks;
 #if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
@@ -80,9 +81,23 @@ namespace Rock.Model
                     }
                 }
 
+                if ( Entry.State == EntityContextState.Modified )
+                {
+                    var workflowIdPrefix = Entry.OriginalValues[nameof( WorkflowIdPrefix )].ToStringSafe();
+                    if ( workflowIdPrefix != Entity.WorkflowIdPrefix )
+                    {
+                        var message = new UpdateWorkflowIds.Message()
+                        {
+                            Prefix = Entity.WorkflowIdPrefix,
+                            WorkflowTypeId = Entity.Id
+                        };
+
+                        message.SendWhen( DbContext.WrappedTransactionCompletedTask );
+                    }
+                }
+
                 base.PreSave();
             }
         }
     }
 }
-

@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,10 +32,12 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Defined Types
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.COMPARISON )]
     public class ComparisonFieldType : FieldType
     {
+        private const string ClientValues = "clientValues";
+
         #region Formatting
 
         /// <inheritdoc/>
@@ -46,6 +49,36 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configuration = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( !configuration.ContainsKey( ClientValues ) )
+            {
+                var options = new List<ListItemBag>();
+
+                foreach ( ComparisonType comparisonType in Enum.GetValues( typeof( ComparisonType ) ) )
+                {
+                    options.Add( new ListItemBag() { Text = comparisonType.ConvertToString(), Value = comparisonType.ConvertToInt().ToString() } );
+                }
+
+                configuration[ClientValues] = options.ToCamelCaseJson( false, true );
+            }
+
+            return configuration;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configuration = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            configuration.Remove( ClientValues );
+
+            return configuration;
+        }
 
         #endregion
 

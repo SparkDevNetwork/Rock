@@ -412,9 +412,9 @@ WHERE  name = DB_NAME()
         }
 
         /// <summary>
-        /// Gets the compatibility version of the database.
+        /// Gets the Compatibility Level of the database
         /// </summary>
-        public string CompatibilityVersion
+        public int CompatibilityLevel
         {
             get
             {
@@ -423,26 +423,39 @@ WHERE  name = DB_NAME()
                     GetCompatibilityLevel();
                 }
 
-                switch ( _compatibility )
+                return int.Parse( _compatibility );
+            }
+        }
+
+        /// <summary>
+        /// Gets the compatibility version of the database.
+        /// </summary>
+        public string CompatibilityVersion
+        {
+            get
+            {
+                switch ( CompatibilityLevel )
                 {
-                    case "150":
+                    case 160:
+                        return "SQL Server 2022";
+                    case 150:
                         return "SQL Server 2019";
-                    case "140":
+                    case 140:
                         return "SQL Server 2017";
-                    case "130":
+                    case 130:
                         return "SQL Server 2016";
-                    case "120":
+                    case 120:
                         return "SQL Server 2014";
-                    case "110":
+                    case 110:
                         return "SQL Server 2012";
-                    case "100":
+                    case 100:
                         return "SQL Server 2008";
-                    case "90":
+                    case 90:
                         return "SQL Server 2005";
-                    case "80":
+                    case 80:
                         return "SQL Server 2000";
                     default:
-                        return "Unkown";
+                        return CompatibilityLevel.ToString();
                 }
             }
         }
@@ -522,6 +535,10 @@ SELECT SERVERPROPERTY('productversion'), @@Version;
             {
                 _versionFriendlyName = "SQL Server 2019";
             }
+            else if ( _versionNumber.StartsWith( "16.0" ) )
+            {
+                _versionFriendlyName = "SQL Server 2022";
+            }
             else
             {
                 _versionFriendlyName = "Unknown";
@@ -591,7 +608,7 @@ WHERE  name = DB_NAME()
             catch
             {
                 // Ignore errors and continue.
-                _compatibility = "#ERROR#";
+                _compatibility = "0";
             }
         }
 

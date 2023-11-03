@@ -1,0 +1,41 @@
+<template>
+    <div class="grid-row" :class="additionalRowClasses">
+        <SkeletonCell v-for="column in props.columns"
+                      :column="column"
+                      :grid="props.grid" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import SkeletonCell from "./skeletonCell.partial.obs";
+    import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { PropType, computed } from "vue";
+
+    const props = defineProps({
+        /**
+         * The array of columns that should be displayed in the data row.
+         * This may be different than the columns defined in the grid but
+         * must be a subset of them.
+         */
+        columns: {
+            type: Array as PropType<ReadonlyArray<ColumnDefinition>>,
+            required: true
+        },
+
+        /** The grid this row is being displayed for. */
+        grid: {
+            type: Object as PropType<IGridState>,
+            required: true
+        },
+
+        /** True if this row is an even numbered row. */
+        isEven: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const additionalRowClasses = computed((): string => {
+        return props.isEven ? "grid-row-even" : "grid-row-odd";
+    });
+</script>

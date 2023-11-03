@@ -1,0 +1,267 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="{ 'row': !showInOneColumn }">
+        <div :class="{ 'col-sm-4': !showInOneColumn }">
+            <DefinedValuePicker v-if="!hideTitle" v-model="personTitle" :definedTypeGuid="DefinedType.PersonTitle" :label="fullPrefix + 'Title'" class="input-width-md" formGroupClasses="field-title" showBlankItem />
+            <TextBox v-model="firstName" :label="fullPrefix + 'First Name'" rules="required" formGroupClasses="field-firstname" />
+            <TextBox v-model="lastName" :label="fullPrefix + 'Last Name'" rules="required" formGroupClasses="field-firstname" />
+            <DefinedValuePicker v-if="!hideSuffix" v-model="personSuffix" :definedTypeGuid="DefinedType.PersonSuffix" :label="fullPrefix + 'Suffix'" class="input-width-md" formGroupClasses="field-suffix" showBlankItem />
+            <EmailBox v-if="showEmail" v-model="email" :label="fullPrefix + 'Email'" formGroupClasses="field-email" :rules="requireEmail ? 'required' : ''" />
+            <PhoneNumberBox v-if="showMobilePhone" v-model="mobilePhoneNumber" v-model:countryCode="mobilePhoneCountryCode" :label="fullPrefix + 'Mobile Phone'" formGroupClasses="field-mobilephone" :rules="requireMobilePhone ? 'required' : ''" />
+            <CheckBox v-if="showSmsOptIn" v-model="isMessagingEnabled" validationLabel="Opt Into SMS" label="" text="Give your consent to receive SMS messages by simply checking the box." />
+        </div>
+        <div :class="{ 'col-sm-4': !showInOneColumn }">
+            <DefinedValuePicker v-if="!hideConnectionStatus" v-model="personConnectionStatus" :definedTypeGuid="DefinedType.PersonConnectionStatus" :label="fullPrefix + 'Connection Status'" formGroupClasses="field-connectionstatus" showBlankItem rules="required" />
+            <GroupRolePicker v-if="!hidePersonRole" v-model="personGroupRole" :label="fullPrefix + 'Role'" rules="required" displayStyle="list" horizontal formGroupClasses="field-role" :groupTypeGuid="GroupType.GrouptypeFamily" />
+            <GenderPicker v-if="!hideGender" v-model="personGender" :label="fullPrefix + 'Gender'" displayStyle="list" hideUnknown formGroupClasses="field-gender" :rules="requireGender ? 'required' : ''" />
+        </div>
+        <div :class="{ 'col-sm-4': !showInOneColumn }">
+            <BirthdayPicker v-if="!hideBirthdate" v-model="personBirthDate" :label="fullPrefix + 'Birthdate'" formGroupClasses="field-birthdate" :rules="requireBirthdate ? 'required' : ''" />
+            <GradePicker v-if="!hideGrade" v-model="personGradeOffset" :label="fullPrefix + 'Grade'" useAbbreviation showBlankItem />
+            <DefinedValuePicker v-if="!hideMaritalStatus" v-model="personMaritalStatus" :definedTypeGuid="DefinedType.PersonMaritalStatus" :label="fullPrefix + 'Marital Status'" formGroupClasses="field-maritalstatus" showBlankItem />
+            <RacePicker v-if="!hideRace" v-model="personRace" formGroupClasses="field-race" :labelPrefix="personLabelPrefix" showBlankItem :rules="requireRace ? 'required' : ''" />
+            <EthnicityPicker v-if="!hideEthnicity" v-model="personEthnicity" formGroupClasses="field-ethnicity" :labelPrefix="personLabelPrefix" showBlankItem :rules="requireEthnicity ? 'required' : ''" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watchEffect } from "vue";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { GroupType } from "@Obsidian/SystemGuids/groupType";
+    import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag.d";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
+    import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
+    import GradePicker from "@Obsidian/Controls/gradePicker.obs";
+    import RacePicker from "@Obsidian/Controls/racePicker.obs";
+    import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+
+    const props = defineProps({
+        /**
+         * V-Model of all the person data.
+         * To get a `PersonBasicEditorBag` for this v-model, call `person.GetPersonBasicEditorBag()` on a `Person` on the server
+         * and to save the bag data to a Person call `bag.UpdatePersonFromBag(person)` on the bag on the server.
+         */
+        modelValue: {
+            type: Object as PropType<PersonBasicEditorBag>,
+            required: true
+        },
+
+        /** If a personGuid is given, this will fetch that person's details from the server and pre-fill the fields */
+        personGuid: {
+            type: String as PropType<Guid>,
+            default: null
+        },
+
+        /** By default is shown in a 3-column layout. If this is true, it becomes 1 column. */
+        showInOneColumn: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Prefix each label with */
+        personLabelPrefix: {
+            type: String,
+            default: ""
+        },
+
+        // Field Visibility
+        showEmail: {
+            type: Boolean,
+            default: false
+        },
+        showMobilePhone: {
+            type: Boolean,
+            default: false
+        },
+        showSmsOptIn: {
+            type: Boolean,
+            default: false
+        },
+        hideTitle: {
+            type: Boolean,
+            default: false
+        },
+        hideSuffix: {
+            type: Boolean,
+            default: false
+        },
+        hideGrade: {
+            type: Boolean,
+            default: false
+        },
+        hideBirthdate: {
+            type: Boolean,
+            default: false
+        },
+        hidePersonRole: {
+            type: Boolean,
+            default: false
+        },
+        hideConnectionStatus: {
+            type: Boolean,
+            default: false
+        },
+        hideMaritalStatus: {
+            type: Boolean,
+            default: false
+        },
+        hideGender: {
+            type: Boolean,
+            default: false
+        },
+        hideRace: {
+            type: Boolean,
+            default: false
+        },
+        hideEthnicity: {
+            type: Boolean,
+            default: false
+        },
+
+        // Field Requirements
+        requireBirthdate: {
+            type: Boolean,
+            default: false
+        },
+        requireEmail: {
+            type: Boolean,
+            default: false
+        },
+        requireMobilePhone: {
+            type: Boolean,
+            default: false
+        },
+        requireGender: {
+            type: Boolean,
+            default: false
+        },
+        requireRace: {
+            type: Boolean,
+            default: false
+        },
+        requireEthnicity: {
+            type: Boolean,
+            default: false
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:model-value", value: PersonBasicEditorBag): void
+    }>();
+
+    /**
+     * Separate each Bag property into a separate writeable computed so they can be
+     * transformed to match the exact types that each form control expects.
+     */
+    const personTitle = ref(props.modelValue.personTitle);
+    const firstName = ref(props.modelValue.firstName ?? "");
+    const lastName = ref(props.modelValue.lastName ?? "");
+    const personSuffix = ref(props.modelValue.personSuffix);
+    const email = ref(props.modelValue.email ?? "");
+    const mobilePhoneNumber = ref(props.modelValue.mobilePhoneNumber ?? "");
+    const mobilePhoneCountryCode = ref(props.modelValue.mobilePhoneCountryCode ?? "");
+    const isMessagingEnabled = ref(props.modelValue.isMessagingEnabled ?? false);
+    const personConnectionStatus = ref(props.modelValue.personConnectionStatus);
+    const personGroupRole = ref(props.modelValue.personGroupRole ?? null);
+    const personGender = ref(props.modelValue.personGender?.toString() ?? undefined);
+    const personBirthDate = ref(props.modelValue.personBirthDate);
+    const personGradeOffset = ref(props.modelValue.personGradeOffset);
+    const personMaritalStatus = ref(props.modelValue.personMaritalStatus);
+    const personRace = ref(props.modelValue.personRace);
+    const personEthnicity = ref(props.modelValue.personEthnicity);
+
+    /**
+     * Mark each field that is visible as "valid" so the server knows whether or not to save
+     * those values to the database.
+     */
+    const validProperties = computed(() => {
+        const validKeys: Array<keyof PersonBasicEditorBag> = ["firstName", "lastName"];
+
+        if (props.showEmail) {
+            validKeys.push("email");
+        }
+        if (props.showMobilePhone) {
+            validKeys.push("mobilePhoneNumber");
+            validKeys.push("mobilePhoneCountryCode");
+        }
+        if (props.showSmsOptIn) {
+            validKeys.push("isMessagingEnabled");
+        }
+
+        if (!props.hideBirthdate) {
+            validKeys.push("personBirthDate");
+        }
+        if (!props.hideConnectionStatus) {
+            validKeys.push("personConnectionStatus");
+        }
+        if (!props.hideEthnicity) {
+            validKeys.push("personEthnicity");
+        }
+        if (!props.hideGender) {
+            validKeys.push("personGender");
+        }
+        if (!props.hideGrade) {
+            validKeys.push("personGradeOffset");
+        }
+        if (!props.hideMaritalStatus) {
+            validKeys.push("personMaritalStatus");
+        }
+        if (!props.hidePersonRole) {
+            validKeys.push("personGroupRole");
+        }
+        if (!props.hideRace) {
+            validKeys.push("personRace");
+        }
+        if (!props.hideSuffix) {
+            validKeys.push("personSuffix");
+        }
+        if (!props.hideTitle) {
+            validKeys.push("personTitle");
+        }
+
+        return validKeys;
+    });
+
+    // Prefix in front of control labels
+    const fullPrefix = computed(() => {
+        if (props.personLabelPrefix) {
+            return props.personLabelPrefix + " ";
+        }
+
+        return "";
+    });
+
+    // Watch the individual properties and update the modelvalue when one changes
+    watchEffect(() => {
+        const newValue: PersonBasicEditorBag = {
+            personTitle: personTitle.value,
+            firstName: firstName.value,
+            lastName: lastName.value,
+            personSuffix: personSuffix.value,
+            email: email.value,
+            mobilePhoneNumber: mobilePhoneNumber.value,
+            mobilePhoneCountryCode: mobilePhoneCountryCode.value,
+            isMessagingEnabled: isMessagingEnabled.value,
+            personConnectionStatus: personConnectionStatus.value,
+            personGroupRole: personGroupRole.value,
+            personGender: parseInt(personGender.value ?? "", 10) as Gender ?? null,
+            personBirthDate: personBirthDate.value,
+            personGradeOffset: personGradeOffset.value,
+            personMaritalStatus: personMaritalStatus.value,
+            personRace: personRace.value,
+            personEthnicity: personEthnicity.value,
+            validProperties: validProperties.value
+        };
+
+        emit("update:model-value", newValue);
+    });
+</script>

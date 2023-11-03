@@ -1,0 +1,40 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <select v-if="pageSizes" v-model="pageSize" class="form-control input-sm">
+        <option v-for="size in pageSizes" :key="size" :value="size">{{ size }}</option>
+    </select>
+</template>
+
+<script setup lang="ts">
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        /**
+         * The currently selected page size value. This is the number of
+         * rows to display per page.
+         */
+        modelValue: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        /**
+         * The list of available page sizes that the individual can pick from.
+         */
+        pageSizes: {
+            type: Array as PropType<number[]>,
+            default: []
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:modelValue", value: number): void,
+    }>();
+
+    // #region Values
+
+    const pageSize = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion
+</script>

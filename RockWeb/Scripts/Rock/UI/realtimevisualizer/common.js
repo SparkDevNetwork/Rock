@@ -34,6 +34,9 @@ class Helper {
     setItemHeight(item) {
         let topMargin = 0;
         let bottomMargin = 0;
+        // get computed style for item
+        let itemStyle = window.getComputedStyle(item);
+        let itemYPadding = Number(itemStyle.paddingTop.replace("px", "") || "0") + Number(itemStyle.paddingBottom.replace("px", "") || "0");
 
         if (item.children.length > 0) {
             let computedStyle = window.getComputedStyle(item.children[0]);
@@ -43,7 +46,7 @@ class Helper {
             bottomMargin = Number(computedStyle.marginBottom.replace("px", "") || "0");
         }
 
-        item.style.height = `${item.scrollHeight + topMargin + bottomMargin}px`;
+        item.style.height = `${item.scrollHeight + topMargin + bottomMargin + itemYPadding}px`;
     }
 
     /**

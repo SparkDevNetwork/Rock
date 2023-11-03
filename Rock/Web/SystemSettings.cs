@@ -154,23 +154,6 @@ namespace Rock.Web
         }
 
         /// <summary>
-        /// Gets the System Settings values for the specified key, returns the default value if the value for the key does not exist
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="defaultValue">The value returned if no value exists for the specified key.</param>
-        /// <returns></returns>
-        public static string GetValue( string key, string defaultValue )
-        {
-            string result;
-            if ( Get().SystemSettingsValues.TryGetValue( key, out result ) )
-            {
-                return result;
-            }
-
-            return defaultValue;
-        }
-
-        /// <summary>
         /// Updates the default value of the system settings associated with the provided <paramref name="key"/>.
         /// </summary>
         /// <remarks>If you are unsure if the system settings exists for the provided <paramref name="key"/>, please use <see cref="SetValue(string, string, Guid)"/> to prevent unintentionally creating duplicates.</remarks>
@@ -311,7 +294,18 @@ namespace Rock.Web
             using ( var rockContext = new RockContext() )
             {
                 var systemSettingAttributes = new AttributeService( rockContext ).GetSystemSettings().ToAttributeCacheList();
-                var keyValueLookup = systemSettingAttributes.ToDictionary( k => k.Key, v => v.DefaultValue );
+
+                // Build the settings lookup list and flag any duplicates.
+                var keyValueLookup = new Dictionary<string, string>();
+                foreach ( var attribute in systemSettingAttributes )
+                {
+                    if ( keyValueLookup.ContainsKey( attribute.Key ) )
+                    {
+                        ExceptionLogService.LogException( $"The SystemSettings.LoadSettings action encountered a duplicate key. The entry will be ignored. [Key={attribute.Key}, AttributeId={attribute.Id}]" );
+                        continue;
+                    }
+                    keyValueLookup.Add( attribute.Key, attribute.DefaultValue );
+                }
 
                 // RockInstanceId is not the default value but the Guid. So we'll do that one seperately.
                 keyValueLookup.AddOrReplace( Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID, systemSettingAttributes.Where( s => s.Key == Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID ).Select( s => s.Guid ).FirstOrDefault().ToString() );

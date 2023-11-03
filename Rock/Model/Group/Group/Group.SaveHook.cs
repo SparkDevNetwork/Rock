@@ -18,6 +18,7 @@ using System;
 #if REVIEW_NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 #else
+using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 #endif
 using System.Linq;
@@ -248,6 +249,12 @@ namespace Rock.Model
                     {
                         groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                         groupMember.InactiveDateTime = newInactiveDateTime;
+
+                        if ( !groupMember.IsValidGroupMember( rockContext ) )
+                        {
+                            // Don't fail the entire operation for a single invalid member's reactivation attempt.
+                            rockContext.Entry( groupMember ).State = EntityState.Detached;
+                        }
                     }
                 }
             }

@@ -31,6 +31,27 @@ namespace Rock.Tests.Integration.Core.Lava
             TestHelper.AssertTemplateOutput( "$1,234,567.89", "{{ '1234567.89' | FormatAsCurrency }}" );
         }
 
+        [TestMethod]
+        public void Round_InputValueIsLessThanMidpoint_ResultIsRoundedDown()
+        {
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ),
+                "0", "{{ 0.4 | Round }}" );
+        }
+
+        [TestMethod]
+        public void Round_InputValueIsMidpoint_ResultIsRoundedUp()
+        {
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ),
+                "2", "{{ 1.5 | Round }}" );
+        }
+
+        [TestMethod]
+        public void Round_WithSpecifiedPrecision_ResultIsCorrectPrecision()
+        {
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ),
+                "183.36", "{{ 183.357 | Round:2 }}" );
+        }
+
     }
 
 }

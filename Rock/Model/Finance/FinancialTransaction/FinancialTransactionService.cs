@@ -262,12 +262,7 @@ namespace Rock.Model
 
             // Get the batch
             var batchService = new FinancialBatchService( rockContext );
-            TimeSpan timespan = new TimeSpan();
-            if ( transaction.FinancialGateway != null )
-            {
-                timespan = transaction.FinancialGateway.GetBatchTimeOffset();
-            }
-            var batch = batchService.GetByNameAndDate( batchName, refundTransaction.TransactionDateTime.Value, timespan );
+            var batch = batchService.GetForNewTransaction( refundTransaction );
 
             // If this is a new Batch, SaveChanges so that we can get the Batch.Id
             if ( batch.Id == 0 )
@@ -370,6 +365,33 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQuery()
         {
+            var query = GetGivingAutomationSourceTransactionQueryWithNegativeTransactions();
+
+            // Remove transactions with $0 or negative amounts. If those are refunds, they have already been factored in.
+            query = query.Where( t => t.TransactionDetails.Any( d => d.Amount > 0M ) );
+
+            return query;
+        }
+
+        /// <summary>
+        /// Gets the giving automation source transaction query by giving identifier.
+        /// </summary>
+        /// <param name="givingId">The giving identifier.</param>
+        /// <returns>IQueryable&lt;FinancialTransaction&gt;.</returns>
+        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryWithNegativeTransactionsByGivingId( string givingId )
+        {
+            var givingIdPersonAliasIdQuery = new PersonAliasService( this.Context as RockContext ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id );
+
+            return GetGivingAutomationSourceTransactionQueryWithNegativeTransactions().Where( a => a.AuthorizedPersonAliasId.HasValue && givingIdPersonAliasIdQuery.Contains( a.AuthorizedPersonAliasId.Value ) );
+        }
+
+        /// <summary>
+        /// Gets the giving automation source transaction query with negative transactions included..
+        /// This is used by <see cref="Rock.Jobs.GivingAutomation"/>.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryWithNegativeTransactions()
+        {
             var query = Queryable().AsNoTracking();
 
             /*  10/10/2022 MDP
@@ -469,20 +491,27 @@ namespace Rock.Model
                     )
                 );
 
-            // Remove transactions with $0 or negative amounts. If those are refunds, those will factored in above
-            query = query.Where( t => t.TransactionDetails.Any( d => d.Amount > 0M ) );
-
             return query;
         }
 
         /// <summary>
-        /// Gets the giving automation monthly account giving history. This is used for the Giving Overview block's monthly
-        /// bar chart and also yearly summary.
+        /// Gets the giving automation monthly account giving history.
         /// </summary>
         /// <returns></returns>
         public List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistory( string givingId )
         {
             return GetGivingAutomationMonthlyAccountGivingHistory( givingId, null );
+        }
+
+        /// <summary>
+        /// Gets the giving automation monthly account giving history.
+        /// </summary>
+        /// <param name="givingId">The giving identifier.</param>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <returns>List&lt;MonthlyAccountGivingHistory&gt;.</returns>
+        public List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistory( string givingId, DateTime? startDateTime )
+        {
+            return GetGivingAutomationMonthlyAccountGivingHistory( GetGivingAutomationSourceTransactionQuery(), givingId, startDateTime );
         }
 
         /// <summary>
@@ -492,14 +521,26 @@ namespace Rock.Model
         /// <param name="givingId">The giving identifier.</param>
         /// <param name="startDateTime">The start date time.</param>
         /// <returns>List&lt;MonthlyAccountGivingHistory&gt;.</returns>
-        public List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistory( string givingId, DateTime? startDateTime )
+        public List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistoryWithNegativeTransactions( string givingId, DateTime? startDateTime )
+        {
+            return GetGivingAutomationMonthlyAccountGivingHistory( GetGivingAutomationSourceTransactionQueryWithNegativeTransactions(), givingId, startDateTime );
+        }
+
+        /// <summary>
+        /// Gets the giving automation monthly account giving history.
+        /// </summary>
+        /// <param name="sourceQuery">The source query to use.</param>
+        /// <param name="givingId">The giving identifier.</param>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <returns>List&lt;MonthlyAccountGivingHistory&gt;.</returns>
+        private List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistory( IQueryable<FinancialTransaction> sourceQuery, string givingId, DateTime? startDateTime )
         {
             var givingIdPersonAliasIdQuery = new PersonAliasService( this.Context as RockContext )
                 .Queryable()
                 .Where( a => a.Person.GivingId == givingId )
                 .Select( a => a.Id );
 
-            var qry = GetGivingAutomationSourceTransactionQuery()
+            var qry = sourceQuery
                 .AsNoTracking()
                 .Where( t =>
                     t.TransactionDateTime.HasValue &&
@@ -512,7 +553,7 @@ namespace Rock.Model
             }
 
             var views = qry
-                .SelectMany( t => t.TransactionDetails.Where(td => td.Account.IsTaxDeductible == true).Select( td => new
+                .SelectMany( t => t.TransactionDetails.Where( td => td.Account.IsTaxDeductible == true ).Select( td => new
                 {
                     TransactionDateTime = t.TransactionDateTime.Value,
                     td.AccountId,

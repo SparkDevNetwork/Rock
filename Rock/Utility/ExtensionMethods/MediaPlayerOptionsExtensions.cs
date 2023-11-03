@@ -38,9 +38,17 @@ namespace Rock
         /// <param name="autoResumeInDays">The number of days back to look for an existing watch map to auto-resume from. Pass -1 to mean forever or 0 to disable.</param>
         /// <param name="combinePlayStatisticsInDays">The number of days back to look for an existing interaction to be updated. Pass -1 to mean forever or 0 to disable.</param>
         /// <param name="currentPerson">The person to use when searching for existing interactions.</param>
-        internal static void UpdateValuesFromMedia( this MediaPlayerOptions options, int? mediaElementId, Guid? mediaElementGuid, int autoResumeInDays, int combinePlayStatisticsInDays, Person currentPerson )
+        /// <param name="personAliasId">If <paramref name="currentPerson"/> is <c>null</c> then this value will be used to optionally find an existing interaction.</param>
+        internal static void UpdateValuesFromMedia( this MediaPlayerOptions options, int? mediaElementId, Guid? mediaElementGuid, int autoResumeInDays, int combinePlayStatisticsInDays, Person currentPerson, int? personAliasId )
         {
             if ( !mediaElementId.HasValue && !mediaElementGuid.HasValue )
+            {
+                return;
+            }
+
+            // If they specified both the media element guid and the url
+            // then assume they provided everything we need.
+            if ( options.MediaElementGuid.HasValue && options.MediaUrl.IsNotNullOrWhiteSpace() )
             {
                 return;
             }
@@ -85,18 +93,25 @@ namespace Rock
                     return;
                 }
 
-                // If we don't have a person, then we can't get interactions.
-                if ( currentPerson == null )
-                {
-                    return;
-                }
-
                 // Build a query to find Interactions for this person having
                 // previously watched this media element.
                 var interactionQry = interactionService.Queryable()
                     .Where( i => i.InteractionComponent.InteractionChannel.Guid == mediaEventsChannelGuid
-                        && i.InteractionComponent.EntityId == mediaElement.Id
-                        && i.PersonAlias.PersonId == currentPerson.Id );
+                        && i.InteractionComponent.EntityId == mediaElement.Id );
+
+                if ( currentPerson != null )
+                {
+                    interactionQry = interactionQry.Where( i => i.PersonAlias.PersonId == currentPerson.Id );
+                }
+                else if ( personAliasId.HasValue )
+                {
+                    interactionQry = interactionQry.Where( i => i.PersonAliasId == personAliasId.Value );
+                }
+                else
+                {
+                    // If we don't have a person, then we can't get interactions.
+                    return;
+                }
 
                 // A negative value means "forever".
                 int daysBack = Math.Max( autoResumeInDays >= 0 ? autoResumeInDays : int.MaxValue,
@@ -132,7 +147,10 @@ namespace Rock
                 {
                     if ( autoResumeInDays < 0 || interaction.InteractionDateTime >= now.AddDays( -autoResumeInDays ) )
                     {
-                        options.ResumePlaying = true;
+                        if ( !options.ResumePlaying.HasValue )
+                        {
+                            options.ResumePlaying = true;
+                        }
 
                         var data = interaction.InteractionData.FromJsonOrNull<MediaWatchedInteractionData>();
                         options.Map = data?.WatchMap;

@@ -1,0 +1,45 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <i class="fa fa-bars reorder-handle" :style="iconStyle"></i>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { Ref, computed, onBeforeUnmount, ref } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    const isFiltered = ref(props.grid.isFiltered);
+    const isSorted = ref(props.grid.isSorted);
+
+    const dropOperationInProgress = props.column.data.dropOperationInProgress as Ref<boolean>;
+
+    /** Contains the custom style values to apply to the icon. */
+    const iconStyle = computed((): Record<string, string> => {
+        const disabled = dropOperationInProgress.value || isFiltered.value || isSorted.value;
+
+        // Make the handles look disabled if we are currently processing
+        // a drop operation.
+        return {
+            cursor: disabled ? "not-allowed" : "grab",
+            opacity: disabled ? "0.25" : "1"
+        };
+    });
+
+    function onIsFilteredChanged(grid: IGridState): void {
+        isFiltered.value = grid.isFiltered;
+    }
+
+    function onIsSortedChanged(grid: IGridState): void {
+        isSorted.value = grid.isSorted;
+    }
+
+    onBeforeUnmount(() => {
+        props.grid.off("isFilteredChanged", onIsFilteredChanged);
+        props.grid.off("isSortedChanged", onIsSortedChanged);
+    });
+
+    props.grid.on("isFilteredChanged", onIsFilteredChanged);
+    props.grid.on("isSortedChanged", onIsSortedChanged);
+</script>

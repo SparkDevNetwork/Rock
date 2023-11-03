@@ -656,7 +656,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             hlblCategory.Text = prayerRequest.Category.Name;
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
 
             // need to load attributes so that lava can loop thru PrayerRequest.Attributes
             prayerRequest.LoadAttributes();

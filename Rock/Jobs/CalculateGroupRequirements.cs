@@ -36,6 +36,27 @@ namespace Rock.Jobs
 
     public class CalculateGroupRequirements : RockJob
     {
+        #region Settings
+
+        internal class CalculateGroupRequirementsJobArgs
+        {
+            /// <summary>
+            /// Specifies the Group Type Requirements that should be processed.
+            /// If not specified, all requirements are processed.
+            /// </summary>
+            public List<int> GroupRequirementTypeIdList { get; set; }
+
+            /// <summary>
+            /// Specifies that Data View caching should be disabled for this execution.
+            /// Caching is enabled for normal operation, but may be disabled for diagnostic purposes.
+            /// </summary>
+            public bool DisableDataViewCache { get; set; }
+        }
+
+        #endregion
+
+        #region Constructors
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -45,30 +66,68 @@ namespace Rock.Jobs
         /// </summary>
         public CalculateGroupRequirements()
         {
+            //
         }
+
+        #endregion
 
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-            var rockContext = new RockContext();
-            var groupRequirementService = new GroupRequirementService( rockContext );
-            var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-            var groupMemberService = new GroupMemberService( rockContext );
-            var groupService = new GroupService( rockContext );
+            var settings = new CalculateGroupRequirementsJobArgs();
+            Execute( settings );
+        }
 
-            // we only need to consider group requirements that are based on a DataView or SQL
-            var groupRequirementQry = groupRequirementService.Queryable()
-                .Where( a => a.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
-                .AsNoTracking();
-
+        /// <summary>
+        /// Executes the job using the specified configuration.
+        /// </summary>
+        /// <param name="args"></param>
+        internal void Execute( CalculateGroupRequirementsJobArgs args )
+        {
             // Lists for warnings of skipped groups, workflows, or people from the job.
             List<string> skippedGroupNames = new List<string>();
             List<string> skippedWorkflowNames = new List<string>();
             List<string> skippedPersonIds = new List<string>();
             List<int> groupRequirementsCalculatedPersonIds = new List<int>();
 
-            foreach ( var groupRequirement in groupRequirementQry.Include( i => i.GroupRequirementType ).Include( a => a.GroupRequirementType.DataView ).Include( a => a.GroupRequirementType.WarningDataView ).AsNoTracking().ToList() )
+            // Get the list of group requirements that are based on a DataView or SQL.
+            var rockContext = new RockContext();
+            var groupRequirementService = new GroupRequirementService( rockContext );
+
+            var groupRequirementsQuery = groupRequirementService.Queryable()
+                 .Include( i => i.GroupRequirementType )
+                 .Include( a => a.GroupRequirementType.DataView )
+                 .Include( a => a.GroupRequirementType.WarningDataView )
+                 .AsNoTracking();
+
+            if ( args.GroupRequirementTypeIdList != null && args.GroupRequirementTypeIdList.Any() )
             {
+                groupRequirementsQuery = groupRequirementsQuery.Where( gr => args.GroupRequirementTypeIdList.Contains( gr.GroupRequirementTypeId ) );
+            }
+            else
+            {
+                groupRequirementsQuery = groupRequirementsQuery.Where( a => a.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual );
+            }
+
+            var groupRequirements = groupRequirementsQuery.ToList();
+
+            // Create a cache to store Data View results for the duration of this task.
+            // This will improve performance where multiple requirements reference the same Data Views.
+            DataViewResultsCache dataViewCache = null;
+            if ( !args.DisableDataViewCache )
+            {
+                dataViewCache = new DataViewResultsCache();
+            }
+
+            foreach ( var groupRequirement in groupRequirements )
+            {
+                // Create a new data context for each requirement to ensure performance is scalable.
+                rockContext = new RockContext();
+
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupService = new GroupService( rockContext );
+
                 // Only calculate group requirements for Active groups (if an inactive group becomes active again, this job will take care of re-calculating the requirements again).
                 var groupQuery = groupService.Queryable().Where( a => a.IsActive );
                 if ( groupRequirement.GroupId.HasValue )
@@ -85,11 +144,11 @@ namespace Rock.Jobs
                     break;
                 }
 
-                var groupIdNameQuery = groupQuery.Select( a => new { a.Id, a.Name } );
+                var groupIdNameList = groupQuery.Select( a => new { a.Id, a.Name } ).OrderBy( g => g.Name ).ToList();
 
-                foreach ( var groupIdName in groupIdNameQuery )
+                foreach ( var groupIdName in groupIdNameList )
                 {
-                    this.UpdateLastStatusMessage( $"Calculating group requirement '{groupRequirement.GroupRequirementType.Name}' for {groupIdName.Name}" );
+                    this.UpdateLastStatusMessage( $"Calculating group requirement '{groupRequirement.GroupRequirementType.Name}' for {groupIdName.Name} (Id:{groupIdName.Id})" );
                     try
                     {
                         var currentDateTime = RockDateTime.Now;
@@ -126,7 +185,12 @@ namespace Rock.Jobs
 
                         var groupMembersThatDoNotMeetRequirementsPersonQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
 
-                        var personGroupRequirementStatuses = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, groupMembersThatDoNotMeetRequirementsPersonQry, groupIdName.Id, groupRequirement.GroupRoleId ).ToList();
+                        var personGroupRequirementStatuses = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext,
+                            groupMembersThatDoNotMeetRequirementsPersonQry,
+                            groupIdName.Id,
+                            groupRequirement.GroupRoleId,
+                            dataViewCache )
+                            .ToList();
 
                         foreach ( var personGroupRequirementStatus in personGroupRequirementStatuses )
                         {
@@ -204,7 +268,7 @@ namespace Rock.Jobs
             }
 
             JobSummary jobSummary = new JobSummary();
-            jobSummary.Successes.Add( $"{groupRequirementQry.Count()} group {"requirement".PluralizeIf( groupRequirementQry.Count() != 1 )} " +
+            jobSummary.Successes.Add( $"{groupRequirements.Count} group {"requirement".PluralizeIf( groupRequirements.Count != 1 )} " +
                 $"re-calculated for {groupRequirementsCalculatedPersonIds.Distinct().Count()} " +
                 $"{"person".PluralizeIf( groupRequirementsCalculatedPersonIds.Distinct().Count() != 1 )}." );
 
@@ -345,5 +409,64 @@ namespace Rock.Jobs
                 return sb.ToString().ConvertCrLfToHtmlBr();
             }
         }
+
     }
 }
+
+#region Support Classes
+
+namespace Rock.Model
+{
+    /// <summary>
+    /// Caches the results of a Data View as an Entity Set.
+    /// </summary>
+    internal class DataViewResultsCache
+    {
+        private Dictionary<int, int> _dataViewToEntitySetMap = new Dictionary<int, int>();
+
+        /// <summary>
+        /// Gets a Queryable that returns the result set for a Data View.
+        /// </summary>
+        /// <param name="dataViewId"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public IQueryable<int> GetDataViewResultQueryable( int dataViewId, RockContext rockContext )
+        {
+            int entitySetId;
+            if ( _dataViewToEntitySetMap.ContainsKey( dataViewId ) )
+            {
+                entitySetId = _dataViewToEntitySetMap[dataViewId];
+            }
+            else
+            {
+                // Create a new Entity Set, using an isolated data context to avoid potential deadlocks.
+                var createContext = new RockContext();
+                var entitySetService = new EntitySetService( createContext );
+
+                var args = new EntitySetService.CreateEntitySetFromDataViewActionArgs
+                {
+                    DatabaseTimeoutInSeconds = 300,
+                    DataViewId = dataViewId,
+                    EntitySetName = $"DataViewId_{dataViewId}",
+                    EntitySetNote = "DataViewResultsCache",
+                    ExpirationPeriod = new TimeSpan( 1, 0, 0 )
+                };
+
+                entitySetId = EntitySetService.CreateEntitySetFromDataView( args, createContext ) ?? 0;
+                createContext.SaveChanges();
+
+                _dataViewToEntitySetMap.AddOrReplace( dataViewId, entitySetId );
+            }
+
+            // Get the set of key values from the entity set.
+            var entitySetItemService = new EntitySetItemService( rockContext );
+            var idQuery = entitySetItemService.Queryable()
+                .Where( es => es.EntitySetId == entitySetId )
+                .Select( es => es.EntityId );
+
+            return idQuery;
+        }
+    }
+}
+
+#endregion

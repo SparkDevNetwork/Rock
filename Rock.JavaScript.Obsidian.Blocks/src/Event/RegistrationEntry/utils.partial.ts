@@ -16,7 +16,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { RegistrantBasicInfo, RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType, RegistrationFieldSource } from "./types.partial";
 
@@ -29,9 +29,9 @@ const unknownSingleFamilyGuid = newGuid();
  * @param currentPerson
  * @param viewModel
  */
-export function getForcedFamilyGuid(currentPerson: PersonBag | null, viewModel: RegistrationEntryBlockViewModel): string | null {
+export function getForcedFamilyGuid(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryBlockViewModel): string | null {
     return (currentPerson && viewModel.registrantsSameFamily === RegistrantsSameFamily.Yes) ?
-        (currentPerson.primaryFamilyGuid || unknownSingleFamilyGuid) :
+        (viewModel.currentPersonFamilyGuid || unknownSingleFamilyGuid) :
         null;
 }
 
@@ -41,7 +41,7 @@ export function getForcedFamilyGuid(currentPerson: PersonBag | null, viewModel: 
  * @param viewModel
  * @param familyGuid
  */
-export function getDefaultRegistrantInfo(currentPerson: PersonBag | null, viewModel: RegistrationEntryBlockViewModel, familyGuid: Guid | null): RegistrantInfo {
+export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryBlockViewModel, familyGuid: Guid | null): RegistrantInfo {
     const forcedFamilyGuid = getForcedFamilyGuid(currentPerson, viewModel);
 
     if (forcedFamilyGuid) {

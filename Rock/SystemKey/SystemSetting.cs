@@ -307,5 +307,45 @@ namespace Rock.SystemKey
         /// The Captcha secret key.
         /// </summary>
         public const string CAPTCHA_SECRET_KEY = "core_CaptchaSecretKey";
+
+        /// <summary>
+        /// The protocol to use for sending telemetry for observability.
+        /// </summary>
+        public const string OBSERVABILITY_ENDPOINT_PROTOCOL = "core_ObservabilityEndpointProtocol";
+
+        /// <summary>
+        /// The URL to use for sending telemetry for observability.
+        /// </summary>
+        public const string OBSERVABILITY_ENDPOINT = "core_ObservabilityEndpoint";
+
+        /// <summary>
+        /// Determines if observability is enabled.
+        /// </summary>
+        public const string OBSERVABILITY_ENABLED = "core_ObservabilityEnabled";
+
+        /// <summary>
+        /// The headers to send with telemetry requests for observability.
+        /// </summary>
+        public const string OBSERVABILITY_ENDPOINT_HEADERS = "core_ObservabilityEndpointHeaders";
+
+        /// <summary>
+        /// The protocol to use for sending telemetry for observability.
+        /// </summary>
+        public const string OBSERVABILITY_TARGETED_QUERIES = "core_ObservabilityTargetedQueries";
+
+        /// <summary>
+        /// The label text for the SMS Opt-In checkbox
+        /// </summary>
+        public const string SMS_OPT_IN_MESSAGE_LABEL = "core_SmsOptInMessageLabel";
+
+        /// <summary>
+        /// The content library data (JSON).
+        /// </summary>
+        public const string CONTENT_LIBRARY_DATA_JSON = "core_ContentLibraryDataJson";
+
+        /// <summary>
+        /// Determine if Same Sex Couples are allowed.
+        /// </summary>
+        public const string BIBLE_STRICT_SPOUSE = "core_BibleStrictSpouse";
     }
 }

@@ -24,6 +24,8 @@ using Newtonsoft.Json;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -73,19 +75,32 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            AssetStorageProvider assetStorageProvider = new AssetStorageProvider();
-            int? assetStorageId = asset.AssetStorageProviderId;
-
-            if ( assetStorageId != null )
+            // Find in cache first before performing expensive operations.
+            // (Every asset should have a provider id and a key.)
+            var cacheKey = $"Rock.Field.Types.AssetFieldType:{asset.AssetStorageProviderId}:{asset.Key}";
+            var uri = RockCache.Get( cacheKey, true ) as string;
+            if ( uri != null )
             {
-                var assetStorageService = new AssetStorageProviderService( new RockContext() );
-                assetStorageProvider = assetStorageService.Get( assetStorageId.Value );
-                assetStorageProvider.LoadAttributes();
+                return uri;
             }
 
-            var component = assetStorageProvider.GetAssetStorageComponent();
+            if ( asset.AssetStorageProviderId <= 0)
+            {
+                return string.Empty;
+            }
 
-            string uri = component.CreateDownloadLink( assetStorageProvider, asset );
+            var assetStorageProviderCache = AssetStorageProviderCache.Get( asset.AssetStorageProviderId );
+
+            var component = assetStorageProviderCache?.AssetStorageComponent;
+            if ( component == null )
+            {
+                return string.Empty;
+            }
+
+            uri = component.CreateDownloadLink( assetStorageProviderCache.ToEntity(), asset );
+
+            // Cache for 60 seconds
+            RockCache.AddOrUpdate( cacheKey, null, uri, RockDateTime.Now.AddSeconds( 60 ) );
 
             return uri;
         }

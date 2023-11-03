@@ -449,11 +449,6 @@ namespace RockWeb.Blocks.Groups
 
             outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectList, mergeFields );
 
-            // Set the name of the output doc
-            outputBinaryFileDoc = new BinaryFileService( rockContext ).Get( outputBinaryFileDoc.Id );
-            outputBinaryFileDoc.FileName = _group.Name + " Attendance Roster" + Path.GetExtension( outputBinaryFileDoc.FileName ?? string.Empty ) ?? ".docx";
-            rockContext.SaveChanges();
-
             if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
             {
                 if ( mergeTemplateType.Exceptions.Count == 1 )

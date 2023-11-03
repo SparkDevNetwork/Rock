@@ -40,7 +40,8 @@
 		"recommendations": [
 			"dbaeumer.vscode-eslint",
 			"vue.volar",
-			"orta.vscode-jest"
+			"orta.vscode-jest",
+			"vue.vscode-typescript-vue-plugin"
 		]
 	},
 	"folders": [
@@ -60,10 +61,11 @@
 			"html": true
 		},
 		"volar.completion.preferredAttrNameCase": "camel",
-		"vue.features.complete.propNameCasing": "camel",
+		"volar.completion.preferredTagNameCase": "pascal",
 		"volar.vueserver.additionalExtensions": [
 			"obs"
 		],
+		"vue.features.complete.propNameCasing": "camel",
 		"vue.complete.casing.props": "camel",
 		"vue.complete.casing.tags": "pascal",
 		"vue.server.additionalExtensions": [
@@ -85,7 +87,13 @@
 		"[vue]": {
 			"editor.defaultFormatter": "Vue.volar"
 		},
-		"css.format.spaceAroundSelectorSeparator": true
+		"css.format.spaceAroundSelectorSeparator": true,
+		"typescript.tsdk": "node_modules/typescript/lib",
+		"workbench.settings.openDefaultSettings": false,
+		"workbench.settings.openDefaultKeybindings": false,
+		"css.lint.duplicateProperties": "warning",
+		"css.lint.zeroUnits": "warning",
+		"css.lint.propertyIgnoredDueToDisplay": "warning"
 	},
 	"tasks": {
 		"version": "2.0.0",
@@ -106,9 +114,6 @@
 				},
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian"
-				},
-				"problemMatcher": {
-					"base": "$tsc-watch"
 				}
 			},
 			{
@@ -126,9 +131,6 @@
 				},
 				"options": {
 					"cwd": "../Rock.JavaScript.Obsidian.Blocks"
-				},
-				"problemMatcher": {
-					"base": "$tsc-watch"
 				}
 			},
 			{
@@ -151,14 +153,14 @@
 					"showReuseMessage": false,
 					"clear": true,
 					"echo": false,
-					"panel":"dedicated"
+					"panel": "dedicated"
 				},
 				"options": {
 					"cwd": "${workspaceFolder:Rock.JavaScript.Obsidian}"
 				},
 				"isBackground": true,
 				"problemMatcher": {
-					"base": "$tsc-watch",
+					"base": "$vite",
 					"background": {
 						"beginsPattern": "^rollup v",
 						"endsPattern": "waiting for changes\\.\\.\\.$"
@@ -180,7 +182,7 @@
 				},
 				"isBackground": true,
 				"problemMatcher": {
-					"base": "$tsc-watch",
+					"base": "$vite",
 					"background": {
 						"beginsPattern": "^rollup v",
 						"endsPattern": "waiting for changes\\.\\.\\.$"

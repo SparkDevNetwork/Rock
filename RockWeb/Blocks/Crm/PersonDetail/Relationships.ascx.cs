@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -213,6 +214,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rGroupMembers_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
         {
+            var lDeceased = e.Item.FindControl( "lDeceased" ) as Literal;
+            var groupMember = e.Item.DataItem as GroupMember;
+            if ( lDeceased != null && groupMember != null && groupMember.Person?.IsDeceased == true )
+            {
+                lDeceased.Text = " (Deceased)";
+            }
+
             var lbEdit = e.Item.FindControl( "lbEdit" ) as LinkButton;
             var lbRemove = e.Item.FindControl( "lbRemove" ) as LinkButton;
 

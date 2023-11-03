@@ -1,0 +1,26 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <NumberBox v-model="item.value"
+                   :disabled="disabled"
+                   :label="item.name"  />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { ServiceMetricsEntryMetricItemBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryMetricItemBag";
+
+    defineProps({
+        item: {
+            type: Object as PropType<ServiceMetricsEntryMetricItemBag>,
+            required: true
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        }
+    });
+</script>

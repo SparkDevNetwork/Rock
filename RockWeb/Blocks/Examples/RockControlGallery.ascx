@@ -191,6 +191,20 @@
     <Rock:NotificationBox ID="nbMP3" runat="server" CssClass="padding-all-xl margin-all-lg" NotificationBoxType="Info" Title=".padding-all-xl .margin-all-md" Text="For God so loved the world that he gave his one and only Son..." />
 </div>
 </div>
+                    <h2 runat="server">Field Labels</h2>
+                    <p>When a field is not editable because it was pre-configured via configuration or block setting,
+                        it should still have a typical look by using the <code>form-group, control-label, control-wrapper</code>
+                        classes.
+                    </p>
+
+<div runat="server" class="r-example">
+<div class="form-group">
+	<label class="control-label">Group</label> 
+	<div class="control-wrapper">
+		<p>A/V Team</p>	
+	</div>
+</div>
+</div>
 
                     <a id="Grid"></a>
                     <h2 runat="server">Rock:Grid</h2>
@@ -981,7 +995,7 @@ Horizontal Rule
                     <a id="CampusAccountAmountPicker"></a>
                     <h2 runat="server">Rock:CampusAccountAmountPicker</h2><span>(SingleAccount Mode)</span>
                     <div runat="server" class="r-example">
-                        <Rock:CampusAccountAmountPicker ID="caapExampleSingleAccount" runat="server" AmountEntryMode="SingleAccount" AutoPostBack="true" OnAccountChanged="caapExample_Changed" />
+                        <Rock:CampusAccountAmountPicker ID="caapExampleSingleAccount" runat="server" AmountEntryMode="SingleAccount" AutoPostBack="true" OnAccountChanged="caapExample_Changed" OnCampusChanged="caapExample_Changed" />
 
                         <hr />
                         <Rock:RockLiteral ID="lCaapExampleSingleAccountResultAccount" runat="server" Label="Resulting Campus Account" Text="-"/>
@@ -989,7 +1003,7 @@ Horizontal Rule
 
                     <h2 runat="server">Rock:CampusAccountAmountPicker</h2><span>(MultipleAccounts Mode)</span>
                     <div runat="server" class="r-example">
-                        <Rock:CampusAccountAmountPicker ID="caapExampleMultiAccount" runat="server" AmountEntryMode="MultipleAccounts" OnAccountChanged="caapExample_Changed"/>
+                        <Rock:CampusAccountAmountPicker ID="caapExampleMultiAccount" runat="server" AmountEntryMode="MultipleAccounts" OnAccountChanged="caapExample_Changed" OnCampusChanged="caapExample_Changed" />
 
                          <hr />
                         <Rock:RockLiteral ID="lCaapExampleMultiAccountResultAccount" runat="server" Label="Resulting Campus Accounts" Text="-" />

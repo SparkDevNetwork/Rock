@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock;
+using Rock.Constants;
+using Rock.Data;
+using Rock.Model;
+using Rock.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
+using Rock.Web.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,24 +31,15 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock;
-using Rock.Constants;
-using Rock.Data;
-using Rock.Model;
-using Rock.Utility;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Web.Utilities;
-
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
     ///     A DataFilter that selects people associated with locations matching the filter.
     /// </summary>
     [Description( "Filter people by their family address." )]
-    [Export( typeof(DataFilterComponent) )]
+    [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Location Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "02920962-40D0-4394-B625-C894AFF67103")]
+    [Rock.SystemGuid.EntityTypeGuid( "02920962-40D0-4394-B625-C894AFF67103" )]
     public class LocationFilter : DataFilterComponent
     {
         #region Settings
@@ -48,7 +47,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         ///     Settings for the Data Select Component.
         /// </summary>
-        private class FilterSettings : SettingsStringBase
+        internal class FilterSettings : SettingsStringBase
         {
             public Guid? LocationTypeGuid;
             public string Street1;
@@ -78,7 +77,7 @@ namespace Rock.Reporting.DataFilter.Person
                 get
                 {
                     // at least one item should be set for this to be valid (otherwise it's just data view bloat).
-                    return LocationTypeGuid.HasValue || ! string.IsNullOrWhiteSpace( Street1 ) || !string.IsNullOrWhiteSpace( City )
+                    return LocationTypeGuid.HasValue || !string.IsNullOrWhiteSpace( Street1 ) || !string.IsNullOrWhiteSpace( City )
                         || !string.IsNullOrWhiteSpace( State ) || !string.IsNullOrWhiteSpace( PostalCode ) || !string.IsNullOrWhiteSpace( Country );
                 }
             }
@@ -256,11 +255,9 @@ function() {
                 string city = string.IsNullOrWhiteSpace( settings.City ) ? null : settings.City;
                 string state = string.IsNullOrWhiteSpace( settings.State ) ? null : settings.State;
                 string postalCode = string.IsNullOrWhiteSpace( settings.PostalCode ) ? null : settings.PostalCode;
+                string countryName = string.IsNullOrWhiteSpace( settings.Country ) ? null : settings.Country;
 
-                string countryName = GlobalAttributesCache.Get().GetValue( "SupportInternationalAddresses" ).AsBoolean() &&
-                    ! string.IsNullOrWhiteSpace( settings.Country ) ? settings.Country : null;
-
-                if ( settings.LocationTypeGuid.HasValue)
+                if ( settings.LocationTypeGuid.HasValue )
                 {
                     locationTypeName = DefinedValueCache.Get( settings.LocationTypeGuid.Value, context ).Value;
                 }
@@ -298,7 +295,7 @@ function() {
 
             var familyLocations = GroupTypeCache.GetFamilyGroupType().LocationTypeValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
 
-            foreach (var value in familyLocations)
+            foreach ( var value in familyLocations )
             {
                 ddlLocationType.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }
@@ -312,6 +309,10 @@ function() {
             acAddress.ID = parentControl.GetChildControlInstanceName( _CtlLocationAddress );
             acAddress.Label = "Address";
             acAddress.Help = "All or part of an address to which the Person is associated.";
+
+            // Set the control to allow incomplete address data for the filter.
+            acAddress.PartialAddressIsAllowed = true;
+
             acAddress.AddCssClass( "js-addresscontrol" );
             parentControl.Controls.Add( acAddress );
 
@@ -367,11 +368,19 @@ function() {
             }
 
             ddlLocationType.SelectedValue = settings.LocationTypeGuid.ToStringSafe();
-            acAddress.Street1 = settings.Street1;
-            acAddress.City = settings.City;
-            acAddress.State = settings.State;
-            acAddress.PostalCode = settings.PostalCode;
-            acAddress.Country = settings.Country;            
+
+            var location = new Location
+            {
+                Street1 = settings.Street1,
+                Street2 = "",
+                City = settings.City,
+                County = "",
+                State = settings.State,
+                PostalCode = settings.PostalCode,
+                Country = settings.Country
+            };
+
+            acAddress.SetValues( location );
         }
 #endif
 
@@ -430,14 +439,14 @@ function() {
                 .Where( gl => gl.Group.GroupTypeId == familyGroupTypeId && locationQuery.Any( l => l.Id == gl.LocationId ) );
 
             // If a Location Type is specified, apply the filter condition.
-            if (settings.LocationTypeGuid.HasValue)
+            if ( settings.LocationTypeGuid.HasValue )
             {
                 int groupLocationTypeId = DefinedValueCache.Get( settings.LocationTypeGuid.Value ).Id;
                 groupLocationsQuery = groupLocationsQuery.Where( x => x.GroupLocationTypeValue.Id == groupLocationTypeId );
             }
 
             // Get all of the Group Members of the qualifying Families.
-            var groupMemberServiceQry = new GroupMemberService( context ).Queryable()
+            var groupMemberServiceQry = new GroupMemberService( context ).Queryable( true )
                 .Where( gm => groupLocationsQuery.Any( gl => gl.GroupId == gm.GroupId ) );
 
             // Get all of the People corresponding to the qualifying Group Members.

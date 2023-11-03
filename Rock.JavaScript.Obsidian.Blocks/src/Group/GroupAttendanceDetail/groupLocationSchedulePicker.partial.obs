@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker";
+    import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker.obs";
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";

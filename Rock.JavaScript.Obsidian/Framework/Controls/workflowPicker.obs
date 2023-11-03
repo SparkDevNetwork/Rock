@@ -1,0 +1,129 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" name="step-program-step-type-picker">
+        <WorkflowTypePicker v-if="!workflowTypeGuid"
+                            v-model="internalWorkflowType"
+                            label="Workflow Type"
+                            :multiple="false"
+                            :disabled="disabled"
+                            showBlankItem
+                            autoExpand
+                            formGroupClasses="mt-0"
+                            :displayStyle="PickerDisplayStyle.Condensed" />
+        <WorkflowBasePicker v-model="internalValue"
+                            label="Workflow"
+                            :workflowTypeGuid="internalTypeGuid"
+                            :multiple="false"
+                            :disabled="disabled"
+                            showBlankItem
+                            :displayStyle="PickerDisplayStyle.Condensed" />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import WorkflowTypePicker from "./workflowTypePicker.obs";
+    import WorkflowBasePicker from "./workflowBasePicker.obs";
+    import RockFormField from "./rockFormField.obs";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { Guid } from "@Obsidian/Types";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowPickerGetWorkflowTypeForWorkflowOptionsBag";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { deepEqual } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            required: true
+        },
+
+        /** Provided Workflow Type: hides Workflow Type picker if provided */
+        workflowTypeGuid: {
+            type: Object as PropType<Guid | null>,
+            default: null
+        },
+
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = ref<ListItemBag | null>(props.modelValue);
+    const internalWorkflowType = ref<ListItemBag | null>(null);
+
+    const securityGrantToken = useSecurityGrantToken();
+    const http = useHttp();
+
+    const internalTypeGuid = computed(() => {
+        return (props.workflowTypeGuid || internalWorkflowType.value?.value) ?? "";
+    });
+    let skipWatcher = false;
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        if (!deepEqual(internalValue.value, props.modelValue, false)) {
+            internalValue.value = props.modelValue;
+            getChannelFromComponent();
+        }
+    });
+
+    watch(internalValue, (val) => {
+        if (!deepEqual(val, props.modelValue, false)) {
+            emit("update:modelValue", val);
+        }
+    });
+
+    watch(() => props.workflowTypeGuid, (newVal) => {
+        if (newVal) {
+            internalWorkflowType.value = null;
+        }
+    });
+
+    watch(internalWorkflowType, () => {
+        if (!skipWatcher) {
+            internalValue.value = null;
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    async function getChannelFromComponent(): Promise<void> {
+        const options: WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag = {
+            workflowGuid: props.modelValue?.value,
+            securityGrantToken: securityGrantToken.value
+        };
+
+        const result = await http.post<ListItemBag>("/api/v2/Controls/WorkflowPickerGetWorkflowTypeForWorkflow", null, options);
+
+        if (result.isSuccess && result.data) {
+            // Set the template, but don't let the change reset the instance
+            skipWatcher = true;
+            internalWorkflowType.value = result.data;
+            await nextTick();
+            skipWatcher = false;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
+
+    // #endregion
+
+    if (props.modelValue && !internalTypeGuid.value) {
+        getChannelFromComponent();
+    }
+</script>

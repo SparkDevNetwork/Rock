@@ -23,8 +23,7 @@
                                  showBlankItem
                                  :lazyMode="isLazy"
                                  :displayStyle="routePickerDisplayStyle"
-                                 :items="actualRouteItems"
-                                 :open="open" />
+                                 :items="actualRouteItems" />
             </div>
         </template>
     </TreeItemPicker>
@@ -35,7 +34,7 @@
     import { PageTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import TreeItemPicker from "./treeItemPicker.obs";
-    import RockButton from "./rockButton";
+    import RockButton from "./rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { useStore } from "@Obsidian/PageState";
@@ -43,7 +42,7 @@
     import { PagePickerGetPageNameOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/pagePickerGetPageNameOptionsBag";
     import { PagePickerGetPageRoutesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/pagePickerGetPageRoutesOptionsBag";
     import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import { useHttp } from "@Obsidian/Utility/http";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
@@ -103,7 +102,6 @@
 
     const http = useHttp();
     const standardFieldProps = useStandardRockFormFieldProps(props);
-    const open = ref(null);
 
     // #region Page
 

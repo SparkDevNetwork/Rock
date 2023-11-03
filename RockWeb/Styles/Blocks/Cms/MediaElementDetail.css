@@ -1,0 +1,179 @@
+.media-element-detail .video-container {
+  position: relative;
+}
+
+.media-element-detail .video-container > .chart-container {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  cursor: col-resize;
+  background: rgba(0, 0, 0, .3);
+}
+
+.media-element-detail video {
+  max-width: 100% !important;
+}
+
+.media-element-detail .analytic-value {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.individual-play-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 768px) {
+  .individual-play-row {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.individual-play-row .individual-play-date {
+  flex: 0 0 auto;
+  padding: 4px 8px 4px 0;
+  font-size: 12px;
+  line-height: initial;
+  color: #737475;
+}
+
+@media (min-width: 768px) {
+  .individual-play-row .individual-play-date {
+    width: 100px;
+    text-align: right;
+  }
+
+  .individual-play-row .individual-play-date span {
+    display: block;
+  }
+}
+
+.individual-play-row .individual-play-person-info {
+  width: 100%;
+  overflow: hidden;
+}
+
+.individual-play-row .individual-play-person-location {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #737475;
+}
+
+.individual-play-row .individual-play-bar {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #eee;
+  border-radius: 6px;
+}
+
+@media (min-width: 768px) {
+  .individual-play-row .individual-play-bar {
+    flex-direction: row;
+  }
+}
+
+.individual-play-row .individual-play-percent,
+.individual-play-row .individual-play-person {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 8px;
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  .individual-play-row .individual-play-person {
+    width: 280px;
+  }
+
+  .individual-play-row .individual-play-percent {
+    justify-content: center;
+    width: 60px;
+  }
+}
+
+.individual-play-row .individual-play-chart {
+  flex: 1 1 auto;
+  height: 60px;
+  background: #f5f5f5;
+}
+
+.individual-play-row .individual-play-chart > svg {
+  width: 100%;
+  height: 60px;
+  pointer-events: none;
+}
+
+.individual-play-row .badge-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 400;
+  text-align: center;
+}
+
+.individual-play-person-detail {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.individual-play-interaction {
+  position: absolute;
+  left: 0;
+  width: 0;
+  height: 100%;
+  padding-right: 20px;
+  background-color: #eee;
+  transition: width .2s ease-in-out;
+}
+
+.individual-play-interaction.expanded {
+  width: 150px;
+}
+
+.individual-play-interaction .individual-play-interaction-session {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: 4px;
+  font-size: 12px;
+  color: #2d2e31;
+  cursor: default;
+  opacity: .5;
+}
+
+.individual-play-interaction .individual-play-interaction-session span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.individual-play-interaction .expander {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.expanded .individual-play-interaction-session {
+  display: flex;
+}

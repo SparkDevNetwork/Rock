@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -376,7 +376,7 @@ function ()
 
             var memberService = new GroupMemberService( context );
 
-            var memberQuery = memberService.Queryable();
+            var memberQuery = memberService.Queryable( true );
 
             if ( dataView != null )
             {

@@ -10,18 +10,18 @@
 
 <script setup lang="ts">
     import { PropType, computed } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
-    import NumberBox from "@Obsidian/Controls/numberBox";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
-    import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
+    import { TimeIntervalBag } from "@Obsidian/ViewModels/Utility/timeIntervalBag";
     import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<TimeInterval>,
+            type: Object as PropType<TimeIntervalBag>,
             required: true
         },
 
@@ -29,10 +29,10 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", _value: TimeInterval): void
+        (e: "update:modelValue", _value: TimeIntervalBag): void
     }>();
 
-    const internalValue = computed<TimeInterval>({
+    const internalValue = computed<TimeIntervalBag>({
         get() {
             return props.modelValue;
         },
@@ -41,7 +41,7 @@
         }
     });
 
-    const value = computed<TimeInterval["value"]>({
+    const value = computed<TimeIntervalBag["value"]>({
         get() {
             return internalValue.value.value;
         },
@@ -53,7 +53,7 @@
         }
     });
 
-    const unit = computed<`${TimeInterval["unit"]}`>({
+    const unit = computed<`${TimeIntervalBag["unit"]}`>({
         get() {
             return `${internalValue.value.unit ?? TimeIntervalUnit.Minutes}`;
         },

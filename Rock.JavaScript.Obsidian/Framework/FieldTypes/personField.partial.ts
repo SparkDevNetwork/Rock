@@ -21,6 +21,7 @@ import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
     EnableSelfSelection = "EnableSelfSelection",
+    IncludeBusinesses = "includeBusinesses"
 }
 
 // The edit component can be quite large, so load it only as needed.

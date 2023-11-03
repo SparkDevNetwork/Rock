@@ -371,7 +371,7 @@ namespace Rock.Reporting
                     cacheAttributeList = cacheAttributeList.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) ).ToList();
                 }
 
-                EntityHelper.AddEntityFieldsForAttributeList( entityFields, cacheAttributeList.ToList() );
+                EntityHelper.AddEntityFieldsForAttributeList( entityFields, cacheAttributeList.ToList(), limitToFilterableFields );
 
             }
 

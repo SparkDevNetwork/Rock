@@ -24,11 +24,11 @@ using Microsoft.EntityFrameworkCore;
 using System.Data.Entity;
 #endif
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Blocks.Group.Scheduling;
 using Rock.Enums.Controls;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -46,13 +46,13 @@ namespace Rock.Blocks.Group.Scheduling
     [Category( "Group Scheduling" )]
     [Description( "Allows group schedules for groups and locations to be managed by a scheduler." )]
     [IconCssClass( "fa fa-calendar-alt" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
     [BooleanField( "Enable Alternate Group Individual Selection",
         Key = AttributeKey.EnableAlternateGroupIndividualSelection,
         Description = "Determines if individuals may be selected from alternate groups.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         Order = 0,
         IsRequired = false )]
@@ -60,7 +60,6 @@ namespace Rock.Blocks.Group.Scheduling
     [BooleanField( "Enable Parent Group Individual Selection",
         Key = AttributeKey.EnableParentGroupIndividualSelection,
         Description = "Determines if individuals may be selected from parent groups.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         Order = 1,
         IsRequired = false )]
@@ -68,7 +67,6 @@ namespace Rock.Blocks.Group.Scheduling
     [BooleanField( "Enable Data View Individual Selection",
         Key = AttributeKey.EnableDataViewIndividualSelection,
         Description = "Determines if individuals may be selected from data views.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         Order = 2,
         IsRequired = false )]
@@ -79,11 +77,18 @@ namespace Rock.Blocks.Group.Scheduling
         Order = 3,
         IsRequired = true )]
 
+    [BooleanField( "Disallow Group Selection If Specified",
+        Key = AttributeKey.DisallowGroupSelectionIfSpecified,
+        Description = "When enabled, will hide the group picker if there is a GroupId in the query string.",
+        DefaultBooleanValue = false,
+        Order = 4,
+        IsRequired = false )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "7ADCE833-A785-4A54-9805-7335809C5367" )]
     [Rock.SystemGuid.BlockTypeGuid( "511D8E2E-4AF3-48D8-88EF-2AB311CD47E0" )]
-    public class GroupScheduler : RockObsidianBlockType
+    public class GroupScheduler : RockBlockType
     {
         #region Keys & Constants
 
@@ -93,6 +98,7 @@ namespace Rock.Blocks.Group.Scheduling
             public const string EnableParentGroupIndividualSelection = "EnableParentGroupIndividualSelection";
             public const string EnableDataViewIndividualSelection = "EnableDataViewIndividualSelection";
             public const string RosterPage = "RosterPage";
+            public const string DisallowGroupSelectionIfSpecified = "DisallowGroupSelectionIfSpecified";
         }
 
         private static class NavigationUrlKey
@@ -119,25 +125,32 @@ namespace Rock.Blocks.Group.Scheduling
 
         private static class PersonPreferenceKey
         {
-            public const string GroupIds = "group-ids";
-            public const string LocationIds = "location-ids";
-            public const string ScheduleIds = "schedule-ids";
+            public const string GroupId = "GroupId";
+            public const string GroupIds = "GroupIds";
+            public const string LocationIds = "LocationIds";
+            public const string ScheduleId = "ScheduleId";
+            public const string ScheduleIds = "ScheduleIds";
 
-            public const string RangeType = "range-type";
-            public const string TimeUnit = "time-unit";
-            public const string TimeValue = "time-value";
-            public const string LowerDate = "lower-date";
-            public const string UpperDate = "upper-date";
+            public const string RangeType = "RangeType";
+            public const string TimeUnit = "TimeUnit";
+            public const string TimeValue = "TimeValue";
+            public const string LowerDate = "LowerDate";
+            public const string UpperDate = "UpperDate";
 
-            public const string ResourceListSourceType = "resource-list-source-type";
-            public const string AlternateGroupId = "alternate-group-id";
-            public const string DataViewId = "data-view-id";
+            public const string ShowChildGroups = "ShowChildGroups";
+            public const string SelectedDate = "EndOfWeekDate";
+            public const string SelectAllSchedules = "SelectAllSchedules";
 
-            public const string CloneSourceDate = "clone-source-date";
-            public const string CloneDestinationDate = "clone-destination-date";
-            public const string CloneGroups = "clone-groups";
-            public const string CloneLocations = "clone-locations";
-            public const string CloneSchedules = "clone-schedules";
+            public const string ResourceListSourceType = "ResourceListSourceType";
+            public const string GroupMemberFilterType = "GroupMemberFilterType";
+            public const string AlternateGroupId = "AlternateGroupId";
+            public const string DataViewId = "DataViewId";
+
+            public const string CloneSourceDate = "CloneSourceDate";
+            public const string CloneDestinationDate = "CloneDestinationDate";
+            public const string CloneGroups = "CloneGroups";
+            public const string CloneLocations = "CloneLocations";
+            public const string CloneSchedules = "CloneSchedules";
         }
 
         private const string NoScheduleTemplateValue = "0";
@@ -167,8 +180,6 @@ namespace Rock.Blocks.Group.Scheduling
         #endregion
 
         #region Properties
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         public IDictionary<string, string> PageParameters
         {
@@ -223,7 +234,7 @@ namespace Rock.Blocks.Group.Scheduling
             var block = new BlockService( rockContext ).Get( this.BlockId );
             block.LoadAttributes( rockContext );
 
-            var filters = GetFiltersFromURLOrPersonPreferences( rockContext );
+            var ( filters, disallowGroupSelection ) = GetFiltersFromURLOrPersonPreferences( rockContext );
 
             box.AppliedFilters = new GroupSchedulerAppliedFiltersBag
             {
@@ -231,17 +242,19 @@ namespace Rock.Blocks.Group.Scheduling
                 ScheduleOccurrences = GetScheduleOccurrences( rockContext ),
                 NavigationUrls = GetNavigationUrls( filters )
             };
+            box.DisallowGroupSelection = disallowGroupSelection;
             box.SecurityGrantToken = GetSecurityGrantToken();
         }
 
         /// <summary>
-        /// Gets the filters, picking first from query params, then from person preferences.
+        /// Gets the filters and whether to disallow group selection, picking first from query params, then from person preferences.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <returns>The filters.</returns>
-        private GroupSchedulerFiltersBag GetFiltersFromURLOrPersonPreferences( RockContext rockContext )
+        /// <returns>The filters and whether to disallow group selection.</returns>
+        private ( GroupSchedulerFiltersBag filters, bool disallowGroupSelection ) GetFiltersFromURLOrPersonPreferences( RockContext rockContext )
         {
             var filters = new GroupSchedulerFiltersBag();
+            var disallowGroupSelection = false;
 
             List<int> groupIds;
             if ( HasPageParameter( PageParameterKey.GroupId ) || HasPageParameter( PageParameterKey.GroupIds ) )
@@ -249,9 +262,21 @@ namespace Rock.Blocks.Group.Scheduling
                 var groupId = this.PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
                 groupIds = ( this.PageParameter( PageParameterKey.GroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
 
-                if ( groupId.HasValue && !groupIds.Contains( groupId.Value ) )
+                if ( groupId.HasValue )
                 {
-                    groupIds.Add( groupId.Value );
+                    // This is to maintain consistency with the Web Forms version of this block; we only disable the group picker if:
+                    //  1) A single group ID is provided via the "GroupId" page parameter;
+                    //  2) Additional group IDs are not provided via the "GroupIds" page parameter;
+                    //  3) The "DisallowGroupSelectionIfSpecified" block attribute is set to true.
+                    if ( !groupIds.Any() && GetAttributeValue( AttributeKey.DisallowGroupSelectionIfSpecified ).AsBoolean() )
+                    {
+                        disallowGroupSelection = true;
+                    }
+
+                    if ( !groupIds.Contains( groupId.Value ) )
+                    {
+                        groupIds.Add( groupId.Value );
+                    }
                 }
             }
             else
@@ -365,7 +390,7 @@ namespace Rock.Blocks.Group.Scheduling
 
             RefineFilters( rockContext, filters );
 
-            return filters;
+            return ( filters, disallowGroupSelection );
         }
 
         /// <summary>
@@ -1005,6 +1030,23 @@ namespace Rock.Blocks.Group.Scheduling
             urls.Add( NavigationUrlKey.CopyLink, $"{RequestContext.RootUrlPath}{this.GetCurrentPageUrl( queryParams )}" );
 
             return urls;
+        }
+
+        /// <summary>
+        /// Validates client-provided filters and provides fallback values when needed.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="filters">The client-provided filters to validate.</param>
+        /// <returns>An object containing the validated or fallback filters.</returns>
+        private GroupSchedulerFiltersBag ValidateClientFilters( RockContext rockContext, GroupSchedulerFiltersBag filters )
+        {
+            var ( fallbackFilters, disallowGroupSelection ) = GetFiltersFromURLOrPersonPreferences( rockContext );
+            if ( filters?.Groups?.Any() == true && disallowGroupSelection )
+            {
+                filters.Groups = fallbackFilters.Groups;
+            }
+
+            return filters ?? fallbackFilters;
         }
 
         /// <summary>
@@ -1766,7 +1808,7 @@ namespace Rock.Blocks.Group.Scheduling
         {
             using ( var rockContext = new RockContext() )
             {
-                RefineFilters( rockContext, bag, true );
+                RefineFilters( rockContext, ValidateClientFilters( rockContext, bag ), true );
 
                 return ActionOk( bag );
             }
@@ -1782,7 +1824,7 @@ namespace Rock.Blocks.Group.Scheduling
         {
             using ( var rockContext = new RockContext() )
             {
-                var appliedFilters = ApplyFilters( rockContext, bag ?? GetFiltersFromURLOrPersonPreferences( rockContext ) );
+                var appliedFilters = ApplyFilters( rockContext, ValidateClientFilters( rockContext, bag ) );
 
                 return ActionOk( appliedFilters );
             }
@@ -1833,7 +1875,7 @@ namespace Rock.Blocks.Group.Scheduling
         {
             using ( var rockContext = new RockContext() )
             {
-                var cloneSettings = GetDefaultOrPersonPreferenceCloneSettings( rockContext, bag ?? GetFiltersFromURLOrPersonPreferences( rockContext ) );
+                var cloneSettings = GetDefaultOrPersonPreferenceCloneSettings( rockContext, ValidateClientFilters( rockContext, bag ) );
 
                 return ActionOk( cloneSettings );
             }
@@ -1865,7 +1907,7 @@ namespace Rock.Blocks.Group.Scheduling
         {
             using ( var rockContext = new RockContext() )
             {
-                var appliedFilters = AutoSchedule( rockContext, bag ?? GetFiltersFromURLOrPersonPreferences( rockContext ) );
+                var appliedFilters = AutoSchedule( rockContext, ValidateClientFilters( rockContext, bag ) );
 
                 return ActionOk( appliedFilters );
             }
@@ -1881,7 +1923,7 @@ namespace Rock.Blocks.Group.Scheduling
         {
             using ( var rockContext = new RockContext() )
             {
-                var response = SendNow( rockContext, bag ?? GetFiltersFromURLOrPersonPreferences( rockContext ) );
+                var response = SendNow( rockContext, ValidateClientFilters( rockContext, bag ) );
 
                 return ActionOk( response );
             }

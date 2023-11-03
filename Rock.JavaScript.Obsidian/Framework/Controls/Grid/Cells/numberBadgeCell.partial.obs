@@ -1,0 +1,179 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span v-if="!isHidden" :class="badgeClasses">{{ formattedValue }}</span>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { computed } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    // #region Types
+
+    type BadgeRanges = {
+        hideMinimum: number;
+        hideMaximum: number;
+
+        infoMinimum: number;
+        infoMaximum: number;
+
+        successMinimum: number;
+        successMaximum: number;
+
+        warningMinimum: number;
+        warningMaximum: number;
+
+        dangerMinimum: number;
+        dangerMaximum: number;
+    };
+
+    // #endregion
+
+    // #region Values
+
+    const minimumValue = -2147483648;
+    const maximumValue = 2147483647;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Contains the numerical value or undefined. */
+    const numberValue = computed((): number | undefined => {
+        if (!props.column.field) {
+            return undefined;
+        }
+
+        const value = props.row[props.column.field];
+
+        if (typeof value !== "number") {
+            return undefined;
+        }
+
+        return value;
+    });
+
+    /** Contains `true` if the value should be hidden. */
+    const isHidden = computed((): boolean => {
+        const count = numberValue.value;
+
+        if (count === undefined) {
+            return true;
+        }
+
+        const ranges = getRanges();
+
+        return count >= ranges.hideMinimum && count <= ranges.hideMaximum;
+    });
+
+    /** Contains the CSS classes to apply to the span. */
+    const badgeClasses = computed((): string => {
+        let classes = "badge";
+        const count = numberValue.value;
+
+        if (count === undefined) {
+            return classes;
+        }
+
+        const ranges = getRanges();
+
+        if (count >= ranges.dangerMinimum && count <= ranges.dangerMaximum) {
+            classes += " badge-danger";
+        }
+        else if (count >= ranges.warningMinimum && count <= ranges.warningMaximum) {
+            classes += " badge-warning";
+        }
+        else if (count >= ranges.successMinimum && count <= ranges.successMaximum) {
+            classes += " badge-success";
+        }
+        else if (count >= ranges.infoMinimum && count <= ranges.infoMaximum) {
+            classes += " badge-info";
+        }
+
+        return classes;
+    });
+
+    /** Contains the human friendly formatted value of the number. */
+    const formattedValue = computed((): string => {
+        if (numberValue.value === undefined) {
+            return "";
+        }
+
+        return numberValue.value.toLocaleString();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the cached range information for this column.
+     */
+    function getRanges(): BadgeRanges {
+        if (props.column.data["ranges"] !== undefined) {
+            return props.column.data["ranges"] as BadgeRanges;
+        }
+
+        const ranges: BadgeRanges = {
+            hideMinimum: getMinimumValue("hide"),
+            hideMaximum: getMaximumValue("hide"),
+            infoMinimum: getMinimumValue("info"),
+            infoMaximum: getMaximumValue("info"),
+            successMinimum: getMinimumValue("success"),
+            successMaximum: getMaximumValue("success"),
+            warningMinimum: getMinimumValue("warning"),
+            warningMaximum: getMaximumValue("warning"),
+            dangerMinimum: getMinimumValue("danger"),
+            dangerMaximum: getMaximumValue("danger")
+        };
+
+        props.column.data["ranges"] = ranges;
+
+        return ranges;
+    }
+
+    /**
+     * Gets the minimum value to use for the range comparison.
+     *
+     * @param valueType The type of minimum value to get.
+     *
+     * @returns The number value to use for the comparison.
+     */
+    function getMinimumValue(valueType: "hide" | "info" | "success" | "warning" | "danger"): number {
+        const minValue = props.column.props[`${valueType}Minimum`];
+        const maxValue = props.column.props[`${valueType}Maximum`];
+
+        if (typeof minValue === "number") {
+            return minValue;
+        }
+
+        // If they specified a maximum value but not a minimum value then
+        // return the minimum int32 value so it behaves like a purely like a
+        // less than or equal to the maximum comparison.
+        return typeof maxValue === "number" ? minimumValue : maximumValue;
+    }
+
+    /**
+     * Gets the maximum value to use for the range comparison.
+     *
+     * @param valueType The type of maximum value to get.
+     *
+     * @returns The number value to use for the comparison.
+     */
+     function getMaximumValue(valueType: "hide" | "info" | "success" | "warning" | "danger"): number {
+        const minValue = props.column.props[`${valueType}Minimum`];
+        const maxValue = props.column.props[`${valueType}Maximum`];
+
+        if (typeof maxValue === "number") {
+            return maxValue;
+        }
+
+        // If they specified a minimum value but not a maximum value then
+        // return the maximum int32 value so it behaves like a purely like a
+        // greater than or equal to the maximum comparison.
+        return typeof minValue === "number" ? maximumValue : minimumValue;
+    }
+
+    // #endregion
+</script>

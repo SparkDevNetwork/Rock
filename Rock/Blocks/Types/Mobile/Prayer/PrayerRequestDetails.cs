@@ -35,12 +35,13 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     /// <summary>
     /// Displays custom XAML content on the page.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Prayer Request Details" )]
     [Category( "Mobile > Prayer" )]
     [Description( "Edits an existing prayer request or creates a new one." )]
     [IconCssClass( "fa fa-praying-hands" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -195,7 +196,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_PRAYER_PRAYER_REQUEST_DETAILS_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "EBB91B46-292E-4784-9E37-38781C714008")]
-    public class PrayerRequestDetails : RockMobileBlockType
+    public class PrayerRequestDetails : RockBlockType
     {
         #region Page Parameters
 
@@ -502,21 +503,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Prayer.PrayerRequestDetails";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

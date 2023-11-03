@@ -96,6 +96,7 @@
         "audienceSecondaryColor",
         "audienceTextColor",
         "description",
+        "experienceEndedTemplate",
         "isActive",
         "name",
         "noActionHeaderImageBinaryFile",

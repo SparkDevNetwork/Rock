@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <li v-if="resource" class="list-group-item cursor-default text-sm">
-        <img :src="imgSrc" :class="imgCssClass">
+    <li v-if="resource" class="list-group-item text-sm">
+        <img :src="imgSrc" :class="imgCssClass" draggable="false">
         <span class="resource-name">
             {{ personName }}
             <i v-if="conflictTooltip"
@@ -17,7 +17,7 @@
         </span>
         <span class="resource-role">{{ resource?.GroupRoleName }}</span>
 
-        <div class="dropdown">
+        <div v-no-drag-scroll class="dropdown">
             <button type="button"
                     class="btn btn-link btn-overflow"
                     data-toggle="dropdown"
@@ -91,6 +91,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import { ISchedulerResourceAssignment, ISchedulerResourceAttend, Preference, ResourceAction } from "./types.partial";
     import UpdatePreference from "./updatePreference.partial.obs";
+    import { NoDragScroll as vNoDragScroll } from "@Obsidian/Directives/dragScroll";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
     import { tooltip } from "@Obsidian/Utility/tooltip";

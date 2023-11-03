@@ -83,6 +83,8 @@ export const BlockType = {
     LogViewer: "6059FC03-E398-4359-8632-909B63FFA550",
     /** Mass Push Notifications Block Type Guid */
     MassPushNotifications: "D886DB44-0D0F-46D3-86AE-C959C520B0FD",
+    /** The mobile Connection &gt; Add Connection Request block type. */
+    MobileConnectionAddConnectionRequest: "1380115A-B3F0-49BC-A6BC-432A59DC27A2",
     /** The mobile Connection &gt; Connection Opportunity List block type. */
     MobileConnectionConnectionOpportunityList: "0015A574-C10A-4530-897C-F7B7C3D9393E",
     /** The mobile Connection &gt; Connection Request Detail block type. */
@@ -91,8 +93,14 @@ export const BlockType = {
     MobileConnectionConnectionRequestList: "612E9E13-434F-4E47-958D-37E1C3EEF304",
     /** The mobile Connection &gt; Connection Type List block type. */
     MobileConnectionConnectionTypeList: "31E1FCCF-C4B1-4D84-992C-DEACAF3697CF",
+    /** The mobile attribute values &gt; Attribute Values block type. */
+    MobileCoreAttributeValues: "DF110543-C295-4DD9-B06E-82640AC63610",
     /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.Search block type. */
     MobileCoreSearch: "41174BEA-6567-430C-AAD4-A89A5CF70FB0",
+    /** The mobile group members &gt; Group Members block type. */
+    MobileCrmGroupMembers: "1F1E7598-8D51-4750-8D61-E5791A226FDB",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.PersonProfile. */
+    MobileCrmPersonProfile: "F97E2359-BB2D-4534-821D-870F853CA5CC",
     /** The mobile Groups &gt; Group Finder block type. */
     MobileGroupsGroupFinder: "BAC6671E-4D6F-4428-A6FA-69B8BEADF55C",
     /** The mobile Groups &gt; Group Registration block type. */
@@ -107,6 +115,12 @@ export const BlockType = {
     MobileGroupsGroupScheduleUnavailability: "AEFF246D-A514-4D46-801E-D717E1D1D209",
     /** The mobile Prayer &gt; Prayer Card View block type. */
     MobilePrayerPrayerCardView: "CA75C558-9345-47E7-99AF-D8191D31D00D",
+    /** The mobile Reminders &gt; Reminder Dashboard block type. */
+    MobileRemindersReminderDashboard: "223F5122-C93A-44CD-BFB7-AF990A2B6B65",
+    /** The mobile Reminders &gt; Reminder Edit block type. */
+    MobileRemindersReminderEdit: "BA26C29E-660C-470D-9FEA-5830DB15E935",
+    /** The mobile Reminders &gt; Reminder List block type. */
+    MobileRemindersReminderList: "E3FD3E7B-BF9D-4008-B71D-DF857DC20D7B",
     /** The motivators block type guid */
     Motivators: "18CF8DA8-5DE0-49EC-A279-D5507CFA5713",
     /** The notes */

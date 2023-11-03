@@ -1,0 +1,174 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+                <ComponentPicker label="Type"
+                                 v-model="mergeTemplateTypeEntityType"
+                                 :containerType="containerType"
+                                 rules="required" />
+            </div>
+            <div class="col-md-6">
+                <NotificationBox v-if="warningMessage" alertType="warning">{{ warningMessage }}</NotificationBox>
+                <FileUploader v-model="templateBinaryFile"
+                              label="Template File"
+                              rules="required"
+                              :binaryFileTypeGuid="binaryFileTypeGuid"
+                              uploadButtonText="Upload"
+                              :showDeleteButton="true" />
+                <CategoryPicker v-if="showCategory"
+                                v-model="category"
+                                label="Category"
+                                rules="required"
+                                :entityTypeGuid="entityTypeGuid" />
+                <PersonPicker v-if="showPersonPicker"
+                              :rules="personPickerRules"
+                              v-model="personAlias"
+                              label="Person"
+                              help="Set this to make it a personal merge template. Leave it blank to make it a global." />
+
+            </div>
+        </div>
+
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { MergeTemplateBag } from "@Obsidian/ViewModels/Blocks/Reporting/MergeTemplateDetail/mergeTemplateBag";
+    import { MergeTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/MergeTemplateDetail/mergeTemplateDetailOptionsBag";
+    import { MergeTemplateFileValidationBag } from "@Obsidian/ViewModels/Blocks/Reporting/MergeTemplateDetail/mergeTemplateFileValidationBag";
+    import { Guid } from "@Obsidian/Types";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<MergeTemplateBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<MergeTemplateDetailOptionsBag>,
+            required: true
+        },
+
+        entityTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: MergeTemplateBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const mergeTemplateTypeEntityType = propertyRef(props.modelValue.mergeTemplateTypeEntityType ?? null, "MergeTemplateTypeEntityTypeId");
+    const templateBinaryFile = propertyRef(props.modelValue.templateBinaryFile ?? null, "TemplateBinaryFileId");
+    const category = propertyRef(props.modelValue.category ?? null, "CategoryId");
+    const personAlias = propertyRef(props.modelValue.personAlias ?? undefined, "PersonAliasId");
+    const showPersonPicker = ref(props.modelValue.showPersonPicker);
+    const showCategory = ref(props.modelValue.showCategoryPicker);
+    const entityTypeGuid = ref(props.entityTypeGuid);
+    const containerType = ref("Rock.MergeTemplates.MergeTemplateTypeContainer");
+    const binaryFileTypeGuid = BinaryFiletype.MergeTemplate;
+    const warningMessage = ref("");
+    const personPickerRules = ref(props.modelValue.isPersonRequired ? "required" : "");
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name, mergeTemplateTypeEntityType, templateBinaryFile, category, personAlias];
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch(() => [templateBinaryFile.value, mergeTemplateTypeEntityType.value], async () => {
+
+        if (templateBinaryFile.value?.value) {
+            const response = await invokeBlockAction<MergeTemplateFileValidationBag>("ValidateFile", {
+                binaryFile: templateBinaryFile.value,
+                mergeTemplateTypeGuid: mergeTemplateTypeEntityType?.value?.value ?? ""
+            });
+
+            if (response.isSuccess && response.data) {
+                if (!name.value) {
+                    name.value = response.data.fileName ?? "";
+                }
+
+                warningMessage.value = response.data.fileTypeWarningMessage ?? "";
+
+                if (!mergeTemplateTypeEntityType.value?.value) {
+                    mergeTemplateTypeEntityType.value = response.data.mergeTemplateTypeEntityType ?? {};
+                }
+            }
+        }
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(mergeTemplateTypeEntityType, props.modelValue.mergeTemplateTypeEntityType ?? null);
+        updateRefValue(templateBinaryFile, props.modelValue.templateBinaryFile ?? null);
+        updateRefValue(category, props.modelValue.category ?? null);
+        updateRefValue(personAlias, props.modelValue.personAlias ?? undefined);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: MergeTemplateBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            name: name.value,
+            category: category.value,
+            mergeTemplateTypeEntityType: mergeTemplateTypeEntityType.value,
+            personAlias: personAlias.value,
+            templateBinaryFile: templateBinaryFile.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

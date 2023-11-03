@@ -40,12 +40,13 @@ namespace Rock.Blocks.Engagement.SignUp
     /// <summary>
     /// Block used to register for a sign-up group/project occurrence date time.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Sign-Up Register" )]
-    [Category( "Obsidian > Engagement > Sign-Up" )]
+    [Category( "Engagement > Sign-Up" )]
     [Description( "Block used to register for a sign-up group/project occurrence date time." )]
     [IconCssClass( "fa fa-clipboard-check" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -95,7 +96,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [Rock.SystemGuid.EntityTypeGuid( "ED7A31F2-8D4C-469A-B2D8-7E28B8717FB8" )]
     [Rock.SystemGuid.BlockTypeGuid( "161587D9-7B74-4D61-BF8E-3CDB38F16A12" )]
-    public class SignUpRegister : RockObsidianBlockType
+    public class SignUpRegister : RockBlockType
     {
         #region Keys
 
@@ -139,8 +140,6 @@ namespace Rock.Blocks.Engagement.SignUp
         #endregion
 
         #region Properties
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         public bool IsAuthenticated
         {

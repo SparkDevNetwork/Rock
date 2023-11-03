@@ -17,14 +17,14 @@
 
 import { defineComponent, inject } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import NumberUpDown from "@Obsidian/Controls/numberUpDown";
-import RockButton from "@Obsidian/Controls/rockButton";
+import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import { toTitleCase, pluralConditional } from "@Obsidian/Utility/stringUtils";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { getDefaultRegistrantInfo, getForcedFamilyGuid } from "./utils.partial";
 import { RegistrationEntryBlockViewModel, RegistrationEntryState } from "./types.partial";
 import { useStore } from "@Obsidian/PageState";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 
 const store = useStore();
 
@@ -51,7 +51,7 @@ export default defineComponent({
     },
     computed: {
         /** The currently authenticated person */
-        currentPerson(): PersonBag | null {
+        currentPerson(): CurrentPersonBag | null {
             return store.state.currentPerson;
         },
 
@@ -179,7 +179,7 @@ export default defineComponent({
     </NotificationBox>
     <div class="text-left" v-html="viewModel.instructionsHtml">
     </div>
-    <div v-if="viewModel.maxRegistrants > 1" class="registrationentry-intro">
+    <div v-if="viewModel.maxRegistrants > 1" class="registrationentry-intro mb-3">
         <h1>How many {{viewModel.pluralRegistrantTerm}} will you be registering?</h1>
         <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" :max="viewModel.maxRegistrants" />
     </div>

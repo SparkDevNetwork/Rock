@@ -15,7 +15,10 @@
 // </copyright>
 //
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Web.UI.Controls;
+using System.Collections.Generic;
+using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
@@ -30,81 +33,71 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PHONE_NUMBER )]
     public class PhoneNumberFieldType : FieldType
     {
-
-        #region Formatting
-
-        #endregion
-
-        #region Edit Control
-
-        /*/// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="message">The message.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool IsValid( string value, bool required, out string message )
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            // Parse the input value to obtain the country code and the remaining digits of the phone number.
+            string countryCodePart;
+            string numberPart;
+
+            var isValid = PhoneNumber.TryParseNumber( privateValue, out countryCodePart, out numberPart );
+            if ( isValid )
             {
-                decimal result;
-                if ( !decimal.TryParse( value, out result ) )
+                // Reformat the number according to the country code.
+                var formattedNumber = PhoneNumber.FormattedNumber( countryCodePart, numberPart, includeCountryCode: false );
+                if ( !string.IsNullOrWhiteSpace( formattedNumber ) )
                 {
-                    message = "The input provided is not a valid currency value.";
-                    return true;
+                    numberPart = formattedNumber;
                 }
+
+                return new PhoneNumberFieldValue
+                {
+                    CountryCode = countryCodePart,
+                    Number = numberPart
+                }.ToCamelCaseJson( false, true );
             }
 
-            return base.IsValid( value, required, out message );
-        }
-
-        /// <summary>
-        /// Returns the value using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object ValueAsFieldType( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            return value.AsDecimalOrNull();
-        }
-
-        /// <summary>
-        /// Returns the value that should be used for sorting, using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object SortValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            // return ValueAsFieldType which returns the value as a Decimal
-            return this.ValueAsFieldType( parentControl, value, configurationValues );
-        }
-
-        #endregion
-
-        #region Filter Control
-
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override Model.ComparisonType FilterComparisonType
-        {
-            get
+            return new PhoneNumberFieldValue
             {
-                return ComparisonHelper.NumericFilterComparisonTypes;
-            }
-        }*/
+                CountryCode = GetDefaultCountryCode(),
+                Number = numberPart
+            }.ToCamelCaseJson( false, true );
+        }
 
-        #endregion
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var number = publicValue.FromJsonOrNull<PhoneNumberFieldValue>();
+            // Store the value as a formatted phone number.
+            return GetFormattedPhoneNumber( number );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return base.GetPublicValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <summary>
+        /// Convert a phone number object to a formatted phone number string
+        /// </summary>
+        /// <param name="phone">A PhoneNumberFieldValue.</param>
+        /// <returns>A formatted string of the given phone number</returns>
+        private string GetFormattedPhoneNumber( PhoneNumberFieldValue phone )
+        {
+            if ( phone == null )
+            {
+                return null;
+            }
+
+            // Include the country code only if it is not the default value.
+            var countryCode = phone.CountryCode;
+            var includeCountryCode = ( countryCode != GetDefaultCountryCode() );
+
+            var value = PhoneNumber.FormattedNumber( countryCode, phone.Number, includeCountryCode );
+            return value;
+        }
+
 
         #region WebForms
 #if WEBFORMS
@@ -122,7 +115,74 @@ namespace Rock.Field.Types
             return new PhoneNumberBox { ID = id };
         }
 
+        /// <inheritdoc/>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var phoneControl = control as PhoneNumberBox;
+            if ( phoneControl == null )
+            {
+                return null;
+            }
+
+            // Store the value as a formatted phone number.
+            return GetFormattedPhoneNumber( new PhoneNumberFieldValue { Number = phoneControl.Number, CountryCode = phoneControl.CountryCode } );
+        }
+
+        /// <inheritdoc/>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var phoneControl = control as PhoneNumberBox;
+            if ( phoneControl == null )
+            {
+                return;
+            }
+
+            // Parse the input value to obtain the country code and the remaining digits of the phone number.
+            string countryCodePart;
+            string numberPart;
+
+            var isValid = PhoneNumber.TryParseNumber( value, out countryCodePart, out numberPart );
+            if ( isValid )
+            {
+                // Reformat the number according to the country code.
+                var formattedNumber = PhoneNumber.FormattedNumber( countryCodePart, numberPart, includeCountryCode: false );
+                if ( !string.IsNullOrWhiteSpace( formattedNumber ) )
+                {
+                    numberPart = formattedNumber;
+                }
+                phoneControl.CountryCode = countryCodePart;
+                phoneControl.Number = numberPart;
+            }
+            else
+            {
+                phoneControl.CountryCode = GetDefaultCountryCode();
+                phoneControl.Number = numberPart;
+            }
+        }
+
+        private string _defaultCountryCode = null;
+
+        private string GetDefaultCountryCode()
+        {
+            if ( _defaultCountryCode == null )
+            {
+                _defaultCountryCode = PhoneNumber.DefaultCountryCode();
+            }
+            return _defaultCountryCode;
+        }
 #endif
         #endregion
+
+        private class PhoneNumberFieldValue
+        {
+            public string Number { get; set; }
+            public string CountryCode { get; set; }
+        }
     }
 }

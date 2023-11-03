@@ -16,9 +16,9 @@
 //
 
 import { computed, defineComponent, inject, ref, watch } from "vue";
-import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
-import RockForm from "@Obsidian/Controls/rockForm";
-import RockButton from "@Obsidian/Controls/rockButton";
+import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+import RockForm from "@Obsidian/Controls/rockForm.obs";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { RegistrationEntryState } from "./types.partial";
 
@@ -39,7 +39,7 @@ export default defineComponent({
         }
 
         const showPrevious = computed((): boolean => {
-            return registrationEntryState.firstStep === registrationEntryState.steps.intro;
+            return registrationEntryState.firstStep === registrationEntryState.steps.intro && !registrationEntryState.viewModel.isExistingRegistration;
         });
 
         const attributes = computed((): Record<string, PublicAttributeBag> => {

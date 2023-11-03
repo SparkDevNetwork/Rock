@@ -251,7 +251,7 @@ namespace Rock.Rest.Controllers
                 // if id is zero and we have a rootCategory, show the children of that rootCategory (but don't show the rootCategory)
                 int parentItemId = id == 0 ? rootCategoryId : id;
 
-                var itemsQry = GetCategorizedItems( serviceInstance, parentItemId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                var itemsQry = GetCategorizedItems<ICategorized>( serviceInstance, parentItemId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
                 if ( itemsQry != null )
                 {
                     // do a ToList to load from database prior to ordering by name, just in case Name is a virtual property
@@ -317,7 +317,266 @@ namespace Rock.Rest.Controllers
                             {
                                 if ( getCategorizedItems )
                                 {
-                                    var childItems = GetCategorizedItems( serviceInstance, parentId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                                    var childItems = GetCategorizedItems<ICategorized>( serviceInstance, parentId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                                    if ( childItems != null )
+                                    {
+                                        foreach ( var categorizedItem in childItems )
+                                        {
+                                            if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                                            {
+                                                categoryItemListItem.HasChildren = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach ( var item in categoryItemList )
+                    {
+                        int parentId = int.Parse( item.Id );
+                        if ( item.Children == null )
+                        {
+                            item.Children = new List<Web.UI.Controls.TreeViewItem>();
+                        }
+
+                        GetAllDescendants( item, currentPerson, getCategorizedItems, defaultIconCssClass, hasActiveFlag, serviceInstance, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                    }
+                }
+            }
+            else if ( !lazyLoad )
+            {
+                // Load all of the categories without the categorized items
+                foreach ( var item in categoryItemList )
+                {
+                    int parentId = int.Parse( item.Id );
+                    if ( item.Children == null )
+                    {
+                        item.Children = new List<Web.UI.Controls.TreeViewItem>();
+                    }
+
+                    GetAllDescendants( item, currentPerson, getCategorizedItems, defaultIconCssClass, hasActiveFlag, serviceInstance, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                }
+            }
+
+            if ( !showCategoriesThatHaveNoChildren )
+            {
+                categoryItemList = categoryItemList.Where( a => !a.IsCategory || ( a.IsCategory && a.HasChildren ) ).ToList();
+            }
+
+            return categoryItemList.AsQueryable();
+        }
+
+        /// <summary>
+        /// Gets the children for the dataview
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rootCategoryId">The root category identifier.</param>
+        /// <param name="getCategorizedItems">if set to <c>true</c> [get categorized items].</param>
+        /// <param name="entityTypeId">The entity type for the Categorys</param>
+        /// <param name="entityQualifier">The entity qualifier.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
+        /// <param name="showCategoriesThatHaveNoChildren">if set to <c>true</c> [show categories that have no children].</param>
+        /// <param name="includedCategoryIds">The included category ids.</param>
+        /// <param name="excludedCategoryIds">The excluded category ids.</param>
+        /// <param name="defaultIconCssClass">The default icon CSS class.</param>
+        /// <param name="includeInactiveItems">if set to <c>true</c> [include inactive items].</param>
+        /// <param name="itemFilterPropertyName">(Advanced) Property to FilterBy on the Item Query</param>
+        /// <param name="itemFilterPropertyValue">(Advanced) Property Value to FilterBy on the Item Query</param>
+        /// <param name="lazyLoad">If true then get the data for each tree node as it is selected, otherwise get the entire tree.</param>
+        /// <param name="displayPersistedOnly">The flag which is set to filter out only persisted data views</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Categories/GetDataView/{id}" )]
+        [Rock.SystemGuid.RestActionGuid( "6C283EB0-BE47-4787-9B6E-20A2F5B15621" )]
+        public IQueryable<CategoryItem> GetDataView(
+            int id,
+            int rootCategoryId = 0,
+            bool getCategorizedItems = false,
+            int entityTypeId = 0,
+            string entityQualifier = null,
+            string entityQualifierValue = null,
+            bool showUnnamedEntityItems = true,
+            bool showCategoriesThatHaveNoChildren = true,
+            string includedCategoryIds = null,
+            string excludedCategoryIds = null,
+            string defaultIconCssClass = null,
+            bool includeInactiveItems = true,
+            string itemFilterPropertyName = null,
+            string itemFilterPropertyValue = null,
+            bool lazyLoad = true,
+            bool displayPersistedOnly = false )
+        {
+            Person currentPerson = GetPerson();
+
+            var includedCategoryIdList = includedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            var excludedCategoryIdList = excludedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            defaultIconCssClass = defaultIconCssClass ?? "fa fa-list-ol";
+
+            bool hasActiveFlag = false;
+            bool excludeInactiveItems = !includeInactiveItems;
+
+            IQueryable<Category> qry = Get();
+
+            if ( id == 0 )
+            {
+                if ( rootCategoryId != 0 )
+                {
+                    qry = qry.Where( a => a.ParentCategoryId == rootCategoryId );
+                }
+                else
+                {
+                    qry = qry.Where( a => a.ParentCategoryId == null );
+                }
+            }
+            else
+            {
+                qry = qry.Where( a => a.ParentCategoryId == id );
+            }
+
+            if ( includedCategoryIdList.Any() )
+            {
+                // if includedCategoryIdList is specified, only get categories that are in the includedCategoryIdList
+                // NOTE: no need to factor in excludedCategoryIdList since included would take precendance and the excluded ones would already not be included
+                qry = qry.Where( a => includedCategoryIdList.Contains( a.Id ) );
+            }
+            else if ( excludedCategoryIdList.Any() )
+            {
+                qry = qry.Where( a => !excludedCategoryIdList.Contains( a.Id ) );
+            }
+
+            IService serviceInstance = null;
+
+            var cachedEntityType = EntityTypeCache.Get( entityTypeId );
+            if ( cachedEntityType != null )
+            {
+                qry = qry.Where( a => a.EntityTypeId == entityTypeId );
+                if ( !string.IsNullOrWhiteSpace( entityQualifier ) )
+                {
+                    qry = qry.Where( a => string.Compare( a.EntityTypeQualifierColumn, entityQualifier, true ) == 0 );
+                    if ( !string.IsNullOrWhiteSpace( entityQualifierValue ) )
+                    {
+                        qry = qry.Where( a => string.Compare( a.EntityTypeQualifierValue, entityQualifierValue, true ) == 0 );
+                    }
+                    else
+                    {
+                        qry = qry.Where( a => a.EntityTypeQualifierValue == null || a.EntityTypeQualifierValue == string.Empty );
+                    }
+                }
+
+                // Get the GetByCategory method
+                if ( cachedEntityType.AssemblyName != null )
+                {
+                    Type entityType = cachedEntityType.GetEntityType();
+                    if ( entityType != null )
+                    {
+                        Type[] modelType = { entityType };
+                        Type genericServiceType = typeof( Rock.Data.Service<> );
+                        Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
+
+                        hasActiveFlag = typeof( IHasActiveFlag ).IsAssignableFrom( entityType );
+                    }
+                }
+            }
+
+            excludeInactiveItems = excludeInactiveItems && hasActiveFlag;
+
+            List<Category> categoryList = qry.OrderBy( c => c.Order ).ThenBy( c => c.Name ).ToList();
+            List<CategoryItem> categoryItemList = new List<CategoryItem>();
+
+            foreach ( var category in categoryList )
+            {
+                if ( category.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    var categoryItem = new CategoryItem();
+                    categoryItem.Id = category.Id.ToString();
+                    categoryItem.Name = category.Name;
+                    categoryItem.IsCategory = true;
+                    categoryItem.IconCssClass = category.IconCssClass;
+                    categoryItemList.Add( categoryItem );
+                }
+            }
+
+            if ( getCategorizedItems )
+            {
+                // if id is zero and we have a rootCategory, show the children of that rootCategory (but don't show the rootCategory)
+                int parentItemId = id == 0 ? rootCategoryId : id;
+
+                var itemsQry = GetCategorizedItems<DataView>( serviceInstance, parentItemId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                if ( itemsQry != null )
+                {
+                    // do a ToList to load from database prior to ordering by name, just in case Name is a virtual property
+                    List<DataView> itemsList = itemsQry.ToList();
+
+                    if ( displayPersistedOnly )
+                    {
+                        itemsList = itemsList.Where( i => i.IsPersisted() ).ToList();
+                    }
+
+                    List<DataView> sortedItemsList = itemsList.OrderBy( i => i.Name ).ToList();
+
+                    foreach ( var categorizedItem in sortedItemsList )
+                    {
+                        if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                        {
+                            var categoryItem = new CategoryItem
+                            {
+                                Id = categorizedItem.Id.ToString(),
+                                Name = categorizedItem.Name,
+                                IsCategory = false,
+                                IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ) as string ?? defaultIconCssClass,
+                                IconSmallUrl = string.Empty
+                            };
+
+                            if ( hasActiveFlag )
+                            {
+                                IHasActiveFlag activatedItem = categorizedItem as IHasActiveFlag;
+                                if ( activatedItem != null && !activatedItem.IsActive )
+                                {
+                                    categoryItem.IsActive = false;
+                                }
+                            }
+
+                            categoryItemList.Add( categoryItem );
+                        }
+                    }
+                }
+
+                if ( lazyLoad )
+                {
+                    // try to figure out which items have viewable children in the existing list and set them appropriately
+                    foreach ( var categoryItemListItem in categoryItemList )
+                    {
+                        if ( categoryItemListItem.IsCategory )
+                        {
+                            int parentId = int.Parse( categoryItemListItem.Id );
+
+                            foreach ( var childCategory in Get().Where( c => c.ParentCategoryId == parentId ) )
+                            {
+                                if ( childCategory.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                                {
+                                    categoryItemListItem.HasChildren = true;
+                                    break;
+                                }
+                            }
+
+                            if ( !categoryItemListItem.HasChildren )
+                            {
+                                if ( getCategorizedItems )
+                                {
+                                    var childItems = GetCategorizedItems<DataView>( serviceInstance, parentId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue ).ToList();
+
+                                    if ( displayPersistedOnly )
+                                    {
+                                        childItems = childItems.Where( i => i.IsPersisted() ).ToList();
+                                    }
+
                                     if ( childItems != null )
                                     {
                                         foreach ( var categorizedItem in childItems )
@@ -430,7 +689,7 @@ namespace Rock.Rest.Controllers
                 // now that we have taken care of the child categories get the items for this category.
                 if ( getCategorizedItems )
                 {
-                    var childItems = GetCategorizedItems( serviceInstance, parentId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
+                    var childItems = GetCategorizedItems<ICategorized>( serviceInstance, parentId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
                     if ( childItems != null )
                     {
                         var sortedChildren = childItems.ToList().OrderBy( c => c.Name );
@@ -482,7 +741,7 @@ namespace Rock.Rest.Controllers
         /// <param name="itemFilterPropertyName">(Advanced) Property to FilterBy on the Item Query</param>
         /// <param name="itemFilterPropertyValue">(Advanced) Property Value to FilterBy on the Item Query</param>
         /// <returns></returns>
-        private IQueryable<ICategorized> GetCategorizedItems( IService serviceInstance, int categoryId, bool showUnnamedEntityItems, bool excludeInactiveItems, string itemFilterPropertyName = null, string itemFilterPropertyValue = null )
+        private IQueryable<T> GetCategorizedItems<T>( IService serviceInstance, int categoryId, bool showUnnamedEntityItems, bool excludeInactiveItems, string itemFilterPropertyName = null, string itemFilterPropertyValue = null ) where T : ICategorized
         {
             if ( serviceInstance != null )
             {
@@ -547,7 +806,7 @@ namespace Rock.Rest.Controllers
                         result = result.Where( a => a.Name != null && a.Name != string.Empty );
                     }
 
-                    return result;
+                    return ( IQueryable<T> ) result;
                 }
             }
 

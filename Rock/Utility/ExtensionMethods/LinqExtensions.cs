@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 #else
 using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
 #endif
 using System.Linq;
 using System.Linq.Expressions;
@@ -369,7 +370,8 @@ namespace Rock
                             && method.GetParameters().Length == 2 )
                     .MakeGenericMethod( typeof( T ), type )
                     .Invoke( null, new object[] { source, lambda } );
-            return (IOrderedQueryable<T>)result;
+
+            return ( IOrderedQueryable<T> ) result;
         }
 
         /// <summary>
@@ -704,6 +706,44 @@ namespace Rock
             var qryPerson = new PersonService( rockContext ).Queryable( true, true );
             qry = qry.Join( qryPerson, keySelector, p => p.Id, ( t, p ) => t );
             return qry;
+        }
+
+        /// <summary>
+        /// Gets the underlying <see cref="ObjectQuery{T}"/> that represents the provided <see cref="IQueryable{T}"/>.
+        /// <para>
+        /// This is useful to gain access to the actual SQL query and parameters that will be executed against the database.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// https://www.stevefenton.co.uk/blog/2015/07/getting-the-sql-query-from-an-entity-framework-iqueryable/
+        /// </remarks>
+        /// <typeparam name="T">The type of the source query.</typeparam>
+        /// <param name="source">The source query.</param>
+        /// <returns>The underlying <see cref="ObjectQuery{T}"/> that represents the provided <see cref="IQueryable{T}"/>.</returns>
+        internal static ObjectQuery<T> ToObjectQuery<T>( this IQueryable<T> source )
+        {
+            try
+            {
+                var internalQueryField = source
+                    .GetType()
+                    .GetFields( BindingFlags.NonPublic | BindingFlags.Instance )
+                    .Where( f => f.Name.Equals( "_internalQuery" ) )
+                    .FirstOrDefault();
+
+                var internalQuery = internalQueryField.GetValue( source );
+
+                var objectQueryField = internalQuery
+                    .GetType()
+                    .GetFields( BindingFlags.NonPublic | BindingFlags.Instance )
+                    .Where( f => f.Name.Equals( "_objectQuery" ) )
+                    .FirstOrDefault();
+
+                return objectQueryField.GetValue( internalQuery ) as ObjectQuery<T>;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         #endregion IQueryable extensions

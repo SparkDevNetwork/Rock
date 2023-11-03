@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Examples
     {
         #region Fields
 
-        private const string DEFINED_TYPE_ROUTE = "/admintools/general/defined-type/";
+        private const string DEFINED_TYPE_ROUTE = "/admin/general/defined-types/";
 
         #endregion Fields
 
@@ -373,14 +373,16 @@ namespace RockWeb.Blocks.Examples
                         PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | BindingFlags.Instance )
                             .Where( m => m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property )
                             .ToArray();
-                        foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
+
+                        // Only fetch properties whose getter is public 
+                        foreach ( PropertyInfo p in properties.Where( p => p.GetMethod.IsPublic ).OrderBy( i => i.Name ).ToArray() )
                         {
 #pragma warning disable CS0618 // LavaIncludeAttribute is obsolete
                             var property = new MProperty
                             {
                                 Name = p.Name,
                                 IsInherited = p.DeclaringType != type,
-                                IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual && !p.GetGetMethod().IsFinal,
+                                IsVirtual = p.GetGetMethod( true ) != null && p.GetGetMethod( true ).IsVirtual && !p.GetGetMethod( true ).IsFinal,
                                 IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( LavaVisibleAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
                                 IsObsolete = p.IsDefined( typeof( ObsoleteAttribute ) ),
                                 ObsoleteMessage = GetObsoleteMessage( p ),
@@ -446,8 +448,33 @@ namespace RockWeb.Blocks.Examples
                         pageReference.QueryString["EntityType"] = entityType.Guid.ToString();
 
                         lClassName.Text = mClass.Name;
+                        lActualTableName.Text = "";
+
+                        // Check if there is a TableAttribute.
+                        if ( System.Attribute.IsDefined( type, typeof( TableAttribute ) ) )
+                        {
+                            // Get the custom attribute.
+                            TableAttribute attribute = ( TableAttribute ) System.Attribute.GetCustomAttribute( type, typeof( TableAttribute ) );
+                            string tableName = attribute.Name;
+
+                            // Check if the table name is different than the class name.
+                            if ( !tableName.Equals( lClassName.Text ) )
+                            {
+                                lActualTableName.Text = "<small>[" + tableName + "]</small>";
+                            }
+                        }
+
                         hlAnchor.NavigateUrl = pageReference.BuildUrl();
                         lClassDescription.Text = mClass.Comment != null ? mClass.Comment.Summary : string.Empty;
+                        lClassExample.Text = ExampleNode( mClass );
+                        if ( divClass.HasCssClass( "mb-4" ) )
+                        {
+                            divClass.RemoveCssClass( "mb-4" );
+                        }
+                        if ( lClassDescription.Text.IsNotNullOrWhiteSpace() || lClassExample.Text.IsNotNullOrWhiteSpace())
+                        {
+                            divClass.AddCssClass( "mb-4" );
+                        }
                         lClasses.Text = ClassNode( mClass );
 
                         pnlClassDetail.Visible = true;
@@ -556,6 +583,27 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Examples the node.
+        /// </summary>
+        /// <param name="mClass">The m class.</param>
+        /// <returns></returns>
+        private string ExampleNode(MClass mClass)
+        {
+            if (!string.IsNullOrWhiteSpace(mClass.Comment.Example))
+            {
+                return $@"
+<h4>Example</h4>
+<div class=""well"">
+    {mClass.Comment.Example}
+</div>";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Reads the XML comments from the Rock assembly XML file.
         /// </summary>
         /// <param name="rockDll">The rock DLL.</param>
@@ -620,10 +668,11 @@ namespace RockWeb.Blocks.Examples
                     // Read the InnerXml contents of the summary Element.
                     var reader = name.Element( "summary" ).CreateReader();
                     reader.MoveToContent();
-                    xmlComment.Summary = MakeSummaryHtml( reader.ReadInnerXml() );
+                    xmlComment.Summary = MakeSummaryHtml( reader.ReadInnerXml(), p.DeclaringType?.FullName );
                     xmlComment.Value = name.Element( "value" ).ValueSafe();
                     xmlComment.Remarks = name.Element( "remarks" ).ValueSafe();
                     xmlComment.Returns = name.Element( "returns" ).ValueSafe();
+                    xmlComment.Example = name.Element( "example" ).ValueSafe();
                 }
             }
             catch
@@ -675,7 +724,7 @@ namespace RockWeb.Blocks.Examples
                         var reader = name.Element( "summary" ).CreateReader();
                         reader.MoveToContent();
                         var xml = reader.ReadInnerXml();
-                        xmlComment.Summary = MakeSummaryHtml( xml );
+                        xmlComment.Summary = MakeSummaryHtml( xml, p.DeclaringType?.FullName );
                     }
 
                     xmlComment.Value = name.Element( "value" ).ValueSafe();
@@ -727,29 +776,54 @@ namespace RockWeb.Blocks.Examples
         /// <param name="innerXml">The inner XML.</param>
         /// <returns></returns>
         ///
-        private string MakeSummaryHtml( string innerXml )
+        private string MakeSummaryHtml( string innerXml, string fullClassName = null )
         {
             innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"\s+", " " );
-            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""T:(.*?)""(?: />|>(.*)</see>)" );
+            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see\w* cref=""T:(.*?)""(?:\s*/>|>(.*)</see\w*>)" );
             while ( match.Success )
             {
                 var updatedValue = match.Value;
-                System.Text.RegularExpressions.Regex.Match( match.Value, @"<see cref=""T:(.*?)""(?: />|>(.*)</see>)" );
+                System.Text.RegularExpressions.Regex.Match( match.Value, @"<see\w* cref=""T:(.*?)""(?:\s*/>|>(.*)</see\w*>)" );
 
                 var entityType = EntityTypeCache.Get( match.Groups[1].Value );
                 if ( entityType != null )
                 {
-                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"" />", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
-                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"">(.*)</see>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">$3</a>", entityType.Id ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""T:(.*)\.([^.]*)""\s*/>", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""T:(.*)\.([^.]*)""></see\w*>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">{1}</a>", entityType.Id, entityType.FriendlyName ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""T:(.*)\.([^.]*)"">(.*)</see\w*>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">$3</a>", entityType.Id ) );
                 }
                 else
                 {
-                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"" />", "<a href=\"#$2\">$2</a>" );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""T:(.*)\.([^.]*)""\s*/>", "<a href=\"#$2\">$2</a>" );
                 }
 
                 innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, match.Value, updatedValue );
                 match = match.NextMatch();
             }
+
+            innerXml = innerXml.Replace( "<para>", "<p>" ).Replace( "</para>", "</p>" );
+            innerXml = innerXml.Replace( "<c>", "<code>" ).Replace( "</c>", "</code>" );
+            innerXml = innerXml.Replace( "<example>", "<p>" ).Replace( "</example>", "</p>" );
+            innerXml = innerXml.Replace( "<code>", "<pre>" ).Replace( "</code>", "</pre>" );
+
+            // Now replace any cref property references
+            var propertyRefMatch = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see\w* cref=""P:(.*?)""(?:\s*/>|>(.*)</see\w*>)" );
+            while ( propertyRefMatch.Success )
+            {
+                var updatedValue = propertyRefMatch.Value;
+                // The propertyName will be something like: "Rock.Model.Interaction.InteractionTimeToServe"
+                var propertyName = propertyRefMatch.Groups[1].Value;
+                // Now shorten it to just InteractionTimeToServe -- if the property is from the given class;
+                // Otherwise it should be left as is
+                var fullPropertyName = propertyName.Replace( fullClassName + ".", string.Empty );
+                // Now we can shorten it to remove the redundant "Rock.Model." if it's in the property name
+                var partialPropertyName = fullPropertyName.Replace( "Rock.Model.", string.Empty );
+                updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""P:(.*)\.([^.]*)""\s*/>", $"<code>{partialPropertyName}</code>" );
+                updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see\w* cref=""P:(.*)\.([^.]*)""\s*/></see\w*>", $"<code>{partialPropertyName}</code>" );
+                innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, propertyRefMatch.Value, updatedValue );
+                propertyRefMatch = propertyRefMatch.NextMatch();
+            }
+
             return innerXml;
         }
 
@@ -915,6 +989,8 @@ namespace RockWeb.Blocks.Examples
         public string[] Params { get; set; }
 
         public string Returns { get; set; }
+
+        public string Example { get; set; }
     }
 
     #endregion

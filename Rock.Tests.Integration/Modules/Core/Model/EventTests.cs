@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Ical.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
@@ -40,7 +41,7 @@ namespace Rock.Tests.Integration.Events
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
-            TestDataHelper.Events.AddDataForRockSolidFinancesClass();
+            EventsDataManager.Instance.AddDataForRockSolidFinancesClass();
         }
 
         #region EventItemService Tests
@@ -304,7 +305,7 @@ namespace Rock.Tests.Integration.Events
 
         #endregion
 
-        #region GetEventCalendarFeedTests
+        #region GetEventCalendarFeed Tests
 
         private const string testScheduleGuid = "D89689A3-8F27-47BC-B035-F96B2871692E";
         private const string testEvent1Guid = "02B9BAB6-151D-4752-AD72-9785B9145BB7";
@@ -365,7 +366,7 @@ namespace Rock.Tests.Integration.Events
             // Get Campus 2.
             var campus2 = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
 
-            var args = GetCalendarEventFeedArgumentsForTest( "Public", campus2.Name );
+            var args = GetCalendarEventFeedArgumentsForTest( "Public", campusName: TestGuids.Crm.CampusSteppingStone );
             var calendarString1 = calendarService.CreateICalendar( args );
 
             // Deserialize the calendar output and verify the results.
@@ -403,6 +404,25 @@ namespace Rock.Tests.Integration.Events
                 "Event with unexpected Audience found." );
         }
 
+        [TestMethod]
+        public void EventCalendarFeed_FilteredByEvent_ReturnsSpecifiedEventsOnly()
+        {
+            var rockContext = new RockContext();
+            var calendarService = new EventCalendarService( rockContext );
+
+            var args = GetCalendarEventFeedArgumentsForTest( calendarName: "Public",
+                eventIdentifier:TestGuids.Events.EventIdentifierRockSolidFinancesClass );
+
+            var calendarString1 = calendarService.CreateICalendar( args );
+
+            // Deserialize the calendar output and verify the results.
+            var events1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events;
+            Assert.IsTrue( events1.Any( e => e.Summary == "Rock Solid Finances Class" ),
+                "Expected result not found. Filter returned no Events." );
+            Assert.IsFalse( events1.Any( e => e.Summary != "Rock Solid Finances Class" ),
+                "Expected result not found. Filter returned unexpected Events." );
+        }
+
         /// <summary>
         /// The calendar feed must comply with specific rules to be imported correctly by Google Calendar and other calendar applications.
         /// This test verifies that the calendar feed format conforms to the known requirements.
@@ -433,47 +453,37 @@ namespace Rock.Tests.Integration.Events
             Assert.That.DoesNotContain( calendarStringDst, winTimeZoneId );
         }
 
-        private static GetCalendarEventFeedArgs GetCalendarEventFeedArgumentsForTest( string calendarName = null, string campusName = null, DateTime? startDate = null, DateTime? endDate = null, string eventName = null )
+        private static GetCalendarEventFeedArgs GetCalendarEventFeedArgumentsForTest( string calendarName = null, string campusName = null, DateTime? startDate = null, DateTime? endDate = null, string eventIdentifier = null )
         {
             var rockContext = new RockContext();
             var calendarService = new EventCalendarService( rockContext );
 
             var args = new GetCalendarEventFeedArgs();
 
-            if ( !string.IsNullOrWhiteSpace( calendarName ) )
-            {
-                var calendarId = EventCalendarCache.All()
-                .Where( x => x.Name == calendarName )
-                .Select( x => x.Id )
-                .FirstOrDefault();
+            calendarName = calendarName ?? "Internal";
 
-                args.CalendarId = calendarId;
-            }
+            var calendar = calendarService.Queryable()
+                .GetByIdentifierOrThrow( calendarName );
 
-            args.StartDate = startDate ?? RockDateTime.New( 2015, 1, 1 ).Value;
-            args.EndDate = endDate ?? RockDateTime.New( 2020, 1, 1 ).Value;
+            args.CalendarId = calendar.Id;
+
+            args.StartDate = startDate ?? RockDateTime.New( 2010, 1, 1 ).Value;
+            args.EndDate = endDate ?? DateTime.MaxValue;
 
             if ( !string.IsNullOrWhiteSpace( campusName ) )
             {
-                var campusId = CampusCache.All()
-                    .Where( x => x.Name == campusName )
-                    .Select( x => x.Id )
-                    .FirstOrDefault();
+                var campusService = new CampusService( rockContext );
+                var campus = campusService.Queryable()
+                    .GetByIdentifierOrThrow( campusName );
 
-                Assert.IsTrue( campusId != 0, "Invalid Campus." );
-
-                args.CampusIds = new List<int> { campusId };
+                args.CampusIds = new List<int> { campus.Id };
             }
 
-            if ( !string.IsNullOrWhiteSpace( eventName ) )
+            if ( !string.IsNullOrWhiteSpace( eventIdentifier ) )
             {
                 var eventItemService = new EventItemService( rockContext );
-                var eventItemId = eventItemService.Queryable()
-                    .Where( x => x.Name == eventName )
-                    .Select( x => x.Id )
-                    .FirstOrDefault();
-
-                Assert.IsTrue( eventItemId != 0, "Invalid Event Item." );
+                  var eventItemId = eventItemService.Queryable()
+                      .GetByIdentifierOrThrow( eventIdentifier )?.Id ?? 0;
 
                 args.EventItemIds = new List<int> { eventItemId };
             }
@@ -569,6 +579,291 @@ namespace Rock.Tests.Integration.Events
                 .Replace( "<date3>", day3Date.ToString( "yyyyMMdd" ) );
             Assert.That.MatchesWildcard( rdateText, calendarString1 );
             Assert.That.MatchesWildcard( $"*RRULE:FREQ=DAILY;COUNT=1*", calendarString1 );
+        }
+
+        /// <summary>
+        /// If an EventItem is modified, the associated iCalendar.SEQUENCE property should be greater than the previous instance.
+        /// The EventItem represents the template from which occurrences of the event are created.
+        /// </summary>
+        [TestMethod]
+        public void EventCalendarFeed_UpdatedEventItem_HasIncrementedSequenceNo()
+        {
+            var testScheduleUid = "509884F8-B7A2-4C4B-8F12-F14E98362DFB";
+            var testEventGuid = "8EF41051-29B0-45A3-8C44-85E11622BD81";
+            var startDate = RockDateTime.New( 2020, 3, 1 ).Value;
+            var eventName = $"Test Event ({testEventGuid})";
+
+            AddOrUpdateScheduleForConsecutiveSpecifiedDays( testScheduleUid, startDate, 2 );
+
+            var rockContext = new RockContext();
+
+            // Create a test Rock Event associated with the schedule.
+            var eventItemArgs = new EventsDataManager.CreateEventItemActionArgs
+            {
+                ExistingItemStrategy = TestData.CreateExistingItemStrategySpecifier.Replace,
+                Guid = testEventGuid.AsGuid(),
+                Properties = new EventsDataManager.EventItemInfo
+                {
+                    EventName = eventName,
+                    CalendarIdentifiers = new List<string> { "Public", "Internal" },
+                    IsApproved = true
+                }
+            };
+
+            var eventItem = EventsDataManager.Instance.AddEventItem( eventItemArgs );
+
+            // Add an Event Occurrence.
+            var occurrenceArgs = new EventsDataManager.CreateEventItemOccurrenceActionArgs
+            {
+                ExistingItemStrategy = TestData.CreateExistingItemStrategySpecifier.Replace,
+                Guid = testEventOccurrence11Guid.AsGuid(),
+                Properties = new EventsDataManager.EventItemOccurrenceInfo
+                {
+                    EventIdentifier = testEventGuid.ToString(),
+                    ScheduleIdentifier = testScheduleUid
+                }
+            };
+
+            var eventOccurrence = EventsDataManager.Instance.AddEventItemOccurrence( occurrenceArgs );
+
+            var calendarService = new EventCalendarService( rockContext );
+
+            var args = GetCalendarEventFeedArgumentsForTest( calendarName: "Public",
+                eventIdentifier: testEventGuid,
+                startDate:startDate );
+
+            // Get the ICalendar.
+            var calendarString1 = calendarService.CreateICalendar( args );
+
+            var calendarEvent1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events
+                .FirstOrDefault( e => e.Summary == eventName );
+
+            Assert.IsNotNull( calendarEvent1, "Expected Event not found." );
+
+            // Delay at least 1s to ensure that the sequence number should be incremented.
+            Thread.Sleep( 1000 );
+
+            // Modify the EventItem.
+            var updateArgs = new EventsDataManager.UpdateEventItemActionArgs
+            {
+                Properties = new EventsDataManager.EventItemInfo { EventName = $"{eventName} [Updated]" }
+            };
+            EventsDataManager.Instance.UpdateEventItem( updateArgs );
+
+            // Get the ICalendar.
+            var calendarString2 = calendarService.CreateICalendar( args );
+
+            var calendarEvent2 = CalendarCollection.Load( calendarString2 )?.FirstOrDefault()?.Events
+                .FirstOrDefault( e => e.Summary == eventName );
+
+            Assert.IsNotNull( calendarEvent2, "Expected Event not found." );
+            Assert.IsTrue( calendarEvent2.Sequence > calendarEvent1.Sequence, $"Event2 Sequence number is not greater than Event 1. [Event1={calendarEvent1.Sequence}, Event2={calendarEvent2.Sequence}]" );
+        }
+
+        /// <summary>
+        /// If an EventItem is modified, the associated iCalendar.SEQUENCE property should be greater than the previous instance.
+        /// The EventItem represents the template from which occurrences of the event are created.
+        /// </summary>
+        [TestMethod]
+        public void EventCalendarFeed_UpdatedEventOccurrence_HasIncrementedSequenceNo()
+        {
+            var testScheduleUid1 = "0017BFAF-0E5D-46F5-ACB6-0543439BB1BE";
+            var testEventGuid = "2329682C-5F92-4FB5-8D62-88B235DB6325";
+            var eventName = $"Test Event ({testEventGuid})";
+
+            var startDate1 = RockDateTime.New( 2020, 3, 1 ).Value;
+
+            AddOrUpdateScheduleForConsecutiveSpecifiedDays( testScheduleUid1, startDate1, 2 );
+
+            var rockContext = new RockContext();
+
+            // Create a test Rock Event associated with the schedule.
+            var eventItemArgs = new EventsDataManager.CreateEventItemActionArgs
+            {
+                ExistingItemStrategy = TestData.CreateExistingItemStrategySpecifier.Replace,
+                Guid = testEventGuid.AsGuid(),
+                Properties = new EventsDataManager.EventItemInfo
+                {
+                    EventName = eventName,
+                    CalendarIdentifiers = new List<string> { "Public", "Internal" },
+                    IsApproved = true
+                }
+            };
+
+            var eventItem = EventsDataManager.Instance.AddEventItem( eventItemArgs );
+
+            rockContext.SaveChanges();
+
+            // Add an Event Occurrence.
+            var occurrenceArgs = new EventsDataManager.CreateEventItemOccurrenceActionArgs
+            {
+                ExistingItemStrategy = TestData.CreateExistingItemStrategySpecifier.Replace,
+                Guid = testEventOccurrence11Guid.AsGuid(),
+                Properties = new EventsDataManager.EventItemOccurrenceInfo
+                {
+                    EventIdentifier = testEventGuid.ToString(),
+                    ScheduleIdentifier = testScheduleUid1
+                }
+            };
+
+            var eventOccurrence = EventsDataManager.Instance.AddEventItemOccurrence( occurrenceArgs );
+
+            var calendarService = new EventCalendarService( rockContext );
+
+            var args = GetCalendarEventFeedArgumentsForTest( calendarName: "Public",
+                eventIdentifier: testEventGuid,
+                startDate: startDate1 );
+
+            // Get the ICalendar.
+            var calendarString1 = calendarService.CreateICalendar( args );
+
+            LogHelper.Log( calendarString1 );
+
+            var calendarEvent1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events
+                .FirstOrDefault( e => e.Summary == eventName );
+
+            Assert.IsNotNull( calendarEvent1, "Expected Event not found." );
+
+            // Delay at least 1s to ensure that the sequence number should be incremented.
+            Thread.Sleep( 1000 );
+
+            // Modify the EventOccurrence: change the Location Description.
+            var updateArgs = new EventsDataManager.UpdateEventItemOccurrenceActionArgs
+            {
+                UpdateTargetIdentifier = testEventOccurrence11Guid,
+                Properties = new EventsDataManager.EventItemOccurrenceInfo
+                {
+                    MeetingLocationDescription = "Location 2"
+                }
+            };
+
+            eventOccurrence = EventsDataManager.Instance.UpdateEventItemOccurrence( updateArgs );
+
+            // Get the ICalendar.
+            var calendarString2 = calendarService.CreateICalendar( args );
+
+            LogHelper.Log( calendarString2 );
+
+            var calendarEvent2 = CalendarCollection.Load( calendarString2 )?.FirstOrDefault()?.Events
+                .FirstOrDefault( e => e.Summary == eventName );
+
+            Assert.IsNotNull( calendarEvent2, "Expected Event not found." );
+            Assert.IsTrue( calendarEvent2.Sequence > calendarEvent1.Sequence, $"Event2 Sequence number is not greater than Event 1. [Event1={calendarEvent1.Sequence}, Event2={calendarEvent2.Sequence}]" );
+        }
+
+        /// <summary>
+        /// If the Schedule associated with an Event Occurrence is modified, the associated iCalendar.SEQUENCE property should be greater than the previous instance.
+        /// </summary>
+        [TestMethod]
+        public void EventCalendarFeed_UpdatedEventOccurrenceSchedule_HasIncrementedSequenceNo()
+        {
+            var testScheduleUid1 = "C1821E26-8986-4AF5-B998-7972A2F73B87";
+            var testEventGuid = "447F9D24-29CD-4F56-A2CC-3EB028F49E81";
+            var testOccurrenceGuid = "61B14EC0-40EE-4B2C-ABEA-1A0458E006A2";
+            var eventName = $"Test Event ({testEventGuid})";
+
+            var startDate1 = RockDateTime.New( 2020, 3, 1 ).Value;
+            var startDate2 = RockDateTime.New( 2020, 4, 1 ).Value;
+
+            AddOrUpdateScheduleForConsecutiveSpecifiedDays( testScheduleUid1, startDate1, 2 );
+
+            var rockContext = new RockContext();
+
+            // Create a test Rock Event associated with the schedule.
+            var eventItemArgs = new EventsDataManager.CreateEventItemActionArgs
+            {
+                ExistingItemStrategy = TestData.CreateExistingItemStrategySpecifier.Replace,
+                Guid = testEventGuid.AsGuid(),
+                Properties = new EventsDataManager.EventItemInfo
+                {
+                    EventName = eventName,
+                    CalendarIdentifiers = new List<string> { "Public", "Internal" },
+                    IsApproved = true
+                }
+            };
+
+            var eventItem = EventsDataManager.Instance.AddEventItem( eventItemArgs );
+
+            // Add an Event Occurrence.
+            var occurrenceArgs = new EventsDataManager.CreateEventItemOccurrenceActionArgs
+            {
+                ExistingItemStrategy = TestData.CreateExistingItemStrategySpecifier.Replace,
+                Guid = testOccurrenceGuid.AsGuid(),
+                Properties = new EventsDataManager.EventItemOccurrenceInfo
+                {
+                    EventIdentifier = testEventGuid.ToString(),
+                    ScheduleIdentifier = testScheduleUid1
+                }
+            };
+
+            var eventOccurrence = EventsDataManager.Instance.AddEventItemOccurrence( occurrenceArgs );
+
+            var calendarService = new EventCalendarService( rockContext );
+
+            var args = GetCalendarEventFeedArgumentsForTest( calendarName: "Public",
+                eventIdentifier: testEventGuid,
+                startDate: startDate1 );
+
+            // Get the ICalendar.
+            var calendarString1 = calendarService.CreateICalendar( args );
+
+            LogHelper.Log( calendarString1 );
+
+            var calendarEvent1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events
+                .FirstOrDefault( e => e.Summary == eventName );
+
+            Assert.IsNotNull( calendarEvent1, "Expected Event not found." );
+
+            // Delay at least 1s to ensure that the sequence number should be incremented.
+            Thread.Sleep( 1000 );
+
+            // Modify the Schedule associated with the EventOccurrence.
+            AddOrUpdateScheduleForConsecutiveSpecifiedDays( testScheduleUid1, startDate2, 2 );
+
+            // Get the ICalendar.
+            var calendarString2 = calendarService.CreateICalendar( args );
+
+            LogHelper.Log( calendarString2 );
+
+            var calendarEvent2 = CalendarCollection.Load( calendarString2 )?.FirstOrDefault()?.Events
+                .FirstOrDefault( e => e.Summary == eventName );
+
+            Assert.IsNotNull( calendarEvent2, "Expected Event not found." );
+            Assert.IsTrue( calendarEvent2.Sequence > calendarEvent1.Sequence, $"Event2 Sequence number is not greater than Event 1. [Event1={calendarEvent1.Sequence}, Event2={calendarEvent2.Sequence}]" );
+        }
+
+        private Schedule AddOrUpdateScheduleForConsecutiveSpecifiedDays( string testScheduleGuid, DateTime firstDate, int repeatCount )
+        {
+            var rockContext = new RockContext();
+            var scheduleService = new ScheduleService( rockContext );
+            var scheduleName = $"Test Schedule {testScheduleGuid.AsGuid()}";
+
+            // Create a new Rock Schedule for an all-day event on specific days:
+            // tomorrow and the following 2 days.
+            var specificDates = new List<DateTime>();
+
+            for ( int i = 0; i <= repeatCount; i++ )
+            {
+                var dayDate = firstDate.AddDays( i );
+                specificDates.Add( dayDate );
+            }
+
+            var scheduleDays = scheduleService.Get( testScheduleGuid );
+            if ( scheduleDays == null )
+            {
+                scheduleDays = new Schedule();
+                scheduleService.Add( scheduleDays );
+            }
+
+            scheduleDays.Name = scheduleName;
+            scheduleDays.Guid = testScheduleGuid.AsGuid();
+
+            var iCalSchedule = ScheduleTestHelper.GetScheduleWithSpecificDates( specificDates );
+            scheduleDays.iCalendarContent = iCalSchedule.iCalendarContent;
+
+            rockContext.SaveChanges();
+
+            return scheduleDays;
         }
 
         #endregion

@@ -1212,6 +1212,11 @@ icon {
     font-size: large;
 }
 
+.toggle-button .append-text {
+    color: ?color-primary;
+    font-size: small;
+}
+
 .toggle-button .icon {
     margin: 3 0 0 0;
     color: ?color-primary;
@@ -1223,6 +1228,10 @@ icon {
 }
 
 .toggle-button.checked .title {
+    color: white;
+}
+
+.toggle-button.checked .append-text {
     color: white;
 }
 
@@ -1807,19 +1816,47 @@ formfield .required-indicator {
     margin: 0, 8, 0, 0;
 }
 
-.connection-request-detail-content .contact-button {
-    border-radius: 6;
-    width: 50;
-    background-color: #e3e3e3;
-    padding: 4;
+^ContactButton.contact-button,
+^VerticalIconButton.contact-button {
+  padding: 4;
+  width: 44;
+  height: 32;
+  background-color: #e3e3e3;
+  border-radius: 6;
 }
 
-.connection-request-detail-content .contact-button-icon {
+^ContactButton .contact-button-icon,
+^VerticalIconButton .contact-button-icon {
     font-size: 14;
+    color: ?color-primary;
 }
 
-.connection-request-detail-content .contact-button-text {
+^ContactButton .contact-button-text,
+^VerticalIconButton .contact-button-text {
     font-size: 11;
+    color: ?color-primary;
+}
+
+.contact-button.is-followed {
+  background-color: ?color-primary;
+}
+
+^VerticalIconButton.contact-button.is-followed .contact-button-text,
+^VerticalIconButton.contact-button.is-followed .contact-button-icon {
+  color: white;
+}
+
+^VerticalIconButton.contact-button-disabled {
+    opacity: 0.4;
+}
+
+^VerticalIconButton.contact-button-enabled {
+    opacity: 1.0;
+}
+
+^VerticalIconButton.contact-button-disabled .contact-button-icon,
+^VerticalIconButton.contact-button-disabled .contact-button-text {
+  color: ?color-primary-100;
 }
 
 .connection-request-detail-content .request-details {
@@ -1976,10 +2013,6 @@ formfield .required-indicator {
     -xf-spacing: 8;
 }
 
-.recipient-name-and-communication {
-    -xf-spacing: 0;
-}
-
 .recipients-layout {
     -xf-spacing: 0;
 }
@@ -2021,6 +2054,169 @@ formfield .required-indicator {
 
 .block-communication-entry .failed-recipient-item {
     height: 30;
+}
+/*** Reminder Blocks ***/
+.reminder-type-item-layout {
+  -xf-spacing:0;
+}
+
+.reminder-type-item {
+  padding: 8;
+}
+
+.reminder-type-item .reminder-type-info-layout {
+  -xf-spacing: 0;
+}
+
+.reminder-type-item .reminder-type-count-label-and-icon-layout {
+  -xf-spacing: 8;
+}
+
+.reminder-type-item .reminder-icon-frame {
+  width: 48;
+  height: 48;
+  border-radius: 24;
+  padding: 0;
+}
+
+.reminder-type-item .reminder-icon-frame ^Icon {
+  color: white;
+  font-size: 22;
+}
+
+.filtered-reminder-card {
+  padding: 16;
+  border-color: #c2c1be;
+  border-width: 1;
+  border-radius: 8;
+}
+
+.filtered-reminder-card ^stacklayout {
+  -xf-spacing: 0;
+}
+
+.filtered-reminder-card .icon-frame {
+  width: 64;
+  height: 64;
+  border-radius: 32;
+  padding: 0;
+}
+
+.filtered-reminder-card .icon-frame ^Icon {
+  font-size: 28;
+}
+
+/* I want this to also apply a background color to
+the .filter-card-icon class */
+.filtered-reminder-card .reminders-all, .reminders-all .icon-frame { 
+  background-color: #E2D8D8;
+}
+
+.filtered-reminder-card .reminders-due, .reminders-due .icon-frame  {
+  background-color: #FBC0C0;
+}
+
+.filtered-reminder-card .reminders-future, .reminders-future .icon-frame  {
+  background-color: #C0E5FB;
+}
+
+.filtered-reminder-card .reminders-completed, .reminders-completed .icon-frame {
+  background-color: #C0FBE7;
+}
+
+.reminder-dashboard-layout {
+  -xf-spacing: 0;
+}
+
+.add-reminder-icon-frame { 
+  background-color: #009CE3;
+  width: 24;
+  height: 24;
+  border-radius: 12;
+  padding: 0;
+}
+
+.add-reminder-icon-frame ^Icon {
+  font-size: 16;
+  color: white;
+}
+
+.reminder-date {
+  color: #a3a0a0;
+}
+
+.reminder-type-detail {
+  color: #a3a0a0;
+}
+
+.reminder-past-due {
+  color: #f35c5c;
+}
+
+.reminder-item-frame {
+  padding: 0;
+}
+
+.reminders-list-layout {
+  -xf-spacing: 0;
+}
+
+.reminder-type-frame {
+  padding: 0;
+}
+
+/* Person Profile Blocks */
+.block-personprofile .block-panel .panel-layout, .block-personprofile .block-panel .items-layout {
+  -xf-spacing: 0;
+}
+
+.block-attributevalues .block-panel .panel-layout, .block-attributevalues .block-panel .items-layout  {
+  -xf-spacing: 0;
+}
+
+.block-personprofile .block-panel .block-panel-name-label {
+  font-size: 14;
+}
+
+.block-personprofile .block-panel .items-frame,
+.block-attribute-values .block-panel .items-frame {
+  background-color: white;
+  border-radius: 8;
+  margin: 0;
+}
+
+.block-personprofile .block-panel .item-frame,
+.block-attribute-values .block-panel .item-frame {
+  padding: 0;
+}
+
+.block-personprofile .block-panel .items-frame .item-flex-layout,
+.block-attributevalues .block-panel .items-frame .item-flex-layout {
+  padding: 0, 8;
+}
+
+.item-value {
+  color: black;
+}
+
+.value-action-item {
+  color: ?color-primary;
+}
+
+.value-no-action-item {
+  color: #9e9ea0;
+}
+
+.phone-number-field-container ^SwitchList .option-layout,
+.phone-number-field-container ^SwitchList ^Divider {
+  padding: 0, 8;
+  margin: 0;
+}
+
+.person-profile-email-edit-sheet.email-field-container ^SwitchList .option-layout,
+.person-profile-email-edit-sheet.email-field-container ^SwitchList ^Divider {
+  padding: 0, 8;
+  margin: 0;
 }
 ";
         #endregion

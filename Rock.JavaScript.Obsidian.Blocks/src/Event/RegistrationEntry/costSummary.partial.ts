@@ -16,10 +16,10 @@
 //
 
 import { defineComponent, inject } from "vue";
-import Loading from "@Obsidian/Controls/loading";
+import Loading from "@Obsidian/Controls/loading.obs";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import CurrencyBox from "@Obsidian/Controls/currencyBox";
-import HelpBlock from "@Obsidian/Controls/helpBlock";
+import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
 import { ValidationRule } from "@Obsidian/ValidationRules";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 import { RegistrationEntryBlockArgs, RegistrationEntryState } from "./types.partial";
@@ -257,41 +257,41 @@ export default defineComponent({
 <Loading :isLoading="isLoading">
     <div class="fee-table">
         <div class="row hidden-xs fee-header">
-            <div class="col-sm-6">
+            <div :class="{ 'col-sm-6': hasDiscount, 'col-sm-9': !hasDiscount }">
                 <strong>Description</strong>
-            </div>
-            <div v-if="hasDiscount" class="col-sm-3 fee-value">
-                <strong>Discounted Amount</strong>
             </div>
             <div class="col-sm-3 fee-value">
                 <strong>Amount</strong>
             </div>
+            <div v-if="hasDiscount" class="col-sm-3 fee-value">
+                <strong>Discounted Amount</strong>
+            </div>
         </div>
         <div v-for="lineItem in augmentedLineItems" class="row" :class="lineItem.isFee ? 'fee-row-fee' : 'fee-row-cost'">
-            <div class="col-sm-6 fee-caption">
+            <div :class="{ 'col-sm-6 fee-caption': hasDiscount, 'col-sm-9 fee-caption': !hasDiscount }">
                 {{lineItem.description}}
+            </div>
+            <div class="col-sm-3 fee-value">
+                <span class="visible-xs-inline">Amount:</span>
+                $ {{lineItem.amountFormatted}}
             </div>
             <div v-if="hasDiscount" class="col-sm-3 fee-value">
                 <HelpBlock v-if="lineItem.discountHelp" :text="lineItem.discountHelp" />
                 <span class="visible-xs-inline">Discounted Amount:</span>
                 $ {{lineItem.discountedAmountFormatted}}
             </div>
-            <div class="col-sm-3 fee-value">
-                <span class="visible-xs-inline">Amount:</span>
-                $ {{lineItem.amountFormatted}}
-            </div>
         </div>
         <div class="row fee-row-total">
-            <div class="col-sm-6 fee-caption">
+            <div :class="{ 'col-sm-6 fee-caption': hasDiscount, 'col-sm-9 fee-caption': !hasDiscount }">
                 Total
-            </div>
-            <div v-if="hasDiscount" class="col-sm-3 fee-value">
-                <span class="visible-xs-inline">Discounted Amount:</span>
-                {{discountedTotalFormatted}}
             </div>
             <div class="col-sm-3 fee-value">
                 <span class="visible-xs-inline">Amount:</span>
                 {{totalFormatted}}
+            </div>
+            <div v-if="hasDiscount" class="col-sm-3 fee-value">
+                <span class="visible-xs-inline">Discounted Amount:</span>
+                {{discountedTotalFormatted}}
             </div>
         </div>
     </div>

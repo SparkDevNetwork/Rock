@@ -39,11 +39,33 @@ namespace Rock.ViewModels.Rest.Controls
         public string EntityKey { get; set; }
 
         /// <summary>
+        /// Gets or sets the entity qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity qualifier column.
+        /// </value>
+        public string EntityQualifierColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity qualifier value.
+        /// </summary>
+        /// <value>
+        /// The entity qualifier value.
+        /// </value>
+        public string EntityQualifierValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the category unique identifier to limit tags to. If a
         /// value is specified then any tags must match the category.
         /// </summary>
         /// <value>The category unique identifier to limit tags to.</value>
         public Guid? CategoryGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to include inactive tags in the results.
+        /// </summary>
+        /// <value>Whether to include inactive tags</value>
+        public bool ShowInactiveTags { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the security grant token to use when performing

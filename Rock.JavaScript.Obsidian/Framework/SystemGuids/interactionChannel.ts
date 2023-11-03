@@ -22,6 +22,8 @@
 //
 
 export const InteractionChannel = {
+    /** Interaction Channel GUID for adaptive messages. */
+    AdaptiveMessages: "6F467CB2-586B-4963-B73B-9ACC42916549",
     /** Interaction Channel GUID for bible events. */
     BibleEvents: "45B6C8CD-5016-4FCF-9AED-A7EECFE00C5E",
     /** Interaction Channel GUID for all Email, SMS, etc */

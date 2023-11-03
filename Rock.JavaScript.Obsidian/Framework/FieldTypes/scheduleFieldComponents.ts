@@ -17,7 +17,7 @@
 
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
-import SchedulePicker from "@Obsidian/Controls/schedulePicker";
+import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({

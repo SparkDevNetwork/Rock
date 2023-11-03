@@ -82,14 +82,14 @@
     }
 
     .btn-back {
-      left: 10px;
+      left: var(--nav-btn-inset, 10px);
       &::before {
         content: @fa-var-chevron-left;
       }
     }
 
     .btn-cancel {
-      right: 10px;
+      right: var(--nav-btn-inset, 10px);
       &::before {
         content: @fa-var-times;
       }

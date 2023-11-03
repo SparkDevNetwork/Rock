@@ -45,6 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="Core\DynamicShortcodeDefinition.cs" />
     <Compile Include="Core\ILavaHost.cs" />
     <Compile Include="Core\ILavaSecured.cs" />
@@ -70,8 +73,8 @@
     <Compile Include="Core\ILavaEngine.cs" />
     <Compile Include="Core\ILavaFileSystem.cs" />
     <Compile Include="Core\ILavaTemplate.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ILavaElement.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shortcodes\ILavaShortcode.cs" />
     <Compile Include="Utility\InputParser.cs" />
   </ItemGroup>

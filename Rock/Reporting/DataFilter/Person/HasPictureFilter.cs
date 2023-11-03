@@ -150,7 +150,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            return ( (RadioButtonList)controls[0] ).SelectedValue;
+            return ( controls[0] as RadioButtonList ).SelectedValue;
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            ( (RadioButtonList)controls[0] ).SelectedValue = selection;
+            ( controls[0] as RadioButtonList ).SelectedValue = selection;
         }
 #endif
 

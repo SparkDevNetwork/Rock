@@ -1,0 +1,60 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="grid-paging-footer">
+        <div class="grid-page-sizes">
+            <PageSizePicker v-model="pageSize" :pageSizes="pageSizes" />
+        </div>
+
+        <PagePicker v-model="currentPage" :pageCount="pageCount" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PropType } from "vue";
+    import PagePicker from "./pagePicker.partial.obs";
+    import PageSizePicker from "./pageSizePicker.partial.obs";
+
+    const props = defineProps({
+        /** The number of items to display per page. */
+        pageSize: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        /** The available page sizes that can be selected by the individual. */
+        pageSizes: {
+            type: Array as PropType<number[]>,
+            default: []
+        },
+
+        /** The currently selected page number to display in the grid. */
+        currentPage: {
+            type: Number as PropType<number>,
+            default: 1
+        },
+
+        /** The total number of pages available to be viewed. */
+        pageCount: {
+            type: Number as PropType<number>,
+            default: 1
+        },
+
+        /**
+         * The number of visible columns. This is used as the colspan attribute
+         * so that the footer looks like a single column across the entire
+         * width of the grid. */
+        visibleColumnCount: {
+            type: Number as PropType<number>,
+            default: 0
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:pageSize", value: number): void,
+        (event: "update:currentPage", value: number): void
+    }>();
+
+    const pageSize = useVModelPassthrough(props, "pageSize", emit);
+    const currentPage = useVModelPassthrough(props, "currentPage", emit);
+</script>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,13 +56,12 @@ namespace Rock.Model
         public int WorkflowIdNumber { get; set; }
 
         /// <summary>
-        /// Gets the workflow identifier.
+        /// This value is a string of the WorkflowType's WorkflowIdPrefix combined with the WorkflowIdNumber.
         /// </summary>
         /// <value>
         /// The workflow identifier.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         public virtual string WorkflowId { get; set; }
 
         /// <summary>

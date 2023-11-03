@@ -296,6 +296,18 @@ namespace RockWeb.Blocks.Security
             public const string AttributeCategories = "AttributeCategories";
         }
 
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string Caption = "Caption";
+        }
+
+        #endregion
+
         #region Fields
 
         private PlaceHolder[] pagePanels = new PlaceHolder[6];
@@ -418,6 +430,7 @@ usernameTextbox.blur(function () {{
         {
             base.OnLoad( e );
 
+            ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( btnUserInfoNext );
             pnlMessage.Controls.Clear();
             pnlMessage.Visible = false;
 
@@ -430,6 +443,12 @@ usernameTextbox.blur(function () {{
 
             if ( !Page.IsPostBack )
             {
+                if ( CurrentPerson != null && PageParameter( PageParameterKey.Caption ).ToLower() == "success" )
+                {
+                    DisplaySuccessPanel( CurrentPerson );
+                    return;
+                }
+
                 DisplayUserInfo( Direction.Forward );
 
                 // show/hide address and phone panels
@@ -490,9 +509,9 @@ usernameTextbox.blur(function () {{
                         rPhoneNumbers.DataSource = phoneNumbers;
                         rPhoneNumbers.DataBind();
                     }
-
-                    SetCurrentPersonDetails();
                 }
+
+                SetCurrentPersonDetails();
 
                 BuildAttributes();
             }
@@ -1055,16 +1074,17 @@ usernameTextbox.blur(function () {{
                         ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Site.Id, CurrentPersonAlias );
                     }
 
-                    string returnUrl = Request.QueryString["returnurl"];
-                    btnContinue.Visible = !string.IsNullOrWhiteSpace( returnUrl );
-
-                    lSuccessCaption.Text = GetAttributeValue( AttributeKey.SuccessCaption );
-                    if ( lSuccessCaption.Text.Contains( "{0}" ) )
+                    // Redirect to new communication
+                    if ( CurrentPageReference.Parameters.ContainsKey( PageParameterKey.Caption ) )
                     {
-                        lSuccessCaption.Text = string.Format( lSuccessCaption.Text, person.FirstName );
+                        CurrentPageReference.Parameters[PageParameterKey.Caption] = "Success";
+                    }
+                    else
+                    {
+                        CurrentPageReference.Parameters.Add( PageParameterKey.Caption, "Success" );
                     }
 
-                    ShowPanel( 5 );
+                    Response.Redirect( CurrentPageReference.BuildUrl(), false );
                 }
                 else
                 {
@@ -1075,6 +1095,20 @@ usernameTextbox.blur(function () {{
             {
                 ShowErrorMessage( "Invalid User" );
             }
+        }
+
+        private void DisplaySuccessPanel( Person person )
+        {
+            string returnUrl = Request.QueryString["returnurl"];
+            btnContinue.Visible = !string.IsNullOrWhiteSpace( returnUrl );
+
+            lSuccessCaption.Text = GetAttributeValue( AttributeKey.SuccessCaption );
+            if ( lSuccessCaption.Text.Contains( "{0}" ) )
+            {
+                lSuccessCaption.Text = string.Format( lSuccessCaption.Text, person.FirstName );
+            }
+
+            ShowPanel( 5 );
         }
 
         /// <summary>
@@ -1189,7 +1223,10 @@ usernameTextbox.blur(function () {{
             // save address
             if ( pnlAddress.Visible )
             {
-                if ( acAddress.IsValid && !string.IsNullOrWhiteSpace( acAddress.Street1 ) && !string.IsNullOrWhiteSpace( acAddress.City ) && !string.IsNullOrWhiteSpace( acAddress.PostalCode ) )
+                if ( acAddress.IsValid
+                     && !string.IsNullOrWhiteSpace( acAddress.Street1 )
+                     && !string.IsNullOrWhiteSpace( acAddress.City )
+                     && !string.IsNullOrWhiteSpace( acAddress.PostalCode ) )
                 {
                     Guid locationTypeGuid = GetAttributeValue( AttributeKey.LocationType ).AsGuid();
                     if ( locationTypeGuid != Guid.Empty )

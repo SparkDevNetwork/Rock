@@ -17,11 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Web;
 
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
@@ -368,7 +368,7 @@ namespace Rock.Mobile
             }
 
             // Run Lava on CSS to enable color utilities
-            cssStyles = cssStyles.ResolveMergeFields(Lava.LavaHelper.GetCommonMergeFields(null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false }));
+            cssStyles = cssStyles.ResolveMergeFields( Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() ) );
 
             // Get the Rock organization time zone. If not found back to the
             // OS time zone. If not found just use Greenwich.
@@ -484,6 +484,17 @@ namespace Rock.Mobile
                     mobileBlockEntity.PageCache = block.Page;
                     mobileBlockEntity.RequestContext = new Net.RockRequestContext();
 
+                    var mobileBlockTypeGuid = mobileBlockEntity.MobileBlockTypeGuid;
+
+                    if ( !mobileBlockTypeGuid.HasValue )
+                    {
+                        mobileBlockTypeGuid = blockEntityType.GetCustomAttribute<SystemGuid.BlockTypeGuidAttribute>()?.Guid;
+                    }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var mobileBlockTypeClass = GetLegacyMobileBlockTypeClass( mobileBlockTypeGuid.Value, mobileBlockEntity.MobileBlockType );
+#pragma warning restore CS0618 // Type or member is obsolete
+
                     var attributes = block.Attributes
                         .Select( a => a.Value )
                         .Where( a => a.Categories.Any( c => c.Name == "custommobile" ) );
@@ -493,8 +504,12 @@ namespace Rock.Mobile
                         PageGuid = block.Page.Guid,
                         Zone = block.Zone,
                         BlockGuid = block.Guid,
+                        RequiredVersion = mobileBlockEntity.RequiredMobileVersion?.ToString(),
+                        BlockTypeGuid = mobileBlockTypeGuid ?? Guid.Empty,
+#pragma warning disable CS0618 // Type or member is obsolete
                         RequiredAbiVersion = mobileBlockEntity.RequiredMobileAbiVersion,
-                        BlockType = mobileBlockEntity.MobileBlockType,
+                        BlockType = mobileBlockTypeClass,
+#pragma warning restore CS0618 // Type or member is obsolete
                         ConfigurationValues = mobileBlockEntity.GetBlockInitialization( Blocks.RockClientType.Mobile ),
                         Order = block.Order,
                         AttributeValues = GetMobileAttributeValues( block, attributes ),
@@ -521,7 +536,8 @@ namespace Rock.Mobile
                 var mobileCampus = new MobileCampus
                 {
                     Guid = campus.Guid,
-                    Name = campus.Name
+                    Name = campus.Name,
+                    Id = campus.IdKey
                 };
 
                 if ( campus.Location != null )
@@ -585,7 +601,7 @@ namespace Rock.Mobile
                     PageGuid = page.Guid,
                     Order = page.Order,
                     ParentPageGuid = page.ParentPage?.Guid,
-                    IconUrl = page.IconBinaryFileId.HasValue ? $"{ applicationRoot }GetImage.ashx?Id={ page.IconBinaryFileId.Value }" : null,
+                    IconUrl = page.IconBinaryFileId.HasValue ? $"{applicationRoot}GetImage.ashx?Id={page.IconBinaryFileId.Value}" : null,
                     LavaEventHandler = additionalPageSettings.LavaEventHandler,
                     DepthLevel = depth,
                     CssClasses = page.BodyCssClass,
@@ -674,6 +690,82 @@ namespace Rock.Mobile
             }
 
             return explicitRules;
+        }
+
+        /// <summary>
+        /// A lookup table of the new mobile block type Guid values to the old
+        /// legacy class names. Can be removed when Mobile shell v6 is the minimum
+        /// supported version.
+        /// </summary>
+        private static readonly Dictionary<Guid, string> _legacyMobileBlockTypeLookup = new Dictionary<Guid, string>
+        {
+            [new Guid( "7258A210-E936-4260-B573-9FA1193AD9E2" )] = "Rock.Mobile.Blocks.Content",
+            [new Guid( "B702FF5B-2488-42C7-AAE8-2DD99E82326D" )] = "Rock.Mobile.Blocks.Cms.DailyChallengeEntry",
+            [new Guid( "32f1da96-82a9-441f-80bb-a82218ddec8d" )] = "Rock.Mobile.Blocks.CollectionViewList",
+            [new Guid( "6006FE32-DC01-4B1C-A9B8-EE172451F4C5" )] = "Rock.Mobile.Blocks.Login",
+            [new Guid( "66B2B513-1C71-4E6B-B4BE-C4EF90E1899C" )] = "Rock.Mobile.Blocks.ProfileDetails",
+            [new Guid( "2A71FDA2-5204-418F-858E-693A1F4E9A49" )] = "Rock.Mobile.Blocks.RegisterAccount",
+            [new Guid( "A8BBE3F8-F3CC-4C0A-AB2F-5085F5BF59E7" )] = "Rock.Mobile.Blocks.Cms.StructuredContentView",
+            [new Guid( "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED" )] = "Rock.Mobile.Blocks.WorkflowEntry",
+            [new Guid( "B0182DA2-82F7-4798-A48E-88EBE61F2109" )] = "Rock.Mobile.Blocks.Communication.CommunicationEntry",
+            [new Guid( "D0C51784-71ED-46F3-86AB-972148B78BE8" )] = "Rock.Mobile.Blocks.Communication.CommunicationListSubscribe",
+            [new Guid( "4ef4250e-2d22-426c-adac-571c1301d18e" )] = "Rock.Mobile.Blocks.Communication.SmsConversation",
+            [new Guid( "E16DC868-101F-4944-BE6C-29D858D9821D" )] = "Rock.Mobile.Blocks.Communication.SmsConversationList",
+            [new Guid( "0015A574-C10A-4530-897C-F7B7C3D9393E" )] = "Rock.Mobile.Blocks.Connection.ConnectionOpportunityList",
+            [new Guid( "EF537CC9-5E53-4832-A473-0D5EA439C296" )] = "Rock.Mobile.Blocks.Connection.ConnectionRequestDetail",
+            [new Guid( "612E9E13-434F-4E47-958D-37E1C3EEF304" )] = "Rock.Mobile.Blocks.Connection.ConnectionRequestList",
+            [new Guid( "31E1FCCF-C4B1-4D84-992C-DEACAF3697CF" )] = "Rock.Mobile.Blocks.Connection.ConnectionTypeList",
+            [new Guid( "DF110543-C295-4DD9-B06E-82640AC63610" )] = "Rock.Mobile.Blocks.Core.AttributeValues",
+            [new Guid( "5B337D89-A298-4620-A0BE-078A41BC054B" )] = "Rock.Mobile.Blocks.Core.Notes",
+            [new Guid( "41174BEA-6567-430C-AAD4-A89A5CF70FB0" )] = "Rock.Mobile.Blocks.Core.Search",
+            [new Guid( "1F1E7598-8D51-4750-8D61-E5791A226FDB" )] = "Rock.Mobile.Blocks.Crm.GroupMembers",
+            [new Guid( "F97E2359-BB2D-4534-821D-870F853CA5CC" )] = "Rock.Mobile.Blocks.Crm.PersonProfile",
+            [new Guid( "A9149623-6A82-4F25-8F4D-0961557BE78C" )] = "Rock.Mobile.Blocks.Events.CalendarEventList",
+            [new Guid( "14B447B3-6117-4142-92E7-E3F289106140" )] = "Rock.Mobile.Blocks.Events.CalendarView",
+            [new Guid( "969EB376-281C-41D8-B7E9-A183DEA751DB" )] = "Rock.Mobile.Blocks.Events.LiveExperience",
+            [new Guid( "c45ba1c6-ce7f-4c37-82bf-a86d28bb28fe" )] = "Rock.Mobile.Blocks.Events.InteractiveExperienceOccurrences",
+            [new Guid( "08AE409C-9E4C-42D1-A93C-A554A3EEA0C3" )] = "Rock.Mobile.Blocks.Groups.GroupAttendanceEntry",
+            [new Guid( "FEC66374-E38F-4651-BAA6-AC658409D9BD" )] = "Rock.Mobile.Blocks.Groups.GroupEdit",
+            [new Guid( "BAC6671E-4D6F-4428-A6FA-69B8BEADF55C" )] = "Rock.Mobile.Blocks.Groups.GroupFinder",
+            [new Guid( "514B533A-8970-4628-A4C8-35388CD869BC" )] = "Rock.Mobile.Blocks.Groups.GroupMemberEdit",
+            [new Guid( "5A6D2ADB-03A7-4B55-8EAA-26A37116BFF1" )] = "Rock.Mobile.Blocks.Groups.GroupMemberList",
+            [new Guid( "6B3C23EA-A1C2-46FA-9F04-5B0BD004ED8B" )] = "Rock.Mobile.Blocks.Groups.GroupMemberView",
+            [new Guid( "8A42E4FA-9FE1-493C-B6D8-7A766D96E912" )] = "Rock.Mobile.Blocks.Groups.GroupRegistration",
+            [new Guid( "F6D0A258-F97E-4561-B881-ACBF985F89DC" )] = "Rock.Mobile.Blocks.Groups.GroupSchedulePreference",
+            [new Guid( "CA27CB14-22FD-4DE6-9C3B-0EAA0AA84708" )] = "Rock.Mobile.Blocks.Groups.GroupScheduleSignUp",
+            [new Guid( "E00F3C6D-D007-4408-8A41-AD2A6AB29D6E" )] = "Rock.Mobile.Blocks.Groups.GroupScheduleToolbox",
+            [new Guid( "AEFF246D-A514-4D46-801E-D717E1D1D209" )] = "Rock.Mobile.Blocks.Groups.GroupScheduleUnavailability",
+            [new Guid( "3F34AE03-9378-4363-A232-0318139C3BD3" )] = "Rock.Mobile.Blocks.Groups.GroupView",
+            [new Guid( "324D5295-72E6-42DF-B111-E428E811B786" )] = "Rock.Mobile.Blocks.Prayer.AnswerToPrayer",
+            [new Guid( "C095B269-36E2-446A-B73E-2C8CC4B7BF37" )] = "Rock.Mobile.Blocks.Prayer.MyPrayerRequests",
+            [new Guid( "CA75C558-9345-47E7-99AF-D8191D31D00D" )] = "Rock.Mobile.Blocks.Prayer.PrayerCardView",
+            [new Guid( "EBB91B46-292E-4784-9E37-38781C714008" )] = "Rock.Mobile.Blocks.Prayer.PrayerRequestDetails",
+            [new Guid( "420DEA5F-9ABC-4E59-A9BD-DCA972657B84" )] = "Rock.Mobile.Blocks.Prayer.PrayerSession",
+            [new Guid( "4A3B0D13-FC32-4354-A224-9D450F860BE9" )] = "Rock.Mobile.Blocks.Prayer.PrayerSessionSetup",
+            [new Guid( "223F5122-C93A-44CD-BFB7-AF990A2B6B65" )] = "Rock.Mobile.Blocks.Reminders.ReminderDashboard",
+            [new Guid( "BA26C29E-660C-470D-9FEA-5830DB15E935" )] = "Rock.Mobile.Blocks.Reminders.ReminderEdit",
+            [new Guid( "E3FD3E7B-BF9D-4008-B71D-DF857DC20D7B" )] = "Rock.Mobile.Blocks.Reminders.ReminderList",
+            [new Guid( "9544EE9E-07C2-4F14-9C93-3B16EBF0CC47" )] = "Rock.Mobile.Blocks.Security.OnboardPerson"
+        };
+
+        /// <summary>
+        /// Gets the legacy mobile block type class from the block type guid.
+        /// </summary>
+        /// <remarks>
+        /// This is to support legacy mobile shell clients. Once the minimum
+        /// supported version is mobile shell v6, this can be removed.
+        /// </remarks>
+        /// <param name="mobileBlockTypeGuid">The mobile block type unique identifier.</param>
+        /// <param name="fallbackValue">The fallback value.</param>
+        /// <returns>A string that represents the mobile shell C# class name.</returns>
+        private static string GetLegacyMobileBlockTypeClass( Guid mobileBlockTypeGuid, string fallbackValue )
+        {
+            if ( _legacyMobileBlockTypeLookup.ContainsKey( mobileBlockTypeGuid ) )
+            {
+                return _legacyMobileBlockTypeLookup[mobileBlockTypeGuid];
+            }
+
+            return fallbackValue;
         }
 
         #region XAML Helper Methods
@@ -896,7 +988,7 @@ namespace Rock.Mobile
             var applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
 
             // We want to trim so we don't end up with URLs that look like this: church.com//GetImage.ashx
-            if( path.StartsWith("/") )
+            if ( path.StartsWith( "/" ) )
             {
                 path = path.RemoveLeadingForwardslash();
             }

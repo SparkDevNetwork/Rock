@@ -380,10 +380,11 @@ namespace Rock.Field.Types
             LocationPickerMode allowedPickerModes = LocationPickerMode.All;
 
             // Get the selected current picker mode, use address if there isn't one specified. This is the mode the picker will start with unless the location specifies a different location type.
-            var currentPickerMode = configurationValues[CURRENT_PICKER_MODE].Value.ConvertToEnumOrNull<LocationPickerMode>() ?? LocationPickerMode.Address;
+
+            var currentPickerMode = configurationValues.ContainsKey( CURRENT_PICKER_MODE ) ? configurationValues[CURRENT_PICKER_MODE].Value.ConvertToEnumOrNull<LocationPickerMode>() ?? LocationPickerMode.Address : LocationPickerMode.Address;
 
             string[] allowedPickerModesConfig = null;
-            if ( configurationValues[ALLOWED_PICKER_MODES].Value.IsNotNullOrWhiteSpace() )
+            if ( configurationValues.ContainsKey(ALLOWED_PICKER_MODES) && configurationValues[ALLOWED_PICKER_MODES].Value.IsNotNullOrWhiteSpace() )
             {
                 allowedPickerModesConfig = configurationValues[ALLOWED_PICKER_MODES].Value.Split( ',' );
             }

@@ -37,12 +37,13 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <summary>
     /// Displays the details of a particular interactive experience.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Interactive Experience Detail" )]
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays the details of a particular interactive experience." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -50,7 +51,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
     [Rock.SystemGuid.EntityTypeGuid( "e9e76f40-3e00-40e1-bd9d-3156e9208557" )]
     [Rock.SystemGuid.BlockTypeGuid( "dc997692-3bb4-470c-a2ee-83cb87d246b1" )]
-    public class InteractiveExperienceDetail : RockObsidianDetailBlockType
+    public class InteractiveExperienceDetail : RockDetailBlockType
     {
         #region Keys
 
@@ -66,8 +67,6 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>
@@ -81,7 +80,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<InteractiveExperience>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<InteractiveExperience>();
 
                 return box;
             }
@@ -159,7 +158,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity );
+                    box.Entity = GetEntityBagForEdit( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -223,6 +222,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     }
                     : null,
                 Description = entity.Description,
+                ExperienceEndedTemplate = settings.ExperienceEndedTemplate ?? string.Empty,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
                 NoActionHeaderImageBinaryFile = entity.NoActionHeaderImageBinaryFile.ToListItemBag(),
@@ -263,8 +263,9 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// Gets the bag for editing the specied entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
         /// <returns>A <see cref="InteractiveExperienceBag"/> that represents the entity.</returns>
-        private InteractiveExperienceBag GetEntityBagForEdit( InteractiveExperience entity )
+        private InteractiveExperienceBag GetEntityBagForEdit( InteractiveExperience entity, RockContext rockContext )
         {
             if ( entity == null )
             {
@@ -272,8 +273,39 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             }
 
             var bag = GetCommonEntityBag( entity );
+            InteractiveExperienceSchedule schedule = null;
+
+            entity.InteractiveExperienceSchedules.LoadAttributes( rockContext );
+
+            bag.Schedules = entity.InteractiveExperienceSchedules
+                ?.Select( s =>
+                {
+                    var scheduleBag = GetScheduleBag( s );
+
+                    scheduleBag.AttributeValues = s.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson );
+
+                    if ( bag.ScheduleAttributes == null )
+                    {
+                        bag.ScheduleAttributes = s.GetPublicAttributesForEdit( RequestContext.CurrentPerson );
+                    }
+
+                    return scheduleBag;
+                } ).ToList();
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+
+            // If we didn't have anys chedules to load attributes from, use a fake one.
+            if ( bag.ScheduleAttributes == null )
+            {
+                schedule = new InteractiveExperienceSchedule
+                {
+                    InteractiveExperienceId = entity.Id
+                };
+
+                schedule.LoadAttributes( rockContext );
+
+                bag.ScheduleAttributes = entity.GetPublicAttributesForEdit( RequestContext.CurrentPerson );
+            }
 
             return bag;
         }
@@ -350,6 +382,9 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
             box.IfValidProperty( nameof( box.Entity.Description ),
                 () => entity.Description = box.Entity.Description );
+
+            box.IfValidProperty( nameof( box.Entity.ExperienceEndedTemplate ),
+                () => settings.ExperienceEndedTemplate = box.Entity.ExperienceEndedTemplate );
 
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );
@@ -539,6 +574,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     Value = experienceSchedule.Schedule.iCalendarContent,
                     Text = experienceSchedule.Schedule.ToString()
                 },
+                EnableMinutesBefore = experienceSchedule.Schedule.CheckInStartOffsetMinutes,
                 Campuses = experienceSchedule.InteractiveExperienceScheduleCampuses
                     .Select( c => c.Campus )
                     .OrderBy( c => c.Order )
@@ -558,12 +594,15 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// <param name="rockContext">The rock context to operate in.</param>
         /// <param name="errorMessage">The error message if the schedules could not be updated.</param>
         /// <returns><c>true</c> if the schedules were updated, <c>false</c> otherwise.</returns>
-        private static bool UpdateSchedules( InteractiveExperience interactiveExperience, List<InteractiveExperienceScheduleBag> scheduleBags, RockContext rockContext, out string errorMessage )
+        private bool UpdateSchedules( InteractiveExperience interactiveExperience, List<InteractiveExperienceScheduleBag> scheduleBags, RockContext rockContext, out string errorMessage )
         {
             var experienceScheduleService = new InteractiveExperienceScheduleService( rockContext );
+            var experienceAnswerService = new InteractiveExperienceAnswerService( rockContext );
             var incomingScheduleGuids = scheduleBags?.Select( s => s.Guid ).ToList() ?? new List<Guid>();
 
             errorMessage = null;
+
+            interactiveExperience.InteractiveExperienceSchedules.LoadAttributes( rockContext );
 
             // Delete any existing schedules that have been removed.
             foreach ( var schedule in interactiveExperience.InteractiveExperienceSchedules.ToList() )
@@ -574,6 +613,13 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     {
                         return false;
                     }
+
+                    var answersToDelete = experienceAnswerService
+                        .Queryable()
+                        .Where( a => a.InteractiveExperienceOccurrence.InteractiveExperienceScheduleId == schedule.Id )
+                        .ToList();
+
+                    experienceAnswerService.DeleteRange( answersToDelete );
 
                     interactiveExperience.InteractiveExperienceSchedules.Remove( schedule );
                     experienceScheduleService.Delete( schedule );
@@ -592,8 +638,11 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                         schedule = new InteractiveExperienceSchedule
                         {
                             Guid = scheduleBag.Guid,
+                            InteractiveExperienceId = interactiveExperience.Id,
                             Schedule = new Schedule()
                         };
+
+                        schedule.LoadAttributes( rockContext );
 
                         interactiveExperience.InteractiveExperienceSchedules.Add( schedule );
                     }
@@ -604,8 +653,10 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     }
 
                     schedule.Schedule.iCalendarContent = scheduleBag.Schedule.Value;
+                    schedule.Schedule.CheckInStartOffsetMinutes = scheduleBag.EnableMinutesBefore;
                     schedule.DataViewId = scheduleBag.DataView.GetEntityId<DataView>( rockContext );
                     schedule.GroupId = scheduleBag.Group.GetEntityId<Rock.Model.Group>( rockContext );
+                    schedule.SetPublicAttributeValues( scheduleBag.AttributeValues, RequestContext.CurrentPerson );
 
                     // Force the cache to refresh if the only thing that
                     // changed was the schedule content.
@@ -909,7 +960,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                 var box = new DetailBlockBox<InteractiveExperienceBag, InteractiveExperienceDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 return ActionOk( box );
@@ -985,6 +1036,11 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     rockContext.SaveChanges();
 
                     entity.SaveAttributeValues( rockContext );
+
+                    foreach ( var schedule in entity.InteractiveExperienceSchedules )
+                    {
+                        schedule.SaveAttributeValues( rockContext );
+                    }
                 } );
 
                 if ( isNew )
@@ -1076,7 +1132,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                 var refreshedBox = new DetailBlockBox<InteractiveExperienceBag, InteractiveExperienceDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
@@ -1191,6 +1247,8 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             using ( var rockContext = new RockContext() )
             {
                 var actionService = new InteractiveExperienceActionService( rockContext );
+                var answerService = new InteractiveExperienceAnswerService( rockContext );
+                var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
 
                 if ( !TryGetEntityForEditAction( idKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -1203,6 +1261,20 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 {
                     return ActionNotFound( "The specified action was not found." );
                 }
+
+                var answersToDelete = answerService
+                    .Queryable()
+                    .Where( a => a.InteractiveExperienceActionId == action.Id )
+                    .ToList();
+
+                answerService.DeleteRange( answersToDelete );
+
+                var occurrencesToUpdate = occurrenceService
+                    .Queryable()
+                    .Where( o => o.CurrentlyShownActionId == action.Id )
+                    .ToList();
+
+                occurrencesToUpdate.ForEach( o => o.CurrentlyShownActionId = null );
 
                 actionService.Delete( action );
 

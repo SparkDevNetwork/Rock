@@ -70,7 +70,7 @@ namespace Rock
             {
                 if ( parentControl is Rock.Web.UI.RockBlock )
                 {
-                    return (Rock.Web.UI.RockBlock)parentControl;
+                    return ( Rock.Web.UI.RockBlock ) parentControl;
                 }
                 parentControl = parentControl.Parent;
             }
@@ -89,7 +89,7 @@ namespace Rock
             {
                 if ( parentControl is System.Web.UI.UpdatePanel )
                 {
-                    return (System.Web.UI.UpdatePanel)parentControl;
+                    return ( System.Web.UI.UpdatePanel ) parentControl;
                 }
                 parentControl = parentControl.Parent;
             }

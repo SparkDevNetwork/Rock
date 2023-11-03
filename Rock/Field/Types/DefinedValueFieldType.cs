@@ -143,7 +143,7 @@ namespace Rock.Field.Types
                 publicConfigurationValues[DEFINED_TYPE_KEY] = definedType?.Guid.ToString();
             }
 
-            if ( usage == ConfigurationValueUsage.Configure )
+            if ( usage == ConfigurationValueUsage.Configure || usage == ConfigurationValueUsage.Edit )
             {
                 // If in configure mode, get the selectable value options that
                 // have been set.
@@ -154,33 +154,29 @@ namespace Rock.Field.Types
                 }
             }
 
-            // Get the list of values that can be selected.
-            if ( usage == ConfigurationValueUsage.Edit || usage == ConfigurationValueUsage.Configure )
+            if ( definedType != null )
             {
-                if ( definedType != null )
-                {
-                    int[] selectableValues = privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && privateConfigurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
-                        ? privateConfigurationValues[SELECTABLE_VALUES_KEY].Split( ',' ).Select( int.Parse ).ToArray()
-                        : null;
+                int[] selectableValues = privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && privateConfigurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
+                    ? privateConfigurationValues[SELECTABLE_VALUES_KEY].Split( ',' ).Select( int.Parse ).ToArray()
+                    : null;
 
-                    var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
+                var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
 
-                    publicConfigurationValues[VALUES_PUBLIC_KEY] = definedType.DefinedValues
-                        .Where( v => ( includeInactive || v.IsActive )
-                            && ( selectableValues == null || selectableValues.Contains( v.Id ) ) )
-                        .OrderBy( v => v.Order )
-                        .Select( v => new
-                        {
-                            Value = v.Guid,
-                            Text = v.Value,
-                            v.Description
-                        } )
-                        .ToCamelCaseJson( false, true );
-                }
-                else
-                {
-                    publicConfigurationValues[VALUES_PUBLIC_KEY] = "[]";
-                }
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = definedType.DefinedValues
+                    .Where( v => ( includeInactive || v.IsActive )
+                        && ( selectableValues == null || selectableValues.Contains( v.Id ) ) )
+                    .OrderBy( v => v.Order )
+                    .Select( v => new
+                    {
+                        Value = v.Guid,
+                        Text = v.Value,
+                        v.Description
+                    } )
+                    .ToCamelCaseJson( false, true );
+            }
+            else
+            {
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = "[]";
             }
 
             return publicConfigurationValues;
@@ -197,6 +193,7 @@ namespace Rock.Field.Types
             selectableValues = ConvertDelimitedGuidsToIds( selectableValues, v => DefinedValueCache.Get( v )?.Id );
 
             privateConfigurationValues[SELECTABLE_VALUES_KEY] = selectableValues;
+            privateConfigurationValues.Remove( SELECTABLE_VALUES_PUBLIC_KEY );
 
             // Convert the defined type value from a guid to an integer.
             var definedTypeGuid = privateConfigurationValues.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsGuidOrNull();
@@ -213,6 +210,43 @@ namespace Rock.Field.Types
             }
 
             return privateConfigurationValues;
+        }
+
+        /// <summary>
+        /// Adds the defined value to the attribute configuration. This only
+        /// updates the configuration if it is required. If the id already is
+        /// selected or the configuration already specifies all values to be
+        /// shown then no changes are made. This makes the change but does not
+        /// save the changes to the database.
+        /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="definedValueId">The defined value identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if SaveChanges() should be called, <c>false</c> otherwise.</returns>
+        internal static bool AddValueToAttributeConfiguration( int attributeId, int definedValueId, RockContext rockContext )
+        {
+            var qualifier = new AttributeQualifierService( rockContext )
+                .Queryable()
+                .Where( q => q.AttributeId == attributeId && q.Key == SELECTABLE_VALUES_KEY )
+                .FirstOrDefault();
+
+            if ( qualifier == null || qualifier.Value.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var ids = qualifier.Value.SplitDelimitedValues().AsIntegerList();
+
+            if ( ids.Contains( definedValueId ) )
+            {
+                return false;
+            }
+
+            ids.Add( definedValueId );
+
+            qualifier.Value = string.Join( ",", ids.Select( id => id.ToString() ) );
+
+            return true;
         }
 
         #endregion

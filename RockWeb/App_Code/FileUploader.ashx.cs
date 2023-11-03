@@ -30,6 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 
 namespace RockWeb
 {
@@ -185,17 +186,15 @@ namespace RockWeb
                 throw new Rock.Web.FileUploadException( "Insufficient info to upload a file of this type.", System.Net.HttpStatusCode.Forbidden );
             }
 
-            var assetStorageService = new AssetStorageProviderService( new RockContext() );
-            AssetStorageProvider assetStorageProvider = assetStorageService.Get( ( int ) assetStorageId );
-            assetStorageProvider.LoadAttributes();
-            var component = assetStorageProvider.GetAssetStorageComponent();
+            var assetStorageProviderCache = AssetStorageProviderCache.Get( assetStorageId.Value );
+            var component = assetStorageProviderCache.AssetStorageComponent;
 
             var asset = new Rock.Storage.AssetStorage.Asset();
             asset.Key = assetKey;
             asset.Type = Rock.Storage.AssetStorage.AssetType.File;
             asset.AssetStream = uploadedFile.InputStream;
 
-            if ( component.UploadObject( assetStorageProvider, asset ) )
+            if ( component.UploadObject( assetStorageProviderCache.ToEntity(), asset ) )
             {
                 context.Response.Write( new { Id = string.Empty, FileName = assetKey }.ToJson() );
             }
@@ -477,7 +476,7 @@ namespace RockWeb
             scrubbedFileName = scrubbedFileName.Replace(" ", "_");
 
              // Remove Illegal Filename Characters
-            char[] illegalChars = { '#', '(', ')' };
+            char[] illegalChars = { '#', '(', ')', '&', '%' };
             scrubbedFileName = string.Concat( scrubbedFileName.Split( illegalChars ) );
 
             return scrubbedFileName;

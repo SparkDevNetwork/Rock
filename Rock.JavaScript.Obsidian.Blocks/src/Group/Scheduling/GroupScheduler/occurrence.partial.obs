@@ -31,14 +31,16 @@
 
             <li class="list-group-item d-flex align-items-center">
                 <ProgressBar :progress="scheduleProgress"></ProgressBar>
-                <RockButton type="button"
-                            class="circle-plus"
-                            :disabled="schedulingDisabled"
-                            @click="onSelectIndividualsClick">
-                    <Loading :isLoading="isLoadingResources" :isSmall="true">
-                        <i class="fa fa-plus"></i>
-                    </Loading>
-                </RockButton>
+                <div v-no-drag-scroll>
+                    <RockButton type="button"
+                                class="circle-plus"
+                                :disabled="schedulingDisabled"
+                                @click="onSelectIndividualsClick">
+                        <Loading :isLoading="isLoadingResources" :isSmall="true">
+                            <i class="fa fa-plus"></i>
+                        </Loading>
+                    </RockButton>
+                </div>
             </li>
         </ul>
 
@@ -56,9 +58,10 @@
     import ScheduledResource from "./scheduledResource.partial.obs";
     import SelectIndividuals from "./selectIndividuals.partial.obs";
     import { IScheduleProgress, ISchedulerResourceAttend, ReloadAllOccurrences, ReloadOccurrencesContainingResource, ReloadScheduleOccurrences, ResourceAction } from "./types.partial";
-    import Loading from "@Obsidian/Controls/loading";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { NoDragScroll as vNoDragScroll } from "@Obsidian/Directives/dragScroll";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { ScheduledAttendanceItemStatus, ScheduledAttendanceItemStatusDescription } from "@Obsidian/Enums/Event/scheduledAttendanceItemStatus";
     import { useHttp } from "@Obsidian/Utility/http";

@@ -142,6 +142,10 @@ namespace Rock.Lava.Fluid
                 {
                     return new LavaDateTimeValue( dto );
                 }
+                else if ( value is TimeSpan ts )
+                {
+                    return new LavaTimeSpanValue( ts );
+                }
 
                 // This converter cannot process the value.
                 return null;
@@ -315,20 +319,25 @@ namespace Rock.Lava.Fluid
             options.Filters.AddFilter( "Join", global::Fluid.Filters.ArrayFilters.Join );
             options.Filters.AddFilter( "First", global::Fluid.Filters.ArrayFilters.First );
             options.Filters.AddFilter( "Last", global::Fluid.Filters.ArrayFilters.Last );
+            options.Filters.AddFilter( "Concat", global::Fluid.Filters.ArrayFilters.Concat );
             options.Filters.AddFilter( "Map", global::Fluid.Filters.ArrayFilters.Map );
             options.Filters.AddFilter( "Reverse", global::Fluid.Filters.ArrayFilters.Reverse );
             options.Filters.AddFilter( "Size", global::Fluid.Filters.ArrayFilters.Size );
             options.Filters.AddFilter( "Sort", global::Fluid.Filters.ArrayFilters.Sort );
+            options.Filters.AddFilter( "SortNatural", global::Fluid.Filters.ArrayFilters.SortNatural );
             options.Filters.AddFilter( "Uniq", global::Fluid.Filters.ArrayFilters.Uniq );
             options.Filters.AddFilter( "Where", global::Fluid.Filters.ArrayFilters.Where );
 
             options.Filters.AddFilter( "Default", global::Fluid.Filters.MiscFilters.Default );
             options.Filters.AddFilter( "Date", global::Fluid.Filters.MiscFilters.Date );
+            options.Filters.AddFilter( "Compact", global::Fluid.Filters.MiscFilters.Compact );
             options.Filters.AddFilter( "UnescapeDataString", global::Fluid.Filters.MiscFilters.UrlDecode );
             options.Filters.AddFilter( "EscapeDataString", global::Fluid.Filters.MiscFilters.UrlEncode );
+            options.Filters.AddFilter( "EscapeOnce", global::Fluid.Filters.MiscFilters.EscapeOnce );
             options.Filters.AddFilter( "StripHtml", global::Fluid.Filters.MiscFilters.StripHtml );
             options.Filters.AddFilter( "Escape", global::Fluid.Filters.MiscFilters.Escape );
 
+            options.Filters.AddFilter( "Abs", global::Fluid.Filters.NumberFilters.Abs );
             options.Filters.AddFilter( "AtLeast", global::Fluid.Filters.NumberFilters.AtLeast );
             options.Filters.AddFilter( "AtMost", global::Fluid.Filters.NumberFilters.AtMost );
             options.Filters.AddFilter( "Ceiling", global::Fluid.Filters.NumberFilters.Ceil );
@@ -337,6 +346,7 @@ namespace Rock.Lava.Fluid
             options.Filters.AddFilter( "Minus", global::Fluid.Filters.NumberFilters.Minus );
             options.Filters.AddFilter( "Modulo", global::Fluid.Filters.NumberFilters.Modulo );
             options.Filters.AddFilter( "Plus", global::Fluid.Filters.NumberFilters.Plus );
+            options.Filters.AddFilter( "Round", global::Fluid.Filters.NumberFilters.Round );
             options.Filters.AddFilter( "Times", global::Fluid.Filters.NumberFilters.Times );
 
             options.Filters.AddFilter( "Append", global::Fluid.Filters.StringFilters.Append );
@@ -564,24 +574,19 @@ namespace Rock.Lava.Fluid
             }
         }
 
-        private static LavaToLiquidTemplateConverter _lavaToLiquidConverter = new LavaToLiquidTemplateConverter();
-
         /// <summary>
         /// Pre-parses a Lava template to ensure it is using Liquid-compliant syntax, and creates a new template object.
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <param name=""></param>
         /// <returns></returns>
-        private FluidTemplate CreateNewFluidTemplate( string lavaTemplate, out string liquidTemplate )
+        private FluidTemplate CreateNewFluidTemplate( string lavaTemplate )
         {
             FluidTemplate template;
-
-            liquidTemplate = _lavaToLiquidConverter.RemoveLavaComments( lavaTemplate );
-
             string error;
             IFluidTemplate fluidTemplate;
 
-            var success = _parser.TryParse( liquidTemplate, out fluidTemplate, out error );
+            var success = _parser.TryParse( lavaTemplate, out fluidTemplate, out error );
 
             var fluidTemplateObject = ( FluidTemplate ) fluidTemplate;
 
@@ -591,7 +596,7 @@ namespace Rock.Lava.Fluid
             }
             else
             {
-                throw new LavaParseException( this.EngineName, liquidTemplate, error );
+                throw new LavaParseException( this.EngineName, lavaTemplate, error );
             }
 
             return template;
@@ -723,9 +728,19 @@ namespace Rock.Lava.Fluid
             return LavaFluidParser.ParseToTokens( lavaTemplate );
         }
 
+        /// <summary>
+        /// Process a template and return the list of statements identified by the parser.
+        /// </summary>
+        /// <param name="lavaTemplate"></param>
+        /// <returns></returns>
+        public List<string> ParseTemplateToStatements( string lavaTemplate )
+        {
+            return LavaFluidParser.ParseToStatements( lavaTemplate );
+        }
+
         protected override ILavaTemplate OnParseTemplate( string lavaTemplate )
         {
-            var fluidTemplate = CreateNewFluidTemplate( lavaTemplate, out _ );
+            var fluidTemplate = CreateNewFluidTemplate( lavaTemplate );
 
             var newTemplate = new FluidTemplateProxy( fluidTemplate, lavaTemplate );
 

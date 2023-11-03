@@ -337,10 +337,12 @@ namespace RockWeb.Blocks.Event
 
         private Dictionary<string, object> GetMergeObjects( Registration registration )
         {
-            Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
-            mergeObjects.Add( "RegistrationInstance", registration.RegistrationInstance );
-            mergeObjects.Add( "Registration", registration );
-            mergeObjects.Add( "TransitionedRegistrants", _registrants.Where( r => r.RegistrationId == registration.Id ).ToList() );
+            Dictionary<string, object> mergeObjects = new Dictionary<string, object>
+            {
+                { "RegistrationInstance", registration.RegistrationInstance },
+                { "Registration", registration },
+                { "TransitionedRegistrants", _registrants.Where( r => r.RegistrationId == registration.Id ).ToList() }
+            };
 
             bool additionalFieldsNeeded = false;
 
@@ -355,6 +357,9 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
+
+            // If there arn't any form fields check for any fees since these would not have been selected when being added to the wait list.
+            additionalFieldsNeeded = !additionalFieldsNeeded ? registration.RegistrationInstance.RegistrationTemplate.Fees.Any() : additionalFieldsNeeded;
 
             mergeObjects.Add( "AdditionalFieldsNeeded", additionalFieldsNeeded );
 

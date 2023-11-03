@@ -1,0 +1,79 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span :class="labelClass" :style="labelStyle">{{ text }}</span>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { computed } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    /** Contains the display text of the cell. */
+    const text = computed((): string => {
+        if (!props.column.field) {
+            return "";
+        }
+
+        const value = props.row[props.column.field];
+
+        // If the value is an object, that means it should be a ListItemBag.
+        if (typeof value === "object") {
+            if (value === null || value["text"] === null || value["text"] === undefined) {
+                return "";
+            }
+
+            return `${(value as ListItemBag).text}`;
+        }
+        else if (typeof value === "number" || typeof value === "string") {
+            const textSource = props.column.props["textSource"] as Record<string | number, string>;
+
+            if (textSource && value in textSource) {
+                return textSource[value];
+            }
+        }
+
+        return `${value}`;
+    });
+
+    /** Contains the CSS classes to apply to the span label. */
+    const labelClass = computed(() => {
+        const classSource = props.column.props["classSource"] as Record<string, string>;
+
+        if (classSource && text.value in classSource) {
+            return `label label-${classSource[text.value]}`;
+        }
+        else {
+            return "label label-default";
+        }
+    });
+
+    /** Contains the custom style values to apply to the span label. */
+    const labelStyle = computed(() => {
+        const colorSource = props.column.props["colorSource"] as Record<string, string>;
+
+        if (props.column.field && props.row[props.column.field] && (props.row[props.column.field] as ListItemBag).value) {
+            // Looks like a ListItemBag, extract the color information.
+            const baseColor = (props.row[props.column.field] as ListItemBag).value ?? "gray";
+
+            const pair = RockColor.calculateColorPair(new RockColor(baseColor));
+
+            return {
+                "backgroundColor": pair.backgroundColor.toRgba(),
+                "color": pair.foregroundColor.toRgba()
+            };
+        }
+        else if (colorSource && text.value in colorSource) {
+            const baseColor = colorSource[text.value];
+            const pair = RockColor.calculateColorPair(new RockColor(baseColor));
+
+            // We are using the color lookup and we have a match.
+            return {
+                "backgroundColor": pair.backgroundColor.toRgba(),
+                "color": pair.foregroundColor.toRgba()
+            };
+        }
+    });
+</script>

@@ -197,11 +197,11 @@ namespace Rock.CodeGeneration.Pages
             };
 
             // Generate the <Entity>Bag.cs file.
-            var content = generator.GenerateEntityBag( options.EntityType.Name, bagNamespace, options.Properties );
+            var content = generator.GenerateEntityBag( options.EntityType.Name, bagNamespace, options.Properties, $"The item details for the {options.EntityType.Name.SplitCase()} Detail block." );
             files.Add( new GeneratedFile( $"{options.EntityType.Name}Bag.cs", bagPath, content ) );
 
             // Generate the <Entity>DetailOptionsBag.cs file.
-            content = generator.GenerateOptionsBag( $"{options.EntityType.Name}DetailOptionsBag", bagNamespace );
+            content = generator.GenerateOptionsBag( $"{options.EntityType.Name}DetailOptionsBag", bagNamespace, $"The additional configuration options for the {options.EntityType.Name.SplitCase()} Detail block." );
             files.Add( new GeneratedFile( $"{options.EntityType.Name}DetailOptionsBag.cs", bagPath, content ) );
 
             // Generate the main <Entity>Detail.cs file.
@@ -221,7 +221,7 @@ namespace Rock.CodeGeneration.Pages
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"{options.EntityType.Name.CamelCase()}Detail.obs", typeScriptBlockPath, result ) );
+                files.Add( new GeneratedFile( $"{options.EntityType.Name.ToCamelCase()}Detail.obs", typeScriptBlockPath, result ) );
             }
 
             // Generate the Obsidian <Entity>Detail\viewPanel.partial.obs file.
@@ -419,7 +419,7 @@ namespace Rock.CodeGeneration.Pages
         /// the IsChecked state.
         /// </summary>
         /// <seealso cref="INotifyPropertyChanged" />
-        private class PropertyItem : INotifyPropertyChanged
+        internal class PropertyItem : INotifyPropertyChanged
         {
             #region Events
 

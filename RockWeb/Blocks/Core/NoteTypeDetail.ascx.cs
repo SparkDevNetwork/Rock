@@ -26,6 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Enums.Core;
 
 namespace RockWeb.Blocks.Core
 {
@@ -120,6 +121,21 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlFormatType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlFormatType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var formatType = ddlFormatType.SelectedValueAsEnum<NoteFormatType>();
+
+            pnlStructuredFeatures.Visible = formatType == NoteFormatType.Unknown
+                || formatType == NoteFormatType.Structured;
+
+            nbStructuredWarning.Visible = ddlFormatType.Visible && formatType == NoteFormatType.Structured;
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -144,6 +160,7 @@ namespace RockWeb.Blocks.Core
 
                 noteType = new NoteType();
                 noteType.Order = ( maxNoteTypeOrderForEntity ?? 0 ) + 1;
+                noteType.FormatType = NoteFormatType.Structured;
                 service.Add( noteType );
             }
 
@@ -153,13 +170,9 @@ namespace RockWeb.Blocks.Core
             noteType.EntityTypeQualifierValue = string.Empty;
             
             noteType.IconCssClass = tbIconCssClass.Text;
-            noteType.BackgroundColor = cpBackgroundColor.Text;
-            noteType.FontColor = cpFontColor.Text;
-            noteType.BorderColor = cpBorderColor.Text;
+            noteType.Color = cpColor.Text;
 
             noteType.UserSelectable = cbUserSelectable.Checked;
-            noteType.RequiresApprovals = cbRequiresApprovals.Checked;
-            noteType.SendApprovalNotifications = cbSendApprovalNotifications.Checked;
             noteType.AllowsWatching = cbAllowsWatching.Checked;
             noteType.AutoWatchAuthors = cbAutoWatchAuthors.Checked;
 
@@ -169,7 +182,8 @@ namespace RockWeb.Blocks.Core
             noteType.AllowsAttachments = cbAllowsAttachments.Checked;
             noteType.BinaryFileTypeId = noteType.AllowsAttachments ? bftpAttachmentType.SelectedValueAsId() : null;
 
-            noteType.ApprovalUrlTemplate = ceApprovalUrlTemplate.Text;
+            noteType.FormatType = ddlFormatType.SelectedValueAsEnum<NoteFormatType>();
+            noteType.IsMentionEnabled = cbIsMentionEnabled.Checked;
 
             if ( noteType.IsValid )
             {
@@ -218,6 +232,8 @@ namespace RockWeb.Blocks.Core
                     lActionTitle.Text = ActionTitle.Add( entityType.FriendlyName + " " + NoteType.FriendlyTypeName ).FormatAsHtmlTitle();
                 }
 
+                noteType.FormatType = NoteFormatType.Structured;
+
                 // hide the panel drawer that shows created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -250,13 +266,9 @@ namespace RockWeb.Blocks.Core
             lEntityTypeReadOnly.Text = entityType != null ? entityType.FriendlyName : string.Empty;
             
             tbIconCssClass.Text = noteType.IconCssClass;
-            cpBackgroundColor.Text = noteType.BackgroundColor;
-            cpFontColor.Text = noteType.FontColor;
-            cpBorderColor.Text = noteType.BorderColor;
+            cpColor.Text = noteType.Color;
 
             cbUserSelectable.Checked = noteType.UserSelectable;
-            cbRequiresApprovals.Checked = noteType.RequiresApprovals;
-            cbSendApprovalNotifications.Checked = noteType.SendApprovalNotifications;
             cbAllowsWatching.Checked = noteType.AllowsWatching;
             cbAutoWatchAuthors.Checked = noteType.AutoWatchAuthors;
 
@@ -266,9 +278,15 @@ namespace RockWeb.Blocks.Core
 
             cbAllowsReplies.Checked = noteType.AllowsReplies;
             nbMaxReplyDepth.Text = noteType.MaxReplyDepth.ToString();
-            ceApprovalUrlTemplate.Text = noteType.ApprovalUrlTemplate;
+
+            ddlFormatType.BindToEnum<NoteFormatType>();
+            ddlFormatType.SetValue( noteType.FormatType.ConvertToInt() );
+            ddlFormatType.Visible = noteType.FormatType != NoteFormatType.Structured;
+
+            cbIsMentionEnabled.Checked = noteType.IsMentionEnabled;
 
             cbAllowsReplies_CheckedChanged( null, null );
+            ddlFormatType_SelectedIndexChanged( null, null );
         }
 
         #endregion

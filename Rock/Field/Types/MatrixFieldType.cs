@@ -84,7 +84,7 @@ namespace Rock.Field.Types
                     tempAttributeMatrixItem.LoadAttributes();
 
                     var lavaTemplate = attributeMatrix.AttributeMatrixTemplate.FormattedLava;
-                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() );
                     mergeFields.Add( "AttributeMatrix", attributeMatrix );
                     mergeFields.Add( "ItemAttributes", tempAttributeMatrixItem.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
                     mergeFields.Add( "AttributeMatrixItems", attributeMatrix.AttributeMatrixItems.OrderBy( a => a.Order ) );
