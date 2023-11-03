@@ -25,6 +25,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo( "Rock.Lava" )]
 #if REVIEW_NET5_0_OR_GREATER
 [assembly: InternalsVisibleTo( "Rock.Lava.NG" )]
+[assembly: InternalsVisibleTo( "Rock.NG" )]
 #endif
 [assembly: InternalsVisibleTo( "Rock" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]

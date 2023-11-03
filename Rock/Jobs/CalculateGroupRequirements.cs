@@ -21,8 +21,12 @@ using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
+#endif
 using System.Linq;
 using System.Text;
 
@@ -158,7 +162,11 @@ namespace Rock.Jobs
                         {
                             // Group requirement can expire: don't recalculate members that already met the requirement within the expire days (unless they are flagged with a warning)
                             var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
+#if REVIEW_NET5_0_OR_GREATER
+                            qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => !a.RequirementWarningDateTime.HasValue && a.RequirementMetDateTime.HasValue && EF.Functions.DateDiffDay( a.RequirementMetDateTime, currentDateTime ) < expireDaysCount );
+#else
                             qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => !a.RequirementWarningDateTime.HasValue && a.RequirementMetDateTime.HasValue && SqlFunctions.DateDiff( "day", a.RequirementMetDateTime, currentDateTime ) < expireDaysCount );
+#endif
                         }
                         else
                         {

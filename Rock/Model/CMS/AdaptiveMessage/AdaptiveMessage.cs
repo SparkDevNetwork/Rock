@@ -127,6 +127,7 @@ namespace Rock.Model
         /// </summary>
         public AdaptiveMessageConfiguration()
         {
+#if REVIEW_WEBFORMS
             this.HasMany( a => a.Categories )
                 .WithMany()
                 .Map( a =>
@@ -135,6 +136,7 @@ namespace Rock.Model
                     a.MapRightKey( "CategoryId" );
                     a.ToTable( "AdaptiveMessageCategory" );
                 } );
+#endif
         }
     }
 

@@ -25,8 +25,10 @@ using System.Data.Entity.Spatial;
 #endif
 using System.Data.SqlClient;
 using System.Linq;
+#if REVIEW_WEBFORMS
 using EF6.TagWith;
 using Microsoft.SqlServer.Types;
+#endif
 using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
@@ -314,6 +316,9 @@ namespace Rock.Model
         /// <param name="databaseTimeoutSeconds">The database timeout in seconds.</param>
         internal void UpdateDataViewPersistedValues( DataView dataView, int? databaseTimeoutSeconds = null )
         {
+#if REVIEW_NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             if ( dataView == null )
             {
                 return;
@@ -423,6 +428,7 @@ END CATCH;";
             .ToArray();
 
             this.Context.Database.ExecuteSqlCommand( TransactionalBehavior.DoNotEnsureTransaction, sql, parameters );
+#endif
         }
     }
 }

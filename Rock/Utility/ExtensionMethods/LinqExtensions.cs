@@ -708,6 +708,7 @@ namespace Rock
             return qry;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the underlying <see cref="ObjectQuery{T}"/> that represents the provided <see cref="IQueryable{T}"/>.
         /// <para>
@@ -745,6 +746,7 @@ namespace Rock
                 return null;
             }
         }
+#endif
 
         #endregion IQueryable extensions
 

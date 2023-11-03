@@ -124,6 +124,21 @@ namespace Rock.Field.Types
     public partial class ColorFieldType : Rock.Field.FieldType
     {
     }
+    public partial class ColorSelectorFieldType : Rock.Field.FieldType
+    {
+        public static class ConfigurationKey
+        {
+            /// <summary>
+            /// The key for colors
+            /// </summary>
+            public const string Colors = "colors";
+
+            /// <summary>
+            /// The key for allowing multiple color selection
+            /// </summary>
+            public const string AllowMultiple = "allowMultiple";
+        }
+    }
     public partial class CommunicationPreferenceFieldType : Rock.Field.FieldType
     {
     }
@@ -172,6 +187,7 @@ namespace Rock.Field.Types
     public partial class ContentChannelItemFieldType : Rock.Field.FieldType
     {
         public static readonly string CONTENT_CHANNEL_KEY = "contentchannel";
+        public static readonly string CONTENT_CHANNELS = "contentchannels";
     }
     public partial class ContentChannelTypeFieldType : Rock.Field.FieldType
     {
@@ -404,6 +420,9 @@ namespace Rock.Field.Types
         public static readonly string CONFIG_LIMIT_TO_FOLDER = "limitToFolder";
         public static readonly string CONFIG_ENHANCE_FOR_LONG_LISTS_THRESHOLD = "enhanceForLongListsThreshold";
         public static readonly string CONFIG_ALLOW_REFRESH = "allowRefresh";
+    }
+    public partial class MediaSelectorFieldType : Rock.Field.FieldType
+    {
     }
     public partial class MediaWatchFieldType : Rock.Field.FieldType
     {

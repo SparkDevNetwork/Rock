@@ -24,7 +24,11 @@ using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 
 namespace Rock.Blocks.Communication
@@ -275,7 +279,11 @@ We have unsubscribed you from the following lists:
             }
             else
             {
+#if REVIEW_NET5_0_OR_GREATER
+                box.EmailPreferenceUpdateAlertType = "danger";
+#else
                 box.EmailPreferenceUpdateAlertType = nameof( NotificationBoxType.Danger ).ToLower();
+#endif
                 box.EmailPreferenceUpdateMessage = "Unfortunately, we're unable to update your email preference, as we're not sure who you are.";
             }
 
@@ -505,14 +513,22 @@ We have unsubscribed you from the following lists:
 
             if ( person == null )
             {
+#if REVIEW_NET5_0_OR_GREATER
+                responseBag.AlertType = "danger";
+#else
                 responseBag.AlertType = nameof( NotificationBoxType.Danger ).ToLower();
+#endif
                 responseBag.ErrorMessage = "Unfortunately, we're unable to update your email preference, as we're not sure who you are.";
                 return responseBag;
             }
 
             if ( !bag.UnsubscribeFromList.Any() )
             {
+#if REVIEW_NET5_0_OR_GREATER
+                responseBag.AlertType = "warning";
+#else
                 responseBag.AlertType = nameof( NotificationBoxType.Warning ).ToLower();
+#endif
                 responseBag.ErrorMessage = "Please select the lists that you want to unsubscribe from.";
                 return responseBag;
             }
@@ -587,7 +603,11 @@ We have unsubscribed you from the following lists:
         /// <returns></returns>
         private EmailPreferenceEntrySaveResponseBag GetSuccessResponseBag(string successMessage = null)
         {
+#if REVIEW_NET5_0_OR_GREATER
+            return new EmailPreferenceEntrySaveResponseBag() { AlertType = "success", SuccessMessage = successMessage ?? GetAttributeValue( AttributeKey.SuccessText ) };
+#else
             return new EmailPreferenceEntrySaveResponseBag() { AlertType = nameof( NotificationBoxType.Success ).ToLower(), SuccessMessage = successMessage ?? GetAttributeValue( AttributeKey.SuccessText ) };
+#endif
         }
 
         /// <summary>
@@ -597,7 +617,11 @@ We have unsubscribed you from the following lists:
         {
             var responseBag = new EmailPreferenceEntrySaveResponseBag()
             {
+#if REVIEW_NET5_0_OR_GREATER
+                AlertType = "danger",
+#else
                 AlertType = nameof( NotificationBoxType.Danger ).ToLower(),
+#endif
                 ErrorMessage = "Unfortunately, we're unable to update your email preference, as we're not sure who you are."
             };
 
@@ -727,7 +751,11 @@ We have unsubscribed you from the following lists:
                     // Though the chance for empty email address is very minimal as client side validation is in place.
                     if ( string.IsNullOrEmpty( bag.Email ) )
                     {
+#if REVIEW_NET5_0_OR_GREATER
+                        responseBag.AlertType = "danger";
+#else
                         responseBag.AlertType = nameof( NotificationBoxType.Danger ).ToLower();
+#endif
                         responseBag.ErrorMessage = "Email is required.";
                     }
                     else

@@ -33,8 +33,12 @@ using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
+#endif
 using System.Linq;
 using System.Text;
 
@@ -792,7 +796,11 @@ namespace Rock.Blocks.Engagement
             var stepsCompleted = completedQuery.Count();
 
             var daysToCompleteList = completedQuery
+#if REVIEW_NET5_0_OR_GREATER
+                .Select( s => EF.Functions.DateDiffDay( s.StartDateTime, s.CompletedDateTime ) )
+#else
                 .Select( s => SqlFunctions.DateDiff( "DAY", s.StartDateTime, s.CompletedDateTime ) )
+#endif
                 .Where( i => i.HasValue )
                 .Select( i => i.Value )
                 .ToList();

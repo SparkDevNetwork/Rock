@@ -470,7 +470,9 @@ namespace Rock.Lava.Blocks
                                 Not sure why this exception is happening. It looks to be within the ZZZ Project System.Linq.Dynamic.Core
                                 package. The important part is that the data is coming back in a single query.
                             */
+#if REVIEW_WEBFORMS
                             dbContext.Configuration.LazyLoadingEnabled = true;
+#endif
 
                             IQueryable resultsQry;
 

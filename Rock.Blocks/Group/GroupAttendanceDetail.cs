@@ -2412,7 +2412,11 @@ namespace Rock.Blocks.Group
             /// <returns>The group associated with the GroupId page parameter if the current person is authorized; otherwise, <c>null</c>.</returns>
             internal Model.Group GetGroupIfAuthorized( bool withTracking = false )
             {
+#if REVIEW_NET5_0_OR_GREATER
+                IQueryable<Model.Group> query = _groupService
+#else
                 var query = _groupService
+#endif
                         .AsNoFilter()
                         .Include( g => g.GroupType )
                         .Include( g => g.Schedule );

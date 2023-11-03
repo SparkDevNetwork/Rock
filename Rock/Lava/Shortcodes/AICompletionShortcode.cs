@@ -273,12 +273,14 @@ so you can customize this to be exactly what you want.</p>
 
             if ( currentPerson == null )
             {
+#if REVIEW_WEBFORMS
                 var httpContext = HttpContext.Current;
 
                 if ( context != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
                     currentPerson = httpContext.Items["CurrentPerson"] as Person;
                 }
+#endif
             }
 
             return currentPerson;

@@ -20,8 +20,10 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
+#if REVIEW_WEBFORMS
 using System.Web.Routing;
 using System.Web.Security.AntiXss;
+#endif
 
 using Rock.Blocks;
 using Rock.Data;
@@ -262,6 +264,9 @@ namespace Rock.Web
         {
             Parameters = new Dictionary<string, string>();
 
+#if REVIEW_NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             var routeInfo = new Rock.Web.RouteInfo( uri, applicationPath );
             if ( routeInfo != null )
             {
@@ -305,6 +310,7 @@ namespace Rock.Web
                     }
                 }
             }
+#endif
 
             // Add query parameters.
             QueryString = HttpUtility.ParseQueryString( uri.Query );
@@ -437,7 +443,11 @@ namespace Rock.Web
             }
 
             // add base path to url -- Fixed bug #84
+#if REVIEW_NET5_0_OR_GREATER
+            url = "/" + url;
+#else
             url = ( HttpContext.Current.Request.ApplicationPath == "/" ) ? "/" + url : HttpContext.Current.Request.ApplicationPath + "/" + url;
+#endif
 
             return url;
         }
@@ -518,7 +528,11 @@ namespace Rock.Web
         /// <returns></returns>
         public string BuildUrlEncoded( bool removeMagicToken )
         {
+#if REVIEW_NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             return AntiXssEncoder.HtmlEncode( BuildUrl( removeMagicToken ), false );
+#endif
         }
 
         /// <summary>
@@ -530,6 +544,7 @@ namespace Rock.Web
         {
             string routeUrl = string.Empty;
 
+#if REVIEW_WEBFORMS
             foreach ( var route in RouteTable.Routes.OfType<Route>() )
             {
                 if ( route != null && route.DataTokens != null && route.DataTokens.ContainsKey( "PageRoutes" ) )
@@ -542,6 +557,7 @@ namespace Rock.Web
                     }
                 }
             }
+#endif
 
             // get dictionary of parms in the route
             Dictionary<string, string> routeParms = new Dictionary<string, string>();
@@ -834,6 +850,7 @@ namespace Rock.Web
             }
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the page references and their breadcrumbs that make up the
         /// current page and it's tree of parent pages.
@@ -967,11 +984,13 @@ namespace Rock.Web
 
             return pageReferences;
         }
+#endif
 
         #endregion
 
         #region Public Static Methods
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the parent page references.
         /// </summary>
@@ -1000,6 +1019,7 @@ namespace Rock.Web
         {
             return new List<PageReference>();
         }
+#endif
 
         /// <summary>
         /// Saves the history.

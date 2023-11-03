@@ -54,7 +54,9 @@ namespace Rock.Utility.ExtensionMethods
 
             if ( fingerprint )
             {
+#if REVIEW_WEBFORMS
                 attributes.Add( "src", Fingerprint.Tag( url ) );
+#endif
             }
             else
             {
@@ -89,7 +91,9 @@ namespace Rock.Utility.ExtensionMethods
 
             if ( fingerprint )
             {
+#if REVIEW_WEBFORMS
                 attributes.Add( "href", Fingerprint.Tag( url ) );
+#endif
             }
             else
             {

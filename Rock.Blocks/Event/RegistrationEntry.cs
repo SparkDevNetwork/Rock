@@ -28,7 +28,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
+#if REVIEW_WEBFORMS
 using DotLiquid.Util;
+#endif
 
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;

@@ -18,7 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
+#endif
 using System.Linq;
 
 using Rock.Attribute;
@@ -495,8 +497,12 @@ namespace Rock.Blocks.Core
                 entity.Location = new Location();
             }
 
+#if REVIEW_NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             entity.Location.GeoPoint = bag.GeoPoint.IsNotNullOrWhiteSpace() ? DbGeography.FromText( bag.GeoPoint ) : null;
             entity.Location.GeoFence = bag.GeoFence.IsNotNullOrWhiteSpace() ? DbGeography.PolygonFromText( bag.GeoFence, DbGeography.DefaultCoordinateSystemId ) : null;
+#endif
 
             var locationGuids = bag.Locations.ConvertAll( l => l.Value.AsGuid() );
             // Remove any deleted locations

@@ -108,7 +108,8 @@ namespace Rock.Web.UI
             /// The position offset.
             /// </value>
             public int PositionOffset { get; set; }
-            
+
+#if REVIEW_WEBFORMS            
             /// <summary>
             /// Gets the grid column.
             /// </summary>
@@ -123,6 +124,7 @@ namespace Rock.Web.UI
                 lavaField.ConvertToItemDictionary = false;
                 return lavaField;
             }
+#endif
 
             /// <summary>
             /// 

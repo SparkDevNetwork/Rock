@@ -266,7 +266,7 @@ namespace Rock.Web2.Routing
 
             var requestMessage = new HttpRequestWrapper( context.Request );
 
-            var rockRequestContext = new RockRequestContext( requestMessage ); //context.RequestServices.GetRequiredService<RockRequestContext>();
+            var rockRequestContext = new RockRequestContext( requestMessage, new NullRockResponseContext() ); //context.RequestServices.GetRequiredService<RockRequestContext>();
 
             var currentPage = new RockPage( pageCache, rockRequestContext );
 

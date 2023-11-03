@@ -18,6 +18,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Lava.Shared.NG", "Rock.Lava.Shared\Rock.Lava.Shared.NG.csproj", "{073C6A87-15FD-409B-BB85-B13922FB0D72}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Common.NG", "Rock.Common\Rock.Common.NG.csproj", "{681CD8A5-9B62-41EC-8BE7-0EB6CC5792A2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B52764ED-C73A-4D19-A81E-FAFF6B808B06} = {B52764ED-C73A-4D19-A81E-FAFF6B808B06}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Version.NG", "Rock.Version\Rock.Version.NG.csproj", "{0E6036B1-F48E-4B69-83EF-83C709DA8B42}"
 EndProject

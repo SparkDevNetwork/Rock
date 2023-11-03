@@ -21,9 +21,11 @@ using System.Data.Entity;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+#if REVIEW_WEBFORMS
 using DocumentFormat.OpenXml.Bibliography;
 using Nest;
 using PuppeteerSharp.Media;
+#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.DataFilter.ContentChannelItem;

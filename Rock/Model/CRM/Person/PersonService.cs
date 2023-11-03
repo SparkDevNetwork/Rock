@@ -2972,7 +2972,7 @@ namespace Rock.Model
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
                 .OrderBy( m => groupOrderQuery.FirstOrDefault( x => x.GroupId == m.GroupId && x.PersonId == person.Id ).GroupOrder ?? int.MaxValue )
 #if REVIEW_NET5_0_OR_GREATER
-                .ThenBy( m => Math.Abs( EF.Functions.DateDiffDay( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) ?? 0 ) )
+                .ThenBy( m => Math.Abs( EF.Functions.DateDiffDay( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) ) )
 #else
                 .ThenBy( m => Math.Abs( DbFunctions.DiffDays( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) ?? 0 ) )
 #endif

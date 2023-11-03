@@ -5210,10 +5210,12 @@ namespace Rock.Lava
             }
 
             // If a color scheme was not provided check the request object to use the clients preference
+#if REVIEW_WEBFORMS
             if ( colorScheme.IsNotNullOrWhiteSpace() && HttpContext.Current.Request.Headers["Sec-CH-Prefers-Color-Scheme"] != null && HttpContext.Current.Request.Headers["Sec-CH-Prefers-Color-Scheme"] == "dark" )
             {
                 colorSchemeValue = ColorScheme.Dark;
             }
+#endif
 
             return RockColor.CalculateColorPair( color, colorSchemeValue );
         }

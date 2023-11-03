@@ -16,7 +16,9 @@
 //
 
 using System.Collections.Generic;
+#if REVIEW_WEBFORMS
 using DocumentFormat.OpenXml.Office2010.ExcelAc;
+#endif
 
 namespace Rock.AI.Classes.ChatCompletions
 {

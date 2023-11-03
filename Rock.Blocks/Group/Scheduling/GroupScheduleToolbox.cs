@@ -28,7 +28,11 @@ using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 
 namespace Rock.Blocks.Group.Scheduling
@@ -935,8 +939,13 @@ namespace Rock.Blocks.Group.Scheduling
                     Location = ( Location ) null,
                     Schedule = ( Schedule ) null,
                     e.PersonAlias,
+#if REVIEW_NET5_0_OR_GREATER
+                    OccurrenceStartDate = e.StartDate.Date,
+                    OccurrenceEndDate = e.EndDate.Date,
+#else
                     OccurrenceStartDate = DbFunctions.TruncateTime( e.StartDate ).Value,
                     OccurrenceEndDate = DbFunctions.TruncateTime( e.EndDate ).Value,
+#endif
                     ConfirmationStatus = ToolboxScheduleRowConfirmationStatus.Unavailable
                 } )
                 .ToList();
@@ -2449,7 +2458,9 @@ namespace Rock.Blocks.Group.Scheduling
             var attendanceService = new AttendanceService( rockContext );
             var localOccurrenceDateTime = bag.OccurrenceDateTime.LocalDateTime;
 
+#if REVIEW_WEBFORMS
             rockContext.SqlLogging( true );
+#endif
 
             var attendance = attendanceService
                 .Queryable()
@@ -2460,7 +2471,9 @@ namespace Rock.Blocks.Group.Scheduling
                     && a.Occurrence.Schedule.Guid == bag.SelectedScheduleGuid
                 );
 
+#if REVIEW_WEBFORMS
             rockContext.SqlLogging( false );
+#endif
 
             if ( attendance != null )
             {

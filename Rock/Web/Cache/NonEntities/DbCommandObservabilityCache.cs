@@ -18,7 +18,9 @@
 using Rock.Data;
 using System.Collections.Concurrent;
 using System;
+#if REVIEW_WEBFORMS
 using DocumentFormat.OpenXml.Spreadsheet;
+#endif
 using System.Collections.Generic;
 using Rock.SystemKey;
 using System.Linq;

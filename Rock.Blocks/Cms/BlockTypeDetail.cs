@@ -195,8 +195,13 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
+#if REVIEW_NET5_0_OR_GREATER
+            bag.IsBlockExists = false;
+            bag.Pages = new List<string>();
+#else
             bag.IsBlockExists = entity.IsBlockExists();
             bag.Pages = entity.Blocks.Where( a => a.Page != null ).Select( a => a.Page.GetFullyQualifiedPageName() ).OrderBy( a => a ).ToList();
+#endif
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;

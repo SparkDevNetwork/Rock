@@ -19,7 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+#if REVIEW_WEBFORMS
 using DotLiquid.Util;
+#endif
 
 using Rock.Attribute;
 using Rock.Cms;
@@ -344,6 +346,9 @@ namespace Rock.Model
                 imageDownloadUrl = imageBinaryFile?.Url;
                 if ( imageDownloadUrl.IsNullOrWhiteSpace() )
                 {
+#if REVIEW_NET5_0_OR_GREATER
+                    throw new NotImplementedException();
+#else
                     // If the image URL is not resolved, 
                     // then fallback to building the URL from the HTTP request.
                     if ( System.Web.HttpContext.Current?.Request != null )
@@ -351,6 +356,7 @@ namespace Rock.Model
                         var uri = new Uri( System.Web.HttpContext.Current.Request.UrlProxySafe().ToString() );
                         imageDownloadUrl = $"{ uri.Scheme }://{ uri.GetComponents( UriComponents.HostAndPort, UriFormat.Unescaped ).EnsureTrailingForwardslash() }GetImage.ashx?guid={imageGuid.Value}";
                     }
+#endif
                 }
             }
 

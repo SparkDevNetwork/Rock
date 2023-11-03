@@ -23,7 +23,7 @@
     <Compile Remove="Field\Types\**" />
     <Compile Remove="Jobs\**" />
     <Compile Remove="Lava\RockLiquid\**" />
-    <Compile Remove="Model\*\*\*.WebForms.cs" />
+    <Compile Remove="**\*.WebForms.cs" />
     <Compile Remove="obj\**" />
     <Compile Remove="PersonProfile\**" />
     <Compile Remove="Plugin\**" />
@@ -78,6 +78,7 @@
   <ItemGroup>
     <Compile Remove="Address\MelissaData.cs" />
     <Compile Remove="Address\ServiceObjects.cs" />
+    <Compile Remove="Blocks\RockMobileBlockTypeCustomSettingsProvider.cs" />
     <Compile Remove="Blocks\Types\Mobile\Groups\GroupFinder.WebForms.cs" />
     <Compile Remove="Bus\Message\ScheduledGiftModifiedMessage.cs" />
     <Compile Remove="Chart\ChartJsTimeSeriesDataPoint.cs" />
@@ -159,6 +160,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs" Link="Properties\AssemblySharedInfo.cs" />
     <Compile Include="Badge\BadgeComponent.cs" />
     <Compile Include="Badge\BadgeContainer.cs" />
+    <Compile Include="Jobs\CalculateGroupRequirements.cs" />
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
     <Compile Include="Jobs\RockJob.cs" />
@@ -191,10 +193,14 @@
     <Compile Include="Transactions\UpdateNotificationMessageBadgeCountTransaction.cs" />
     <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
     <Compile Include="Transactions\UpdatePersonPreferenceLastAccessedTransaction.cs" />
+    <Compile Include="Web\BreadCrumbLink.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\AchievementTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\AchievementTypePrerequisiteCache.cs" />
+    <Compile Include="Web\Cache\Entities\AdaptiveMessageAdaptationCache.cs" />
+    <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
     <Compile Include="Web\Cache\Entities\AssessmentTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\AttributeCache.cs" />
     <Compile Include="Web\Cache\Entities\BadgeCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
@@ -207,6 +213,8 @@
     <Compile Include="Web\Cache\Entities\ContentChannelTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />
+    <Compile Include="Web\Cache\Entities\ContentTopicCache.cs" />
+    <Compile Include="Web\Cache\Entities\ContentTopicDomainCache.cs" />
     <Compile Include="Web\Cache\Entities\DefinedTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\DefinedValueCache.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
@@ -258,6 +266,7 @@
     <Compile Include="Web\Cache\ItemCache.cs" />
     <Compile Include="Web\Cache\ModelCache.cs" />
     <Compile Include="Web\Cache\NonEntities\AttributeValueCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\DbCommandObservabilityCache.cs" />
     <Compile Include="Web\Cache\NonEntities\DeepLinkCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityNoteTypesCache.cs" />
@@ -267,15 +276,22 @@
     <Compile Include="Web\Cache\NonEntities\PersistedDatasetValueCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersonOrVisitorCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersonPreferenceCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\RateLimiterCache.cs" />
     <Compile Include="Web\Cache\NonEntities\RoleCache.cs" />
     <Compile Include="Web\Cache\NonEntities\WorkflowTriggersCache.cs" />
     <Compile Include="Web\Cache\RockCache.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\Cache\RockCacheManager.cs" />
+    <Compile Include="Web\IBreadCrumb.cs" />
+    <Compile Include="Web\PageReference.cs" />
     <Compile Include="Web\SystemSettings.cs" />
+    <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\ContextAttribute.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CustomActionConfig.cs" />
     <Compile Include="Web\UI\Controls\ValueFilter.cs" />
+    <Compile Include="Web\UI\ICustomGridColumns.cs" />
+    <Compile Include="Web\UI\ICustomGridOptions.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
   </ItemGroup>
 
@@ -306,11 +322,12 @@
     <PackageReference Include="NEST" Version="7.17.4" />
     <PackageReference Include="NEST.JsonNetSerializer" Version="7.17.4" />
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="2.0.4" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.6.0" />
     <PackageReference Include="PreMailer.Net" Version="2.2.0" />
     <PackageReference Include="PuppeteerSharp" Version="6.2.0" />
     <PackageReference Include="Quartz" Version="3.6.0" />
     <PackageReference Include="RestSharp" Version="106.11.7" />
-    <PackageReference Include="RockRMS.Common.Mobile" Version="0.3.32" />
+    <PackageReference Include="RockRMS.Common.Mobile" Version="0.3.40" />
     <PackageReference Include="Serilog" Version="2.8.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
     <PackageReference Include="Serilog.Formatting.Compact.Reader" Version="1.0.3" />
@@ -321,6 +338,7 @@
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
     <PackageReference Include="System.Data.Odbc" Version="5.0.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.1" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.10" />
     <PackageReference Include="System.Runtime.Caching" Version="5.0.0" />
     <PackageReference Include="UAParser" Version="3.1.47" />

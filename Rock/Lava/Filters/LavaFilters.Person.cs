@@ -18,7 +18,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
@@ -29,6 +33,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+#if REVIEW_WEBFORMS
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -36,6 +41,7 @@ using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;
 using ImageResizer;
+#endif
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
@@ -505,7 +511,11 @@ namespace Rock.Lava
                                 case "GeoPoint":
                                     if ( location.GeoPoint != null )
                                     {
+#if REVIEW_NET5_0_OR_GREATER
+                                        qualifier = qualifier.Replace( match.ToString(), string.Format( "{0},{1}", location.Latitude.ToString(), location.Longitude.ToString() ) );
+#else
                                         qualifier = qualifier.Replace( match.ToString(), string.Format( "{0},{1}", location.GeoPoint.Latitude.ToString(), location.GeoPoint.Longitude.ToString() ) );
+#endif
                                     }
                                     else
                                     {
@@ -516,7 +526,11 @@ namespace Rock.Lava
                                 case "Latitude":
                                     if ( location.GeoPoint != null )
                                     {
+#if REVIEW_NET5_0_OR_GREATER
+                                        qualifier = qualifier.Replace( match.ToString(), location.Latitude.ToString() );
+#else
                                         qualifier = qualifier.Replace( match.ToString(), location.GeoPoint.Latitude.ToString() );
+#endif
                                     }
                                     else
                                     {
@@ -527,7 +541,11 @@ namespace Rock.Lava
                                 case "Longitude":
                                     if ( location.GeoPoint != null )
                                     {
+#if REVIEW_NET5_0_OR_GREATER
+
+#else
                                         qualifier = qualifier.Replace( match.ToString(), location.GeoPoint.Longitude.ToString() );
+#endif
                                     }
                                     else
                                     {
@@ -696,7 +714,11 @@ namespace Rock.Lava
                     else
                     {
                         var photoUrl = new StringBuilder();
+#if REVIEW_NET5_0_OR_GREATER
+                        photoUrl.Append( "/" );
+#else
                         photoUrl.Append( HttpContext.Current.Server.MapPath( "~/" ) );
+#endif
 
                         if ( person.Age.HasValue && person.Age.Value < 18 )
                         {

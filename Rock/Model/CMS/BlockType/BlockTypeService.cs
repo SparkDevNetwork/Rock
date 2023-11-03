@@ -387,10 +387,12 @@ namespace Rock.Model
                     var type = bt.GetCompiledType();
                     if ( siteType == SiteType.Web )
                     {
+#if REVIEW_WEBFORMS
                         if ( typeof( RockBlock ).IsAssignableFrom( type ) )
                         {
                             return true;
                         }
+#endif
 
                         if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
                         {
@@ -398,7 +400,11 @@ namespace Rock.Model
                             // So show it only if it is the develop environment.
                             if ( type.GetCustomAttribute<SupportedSiteTypesAttribute>() == null )
                             {
+#if REVIEW_WEBFORMS
                                 return System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
+#else
+                                return true;
+#endif
                             }
                             return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
                         }

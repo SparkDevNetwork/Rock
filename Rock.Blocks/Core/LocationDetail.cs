@@ -17,7 +17,9 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
+#endif
 using System.Linq;
 
 using Rock.Attribute;
@@ -277,7 +279,11 @@ namespace Rock.Blocks.Core
                 {
                     if ( location.GeoPoint != null )
                     {
+#if REVIEW_NET5_0_OR_GREATER
+                        string markerPoints = string.Format( "{0},{1}", location.Latitude, location.Longitude );
+#else
                         string markerPoints = string.Format( "{0},{1}", location.GeoPoint.Latitude, location.GeoPoint.Longitude );
+#endif
                         string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
                         mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
                         mapLink += "&sensor=false&size=350x200&zoom=13&format=png&key=" + googleAPIKey;
@@ -396,11 +402,15 @@ namespace Rock.Blocks.Core
                     entity.State = box.Entity.AddressFields.State;
                 } );
 
+#if REVIEW_NET5_0_OR_GREATER
+            throw new System.NotImplementedException();
+#else
             box.IfValidProperty( nameof( box.Entity.GeoPoint_WellKnownText ),
                 () => entity.GeoPoint = box.Entity.GeoPoint_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.FromText( box.Entity.GeoPoint_WellKnownText ) );
 
             box.IfValidProperty( nameof( box.Entity.GeoFence_WellKnownText ),
                 () => entity.GeoFence = box.Entity.GeoFence_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.PolygonFromText( box.Entity.GeoFence_WellKnownText, DbGeography.DefaultCoordinateSystemId ) );
+#endif
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>

@@ -16,7 +16,9 @@
 //
 
 using Rock.Attribute;
+#if REVIEW_WEBFORMS
 using Rock.Badge.Component;
+#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -24,7 +26,11 @@ using Rock.ViewModels.Blocks.Crm.AssessmentList;
 using Rock.Web.UI.Controls;
 using System;
 using System.ComponentModel;
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 
 namespace Rock.Blocks.Crm

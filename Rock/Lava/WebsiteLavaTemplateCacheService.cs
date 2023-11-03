@@ -275,6 +275,7 @@ namespace Rock.Lava
         private bool IsCacheEnabled()
         {
             // If a web request is active, check if caching is disabled by the CACHE_CONTROL_COOKIE.
+#if REVIEW_WEBFORMS
             if ( HttpContext.Current?.Request != null )
             {
                 var isCachedEnabled = HttpContext.Current.Request.Cookies.Get( RockCache.CACHE_CONTROL_COOKIE );
@@ -283,6 +284,7 @@ namespace Rock.Lava
                     return false;
                 }
             }
+#endif
             return true;
         }
 

@@ -21,8 +21,10 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#if REVIEW_WEBFORMS
 using DDay.iCal;
 using Mono.CSharp;
+#endif
 using Rock.Address;
 using Rock.Extension;
 using Rock.UniversalSearch;

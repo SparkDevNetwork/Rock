@@ -391,7 +391,11 @@ namespace Rock.Model
         internal static int? CreateEntitySetFromDataView( CreateEntitySetFromDataViewActionArgs args, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
+#if REVIEW_NET5_0_OR_GREATER
+            rockContext.Database.SetCommandTimeout( args.DatabaseTimeoutInSeconds );
+#else
             rockContext.Database.CommandTimeout = args.DatabaseTimeoutInSeconds;
+#endif
 
             var dataViewService = new DataViewService( rockContext );
             var dataView = dataViewService.Queryable().AsNoTracking().FirstOrDefault( dv => dv.Id == args.DataViewId );

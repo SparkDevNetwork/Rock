@@ -17,7 +17,11 @@
 
 using System;
 using System.Collections.Generic;
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Diagnostics;
 using System.Linq;
 using Rock.Attribute;
@@ -72,10 +76,18 @@ namespace Rock.Model
                 updateStatusAction?.Invoke( $"Syncing group '{syncInfo.GroupName}'" );
 
                 // Use a fresh rockContext per sync so that ChangeTracker doesn't get bogged down
+#if REVIEW_NET5_0_OR_GREATER
+                using ( var rockContextReadOnly = new RockContext() )
+#else
                 using ( var rockContextReadOnly = new RockContextReadOnly() )
+#endif
                 {
                     // increase the timeout just in case the data view source is slow
+#if REVIEW_NET5_0_OR_GREATER
+                    rockContextReadOnly.Database.SetCommandTimeout( commandTimeout ?? 30 );
+#else
                     rockContextReadOnly.Database.CommandTimeout = commandTimeout ?? 30;
+#endif
                     rockContextReadOnly.SourceOfChange = "Group Sync";
 
                     // Get the Sync
@@ -323,7 +335,11 @@ namespace Rock.Model
                                         // Only create a login if requested, no logins exist and we have enough information to generate a user name.
                                         if ( createLogin && !person.Users.Any() && !string.IsNullOrWhiteSpace( person.NickName ) && !string.IsNullOrWhiteSpace( person.LastName ) )
                                         {
+#if REVIEW_NET5_0_OR_GREATER
+                                            throw new NotImplementedException();
+#else
                                             newPassword = System.Web.Security.Membership.GeneratePassword( 9, 1 );
+#endif
                                             var username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );
 
                                             var login = UserLoginService.Create(

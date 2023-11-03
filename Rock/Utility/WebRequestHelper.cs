@@ -263,6 +263,7 @@ namespace Rock.Utility
             return true;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the specified cookie. If the cookie is not found in the Request then it checks the Response, otherwise it will return null.
         /// </summary>
@@ -365,6 +366,7 @@ namespace Rock.Utility
             response.Cookies.Remove( responseCookie.Name );
             response.Cookies.Add( responseCookie );
         }
+#endif
 
         /// <summary>
         /// Gets the future date and time at which a persisted browser cookie should expire in accordance with the Rock application settings.

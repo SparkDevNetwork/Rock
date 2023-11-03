@@ -20,7 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+#if REVIEW_WEBFORMS
 using DotLiquid;
+#endif
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -535,6 +537,7 @@ namespace Rock.Blocks.Cms
                     entity.SaveAttributeValues( rockContext );
                 } );
 
+#if REVIEW_WEBFORMS
                 if ( LavaService.RockLiquidIsEnabled )
                 {
                     // unregister shortcode
@@ -560,6 +563,7 @@ namespace Rock.Blocks.Cms
                     LavaTemplateCache.Clear();
 #pragma warning restore CS0618 // Type or member is obsolete
                 }
+#endif
 
                 if ( oldTagName.IsNotNullOrWhiteSpace() )
                 {

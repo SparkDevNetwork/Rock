@@ -17,7 +17,11 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 
 using Rock.Attribute;
@@ -159,7 +163,11 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override IQueryable<FinancialPledge> GetListQueryable( RockContext rockContext )
         {
+#if REVIEW_NET5_0_OR_GREATER
+            IQueryable<FinancialPledge> query = base.GetListQueryable( rockContext )
+#else
             var query = base.GetListQueryable( rockContext )
+#endif
                     .Include( a => a.PersonAlias )
                     .Include( a => a.Account )
                     .Include( a => a.PledgeFrequencyValue )

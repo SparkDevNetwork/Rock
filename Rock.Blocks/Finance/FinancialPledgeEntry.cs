@@ -29,7 +29,11 @@ using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 
 namespace Rock.Blocks.Finance
@@ -341,11 +345,15 @@ namespace Rock.Blocks.Finance
 
             if ( pledgeDateRange.IsNotNullOrWhiteSpace() )
             {
+#if REVIEW_NET5_0_OR_GREATER
+                throw new NotImplementedException();
+#else
                 var dateRangePicker = new DateRangePicker() { DelimitedValues = pledgeDateRange };
                 var dateRange = dateRangePicker.DateRange;
 
                 entityBag.StartDate = dateRange.Start;
                 entityBag.EndDate = dateRange.End;
+#endif
             }
 
             if ( entity.TotalAmount > 0 )

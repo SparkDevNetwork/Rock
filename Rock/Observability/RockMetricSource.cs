@@ -22,8 +22,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#if REVIEW_WEBFORMS
 using ImageResizer.Plugins.Basic;
 using Microsoft.Ajax.Utilities;
+#endif
 using Rock.Bus;
 
 namespace Rock.Observability

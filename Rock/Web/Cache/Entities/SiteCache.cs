@@ -288,7 +288,6 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? CommunicationPageRouteId { get; private set; }
 
-#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the communication page reference.
         /// </summary>
@@ -296,7 +295,6 @@ namespace Rock.Web.Cache
         /// The communication page reference.
         /// </value>
         public PageReference CommunicationPageReference => new PageReference( CommunicationPageId ?? 0, CommunicationPageRouteId ?? 0 );
-#endif
 
         /// <summary>
         /// Gets or sets the registration page id.

@@ -261,7 +261,11 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
+#if REVIEW_NET5_0_OR_GREATER
+            bag.AllowsCompile = false;
+#else
             bag.AllowsCompile = new Rock.Web.UI.RockTheme( entity.Theme ).AllowsCompile;
+#endif
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;
@@ -979,6 +983,9 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( "Unable to find the requested site." );
             }
 
+#if REVIEW_NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             string messages;
             var theme = new Rock.Web.UI.RockTheme( site.Theme );
             bool success = theme.Compile( out messages );
@@ -991,6 +998,7 @@ namespace Rock.Blocks.Cms
             {
                 return ActionBadRequest( string.Format( "An error occurred compiling the theme {0}. Message: {1}.", site.Theme, messages ) );
             }
+#endif
         }
 
         #endregion
