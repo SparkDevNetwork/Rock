@@ -27,24 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for SignatureDocumentTemplate that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for AdaptiveMessage that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class SignatureDocumentTemplateEntity
+    public partial class AdaptiveMessageEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? BinaryFileTypeId { get; set; }
-
-        /// <summary />
-        public int? CompletionSystemCommunicationId { get; set; }
-
-        /// <summary />
         public string Description { get; set; }
-
-        /// <summary />
-        public string DocumentTerm { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -53,21 +44,10 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int? InviteSystemCommunicationId { get; set; }
-
-        /// <summary />
-        // Made Obsolete in Rock "1.10"
-        [Obsolete( "Use InviteSystemCommunicationId instead.", true )]
-        public int? InviteSystemEmailId { get; set; }
-
-        /// <summary />
         public bool IsActive { get; set; } = true;
 
         /// <summary />
-        public bool IsValidInFuture { get; set; }
-
-        /// <summary />
-        public string LavaTemplate { get; set; }
+        public string Key { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -76,18 +56,6 @@ namespace Rock.Client
 
         /// <summary />
         public string Name { get; set; }
-
-        /// <summary />
-        public int? ProviderEntityTypeId { get; set; }
-
-        /// <summary />
-        public string ProviderTemplateKey { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.SignatureType SignatureType { get; set; }
-
-        /// <summary />
-        public int? ValidityDurationInDays { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -116,28 +84,19 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source SignatureDocumentTemplate object
+        /// Copies the base properties from a source AdaptiveMessage object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( SignatureDocumentTemplate source )
+        public void CopyPropertiesFrom( AdaptiveMessage source )
         {
             this.Id = source.Id;
-            this.BinaryFileTypeId = source.BinaryFileTypeId;
-            this.CompletionSystemCommunicationId = source.CompletionSystemCommunicationId;
             this.Description = source.Description;
-            this.DocumentTerm = source.DocumentTerm;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
             this.IsActive = source.IsActive;
-            this.IsValidInFuture = source.IsValidInFuture;
-            this.LavaTemplate = source.LavaTemplate;
+            this.Key = source.Key;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.ProviderEntityTypeId = source.ProviderEntityTypeId;
-            this.ProviderTemplateKey = source.ProviderTemplateKey;
-            this.SignatureType = source.SignatureType;
-            this.ValidityDurationInDays = source.ValidityDurationInDays;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -149,21 +108,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for SignatureDocumentTemplate that includes all the fields that are available for GETs. Use this for GETs (use SignatureDocumentTemplateEntity for POST/PUTs)
+    /// Client model for AdaptiveMessage that includes all the fields that are available for GETs. Use this for GETs (use AdaptiveMessageEntity for POST/PUTs)
     /// </summary>
-    public partial class SignatureDocumentTemplate : SignatureDocumentTemplateEntity
+    public partial class AdaptiveMessage : AdaptiveMessageEntity
     {
         /// <summary />
-        public BinaryFileType BinaryFileType { get; set; }
+        public ICollection<AdaptiveMessageAdaptation> AdaptiveMessageAdaptations { get; set; }
 
         /// <summary />
-        public SystemCommunication CompletionSystemCommunication { get; set; }
-
-        /// <summary />
-        public SystemCommunication InviteSystemCommunication { get; set; }
-
-        /// <summary />
-        public EntityType ProviderEntityType { get; set; }
+        public ICollection<Category> Categories { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

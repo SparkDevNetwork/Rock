@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageAdaptationDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class AdaptiveMessageAdaptationDetailOptionsBag
     {
         /// <summary>

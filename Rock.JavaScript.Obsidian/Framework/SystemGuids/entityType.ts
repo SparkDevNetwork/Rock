@@ -37,8 +37,6 @@ export const EntityType = {
     AdaptiveMessageAdaptation: "39753CCE-184A-4F14-AE80-08241DE8FC2E",
     /** The EntityType Guid for Rock.Model.AdaptiveMessageAdaptationSegment  */
     AdaptiveMessageAdaptationSegment: "40EDF82B-EFF5-4253-A129-965F7BC90033",
-    /** The EntityType Guid for Rock.Model.AdaptiveMessageCategory  */
-    AdaptiveMessageCategory: "BFBE3BCE-259A-437E-B8BD-B4C278FC4610",
     /** The EntityType Guid for Rock.Model.AnalyticsDimCampus  */
     AnalyticsDimCampus: "DCEB0575-1351-4CFF-BA4F-410BA2D638CB",
     /** The EntityType Guid for Rock.Model.AnalyticsDimFamilyCurrent  */
@@ -427,6 +425,8 @@ export const EntityType = {
     MobileCommunicationCommunicationentryBlockType: "9A952F9F-F619-4063-B1BB-CFB2E6983C01",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView */
     MobileCommunicationCommunicationviewBlockType: "4AF5FCEF-CBF6-486B-A04D-920E31356B7F",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest. */
+    MobileConnectionAddConnectionRequest: "F41E7BE3-2854-40FF-82C8-1FDEA12B8B2F",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList. */
     MobileConnectionConnectionOpportunityListBlockType: "CB151D80-DBEF-4A1E-A816-3DF4CD2DE45A",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail. */

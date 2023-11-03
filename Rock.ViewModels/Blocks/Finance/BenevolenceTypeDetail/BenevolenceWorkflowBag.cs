@@ -19,6 +19,9 @@ using System;
 
 namespace Rock.ViewModels.Blocks.Finance.BenevolenceTypeDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class BenevolenceWorkflowBag
     {
         /// <summary>

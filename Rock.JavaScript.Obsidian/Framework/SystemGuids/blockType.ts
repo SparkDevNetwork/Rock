@@ -83,6 +83,8 @@ export const BlockType = {
     LogViewer: "6059FC03-E398-4359-8632-909B63FFA550",
     /** Mass Push Notifications Block Type Guid */
     MassPushNotifications: "D886DB44-0D0F-46D3-86AE-C959C520B0FD",
+    /** The mobile Connection &gt; Add Connection Request block type. */
+    MobileConnectionAddConnectionRequest: "1380115A-B3F0-49BC-A6BC-432A59DC27A2",
     /** The mobile Connection &gt; Connection Opportunity List block type. */
     MobileConnectionConnectionOpportunityList: "0015A574-C10A-4530-897C-F7B7C3D9393E",
     /** The mobile Connection &gt; Connection Request Detail block type. */
