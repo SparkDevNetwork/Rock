@@ -239,6 +239,9 @@ registerFieldType(FieldTypeGuids.LavaCommands, new LavaCommandsFieldType());
 import { LocationListFieldType } from "./locationListField.partial";
 registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 
+import { MatrixFieldType } from "./matrixField.partial";
+registerFieldType(FieldTypeGuids.Matrix, new MatrixFieldType());
+
 import { MemoFieldType } from "./memoField.partial";
 registerFieldType(FieldTypeGuids.Memo, new MemoFieldType());
 

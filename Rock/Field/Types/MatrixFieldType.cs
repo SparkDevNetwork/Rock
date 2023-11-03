@@ -21,6 +21,7 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using NuGet;
 #endif
 using Rock.Attribute;
 using Rock.Data;
@@ -33,20 +34,157 @@ namespace Rock.Field.Types
     ///  Matrix Field Type
     ///  Value stored as AttributeMatrix.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MATRIX )]
     public class MatrixFieldType : FieldType, IEntityFieldType
     {
         #region Configuration
+
+
+
+
+        //TEMP
+        private void GetStuff()
+        {
+
+            using ( var rockContext = new RockContext() )
+            {
+                Guid attributeMatrixTemplateGuid = new Guid( "1d24694e-445c-4852-b5bc-64cdea6f7175" );
+                Guid attributeMatrixGuid = new Guid( "66468021-39f0-4727-8156-8abf1067781c" );
+                AttributeMatrixItem tempAttributeMatrixItem = null;
+
+                if ( attributeMatrixTemplateGuid != null && !attributeMatrixTemplateGuid.IsEmpty() )
+                {
+                    var attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
+                    //var template = attributeMatrixTemplateService.Get( attributeMatrixTemplateGuid );
+                    var templateData = attributeMatrixTemplateService.GetSelect( attributeMatrixTemplateGuid, s => new { s.Id, s.MinimumRows, s.MaximumRows } );
+
+
+                    tempAttributeMatrixItem = new AttributeMatrixItem();
+                    tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = templateData.Id };
+                    tempAttributeMatrixItem.LoadAttributes();
+
+                    var attributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid );
+                    if ( attributeMatrix == null )
+                    {
+                        return; // Not Found....
+                    }
+
+                    var attributeMatrixItemList = attributeMatrix.AttributeMatrixItems
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Id )
+                        .ToList();
+
+                    foreach ( var attributeMatrixItem in attributeMatrixItemList )
+                    {
+                        attributeMatrixItem.LoadAttributes();
+                    }
+
+                    var matrixItems = attributeMatrixItemList
+                        .Select( a => new
+                        {
+                            a.Guid,
+                            a.Order,
+                            //Attributes = MakePublicAttributeBags( a.Attributes ),
+                            AttributeValues = a.AttributeValues.ToDictionary( v => v.Key, v => v.Value.Value ),
+                            Other = a.Attributes.ToDictionary( v => v.Key, v => v.Value.FieldType.Field.GetPublicValue( a.AttributeValues.GetValueOrNull( v.Key )?.Value, v.Value.ConfigurationValues ) )
+                        } )
+                        .ToList();
+
+                    var returnValue = new
+                    {
+                        Attributes = tempAttributeMatrixItem.Attributes.ToDictionary(
+                            a => a.Key, a => PublicAttributeHelper.GetPublicAttributeForEdit( a.Value )
+                        ),
+                        MatrixItems = matrixItems,
+                        MinRows = templateData.MinimumRows.GetValueOrDefault( 0 ),
+                        MaxRows = templateData.MaximumRows.GetValueOrDefault( 0 )
+                    };
+                }
+
+                //not found...
+            }
+        }
+
+
+
+
 
         /// <summary>
         /// The attribute matrix template (stored as AttributeMatrixTemplate.Id)
         /// </summary>
         public const string ATTRIBUTE_MATRIX_TEMPLATE = "attributematrixtemplate";
 
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = new Dictionary<string, string>( privateConfigurationValues );
+
+            using ( var rockContext = new RockContext() )
+            {
+
+                if (
+                    privateConfigurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE )
+                    && !privateConfigurationValues[ATTRIBUTE_MATRIX_TEMPLATE].IsEmpty()
+                )
+                {
+                    // set the AttributeMatrixTemplateId just in case it was changed since the last time the attributeMatrix was saved
+                    int attributeMatrixTemplateId = privateConfigurationValues[ATTRIBUTE_MATRIX_TEMPLATE].AsInteger();
+                    var AttributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).GetNoTracking( attributeMatrixTemplateId );
+
+                    if ( AttributeMatrixTemplate != null && !AttributeMatrixTemplate.Guid.IsEmpty() )
+                    {
+                        configurationValues.AddOrReplace( ATTRIBUTE_MATRIX_TEMPLATE, AttributeMatrixTemplate.Guid.ToString() );
+                    }
+                    else
+                    {
+                        configurationValues.AddOrReplace( ATTRIBUTE_MATRIX_TEMPLATE, "" );
+                    }
+                }
+
+                return configurationValues;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            return new Dictionary<string, string>( publicConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            var dict = new Dictionary<string, string>
+            {
+                { "hello", "there" }
+            };
+            return dict;
+        }
+
         #endregion
 
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetPublicValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return publicValue;
+        }
 
         /// <inheritdoc/>
         public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -72,7 +210,7 @@ namespace Rock.Field.Types
                             attributeMatrix.AttributeMatrixTemplateId = attributeMatrixTemplateId;
                             attributeMatrix.AttributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).GetNoTracking( attributeMatrix.AttributeMatrixTemplateId );
 
-                            // If the AttributeMatrixTemplateId changed, all the values in the AttributeMatrixItems 
+                            // If the AttributeMatrixTemplateId changed, all the values in the AttributeMatrixItems
                             // are referring to attributes from the old template, so wipe them out. All of them.
                             attributeMatrix.AttributeMatrixItems.Clear();
                         }
@@ -371,7 +509,7 @@ namespace Rock.Field.Types
 
                         var attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
 
-                        // If the AttributeMatrixTemplateId changed, all the values in the AttributeMatrixItems 
+                        // If the AttributeMatrixTemplateId changed, all the values in the AttributeMatrixItems
                         // are referring to attributes from the old template, so wipe them out. All of them.
                         foreach ( var attributeMatrixItem in attributeMatrix.AttributeMatrixItems.ToList() )
                         {
