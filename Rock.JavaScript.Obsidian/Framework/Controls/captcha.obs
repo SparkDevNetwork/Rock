@@ -1,0 +1,174 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="fieldProps" :rules="computedRules" name="captchaContent" :modelValue="modelValue">
+        <div class="control-wrapper">
+            <div id="turnstile-box"></div>
+        </div>
+    </RockFormField>
+</template>
+
+<script lang="ts">
+    declare global {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-var
+        var turnstile: any | undefined;
+    }
+</script>
+
+<script setup lang="ts">
+    import { PropType, computed, onMounted, ref, } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ValidationResult, containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { CaptchaControlConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlConfigurationBag";
+    import { CaptchaControlTokenValidateTokenResultBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlTokenValidateTokenResultBag";
+    import { CaptchaControlValidateTokenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlValidateTokenOptionsBag";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+
+    const props = defineProps({
+        /** the returned token */
+        modelValue: {
+            type: String as PropType<string | null>,
+            default: ""
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void
+    }>();
+
+    // #region Values
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+    const http = useHttp();
+    const widgetId = ref("");
+    const loadJavascriptPromise = loadJavaScriptAsync("https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback", () => window.turnstile);
+
+    // #endregion
+
+    // #region Computed
+
+    const computedRules = computed(() => {
+        const rules = normalizeRules(props.rules);
+
+        if (containsRequiredRule(rules)) {
+            rules.push(requiredValidator);
+        }
+
+        return rules;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Get the control configuration from the server.
+     */
+    async function getConfiguration(): Promise<CaptchaControlConfigurationBag | undefined> {
+        try {
+            const result = await http.post<CaptchaControlConfigurationBag>("/api/v2/Controls/CaptchaControlGetConfiguration");
+
+            if (result.isSuccess && result.data) {
+                return result.data;
+            }
+            else {
+                console.error(result.errorMessage ?? "Unknown error while loading captcha configuration.");
+            }
+        }
+        catch (error) {
+            console.error("Unknown error while loading captcha configuration.");
+        }
+    }
+
+    /**
+     * Get validate the token with the server.
+     */
+    async function validateToken(token: string): Promise<CaptchaControlTokenValidateTokenResultBag | undefined> {
+        const options: CaptchaControlValidateTokenOptionsBag = {
+            token: token
+        };
+
+        try {
+            const result = await http.post<CaptchaControlTokenValidateTokenResultBag>("/api/v2/Controls/CaptchaControlValidateToken", undefined, options);
+
+            if (result.isSuccess && result.data) {
+                return result.data;
+            }
+            else {
+                console.error(result.errorMessage ?? "Unknown error while validating token.");
+            }
+        }
+        catch (error) {
+            console.error("Unknown error while validating token.");
+        }
+    }
+
+    /**
+    * Renders the captcha control in the selected element after the turnstile script has been injected.
+    */
+    function renderCaptchaControl(siteKey: string): void {
+        /* eslint-disable */
+        // @ts-ignore
+        window.onloadTurnstileCallback = () => {
+            widgetId.value = window.turnstile?.render("#turnstile-box", {
+                sitekey: siteKey,
+                "callback": callback,
+                "error-callback": errorCallback,
+                "expired-callback": expiredCallback
+            });
+        };
+    }
+
+    /**
+     * Callback function invoked upon success of the challenge. The callback is passed a token that can be validated.
+     */
+    async function callback(response: string): Promise<void> {
+        var result = await validateToken(response);
+        emit("update:modelValue", asTrueOrFalseString(result?.isTokenValid));
+    }
+
+    /**
+     * Callback function invoked when there is an error (e.g. network error or the challenge failed).
+     * The callback is passed a error code detailing the nature of the error https://developers.cloudflare.com/turnstile/reference/client-side-errors/
+     */
+    function errorCallback(error: string): void {
+        console.error("Captcha challenge failed.", error);
+        emit("update:modelValue", "False");
+    }
+
+    /**
+    * Callback function invoked when the token expires and does not reset the widget.
+    */
+    function expiredCallback(): void {
+        if (widgetId.value) {
+            turnstile.reset(widgetId.value);
+        }
+    }
+
+    /**
+     * Ensures that the Captcha was solved and verified successfully.
+     */
+     function requiredValidator(value: unknown): ValidationResult {
+        const invalidMessage = "is required";
+
+        if (!asBoolean(value)) {
+            return invalidMessage;
+        }
+
+        return true;
+    }
+
+    // #endregion
+
+    onMounted(async () => {
+        const config = await getConfiguration();
+        await loadJavascriptPromise;
+        if (config?.siteKey) {
+            renderCaptchaControl(config.siteKey);
+        }
+    });
+</script>

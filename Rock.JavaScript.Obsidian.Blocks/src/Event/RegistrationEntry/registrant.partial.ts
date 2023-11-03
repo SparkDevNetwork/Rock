@@ -29,7 +29,7 @@ import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import RockForm from "@Obsidian/Controls/rockForm.obs";
-import FeeField from "./feeField.partial";
+import FeeField from "./feeField.partial.obs";
 import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
 import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
 import { useStore } from "@Obsidian/PageState";
@@ -88,7 +88,7 @@ export default defineComponent({
             required: true
         }
     },
-    setup() {
+    setup(props) {
         const invokeBlockAction = useInvokeBlockAction();
         const registrationEntryState = inject("registrationEntryState") as RegistrationEntryState;
         const getRegistrationEntryBlockArgs = inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs;
@@ -99,6 +99,14 @@ export default defineComponent({
         const formResetKey = ref("");
         const isNextDisabled = ref(false);
         const isSignatureDrawn = computed((): boolean => registrationEntryState.viewModel.isSignatureDrawn);
+
+        for (const fee of registrationEntryState.viewModel.fees) {
+            for (const feeItem of fee.items) {
+                if (typeof props.currentRegistrant.feeItemQuantities[feeItem.guid] !== "number") {
+                    props.currentRegistrant.feeItemQuantities[feeItem.guid] = 0;
+                }
+            }
+        }
 
         return {
             formResetKey,
@@ -325,7 +333,6 @@ export default defineComponent({
                 return;
             }
 
-
             this.registrationEntryState.currentRegistrantFormIndex--;
 
             // Wait for the previous form to be rendered and then scroll to the top
@@ -353,6 +360,9 @@ export default defineComponent({
 
                         lastFormIndex += 1;
                     }
+                    // If the response is successful but the backend does not return a data, then the Signature Document is not required for the current
+                    // registrant. We may continue execution.
+                    else if (result.isSuccess) { }
                     else {
                         console.error(result.data);
                         return;
@@ -382,10 +392,6 @@ export default defineComponent({
 
             // Get all of the fee items in use for all registrants and add them to the combinedFeeItemQuantities Record
             for(const registrant of self.registrationEntryState.registrants) {
-                if(registrant.guid === this.currentRegistrant.guid) {
-                    continue;
-                }
-
                 for (const feeItemGuid in registrant.feeItemQuantities) {
 
                     if (registrant.feeItemQuantities[feeItemGuid] > 0) {
@@ -410,7 +416,7 @@ export default defineComponent({
                             continue;
                         }
 
-                        const usedFeeItemCount = combinedFeeItemQuantities[feeItem.guid];
+                        const usedFeeItemCount = combinedFeeItemQuantities[feeItem.guid] ?? 0;
                         if(usedFeeItemCount !== undefined && usedFeeItemCount !== null) {
                             feeItem.countRemaining = feeItem.originalCountRemaining - usedFeeItemCount;
                         }
@@ -516,6 +522,18 @@ export default defineComponent({
                 }
             }
         },
+
+        onUpdateRegistrantFee(values: Record<string, number>): void {
+            const newValue = {...this.currentRegistrant.feeItemQuantities};
+
+            for (const key of Object.keys(values)) {
+                newValue[key] = values[key];
+            }
+
+            this.currentRegistrant.feeItemQuantities = newValue;
+
+            this.updateFeeItemsRemaining();
+        }
     },
     watch: {
         "currentRegistrant.familyGuid"(): void {
@@ -577,7 +595,7 @@ export default defineComponent({
             <div v-if="!isWaitList && isLastForm && viewModel.fees.length" class="well registration-additional-options">
                 <h4>{{pluralFeeTerm}}</h4>
                 <template v-for="fee in viewModel.fees" :key="fee.guid">
-                    <FeeField :fee="fee" v-model="currentRegistrant.feeItemQuantities" />
+                    <FeeField :modelValue="currentRegistrant.feeItemQuantities" :fee="fee" @update:modelValue="onUpdateRegistrantFee" />
                 </template>
             </div>
         </template>

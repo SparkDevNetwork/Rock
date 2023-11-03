@@ -755,6 +755,7 @@
     <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\RockMobileBlockTypeCustomSettingsProvider.cs" />
     <Compile Include="Blocks\SupportedSiteTypesAttribute.cs" />
+    <Compile Include="Blocks\Types\Mobile\Connection\AddConnectionRequest.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\AttributeValues.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\CommunicationEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Communication\SmsConversation.cs" />
@@ -1009,6 +1010,7 @@
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostUpdateJob.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV161RemoveObsidianGroupScheduleToolboxBackButtons.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionSessionStartDateKey.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV151DataMigrationsDuplicateMobileInteractionsCleanup.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV15DataMigrationsMobileRestUserGroup.cs" />
@@ -1038,8 +1040,14 @@
     <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
+    <Compile Include="Lava\Blocks\AdaptiveMessageBlock.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
     <Compile Include="Lava\Helpers\LavaAppendWatchesHelper.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessageAdaptationSegment\AdaptiveMessageAdaptationSegment.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessageAdaptation\AdaptiveMessageAdaptation.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessageAdaptation\AdaptiveMessageAdaptation.Logic.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessage\AdaptiveMessage.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessage\AdaptiveMessage.Logic.cs" />
     <Compile Include="Model\CMS\BlockType\BlockType.WebForms.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\AddToContentLibraryException.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\AddFromContentLibraryException.cs" />
@@ -1061,6 +1069,9 @@
     <Compile Include="Model\CMS\ContentCollection\ContentCollection.cs" />
     <Compile Include="Model\CMS\ContentCollection\ContentCollection.Logic.cs" />
     <Compile Include="Model\CMS\ContentCollection\ContentCollectionService.cs" />
+    <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationSegmentService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AdaptiveMessageService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionSourceService.CodeGenerated.cs" />
     <Compile Include="Jobs\UpdatePersonalizationData.cs" />
@@ -1179,6 +1190,8 @@
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
     <Compile Include="Plugin\HotFixes\188_MigrationRollupsForV17_0_0.cs" />
+    <Compile Include="Plugin\HotFixes\190_MigrationRollupsForV17_0_1.cs" />
+    <Compile Include="Plugin\HotFixes\189_UpdateAppleDeviceList.cs" />
     <Compile Include="Plugin\HotFixes\187_MigrationRollupsForV15_2_6.cs" />
     <Compile Include="Plugin\HotFixes\186_MigrationRollupsForV15_2_5.cs" />
     <Compile Include="Plugin\HotFixes\185_MigrationRollupsForV15_2_4.cs" />
@@ -1280,6 +1293,7 @@
     <Compile Include="Security\Authentication\PasswordlessAuthentication.cs" />
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
+    <Compile Include="Utility\CaptchaApi\CloudflareApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\CachedContentLibraryApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApi.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
@@ -2112,6 +2126,8 @@
     <Compile Include="Blocks\BreadCrumbResult.cs" />
     <Compile Include="Web\BreadCrumbLink.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
+    <Compile Include="Web\Cache\Entities\AdaptiveMessageAdaptationCache.cs" />
+    <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
     <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentTopicDomainCache.cs" />

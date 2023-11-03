@@ -87,7 +87,7 @@
             password: "",
             username: ""
         },
-        personInfo: {
+        personInfo: config.accountEntryPersonInfoBag ?? {
             birthday: {
                 year: 0,
                 month: 0,

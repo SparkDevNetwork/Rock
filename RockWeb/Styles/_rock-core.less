@@ -71,6 +71,7 @@
 @import "_grid.less";
 
 @import "_rock-obsidian.less";
+@import "_skeleton.less";
 
 @import "_blocks-cms.less";
 @import "_blocks-connections.less";
@@ -1036,6 +1037,7 @@ th[align="right"] {
     border-color: var(--btn-bg, @btn-default-border);
 
     &::before {
+      display: inline-block;
       margin-right: 12px;
       font-family: "@{fa-font-face} Brands";
       font-weight: 400;

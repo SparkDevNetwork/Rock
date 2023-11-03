@@ -529,6 +529,24 @@ namespace Rock.Blocks.Finance
                     return actionError;
                 }
 
+                var isNew = entity.Id == 0;
+
+                var changes = new History.HistoryChangeList();
+                if ( isNew )
+                {
+                    changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
+                }
+
+                History.EvaluateChange( changes, "Batch Name", entity.Name, box.Entity.Name );
+                History.EvaluateChange( changes, "Campus", entity?.Campus?.Name ?? "None", box.Entity?.Campus?.Text ?? "None" );
+                History.EvaluateChange( changes, "Status", entity?.Status, box.Entity?.Status);
+                History.EvaluateChange( changes, "Start Date/Time", entity.BatchStartDateTime, box.Entity?.BatchStartDateTime );
+                History.EvaluateChange( changes, "End Date/Time", entity.BatchEndDateTime, box.Entity?.BatchEndDateTime );
+                History.EvaluateChange( changes, "Control Amount", entity?.ControlAmount.FormatAsCurrency(), ( box.Entity?.ControlAmount ?? 0.0m ).FormatAsCurrency() );
+                History.EvaluateChange( changes, "Control Item Count", entity.ControlItemCount, box.Entity?.ControlItemCount );
+                History.EvaluateChange( changes, "Accounting System Code", entity.AccountingSystemCode, box.Entity?.AccountingSystemCode );
+                History.EvaluateChange( changes, "Notes", entity.Note, box.Entity?.Note );
+
                 // Update the entity instance from the information in the bag.
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
@@ -541,11 +559,20 @@ namespace Rock.Blocks.Finance
                     return ActionBadRequest( validationMessage );
                 }
 
-                var isNew = entity.Id == 0;
-
                 rockContext.WrapTransaction( () =>
                 {
-                    rockContext.SaveChanges();
+                    if ( rockContext.SaveChanges() > 0 )
+                    {
+                        if ( changes.Any() )
+                        {
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                                entity.Id,
+                                changes );
+                        }
+                    }
                     entity.SaveAttributeValues( rockContext );
                 } );
 

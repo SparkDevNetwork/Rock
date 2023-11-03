@@ -1,0 +1,147 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+         <div class="row">
+            <div class="col-md-3">
+                <NumberBox v-model="viewSaturationCount" label="View Saturation Count" help="The number of times a person should view the message before it's deemed to have been saturated." />
+            </div>
+            <div class="col-md-3">
+                <NumberBox v-model="viewSaturationInDays" label="View Saturation Date Range" help="Specify the number of days to be taken into consideration for the saturation calculation of views. Views outside this range will not be considered.">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList
+                              v-model="segments"
+                              enhanceForLongLists
+                              multiple
+                              label="Segments"
+                              help="The segment that an individual need to be in order for this message adaptation to be considered relevant. Leave blank for all individuals to be considered relevant."
+                              :items="segmentOptions" />
+            </div>
+        </div>
+
+        <SectionHeader title="Message Content"
+                       description="The items below represent different forms of content that can the associated with the message." />
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="1" :showCategoryLabel="false" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AdaptiveMessageAdaptationBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationBag";
+    import { AdaptiveMessageAdaptationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AdaptiveMessageAdaptationBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AdaptiveMessageAdaptationDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AdaptiveMessageAdaptationBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const viewSaturationCount = propertyRef(props.modelValue.viewSaturationCount ?? null, "ViewSaturationCount");
+    const viewSaturationInDays = propertyRef(props.modelValue.viewSaturationInDays ?? null, "ViewSaturationInDays");
+    const segments = propertyRef(props.modelValue.segments ?? [], "Segments");
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, segments, viewSaturationCount, viewSaturationInDays];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const segmentOptions = computed((): ListItemBag[] => {
+        return props.options.segmentOptions ?? [];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(viewSaturationCount, props.modelValue.viewSaturationCount ?? null);
+        updateRefValue(viewSaturationInDays, props.modelValue.viewSaturationInDays ?? null);
+        updateRefValue(segments, props.modelValue.segments ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: AdaptiveMessageAdaptationBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            viewSaturationInDays: viewSaturationInDays.value,
+            viewSaturationCount: viewSaturationCount.value,
+            isActive: isActive.value,
+            name: name.value,
+            segments: segments.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

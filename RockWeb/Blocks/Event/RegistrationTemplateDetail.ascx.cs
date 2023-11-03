@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Event
 				<ul>
 				{% for fee in registrant.Fees %}
 					<li>
-						{{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+                        {{ fee.RegistrationTemplateFee.Name }} {% if fee.RegistrationTemplateFee.FeeType == 'Multiple' %} - {{ fee.Option }} {% endif %}
 						{% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ fee.Cost | FormatAsCurrency }}){% endif %}: {{ fee.TotalCost | FormatAsCurrency }}
 					</li>
 				{% endfor %}
@@ -218,7 +218,7 @@ namespace RockWeb.Blocks.Event
                 <ul class='list-unstyled'>
                 {% for fee in registrant.Fees %}
                     <li>
-                        {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+                        {{ fee.RegistrationTemplateFee.Name }} {% if fee.RegistrationTemplateFee.FeeType == 'Multiple' %} - {{ fee.Option }} {% endif %}
                         {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ fee.Cost | FormatAsCurrency }}){% endif %}: {{ fee.TotalCost | FormatAsCurrency }}
                     </li>
                 {% endfor %}

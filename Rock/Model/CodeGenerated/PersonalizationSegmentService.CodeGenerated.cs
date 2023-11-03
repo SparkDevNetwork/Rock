@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( PersonalizationSegment item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<AdaptiveMessageAdaptationSegment>( Context ).Queryable().Any( a => a.PersonalizationSegmentId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonalizationSegment.FriendlyTypeName, AdaptiveMessageAdaptationSegment.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

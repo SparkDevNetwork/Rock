@@ -217,7 +217,6 @@ namespace Rock.Web.UI.Controls
             set { ViewState["ValidationDisplay"] = value; }
         }
 
-
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
@@ -635,7 +634,7 @@ namespace Rock.Web.UI.Controls
             RequiredFieldValidator.ControlToValidate = _hfGeoPath.ID;
 
             _validator = new CustomValidator();
-            _validator.ID = this.ID + "_CV";
+            _validator.ID = this.ClientID + "_CV";
             _validator.Display = ValidatorDisplay.None;
             _validator.CssClass = "validation-error help-inline";
             _validator.EnableClientScript = false;

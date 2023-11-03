@@ -47,9 +47,9 @@ namespace Rock.AI.OpenAI.Provider
         IsRequired = true,
         Order = 0 )]
     [TextField(
-        "OpenAI Organization",
+        "OpenAI Organization Id",
         Key = AttributeKey.Organization,
-        Description = "The OpenAI Organization.",
+        Description = "The OpenAI organization id (e.g. org-FJsnwh1iFFq6xxxxxxxxxxxx).",
         IsRequired = true,
         Order = 0 )]
 

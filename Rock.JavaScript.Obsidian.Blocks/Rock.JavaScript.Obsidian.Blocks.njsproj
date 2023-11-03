@@ -35,6 +35,10 @@
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
     <Content Include="src\Bus\queueDetail.vue" />
+    <Content Include="src\Cms\adaptiveMessageAdaptationDetail.obs" />
+    <Content Include="src\Cms\AdaptiveMessageAdaptationDetail\editPanel.partial.obs" />
+    <Content Include="src\Cms\AdaptiveMessageAdaptationDetail\viewPanel.partial.obs" />
+    <Content Include="src\Cms\adaptiveMessageList.obs" />
     <Content Include="src\Cms\lavaShortcodeDetail.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\viewPanel.partial.obs" />
@@ -141,6 +145,30 @@
     <Content Include="src\Group\groupRequirementTypeDetail.obs" />
     <Content Include="src\Group\GroupRequirementTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Group\GroupRequirementTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Group\Scheduling\groupScheduler.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\availableResources.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\cloneSchedules.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\group.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\groupSchedulerHelp.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\occurrence.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\occurrenceDate.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\progressBar.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\resourceNotes.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\schedule.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\scheduledResource.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\selectFilters.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\selectIndividuals.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\updatePreference.partial.obs" />
+    <Content Include="src\Group\Scheduling\groupScheduleToolbox.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduleToolbox\currentSchedule.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduleToolbox\currentScheduleRow.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduleToolbox\declineReason.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduleToolbox\editAssignment.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduleToolbox\scheduleUnavailability.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduleToolbox\signUp.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduleToolbox\signUpOccurrence.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduleToolbox\signUpOccurrenceDate.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduleToolbox\updatePreferences.partial.obs" />
     <Content Include="src\Prayer\prayerRequestDetail.obs" />
     <Content Include="src\Prayer\PrayerRequestDetail\editPanel.partial.obs" />
     <Content Include="src\Prayer\PrayerRequestDetail\viewPanel.partial.obs" />
@@ -261,6 +289,9 @@
     <Folder Include="src\" />
     <Folder Include="src\Bus\QueueDetail\" />
     <Folder Include="src\Cms\" />
+    <Folder Include="src\Cms\AdaptiveMessageAdaptationDetail\" />
+    <Folder Include="src\Cms\AdaptiveMessageDetail\" />
+    <Folder Include="src\Cms\AdaptiveMessageList\" />
     <Folder Include="src\Cms\BlockTypeDetail\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
     <Folder Include="src\Cms\ContentCollectionView\" />
@@ -321,6 +352,9 @@
     <Folder Include="src\Finance\FinancialStatementTemplateDetail\" />
     <Folder Include="src\Group\GroupMemberScheduleTemplateDetail\" />
     <Folder Include="src\Group\GroupRequirementTypeDetail\" />
+    <Folder Include="src\Group\Scheduling\" />
+    <Folder Include="src\Group\Scheduling\GroupScheduler\" />
+    <Folder Include="src\Group\Scheduling\GroupScheduleToolbox\" />
     <Folder Include="src\Prayer\" />
     <Folder Include="src\Prayer\PrayerRequestDetail\" />
     <Folder Include="src\Finance\FinancialPledgeDetail\" />
@@ -365,6 +399,9 @@
     <Folder Include="src\WorkFlow\FormBuilder\Shared\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\Cms\AdaptiveMessageAdaptationDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\AdaptiveMessageDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\AdaptiveMessageList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\blockTypeDetail.ts" />
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\types.partial.ts" />
@@ -466,6 +503,7 @@
     <TypeScriptCompile Include="src\Engagement\AchievementAttemptDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\AchievementTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StepTypeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Engagement\SignUp\SignUpFinder\signUpFilterType.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakTypeExclusionDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
@@ -478,6 +516,8 @@
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupMemberScheduleTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupRequirementTypeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduleToolbox\types.partial.ts" />
     <TypeScriptCompile Include="src\Prayer\PrayerRequestDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Bus\QueueDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchDetail\types.partial.ts" />
@@ -486,7 +526,6 @@
     <TypeScriptCompile Include="src\Security\ConfirmAccount\events.d.ts" />
     <TypeScriptCompile Include="src\Security\ConfirmAccount\views.ts" />
     <TypeScriptCompile Include="src\Security\RestKeyDetail\types.partial.ts" />
-    <TypeScriptCompile Include="src\Engagement\SignUp\SignUpFinder\signUpFilterType.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\stepFlow.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\StepFlow\flowNodeDiagram.partial.ts" />
     <TypeScriptCompile Include="src\Event\InteractiveExperiences\ExperienceManagerOccurrences\types.partial.ts" />
@@ -520,7 +559,6 @@
     <TypeScriptCompile Include="src\Example\personDetail.ts" />
     <TypeScriptCompile Include="src\Example\personSecondary.ts" />
     <TypeScriptCompile Include="src\Finance\transactionEntry.ts" />
-    <TypeScriptCompile Include="src\Group\groupMemberList.ts" />
     <TypeScriptCompile Include="src\Reporting\MergeTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupAttendanceDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupAttendanceDetail\utils.partial.ts" />
@@ -559,6 +597,11 @@
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\personEntrySettings.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\segmentedPicker.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\types.partial.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="src\Cms\adaptiveMessageDetail.obs" />
+    <Compile Include="src\Cms\AdaptiveMessageDetail\editPanel.partial.obs" />
+    <Compile Include="src\Cms\AdaptiveMessageDetail\viewPanel.partial.obs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean" Inputs="package.json" Outputs="node_modules/.install-stamp">

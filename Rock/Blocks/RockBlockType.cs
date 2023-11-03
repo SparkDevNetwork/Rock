@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -319,6 +320,8 @@ namespace Rock.Blocks
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";
             var rootElementStyle = "";
+            var rootElementClasses = "obsidian-block-loading";
+            var placeholderContent = GetPlaceholderContent( RockClientType.Web );
 
             if ( !IsBrowserSupported() )
             {
@@ -338,17 +341,33 @@ namespace Rock.Blocks
                 rootElementStyle += $" --initial-block-height: {initialHeight.Value}px";
             }
 
+            if ( placeholderContent.IsNotNullOrWhiteSpace() )
+            {
+                rootElementClasses += " obsidian-block-has-placeholder";
+            }
+
             var config = GetConfigBag( rootElementId );
 
-            return
-$@"<div id=""{rootElementId}"" class=""obsidian-block-loading"" style=""{rootElementStyle.Trim()}""></div>
+            var sb = new StringBuilder();
+
+            sb.AppendLine( $"<div id=\"{rootElementId}\" class=\"{rootElementClasses}\" style=\"{rootElementStyle.Trim()}\">" );
+
+            if ( placeholderContent.IsNotNullOrWhiteSpace() )
+            {
+                sb.AppendLine( $"    <div class=\"obsidian-block-placeholder\">{placeholderContent}</div>" );
+            }
+
+            sb.AppendLine( $@"    <div class=""obsidian-block-wrapper""></div>
+</div>
 <script type=""text/javascript"">
 Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
         module.initializeBlock({config.ToCamelCaseJson( false, true )});
     }});
 }});
-</script>";
+</script>" );
+
+            return sb.ToString();
         }
 
         /// <summary>
@@ -440,6 +459,22 @@ Obsidian.onReady(() => {{
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the placeholder content to use for the block. On a web block this
+        /// would be HTML and a mobile block would use XAML.
+        /// </summary>
+        /// <param name="clientType">Type of the client.</param>
+        /// <returns>System.String.</returns>
+        protected virtual string GetPlaceholderContent( RockClientType clientType )
+        {
+            if ( clientType == RockClientType.Web )
+            {
+                return $"<div class=\"skeleton skeleton-block h-100\"></div>";
+            }
+
+            return string.Empty;
         }
 
         #endregion
