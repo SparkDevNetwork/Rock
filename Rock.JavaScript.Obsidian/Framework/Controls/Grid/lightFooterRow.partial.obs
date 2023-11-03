@@ -1,8 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="d-flex grid-light-action-row">
-        <div class="flex-grow-1"></div>
-
         <ActionGroup :gridActions="primaryGridActions"
                      :grid="grid" />
 
@@ -11,6 +9,21 @@
                           :grid="grid" />
     </div>
 </template>
+
+<style>
+    .grid-light-action-row {
+        justify-content: flex-end;
+    }
+
+    .grid-light-action-row .grid-actions {
+        background-color: inherit;
+        padding: calc(var(--table-cell-padding-y) * .25) 0;
+    }
+
+    .grid-light-action-row .grid-actions:last-child {
+        padding-right: var(--table-cell-padding-x);
+    }
+</style>
 
 <script setup lang="ts">
     import ActionGroup from "./actionGroup.partial.obs";

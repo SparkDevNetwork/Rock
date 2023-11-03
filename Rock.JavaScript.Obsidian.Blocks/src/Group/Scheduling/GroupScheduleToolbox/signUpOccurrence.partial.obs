@@ -17,16 +17,16 @@
 
             <DropDownList v-if="isLocationListVisible"
                           v-model="selectedLocationGuid"
-                          formGroupClasses="input-sm"
+                          label=""
+                          inputClasses="input-sm"
                           :items="locationItems"
-                          :disableLabel="true"
                           :showBlankItem="false"
                           :disabled="disabled || isSavingSignUp"
                           @update:modelValue="onSignUpChanged" />
         </div>
 
         <div :class="checkCssClass">
-            <i class='fas fa-check'></i>
+            <i class='fa fa-check'></i>
         </div>
     </div>
 </template>
@@ -46,6 +46,7 @@
 }
 
 .schedule-toolbox-sign-up-occurrence-check {
+    margin-left: 12px;
     transition: color 0s linear;
 
     &.not-signed-up {
