@@ -231,5 +231,13 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         /// Gets or sets the child communication preference field.
         /// </summary>
         public FamilyPreRegistrationFieldBag ChildCommunicationPreferenceField { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether captcha support should be disabled for this block.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable captcha support]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisableCaptchaSupport { get; set; }
     }
 }

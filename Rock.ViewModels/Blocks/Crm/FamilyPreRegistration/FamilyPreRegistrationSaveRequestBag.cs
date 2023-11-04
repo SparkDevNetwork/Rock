@@ -32,9 +32,12 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         public Guid? FamilyGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the full name.
+        /// Gets or sets a value indicating whether the solved captcha is valid.
         /// </summary>
-        public string FullName { get; set; }
+        /// <value>
+        ///   <c>true</c> if the solved captcha is valid; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCaptchaValid { get; set; }
 
         /// <summary>
         /// Gets or sets the address.

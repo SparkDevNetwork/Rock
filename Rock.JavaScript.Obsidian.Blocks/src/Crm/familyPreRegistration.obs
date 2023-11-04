@@ -67,13 +67,6 @@
                             <h4 class="heading-individual">First Adult</h4>
 
                             <div class="row">
-                                <TextBox
-                                         v-model="fullName"
-                                         autocomplete="new-password"
-                                         class="rock-fullname"
-                                         :disabled="isSaving || isNavigating"
-                                         placeholder="Please enter name (Required)" />
-
                                 <div class="col-sm-6">
                                     <StaticFormControl
                                                        v-if="adult1.isFirstNameReadOnly"
@@ -457,6 +450,8 @@
                                                  @addChild="onAddChild"
                                                  @removeChild="onRemoveChild" />
                     </Panel>
+
+                    <Captcha v-if="!disableCaptcha" v-model="isCaptchaValid"></Captcha>
                 </template>
 
                 <template #footerActions>
@@ -501,6 +496,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
@@ -517,6 +513,7 @@
     import { FamilyPreRegistrationScheduleDateBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationScheduleDateBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -539,12 +536,13 @@
     const isUsernameAvailable = ref<boolean | null | undefined>();
     const confirmPassword = ref<string>("");
     const address = ref<AddressControlBag | undefined>(config.address ?? undefined);
-    const fullName = ref<string>("");
+    const isCaptchaValid = ref("");
     const familyAttributeValues = ref<Record<string, string>>(config.familyAttributeValues || {});
     const createAccount = ref<CreateAccountRequest>({
         username: "",
         password: ""
     });
+    const disableCaptcha = ref(config.disableCaptchaSupport);
 
     // Create the request bags that will be used to pre-register the adults and children.
     const adult1Request = ref<PersonRequestBag>(convertPersonToPersonRequest(config.adult1));
@@ -647,7 +645,7 @@
                 createAccount: createAccount.value,
                 familyAttributeValues: familyAttributeValues.value,
                 familyGuid: config.familyGuid,
-                fullName: fullName.value,
+                isCaptchaValid: asBoolean(isCaptchaValid.value),
                 plannedVisitDate: plannedVisitDate.value,
                 scheduleGuid: scheduleGuid.value
             };

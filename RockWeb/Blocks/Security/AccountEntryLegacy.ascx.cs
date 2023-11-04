@@ -28,6 +28,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -260,6 +261,13 @@ namespace RockWeb.Blocks.Security
         IsRequired = false,
         Order = 26 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 27 )]
+
     #endregion
 
     [Rock.SystemGuid.BlockTypeGuid( "99362B60-71A5-44C6-BCFE-DDA9B00CC7F3" )]
@@ -294,6 +302,7 @@ namespace RockWeb.Blocks.Security
             public const string CreateCommunicationRecord = "CreateCommunicationRecord";
             public const string ShowGender = "ShowGender";
             public const string AttributeCategories = "AttributeCategories";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         #region Page Parameter Keys
@@ -455,6 +464,7 @@ usernameTextbox.blur(function () {{
                 pnlAddress.Visible = GetAttributeValue( AttributeKey.ShowAddress ).AsBoolean();
                 pnlPhoneNumbers.Visible = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
                 acAddress.Required = GetAttributeValue( AttributeKey.AddressRequired ).AsBoolean();
+                cpCaptcha.Visible = !GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
 
                 // show/hide gender
                 ddlGender.Visible = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean();
@@ -632,7 +642,8 @@ usernameTextbox.blur(function () {{
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDuplicatesNext_Click( object sender, EventArgs e )
         {
-            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
+            if ( !disableCaptcha && !cpCaptcha.IsResponseValid() )
             {
                 /* 03/22/2021 MDP
 
@@ -640,9 +651,9 @@ usernameTextbox.blur(function () {{
 
                 */
 
-                nbRockFullName.Visible = true;
-                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
-                nbRockFullName.Text = "Invalid Form Value";
+                nbCaptcha.Visible = true;
+                nbCaptcha.NotificationBoxType = NotificationBoxType.Validation;
+                nbCaptcha.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
                 return;
             }
 
@@ -774,7 +785,8 @@ usernameTextbox.blur(function () {{
         /// <param name="direction">The direction.</param>
         private void DisplayDuplicates( Direction direction )
         {
-            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
+            if ( !disableCaptcha && !cpCaptcha.IsResponseValid() )
             {
                 /* 03/22/2021 MDP
 
@@ -782,9 +794,9 @@ usernameTextbox.blur(function () {{
 
                 */
 
-                nbRockFullName.Visible = true;
-                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
-                nbRockFullName.Text = "Invalid Form Value";
+                nbCaptcha.Visible = true;
+                nbCaptcha.NotificationBoxType = NotificationBoxType.Validation;
+                nbCaptcha.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
                 return;
             }
 

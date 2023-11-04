@@ -24,6 +24,8 @@
                         <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm Password" Required="true" TextMode="Password" ValidateRequestMode="Disabled"></Rock:RockTextBox>
                         <asp:CompareValidator ID="covalPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="Password and Confirmation do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
 
+                        <Rock:Captcha runat="server" ID="cpCaptcha" />
+
                     </fieldset>
 
                 </div>
@@ -33,9 +35,7 @@
                     <fieldset>
                         <legend>Your Information</legend>
 
-                        <%-- Special input with rock-fullname class --%>
-                        <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" autocomplete="new-password" />
-                        <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
+                        <Rock:NotificationBox ID="nbCaptcha" runat="server" NotificationBoxType="Validation" />
 
                         <Rock:FirstNameTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                         <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" />
