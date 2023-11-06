@@ -18,10 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-#if REVIEW_NET5_0_OR_GREATER
-
-using Microsoft.EntityFrameworkCore;
-#endif
 
 using Rock.Attribute;
 using Rock.Data;

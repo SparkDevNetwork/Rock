@@ -21,7 +21,6 @@
     <Compile Remove="Example\PersonDetail.cs" />
     <Compile Remove="Example\PersonSecondary.cs" />
     <Compile Remove="Finance\TransactionEntry.cs" />
-    <Compile Remove="Groups\GroupMemberList.cs" />
     <Compile Remove="Security\Login.cs" />
     <Compile Remove="Utility\StarkDetail.cs" />
   </ItemGroup>
@@ -40,7 +39,6 @@
   <ItemGroup>
     <Folder Include="Crm\" />
     <Folder Include="Finance\" />
-    <Folder Include="Groups\" />
     <Folder Include="Security\" />
     <Folder Include="Utility\" />
   </ItemGroup>

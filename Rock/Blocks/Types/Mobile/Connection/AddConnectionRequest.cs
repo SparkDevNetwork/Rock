@@ -32,11 +32,7 @@ using Rock.Common.Mobile.Blocks.Connection.AddConnectionRequest;
 using Rock.Web.Cache;
 using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {

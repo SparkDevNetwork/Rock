@@ -17,22 +17,15 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Data.SqlClient;
-#else
 using System.Data.Common;
 using System.Data.Entity;
 using System.Data.SqlClient;
-#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web.UI;
-#if REVIEW_WEBFORMS
 using System.Web.UI.HtmlControls;
-#endif
 using System.Web.UI.WebControls;
 
 using Rock.Data;

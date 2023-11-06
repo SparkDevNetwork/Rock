@@ -16,8 +16,11 @@ using System.Runtime.InteropServices;
 [assembly: Guid( "1EE4167E-E7AE-41AD-9E58-406C1A7C3A30" )]
 
 [assembly: InternalsVisibleTo( "Rock" )]
-[assembly: InternalsVisibleTo( "Rock.NG" )]
 [assembly: InternalsVisibleTo( "Rock.Blocks" )]
-[assembly: InternalsVisibleTo( "Rock.Blocks.NG" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
-[assembly: InternalsVisibleTo( "Rock.Lava.Tests" )] 
+[assembly: InternalsVisibleTo( "Rock.Lava.Tests" )]
+
+#if !WEBFORMS
+[assembly: InternalsVisibleTo( "Rock.NG" )]
+[assembly: InternalsVisibleTo( "Rock.Blocks.NG" )]
+#endif
