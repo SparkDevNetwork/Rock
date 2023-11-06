@@ -86,7 +86,7 @@
     import Grid, { NumberColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn, numberValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { AdaptiveMessageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageList/AdaptiveMessageListOptionsBag";
+    import { AdaptiveMessageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageList/adaptiveMessageListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey, Row } from "./AdaptiveMessageList/types.partial";
     import { reactive, ref } from "vue";
