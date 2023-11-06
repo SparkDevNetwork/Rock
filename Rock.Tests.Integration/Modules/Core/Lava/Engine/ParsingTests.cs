@@ -244,15 +244,31 @@ abc <= abc.
         }
 
         [TestMethod]
-        [Ignore( "Requires a fix for the Fluid library. Tags embedded in a raw tag are incorrectly parsed by the Fluid engine." )]
         public void Tags_RawTagWithEmbeddedTag_ReturnsLiteralTagText()
         {
             var inputTemplate = @"
-{% capture lava %}{% raw %}{% assign test = 'hello' %}{{ test }}{% endraw %}{% endcapture %}
-{{ lava | RunLava }}
+{% raw %}{% assign test = 'hello' %}{% endraw %}
 ";
 
-            TestHelper.AssertTemplateOutput( "hello", inputTemplate );
+            TestHelper.AssertTemplateOutput( "{% assign test = 'hello' %}", inputTemplate );
+        }
+
+        /// <summary>
+        /// Verify that a comment tag correctly ignores any other tags that are contained within it.
+        /// </summary>
+        /// <remarks>
+        /// Fluid only. The DotLiquid framework does not support this behaviour.
+        /// </remarks>
+        [TestMethod]
+        public void Tags_CommentTagContainingInvalidRawTag_IsParsedCorrectly()
+        {
+            var inputTemplate = @"
+Comment-->
+{% comment %}Open-ended tag-->{% raw %}, Invalid tag-->{% invalid_tag %}{% endcomment %}
+<--Comment
+";
+
+            TestHelper.AssertTemplateOutput( typeof(FluidEngine), "Comment--><--Comment", inputTemplate );
         }
 
         [TestMethod]

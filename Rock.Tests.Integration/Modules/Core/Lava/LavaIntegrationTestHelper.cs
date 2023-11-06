@@ -860,9 +860,9 @@ namespace Rock.Tests.Integration.Core.Lava
                         // Require a match of 1 or more characters for a wildcard.
                         expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.+)" );
 
-                        if ( matchWild )
+                        if ( matchWild && !options.IgnoreWhiteSpace )
                         {
-                            // If this is a wildcard match, add RegEx anchors for the start and end of the template.
+                            // If this is a wildcard match and whitespace is ignored, add RegEx anchors for the start and end of the template.
                             expectedOutput = "^" + expectedOutput + "$";
                         }
 
