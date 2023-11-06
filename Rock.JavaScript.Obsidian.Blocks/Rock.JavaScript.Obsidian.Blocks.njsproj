@@ -123,6 +123,7 @@
     <Content Include="src\Group\Scheduling\GroupScheduler\occurrence.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\occurrenceDate.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\progressBar.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\provideLocations.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\resourceNotes.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\schedule.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\scheduledResource.partial.obs" />
@@ -467,6 +468,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\utils.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduleToolbox\types.partial.ts" />
     <TypeScriptCompile Include="src\Prayer\PrayerRequestDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Bus\QueueDetail\types.partial.ts" />

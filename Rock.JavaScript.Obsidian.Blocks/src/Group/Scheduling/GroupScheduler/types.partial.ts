@@ -19,6 +19,7 @@
 
 import { InjectionKey, Ref } from "vue";
 import { ResourceListSourceType } from "@Obsidian/Enums/Blocks/Group/Scheduling/resourceListSourceType";
+import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
 
 /**
  * Information about a scheduler resource assignment for the group scheduler.
@@ -233,9 +234,29 @@ export interface IRemainingResourceSpots {
 }
 
 /**
+ * An injection key to provide information about unassigned resource counts.
+ */
+export const UnassignedResourceCounts: InjectionKey<Ref<GroupSchedulerUnassignedResourceCountBag[]>> = Symbol("unassigned-resource-counts");
+
+/**
+ * An injection key to provide a function that can be used to report unassigned resources as assigned.
+ */
+export const ReportAssignedResources: InjectionKey<(unassignedResourceCountGuid: string | null | undefined, assignedCount: number) => void> = Symbol("report-assigned-resources");
+
+/**
+ * An injection key to provide an occurrence date.
+ */
+export const OccurrenceDate: InjectionKey<Ref<string>> = Symbol("occurrence-date");
+
+/**
  * An injection key to provide a computed occurrence date title to descendent components.
  */
 export const OccurrenceDateTitle: InjectionKey<Ref<string>> = Symbol("occurrence-date-title");
+
+/**
+ * * An injection key to provide a schedule identifier.
+ */
+export const ScheduleId: InjectionKey<Ref<number>> = Symbol("schedule-id");
 
 /**
  * An injection key to instruct all schedule occurrences to reload themselves.

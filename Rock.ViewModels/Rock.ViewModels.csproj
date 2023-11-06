@@ -76,6 +76,7 @@
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerUnassignedResourceCountBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\AssignmentOptionsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\CurrentScheduleBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\DeleteAssignmentRequestBag.cs" />

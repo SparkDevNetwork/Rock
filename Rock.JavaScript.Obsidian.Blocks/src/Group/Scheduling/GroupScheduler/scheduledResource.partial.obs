@@ -8,12 +8,12 @@
                ref="conflictElement"
                class="fa fa-exclamation-triangle"
                data-toggle="tooltip"
-               :title="conflictTooltip"></i>
+               :data-original-title="conflictTooltip"></i>
             <i v-if="preferenceTooltip"
                ref="preferenceElement"
                class="fa fa-minus-circle"
                data-toggle="tooltip"
-               :title="preferenceTooltip"></i>
+               :data-original-title="preferenceTooltip"></i>
         </span>
         <span class="resource-role">{{ resource?.GroupRoleName }}</span>
 

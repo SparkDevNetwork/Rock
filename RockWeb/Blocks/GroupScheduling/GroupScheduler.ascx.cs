@@ -1306,7 +1306,7 @@ btnCopyToClipboard.ClientID );
                      }
                  } ).ToList();
 
-            // if there are any people that signed up with no location preference, add the to a special list of "No Location Preference" occurrences to the top of the list
+            // if there are any people that signed up with no location preference, add them to a special list of "No Location Preference" occurrences to the top of the list
             var unassignedLocationOccurrenceList = attendanceOccurrenceService.Queryable()
                 .Where( a => occurrenceDateList.Contains( a.OccurrenceDate )
                     && a.ScheduleId.HasValue

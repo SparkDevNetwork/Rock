@@ -507,7 +507,7 @@ namespace Rock.Blocks.Group.Scheduling
                 return toolboxData;
             }
 
-            if ( config.SchedulableGroupLoadingMode != SchedulableGroupLoadingMode.DotNoLoad )
+            if ( config.SchedulableGroupLoadingMode != SchedulableGroupLoadingMode.DoNotLoad )
             {
                 toolboxData.SchedulableGroups = GetSchedulableGroups( rockContext, toolboxData.SelectedPerson, config.SchedulableGroupLoadingMode );
 
@@ -2909,7 +2909,7 @@ namespace Rock.Blocks.Group.Scheduling
             /// <summary>
             /// Gets or sets how to load the selected person's schedulable groups.
             /// </summary>
-            public SchedulableGroupLoadingMode SchedulableGroupLoadingMode { get; set; } = SchedulableGroupLoadingMode.DotNoLoad;
+            public SchedulableGroupLoadingMode SchedulableGroupLoadingMode { get; set; } = SchedulableGroupLoadingMode.DoNotLoad;
         }
 
         /// <summary>
@@ -2958,7 +2958,7 @@ namespace Rock.Blocks.Group.Scheduling
             /// <summary>
             /// Do not load any of the selected person's schedulable groups.
             /// </summary>
-            DotNoLoad = 0,
+            DoNotLoad = 0,
 
             /// <summary>
             /// Load all of the selected person's schedulable groups.
