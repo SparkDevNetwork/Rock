@@ -385,6 +385,9 @@ namespace Rock.Web.UI.Controls
                 var blockEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.BLOCK );
                 var areBlockSettingsControls = ( item.Attributes.Values.FirstOrDefault().EntityTypeId ?? 0 ) == blockEntityTypeId;
 
+                // Show block setting categories in panels if at least one category is specified.
+                var showCategoryPanels = areBlockSettingsControls && categoryAttributes.Where( c => c.Category != null ).Count() > 0;
+
                 foreach ( var attributeCategory in categoryAttributes.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
                 {
                     var attributes = attributeCategory.Attributes;
@@ -404,8 +407,7 @@ namespace Rock.Web.UI.Controls
                             ShowCategoryLabel = ShowCategoryLabel,
                             ShowPrePostHtml = this.ShowPrePostHtml,
 
-                            // Show block setting categories in panels.
-                            ShowCategoryPanels = areBlockSettingsControls,
+                            ShowCategoryPanels = showCategoryPanels,
                             // Use "General Settings" as default label for uncategorized block settings attributes.
                             DefaultCategoryName = areBlockSettingsControls ? "General Settings" : null,
                             CategoryDescription = attributeCategory.Category?.Description,
