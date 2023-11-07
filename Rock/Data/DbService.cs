@@ -19,10 +19,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#endif
-
 namespace Rock.Data
 {
     /// <summary>

@@ -18,11 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -750,10 +746,6 @@ namespace Rock.Communication.SmsActions
                 return;
             }
 
-#if REVIEW_NET5_0_OR_GREATER
-            context.LavaMergeFields[LavaMergeFieldKeys.SetupLink] = string.Empty;
-            return;
-#else
             var setupPage = new Rock.Web.PageReference( setupPageAttribute );
             if ( setupPage == null )
             {
@@ -801,7 +793,6 @@ namespace Rock.Communication.SmsActions
             {
                 context.LavaMergeFields[LavaMergeFieldKeys.SetupLink] = string.Empty;
             }
-#endif
         }
 
         /// <summary>

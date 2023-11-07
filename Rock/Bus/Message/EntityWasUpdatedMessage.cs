@@ -17,12 +17,11 @@
 
 using System;
 using System.Collections.Generic;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-using EFEntityState = Microsoft.EntityFrameworkCore.EntityState;
-#else
+#if WEBFORMS
 using System.Data.Entity;
 using EFEntityState = System.Data.Entity.EntityState;
+#else
+using EFEntityState = Microsoft.EntityFrameworkCore.EntityState;
 #endif
 using Rock.Bus.Queue;
 using Rock.Data;

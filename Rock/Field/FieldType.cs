@@ -18,11 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-#if REVIEW_WEBFORMS
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-#endif
 
 using Rock.Attribute;
 using Rock.Data;

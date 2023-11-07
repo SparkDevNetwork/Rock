@@ -32,10 +32,6 @@ using System.Text;
 using System.Web;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
-#if REVIEW_NET5_0_OR_GREATER
-
-using Microsoft.EntityFrameworkCore;
-#endif
 
 namespace Rock.Utility
 {

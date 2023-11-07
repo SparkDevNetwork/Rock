@@ -21,9 +21,6 @@ using MassTransit;
 #if REVIEW_WEBFORMS
 using MassTransit.AzureServiceBusTransport;
 using Microsoft.ServiceBus;
-#else
-using MassTransit.Azure.ServiceBus.Core;
-//using MassTransit.Azure.ServiceBus.Core.Contexts;
 #endif
 using Rock.Attribute;
 using Rock.Data;
@@ -184,6 +181,59 @@ namespace Rock.Bus.Transport
                     }
                 }
             }
+#else
+            System.Threading.Tasks.Task.Run( async () =>
+            {
+                var client = new Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient( url );
+
+                // Get all of the current queues
+                var queues = await client.GetQueuesAsync().ToListAsync();
+                if ( queues != null )
+                {
+                    foreach ( var queue in queues )
+                    {
+                        if ( queue.DefaultMessageTimeToLive != messageExpiration || queue.DeadLetteringOnMessageExpiration != enableDeadletterOnMessageExpiration )
+                        {
+                            queue.DefaultMessageTimeToLive = messageExpiration;
+                            queue.DeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
+                            await client.UpdateQueueAsync( queue );
+                        }
+                    }
+                }
+
+                // Get all of the current topics
+                var topics = await client.GetTopicsAsync().ToListAsync();
+                if ( topics != null )
+                {
+                    foreach ( var topic in topics )
+                    {
+                        if ( topic.DefaultMessageTimeToLive != messageExpiration )
+                        {
+                            topic.DefaultMessageTimeToLive = messageExpiration;
+                            await client.UpdateTopicAsync( topic );
+                        }
+
+                        var subs = await client.GetSubscriptionsAsync( topic.Name ).ToListAsync();
+
+                        // Get all of the topic subscriptions 
+                        if ( subs != null )
+                        {
+                            foreach ( var sub in subs )
+                            {
+                                // If the topic specifies a smaller TTL than the subscription, the topic TTL is applied ⬆.
+
+                                if ( sub.DeadLetteringOnMessageExpiration != enableDeadletterOnMessageExpiration )
+                                {
+                                    sub.DeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
+
+                                    await client.UpdateSubscriptionAsync( sub );
+                                }
+
+                            }
+                        }
+                    }
+                }
+            } );
 #endif
         }
 

@@ -19,9 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
-#endif
 using System.Linq;
 using System.Net;
 using Newtonsoft.Json;

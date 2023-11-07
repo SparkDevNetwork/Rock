@@ -22,10 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#endif
-
 using Rock.Data;
 
 namespace Rock.Lava.Blocks

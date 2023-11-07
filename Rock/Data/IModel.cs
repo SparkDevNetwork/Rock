@@ -16,11 +16,8 @@
 //
 using System;
 #if REVIEW_NET5_0_OR_GREATER
-using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 using EFEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
-using Microsoft.EntityFrameworkCore;
 #else
-using EFDbContext = System.Data.Entity.DbContext;
 using EFEntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;

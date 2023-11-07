@@ -18,11 +18,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -32,9 +28,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
-#if REVIEW_WEBFORMS
 using System.Web.UI.HtmlControls;
-#endif
 using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;

@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Data;
 #if REVIEW_NET5_0_OR_GREATER
 using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 #else
 using System.Data.Entity;

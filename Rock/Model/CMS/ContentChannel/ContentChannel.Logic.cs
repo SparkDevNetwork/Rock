@@ -15,11 +15,7 @@
 // </copyright>
 //
 using System.ComponentModel.DataAnnotations.Schema;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
 using Rock.Cms;
 using Rock.Web.Cache;
 

@@ -16,11 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -318,12 +314,12 @@ namespace Rock.Communication
                     var mediumEntity = EntityTypeCache.Get( MediumEntityTypeId );
                     if ( mediumEntity != null )
                     {
-                        //var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                        //if ( medium != null )
-                        //{
-                        //    medium.Send( this, out errorMessages );
-                        //    return !errorMessages.Any();
-                        //}
+                        var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                        if ( medium != null )
+                        {
+                            medium.Send( this, out errorMessages );
+                            return !errorMessages.Any();
+                        }
                     }
 
                     errorMessages.Add( "Could not find valid Medium" );
@@ -334,7 +330,11 @@ namespace Rock.Communication
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex/*, HttpContext.Current*/ );
+#if WEBFORMS
+                ExceptionLogService.LogException( ex, HttpContext.Current );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
                 errorMessages.Add( ex.Message );
                 return false;
             }
@@ -380,7 +380,11 @@ namespace Rock.Communication
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex/*, HttpContext.Current*/ );
+#if WEBFORMS
+                ExceptionLogService.LogException( ex, HttpContext.Current );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
                 sendEmailResult.Errors.Add( ex.Message );
                 return sendEmailResult;
             }
