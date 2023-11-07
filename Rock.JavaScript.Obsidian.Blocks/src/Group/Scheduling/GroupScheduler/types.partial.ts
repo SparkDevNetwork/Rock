@@ -219,7 +219,10 @@ export interface IScheduleProgress {
     confirmedCount: number,
 
     /** The count of pending resources for this occurrence. */
-    pendingCount: number
+    pendingCount: number,
+
+    /** The count of declined resources for this occurrence. */
+    declinedCount: number
 }
 
 /**
