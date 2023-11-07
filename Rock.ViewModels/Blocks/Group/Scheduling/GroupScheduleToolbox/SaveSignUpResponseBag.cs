@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox
 {
     /// <summary>
@@ -31,5 +33,15 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox
         /// Gets or sets the current sign-ups; will only be provided if the save failed.
         /// </summary>
         public SignUpsBag SignUps { get; set; }
+
+        /// <summary>
+        /// Gets or sets the updated sign-up occurrence; will only be provided if the save succeeded.
+        /// </summary>
+        public SignUpOccurrenceBag SignUpOccurrence { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected location unique identifier; will only be provided if the save succeeded.
+        /// </summary>
+        public Guid SelectedLocationGuid { get; set; }
     }
 }

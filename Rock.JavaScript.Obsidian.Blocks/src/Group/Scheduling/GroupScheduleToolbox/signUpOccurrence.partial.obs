@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div :class="occurrenceCssClass">
+    <div v-if="signUpOccurrence" :class="occurrenceCssClass">
         <div class="flex-fill d-flex flex-column flex-sm-row flex-wrap justify-content-sm-between align-items-sm-center">
             <CheckBox v-model="isChecked"
                       label=""
@@ -94,14 +94,18 @@
     const selectedPersonGuid = inject(SelectedPersonGuid, ref(""));
     const selectedGroup = inject(SelectedGroup);
 
+    const signUpOccurrence = ref<SignUpOccurrenceBag | null | undefined>(props.occurrence);
+
     const isChecked = ref(false);
     let oldIsChecked = isChecked.value;
 
-    const selectedLocationGuid = ref(props.occurrence?.locations?.length ? props.occurrence.locations[0].locationGuid ?? emptyGuid : emptyGuid);
+    const selectedLocationGuid = ref(getFirstLocationOrEmptyGuid(props.occurrence));
     let oldSelectedLocationGuid = selectedLocationGuid.value;
 
     const isSavingSignUp = ref(false);
     const saveSignUpErrorMessage = inject(SaveSignUpErrorMessage, ref(""));
+
+    const postSaveLocationItemCount = ref(0);
 
     const areSuccessStylesVisible = ref(false);
     let successStylesTimeoutID: NodeJS.Timeout;
@@ -115,11 +119,11 @@
     });
 
     const text = computed((): string => {
-        return props.occurrence?.formattedScheduleName ?? "";
+        return signUpOccurrence.value?.formattedScheduleName ?? "";
     });
 
     const peopleNeededText = computed((): string => {
-        let peopleNeededCount = props.occurrence?.peopleNeededCount ?? 0;
+        let peopleNeededCount = signUpOccurrence.value?.peopleNeededCount ?? 0;
         if (peopleNeededCount > 0 && isChecked.value) {
             peopleNeededCount--;
         }
@@ -130,11 +134,11 @@
     });
 
     const title = computed((): string => {
-        return props.occurrence?.scheduleName ?? "";
+        return signUpOccurrence.value?.scheduleName ?? "";
     });
 
     const locationItems = computed((): ListItemBag[] => {
-        return props.occurrence?.locations
+        return signUpOccurrence.value?.locations
             ?.filter((location: SignUpOccurrenceLocationBag) => location?.locationName && location?.locationGuid)
             .map((location: SignUpOccurrenceLocationBag) => ({
                 text: location.locationName,
@@ -143,7 +147,7 @@
     });
 
     const isLocationListVisible = computed((): boolean => {
-        return locationItems.value.length > 1 && isChecked.value;
+        return postSaveLocationItemCount.value > 1 && isChecked.value;
     });
 
     const checkCssClass = computed((): string => {
@@ -153,6 +157,17 @@
     // #endregion Computed Values
 
     // #region Functions
+
+    /**
+     * Gets the first occurrence location Guid or an empty guid if not found.
+     *
+     * @param occurrence The occurrence from which to get the first location guid.
+     */
+    function getFirstLocationOrEmptyGuid(occurrence: SignUpOccurrenceBag | null | undefined): string {
+        return occurrence?.locations?.length
+            ? occurrence.locations[0].locationGuid ?? emptyGuid
+            : emptyGuid;
+    }
 
     /**
      * Restores the old values after a save failure.
@@ -188,9 +203,9 @@
         const bag: SaveSignUpRequestBag = {
             selectedPersonGuid: selectedPersonGuid.value,
             selectedGroupGuid: selectedGroup?.value?.guid,
-            selectedScheduleGuid: props.occurrence?.scheduleGuid,
+            selectedScheduleGuid: signUpOccurrence.value?.scheduleGuid,
             selectedLocationGuid: selectedLocationGuid.value,
-            occurrenceDateTime: props.occurrence?.occurrenceDateTime,
+            occurrenceDateTime: signUpOccurrence.value?.occurrenceDateTime,
             isSigningUp: isChecked.value
         };
 
@@ -209,9 +224,22 @@
             return;
         }
 
+        if (isChecked.value) {
+            // It's possible that the occurrence's current locations / selected location
+            // are different than what was submitted; update local refs just in case.
+            signUpOccurrence.value = result.data?.signUpOccurrence;
+            selectedLocationGuid.value = result.data?.selectedLocationGuid ?? emptyGuid;
+            postSaveLocationItemCount.value = locationItems.value.length;
+        }
+        else {
+            postSaveLocationItemCount.value = 0;
+        }
+
         // Update the "old" values for next time.
         oldIsChecked = isChecked.value;
-        oldSelectedLocationGuid = selectedLocationGuid.value;
+        oldSelectedLocationGuid = isChecked.value
+            ? selectedLocationGuid.value
+            : getFirstLocationOrEmptyGuid(signUpOccurrence.value);
 
         areSuccessStylesVisible.value = true;
         successStylesTimeoutID = setTimeout(() => areSuccessStylesVisible.value = false, 1000);
