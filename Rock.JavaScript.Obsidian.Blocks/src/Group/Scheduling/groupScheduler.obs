@@ -32,7 +32,7 @@
                             <p>The invite status is shown by a border around the individual's avatar.</p>
                             <p>Some scheduled individuals may also have notification icons that alert you to issues with their schedule.</p>
                             <ul>
-                                <li><i class="fa fa-exclamation-triangle"></i> Indicates a conflict; which can can happen if an individual is unavailable due to a blackout, they do not meet the group requirements, or because they have a scheduling conflict.</li>
+                                <li><i class="fa fa-exclamation-triangle"></i> Indicates a conflict; which can happen if an individual is unavailable due to a blackout, they do not meet the group requirements, or because they have a scheduling conflict.</li>
                                 <li><i class="fa fa-minus-circle"></i> Indicates that the schedule does not match this person's scheduling preference.</li>
                             </ul>
                             <p>For both notification icon types, additional details can be viewed by hovering over the icon.</p>

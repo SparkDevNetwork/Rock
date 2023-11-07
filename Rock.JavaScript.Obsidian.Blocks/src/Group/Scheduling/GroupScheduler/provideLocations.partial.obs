@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Modal v-model="isVisible"
-           modalWrapperClasses="sched-group-provide-location-modal"
+           modalWrapperClasses="new-group-scheduler provide-location-modal"
            saveText="Save"
            :title="title"
            :isSaveButtonDisabled="isSaveButtonDisabled"
@@ -18,35 +18,52 @@
 
             <LoadingIndicator v-if="isLoadingResources" :delay="500" />
 
-            <div v-for="resource in resources" class="sched-group-provide-location-resource row">
-                <div class="col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
-
-                    <div class="sched-group-provide-location-resource-name">
-                        {{ resource.PersonName }}
-                    </div>
-
-                    <DropDownList v-model="locationIdByPersonIds[resource.PersonId]"
-                                  :items="locations"
-                                  :validationTitle="`Location for ${resource.PersonName}`"
-                                  inputClasses="input-width-lg"
-                                  :disabled="isBusy" />
+            <div v-for="resource in resources" class="sched-group-provide-location-resource">
+                <div class="sched-group-provide-location-resource-name">
+                    {{ resource.PersonName }}
                 </div>
+
+                <DropDownList v-model="locationIdByPersonIds[resource.PersonId]"
+                              :items="locations"
+                              :validationTitle="`Location for ${resource.PersonName}`"
+                              inputClasses="input-width-lg"
+                              :disabled="isBusy" />
             </div>
         </template>
 
     </Modal>
 </template>
 
-<style scoped>
-.sched-group-provide-location-resource {
-    & > div {
+<!-- These styles cannot be scoped since some of them are being used in a modal. -->
+<style>
+.new-group-scheduler {
+    @media (min-width: 576px) {
+        &.provide-location-modal {
+            .modal-scrollable {
+                display: flex;
+                justify-content: center;
+            }
+
+            .modal.container {
+                width: auto;
+                min-width: 480px;
+                left: auto;
+                right: auto;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    }
+
+    .sched-group-provide-location-resource {
         display: flex;
         justify-content: space-between;
         align-items: center;
-    }
+        gap: 12px;
 
-    &:not(:first-of-type) {
-        margin-top: 12px;
+        &:not(:first-of-type) {
+            margin-top: 12px;
+        }
     }
 }
 </style>
