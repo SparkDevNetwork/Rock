@@ -30,6 +30,7 @@ using Rock.Security;
 using Rock.Security.Authentication;
 using Rock.Security.Authentication.Passwordless;
 using Rock.ViewModels.Blocks.Security.AccountEntry;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -290,6 +291,13 @@ namespace Rock.Blocks.Security
         Category = "Captions",
         Order = 29 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 30 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "75704274-FDB8-4A0C-AE0E-510F1977BE0A" )]
@@ -330,6 +338,7 @@ namespace Rock.Blocks.Security
             public const string DisableUsernameAvailabilityCheck = "DisableUsernameAvailabilityCheck";
             public const string ConfirmAccountPasswordlessTemplate = "ConfirmAccountPasswordlessTemplate";
             public const string ConfirmCaptionPasswordless = "ConfirmCaptionPasswordless";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         private static class PageParameterKey
@@ -1030,6 +1039,7 @@ namespace Rock.Blocks.Security
                 AccountEntryRegisterStepBox = accountEntryRegisterStepBox,
                 IsGenderPickerShown = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean(),
                 AccountEntryPersonInfoBag = accountEntryPersonInfoBag,
+                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
             };
         }
 
@@ -1175,16 +1185,10 @@ namespace Rock.Blocks.Security
         /// </summary>
         /// <param name="box">The register request box.</param>
         /// <returns><c>true</c> if valid; otherwise, <c>false</c>.</returns>
-        private static bool IsFullNameValid( AccountEntryRegisterRequestBox box )
+        private bool IsCaptchaValid( AccountEntryRegisterRequestBox box )
         {
-            /*
-                12/28/2022 - JMH
-             
-                See https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-
-                Reason: Passwordless Authentication
-             */
-            if ( box.FullName.IsNotNullOrWhiteSpace() )
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
+            if ( !disableCaptcha && !box.IsCaptchaValid )
             {
                 return false;
             }
@@ -1278,9 +1282,9 @@ namespace Rock.Blocks.Security
                 return false;
             }
 
-            if ( !IsFullNameValid( box ) )
+            if ( !IsCaptchaValid( box ) )
             {
-                errorMessage = "Invalid Form Value";
+                errorMessage = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
                 return false;
             }
 

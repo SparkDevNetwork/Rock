@@ -132,6 +132,13 @@ namespace Rock.Blocks.Event
         DefaultBooleanValue = true,
         Order = 11 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 17 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
@@ -155,6 +162,7 @@ namespace Rock.Blocks.Event
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
             public const string EnableSavedAccount = "EnableSavedAccount";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         /// <summary>
@@ -3229,7 +3237,8 @@ namespace Rock.Blocks.Event
                     .ToList(),
 
                 EnableSaveAccount = enableSavedAccount,
-                SavedAccounts = savedAccounts
+                SavedAccounts = savedAccounts,
+                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean()
             };
 
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired )
@@ -4002,6 +4011,7 @@ namespace Rock.Blocks.Event
             var currentPerson = GetCurrentPerson();
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
 
             // Basic check on the args to see that they appear valid
             if ( args == null )
@@ -4019,6 +4029,12 @@ namespace Rock.Blocks.Event
             if ( args.Registrar == null )
             {
                 errorMessage = "A registrar is required";
+                return null;
+            }
+
+            if ( !disableCaptcha && !args.IsCaptchaValid )
+            {
+                errorMessage = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
                 return null;
             }
 

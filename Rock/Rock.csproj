@@ -1053,7 +1053,6 @@
     <Compile Include="Model\CMS\ContentChannelItem\AddFromContentLibraryException.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\Options\ContentLibraryItemUploadOptions.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\Options\ContentLibraryItemDownloadOptions.cs" />
-    <Compile Include="Model\CMS\Page\Page.WebForms.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
     <Compile Include="Lava\Shortcodes\AICompletionShortcode.cs" />
     <Compile Include="Lava\WebsiteLavaHost.cs" />

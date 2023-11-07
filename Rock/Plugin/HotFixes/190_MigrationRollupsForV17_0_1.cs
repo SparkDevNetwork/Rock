@@ -31,7 +31,6 @@ namespace Rock.Plugin.HotFixes
             AddAdaptiveMessageRelatedPagesUp();
             RemoveLavaEngineFrameworkGlobalAttribute_Up();
             RemoveLavaEngineWarningBlockInstance();
-            UpdateIndexesOnInteraction();
             AddRawHtmlLavaStrucuturedContentToolUp();
             SortCMSPagesUp();
         }
@@ -94,19 +93,6 @@ namespace Rock.Plugin.HotFixes
         {
             RockMigrationHelper.DeleteSecurityAuthForBlock( "CAEC8719-BEDF-4BE3-9847-55DE93624974" );
             RockMigrationHelper.DeleteBlock( "CAEC8719-BEDF-4BE3-9847-55DE93624974" );
-        }
-
-        /// <summary>
-        /// PA: Updated indexes on the Interaction table.
-        /// </summary>
-        private void UpdateIndexesOnInteraction()
-        {
-            // note: the cronExpression was chosen at random. It is provided as it is mandatory in the Service Job. Feel free to change it if needed.
-            RockMigrationHelper.AddPostUpdateServiceJob(
-                name: "Rock Update Helper v17.0 - Interaction Index Post Migration Job",
-                description: "This job adds the IX_InteractionSessionId_CreatedDateTime index on the Interaction Table.",
-                jobType: "Rock.Jobs.PostV17InteractionIndexPostMigrationJob", cronExpression: "0 0 21 1/1 * ? *", 
-                guid: "9984C806-FAEE-4005-973B-9FBE21948972" );
         }
 
         /// <summary>

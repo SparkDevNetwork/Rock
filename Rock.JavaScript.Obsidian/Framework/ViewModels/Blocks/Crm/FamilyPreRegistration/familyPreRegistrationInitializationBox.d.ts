@@ -138,6 +138,9 @@ export type FamilyPreRegistrationInitializationBox = {
     /** Gets or sets the create account title. */
     createAccountTitle?: string | null;
 
+    /** Gets or sets a value indicating whether captcha support should be disabled for this block. */
+    disableCaptchaSupport: boolean;
+
     /** Gets or sets the display SMS opt in. */
     displaySmsOptIn?: FamilyPreRegistrationSmsOptInFieldBag | null;
 

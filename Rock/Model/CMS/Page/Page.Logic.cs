@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Data.Entity;
 #endif
 using Rock.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -106,5 +107,29 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the name of the fully qualified page.
+        /// </summary>
+        /// <returns></returns>
+        public string GetFullyQualifiedPageName()
+        {
+            string result = InternalName.EncodeHtml();
+
+            result = string.Format( "<a href='{0}'>{1}</a>", new PageReference( Id ).BuildUrl(), result );
+
+            var parent = ParentPage;
+            while ( parent != null )
+            {
+                result = string.Format( "<a href='{0}'>{1}</a> / {2}", new PageReference( parent.Id ).BuildUrl(), parent.InternalName.EncodeHtml(), result );
+                parent = parent.ParentPage;
+            }
+
+            return result;
+        }
+
+        #endregion
     }
 }
