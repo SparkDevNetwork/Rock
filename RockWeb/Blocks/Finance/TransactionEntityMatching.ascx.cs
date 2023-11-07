@@ -828,10 +828,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            BindHtmlGrid( hfBatchId.Value.AsIntegerOrNull(), hfDataViewId.Value.AsIntegerOrNull() );
-            LoadEntityDropDowns();
-
-            nbSaveSuccess.Visible = true;
+            NavigateToCurrentPage();
         }
 
         #endregion
