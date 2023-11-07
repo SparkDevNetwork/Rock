@@ -1,6 +1,6 @@
 {% assign internalApplicationRoot = 'Global' | Attribute:'InternalApplicationRoot' %}
 {% assign externalApplicationRoot = 'Global' | Attribute:'ExternalApplicationRoot' %}
-{% assign items = 'newspring_news' | PersistedDataset | Where:'Status',2 | OrderBy:'Priority desc, PublishDateTime desc' %}
+{% assign items = 'newspring_news' | PersistedDataset | Where:'Status',2 | Where:'Priority',0,'notequal' %}
 
 //- This loops through the items from the dataset and strips out anything that is future-dated or expired.
 {%- assign now = 'Now' | Date:'yyyyMMddHHmmss' -%}
@@ -12,6 +12,7 @@
 		{% assign items = items | RemoveFromArray:item %}
 	{% endif %}
 {%- endfor -%}
+{% assign items = items | OrderBy:'Priority' %}
 
 <style>
     .rounded-lg { border-radius: 7px; }
@@ -31,6 +32,7 @@
 {% if campusid and campusid != empty %}
     {% assign campusname = 'All' | FromCache:'Campus' | Where:'Id',campusid | First | Property:'Name' %}
 {% endif %}
+
 
 {% if campusname and campusname != empty %}
     <table class="content" border="0" cellspacing="0" cellpadding="0">
