@@ -269,6 +269,9 @@ registerFieldType(FieldTypeGuids.NoteTypes, new NoteTypesField());
 import { PhoneNumberFieldType } from "./phoneNumberField.partial";
 registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
 
+import { PageReferenceFieldType } from "./pageReferenceField.partial";
+registerFieldType(FieldTypeGuids.PageReference, new PageReferenceFieldType());
+
 import { PersonFieldType } from "./personField.partial";
 registerFieldType(FieldTypeGuids.Person, new PersonFieldType());
 
