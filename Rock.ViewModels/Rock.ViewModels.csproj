@@ -104,6 +104,7 @@
     <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeBag.cs" />
     <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\InteractionDetail\InteractionDetailInitializationBox.cs" />
+    <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerUnassignedResourceCountBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\AssignmentOptionsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\CurrentScheduleBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\DeleteAssignmentRequestBag.cs" />

@@ -59,7 +59,7 @@ namespace Rock.Blocks.Finance
 
     [Rock.SystemGuid.EntityTypeGuid( "b5976e12-a3e4-4faf-95b5-3d54f25405da" )]
     [Rock.SystemGuid.BlockTypeGuid( "6be58680-8795-46a0-8bfa-434a01feb4c8" )]
-    public class FinancialBatchDetail : RockDetailBlockType
+    public class FinancialBatchDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         private const string AuthorizationReopenBatch = "ReopenBatch";
 
@@ -539,7 +539,7 @@ namespace Rock.Blocks.Finance
 
                 History.EvaluateChange( changes, "Batch Name", entity.Name, box.Entity.Name );
                 History.EvaluateChange( changes, "Campus", entity?.Campus?.Name ?? "None", box.Entity?.Campus?.Text ?? "None" );
-                History.EvaluateChange( changes, "Status", entity?.Status, box.Entity?.Status);
+                History.EvaluateChange( changes, "Status", entity?.Status, box.Entity?.Status );
                 History.EvaluateChange( changes, "Start Date/Time", entity.BatchStartDateTime, box.Entity?.BatchStartDateTime );
                 History.EvaluateChange( changes, "End Date/Time", entity.BatchEndDateTime, box.Entity?.BatchEndDateTime );
                 History.EvaluateChange( changes, "Control Amount", entity?.ControlAmount.FormatAsCurrency(), ( box.Entity?.ControlAmount ?? 0.0m ).FormatAsCurrency() );
@@ -673,6 +673,27 @@ namespace Rock.Blocks.Finance
                 }
 
                 return ActionOk( refreshedBox );
+            }
+        }
+
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var pageParameters = new Dictionary<string, string>();
+            using ( var rockContext = new RockContext() )
+            {
+                var batchId = pageReference.GetPageParameter( PageParameterKey.BatchId );
+                var batchName = new FinancialBatchService( rockContext )
+                    .GetSelect( batchId, b => b.Name );
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( batchName ?? "New Batch", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                   {
+                       breadCrumb
+                   }
+                };
             }
         }
 

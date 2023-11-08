@@ -988,6 +988,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerResourceSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSchedulesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSendNowResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerUnassignedResourceCountBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerUpdatePreferenceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\mobileLayoutBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\mobileLayoutDetailOptionsBag.d.ts" />

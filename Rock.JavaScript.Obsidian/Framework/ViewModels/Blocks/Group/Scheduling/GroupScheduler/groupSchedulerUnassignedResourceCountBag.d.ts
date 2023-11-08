@@ -22,20 +22,27 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { SignUpOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpOccurrenceBag";
-import { SignUpsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpsBag";
 
-/** A bag that contains information about the outcome of a "save sign-up" request for the group schedule toolbox block. */
-export type SaveSignUpResponseBag = {
-    /** Gets or sets a friendly error message to describe any problems encountered while saving. */
-    saveError?: string | null;
+/**
+ * The information about unassigned resource counts (attendance records without a location)
+ * for an occurrence date, schedule and group combo for the group scheduler.
+ */
+export type GroupSchedulerUnassignedResourceCountBag = {
+    /** Gets or sets the attendance occurrence identifier. */
+    attendanceOccurrenceId: number;
 
-    /** Gets or sets the selected location unique identifier; will only be provided if the save succeeded. */
-    selectedLocationGuid?: Guid | null;
+    /** Gets or sets the group identifier. */
+    groupId: number;
 
-    /** Gets or sets the updated sign-up occurrence; will only be provided if the save succeeded. */
-    signUpOccurrence?: SignUpOccurrenceBag | null;
+    /** Gets or sets the unique identifier. */
+    guid?: Guid | null;
 
-    /** Gets or sets the current sign-ups; will only be provided if the save failed. */
-    signUps?: SignUpsBag | null;
+    /** Gets or sets the occurrence date. */
+    occurrenceDate?: string | null;
+
+    /** Gets or sets the count of unassigned resources. */
+    resourceCount: number;
+
+    /** Gets or sets the schedule identifier. */
+    scheduleId: number;
 };

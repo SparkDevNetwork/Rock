@@ -507,7 +507,7 @@ namespace Rock.Blocks.Group.Scheduling
                 return toolboxData;
             }
 
-            if ( config.SchedulableGroupLoadingMode != SchedulableGroupLoadingMode.DotNoLoad )
+            if ( config.SchedulableGroupLoadingMode != SchedulableGroupLoadingMode.DoNotLoad )
             {
                 toolboxData.SchedulableGroups = GetSchedulableGroups( rockContext, toolboxData.SelectedPerson, config.SchedulableGroupLoadingMode );
 
@@ -2490,7 +2490,7 @@ namespace Rock.Blocks.Group.Scheduling
                 errorMessage
             ) = GetSignUps( rockContext, signUpsRequestBag );
 
-            response.SignUps = signUps;
+            response.SignUps = signUps; // Just in case we need to send back an updated list of sign-ups.
 
             if ( errorMessage.IsNotNullOrWhiteSpace() )
             {
@@ -2514,6 +2514,26 @@ namespace Rock.Blocks.Group.Scheduling
                     && o.OccurrenceDateTime.LocalDateTime == localOccurrenceDateTime
                     && o.Locations.Any( l => l.LocationGuid == bag.SelectedLocationGuid )
                 );
+
+            if ( matchingOccurrence == null && bag.SelectedLocationGuid == Guid.Empty )
+            {
+                // It's possible a previously-available location has been maxed-out, leading
+                // to the "No Location Preference" option no longer being available. If the
+                // specified occurrence date + schedule combo has ANY locations available,
+                // just pick the first one in the list and assign this individual there. This
+                // way, we'll avoid showing them a needless error in the UI.
+                matchingOccurrence = signUps.Occurrences
+                    ?.FirstOrDefault( o =>
+                        o.ScheduleGuid == bag.SelectedScheduleGuid
+                        && o.OccurrenceDateTime.LocalDateTime == localOccurrenceDateTime
+                        && o.Locations.Any()
+                    );
+
+                if ( matchingOccurrence != null )
+                {
+                    bag.SelectedLocationGuid = matchingOccurrence.Locations.First().LocationGuid;
+                }
+            }
 
             int scheduleId = 0;
             var wasScheduleFound = true;
@@ -2561,8 +2581,9 @@ namespace Rock.Blocks.Group.Scheduling
             rockContext.SaveChanges();
 
             // Since we got this far, the save was successful.
-            // Send back an empty object indicating success.
-            response.SignUps = null;
+            response.SignUps = null; // No need to send back the complete list of sign-ups in this case.
+            response.SignUpOccurrence = matchingOccurrence; // Send back an updated instance in case the list of locations changed.
+            response.SelectedLocationGuid = bag.SelectedLocationGuid; // Send back the identifier of the location that was saved.
             return response;
         }
 
@@ -2909,7 +2930,7 @@ namespace Rock.Blocks.Group.Scheduling
             /// <summary>
             /// Gets or sets how to load the selected person's schedulable groups.
             /// </summary>
-            public SchedulableGroupLoadingMode SchedulableGroupLoadingMode { get; set; } = SchedulableGroupLoadingMode.DotNoLoad;
+            public SchedulableGroupLoadingMode SchedulableGroupLoadingMode { get; set; } = SchedulableGroupLoadingMode.DoNotLoad;
         }
 
         /// <summary>
@@ -2958,7 +2979,7 @@ namespace Rock.Blocks.Group.Scheduling
             /// <summary>
             /// Do not load any of the selected person's schedulable groups.
             /// </summary>
-            DotNoLoad = 0,
+            DoNotLoad = 0,
 
             /// <summary>
             /// Load all of the selected person's schedulable groups.

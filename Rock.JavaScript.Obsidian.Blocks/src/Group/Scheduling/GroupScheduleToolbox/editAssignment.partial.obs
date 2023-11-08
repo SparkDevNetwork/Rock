@@ -52,7 +52,7 @@
 
         optionsRequest: {
             type: Object as PropType<GetAssignmentOptionsRequestBag | null>,
-            requrired: true
+            required: true
         }
     });
 

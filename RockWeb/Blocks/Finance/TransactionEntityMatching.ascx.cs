@@ -327,7 +327,7 @@ namespace RockWeb.Blocks.Finance
                     if ( limitToActiveGroups )
                     {
                         groupQry = groupQry.Where( a => a.IsActive == true );
-                    };
+                    }
 
                     var groupList = groupQry.OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking().Select( a =>
                         new
@@ -609,6 +609,7 @@ namespace RockWeb.Blocks.Finance
                                         tdEntityControls.Controls.Add( ddlGroup );
                                         var ddlGroupMember = new RockDropDownList { ID = "ddlGroupMember_" + financialTransactionDetail.Id.ToString(), Visible = false, EnhanceForLongLists = true };
                                         ddlGroupMember.Label = "Group Member";
+                                        ddlGroupMember.AutoPostBack = true;
                                         tdEntityControls.Controls.Add( ddlGroupMember );
                                     }
                                     else if ( _transactionEntityType.Id == EntityTypeCache.GetId<Group>() )
@@ -767,12 +768,16 @@ namespace RockWeb.Blocks.Finance
             {
                 if ( _transactionEntityType.Id == EntityTypeCache.GetId<GroupMember>() )
                 {
+                    var rockContext = new RockContext();
                     foreach ( var ddlGroupMember in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlGroupMember_" ) ) )
                     {
                         int? financialTransactionDetailId = ddlGroupMember.ID.Replace( "ddlGroupMember_", string.Empty ).AsInteger();
-                        var dllGroup = phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID == "ddlGroup_" + financialTransactionDetailId.Value.ToString() );
+                        var dllGroup = phTableRows.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.ID == "ddlGroup_" + financialTransactionDetailId.Value.ToString() );
                         int? groupMemberId = ddlGroupMember.SelectedValue.AsIntegerOrNull();
-                        if ( groupMemberId != null )
+                        var groupId = dllGroup.SelectedValueAsId(); 
+                        var configuredGroupTypeId = GetAttributeValue( "EntityTypeQualifierValue" ).AsInteger();
+                        var isConfiguredGroupType = new GroupService( rockContext ).Queryable().Any( x => x.Id == groupId && x.GroupTypeId == configuredGroupTypeId );
+                        if ( groupMemberId != null || isConfiguredGroupType )
                         {
                             AssignEntityToTransactionDetail( groupMemberId, financialTransactionDetailId );
                         }
@@ -823,10 +828,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            BindHtmlGrid( hfBatchId.Value.AsIntegerOrNull(), hfDataViewId.Value.AsIntegerOrNull() );
-            LoadEntityDropDowns();
-
-            nbSaveSuccess.Visible = true;
+            NavigateToCurrentPage();
         }
 
         #endregion
