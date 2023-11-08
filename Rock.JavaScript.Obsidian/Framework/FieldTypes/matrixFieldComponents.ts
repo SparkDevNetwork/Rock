@@ -14,136 +14,55 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, ref, computed, watch } from "vue";
+import { defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import { asTrueFalseOrNull, asBoolean } from "@Obsidian/Utility/booleanUtils";
-import { ConfigurationValueKey } from "./matrixField.partial";
+import { ConfigurationValueKey, ConfigurationPropertyKey } from "./matrixField.partial";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import Toggle from "@Obsidian/Controls/toggle.obs";
-import CheckBox from "@Obsidian/Controls/checkBox.obs";
-import TextBox from "@Obsidian/Controls/textBox.obs";
+import AttributeMatrixEditor from "@Obsidian/Controls/Internal/attributeMatrixEditor.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-
-enum BooleanControlType {
-    DropDown,
-    Checkbox,
-    Toggle
-}
+import { MatrixFieldDataBag } from "@Obsidian/ViewModels/Rest/Controls/matrixFieldDataBag";
 
 export const EditComponent = defineComponent({
     name: "MatrixField.Edit",
     components: {
-        DropDownList,
-        Toggle,
-        CheckBox
+        AttributeMatrixEditor
     },
     props: getFieldEditorProps(),
 
     emits: ["update:modelValue"],
 
     setup(props, { emit }) {
-        // Internal values
-        const internalBooleanValue = ref(asBoolean(props.modelValue));
-        const internalValue = ref(asTrueFalseOrNull(props.modelValue) || "");
+        const internalValue = ref(tryParseModel());
 
-        // Which control type should be used for value selection
-        const booleanControlType = computed((): BooleanControlType => {
-            const controlType = props.configurationValues[ConfigurationValueKey.BooleanControlType];
+        watch(internalValue, () => emit("update:modelValue", JSON.stringify(internalValue.value)));
 
-            switch (controlType) {
-                case "1":
-                    return BooleanControlType.Checkbox;
-                case "2":
-                    return BooleanControlType.Toggle;
-                default:
-                    return BooleanControlType.DropDown;
+        watch(() => props.modelValue, () => internalValue.value = tryParseModel());
+
+        function tryParseModel() :MatrixFieldDataBag {
+            try{
+                return JSON.parse(props.modelValue) as MatrixFieldDataBag;
             }
-        });
-
-        // Helpers to determine control type in the template
-        const isToggle = computed((): boolean => booleanControlType.value === BooleanControlType.Toggle);
-        const isCheckBox = computed((): boolean => booleanControlType.value === BooleanControlType.Checkbox);
-
-        // What labels does the user see for the true/false values
-        const trueText = computed((): string => {
-            let trueText = "Yes";
-            const trueConfig = props.configurationValues[ConfigurationValueKey.TrueText];
-
-            if (trueConfig) {
-                trueText = trueConfig;
+            catch(e) {
+                return {
+                    matrixItems: [],
+                    attributes: {}
+                } as MatrixFieldDataBag;
             }
-
-            return trueText || "Yes";
-        });
-
-        const falseText = computed((): string => {
-            let falseText = "No";
-            const falseConfig = props.configurationValues[ConfigurationValueKey.FalseText];
-
-            if (falseConfig) {
-                falseText = falseConfig;
-            }
-
-            return falseText || "No";
-        });
-
-        // configuration for a toggle button
-        const toggleOptions = computed((): Record<string, unknown> => ({
-                trueText: trueText.value,
-                falseText: falseText.value
-        }));
-
-        // configuration for a dropdown control
-        const dropDownListOptions = computed((): ListItemBag[] => {
-            const trueVal = asTrueFalseOrNull(true);
-            const falseVal = asTrueFalseOrNull(false);
-
-            return [
-                { text: falseText.value, value: falseVal },
-                { text: trueText.value, value: trueVal }
-            ] as ListItemBag[];
-        });
-
-        // Sync internal values and modelValue
-        watch(internalValue, () => {
-            if (booleanControlType.value === BooleanControlType.DropDown) {
-                emit("update:modelValue", internalValue.value);
-            }
-        });
-
-        watch(internalBooleanValue, () => {
-            if (booleanControlType.value !== BooleanControlType.DropDown) {
-                emit("update:modelValue", asTrueFalseOrNull(internalBooleanValue.value) || "");
-            }
-        });
-
-        watch(() => props.modelValue, () => {
-            internalValue.value = asTrueFalseOrNull(props.modelValue) || "";
-            internalBooleanValue.value = asBoolean(props.modelValue);
-        });
+        }
 
         return {
-            internalBooleanValue,
-            internalValue,
-            booleanControlType,
-            isToggle,
-            isCheckBox,
-            toggleOptions,
-            dropDownListOptions
+            val: internalValue,
         };
     },
     template: `
-<Toggle v-if="isToggle" v-model="internalBooleanValue" v-bind="toggleOptions" />
-<CheckBox v-else-if="isCheckBox" v-model="internalBooleanValue" />
-<DropDownList v-else v-model="internalValue" :items="dropDownListOptions" />
+<AttributeMatrixEditor v-model="val.matrixItems" :attributes="val.attributes" :defaultAttributeValues="val.defaultAttributeValues" :minRows="val.minRows" :maxRows="val.maxRows" />
 `
 });
 
 export const ConfigurationComponent = defineComponent({
     name: "MatrixField.Configuration",
 
-    components: { TextBox, DropDownList },
+    components: { DropDownList },
 
     props: getFieldConfigurationProps(),
 
@@ -151,6 +70,7 @@ export const ConfigurationComponent = defineComponent({
 
     setup(props, { emit }) {
         const template = ref<string>("");
+        const templateOptions =ref<ListItemBag[]>([]);
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -195,6 +115,9 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
+            const templates = props.configurationProperties[ConfigurationPropertyKey.Templates];
+
+            templateOptions.value = templates ? JSON.parse(templates) as ListItemBag[] : [];
             template.value = props.modelValue[ConfigurationValueKey.AttributeMatrixTemplate] ?? "";
         }, {
             immediate: true
@@ -211,18 +134,17 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes in properties that only require a local UI update.
         watch(template, () => maybeUpdateConfiguration(ConfigurationValueKey.AttributeMatrixTemplate, template.value ?? ""));
 
-        const controlTypeOptions = [
-            { text: "Drop Down", value: BooleanControlType.DropDown },
-            { text: "Checkbox", value: BooleanControlType.Checkbox },
-            { text: "Toggle", value: BooleanControlType.Toggle }
-        ];
-
-        return { controlTypeOptions, template };
+        return { templateOptions, template };
     },
 
     template: `
 <div>
-    <DropDownList v-model="template" label="Control Type" help="The type of control to use when editing the value" :items="controlTypeOptions" :show-blank-item="false" />
+    <DropDownList v-model="template"
+                  label="Attribute Matrix Template"
+                  help="The Attribute Matrix Template that defines this matrix attribute"
+                  :items="templateOptions"
+                  show-blank-item
+                  rules="required" />
 </div>
 `
 });

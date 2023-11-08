@@ -422,6 +422,7 @@
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Controls\RockCacheabilityBag.cs" />
+    <Compile Include="Rest\Controls\MatrixFieldDataBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorPublicItemBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueResultsBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueOptionsBag.cs" />

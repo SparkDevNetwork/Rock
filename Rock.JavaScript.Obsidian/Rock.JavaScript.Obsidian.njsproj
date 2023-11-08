@@ -1244,6 +1244,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationItemPickerGetActiveChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationListGetLocationsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationListSaveNewLocationOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\matrixFieldDataBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaElementsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaFoldersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaTreeOptionsBag.d.ts" />

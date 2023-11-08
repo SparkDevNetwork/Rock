@@ -18,9 +18,15 @@ import { Component } from "vue";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 export const enum ConfigurationValueKey {
     AttributeMatrixTemplate = "attributematrixtemplate"
+}
+
+export const enum ConfigurationPropertyKey {
+    Templates = "templates"
 }
 
 
@@ -40,7 +46,35 @@ const configurationComponent = defineAsyncComponent(async () => {
  */
 export class MatrixFieldType extends FieldTypeBase {
     public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
-        return value;
+        if (value === undefined || value === null || value === "") {
+            return "";
+        }
+
+        try {
+            const val = JSON.parse(value) as ListItemBag;
+            return val.value ?? "";
+        }
+        catch {
+            return value;
+        }
+    }
+
+    public override getHtmlValue(value: string, _configurationValues: Record<string, string>): string {
+        if (value === undefined || value === null || value === "") {
+            return "";
+        }
+
+        try {
+            const val = JSON.parse(value) as ListItemBag;
+            return escapeHtml(val.text ?? "");
+        }
+        catch {
+            return escapeHtml(value);
+        }
+    }
+
+    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>): string {
+        return this.getHtmlValue(value, configurationValues);
     }
 
     public override getEditComponent(): Component {
