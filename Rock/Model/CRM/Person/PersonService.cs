@@ -3661,6 +3661,7 @@ namespace Rock.Model
                     var groupMember = new GroupMember();
                     groupMember.Person = person;
                     groupMember.GroupRoleId = ownerRole.Id;
+                    groupMember.GroupTypeId = knownRelationshipGroupType.Id;
 
                     var group = new Group();
                     group.Name = knownRelationshipGroupType.Name;
@@ -3684,6 +3685,7 @@ namespace Rock.Model
                     var groupMember = new GroupMember();
                     groupMember.Person = person;
                     groupMember.GroupRoleId = ownerRole.Id;
+                    groupMember.GroupTypeId = impliedRelationshipGroupType.Id;
 
                     var group = new Group();
                     group.Name = impliedRelationshipGroupType.Name;
@@ -3716,6 +3718,7 @@ namespace Rock.Model
                     var groupMember = new GroupMember();
                     groupMember.Person = person;
                     groupMember.GroupRoleId = familyRole.Id;
+                    groupMember.GroupTypeId = familyGroupType.Id;
 
                     var groupMembers = new List<GroupMember>();
                     groupMembers.Add( groupMember );

@@ -99,6 +99,14 @@ export const ServiceJob = {
     DataMigrations160UpdatePersonPrimaryPersonAliasId: "BC7564DC-594F-4B50-8988-1594849515F1",
     /** The Job to run Post v16.0 Data Migrations to update the newly persisted WorkflowId column on Workflow entity with their correct values. */
     DataMigrations160UpdateWorkflowidColumns: "2222F9D2-4771-4B21-A630-E696DB0C329A",
+    /** The post update data migration job to chop the Group Schedule Toolbox V2. */
+    DataMigrations161ChopBlockGroupScheduleToolboxV2: "7F989E9F-913C-45E4-9EB1-EC70AC220939",
+    /** The post update data migration job to remove obsidian group schedule toolbox back buttons. */
+    DataMigrations161RemoveObsidianGroupScheduleToolboxBackButtons: "781F2D3B-E5E4-41D5-9145-1D70DDB3EE04",
+    /** The post update data migration job to swap the Group Schedule Toolbox V1. */
+    DataMigrations161SwapBlockGroupScheduleToolboxV1: "22DBD648-79C0-40C7-B561-094E4E7637E5",
+    /** The Job to run Post v16.1 Data Migrations to swap Financial Batch List web forms block with obsidian block. */
+    DataMigrations161SwapFinancialBatchList: "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail

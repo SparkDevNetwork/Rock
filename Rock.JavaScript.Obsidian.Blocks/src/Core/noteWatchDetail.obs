@@ -87,7 +87,14 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return "Note Watch";
+        switch (panelMode.value) {
+            case DetailPanelMode.Add:
+                return "Add Note Watch";
+            case DetailPanelMode.Edit:
+                return "Edit Note Watch";
+            default:
+                return "Note Watch";
+        }
     });
 
     /**

@@ -38,6 +38,7 @@ using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Utility.CaptchaApi;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
@@ -1077,6 +1078,48 @@ namespace Rock.Rest.v2
                 Text = account.Name,
                 Value = account.Guid.ToString()
             };
+        }
+
+        #endregion
+
+        #region Captcha
+
+        /// <summary>
+        /// Gets saved captcha Site Key
+        /// </summary>
+        [HttpPost]
+        [System.Web.Http.Route("CaptchaControlGetConfiguration")]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid("9e066058-13d9-4b4d-8457-07ba8e2cacd3")]
+        public IHttpActionResult CaptchaControlGetConfiguration()
+        {
+            var bag = new CaptchaControlConfigurationBag()
+            {
+                SiteKey = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SITE_KEY )
+            };
+
+            return Ok( bag );
+        }
+
+        /// <summary>
+        /// Gets saved captcha Site Key
+        /// </summary>
+        [HttpPost]
+        [System.Web.Http.Route( "CaptchaControlValidateToken" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "8f373592-d745-4d69-944a-729e15c3f941" )]
+        public IHttpActionResult CaptchaControlValidateToken( [FromBody] CaptchaControlValidateTokenOptionsBag options )
+        {
+            var api = new CloudflareApi();
+
+            var isTokenValid = api.IsTurnstileTokenValid( options.Token );
+
+            var result = new CaptchaControlTokenValidateTokenResultBag()
+            {
+                IsTokenValid = isTokenValid
+            };
+
+            return Ok( result );
         }
 
         #endregion

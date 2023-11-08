@@ -17,7 +17,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 using DotLiquid;
 
@@ -26,6 +25,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Lava.Blocks;
 using Rock.Lava.DotLiquid;
+using System;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -125,15 +125,14 @@ namespace Rock.Lava.RockLiquid.Blocks
             string parmWorkflowId = settings.GetString( "workflowid", null );
             string parmActivityType = settings.GetString( "activitytype", null );
 
-            /* Parse the markup text to pull out configuration parameters. */
-            var knownParameterKeys = new List<string> { "workflowtype", "workflowname", "workflowid", "activitytype" };
-            foreach ( var attributeKey in settings.GetUnmatchedAttributes( knownParameterKeys ) )
-            {
-                attributes.AddOrReplace( attributeKey, settings.GetString( attributeKey ) );
-            }
+            // Get the set of lava parameters that represent Workflow Attributes.
+            var entityAttributes = settings.Clone();
 
-            /* Process inside a new stack level so our own created variables do not
-             * persist throughout the rest of the workflow. */
+            var knownParameterKeys = new List<string> { "workflowtype", "workflowname", "workflowid", "activitytype" };
+            entityAttributes.Remove( knownParameterKeys );
+
+            // Process inside a new stack level so our own created variables do not
+            // persist throughout the rest of the workflow.
             context.Stack( ( System.Action)(() =>
             {
                 using ( var rockContext = new RockContext() )
@@ -142,14 +141,14 @@ namespace Rock.Lava.RockLiquid.Blocks
                     Rock.Model.Workflow workflow = null;
                     WorkflowActivity activity = null;
 
-                    /* They provided a WorkflowType, so we need to kick off a new workflow. */
+                    // They provided a WorkflowType, so we need to kick off a new workflow.
                     if ( parmWorkflowType != null )
                     {
                         string type = parmWorkflowType;
                         string name = parmWorkflowName ?? string.Empty;
                         WorkflowTypeCache workflowType = null;
 
-                        /* Get the type of workflow */
+                        // Get the type of workflow
                         if ( type.AsGuidOrNull() != null )
                         {
                             workflowType = WorkflowTypeCache.Get( type.AsGuid() );
@@ -159,19 +158,13 @@ namespace Rock.Lava.RockLiquid.Blocks
                             workflowType = WorkflowTypeCache.Get( type.AsInteger() );
                         }
 
-                        /* Try to activate the workflow */
+                        // Try to activate the workflow
                         if ( workflowType != null )
                         {
                             workflow = Rock.Model.Workflow.Activate( ( WorkflowTypeCache ) workflowType, ( string ) parmWorkflowName );
 
-                            /* Set any workflow attributes that were specified. */
-                            foreach ( var attr in attributes )
-                            {
-                                if ( workflow.Attributes.ContainsKey( attr.Key ) )
-                                {
-                                    workflow.SetAttributeValue( attr.Key, attr.Value.ToString() );
-                                }
-                            }
+                            // Set any workflow attributes that were specified.
+                            SetWorkflowAttributeValues( workflow, entityAttributes );
 
                             if ( workflow != null )
                             {
@@ -197,12 +190,12 @@ namespace Rock.Lava.RockLiquid.Blocks
                         }
                     }
 
-                    /* They instead provided a WorkflowId, so we are working with an existing Workflow. */
+                    // They instead provided a WorkflowId, so we are working with an existing Workflow.
                     else if ( parmWorkflowId != null )
                     {
-                        string id = parmWorkflowId.ToString();
+                        var id = parmWorkflowId.ToString();
 
-                        /* Get the workflow */
+                        // Get the workflow
                         if ( id.AsGuidOrNull() != null )
                         {
                             workflow = workflowService.Get( id.AsGuid() );
@@ -216,23 +209,21 @@ namespace Rock.Lava.RockLiquid.Blocks
                         {
                             if ( workflow.CompletedDateTime == null )
                             {
-                                /* Currently we cannot activate an activity in a workflow that is currently
-                                 * being processed. The workflow is held in-memory so the activity we would
-                                 * activate would not show up for the processor and probably never run.
-                                 */
+                                // Currently we cannot activate an activity in a workflow that is currently
+                                // being processed. The workflow is held in-memory so the activity we would
+                                // activate would not show up for the processor and probably never run.
                                 if ( !workflow.IsProcessing )
                                 {
-                                    bool hasError = false;
+                                    var hasError = false;
 
-                                    /* If they provided an ActivityType parameter then we need to activate
-                                     * a new activity in the workflow.
-                                     */
+                                    // If they provided an ActivityType parameter then we need to activate
+                                    // a new activity in the workflow.
                                     if ( parmActivityType != null )
                                     {
-                                        string type = parmActivityType.ToString();
+                                        var type = parmActivityType.ToString();
                                         WorkflowActivityTypeCache activityType = null;
 
-                                        /* Get the type of activity */
+                                        // Get the type of activity
                                         if ( type.AsGuidOrNull() != null )
                                         {
                                             activityType = WorkflowActivityTypeCache.Get( type.AsGuid() );
@@ -248,14 +239,8 @@ namespace Rock.Lava.RockLiquid.Blocks
 
                                             if ( activity != null )
                                             {
-                                                /* Set any workflow attributes that were specified. */
-                                                foreach ( var attr in attributes )
-                                                {
-                                                    if ( activity.Attributes.ContainsKey( attr.Key ) )
-                                                    {
-                                                        activity.SetAttributeValue( attr.Key, attr.Value.ToString() );
-                                                    }
-                                                }
+                                                // Set any workflow attributes that were specified.
+                                                SetWorkflowAttributeValues( workflow, entityAttributes );
                                             }
 
                                         }
@@ -266,7 +251,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                                         }
                                     }
 
-                                    /* Process the existing Workflow. */
+                                    // Process the existing Workflow.
                                     if ( !hasError )
                                     {
                                         List<string> errorMessages;
@@ -306,61 +291,25 @@ namespace Rock.Lava.RockLiquid.Blocks
             }) );
         }
 
-        /// <summary>
-        /// Parses the markup.
-        /// </summary>
-        /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, Context context )
+        private void SetWorkflowAttributeValues( Rock.Model.Workflow workflow, LavaElementAttributes lavaAttributes )
         {
-            // first run lava across the inputted markup
-            var internalMergeFields = new Dictionary<string, object>();
-
-            // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
+            // Entity Attribute keys are case-sensitive, where Lava parameters are not
+            // Create a map of case-insensitive keys to the correct Entity Attribute casing.
+            var attributeNameToKeyMap = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+            foreach ( var attributeKey in workflow.Attributes.Keys )
             {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
+                attributeNameToKeyMap[attributeKey] = attributeKey;
             }
 
-            // get merge fields loaded by the block or container
-            foreach ( var environment in context.Environments )
+            // Set any workflow attributes that were specified.
+            foreach ( var attr in lavaAttributes.Attributes )
             {
-                foreach ( var item in environment )
+                var exists = attributeNameToKeyMap.TryGetValue( attr.Key, out string entityKey );
+                if ( exists )
                 {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    workflow.SetAttributeValue( entityKey, attr.Value.ToString() );
                 }
             }
-
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            var parms = new Dictionary<string, string>();
-
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:('[^']+'|[\\d.]+))" )
-                .Cast<Match>()
-                .Select( m => m.Value )
-                .ToList();
-
-            foreach ( var item in markupItems )
-            {
-                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
-                if ( itemParts.Length > 1 )
-                {
-                    if ( itemParts[1].Trim()[0] == '\'' )
-                    {
-                        parms.AddOrReplace( itemParts[0].Trim(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
-                    }
-                    else
-                    {
-                        parms.AddOrReplace( itemParts[0].Trim(), itemParts[1].Trim() );
-                    }
-                }
-            }
-
-            return parms;
         }
     }
 }

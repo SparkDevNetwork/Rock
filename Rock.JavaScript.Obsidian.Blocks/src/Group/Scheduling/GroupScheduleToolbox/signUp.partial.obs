@@ -14,46 +14,52 @@
                    :tabs="groupList"
                    :disabled="disabled || isLoadingSignUps" />
 
-        <NotificationBox v-if="saveSignUpErrorMessage"
-                         class="schedule-toolbox-signup-save-error-message"
-                         :alertType="AlertType.Warning">
-            {{ saveSignUpErrorMessage }}
+        <NotificationBox v-if="!anySignUps"
+                         class="schedule-toolbox-no-sign-ups-available"
+                         :alertType="AlertType.Info">
+            No sign-ups available.
         </NotificationBox>
 
-        <div v-if="instructionsHtml" v-html="instructionsHtml" class="schedule-toolbox-signup-instructions"></div>
+        <template v-else>
+            <NotificationBox v-if="saveSignUpErrorMessage"
+                             class="schedule-toolbox-signup-save-error-message"
+                             :alertType="AlertType.Warning">
+                {{ saveSignUpErrorMessage }}
+            </NotificationBox>
 
-        <NotificationBox v-if="areImmediateNeedSignUpsVisible"
-                         class="schedule-toolbox-signup-immediate-needs"
-                         :alertType="AlertType.Info"
-                         :heading="immediateNeedsTitle ?? ''">
+            <NotificationBox v-if="anyImmediateSignUps"
+                             class="schedule-toolbox-signup-immediate-needs"
+                             :alertType="AlertType.Info"
+                             :heading="immediateNeedsTitle ?? ''">
 
-            <div v-if="immediateNeedsIntroduction"
-                 class="schedule-toolbox-immediate-needs-introduction">
-                {{ immediateNeedsIntroduction }}
+                <div v-if="immediateNeedsIntroduction"
+                     class="schedule-toolbox-immediate-needs-introduction">
+                    {{ immediateNeedsIntroduction }}
+                </div>
+
+                <SignUpOccurrenceDate v-for="[date, occurrences] in immediateOccurrencesByDate"
+                                      :key="`${selectedGroupGuid}-${date}`"
+                                      :title="formatToolboxDate(date)"
+                                      :occurrences="occurrences"
+                                      :disabled="disabled || isLoadingSignUps"
+                                      @updatedSignUps="setSignUps($event)" />
+            </NotificationBox>
+
+            <div v-if="anyNonImmediateSignups" class="schedule-toolbox-signup-non-immediate-needs">
+                <SignUpOccurrenceDate v-for="[date, occurrences] in nonImmediateOccurrencesByDate"
+                                      :key="`${selectedGroupGuid}-${date}`"
+                                      :title="formatToolboxDate(date)"
+                                      :occurrences="occurrences"
+                                      :disabled="disabled || isLoadingSignUps"
+                                      @updatedSignUps="setSignUps($event)" />
             </div>
-
-            <SignUpOccurrenceDate v-for="[date, occurrences] in immediateNeedsOccurrencesByDate"
-                                  :key="`${selectedGroupGuid}-${date}`"
-                                  :title="getOccurrenceDateTitle(date)"
-                                  :occurrences="occurrences"
-                                  :disabled="disabled || isLoadingSignUps"
-                                  @updatedSignUps="setSignUps($event)" />
-        </NotificationBox>
-
-        <div v-if="areFutureWeekSignupsVisible" class="schedule-toolbox-signup-future-weeks">
-            <SignUpOccurrenceDate v-for="[date, occurrences] in futureWeekOccurrencesByDate"
-                                  :key="`${selectedGroupGuid}-${date}`"
-                                  :title="getOccurrenceDateTitle(date)"
-                                  :occurrences="occurrences"
-                                  :disabled="disabled || isLoadingSignUps"
-                                  @updatedSignUps="setSignUps($event)" />
-        </div>
+        </template>
     </template>
 </template>
 
 <style scoped>
+.schedule-toolbox-no-sign-ups-available,
 .schedule-toolbox-signup-save-error-message,
-.schedule-toolbox-signup-instructions,
 .schedule-toolbox-signup-immediate-needs {
     margin-top: 20px;
 }
@@ -63,12 +69,12 @@
     import { computed, inject, PropType, provide, ref, watch } from "vue";
     import SignUpOccurrenceDate from "./signUpOccurrenceDate.partial.obs";
     import { SaveSignUpErrorMessage, SelectedGroup, SelectedPersonGuid } from "./types.partial";
+    import { formatToolboxDate } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { toOrdinalSuffix } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { GetSignUpsRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/getSignUpsRequestBag";
     import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/groupBag";
@@ -115,7 +121,6 @@
     const hasCompletedInitialLoad = ref(false);
 
     const schedulableGroups = ref<GroupBag[]>([]);
-    const instructionsHtml = ref("");
     const signUpOccurrences = ref<SignUpOccurrenceBag[]>([]);
 
     const saveSignUpErrorMessage = ref("");
@@ -150,7 +155,7 @@
         return !isNoGroupsNotificationVisible.value && hasCompletedInitialLoad.value;
     });
 
-    const immediateNeedsOccurrencesByDate = computed((): Map<number, SignUpOccurrenceBag[]> => {
+    const immediateOccurrencesByDate = computed((): Map<string, SignUpOccurrenceBag[]> => {
         const immediateOccurrences = signUpOccurrences.value
             ?.filter((o: SignUpOccurrenceBag) => o?.occurrenceDateTime && o.isImmediateNeed)
             ?? [];
@@ -158,11 +163,11 @@
         return groupOccurrencesByDate(immediateOccurrences);
     });
 
-    const areImmediateNeedSignUpsVisible = computed((): boolean => {
-        return !!immediateNeedsOccurrencesByDate.value.size;
+    const anyImmediateSignUps = computed((): boolean => {
+        return !!immediateOccurrencesByDate.value.size;
     });
 
-    const futureWeekOccurrencesByDate = computed((): Map<number, SignUpOccurrenceBag[]> => {
+    const nonImmediateOccurrencesByDate = computed((): Map<string, SignUpOccurrenceBag[]> => {
         const nonImmediateOccurrences = signUpOccurrences.value
             ?.filter((o: SignUpOccurrenceBag) => o?.occurrenceDateTime && !o.isImmediateNeed)
             ?? [];
@@ -170,8 +175,12 @@
         return groupOccurrencesByDate(nonImmediateOccurrences);
     });
 
-    const areFutureWeekSignupsVisible = computed((): boolean => {
-        return !!futureWeekOccurrencesByDate.value.size;
+    const anyNonImmediateSignups = computed((): boolean => {
+        return !!nonImmediateOccurrencesByDate.value.size;
+    });
+
+    const anySignUps = computed((): boolean => {
+        return anyImmediateSignUps.value || anyNonImmediateSignups.value;
     });
 
     // #endregion Computed Values
@@ -221,7 +230,6 @@
         }
 
         schedulableGroups.value = signUps?.schedulableGroups ?? [];
-        instructionsHtml.value = signUps?.instructionsHtml ?? "";
         signUpOccurrences.value = signUps?.occurrences ?? [];
     }
 
@@ -230,11 +238,18 @@
      *
      * @param occurrences The occurrences to be grouped.
      */
-    function groupOccurrencesByDate(occurrences: SignUpOccurrenceBag[]): Map<number, SignUpOccurrenceBag[]> {
-        const groupedOccurrences = new Map<number, SignUpOccurrenceBag[]>();
+    function groupOccurrencesByDate(occurrences: SignUpOccurrenceBag[]): Map<string, SignUpOccurrenceBag[]> {
+        const groupedOccurrences = new Map<string, SignUpOccurrenceBag[]>();
 
         occurrences.forEach((o: SignUpOccurrenceBag) => {
-            const date = RockDateTime.parseISO(o.occurrenceDateTime ?? "")?.date.toMilliseconds() ?? 0;
+            if (!o.occurrenceDateTime) {
+                return; // Should never happen, but continue to the next iteration if date isn't defined.
+            }
+
+            const date = RockDateTime.parseISO(o.occurrenceDateTime)?.date?.toISOString();
+            if (!date) {
+                return; // Should never happen, but continue to the next iteration if unable to parse date.
+            }
 
             let dateOccurrences = groupedOccurrences.get(date);
             if (!dateOccurrences) {
@@ -246,33 +261,6 @@
         });
 
         return groupedOccurrences;
-    }
-
-    /**
-     * Gets the occurrence date title.
-     *
-     * @param date The date for which to get the title.
-     */
-    function getOccurrenceDateTitle(dateMilliseconds: number): string {
-        let title: string | null | undefined;
-        const rockDateTime = RockDateTime.fromMilliseconds(dateMilliseconds);
-        if (rockDateTime) {
-            title = rockDateTime.toASPString("dddd, MMM d");
-
-            if (title) {
-                const dateParts = title.split(" ");
-                if (dateParts.length === 3) {
-                    const ordinalDate = toOrdinalSuffix(+dateParts[2]);
-                    title = [
-                        dateParts[0],
-                        dateParts[1],
-                        ordinalDate ?? dateParts[2]
-                    ].join(" ");
-                }
-            }
-        }
-
-        return title || "No Date Provided";
     }
 
     // #endregion Functions

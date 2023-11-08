@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialBatchDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Finance
@@ -59,7 +60,7 @@ namespace Rock.Blocks.Finance
 
     [Rock.SystemGuid.EntityTypeGuid( "b5976e12-a3e4-4faf-95b5-3d54f25405da" )]
     [Rock.SystemGuid.BlockTypeGuid( "6be58680-8795-46a0-8bfa-434a01feb4c8" )]
-    public class FinancialBatchDetail : RockDetailBlockType
+    public class FinancialBatchDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         private const string AuthorizationReopenBatch = "ReopenBatch";
 
@@ -529,6 +530,24 @@ namespace Rock.Blocks.Finance
                     return actionError;
                 }
 
+                var isNew = entity.Id == 0;
+
+                var changes = new History.HistoryChangeList();
+                if ( isNew )
+                {
+                    changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
+                }
+
+                History.EvaluateChange( changes, "Batch Name", entity.Name, box.Entity.Name );
+                History.EvaluateChange( changes, "Campus", entity?.Campus?.Name ?? "None", box.Entity?.Campus?.Text ?? "None" );
+                History.EvaluateChange( changes, "Status", entity?.Status, box.Entity?.Status );
+                History.EvaluateChange( changes, "Start Date/Time", entity.BatchStartDateTime, box.Entity?.BatchStartDateTime );
+                History.EvaluateChange( changes, "End Date/Time", entity.BatchEndDateTime, box.Entity?.BatchEndDateTime );
+                History.EvaluateChange( changes, "Control Amount", entity?.ControlAmount.FormatAsCurrency(), ( box.Entity?.ControlAmount ?? 0.0m ).FormatAsCurrency() );
+                History.EvaluateChange( changes, "Control Item Count", entity.ControlItemCount, box.Entity?.ControlItemCount );
+                History.EvaluateChange( changes, "Accounting System Code", entity.AccountingSystemCode, box.Entity?.AccountingSystemCode );
+                History.EvaluateChange( changes, "Notes", entity.Note, box.Entity?.Note );
+
                 // Update the entity instance from the information in the bag.
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
@@ -541,11 +560,20 @@ namespace Rock.Blocks.Finance
                     return ActionBadRequest( validationMessage );
                 }
 
-                var isNew = entity.Id == 0;
-
                 rockContext.WrapTransaction( () =>
                 {
-                    rockContext.SaveChanges();
+                    if ( rockContext.SaveChanges() > 0 )
+                    {
+                        if ( changes.Any() )
+                        {
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                                entity.Id,
+                                changes );
+                        }
+                    }
                     entity.SaveAttributeValues( rockContext );
                 } );
 
@@ -646,6 +674,27 @@ namespace Rock.Blocks.Finance
                 }
 
                 return ActionOk( refreshedBox );
+            }
+        }
+
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var pageParameters = new Dictionary<string, string>();
+            using ( var rockContext = new RockContext() )
+            {
+                var batchId = pageReference.GetPageParameter( PageParameterKey.BatchId );
+                var batchName = new FinancialBatchService( rockContext )
+                    .GetSelect( batchId, b => b.Name );
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( batchName ?? "New Batch", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                   {
+                       breadCrumb
+                   }
+                };
             }
         }
 

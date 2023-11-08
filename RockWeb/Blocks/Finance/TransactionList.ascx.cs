@@ -1265,6 +1265,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindFilter()
         {
+            gfTransactions.PreferenceKeyPrefix = hfTransactionViewMode.Value;
             drpDates.DelimitedValues = gfTransactions.GetFilterPreference( "Date Range" );
             nreAmount.DelimitedValues = gfTransactions.GetFilterPreference( "Amount Range" );
 
@@ -1358,7 +1359,16 @@ namespace RockWeb.Blocks.Finance
             // Parse the attribute filters
             _availableAttributes = new List<AttributeCache>();
 
-            int entityTypeId = new FinancialTransaction().TypeId;
+            int entityTypeId;
+            if ( hfTransactionViewMode.Value == "Transactions" )
+            {
+                entityTypeId = new FinancialTransaction().TypeId;
+            }
+            else
+            {
+                entityTypeId = new FinancialTransactionDetail().TypeId;
+            }
+
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -2256,6 +2266,7 @@ namespace RockWeb.Blocks.Finance
             preferences.SetValue( "TransactionViewMode", hfTransactionViewMode.Value );
             preferences.Save();
 
+            BindFilter();
             BindGrid();
         }
 

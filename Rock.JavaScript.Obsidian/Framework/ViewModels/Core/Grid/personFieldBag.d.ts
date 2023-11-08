@@ -26,6 +26,9 @@
  * a PersonColumn in a Grid.
  */
 export type PersonFieldBag = {
+    /** Gets or sets the person's IdKey. */
+    idKey?: string | null;
+
     /** Gets or sets the last name. */
     lastName?: string | null;
 

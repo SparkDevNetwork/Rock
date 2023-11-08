@@ -17,7 +17,7 @@
             <TransitionVerticalCollapse>
                 <div v-if="config.isDescending && isAddNoteVisible">
                     <NoteEditor v-model="addNoteBag"
-                                :noteTypes="selectableNoteTypes"
+                                :noteTypes="config.noteTypes ?? []"
                                 :showAlert="noteOptions.showAlert"
                                 :showDate="noteOptions.showCreateDate"
                                 :showPrivate="noteOptions.showPrivate"
@@ -35,7 +35,7 @@
             <TransitionVerticalCollapse>
                 <div v-if="!config.isDescending && isAddNoteVisible">
                     <NoteEditor v-model="addNoteBag"
-                                :noteTypes="selectableNoteTypes"
+                                :noteTypes="config.noteTypes ?? []"
                                 :showAlert="noteOptions.showAlert"
                                 :showDate="noteOptions.showCreateDate"
                                 :showPrivate="noteOptions.showPrivate"

@@ -447,7 +447,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             if ( !filterBag.IncludeInactive )
             {
-                members = members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active );
+                members = members.Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive );
             }
 
             // If they selected group roles to filter, and the amount of
@@ -548,6 +548,42 @@ namespace Rock.Blocks.Types.Mobile.Groups
             return groupMembers;
         }
 
+        /// <summary>
+        /// Gets the total number of group members.
+        /// </summary>
+        /// <param name="groupGuid">The group to get the group member count of.</param>
+        /// <param name="groupByPerson">If enabled, the count will represent the # of distinct people in the group.</param>
+        /// <param name="includeInactive">Whether or not inactive group members should be included in the count.</param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        private static int GetGroupMemberCount( Guid groupGuid, bool groupByPerson, bool includeInactive, RockContext rockContext )
+        {
+            var group = new GroupMemberService( rockContext )
+                        .Queryable()
+                        .Where( gm => gm.Group.Guid == groupGuid );
+
+            if ( group == null )
+            {
+                return 0;
+            }
+
+            // Filter out inactive members.
+            if ( !includeInactive )
+            {
+                group = group.Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive );
+            }
+
+            // If we are grouping by person, then we need to get the distinct count of people.
+            if ( groupByPerson )
+            {
+                return group.Select( gm => gm.PersonId ).Distinct().Count();
+            }
+            else
+            {
+                return group.Count();
+            }
+        }
+
         #endregion
 
         #region Action Methods
@@ -560,6 +596,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetGroupDetailsWithFilterOptions( FilterBag filterBag )
         {
+            filterBag = filterBag ?? new FilterBag();
+
             using ( var rockContext = new RockContext() )
             {
                 var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
@@ -576,46 +614,16 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionNotFound();
                 }
 
-                IEnumerable<GroupMember> groupMembers;
-                int totalGroupMemberCount;
+                // Get the total count of group members.
+                var totalGroupMemberCount = GetGroupMemberCount( groupGuid, GroupByPerson, filterBag.IncludeInactive, rockContext );
 
-                // This really shouldn't ever be null, and in most cases
-                // the shell just passes up an empty filter, but if it is
-                // we just want to use all of the active group members.
-                if ( filterBag == null )
-                {
-                    groupMembers = new GroupMemberService( rockContext )
-                        .Queryable()
-                        .Include( gm => gm.Person )
-                        .Where( gm => gm.Group.Guid == groupGuid )
-                        .ToList();
-
-                    totalGroupMemberCount = groupMembers.Count();
-                }
-                // Otherwise, filter the group members according to our filter bag values.
-                else
-                {
-                    groupMembers = FilterGroupMembers( group, filterBag, rockContext );
-
-                    if ( filterBag.IncludeInactive )
-                    {
-                        totalGroupMemberCount = new GroupMemberService( rockContext )
-                        .Queryable()
-                        .Where( gm => gm.Group.Guid == groupGuid )
-                        .Count();
-                    }
-                    else
-                    {
-                        totalGroupMemberCount = new GroupMemberService( rockContext )
-                        .Queryable()
-                        .Where( gm => gm.Group.Guid == groupGuid && gm.GroupMemberStatus == GroupMemberStatus.Active )
-                        .Count();
-                    }
-                }
+                // Filter the group members based on the filter bag.
+                var groupMembers = FilterGroupMembers( group, filterBag, rockContext );
 
                 var lavaTemplate = CreateLavaTemplate();
                 var mergeFields = RequestContext.GetCommonMergeFields();
 
+                // If we are grouping by person, then we need to get each distinct person.
                 if ( GroupByPerson )
                 {
                     var groupedByPersonMembers = groupMembers.Select( gm => new
@@ -624,7 +632,6 @@ namespace Rock.Blocks.Types.Mobile.Groups
                         Roles = new GroupMemberService( rockContext ).GetByGroupIdAndPersonId( gm.GroupId, gm.PersonId ).Select( member => member.GroupRole.Name ).ToList().AsDelimited( ", " )
                     } ).Distinct();
 
-                    totalGroupMemberCount = groupedByPersonMembers.Count();
                     mergeFields.Add( "Items", groupedByPersonMembers );
                 }
                 else
@@ -666,7 +673,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
                 // We also need to send the shell a list of child groups
                 // that they can filter by.
-                var childGroups = group.Groups.Where( g => g.IsActive && g.IsPublic && !g.IsArchived )
+                var childGroups = group.Groups.Where( g => g.IsActive && !g.IsArchived )
                     .Select( g => new ListItemViewModel
                     {
                         Text = g.Name,

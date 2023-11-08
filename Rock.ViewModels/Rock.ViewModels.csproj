@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -52,6 +52,9 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntryInitializationBox.cs" />
@@ -101,6 +104,7 @@
     <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeBag.cs" />
     <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\InteractionDetail\InteractionDetailInitializationBox.cs" />
+    <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerUnassignedResourceCountBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\AssignmentOptionsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\CurrentScheduleBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\DeleteAssignmentRequestBag.cs" />
@@ -426,6 +430,8 @@
     <Compile Include="Rest\Controls\AttributeMatrixEditorPublicItemBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueResultsBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CaptchaControlValidateTokenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CaptchaControlTokenValidateTokenResultBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />
     <Compile Include="Core\Grid\CustomActionBag.cs" />
     <Compile Include="Core\Grid\CustomColumnDefinitionBag.cs" />
@@ -466,6 +472,7 @@
     <Compile Include="Rest\Controls\BlockTemplatePickerGetBlockTemplatesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsResultItemBag.cs" />
     <Compile Include="Rest\Controls\CampusAccountAmountPickerGetAccountsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CaptchaControlConfigurationBag.cs" />
     <Compile Include="Rest\Controls\EntityPickerGetFieldTypeConfigurationResultsBag.cs" />
     <Compile Include="Rest\Controls\EntityPickerGetFieldTypeConfigurationOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityPickerGetEntityTypeGuidsOptionsBag.cs" />
@@ -648,6 +655,8 @@
       <Name>Rock.Enums</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Compile Include="Blocks\Cms\PageShortLinkClickList\PageShortLinkClickListOptionsBag.cs" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

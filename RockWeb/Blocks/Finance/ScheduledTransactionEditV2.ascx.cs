@@ -21,7 +21,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Bus.Message;
@@ -35,8 +34,6 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    #region Block Attributes
-
     /// <summary>
     /// Edit an existing scheduled transaction
     /// This is the *Public* block for editing scheduled transactions 
@@ -44,8 +41,6 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Scheduled Transaction Edit (V2)" )]
     [Category( "Finance" )]
     [Description( "Edit an existing scheduled transaction." )]
-
-    #endregion
 
     #region Block Attributes
 
@@ -64,19 +59,37 @@ namespace RockWeb.Blocks.Finance
         Order = 2 )]
 
     [AccountsField(
-        "Accounts",
+        "Display Accounts",
         Key = AttributeKey.AccountsToDisplay,
         Description = "The accounts to display. If the account has a child account for the selected campus, the child account for that campus will be used.",
+        IsRequired = false,
         Category = AttributeCategory.None,
         Order = 3 )]
+
+    [BooleanField(
+        "Show Additional Accounts",
+        Key = AttributeKey.ShowAdditionalAccounts,
+        Description = "When enabled, all active financial accounts marked Public will be available for selection, or you can choose 'Additional Accounts' in the setting below to show only certain accounts.",
+        TrueText = "Display option for selecting additional accounts",
+        FalseText = "Don't display option",
+        Category = AttributeCategory.None,
+        Order = 4 )]
+
+    [AccountsField(
+        "Additional Accounts",
+        Key = AttributeKey.AdditionalAccounts,
+        Description = "When 'Show Additional Accounts' is enabled, the accounts you choose here will be available for selection.",
+        IsRequired = false,
+        Category = AttributeCategory.None,
+        Order = 5 )]
 
     [BooleanField(
         "Ask for Campus if Known",
         Key = AttributeKey.AskForCampusIfKnown,
         Description = "If the campus for the person is already known, should the campus still be prompted for?",
-        DefaultBooleanValue = true,
+        DefaultBooleanValue = false,
         Category = AttributeCategory.None,
-        Order = 4 )]
+        Order = 6 )]
 
     [BooleanField(
         "Enable Multi-Account",
@@ -84,7 +97,7 @@ namespace RockWeb.Blocks.Finance
         Description = "Should the person be able specify amounts for more than one account?",
         DefaultBooleanValue = true,
         Category = AttributeCategory.None,
-        Order = 5 )]
+        Order = 7 )]
 
     #region Text Options
 
@@ -103,6 +116,14 @@ namespace RockWeb.Blocks.Finance
         DefaultValue = DefaultFinishLavaTemplate,
         Category = AttributeCategory.TextOptions,
         Order = 2 )]
+
+    [TextField( "Add Account Text",
+        Key = AttributeKey.AddAccountText,
+        Description = "The button text to display for adding an additional account",
+        IsRequired = false,
+        DefaultValue = "Add Another Account",
+        Category = AttributeCategory.TextOptions,
+        Order = 3 )]
 
     #endregion Text Options
 
@@ -262,6 +283,28 @@ mission. We are so grateful for your commitment.</p>
             }
         }
 
+        /// <summary>
+        /// Gets or sets the accounts that are available for user to add to the list.
+        /// </summary>
+        protected List<Guid> AvailableAccounts
+        {
+            get
+            {
+                var availableAccounts = ViewState["AvailableAccounts"] as List<Guid>;
+                if ( availableAccounts == null )
+                {
+                    availableAccounts = new List<Guid>();
+                }
+
+                return availableAccounts;
+            }
+
+            set
+            {
+                ViewState["AvailableAccounts"] = value;
+            }
+        }
+
         #endregion Properties
 
         #region Attribute Keys
@@ -272,21 +315,16 @@ mission. We are so grateful for your commitment.</p>
         private static class AttributeKey
         {
             public const string EnableACH = "EnableACH";
-
             public const string EnableCreditCard = "EnableCreditCard";
-
             public const string AccountsToDisplay = "AccountsToDisplay";
-
+            public const string ShowAdditionalAccounts = "ShowAdditionalAccounts";
+            public const string AdditionalAccounts = "AdditionalAccounts";
+            public const string AddAccountText = "AddAccountText";
             public const string AllowImpersonation = "AllowImpersonation";
-
             public const string ImpersonatorCanSeeSavedAccounts = "ImpersonatorCanSeeSavedAccounts";
-
             public const string GiftTerm = "GiftTerm";
-
             public const string AskForCampusIfKnown = "AskForCampusIfKnown";
-
             public const string EnableMultiAccount = "EnableMultiAccount";
-
             public const string FinishLavaTemplate = "FinishLavaTemplate";
         }
 
@@ -371,6 +409,8 @@ mission. We are so grateful for your commitment.</p>
             {
                 ( _hostedPaymentInfoControl as IHostedGatewayPaymentControlTokenEvent ).TokenReceived += _hostedPaymentInfoControl_TokenReceived;
             }
+
+            btnAddAccount.Title = GetAttributeValue( AttributeKey.AddAccountText );
         }
 
         /// <summary>
@@ -505,7 +545,50 @@ mission. We are so grateful for your commitment.</p>
 
             hfScheduledTransactionGuid.Value = scheduledTransaction.Guid.ToString();
 
-            List<int> selectableAccountIds = FinancialAccountCache.GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
+            var selectableAccountGuids = this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList();
+
+            var currentTransactionAccountGuids = scheduledTransaction.ScheduledTransactionDetails.Select( d => d.Account.Guid ).ToList();
+            foreach ( var currentTransactionAccountGuid in currentTransactionAccountGuids )
+            {
+                if ( !selectableAccountGuids.Contains( currentTransactionAccountGuid ) )
+                {
+                    selectableAccountGuids.Add( currentTransactionAccountGuid );
+                }
+            }
+
+            if ( this.GetAttributeValue( AttributeKey.ShowAdditionalAccounts ).AsBoolean() )
+            {
+                var publicAccountGuids = new FinancialAccountService( rockContext ).Queryable()
+                    .Where( f =>
+                        f.IsActive &&
+                        f.IsPublic.HasValue &&
+                        f.IsPublic.Value &&
+                        ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
+                        ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
+                    .Select( f => f.Guid )
+                    .ToList();
+
+                // Limit to user selected additional accounts (if set).
+                var additionalAccountGuids = this.GetAttributeValues( AttributeKey.AdditionalAccounts ).AsGuidList();
+                if ( additionalAccountGuids.Any() )
+                {
+                    publicAccountGuids = publicAccountGuids.Where( v => additionalAccountGuids.Contains( v ) ).ToList();
+                }
+
+                if ( !selectableAccountGuids.Any() )
+                {
+                    selectableAccountGuids = publicAccountGuids;
+                }
+                else
+                {
+                    var unselectedPublicAccountGuids = publicAccountGuids.Where( g => !selectableAccountGuids.Contains( g ) ).ToList();
+                    AvailableAccounts = unselectedPublicAccountGuids;
+                }
+
+                BindAddAccountButton();
+            }
+
+            List<int> selectableAccountIds = FinancialAccountCache.GetByGuids( selectableAccountGuids ).Select( a => a.Id ).ToList();
 
             CampusAccountAmountPicker.AccountIdAmount[] accountAmounts = scheduledTransaction.ScheduledTransactionDetails.Select( a => new CampusAccountAmountPicker.AccountIdAmount( a.AccountId, a.Amount ) ).ToArray();
 
@@ -649,6 +732,21 @@ mission. We are so grateful for your commitment.</p>
             }
 
             acBillingAddress.SetValues( billingLocation );
+        }
+
+        /// <summary>
+        /// Binds the Add Account button.
+        /// </summary>
+        private void BindAddAccountButton()
+        {
+            var showAdditionalAccounts = AvailableAccounts.Any();
+            btnAddAccount.Visible = showAdditionalAccounts;
+            if ( showAdditionalAccounts )
+            {
+                var additionalAccounts = FinancialAccountCache.GetByGuids( AvailableAccounts ).Select( a => new { a.Guid, a.PublicName } ).ToList();
+                btnAddAccount.DataSource = additionalAccounts;
+                btnAddAccount.DataBind();
+            }
         }
 
         /// <summary>
@@ -1015,6 +1113,32 @@ mission. We are so grateful for your commitment.</p>
             pnlUseExistingPaymentNoSavedAccounts.Visible = false;
             pnlUseExistingPaymentWithSavedAccounts.Visible = false;
             pnlHostedPaymentControl.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the btnAddAccount control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnAddAccount_SelectionChanged( object sender, EventArgs e )
+        {
+            var addAccountGuid = btnAddAccount.SelectedValueAsGuid();
+            if ( addAccountGuid.HasValue )
+            {
+                var addAccountId = FinancialAccountCache.GetId( addAccountGuid.Value );
+                if ( addAccountId .HasValue )
+                {
+                    var amounts = caapPromptForAccountAmounts.AccountAmounts;
+                    var accountList = caapPromptForAccountAmounts.SelectableAccountIds.ToList();
+                    accountList.Add( addAccountId.Value );
+                    caapPromptForAccountAmounts.SelectableAccountIds = accountList.ToArray();
+                    caapPromptForAccountAmounts.AccountAmounts = amounts;
+                }
+
+                AvailableAccounts.Remove( addAccountGuid.Value );
+            }
+
+            BindAddAccountButton();
         }
     }
 

@@ -77,7 +77,9 @@
         "name",
         "providerEntityType",
         "providerTemplateKey",
-        "signatureType"
+        "signatureType",
+        "isValidInFuture",
+        "validityDurationInDays"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(signatureDocumentTemplateEditBag, validProperties, invokeBlockAction), undefined, true);

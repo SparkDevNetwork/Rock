@@ -988,6 +988,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerResourceSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSchedulesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSendNowResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerUnassignedResourceCountBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerUpdatePreferenceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\mobileLayoutBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\mobileLayoutDetailOptionsBag.d.ts" />
@@ -1194,6 +1195,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusAccountAmountPickerGetAccountsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusAccountAmountPickerGetAccountsResultItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusPickerGetCampusesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\captchaControlConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\captchaControlTokenValidateTokenResultBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\captchaControlValidateTokenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerGetTreeOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerGetTreeResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerNodeBag.d.ts" />

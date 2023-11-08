@@ -1,0 +1,28 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <RockButton
+            @click="actionFunction(props.grid.getRowKey(row))"
+            :title="column.props.title">
+            <i :class="column.props.iconClass"></i>
+        </RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+
+const props = defineProps({
+    ...standardCellProps
+});
+
+const column = props.column;
+
+const actionFunction = computed(() => {
+    return typeof column.props.action === "function" ? column.props.action : () => {};
+});
+
+</script>
+

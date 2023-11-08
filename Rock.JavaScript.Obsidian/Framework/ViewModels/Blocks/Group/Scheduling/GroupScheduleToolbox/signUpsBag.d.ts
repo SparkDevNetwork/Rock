@@ -26,9 +26,6 @@ import { SignUpOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Schedulin
 
 /** A bag that contains information about the selected person's additional time sign-ups for the group schedule toolbox block. */
 export type SignUpsBag = {
-    /** Gets or sets the instructions HTML. */
-    instructionsHtml?: string | null;
-
     /** Gets or sets the selected person's additional time sign-up occurrences for the selected group. */
     occurrences?: SignUpOccurrenceBag[] | null;
 

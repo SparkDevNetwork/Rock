@@ -21,20 +21,6 @@
 // </copyright>
 //
 
-using Rock.Model;
-using Rock.SystemGuid;
-
-namespace Rock.Rest.Controllers
-{
-    /// <summary>
-    /// AdaptiveMessageCategories REST API
-    /// </summary>
-    [RestControllerGuid( "8BE37916-6ECA-43DA-AC6E-CCBC0E6DD7FC" )]
-    public partial class AdaptiveMessageCategoriesController : Rock.Rest.ApiController<Rock.Model.AdaptiveMessageCategory>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AdaptiveMessageCategoriesController"/> class.
-        /// </summary>
-        public AdaptiveMessageCategoriesController() : base( new Rock.Model.AdaptiveMessageCategoryService( new Rock.Data.RockContext() ) ) { } 
-    }
-}
+/** The additional configuration options for the Layout List block. */
+export type LayoutListOptionsBag = {
+};

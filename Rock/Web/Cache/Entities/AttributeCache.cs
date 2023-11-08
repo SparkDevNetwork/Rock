@@ -965,6 +965,29 @@ namespace Rock.Web.Cache
             return qualifiedColumns;
         }
 
+        /// <summary>
+        /// Flushes the attributes for a block type.
+        /// </summary>
+        /// <param name="blockTypeId">The block type identifier.</param>
+        [RockInternal( "1.16.1" )]
+        public static void FlushAttributesForBlockType( int blockTypeId )
+        {
+            if ( blockTypeId <= 0 )
+            {
+                return;
+            }
+
+            var blockTypeIdString = blockTypeId.ToString();
+
+            foreach ( var attribute in All() )
+            {
+                if ( attribute != null && attribute.EntityTypeQualifierColumn == "BlockTypeId" && attribute.EntityTypeQualifierValue == blockTypeIdString )
+                {
+                    AttributeCache.FlushItem( attribute.Id );
+                }
+            }
+        }
+
         #endregion
 
         #region ILiquidizable Implementation

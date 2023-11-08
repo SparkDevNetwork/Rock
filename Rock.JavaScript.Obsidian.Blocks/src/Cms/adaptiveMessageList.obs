@@ -13,11 +13,27 @@
           @selectItem="onSelectItem">
         <SelectColumn />
 
-        <TextColumn name="name"
-                    title="Name"
-                    field="name"
-                    :filter="textValueFilter"
-                    visiblePriority="sm" />
+        <Column name="name"
+                title="Name"
+                :filter="textValueFilter"
+                :filterValue="getRowNameFilterValue"
+                :quickFilterValue="getRowNameFilterValue"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div>
+                    <div>
+                        <span class="text-semibold">{{ row.name }}</span> <span class="text-muted text-xs">{{ row.id }}</span>
+                    </div>
+                    <div v-if="row.description">
+                        {{ row.description }}
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
 
        <Column name="categories"
                 title="Categories"
@@ -40,18 +56,25 @@
                       title="Views"
                       field="views"
                       :filter="numberValueFilter"
-                      visiblePriority="sm" />
-
+                      visiblePriority="sm">
+            <template #format="{ row }">
+                <div class="flex-grow-1 text-right">
+                    {{ row.views }}
+                </div>
+            </template>
+        </NumberColumn>
         <NumberColumn name="adaptations"
                       title="Adaptations"
                       field="adaptations"
                       :filter="numberValueFilter"
-                      visiblePriority="sm" />
+                      visiblePriority="xs" >
+            <template #format="{ row }">
+                <div class="flex-grow-1 text-right">
+                    {{ row.adaptations }}
+                </div>
+            </template>
 
-        <BooleanColumn name="isActive"
-                       title="Is Active"
-                       field="isActive"
-                       visiblePriority="xs" />
+        </NumberColumn>
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -60,10 +83,10 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn, numberValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { NumberColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn, numberValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { AdaptiveMessageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageList/AdaptiveMessageListOptionsBag";
+    import { AdaptiveMessageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageList/adaptiveMessageListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey, Row } from "./AdaptiveMessageList/types.partial";
     import { reactive, ref } from "vue";
@@ -108,6 +131,17 @@
         }
 
         return filterValue;
+    }
+
+    /**
+     * Gets the filter value text to use for the name column.
+     *
+     * @param row The row to be filtered.
+     */
+     function getRowNameFilterValue(row: Record<string, unknown>): string {
+        const r = row as Row;
+
+        return `${r.name} ${r.id} ${r.description ?? ""}`;
     }
 
     // #endregion

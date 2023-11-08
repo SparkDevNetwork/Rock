@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Rock.Lava.RockLiquid;
+using Rock.Lava.Fluid;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
@@ -257,8 +258,6 @@ Parameter 1: Testing 'single' quotes...
             } );
         }
 
-        #region Accordion
-
         [TestMethod]
         public void ShortcodeBlock_RepeatedShortcodeBlock_ProducesExpectedOutput()
         {
@@ -312,6 +311,77 @@ Font Bold: true
                 Parallel.For( 0, 1000, parallelOptions, ( x ) => TestHelper.AssertTemplateOutput( engine, expectedOutput, input ) );
             } );
         }
+
+        /// <summary>
+        /// Verifies the precendence of parsing a raw tag before a shortcode.
+        /// </summary>
+        [TestMethod]
+        public void ShortcodeBlock_EmbeddedInRawTag_IsRenderedAsLiteralText()
+        {
+            var input = @"
+    {% raw %}
+        {[ panel title:'Example' ]}
+            This is a sample panel.
+        {[ endpanel ]}
+    {% endraw %}
+";
+
+            var expectedOutput = @"
+{[ panel title:'Example' ]}
+    This is a sample panel.
+{[ endpanel ]}
+";
+
+            expectedOutput = expectedOutput.Replace( "`", @"""" );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        [TestMethod]
+        public void ShortcodeBlock_WithInvalidShortcodeInRawTag_IsRenderedAsLiteralText()
+        {
+            var input = @"
+{[ panel title:'Important Stuff' icon:'fa fa-star' ]}
+    This is a super simple panel.
+    {% raw %}
+        This is some literal text containing an invalid shortcode: {[ panel title:'Example' ]}
+    {% endraw %}
+{[ endpanel ]}
+";
+
+            var expectedOutput = @"
+<div class=`panel panel-default`>
+    <div class=`panel-heading`>
+        <h3 class=`panel-title`><i class=`fa fa-star`></i>Important Stuff</h3>
+    </div>
+    <div class=`panel-body`>
+       This is a super simple panel.
+       This is some literal text containing an invalid shortcode: {[ panel title:'Example' ]}
+    </div>  
+</div>
+";
+            expectedOutput = expectedOutput.Replace( "`", @"""" );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        [TestMethod]
+        public void ShortcodeBlock_OpenShortcodeInRawBlock_IsRenderedAsLiteralText()
+        {
+            var input = @"
+{% raw %}
+    This is some literal text containing an invalid shortcode: {[ panel title:'Example' ]}
+{% endraw %}
+";
+
+            var expectedOutput = @"
+This is some literal text containing an invalid shortcode: {[ panel title:'Example' ]}
+";
+            expectedOutput = expectedOutput.Replace( "`", @"""" );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        #region Accordion
 
         [TestMethod]
         public void AccordionShortcodeBlock_DefaultOptions_EmitsCorrectHtml()
@@ -561,6 +631,126 @@ var chart = new Chart(ctx, {
 
             var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
 
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        [TestMethod]
+        public void ChartShortcode_EmbeddedInPanelShortcode_RendersCorrectly()
+        {
+            var input = @"
+<div class=`col-md-6`>
+    {[ panel title:'<i class=`fa fa-facebook`></i> Facebook Fans' ]}
+        {[ chart chartheight:'300' type:'line' xaxistype:'time' fillcolor:'rgba(75, 169, 223, .25)' bordercolor:'#4ba9df' pointcolor:'#4ba9df' pointbordercolor:'#fff' pointhovercolor:'#fff' pointhoverbordercolor:'#4ba9df' filllinearea:'true' pointradius:'4' pointhoverradius:'4' borderwidth:'2' ]}
+            {% for item in facebookFans %}
+                [[ dataitem label:'{{ item.MetricValueDateTime }}' value:'{{ item.YValue }}' ]] [[ enddataitem ]]
+            {% endfor %}
+        {[ endchart ]}
+    {[ endpanel ]}
+</div>
+";
+
+            var expectedOutput = @"
+<div class=`col-md-6`>
+  <div class=`panel panel-default`>
+    <div class=`panel-heading`>
+      <h3 class=`panel-title`><i class=`fa fa-facebook`></i> Facebook Fans</h3>
+    </div>
+    <div class=`panel-body`>
+      <script src='~/Scripts/moment.min.js' type='text/javascript'></script>
+
+      <script
+        src='~/Scripts/Chartjs/Chart.min.js'
+        type='text/javascript'
+      ></script>
+
+      <div class=`alert alert-warning`>
+        When using datasets you must provide labels on the shortcode to define
+        each unit of measure. {[ chart labels:'Red, Green, Blue' ... ]}
+      </div>
+
+      <div
+        class=`chart-container`
+        style=`position: relative; height: 300; width: 100%`
+      >
+        <canvas id=`chart-id-<<guid>>`></canvas>
+      </div>
+
+      <script>
+        var options = {
+          maintainAspectRatio: false,
+          legend: {
+            position: 'bottom',
+            display: false
+          },
+          tooltips: {
+            enabled: true,
+
+            backgroundColor: '#000',
+            bodyFontColor: '#fff',
+            titleFontColor: '#fff',
+
+            callbacks: {
+              label: function (tooltipItem, data) {
+                return Intl.NumberFormat().format(
+                  data.datasets[tooltipItem.datasetIndex].data[
+                    tooltipItem.index
+                  ]
+                );
+              }
+            }
+          },
+
+          scales: {
+            xAxes: [
+              {
+                type: `time`,
+                display: true,
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Date'
+                }
+              }
+            ],
+            yAxes: [
+              {
+                display: true,
+
+                ticks: {
+                  callback: function (label, index, labels) {
+                    return Intl.NumberFormat().format(label);
+                  },
+                }
+              }
+            ]
+          }
+        };
+        var data = {
+          labels: [],
+          datasets: [],
+          borderWidth: 2
+        };
+
+        Chart.defaults.global.defaultFontColor = '#777';
+        Chart.defaults.global.defaultFontFamily = `sans-serif`;
+
+        var ctx = document
+          .getElementById('chart-id-<<guid>>')
+          .getContext('2d');
+        var chart = new Chart(ctx, {
+          type: 'line',
+          data: data,
+          options: options
+        });
+      </script>
+    </div>
+  </div>
+</div>
+";
+
+            input = input.Replace( "`", @"""" );
+            expectedOutput = expectedOutput.Replace( "`", @"""" );
+
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" }, IgnoreWhiteSpace = true };
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
@@ -928,7 +1118,6 @@ $( document ).ready(function() {
 
         #endregion
 
-
         #region KPI
 
         [TestMethod]
@@ -981,7 +1170,6 @@ $( document ).ready(function() {
         }
 
         #endregion
-
 
         #region Panel
 

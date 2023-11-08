@@ -51,7 +51,7 @@ namespace Rock.Tests.Integration.Core.Lava
             var expectedOutput = @"
 <script>
     (function(){
-        alert('Message 1');    
+        alert('Message 1');
     })();
 </script>
 <script>
@@ -395,7 +395,7 @@ findme-interactiontest3
             var expectedOutput = @"
 <script>
     (function(){
-        alert('Hello world!');    
+        alert('Hello world!');
     })();
 </script>
 ";
@@ -769,6 +769,27 @@ Outer Workflow Value: Request 0
 ";
 
             var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        [TestMethod]
+        public void WorkflowActivateBlock_WithAttributeParameterNamesAsMixedCase_PassesAttributeValuesCorrectly()
+        {
+            // Activate Workflow: IT Support
+            var input = @"
+{% workflowactivate WorkflowType:'51FE9641-FB8F-41BF-B09E-235900C3E53E' summary:'Test Workflow' DETAILS:'Here are the details...' %}
+    Title: {{ Workflow | Attribute:'Summary' }}<br>
+    Details: {{ Workflow | Attribute:'Details' }}
+{% endworkflowactivate %}
+";
+
+            var expectedOutput = @"
+Title: Test Workflow<br>
+Details: Here are the details...
+";
+
+            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate" };
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }

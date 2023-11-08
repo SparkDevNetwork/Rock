@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
@@ -31,6 +32,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks.Crm.FamilyPreRegistration;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -204,6 +206,13 @@ namespace Rock.Blocks.Crm
         IsRequired = true,
         DefaultValue = "Hide",
         Order = 18 )]
+
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 19 )]
 
     #region Adult Category
 
@@ -531,6 +540,7 @@ namespace Rock.Blocks.Crm
             public const string RedirectURL = "RedirectURL";
             public const string RequireCampus = "RequireCampus";
             public const string DisplaySmsOptIn = "DisplaySmsOptIn";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
             
             public const string AdultSuffix = "AdultSuffix";
             public const string AdultGender = "AdultGender";
@@ -1593,15 +1603,10 @@ namespace Rock.Blocks.Crm
         {
             errorMessages = new List<string>();
 
-            if ( bag.FullName.IsNotNullOrWhiteSpace() )
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
+            if ( !disableCaptcha && !bag.IsCaptchaValid )
             {
-                /* 03/22/2021 MDP
-
-                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-
-                */
-
-                errorMessages.Add( "Invalid Form Value" );
+                errorMessages.Add( "There was an issue processing your request. Please try again. If the issue persists please contact us." );
                 return false;
             }
 
@@ -1921,7 +1926,8 @@ namespace Rock.Blocks.Crm
                 ChildCommunicationPreferenceField = GetFieldBag( AttributeKey.ChildDisplayCommunicationPreference ),
                 ChildProfilePhotoField = GetFieldBag( AttributeKey.ChildProfilePhoto ),
                 ChildRaceField = GetFieldBag( AttributeKey.ChildRaceOption ),
-                ChildEthnicityField = GetFieldBag( AttributeKey.ChildEthnicityOption )
+                ChildEthnicityField = GetFieldBag( AttributeKey.ChildEthnicityOption ),
+                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
             };
 
             using ( var rockContext = new RockContext() )
