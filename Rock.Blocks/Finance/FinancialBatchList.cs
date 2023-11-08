@@ -351,8 +351,11 @@ namespace Rock.Blocks.Finance
                                 Amount = a.Amount
                             };
                         } )
-                        .ToList()
-                        ?? new List<AccountData>();
+                        .ToList();
+                }
+                else
+                {
+                    item.Accounts = new List<AccountData>();
                 }
             }
 
