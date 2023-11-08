@@ -1133,7 +1133,7 @@ namespace Rock.Blocks.Security
 
                 var mergeFields = GetMergeFields( new Dictionary<string, object>
                 {
-                    { "ConfirmAccountUrl", RequestContext.RootUrlPath + url.TrimStart( '/' ) },
+                    { "ConfirmAccountUrl", RequestContext.RootUrlPath.EnsureTrailingForwardslash() + url.RemoveLeadingForwardslash() },
                     { "Person", userLogin.Person },
                     { "User", userLogin }
                 } );
