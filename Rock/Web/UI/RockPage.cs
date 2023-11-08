@@ -766,8 +766,8 @@ namespace Rock.Web.UI
 
                 // Add attributes
                 Activity.Current.AddTag( "rock-otel-type", "rock-page" );
-                Activity.Current.AddTag( "rock.current-person", this.CurrentPerson?.FullName );
                 Activity.Current.AddTag( "rock.current-user", this.CurrentUser?.UserName );
+                Activity.Current.AddTag( "rock.current-person", this.CurrentPerson?.FullName );
                 Activity.Current.AddTag( "rock.current-visitor", this.CurrentVisitor?.AliasPersonGuid );
                 Activity.Current.AddTag( "rock.page-id", this.PageId );
                 Activity.Current.AddTag( "rock.page-ispostback", this.IsPostBack );
@@ -775,7 +775,7 @@ namespace Rock.Web.UI
 
             var stopwatchInitEvents = Stopwatch.StartNew();
 
-            RequestContext = new RockRequestContext( Request, new RockResponseContext( this ) );
+            RequestContext = new RockRequestContext( Request, new RockResponseContext( this ), CurrentUser );
 
             if ( _pageCache != null )
             {
