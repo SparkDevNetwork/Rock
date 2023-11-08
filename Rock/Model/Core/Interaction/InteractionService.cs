@@ -21,7 +21,6 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Rock.BulkImport;
-
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Utility;

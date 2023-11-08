@@ -18,13 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
-#else
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Data.SqlTypes;
 using System.Linq;
@@ -32,6 +27,10 @@ using System.Linq;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
+
+#if REVIEW_NET5_0_OR_GREATER
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#endif
 
 namespace Rock.Model
 {
@@ -312,9 +311,7 @@ namespace Rock.Model
                 }
                 else if ( cacheAttribute.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Device>() )
                 {
-#if REVIEW_WEBFORMS
                     Rock.CheckIn.KioskDevice.FlushItem( this.EntityId.Value );
-#endif
                 }
             }
 

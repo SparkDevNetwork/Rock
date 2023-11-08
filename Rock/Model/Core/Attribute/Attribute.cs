@@ -19,13 +19,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
-#else
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;

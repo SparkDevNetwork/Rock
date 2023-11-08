@@ -22,10 +22,6 @@ using Rock.Data;
 using Rock.Tasks;
 using Rock.Web.Cache;
 
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#endif
-
 namespace Rock.Model
 {
     public partial class AttributeValue

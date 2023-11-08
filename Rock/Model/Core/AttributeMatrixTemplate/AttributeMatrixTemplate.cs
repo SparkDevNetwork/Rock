@@ -132,7 +132,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<AttributeMatrix> AttributeMatrices { get; set; }
 
-        #endregion
+        #endregion 
     }
 
     #region Entity Configuration

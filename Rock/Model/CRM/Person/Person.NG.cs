@@ -27,6 +27,42 @@ namespace Rock.Model
 {
     public partial class Person
     {
+        /**
+         * NOTE!!! This is temporary, this is implemented in the webforms file.
+         */
+        /// <summary>
+        /// Gets the person photo URL.
+        /// </summary>
+        /// <param name="initials"></param>
+        /// <param name="photoId"></param>
+        /// <param name="age"></param>
+        /// <param name="gender"></param>
+        /// <param name="recordTypeValueId"></param>
+        /// <param name="ageClassification"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static string GetPersonPhotoUrl( string initials, int? photoId, int? age, Gender gender, int? recordTypeValueId, AgeClassification? ageClassification, int? size = null )
+        {
+            string virtualPath = string.Empty;
+
+            // If there are no initials provided we'll change the style of the avatar to be an icon
+            var stylingOverride = string.Empty;
+            if ( initials.IsNullOrWhiteSpace() )
+            {
+                stylingOverride = "&Style=icon";
+            }
+
+            // Determine if we need to provide a size
+            var sizeParamter = string.Empty;
+
+            if ( size.HasValue )
+            {
+                sizeParamter = $"&Size={size}";
+            }
+
+            return $"/GetAvatar.ashx?PhotoId={photoId}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
+        }
+
         /// <summary>
         /// Gets an anchor tag to send person a communication
         /// </summary>

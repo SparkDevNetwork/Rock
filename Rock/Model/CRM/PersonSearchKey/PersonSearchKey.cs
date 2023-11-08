@@ -18,9 +18,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-#if REVIEW_WEBFORMS
 using System.Data.Entity.Infrastructure;
-#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;

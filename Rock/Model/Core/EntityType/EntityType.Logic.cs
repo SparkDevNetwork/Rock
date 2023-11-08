@@ -15,11 +15,7 @@
 // </copyright>
 
 using System;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
 
 using Rock.UniversalSearch;
 using Rock.Web.Cache;

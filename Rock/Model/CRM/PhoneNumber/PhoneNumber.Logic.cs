@@ -19,10 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-#if REVIEW_WEBFORMS
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-#endif
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;

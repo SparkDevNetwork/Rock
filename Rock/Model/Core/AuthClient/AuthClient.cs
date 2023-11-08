@@ -86,7 +86,9 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]
-        //[Index( IsUnique = true )]
+#if REVIEW_WEBFORMS
+        [Index( IsUnique = true )]
+#endif
         [MaxLength(50)]
         public string ClientId { get; set; }
 

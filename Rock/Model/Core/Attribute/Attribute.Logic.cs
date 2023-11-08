@@ -17,11 +17,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;

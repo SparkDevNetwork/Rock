@@ -18,10 +18,6 @@
 using System.Linq;
 using Rock.Data;
 
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#endif
-
 namespace Rock.Model
 {
     /// <summary>

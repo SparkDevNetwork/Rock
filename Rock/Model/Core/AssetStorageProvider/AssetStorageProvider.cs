@@ -19,9 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
-#if REVIEW_WEBFORMS
 using Rock.Storage.AssetStorage;
-#endif
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -102,7 +100,6 @@ namespace Rock.Model
 
         #region Public Methods
 
-#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the asset storage component.
         /// </summary>
@@ -120,7 +117,6 @@ namespace Rock.Model
 
             return null;
         }
-#endif
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

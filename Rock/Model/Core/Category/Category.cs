@@ -15,9 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-#if REVIEW_NET5_0_OR_GREATER
 using System.Collections.ObjectModel;
-#endif
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;

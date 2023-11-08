@@ -15,10 +15,7 @@
 // </copyright>
 //
 
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
 using System.Data.Entity;
-#endif
 using System.Linq;
 using Rock.Web.Cache;
 

@@ -16,11 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
 using System.Linq;
 using System.Linq.Expressions;
 using Rock.Attribute;

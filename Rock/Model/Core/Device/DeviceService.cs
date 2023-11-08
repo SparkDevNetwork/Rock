@@ -15,9 +15,7 @@
 // </copyright>
 //
 using System;
-#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
-#endif
 using System.Linq;
 using System.Net.Sockets;
 
@@ -78,7 +76,11 @@ namespace Rock.Model
         /// <returns>a single matching Device kiosk or null if nothing was matched</returns>
         public IQueryable<Device> GetDevicesByGeocode( double latitude, double longitude, int deviceTypeValueId )
         {
+#if REVIEW_NET5_0_OR_GREATER
             var geoLocation = Location.GetGeoPoint( latitude, longitude );
+#else
+            DbGeography geoLocation = Location.GetGeoPoint( latitude, longitude );
+#endif
 
             var deviceQueryable = Queryable()
                 .Where( d =>

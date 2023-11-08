@@ -25,10 +25,6 @@ using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Lava;
 
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#endif
-
 namespace Rock.Model
 {
     /// <summary>
