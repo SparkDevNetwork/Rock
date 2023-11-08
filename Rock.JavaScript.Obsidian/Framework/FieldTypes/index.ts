@@ -158,6 +158,9 @@ registerFieldType(FieldTypeGuids.DefinedValue, new DefinedValueFieldType());
 import { DefinedValueRangeFieldType } from "./definedValueRangeField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldType());
 
+import { DocumentTypeFieldType } from "./documentTypeField.partial";
+registerFieldType(FieldTypeGuids.DocumentType, new DocumentTypeFieldType());
+
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
 

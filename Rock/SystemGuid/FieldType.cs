@@ -304,6 +304,11 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE_RANGE = "B5C07B16-844D-4620-82E3-4CCA8F5FC350";
 
         /// <summary>
+        /// Document Type field type
+        /// </summary>
+        public const string DOCUMENT_TYPE = "1FD31CDC-E5E2-431B-8D53-72FC0430044D";
+
+        /// <summary>
         /// Email field type
         /// </summary>
         public const string EMAIL = "3D045CAE-EA72-4A04-B7BE-7FD1D6214217";

@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
@@ -24,7 +23,6 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -37,13 +35,33 @@ namespace Rock.Field.Types
     /// Implements the <see cref="Rock.Field.FieldType" />
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "1FD31CDC-E5E2-431B-8D53-72FC0430044D" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DOCUMENT_TYPE )]
     public class DocumentTypeFieldType : FieldType, IEntityReferenceFieldType
     {
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
+        private const string VALUES_PUBLIC_KEY = "values";
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+            publicConfigurationValues[VALUES_PUBLIC_KEY] = DocumentTypeCache.All()
+                .OrderBy( v => v.Name )
+                .ToListItemBagList()
+                .ToCamelCaseJson( false, true );
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+            configurationValues.Remove( VALUES_PUBLIC_KEY );
+            return configurationValues;
+        }
 
         #endregion Configuration
 
@@ -71,6 +89,27 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // The database stores the Document Type AttirbuteValues by their Ids.
+            // However, the remote device needs the Guid to display them. So we are doing the following conversions.
+            var documentTypeGuids = privateValue.Split( ',' )
+                .Select( g => DocumentTypeCache.GetGuid( g.ToIntSafe() ).ToString() )
+                .ToList();
+            return string.Join( ",", documentTypeGuids );
+        }
+
+        /// <inheritdoc />
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // The publicValue which is sent by the remote device is a GUID. However, the database only stores the integer values in the database.
+            // So for each DocumentTypeGuid from the remote device, we convert it to the corresponding Id
+            var documentTypeIds = publicValue.Split( ',' )
+                .Select( g => DocumentTypeCache.GetId( g.AsGuid() ).ToString() )
+                .ToList();
+            return string.Join( ",", documentTypeIds );
+        }
 
         #endregion Edit Control
 
