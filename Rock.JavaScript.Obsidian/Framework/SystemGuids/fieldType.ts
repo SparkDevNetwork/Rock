@@ -273,6 +273,8 @@ export const FieldType = {
     SocialMediaAccount: "92C0E3A1-9F63-49D4-B23B-73624AC42546",
     /** Social Security Number */
     Ssn: "4722C99A-C078-464A-968F-13AB5E8E318F",
+    /** Step Program field type */
+    StepProgram: "33875369-7D2B-4CD7-BB89-ABC29906CCAE",
     /** Streak Type field type */
     StreakType: "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
     /** Streak Type field type */

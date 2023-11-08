@@ -308,6 +308,9 @@ registerFieldType(FieldTypeGuids.SocialMediaAccount, new SocialMediaAccountField
 import { SiteFieldType } from "./siteField.partial";
 registerFieldType(FieldTypeGuids.Site, new SiteFieldType());
 
+import { StepProgramFieldType } from "./stepProgramField.partial";
+registerFieldType(FieldTypeGuids.StepProgram, new StepProgramFieldType());
+
 import { SSNFieldType } from "./ssnField.partial";
 registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
 
