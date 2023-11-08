@@ -60,7 +60,7 @@ namespace Rock.Observability
         /// <summary>
         /// Gets the maximum number of spans that will be allowed on a single trace.
         /// </summary>
-        private static int SpanCountLimit
+        internal static int SpanCountLimit
         {
             get
             {
