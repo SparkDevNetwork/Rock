@@ -2570,11 +2570,9 @@ const sectionHeaderGallery = defineComponent({
         :description="description"
         :isSeparatorHidden="!showSeparator" >
         <template v-if="showActionBar" #actions>
-            <div>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
-                <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
-            </div>
+            <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
+            <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
+            <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
         </template>
     </SectionHeader>
 
@@ -2632,11 +2630,9 @@ const sectionContainerGallery = defineComponent({
         v-model="showContent"
         :toggleText="showContentToggle ? 'Show' : ''" >
         <template v-if="showActionBar" #actions>
-            <div>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
-                <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
-            </div>
+            <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
+            <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
+            <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
         </template>
         Here's some content to put in here.
     </SectionContainer>
