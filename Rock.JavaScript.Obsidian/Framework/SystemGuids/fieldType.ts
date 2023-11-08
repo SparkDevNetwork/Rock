@@ -273,6 +273,8 @@ export const FieldType = {
     SlidingDateRange: "55810BC5-45EA-4044-B783-0CCE0A445C6F",
     /** Social Media Account field type */
     SocialMediaAccount: "92C0E3A1-9F63-49D4-B23B-73624AC42546",
+    /** Step field type */
+    Step : "829803DB-7CA3-44F6-B1CB-669D61ED6E92",
     /** Social Security Number */
     Ssn: "4722C99A-C078-464A-968F-13AB5E8E318F",
     /** Step Program field type */
