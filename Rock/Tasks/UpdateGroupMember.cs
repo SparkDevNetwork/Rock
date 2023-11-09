@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Rock.Data;
 using Rock.Model;
@@ -126,7 +127,7 @@ namespace Rock.Tasks
                                             {
                                                 if ( message.State == EntityContextState.Added && QualifiersMatch( rockContext, trigger, message.GroupMemberStatus, message.GroupMemberStatus, message.GroupMemberRoleId, message.GroupMemberRoleId ) )
                                                 {
-                                                    LaunchWorkflow( rockContext, trigger, message );
+                                                    LaunchWorkflow( trigger, message );
                                                 }
 
                                                 break;
@@ -136,7 +137,7 @@ namespace Rock.Tasks
                                             {
                                                 if ( message.State == EntityContextState.Deleted && QualifiersMatch( rockContext, trigger, message.GroupMemberStatus, message.GroupMemberStatus, message.GroupMemberRoleId, message.GroupMemberRoleId ) )
                                                 {
-                                                    LaunchWorkflow( rockContext, trigger, message );
+                                                    LaunchWorkflow( trigger, message );
                                                 }
 
                                                 break;
@@ -146,7 +147,7 @@ namespace Rock.Tasks
                                             {
                                                 if ( message.State == EntityContextState.Modified && message.PreviousGroupMemberRoleId != message.GroupMemberRoleId && QualifiersMatch( rockContext, trigger, message.PreviousGroupMemberRoleId, message.GroupMemberRoleId ) )
                                                 {
-                                                    LaunchWorkflow( rockContext, trigger, message );
+                                                    LaunchWorkflow( trigger, message );
                                                 }
 
                                                 break;
@@ -156,7 +157,7 @@ namespace Rock.Tasks
                                             {
                                                 if ( message.State == EntityContextState.Modified && message.PreviousGroupMemberStatus != message.GroupMemberStatus && QualifiersMatch( rockContext, trigger, message.PreviousGroupMemberStatus, message.GroupMemberStatus ) )
                                                 {
-                                                    LaunchWorkflow( rockContext, trigger, message );
+                                                    LaunchWorkflow( trigger, message );
                                                 }
 
                                                 break;
@@ -237,8 +238,13 @@ namespace Rock.Tasks
             return matches;
         }
 
-        private void LaunchWorkflow( RockContext rockContext, GroupMemberWorkflowTrigger groupMemberWorkflowTrigger, Message message )
+        private async void LaunchWorkflow( GroupMemberWorkflowTrigger groupMemberWorkflowTrigger, Message message )
         {
+            RockContext rockContext = new RockContext();
+
+            // Wait 1 second to allow all post save actions to complete
+            await Task.Delay( 1000 );
+
             GroupMember groupMember = null;
             if ( message.GroupMemberGuid.HasValue )
             {
