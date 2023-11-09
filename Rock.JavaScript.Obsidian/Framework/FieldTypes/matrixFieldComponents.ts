@@ -34,7 +34,7 @@ export const EditComponent = defineComponent({
     setup(props, { emit }) {
         const internalValue = ref(tryParseModel());
 
-        watch(internalValue, () => emit("update:modelValue", JSON.stringify(internalValue.value)));
+        watch(internalValue, () => emit("update:modelValue", JSON.stringify(internalValue.value)), {deep:true});
 
         watch(() => props.modelValue, () => internalValue.value = tryParseModel());
 

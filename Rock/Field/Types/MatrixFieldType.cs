@@ -21,6 +21,7 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using NuGet;
 #endif
 using Rock.Attribute;
@@ -47,76 +48,6 @@ namespace Rock.Field.Types
         /// The attribute matrix template (stored as AttributeMatrixTemplate.Id)
         /// </summary>
         public const string ATTRIBUTE_MATRIX_TEMPLATE = "attributematrixtemplate";
-
-
-
-
-        //TEMP
-        private void GetStuff()
-        {
-
-            using ( var rockContext = new RockContext() )
-            {
-                Guid attributeMatrixTemplateGuid = new Guid( "1d24694e-445c-4852-b5bc-64cdea6f7175" );
-                Guid attributeMatrixGuid = new Guid( "66468021-39f0-4727-8156-8abf1067781c" );
-                AttributeMatrixItem tempAttributeMatrixItem = null;
-
-                if ( attributeMatrixTemplateGuid != null && !attributeMatrixTemplateGuid.IsEmpty() )
-                {
-                    var attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
-                    //var template = attributeMatrixTemplateService.Get( attributeMatrixTemplateGuid );
-                    var templateData = attributeMatrixTemplateService.GetSelect( attributeMatrixTemplateGuid, s => new { s.Id, s.MinimumRows, s.MaximumRows } );
-
-
-                    tempAttributeMatrixItem = new AttributeMatrixItem();
-                    tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = templateData.Id };
-                    tempAttributeMatrixItem.LoadAttributes();
-
-                    var attributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid );
-                    if ( attributeMatrix == null )
-                    {
-                        return; // Not Found....
-                    }
-
-                    var attributeMatrixItemList = attributeMatrix.AttributeMatrixItems
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Id )
-                        .ToList();
-
-                    foreach ( var attributeMatrixItem in attributeMatrixItemList )
-                    {
-                        attributeMatrixItem.LoadAttributes();
-                    }
-
-                    var matrixItems = attributeMatrixItemList
-                        .Select( a => new
-                        {
-                            a.Guid,
-                            a.Order,
-                            //Attributes = MakePublicAttributeBags( a.Attributes ),
-                            AttributeValues = a.AttributeValues.ToDictionary( v => v.Key, v => v.Value.Value ),
-                            Other = a.Attributes.ToDictionary( v => v.Key, v => v.Value.FieldType.Field.GetPublicValue( a.AttributeValues.GetValueOrNull( v.Key )?.Value, v.Value.ConfigurationValues ) )
-                        } )
-                        .ToList();
-
-                    var returnValue = new
-                    {
-                        Attributes = tempAttributeMatrixItem.Attributes.ToDictionary(
-                            a => a.Key, a => PublicAttributeHelper.GetPublicAttributeForEdit( a.Value )
-                        ),
-                        MatrixItems = matrixItems,
-                        MinRows = templateData.MinimumRows.GetValueOrDefault( 0 ),
-                        MaxRows = templateData.MaximumRows.GetValueOrDefault( 0 )
-                    };
-                }
-
-                //not found...
-            }
-        }
-
-
-
-
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
@@ -327,20 +258,100 @@ namespace Rock.Field.Types
 
             using ( var rockContext = new RockContext() )
             {
-                AttributeMatrix matrix;
+                var templateId = privateConfigurationValues.GetValueOrNull( ATTRIBUTE_MATRIX_TEMPLATE )?.AsIntegerOrNull() ?? 0;
+                var attributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).Get( templateId );
 
-                if ( dataBag.AttributeMatrixGuid == null )
+                if ( attributeMatrixTemplate == null )
+                {
+                    // If we don't have a valid template configured, we should not have a value
+                    return string.Empty;
+                }
+
+                var matrixService = new AttributeMatrixService( rockContext );
+                var matrixItemService = new AttributeMatrixItemService( rockContext );
+                var matrix = matrixService.Get( dataBag.AttributeMatrixGuid ?? Guid.Empty );
+
+
+                if ( dataBag.AttributeMatrixGuid == null && dataBag.MatrixItems.Count == 0 )
+                {
+                    // Empty Matrix, so don't bother creating/saving anything.
+                    return string.Empty;
+                }
+                else if ( dataBag.AttributeMatrixGuid == null || matrix == null )
                 {
                     // New Matrix
-                    matrix = new AttributeMatrix();
+                    matrix = new AttributeMatrix { Guid = Guid.NewGuid() };
+                    matrix.AttributeMatrixTemplateId = templateId;
+                    matrix.AttributeMatrixItems = new List<AttributeMatrixItem>();
+                    matrixService.Add( matrix );
+
+                    rockContext.SaveChanges();
+
+                    // Add all the items
+                    foreach ( var newItem in dataBag.MatrixItems )
+                    {
+                        var matrixItem = new AttributeMatrixItem();
+                        matrixItem.AttributeMatrix = matrix;
+                        matrixItemService.Add( matrixItem );
+
+                        ApplyClientDataToAttributeMatrixItem( matrixItem, newItem, rockContext );
+                    }
+
+                    return matrix.Guid.ToString();
                 }
                 else
                 {
                     // Existing Matrix
-                    matrix = new AttributeMatrixService( rockContext ).Get( dataBag.AttributeMatrixGuid ?? Guid.Empty );
-                }
+                    if ( matrix.AttributeMatrixTemplateId != templateId )
+                    {
+                        // If the configured template changed since the last save, then we need to clean out the matrix because its items are no longer valid
+                        UpdateAttributeMatrixWithNewAttributeMatrixTemplateId( matrix, templateId, rockContext );
+                    }
+                    else
+                    {
+                        // Delete any items that no longer exist in the list from the client
+                        var existingClientItemGuids = dataBag.MatrixItems.Select( mi => mi.Guid ).Where( g => !g.IsEmpty() ).ToList();
+                        foreach ( var matrixItem in matrix.AttributeMatrixItems.ToList() )
+                        {
+                            if ( !existingClientItemGuids.Contains( matrixItem.Guid ) )
+                            {
+                                matrixItemService.Delete( matrixItem );
+                                rockContext.SaveChanges();
+                            }
+                        }
 
-                return dataBag.AttributeMatrixGuid.ToString();
+                        // Edit the matrix items to match the new matrix items from the client
+                        foreach ( var clientItem in dataBag.MatrixItems )
+                        {
+                            if ( clientItem.Guid == Guid.Empty )
+                            {
+                                // New Matrix Item
+                                var matrixItem = new AttributeMatrixItem();
+                                matrixItem.AttributeMatrix = matrix;
+                                matrixItemService.Add( matrixItem );
+
+                                ApplyClientDataToAttributeMatrixItem( matrixItem, clientItem, rockContext );
+                            }
+                            else
+                            {
+                                // Existing Matrix Item
+                                var matrixItem = matrixItemService.Get( clientItem.Guid );
+
+                                if ( matrixItem == null )
+                                {
+                                    // Doesn't exist? Odd... we'll have to recreate it then.
+                                    matrixItem = new AttributeMatrixItem();
+                                    matrixItem.AttributeMatrix = matrix;
+                                    matrixItemService.Add( matrixItem );
+                                }
+
+                                ApplyClientDataToAttributeMatrixItem( matrixItem, clientItem, rockContext );
+                            }
+                        }
+                    }
+
+                    return matrix.Guid.ToString();
+                }
             }
         }
 
@@ -411,6 +422,49 @@ namespace Rock.Field.Types
         {
             // Don't copy
             return string.Empty;
+        }
+
+        /// <summary>
+        /// The AttributeMatrixTemplateId was changed since the last time the attributeMatrix was saved, so change it and wipe out the items
+        /// </summary>
+        /// <param name="attributeMatrix">The Out-of-date AttributeMatrix</param>
+        /// <param name="attributeMatrixTemplateId">The ID of the configured AttributeMatrixTemplate</param>
+        /// <param name="rockContext">Context</param>
+        private void UpdateAttributeMatrixWithNewAttributeMatrixTemplateId( AttributeMatrix attributeMatrix, int attributeMatrixTemplateId, RockContext rockContext )
+        {
+            attributeMatrix.AttributeMatrixTemplateId = attributeMatrixTemplateId;
+
+            var attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
+
+            foreach ( var attributeMatrixItem in attributeMatrix.AttributeMatrixItems.ToList() )
+            {
+                attributeMatrixItemService.Delete( attributeMatrixItem );
+            }
+
+            attributeMatrix.AttributeMatrixItems.Clear();
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Apply the client matrix item's data onto an AttributeMatrixItem and save the changes
+        /// </summary>
+        /// <param name="matrixItem">The AttributeMatrixItem to update</param>
+        /// <param name="clientItem">The data from the client to apply to the matrixItem</param>
+        /// <param name="rockContext">Context</param>
+        private void ApplyClientDataToAttributeMatrixItem( AttributeMatrixItem matrixItem, AttributeMatrixEditorPublicItemBag clientItem, RockContext rockContext )
+        {
+            matrixItem.Order = clientItem.Order;
+            matrixItem.LoadAttributes( rockContext );
+
+            foreach ( KeyValuePair<string, string> newValue in clientItem.EditValues )
+            {
+                var attribute = matrixItem.Attributes[newValue.Key];
+                var privateValue = PublicAttributeHelper.GetPrivateValue( attribute, newValue.Value );
+                matrixItem.AttributeValues[newValue.Key] = new AttributeValueCache { AttributeId = attribute.Id, Value = privateValue, EntityId = matrixItem.Id };
+            }
+
+            rockContext.SaveChanges();
+            matrixItem.SaveAttributeValues( rockContext );
         }
 
         #region Filter Control
@@ -660,22 +714,10 @@ namespace Rock.Field.Types
                         rockContext.SaveChanges();
                     }
 
-                    // If the AttributeMatrixTemplateId jwas changed since the last time the attributeMatrix was saved, change it and wipe out the items
+                    // If the AttributeMatrixTemplateId was changed since the last time the attributeMatrix was saved, change it and wipe out the items
                     if ( attributeMatrix.AttributeMatrixTemplateId != attributeMatrixEditor.AttributeMatrixTemplateId.Value )
                     {
-                        attributeMatrix.AttributeMatrixTemplateId = attributeMatrixEditor.AttributeMatrixTemplateId.Value;
-
-                        var attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
-
-                        // If the AttributeMatrixTemplateId changed, all the values in the AttributeMatrixItems
-                        // are referring to attributes from the old template, so wipe them out. All of them.
-                        foreach ( var attributeMatrixItem in attributeMatrix.AttributeMatrixItems.ToList() )
-                        {
-                            attributeMatrixItemService.Delete( attributeMatrixItem );
-                        }
-
-                        attributeMatrix.AttributeMatrixItems.Clear();
-                        rockContext.SaveChanges();
+                        UpdateAttributeMatrixWithNewAttributeMatrixTemplateId( attributeMatrix, attributeMatrixEditor.AttributeMatrixTemplateId.Value, rockContext );
                     }
 
                     attributeMatrixEditor.AttributeMatrixGuid = attributeMatrix.Guid;

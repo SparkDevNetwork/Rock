@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="items" v-bind="fieldProps" name="attribute-matrix-editor" :rules="matrixRules" watchDeep>
+    <RockFormField :modelValue="items" v-bind="{ ...fieldProps, ...$attrs }" name="attribute-matrix-editor" :rules="matrixRules" watchDeep>
         <NotificationBox v-if="maxRows < Infinity && items.length > maxRows && !maxRowNotificationDismissed" alertType="warning" dismissible @dismiss="maxRowNotificationDismissed = true">{{ maxRowInvalidMessage }}</NotificationBox>
         <NotificationBox v-if="minRows > 0 && items.length < minRows && !minRowNotificationDismissed" alertType="warning" dismissible @dismiss="minRowNotificationDismissed = true">{{ minRowInvalidMessage }}</NotificationBox>
 
@@ -9,21 +9,21 @@
             <RockFieldColumn v-for="attr in attributeList" :key="attr.fieldTypeGuid ?? ''" :field="attr.field ?? ''" :name="attr.field ?? ''" :title="attr.title ?? ''" :attribute="attributes[attr.field ?? '']" />
             <DeleteColumn @click="onDelete" />
         </Grid>
-
-        <RockForm v-if="mode == 'add'" class="well" @submit="onSubmitAddItem" novalidate>
-            <AttributeValuesContainer v-model="newValue" :attributes="attributes" isEditMode />
-            <NotificationBox v-if="error == 'add'" alertType="danger" dismissible @dismiss="error = null" />
-            <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Add</RockButton>
-            <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
-        </RockForm>
-
-        <RockForm v-if="mode == 'edit'" class="well" @submit="onSubmitEditItem" novalidate>
-            <AttributeValuesContainer v-model="editValue" :attributes="attributes" isEditMode />
-            <NotificationBox v-if="error == 'add'" alertType="danger" dismissible @dismiss="error = null" />
-            <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Save</RockButton>
-            <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
-        </RockForm>
     </RockFormField>
+
+    <RockForm v-if="mode == 'add'" class="well" @submit="onSubmitAddItem" novalidate>
+        <AttributeValuesContainer v-model="newValue" :attributes="attributes" isEditMode />
+        <NotificationBox v-if="error == 'add'" alertType="danger" dismissible @dismiss="error = null" />
+        <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Add</RockButton>
+        <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
+    </RockForm>
+
+    <RockForm v-if="mode == 'edit'" class="well" @submit="onSubmitEditItem" novalidate>
+        <AttributeValuesContainer v-model="editValue" :attributes="attributes" isEditMode />
+        <NotificationBox v-if="error == 'add'" alertType="danger" dismissible @dismiss="error = null" />
+        <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Save</RockButton>
+        <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
+    </RockForm>
 </template>
 
 <script setup lang="ts">
@@ -45,6 +45,8 @@
     import { AttributeMatrixEditorPublicItemBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorPublicItemBag.d";
     import { useHttp } from "@Obsidian/Utility/http";
     import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
+
+    defineOptions({ inheritAttrs: false });
 
     const props = defineProps({
         /**

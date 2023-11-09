@@ -16,42 +16,43 @@
 //
 using System;
 using System.Collections.Generic;
+
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// TODO
+    /// The data used by the Obsidian Matrix Field Type to be able to edit an AttributeMatrix
     /// </summary>
     public class MatrixFieldDataBag
     {
         /// <summary>
-        /// TODO
+        /// Unique identifier of the currently saved AttributeMatrix
         /// </summary>
         public Guid? AttributeMatrixGuid { get; set; } = null;
 
         /// <summary>
-        /// TODO
+        /// List of representations of AttributeMatrixItems in this AttributeMatrix
         /// </summary>
         public List<AttributeMatrixEditorPublicItemBag> MatrixItems { get; set; }
 
         /// <summary>
-        /// TODO
+        /// Public configuration data for the attributes of the matrix items
         /// </summary>
         public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
 
         /// <summary>
-        /// TODO
+        /// Default values for each of the different values
         /// </summary>
         public Dictionary<string, string> DefaultAttributeValues { get; set; }
 
         /// <summary>
-        /// TODO
+        /// Minimum number of matrix items needed to be valid
         /// </summary>
         public int? MinRows { get; set; }
 
         /// <summary>
-        /// TODO
+        /// Maximum number of matrix items allowed to be valid
         /// </summary>
         public int? MaxRows { get; set; }
     }
