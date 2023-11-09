@@ -970,19 +970,50 @@ namespace Rock.Model
 
         /// <summary>
         /// Sends the schedule confirmation communication.
+        /// <para>
+        /// The caller of this method is responsible for calling SaveChanges() on the RockContext in order
+        /// to save the Attendance.ScheduleConfirmationSent values in the database, for those records having
+        /// a successfully-sent confirmation communication.
+        /// </para>
         /// </summary>
         /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
-        /// <returns></returns>
+        /// <returns>An object detailing the outcome of the send attempt.</returns>
         public SendMessageResult SendScheduleConfirmationCommunication( IQueryable<Attendance> sendConfirmationAttendancesQuery )
         {
+            return SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery, false );
+        }
+
+        /// <summary>
+        /// Sends the schedule confirmation communication.
+        /// <para>
+        /// The caller of this method is responsible for calling SaveChanges() on the RockContext in order
+        /// to save the Attendance.ScheduleConfirmationSent values in the database, for those records having
+        /// a successfully-sent confirmation communication.
+        /// </para>
+        /// </summary>
+        /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
+        /// <param name="includePeopleMissingContactInfo">
+        /// Whether to include people who are missing contact info in this send attempt.
+        /// Include these people if you want this method to return specific warnings about which people are missing the email
+        /// address or phone number needed to send their confirmation, according to the specified communication preferences.
+        /// </param>
+        /// <returns>An object detailing the outcome of the send attempt.</returns>
+        [RockInternal( "1.16.1" )]
+        public SendMessageResult SendScheduleConfirmationCommunication( IQueryable<Attendance> sendConfirmationAttendancesQuery, bool includePeopleMissingContactInfo )
+        {
             sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery
-                .Where( a =>
-                    ( a.PersonAlias.Person.Email != null
-                    && a.PersonAlias.Person.Email != string.Empty
-                    && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
-                    && a.PersonAlias.Person.IsEmailActive )
-                    || a.PersonAlias.Person.PhoneNumbers.Any( ph => ph.IsMessagingEnabled ) )
                 .Where( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue );
+
+            if ( !includePeopleMissingContactInfo )
+            {
+                sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery
+                    .Where( a =>
+                        ( a.PersonAlias.Person.Email != null
+                            && a.PersonAlias.Person.Email != string.Empty
+                            && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
+                            && a.PersonAlias.Person.IsEmailActive )
+                        || a.PersonAlias.Person.PhoneNumbers.Any( ph => ph.IsMessagingEnabled ) );
+            }
 
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
 

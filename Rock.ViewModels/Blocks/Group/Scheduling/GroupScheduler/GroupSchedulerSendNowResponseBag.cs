@@ -41,12 +41,12 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         public List<string> Warnings { get; set; }
 
         /// <summary>
-        /// Gets or sets whether there were any communications to send (false if all communications have already been sent).
+        /// Gets or sets the count of communications to send.
         /// </summary>
         /// <value>
-        /// Whether there were any communications to send.
+        /// The count of communications to send.
         /// </value>
-        public bool AnyCommunicationsToSend { get; set; }
+        public int CommunicationsToSendCount { get; set; }
 
         /// <summary>
         /// Gets or sets the count of communications sent.
