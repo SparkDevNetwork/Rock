@@ -321,5 +321,10 @@ namespace Rock.SystemGuid
         /// The post update data migration job to remove obsidian group schedule toolbox back buttons.
         /// </summary>
         public const string DATA_MIGRATIONS_161_REMOVE_OBSIDIAN_GROUP_SCHEDULE_TOOLBOX_BACK_BUTTONS = "781F2D3B-E5E4-41D5-9145-1D70DDB3EE04";
+
+        /// <summary>
+        /// The post update data migration job to remove the legacy Communication Recipient List Webforms block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_REMOVE_COMMUNICATION_RECIPIENT_LIST_BLOCK = "54CCFFFD-83A8-4BB6-A699-DDE34310BFE6";
     }
 }
