@@ -251,7 +251,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var givingId = Person.GivingId;
 
             var threeYearsAgo = RockDateTime.Now.AddMonths( -35 ).StartOfMonth();
-            List<MonthlyAccountGivingHistory> threeYearsOfMonthlyAccountGiving = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistoryWithNegativeTransactions( givingId, threeYearsAgo );
+            List<MonthlyAccountGivingHistory> threeYearsOfMonthlyAccountGiving = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistory( givingId, threeYearsAgo, true );
 
             if ( threeYearsOfMonthlyAccountGiving.Any() )
             {
@@ -328,7 +328,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var oneYearAgo = RockDateTime.Now.AddMonths( -12 );
 
             var twelveMonthsTransactionsQry = financialTransactionService
-                    .GetGivingAutomationSourceTransactionQueryWithNegativeTransactionsByGivingId( givingId )
+                    .GetGivingAutomationSourceTransactionQueryByGivingId( givingId, true )
                     .Where( t => t.TransactionDateTime >= oneYearAgo );
 
             var twelveMonthTransactions = twelveMonthsTransactionsQry
@@ -684,7 +684,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                     startDate = null;
                 }
 
-                var monthlyAccountGivingHistoryList = new FinancialTransactionService( rockContext ).GetGivingAutomationMonthlyAccountGivingHistoryWithNegativeTransactions( givingId, startDate );
+                var monthlyAccountGivingHistoryList = new FinancialTransactionService( rockContext ).GetGivingAutomationMonthlyAccountGivingHistory( givingId, startDate, true );
 
                 var financialAccounts = new FinancialAccountService( rockContext ).Queryable()
                     .AsNoTracking()

@@ -346,47 +346,22 @@ namespace Rock.Model
         /// Gets the giving automation source transaction query by giving identifier.
         /// </summary>
         /// <param name="givingId">The giving identifier.</param>
+        /// <param name="includeNegativeTransactions">Whether or not negative transactions should be included in the query.</param>
         /// <returns>IQueryable&lt;FinancialTransaction&gt;.</returns>
-        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryByGivingId( string givingId )
+        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryByGivingId( string givingId, bool includeNegativeTransactions = false )
         {
             var givingIdPersonAliasIdQuery = new PersonAliasService( this.Context as RockContext ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id );
 
-            return GetGivingAutomationSourceTransactionQuery().Where( a => a.AuthorizedPersonAliasId.HasValue && givingIdPersonAliasIdQuery.Contains( a.AuthorizedPersonAliasId.Value ) );
+            return GetGivingAutomationSourceTransactionQuery( includeNegativeTransactions ).Where( a => a.AuthorizedPersonAliasId.HasValue && givingIdPersonAliasIdQuery.Contains( a.AuthorizedPersonAliasId.Value ) );
         }
 
         /// <summary>
         /// Gets the giving automation source transaction query.
         /// This is used by <see cref="Rock.Jobs.GivingAutomation"/>.
         /// </summary>
+        /// <param name="includeNegativeTransactions">Whether or not negative transactions should be included in the query.</param>
         /// <returns></returns>
-        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQuery()
-        {
-            var query = GetGivingAutomationSourceTransactionQueryWithNegativeTransactions();
-
-            // Remove transactions with $0 or negative amounts. If those are refunds, they have already been factored in.
-            query = query.Where( t => t.TransactionDetails.Any( d => d.Amount > 0M ) );
-
-            return query;
-        }
-
-        /// <summary>
-        /// Gets the giving automation source transaction query by giving identifier.
-        /// </summary>
-        /// <param name="givingId">The giving identifier.</param>
-        /// <returns>IQueryable&lt;FinancialTransaction&gt;.</returns>
-        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryWithNegativeTransactionsByGivingId( string givingId )
-        {
-            var givingIdPersonAliasIdQuery = new PersonAliasService( this.Context as RockContext ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id );
-
-            return GetGivingAutomationSourceTransactionQueryWithNegativeTransactions().Where( a => a.AuthorizedPersonAliasId.HasValue && givingIdPersonAliasIdQuery.Contains( a.AuthorizedPersonAliasId.Value ) );
-        }
-
-        /// <summary>
-        /// Gets the giving automation source transaction query with negative transactions included..
-        /// This is used by <see cref="Rock.Jobs.GivingAutomation"/>.
-        /// </summary>
-        /// <returns></returns>
-        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryWithNegativeTransactions()
+        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQuery( bool includeNegativeTransactions = false )
         {
             var query = Queryable().AsNoTracking();
 
@@ -487,6 +462,12 @@ namespace Rock.Model
                     )
                 );
 
+            if ( !includeNegativeTransactions )
+            {
+                // Remove transactions with $0 or negative amounts. If those are refunds, they have already been factored in.
+                query = query.Where( t => t.TransactionDetails.Any( d => d.Amount > 0M ) );
+            }
+
             return query;
         }
 
@@ -504,22 +485,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="givingId">The giving identifier.</param>
         /// <param name="startDateTime">The start date time.</param>
+        /// <param name="includeNegativeTransactions">Whether or not negative transactions should be included in the query.</param>
         /// <returns>List&lt;MonthlyAccountGivingHistory&gt;.</returns>
-        public List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistory( string givingId, DateTime? startDateTime )
+        public List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistory( string givingId, DateTime? startDateTime, bool includeNegativeTransactions = false )
         {
-            return GetGivingAutomationMonthlyAccountGivingHistory( GetGivingAutomationSourceTransactionQuery(), givingId, startDateTime );
-        }
-
-        /// <summary>
-        /// Gets the giving automation monthly account giving history. This is used for the Giving Overview block's monthly
-        /// bar chart and also yearly summary.
-        /// </summary>
-        /// <param name="givingId">The giving identifier.</param>
-        /// <param name="startDateTime">The start date time.</param>
-        /// <returns>List&lt;MonthlyAccountGivingHistory&gt;.</returns>
-        public List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistoryWithNegativeTransactions( string givingId, DateTime? startDateTime )
-        {
-            return GetGivingAutomationMonthlyAccountGivingHistory( GetGivingAutomationSourceTransactionQueryWithNegativeTransactions(), givingId, startDateTime );
+            return GetGivingAutomationMonthlyAccountGivingHistory( GetGivingAutomationSourceTransactionQuery( includeNegativeTransactions ), givingId, startDateTime );
         }
 
         /// <summary>
