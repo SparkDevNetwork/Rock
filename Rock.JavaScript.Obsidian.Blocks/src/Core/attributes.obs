@@ -100,7 +100,7 @@
 
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
-    import { computed, ref, watch, watchEffect } from "vue";
+    import { computed, ref, watch } from "vue";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockField from "@Obsidian/Controls/rockField.obs";

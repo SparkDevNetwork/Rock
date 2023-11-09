@@ -25,23 +25,23 @@ import { Guid } from "@Obsidian/Types";
 import { AttributeMatrixEditorPublicItemBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorPublicItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** TODO */
+/** The data used by the Obsidian Matrix Field Type to be able to edit an AttributeMatrix */
 export type MatrixFieldDataBag = {
-    /** TODO */
+    /** Unique identifier of the currently saved AttributeMatrix */
     attributeMatrixGuid?: Guid | null;
 
-    /** TODO */
+    /** Public configuration data for the attributes of the matrix items */
     attributes?: Record<string, PublicAttributeBag> | null;
 
-    /** TODO */
+    /** Default values for each of the different values */
     defaultAttributeValues?: Record<string, string> | null;
 
-    /** TODO */
+    /** List of representations of AttributeMatrixItems in this AttributeMatrix */
     matrixItems?: AttributeMatrixEditorPublicItemBag[] | null;
 
-    /** TODO */
+    /** Maximum number of matrix items allowed to be valid */
     maxRows?: number | null;
 
-    /** TODO */
+    /** Minimum number of matrix items needed to be valid */
     minRows?: number | null;
 };

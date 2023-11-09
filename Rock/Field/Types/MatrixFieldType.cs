@@ -21,8 +21,6 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using NuGet;
 #endif
 using Rock.Attribute;
 using Rock.Data;
@@ -132,7 +130,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            if ( privateValue == null || privateValue.IsEmpty() )
+            if ( privateValue.IsNullOrWhiteSpace() )
             {
                 return string.Empty;
             }
