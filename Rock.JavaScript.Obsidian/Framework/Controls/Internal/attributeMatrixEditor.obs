@@ -1,0 +1,393 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="items" v-bind="{ ...fieldProps, ...$attrs }" name="attribute-matrix-editor" :rules="matrixRules" watchDeep>
+        <NotificationBox v-if="maxRows < Infinity && items.length > maxRows && !maxRowNotificationDismissed" alertType="warning" dismissible @dismiss="maxRowNotificationDismissed = true">{{ maxRowInvalidMessage }}</NotificationBox>
+        <NotificationBox v-if="minRows > 0 && items.length < minRows && !minRowNotificationDismissed" alertType="warning" dismissible @dismiss="minRowNotificationDismissed = true">{{ minRowInvalidMessage }}</NotificationBox>
+
+        <Grid v-show="mode == 'grid'" :data="gridData" itemTerm="Item" keyField="key" liveUpdates light @addItem="onAddItem" @selectItem="onSelectItem">
+            <ReorderColumn @orderChanged="onOrderChanged" />
+            <RockFieldColumn v-for="attr in attributeList" :key="attr.fieldTypeGuid ?? ''" :field="attr.field ?? ''" :name="attr.field ?? ''" :title="attr.title ?? ''" :attribute="attributes[attr.field ?? '']" />
+            <DeleteColumn @click="onDelete" />
+        </Grid>
+    </RockFormField>
+
+    <RockForm v-if="mode == 'add'" class="well" @submit="onSubmitAddItem" novalidate>
+        <AttributeValuesContainer v-model="newValue" :attributes="attributes" isEditMode />
+        <NotificationBox v-if="error == 'add'" alertType="danger" dismissible @dismiss="error = null" />
+        <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Add</RockButton>
+        <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
+    </RockForm>
+
+    <RockForm v-if="mode == 'edit'" class="well" @submit="onSubmitEditItem" novalidate>
+        <AttributeValuesContainer v-model="editValue" :attributes="attributes" isEditMode />
+        <NotificationBox v-if="error == 'add'" alertType="danger" dismissible @dismiss="error = null" />
+        <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Save</RockButton>
+        <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch } from "vue";
+    import RockFormField from "../rockFormField.obs";
+    import RockForm from "../rockForm.obs";
+    import RockButton from "../rockButton.obs";
+    import AttributeValuesContainer from "../attributeValuesContainer.obs";
+    import Grid, { DeleteColumn, RockFieldColumn, ReorderColumn } from "../grid";
+    import NotificationBox from "../notificationBox.obs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { clone } from "@Obsidian/Utility/objectUtils";
+    import { AttributeMatrixEditorNormalizeEditValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorNormalizeEditValueOptionsBag.d";
+    import { AttributeMatrixEditorNormalizeEditValueResultsBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorNormalizeEditValueResultsBag.d";
+    import { AttributeMatrixEditorPublicItemBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorPublicItemBag.d";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
+
+    defineOptions({ inheritAttrs: false });
+
+    const props = defineProps({
+        /**
+         * The list of items in the matrix and both their values for editing and their values for viewing.
+         */
+        modelValue: {
+            type: Array as PropType<AttributeMatrixEditorPublicItemBag[]>,
+            default: []
+        },
+
+        /**
+         * Definitions for each attribute of the items.
+         * Key is the name of the attribute and the value is a PublicAttributeBag describing the attribute.
+         */
+        attributes: {
+            type: Object as PropType<Record<string, PublicAttributeBag>>,
+            required: true
+        },
+
+        /**
+         * Record of the default values for the row item attributes.
+         * Key is the name of the attribute and the value is the default value.
+         * This is used to initially fill the form for adding a new item.
+         */
+        defaultAttributeValues: {
+            type: Object as PropType<Record<string, string>>,
+            default: {}
+        },
+
+        /**
+         * Minimum number of items that should be created to validate.
+         */
+        minRows: {
+            type: Number,
+            default: 0
+        },
+
+        /**
+         * Maximum number of items that should be created to validate.
+         */
+        maxRows: {
+            type: Number,
+            default: Infinity
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, unknown>[]): void
+        (e: "newItem", value: Record<string, unknown>): void
+    }>();
+
+
+    //#region Main Model
+    const items = ref(clone(props.modelValue));
+
+    watch(() => props.modelValue, () => {
+        if (!deepEqual(props.modelValue, items.value, false)) {
+            items.value = clone(props.modelValue);
+        }
+    }, { deep: true });
+
+    watch(items, () => {
+        if (!deepEqual(props.modelValue, items.value, false)) {
+            emit("update:modelValue", clone(items.value));
+        }
+    }, { deep: true });
+
+    //#endregion
+
+    //#region State
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    const http = useHttp();
+    const mode = ref<"grid" | "edit" | "add">("grid");
+    const newValue = ref({});
+    const editValue = ref({});
+    const editKey = ref("");
+    const isLoading = ref(false);
+    const error = ref<"add" | "edit" | null>(null);
+    const keySeparator = "##";
+
+    const maxRowNotificationDismissed = ref(false);
+    const minRowNotificationDismissed = ref(false);
+
+    // This increments every time a new item is added. It is used to ensure a unique key for new items
+    // since they all have an empty guid.
+    let itemsAdded = 0;
+
+    //#endregion
+
+    //#region Computeds
+
+    //#region Validation
+    const isRequired = computed(() => {
+        return containsRequiredRule(props.rules);
+    });
+
+    const minRows = computed(() => {
+        return isRequired.value ? Math.max(1, props.minRows) : props.minRows;
+    });
+
+    const minRowInvalidMessage = computed(() => {
+        if (minRows.value == 1) {
+            return "At least 1 item is required.";
+        }
+
+        return `At least ${minRows.value} items are required.`;
+    });
+
+    const maxRowInvalidMessage = computed(() => {
+        if (props.maxRows == 1) {
+            return "No more than 1 item is allowed.";
+        }
+
+        return `No more than ${props.maxRows} items are allowed.`;
+    });
+
+    const matrixRules = computed(() => {
+        const rules = normalizeRules(props.rules);
+
+        if (minRows.value > 0) {
+            rules.push((val: unknown) => {
+                if (Array.isArray(val)) {
+                    if (val.length >= minRows.value) {
+                        return true;
+                    }
+
+                    return minRowInvalidMessage.value;
+                }
+
+                // Not sure how it's not an array... so I wouldn't be able to give an accurate error message.
+                return true;
+            });
+        }
+
+        // For some reason we don't actually validate max rows, but if that changes, just uncomment the lines below
+        // if (props.maxRows < Infinity) {
+        //     rules.push((val: unknown) => {
+        //         if (Array.isArray(val)) {
+        //             if (val.length <= props.maxRows) {
+        //                 return true;
+        //             }
+
+        //             return maxRowInvalidMessage.value;
+        //         }
+
+        //         // Not sure how it's not an array... so I wouldn't be able to give an accurate error message.
+        //         return true;
+        //     });
+        // }
+
+        return rules;
+    });
+
+    //#endregion
+
+    //#region Grid Data
+    const gridData = computed<GridDataBag>(
+        () => ({
+            rows: props.modelValue.map(item => {
+                const row = {
+                    key: item.guid + keySeparator + (item.key ?? ""),
+                    order: item.order,
+                    ...(item.viewValues)
+                };
+
+                return row;
+            })
+        })
+    );
+
+    const attributeList = computed(
+        () => Object.values(props.attributes).sort((a, b) => {
+            return (a.order ?? 0) - (b.order ?? 0);
+        }).map(attr => ({
+            fieldTypeGuid: attr.fieldTypeGuid,
+            field: attr.key,
+            title: attr.name
+        }))
+    );
+
+    //#endregion
+
+    //#endregion
+
+    //#region Watchers
+
+    // Re-enable the notifications when the data changes if they were previously dismissed
+    watch(items.value, () => {
+        maxRowNotificationDismissed.value = false;
+        minRowNotificationDismissed.value = false;
+    });
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Show the form to add a new row item */
+    function onAddItem(): void {
+        newValue.value = Object.keys(props.attributes).reduce((obj, key) => {
+            obj[key] = props.defaultAttributeValues[key] ?? "";
+            return obj;
+        }, {});
+
+        mode.value = "add";
+    }
+
+    /** Add a newly created row item */
+    async function onSubmitAddItem(): Promise<void> {
+        error.value = null;
+
+        const data = await normalizeEditValue(newValue.value);
+
+        if (!data) {
+            error.value = "add";
+            return;
+        }
+
+        items.value.push({
+            guid: emptyGuid,
+            key: ++itemsAdded,
+            order: items.value.length,
+            ...data
+        });
+
+        newValue.value = {};
+        mode.value = "grid";
+    }
+
+    /** Clear out any form and show the grid when a form is cancelled */
+    function onCancelAddOrEditItem(): void {
+        editKey.value = "";
+        editValue.value = {};
+        newValue.value = {};
+        mode.value = "grid";
+    }
+
+    /** Open the form to edit a selected row item */
+    function onSelectItem(key: string): void {
+        const [itemGuid, itemKey] = key.split(keySeparator);
+        const item = items.value.find(i => i.guid == itemGuid && i.key == (itemKey || undefined));
+
+        if (item != undefined) {
+            editValue.value = clone(item.editValues ?? {});
+            editKey.value = key;
+            mode.value = "edit";
+        }
+    }
+
+    /** Apply edits to a row item */
+    async function onSubmitEditItem(): Promise<void> {
+        error.value = null;
+
+        const [itemGuid, itemKey] = editKey.value.split(keySeparator);
+        const index = items.value.findIndex(i => i.guid == itemGuid && i.key == (itemKey || undefined));
+
+        if (index < 0) {
+            mode.value = "grid";
+            return;
+        }
+
+        const data = await normalizeEditValue(editValue.value);
+
+        if (!data) {
+            error.value = "edit";
+            return;
+        }
+
+        items.value[index].editValues = data.editValues;
+        items.value[index].viewValues = data.viewValues;
+
+        editKey.value = "";
+        editValue.value = {};
+        mode.value = "grid";
+    }
+
+    /** Delete a row item */
+    async function onDelete(key: string): Promise<void> {
+        const [itemGuid, itemKey] = key.split(keySeparator);
+        const index = items.value.findIndex(i => i.guid == itemGuid && i.key == (itemKey || undefined));
+        if (index !== -1) {
+            items.value.splice(index, 1);
+        }
+    }
+
+    /**
+     * When the order of the items in the matrix is changed via drag and drop, rearrange the items in the
+     * array and update the `order` property to match the array order.
+     */
+    function onOrderChanged(movedItem: Record<string, unknown>, beforeItem: Record<string, unknown> | null): void {
+        const [movedItemGuid, movedItemKey] = (movedItem.key as string).split(keySeparator);
+        const [beforeItemGuid, beforeItemKey] = beforeItem == null ? [null, null] : (beforeItem.key as string).split(keySeparator);
+
+        const movedIndex = items.value.findIndex(i => i.guid == movedItemGuid && i.key == (movedItemKey || undefined));
+
+        if (movedIndex < 0) {
+            return;
+        }
+
+        const [trueMovedItem] = items.value.splice(movedIndex, 1);
+
+        const beforeItemIndex = items.value.findIndex(i => i.guid == beforeItemGuid && i.key == (beforeItemKey || undefined));
+
+        if (beforeItem == null || beforeItemIndex < 0) {
+            items.value.push(trueMovedItem);
+        }
+        else {
+            items.value.splice(beforeItemIndex, 0, trueMovedItem);
+        }
+
+        items.value.forEach((item, index) => {
+            item.order = index;
+        });
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    async function normalizeEditValue(editValue: Record<string, string>): Promise<false | AttributeMatrixEditorNormalizeEditValueResultsBag> {
+        isLoading.value = true;
+
+        const options: AttributeMatrixEditorNormalizeEditValueOptionsBag = {
+            attributes: props.attributes,
+            attributeValues: editValue
+        };
+        const response = await http.post<AttributeMatrixEditorNormalizeEditValueResultsBag>("/api/v2/Controls/AttributeMatrixEditorNormalizeEditValue", undefined, options);
+
+        isLoading.value = false;
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.error("Error adding item.", response.errorMessage);
+            return false;
+        }
+    }
+
+    //#endregion
+</script>

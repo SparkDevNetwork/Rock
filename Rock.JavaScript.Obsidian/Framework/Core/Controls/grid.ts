@@ -1119,7 +1119,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
  * @returns An array of {@link ColumnDefinition} objects.
  */
 export function getColumnDefinitions(columnNodes: VNode[]): ColumnDefinition[] {
-    const columns: ColumnDefinition[] = [];
+    let columns: ColumnDefinition[] = [];
 
     for (const node of columnNodes) {
         const name = getVNodeProp<string>(node, "name");
@@ -1127,6 +1127,12 @@ export function getColumnDefinitions(columnNodes: VNode[]): ColumnDefinition[] {
         // Check if this node is the special AttributeColumns node.
         if (!name) {
             if (getVNodeProp<boolean>(node, "__attributeColumns") !== true) {
+                if (node?.children?.length) {
+                    // V-For was used, so it's just a blank VNode with children that we need to loop through
+                    const newColumns = getColumnDefinitions(node.children as VNode[]);
+                    columns = columns.concat(newColumns);
+                }
+
                 continue;
             }
 

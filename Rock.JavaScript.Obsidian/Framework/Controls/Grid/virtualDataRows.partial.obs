@@ -1,7 +1,8 @@
 <template>
     <div class="grid-body" ref="element">
         <div :style="beforePadStyle" />
-        <DataRow v-for="(row, index) of virtualRows"
+        <DataRow v-if="hasRows"
+                 v-for="(row, index) of virtualRows"
                  :key="props.grid.getRowKey(row)"
                  :columns="props.columns"
                  :row="row"
@@ -12,6 +13,12 @@
                  monitorHeight
                  @resize="onRowResize"
                  @click="onRowClick" />
+
+        <div class="grid-row" v-else>
+            <div class="grid-cell table-empty">
+                No {{ pluralItemTerm }} Found
+            </div>
+        </div>
         <div :style="afterPadStyle" />
     </div>
 </template>
@@ -21,6 +28,7 @@
     import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
     import { PropType, computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
     import VirtualScroller, { Range } from "./virtualScroller.partial";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         /**
@@ -55,6 +63,12 @@
         isSelectable: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /** The term that identifies individual rows in the grid. */
+        itemTerm: {
+            type: String as PropType<string>,
+            default: "item"
         }
     });
 
@@ -108,6 +122,20 @@
         return {
             height: `${range.value.padAfter}px`
         };
+    });
+
+    /**
+     * Whether or not there are any rows given
+     */
+    const hasRows = computed(() => {
+        return props.rows.length > 0;
+    });
+
+    /**
+     * Plural form of the itemTerm prop.
+     */
+    const pluralItemTerm = computed(() => {
+        return pluralize(props.itemTerm);
     });
 
     // #endregion

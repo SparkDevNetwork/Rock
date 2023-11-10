@@ -252,7 +252,7 @@
      * @param key The key of the configuration value that was changed.
      * @param value The new value of the configuration value.
      */
-     function onUpdateFieldConfigurationValue(key: string, value: string): void {
+    function onUpdateFieldConfigurationValue(key: string, value: string): void {
         configurationValues.value[key] = value;
         updateFieldConfiguration(defaultValue.value ?? "");
     }

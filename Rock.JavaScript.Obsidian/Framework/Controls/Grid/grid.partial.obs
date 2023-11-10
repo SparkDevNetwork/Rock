@@ -37,6 +37,7 @@
                       :grid="gridState"
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
+                      :itemTerm="gridState.itemTerm"
                       @click="onRowClick" />
         </div>
 
@@ -47,6 +48,7 @@
                       :grid="gridState"
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
+                      :itemTerm="gridState.itemTerm"
                       @click="onRowClick" />
         </div>
 
@@ -56,6 +58,7 @@
                          :grid="gridState"
                          :tooltipField="tooltipField"
                          :isSelectable="isSelectionEnabled"
+                         :itemTerm="gridState.itemTerm"
                          @click="onRowClick" />
 
         <div class="grid-footing">

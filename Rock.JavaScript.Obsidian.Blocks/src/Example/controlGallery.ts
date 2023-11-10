@@ -244,6 +244,7 @@ import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
 import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
 import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
 import PersonBasicEditorGallery from "./ControlGallery/personBasicEditorGallery.partial.obs";
+import AttributeMatrixEditorGallery from "./ControlGallery/attributeMatrixEditorGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -385,7 +386,8 @@ const attributeValuesContainerGallery = defineComponent({
         :displayAsTabs="displayAsTabs"
         :showCategoryLabel="showCategoryLabel"
         :numberOfColumns="numberOfColumns"
-        :entityTypeName="entityName" />
+        :entityTypeName="entityName"
+        :showPrePostHtml="showPrePost" />
 
     <template #settings>
         <div class="row">
@@ -1400,7 +1402,7 @@ const genderPickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <GenderPicker label="Your Gender" v-model="value" />
+    <GenderPicker  v-model="value" />
 
     <template #settings>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
@@ -4745,7 +4747,7 @@ const notificationBoxGallery = defineComponent({
             options,
             alertType: ref(AlertType.Default),
             importCode: getSfcControlImportPath("notificationBox"),
-            exampleCode: `<NotificationBox dismissable alertType="AlertType.Info" @dismiss="onDismiss" heading="Heading Text">
+            exampleCode: `<NotificationBox dismissible :alertType="AlertType.Info" @dismiss="onDismiss" heading="Heading Text">
     This is an alert!
     <template #details>
         Here's a place where you can place details that show up when you click "Show Details".
@@ -4777,7 +4779,7 @@ const notificationBoxGallery = defineComponent({
                 <TextBox v-model="details" label="Details Text" />
             </div>
             <div class="col-md-3">
-                <CheckBox label="Dismissable" v-model="isDismissible" />
+                <CheckBox label="Dismissible" v-model="isDismissible" />
             </div>
         </div>
     </template>
@@ -8188,6 +8190,7 @@ const controlGalleryComponents: Record<string, Component> = [
     ChartGallery,
     EntityPickerGallery,
     PersonBasicEditorGallery,
+    AttributeMatrixEditorGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

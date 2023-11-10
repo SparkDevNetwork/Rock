@@ -602,6 +602,40 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Attribute Matrix Editor
+
+        /// <summary>
+        /// Take the public edit values for a given matrix item and convert them to public viewing values.
+        /// </summary>
+        /// <param name="options">The options that describe the attributes and their public edit values.</param>
+        /// <returns>The public edit values and the public viewing values.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AttributeMatrixEditorNormalizeEditValue" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1B7BA1CB-6D3F-4DE7-AC02-EAAADF89C7ED" )]
+        public IHttpActionResult AttributeMatrixEditorNormalizeEditValue( [FromBody] AttributeMatrixEditorNormalizeEditValueOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var publicValues = options.Attributes.ToDictionary( a => a.Key, a =>
+                {
+                    var attr = AttributeCache.Get( a.Value.AttributeGuid );
+
+                    var privateValue = PublicAttributeHelper.GetPrivateValue( attr, options.AttributeValues.GetValueOrDefault( a.Key, "" ) );
+                    var publicValue = PublicAttributeHelper.GetPublicValueForView( attr, privateValue );
+                    return publicValue;
+                } );
+
+                return Ok( new
+                {
+                    ViewValues = publicValues,
+                    EditValues = options.AttributeValues
+                } );
+            }
+        }
+
+        #endregion
+
         #region Audit Detail
 
         /// <summary>
