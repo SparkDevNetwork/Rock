@@ -1,0 +1,43 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+        <BadgeControl :entityTypeGuid="entityTypeGuid?.value" :entityKey="entityKey" :badgeTypeGuid="badgeTypeGuid!" />
+
+        <template #settings>
+            <div class="row">
+                <EntityTypePicker formGroupClasses="col-md-4" label="Entity Type" v-model="entityType" enhanceForLongLists />
+                <TextBox formGroupClasses="col-md-4" label="Entity Key" v-model="entityKey" />
+                <BadgePicker formGroupClasses="col-md-4" label="Badge Type" v-model="badgeType" lazyMode="eager" />
+            </div>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import BadgeControl from "@Obsidian/Controls/badgeControl.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import BadgePicker from "@Obsidian/Controls/badgePicker.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useStore } from "@Obsidian/PageState";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+
+
+    const entityType = ref({ text: "Person", value: EntityType.Person });
+    const entityTypeGuid = computed(() => entityType?.value);
+    const badgeType = ref<ListItemBag>({});
+    const badgeTypeGuid = computed(() => badgeType.value.value);
+
+    const store = useStore();
+    const entityKey = ref(store.state.currentPerson?.idKey ?? "");
+
+
+    const importCode = getSfcControlImportPath("badgeControl");
+    const exampleCode = computed(() => {
+        return `<BadgeControl :entityTypeGuid="entityTypeGuid?.value" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />`;
+    });
+</script>
