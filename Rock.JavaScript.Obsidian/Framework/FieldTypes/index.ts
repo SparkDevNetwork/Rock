@@ -158,6 +158,9 @@ registerFieldType(FieldTypeGuids.DefinedValue, new DefinedValueFieldType());
 import { DefinedValueRangeFieldType } from "./definedValueRangeField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldType());
 
+import { DocumentTypeFieldType } from "./documentTypeField.partial";
+registerFieldType(FieldTypeGuids.DocumentType, new DocumentTypeFieldType());
+
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
 
@@ -311,8 +314,14 @@ registerFieldType(FieldTypeGuids.SocialMediaAccount, new SocialMediaAccountField
 import { SiteFieldType } from "./siteField.partial";
 registerFieldType(FieldTypeGuids.Site, new SiteFieldType());
 
+import { StepProgramFieldType } from "./stepProgramField.partial";
+registerFieldType(FieldTypeGuids.StepProgram, new StepProgramFieldType());
+
 import { SSNFieldType } from "./ssnField.partial";
 registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
+
+import { StepFieldType } from "./stepField.partial";
+registerFieldType(FieldTypeGuids.Step, new StepFieldType());
 
 import { StreakTypeFieldType } from "./streakTypeField.partial";
 registerFieldType(FieldTypeGuids.StreakType, new StreakTypeFieldType());

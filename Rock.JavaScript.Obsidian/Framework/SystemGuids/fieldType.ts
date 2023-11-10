@@ -135,6 +135,8 @@ export const FieldType = {
     DefinedValueCategorized: "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D",
     /** Defined Value Range field type */
     DefinedValueRange: "B5C07B16-844D-4620-82E3-4CCA8F5FC350",
+    /** Document Type field type */
+    DocumentType: "1FD31CDC-E5E2-431B-8D53-72FC0430044D",
     /** Email field type */
     Email: "3D045CAE-EA72-4A04-B7BE-7FD1D6214217",
     /** Email Template field type */
@@ -271,8 +273,12 @@ export const FieldType = {
     SlidingDateRange: "55810BC5-45EA-4044-B783-0CCE0A445C6F",
     /** Social Media Account field type */
     SocialMediaAccount: "92C0E3A1-9F63-49D4-B23B-73624AC42546",
+    /** Step field type */
+    Step : "829803DB-7CA3-44F6-B1CB-669D61ED6E92",
     /** Social Security Number */
     Ssn: "4722C99A-C078-464A-968F-13AB5E8E318F",
+    /** Step Program field type */
+    StepProgram: "33875369-7D2B-4CD7-BB89-ABC29906CCAE",
     /** Streak Type field type */
     StreakType: "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
     /** Streak Type field type */

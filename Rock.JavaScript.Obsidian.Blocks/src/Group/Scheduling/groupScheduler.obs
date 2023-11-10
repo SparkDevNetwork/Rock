@@ -235,13 +235,7 @@
                     </ul>
                 </div>
 
-                <p v-if="sendNowResponse?.anyCommunicationsToSend === false">
-                    Everybody has already been sent a confirmation. No additional confirmations sent.
-                </p>
-
-                <p v-else-if="sentConfirmationsMessage">
-                    {{ sentConfirmationsMessage }}
-                </p>
+                <div v-html="sendNowOutcomeMessage"></div>
 
             </ModalAlert>
         </Panel>
@@ -272,6 +266,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { GroupSchedulerAppliedFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerAppliedFiltersBag";
     import { GroupSchedulerCloneSchedulesResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerCloneSchedulesResponseBag";
     import { GroupSchedulerCloneSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerCloneSettingsBag";
@@ -469,22 +464,49 @@
         return navigationUrls.value?.[NavigationUrlKey.RosterPage] ?? null;
     });
 
+    const toSendCount = computed((): number => {
+        return sendNowResponse.value?.communicationsToSendCount ?? 0;
+    });
+
+    const sentCount = computed((): number => {
+        return sendNowResponse.value?.communicationsSentCount ?? 0;
+    });
+
+    const failedToSendCount = computed((): number => {
+        return toSendCount.value - sentCount.value;
+    });
+
     const sendNowModalAlertType = computed((): ModalAlertType => {
         if (sendNowResponse.value?.errors?.length) {
             return ModalAlertType.Alert;
         }
-        else if (sendNowResponse.value?.warnings?.length) {
+        else if (sendNowResponse.value?.warnings?.length || failedToSendCount.value > 0) {
             return ModalAlertType.Warning;
         }
 
         return ModalAlertType.Information;
     });
 
-    const sentConfirmationsMessage = computed((): string | null => {
-        const count = sendNowResponse.value?.communicationsSentCount ?? 0;
-        return count
-            ? `Successfully sent ${count} confirmation${(count > 1 ? "s" : "")}.`
-            : null;
+    const sendNowOutcomeMessage = computed((): string => {
+        const messageParts: string[] = [];
+
+        if (toSendCount.value === 0) {
+            messageParts.push("Everybody has already been sent a confirmation. No additional confirmations sent.");
+        }
+        else {
+            if (sentCount.value > 0) {
+                messageParts.push(`Successfully sent ${sentCount.value} ${pluralize("confirmation", sentCount.value)}.`);
+            }
+
+            if (failedToSendCount.value > 0) {
+                messageParts.push(`Failed to send ${failedToSendCount.value} ${pluralize("confirmation", failedToSendCount.value)}.`);
+            }
+        }
+
+        let message = "";
+        messageParts.forEach((messagePart: string) => message += `<p>${messagePart}</p>`);
+
+        return message || "<p>Unknown error while trying to send confirmations.</p>";
     });
 
     const isBusy = computed((): boolean => {
@@ -805,6 +827,7 @@
 
         filters.value = result.data?.filters;
         scheduleOccurrences.value = result.data?.scheduleOccurrences;
+        unassignedResourceCounts.value = result.data?.unassignedResourceCounts ?? [];
         navigationUrls.value = result.data?.navigationUrls;
 
         reloadAllScheduleOccurrences();
@@ -845,6 +868,7 @@
 
         filters.value = appliedFilters?.filters;
         scheduleOccurrences.value = appliedFilters?.scheduleOccurrences;
+        unassignedResourceCounts.value = appliedFilters?.unassignedResourceCounts ?? [];
         navigationUrls.value = appliedFilters?.navigationUrls;
 
         nextTick(() => {

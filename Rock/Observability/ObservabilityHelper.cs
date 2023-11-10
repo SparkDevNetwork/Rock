@@ -14,15 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using OpenTelemetry.Resources;
-using OpenTelemetry;
-using OpenTelemetry.Trace;
-using Rock.SystemKey;
 using System;
 using System.Configuration;
 using System.Diagnostics;
-using Rock.Bus;
+
+using OpenTelemetry;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+
+using Rock.Bus;
+using Rock.SystemKey;
 
 namespace Rock.Observability
 {
@@ -54,6 +56,42 @@ namespace Rock.Observability
         /// Cache the machine name to reduce the load from a Win32 native call.
         /// </summary>
         private static readonly Lazy<string> _machineName = new Lazy<string>( () => Environment.MachineName.ToLower() );
+
+        /// <summary>
+        /// Gets the maximum number of spans that will be allowed on a single trace.
+        /// </summary>
+        internal static int SpanCountLimit
+        {
+            get
+            {
+                if ( Rock.Web.SystemSettings.TryGetCachedValue( SystemSetting.OBSERVABILITY_SPAN_COUNT_LIMIT, out var value ) )
+                {
+                    return value.AsIntegerOrNull() ?? 9_900;
+                }
+                else
+                {
+                    return 9_900;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the maximum length a single attribute value should be.
+        /// </summary>
+        internal static int MaximumAttributeLength
+        {
+            get
+            {
+                if ( Rock.Web.SystemSettings.TryGetCachedValue( SystemSetting.OBSERVABILITY_MAX_ATTRIBUTE_LENGTH, out var value ) )
+                {
+                    return value.AsIntegerOrNull() ?? 4_000;
+                }
+                else
+                {
+                    return 4_000;
+                }
+            }
+        }
 
         static ObservabilityHelper()
         {
@@ -183,9 +221,9 @@ namespace Rock.Observability
         /// <param name="kind"></param>
         public static Activity StartActivity( string name, ActivityKind kind = ActivityKind.Internal )
         {
-            // Some systems only support an activity chain with up to 10,000
-            // total related activities. We store the number on the root
-            // activity and if it exceeds 9,999 then we don't start an activity.
+            // Some systems only support a specific number of spans for a single
+            // trace. This checks to see if the root activity (trace) has more
+            // activities than the limit and if so does not create a new activity.
             if ( Activity.Current != null )
             {
                 var rootActivity = GetRootActivity( Activity.Current );
@@ -193,7 +231,8 @@ namespace Rock.Observability
 
                 rootActivity.SetTag( "rock-descendant-count", childCount + 1 );
 
-                if ( childCount >= 9_999 )
+                // Subtract one since the root activity is not counted in childCount.
+                if ( childCount >= SpanCountLimit - 1 )
                 {
                     return null;
                 }

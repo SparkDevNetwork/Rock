@@ -643,6 +643,7 @@ namespace RockWeb.Blocks.Connection
             var badgeTypes = delimitedBadgeGuids.SplitDelimitedValues()
                 .AsGuidList()
                 .Select( BadgeCache.Get )
+                .Where( b => b != null ) // exclude the badge in case it has been deleted
                 .ToList();
 
             blRequestModalViewModeBadges.BadgeTypes.AddRange( badgeTypes );
@@ -5166,7 +5167,7 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 if ( _connectionTypeViewModels != null )
-                { 
+                {
                     _connectionTypeViewModels = _connectionTypeViewModels
                         .Where( vm => vm.ConnectionOpportunities.Any() )
                         .OrderBy( ct => ct.Order )

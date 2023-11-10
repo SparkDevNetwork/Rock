@@ -679,13 +679,12 @@ namespace Rock.Blocks.Finance
 
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            var pageParameters = new Dictionary<string, string>();
             using ( var rockContext = new RockContext() )
             {
                 var batchId = pageReference.GetPageParameter( PageParameterKey.BatchId );
                 var batchName = new FinancialBatchService( rockContext )
                     .GetSelect( batchId, b => b.Name );
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
                 var breadCrumb = new BreadCrumbLink( batchName ?? "New Batch", breadCrumbPageRef );
 
                 return new BreadCrumbResult

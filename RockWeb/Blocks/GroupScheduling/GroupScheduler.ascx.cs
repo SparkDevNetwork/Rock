@@ -2049,9 +2049,36 @@ btnCopyToClipboard.ClientID );
                 .Where( a => attendanceOccurrenceIdList.Contains( a.OccurrenceId ) )
                 .Where( a => a.ScheduleConfirmationSent != true );
 
-            var sendMessageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery );
-            var isSendConfirmationAttendancesFound = sendConfirmationAttendancesQuery.Any();
+            // Take note of how many communications we expect to send.
+            var toSendCount = sendConfirmationAttendancesQuery.Count();
+
+            // Make sure we save changes after calling the following method, to mark successful sends in the database
+            // and prevent duplicate sends the next time this method is called.
+            var sendMessageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery, true );
             rockContext.SaveChanges();
+
+            var sentCount = sendMessageResult.MessagesSent;
+            var failedToSendCount = toSendCount - sentCount;
+
+            if ( failedToSendCount > 0 )
+            {
+                // Check to see if any un-sent attendances belong to a group type without a system communication specified.
+                var groupTypeNamesWithoutSystemCommunication = sendConfirmationAttendancesQuery
+                    .Where( a =>
+                        a.Occurrence.Group.GroupType != null
+                        && !a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue
+                    )
+                    .Select( a => a.Occurrence.Group.GroupType.Name )
+                    .Distinct()
+                    .ToList();
+
+                if ( groupTypeNamesWithoutSystemCommunication.Any() )
+                {
+                    sendMessageResult.Warnings.InsertRange( 0, groupTypeNamesWithoutSystemCommunication.Select( name =>
+                        $@"Group Type ""{name}"" does not have a ""Schedule Confirmation Communication"" specified."
+                    ) );
+                }
+            }
 
             var summaryMessageBuilder = new StringBuilder();
             var alertType = ModalAlertType.Information;
@@ -2064,7 +2091,16 @@ btnCopyToClipboard.ClientID );
 
                 ExceptionLogService.LogException( logException );
 
-                summaryMessageBuilder.AppendLine( logException.Message );
+                var htmlErrorsSb = new StringBuilder ( "<div>One or more errors occurred when sending confirmations:<ul>" );
+
+                foreach ( var error in sendMessageResult.Errors )
+                {
+                    htmlErrorsSb.Append( $"<li>{error}</li>" );
+                }
+
+                htmlErrorsSb.Append( "</ul></div>" );
+
+                summaryMessageBuilder.Append( htmlErrorsSb.ToString() );
             }
 
             if ( sendMessageResult.Warnings.Any() )
@@ -2074,21 +2110,41 @@ btnCopyToClipboard.ClientID );
                     alertType = ModalAlertType.Warning;
                 }
 
-                var warningMessage = "One or more warnings occurred when sending confirmations: " + Environment.NewLine + sendMessageResult.Warnings.AsDelimited( Environment.NewLine );
+                var htmlWarningsSb = new StringBuilder ( "<div>One or more warnings occurred when sending confirmations:<ul>" );
 
-                summaryMessageBuilder.AppendLine( warningMessage );
+                foreach ( var warning in sendMessageResult.Warnings )
+                {
+                    htmlWarningsSb.Append( $"<li>{warning}</li>" );
+                }
+
+                htmlWarningsSb.Append( "</ul></div>" );
+
+                summaryMessageBuilder.Append( htmlWarningsSb.ToString() );
             }
 
-            if ( sendMessageResult.MessagesSent > 0 && isSendConfirmationAttendancesFound )
+            if ( toSendCount == 0 )
             {
-                summaryMessageBuilder.AppendLine( string.Format( "Successfully sent {0} {1}.", sendMessageResult.MessagesSent, "confirmation".PluralizeIf( sendMessageResult.MessagesSent != 1 ) ) );
+                summaryMessageBuilder.Append( "<p>Everybody has already been sent a confirmation. No additional confirmations sent.</p>" );
             }
-            else if ( !isSendConfirmationAttendancesFound )
+            else
             {
-                summaryMessageBuilder.AppendLine( "Everybody has already been sent a confirmation. No additional confirmations sent." );
+                if ( sentCount > 0 )
+                {
+                    summaryMessageBuilder.Append( $"<p>Successfully sent {sentCount} {"confirmation".PluralizeIf( sentCount > 1 )}.</p>" );
+                }
+
+                if ( failedToSendCount > 0 )
+                {
+                    if ( alertType != ModalAlertType.Alert )
+                    {
+                        alertType = ModalAlertType.Warning;
+                    }
+
+                    summaryMessageBuilder.Append( $"<p>Failed to send {failedToSendCount} {"confirmation".PluralizeIf( failedToSendCount > 1 )}.</p>" );
+                }
             }
 
-            maSendNowResults.Show( summaryMessageBuilder.ToString().ConvertCrLfToHtmlBr(), alertType );
+            maSendNowResults.Show( summaryMessageBuilder.ToString(), alertType );
         }
 
         /// <summary>

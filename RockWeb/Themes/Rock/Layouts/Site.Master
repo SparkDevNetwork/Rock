@@ -85,10 +85,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
             </nav>
 
             <nav class="navbar-default navbar-static-side" role="navigation">
-                <%-- <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
-                    <i class="fa fa-bars"></i>
-                </div> --%>
-                <Rock:Zone Name="Navigation" runat="server" />
+                <Rock:Zone Name="Navigation" CssClass="zone-navigation" runat="server" />
             </nav>
 
             <div id="content-wrapper">
