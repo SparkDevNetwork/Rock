@@ -33,7 +33,8 @@
         </div>
     </div>
 
-    <ProvideLocations v-model:isVisible="isProvideLocationsModalVisible"
+    <ProvideLocations v-if="unassignedResourceCount"
+                      v-model:isVisible="isProvideLocationsModalVisible"
                       :unassignedResourceCount="unassignedResourceCount"
                       :availableOccurrences="occurrences"
                       @resourceListUpdated="$emit('resourceListUpdated', $event)" />
@@ -142,5 +143,5 @@
             : "";
     });
 
-        // #endregion
+    // #endregion
 </script>

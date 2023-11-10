@@ -827,6 +827,7 @@
 
         filters.value = result.data?.filters;
         scheduleOccurrences.value = result.data?.scheduleOccurrences;
+        unassignedResourceCounts.value = result.data?.unassignedResourceCounts ?? [];
         navigationUrls.value = result.data?.navigationUrls;
 
         reloadAllScheduleOccurrences();
@@ -867,6 +868,7 @@
 
         filters.value = appliedFilters?.filters;
         scheduleOccurrences.value = appliedFilters?.scheduleOccurrences;
+        unassignedResourceCounts.value = appliedFilters?.unassignedResourceCounts ?? [];
         navigationUrls.value = appliedFilters?.navigationUrls;
 
         nextTick(() => {

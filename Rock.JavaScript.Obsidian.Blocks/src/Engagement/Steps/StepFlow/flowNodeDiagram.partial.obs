@@ -81,22 +81,22 @@
 .step-flow-svg .edge {
   opacity: 0;
   transform-origin: left center;
-  animation: flow-edges 0.5s ease-in-out forwards;
+  animation: flow-edges 0.25s ease-in-out forwards;
 }
 .step-flow-svg .edge.level-2 {
-  animation-delay: 0.5s;
+  animation-delay: 0.25s;
 }
 .step-flow-svg .edge.level-3 {
-  animation-delay: 1s;
+  animation-delay: .5s;
 }
 .step-flow-svg .edge.level-4 {
-  animation-delay: 1.5s;
+  animation-delay: .75s;
 }
 .step-flow-svg .edge.level-5 {
-  animation-delay: 2s;
+  animation-delay: 1s;
 }
 .step-flow-svg .edge.level-6 {
-  animation-delay: 2.5s;
+  animation-delay: 1.25s;
 }
 @keyframes flow-edges {
   0% {

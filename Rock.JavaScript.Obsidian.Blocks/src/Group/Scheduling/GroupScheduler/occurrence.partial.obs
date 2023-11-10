@@ -215,6 +215,10 @@
 
     getCurrentResources();
 
+    watch(() => props.occurrence, () => {
+        getCurrentResources();
+    });
+
     watch(isSelectingIndividuals, () => {
         if (!isSelectingIndividuals.value) {
             getCurrentResources();
