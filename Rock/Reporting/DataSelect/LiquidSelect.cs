@@ -119,7 +119,7 @@ namespace Rock.Reporting.DataSelect
         }
 #endif
 
-#endregion
+        #endregion
 
         #region Methods
 

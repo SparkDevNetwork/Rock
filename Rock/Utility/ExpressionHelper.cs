@@ -20,9 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-#if REVIEW_WEBFORMS
 using System.Web.UI;
-#endif
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;

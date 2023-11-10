@@ -79,9 +79,8 @@ namespace Rock
         [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
         public static string Singularize( string str )
         {
-            return str;
-            //var pluralizationService = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
-            //return pluralizationService.Singularize( str );
+            var pluralizationService = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
+            return pluralizationService.Singularize( str );
         }
 
         /// <summary>

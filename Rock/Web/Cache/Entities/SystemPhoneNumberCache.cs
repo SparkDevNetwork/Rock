@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
-#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
-#endif
 using Rock.Lava;
 
 using Rock.Data;

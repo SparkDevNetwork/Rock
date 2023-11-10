@@ -163,12 +163,10 @@ namespace Rock.Web.Cache.Entities
             this.IsActive = assetStorageProvider.IsActive;
             this.Description = assetStorageProvider.Description;
 
-#if REVIEW_WEBFORMS
             lock ( _assetStorageComponentLock )
             {
                 _assetStorageComponent = assetStorageProvider.GetAssetStorageComponent();
             }
-#endif
         }
 
         /// <summary>

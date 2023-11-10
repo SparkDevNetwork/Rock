@@ -64,7 +64,7 @@ namespace Rock.Web.Cache
 
         #endregion Properties
 
-#region Public Methods
+        #region Public Methods
 
 #if REVIEW_WEBFORMS
         /// <summary>
@@ -161,6 +161,6 @@ namespace Rock.Web.Cache
             return Name;
         }
 
-#endregion Public Methods
+        #endregion Public Methods
     }
 }

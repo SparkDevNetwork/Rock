@@ -15,11 +15,6 @@
 // </copyright>
 //
 using System;
-
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#endif
-
 using Rock.Data;
 
 using static Rock.Web.UI.Controls.SlidingDateRangePicker;

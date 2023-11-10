@@ -17,9 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if REVIEW_WEBFORMS
 using System.Linq.Dynamic;
-#endif
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Model;

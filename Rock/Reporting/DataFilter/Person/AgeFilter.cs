@@ -18,11 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity.SqlServer;
-#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -266,10 +262,6 @@ function() {
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-#if REVIEW_NET5_0_OR_GREATER
-            // NET5: Can be implemented, just too lazy at the moment.
-            throw new NotImplementedException();
-#else
             DateTime currentDate = RockDateTime.Today;
             int currentDayOfYear = currentDate.DayOfYear;
 
@@ -286,11 +278,24 @@ function() {
 
             if ( values.Length >= 3 && comparisonType == ComparisonType.Between )
             {
+#if REVIEW_WEBFORMS
                 var numberRangeEditor = new NumberRangeEditor();
                 numberRangeEditor.DelimitedValues = values[2];
 
                 decimal ageValueStart = numberRangeEditor.LowerValue ?? 0;
                 decimal ageValueEnd = numberRangeEditor.UpperValue ?? decimal.MaxValue;
+#else
+                var numberValues = values[2].Split( new char[] { ',' }, StringSplitOptions.None );
+                if ( numberValues.Length != 2 || !decimal.TryParse( numberValues[0], out var ageValueStart ) )
+                {
+                    ageValueStart = 0;
+                }
+
+                if ( numberValues.Length != 2 || !decimal.TryParse( numberValues[1], out var ageValueEnd ) )
+                {
+                    ageValueEnd = decimal.MaxValue;
+                }
+#endif
                 var personAgeBetweenQuery = personAgeQuery.Where( p => p.Age >= ageValueStart && p.Age <= ageValueEnd );
 
                 BinaryExpression result = FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeBetweenQuery, parameterExpression, "p" ) as BinaryExpression;
@@ -304,7 +309,6 @@ function() {
                 BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
                 return result;
             }
-#endif
         }
 
         #endregion

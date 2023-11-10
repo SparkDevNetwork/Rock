@@ -38,9 +38,6 @@ namespace Rock
         /// <returns>A string representing the URL to the linked <see cref="Rock.Model.Page"/>.</returns>
         public static string GetLinkedPageUrl( this RockBlockType block, string attributeKey, IDictionary<string, string> queryParams = null )
         {
-#if REVIEW_NET5_0_OR_GREATER
-            return string.Empty;
-#else
             var pageReference = new Rock.Web.PageReference( block.GetAttributeValue( attributeKey ), queryParams != null ? new Dictionary<string, string>( queryParams ) : null );
 
             if ( pageReference.PageId > 0 )
@@ -51,7 +48,6 @@ namespace Rock
             {
                 return string.Empty;
             }
-#endif
         }
 
         /// <summary>
@@ -90,9 +86,6 @@ namespace Rock
         /// <returns>A string representing the URL to the parent <see cref="Rock.Model.Page"/>.</returns>
         public static string GetParentPageUrl( this RockBlockType block, IDictionary<string, string> queryParams = null )
         {
-#if REVIEW_NET5_0_OR_GREATER
-            return string.Empty;
-#else
             if ( block.PageCache.ParentPage == null )
             {
                 return string.Empty;
@@ -108,7 +101,6 @@ namespace Rock
             {
                 return string.Empty;
             }
-#endif
         }
 
         /// <summary>
@@ -120,9 +112,6 @@ namespace Rock
         /// <returns>A string representing the URL to the current <see cref="Rock.Model.Page"/>.</returns>
         public static string GetCurrentPageUrl( this RockBlockType block, IDictionary<string, string> queryParams = null )
         {
-#if REVIEW_NET5_0_OR_GREATER
-            return string.Empty;
-#else
             var parameters = queryParams != null ? new Dictionary<string, string>( queryParams ) : new Dictionary<string, string>();
 
             // Add in the original page parameters if they have not already
@@ -148,7 +137,6 @@ namespace Rock
             {
                 return string.Empty;
             }
-#endif
         }
 
         /// <summary>
@@ -160,9 +148,6 @@ namespace Rock
         /// <returns>A string representing the URL to the login <see cref="Rock.Model.Page"/>.</returns>
         public static string GetLoginPageUrl( this RockBlockType block, string returnUrl )
         {
-#if REVIEW_NET5_0_OR_GREATER
-            return string.Empty;
-#else
             var site = SiteCache.Get( block.PageCache.SiteId );
             var pageReference = new Rock.Web.PageReference( site.LoginPageReference );
 
@@ -179,7 +164,6 @@ namespace Rock
             {
                 return string.Empty;
             }
-#endif
         }
     }
 }

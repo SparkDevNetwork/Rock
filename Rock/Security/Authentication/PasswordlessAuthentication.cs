@@ -18,11 +18,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel;
 using System.Collections.Generic;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
 using System.Linq;
 using System.Web;
 using Rock.Communication;

@@ -24,6 +24,7 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
+
 #if REVIEW_WEBFORMS
         /// <summary>
         /// Returns a URL from the request object that checks to see if the request has been proxied from a CDN or

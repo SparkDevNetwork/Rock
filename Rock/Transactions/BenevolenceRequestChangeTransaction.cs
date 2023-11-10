@@ -16,14 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-#else
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-#endif
 using System.Linq;
+
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+#endif
 
 using Rock.Data;
 using Rock.Model;
