@@ -17,15 +17,14 @@
 
 using System;
 using System.Collections.Generic;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-using NetTopologySuite.Geometries;
-#else
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
-#endif
 using System.Linq;
 using System.Threading.Tasks;
+
+#if REVIEW_NET5_0_OR_GREATER
+using NetTopologySuite.Geometries;
+#endif
 
 using Rock.Communication;
 using Rock.Data;

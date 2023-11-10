@@ -15,9 +15,7 @@
 // </copyright>
 //
 using System;
-#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
-#endif
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

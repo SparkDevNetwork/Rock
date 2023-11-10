@@ -16,19 +16,18 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
-#else
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
+
+#if REVIEW_NET5_0_OR_GREATER
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#endif
 
 namespace Rock.Model
 {

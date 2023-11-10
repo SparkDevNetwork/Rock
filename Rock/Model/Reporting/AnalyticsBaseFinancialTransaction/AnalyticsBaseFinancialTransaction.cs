@@ -15,9 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
-#if REVIEW_WEBFORMS
 using Rock.Web.UI.Controls;
-#endif
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -334,7 +332,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
 #if REVIEW_WEBFORMS
-        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [BoundFieldType( typeof( CurrencyField ) )]
 #endif
         public decimal Amount { get; set; }
 

@@ -148,6 +148,7 @@ namespace Rock.Model
         public virtual ICollection<EventCalendarItem> EventCalendarItems
         {
 #if REVIEW_NET5_0_OR_GREATER
+            // _eventCalendarItems is spelled wrong in WebForms
             get { return _eventCalendarItems ?? ( _eventCalendarItems = new Collection<EventCalendarItem>() ); }
             set { _eventCalendarItems = value; }
         }

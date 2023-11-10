@@ -14,18 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
+using EntityFramework.Utilities;
+#endif
 using Rock.Data;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
-
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
-using EntityFramework.Utilities;
-#endif
 
 namespace Rock.Model
 {

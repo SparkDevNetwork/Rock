@@ -95,8 +95,7 @@ namespace Rock.Model
             // EFCORE: Moved to Attendance with reverse relationship setup.
 
             // the Migration will manually add a ON DELETE SET NULL for AttendanceCheckInSessionId
-            this.HasMany( c => c.Attendances ).WithOptional( a => a.AttendanceCheckInSession )
-                .HasForeignKey( a => a.AttendanceCheckInSessionId ).WillCascadeOnDelete( true );
+            this.HasMany( c => c.Attendances ).WithOptional( a => a.AttendanceCheckInSession ).HasForeignKey( a => a.AttendanceCheckInSessionId ).WillCascadeOnDelete( true );
 #endif
         }
     }

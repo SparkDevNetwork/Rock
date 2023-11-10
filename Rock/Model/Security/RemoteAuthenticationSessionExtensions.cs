@@ -18,8 +18,6 @@ using System;
 using System.Data.Entity;
 using System.Linq;
 
-using Microsoft.EntityFrameworkCore;
-
 namespace Rock.Model
 {
     internal static class RemoteAuthenticationSessionExtensions

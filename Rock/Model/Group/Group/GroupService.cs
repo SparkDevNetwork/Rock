@@ -17,13 +17,8 @@
 
 using System;
 using System.Collections.Generic;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-using DbGeography = NetTopologySuite.Geometries.Geometry;
-#else
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
-#endif
 using System.Linq;
 using System.Text;
 
@@ -31,6 +26,10 @@ using Rock.Data;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
+
+#if REVIEW_NET5_0_OR_GREATER
+using DbGeography = NetTopologySuite.Geometries.Geometry;
+#endif
 
 namespace Rock.Model
 {

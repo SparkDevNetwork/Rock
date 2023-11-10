@@ -15,11 +15,7 @@
 // </copyright>
 //
 using Rock.Web.Cache;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
-#endif
 
 namespace Rock.Model
 {

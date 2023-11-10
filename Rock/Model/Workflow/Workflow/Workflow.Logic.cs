@@ -362,6 +362,7 @@ namespace Rock.Model
             }
         }
 
+#endregion Public Methods
 #if REVIEW_NET5_0_OR_GREATER
         /// <summary>
         /// Sets the initiator.
@@ -373,8 +374,6 @@ namespace Rock.Model
         }
 
 #endif
-
-        #endregion Public Methods
 
         #region Private Methods
 

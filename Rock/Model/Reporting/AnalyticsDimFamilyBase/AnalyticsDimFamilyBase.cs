@@ -16,12 +16,12 @@
 //
 using Rock.Data;
 using System.ComponentModel.DataAnnotations;
+using System.Data.Entity.Spatial;
+using System.Runtime.Serialization;
+
 #if REVIEW_NET5_0_OR_GREATER
 using DbGeography = NetTopologySuite.Geometries.Geometry;
-#else
-using System.Data.Entity.Spatial;
 #endif
-using System.Runtime.Serialization;
 
 namespace Rock.Model
 {

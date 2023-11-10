@@ -120,7 +120,9 @@ namespace Rock.Model
         /// The fee coverage amount.
         /// </value>
         [DataMember]
-        //[BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#if REVIEW_WEBFORMS
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#endif
         [DecimalPrecision(18, 2)]
         public decimal? FeeCoverageAmount { get; set; }
 
@@ -140,7 +142,7 @@ namespace Rock.Model
         [DecimalPrecision( 18, 2 )]
         public decimal? ForeignCurrencyAmount { get; set; }
 
-        #endregion Entity Properties
+#endregion Entity Properties
 
         #region Navigation Properties
 

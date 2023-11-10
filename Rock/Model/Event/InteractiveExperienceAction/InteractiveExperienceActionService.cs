@@ -17,9 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
-#endif
 using System.Linq;
 using System.Threading.Tasks;
 

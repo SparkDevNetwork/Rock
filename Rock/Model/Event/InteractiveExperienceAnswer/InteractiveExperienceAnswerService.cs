@@ -18,10 +18,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-#if REVIEW_NET5_0_OR_GREATER
-
-using Microsoft.EntityFrameworkCore;
-#endif
 
 using Rock.Data;
 using Rock.Enums.Event;

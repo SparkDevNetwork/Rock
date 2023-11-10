@@ -21,9 +21,6 @@ using System.Linq;
 using System.Linq.Expressions;
 
 #if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-using Rock.Web.UI.Controls;
-using System.Web.UI.WebControls;
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 #else
 using EFDbContext = System.Data.Entity.DbContext;
@@ -125,18 +122,18 @@ namespace Rock.Model
         /// <returns></returns>
         public EFDbContext GetDbContext()
         {
-#if REVIEW_NET5_0_OR_GREATER
-            return new RockContext();
-#else
             if ( this.DisableUseOfReadOnlyContext )
             {
                 return new RockContext();
             }
             else
             {
+#if REVIEW_NET5_0_OR_GREATER
+                return new RockContext();
+#else
                 return new RockContextReadOnly();
-            }
 #endif
+            }
         }
 
         /// <summary>
@@ -301,14 +298,14 @@ namespace Rock.Model
                 if ( this.TransformEntityTypeId.HasValue )
                 {
 
-                    //Expression transformedExpression = GetTransformExpression( this.TransformEntityTypeId.Value, serviceInstance, paramExpression, filterExpression );
-                    //if ( transformedExpression == null )
+                    Expression transformedExpression = GetTransformExpression( this.TransformEntityTypeId.Value, serviceInstance, paramExpression, filterExpression );
+                    if ( transformedExpression == null )
                     {
                         // if TransformEntityTypeId is defined, but we got null back, we'll get unexpected results, so throw an exception
                         throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine transform expression for TransformEntityTypeId: {TransformEntityTypeId}" );
                     }
 
-                    //return transformedExpression;
+                    return transformedExpression;
                 }
 
                 return filterExpression;
@@ -370,74 +367,5 @@ namespace Rock.Model
 
             return component.GetExpression( service, parameterExpression, whereExpression );
         }
-
-#if REVIEW_NET5_0_OR_GREATER
-        /// <summary>
-        /// Gets the query.
-        /// </summary>
-        /// <param name="dataViewGetQueryArgs">The data view get query arguments.</param>
-        /// <returns></returns>
-        /// <exception cref="Rock.Reporting.RockReportingException">
-        /// Unable to determine DbContext for {this}
-        /// or
-        /// Unable to determine ServiceInstance for {this}
-        /// or
-        /// Unable to determine IService.Get for {this}
-        /// </exception>
-        public IQueryable<IEntity> GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs )
-        {
-            var dbContext = dataViewGetQueryArgs.DbContext;
-            if ( dbContext == null )
-            {
-                dbContext = this.GetDbContext();
-                if ( dbContext == null )
-                {
-                    // this could happen if the EntityTypeId id refers to an assembly/type that doesn't exist anymore
-                    // we'll just default to new RockContext(), but it'll likely fail when we try to get a ServiceInstance below if the entityType doesn't exist in an assembly
-                    dbContext = new RockContext();
-                }
-            }
-
-            IService serviceInstance = this.GetServiceInstance( dbContext );
-            if ( serviceInstance == null )
-            {
-                var entityTypeCache = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine ServiceInstance from DataView EntityType {entityTypeCache} for {this}" );
-            }
-
-            var databaseTimeoutSeconds = dataViewGetQueryArgs.DatabaseTimeoutSeconds;
-            if ( databaseTimeoutSeconds.HasValue )
-            {
-#if REVIEW_NET5_0_OR_GREATER
-                dbContext.Database.SetCommandTimeout( databaseTimeoutSeconds.Value );
-#else
-                dbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
-#endif
-            }
-
-            var dataViewFilterOverrides = dataViewGetQueryArgs.DataViewFilterOverrides;
-            ParameterExpression paramExpression = serviceInstance.ParameterExpression;
-            Expression whereExpression = GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides );
-
-            var getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
-            if ( getMethod == null )
-            {
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine IService.Get for Report: {this}" );
-            }
-
-            var sortProperty = dataViewGetQueryArgs.SortProperty;
-
-            if ( sortProperty == null )
-            {
-                // if no sorting is specified, just sort by Id
-                sortProperty = new SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
-            }
-
-            var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
-            var qry = getResult as IQueryable<IEntity>;
-
-            return qry;
-        }
-#endif
     }
 }

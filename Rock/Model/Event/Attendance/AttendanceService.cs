@@ -18,12 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-#if REVIEW_NET5_0_OR_GREATER
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
-#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
