@@ -1,6 +1,6 @@
 <template>
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
-        <BadgeControl :entityTypeGuid="entityTypeGuid?.value" :entityKey="entityKey" :badgeTypeGuid="badgeTypeGuid!" />
+        <BadgeControl :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :badgeTypeGuid="badgeTypeGuid!" />
 
         <template #settings>
             <div class="row">
@@ -8,7 +8,6 @@
                 <TextBox formGroupClasses="col-md-4" label="Entity Key" v-model="entityKey" />
                 <BadgePicker formGroupClasses="col-md-4" label="Badge Type" v-model="badgeType" lazyMode="eager" />
             </div>
-            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
         </template>
     </GalleryAndResult>
 </template>
@@ -28,7 +27,7 @@
 
 
     const entityType = ref({ text: "Person", value: EntityType.Person });
-    const entityTypeGuid = computed(() => entityType?.value);
+    const entityTypeGuid = computed(() => entityType?.value.value);
     const badgeType = ref<ListItemBag>({});
     const badgeTypeGuid = computed(() => badgeType.value.value);
 
@@ -38,6 +37,9 @@
 
     const importCode = getSfcControlImportPath("badgeControl");
     const exampleCode = computed(() => {
-        return `<BadgeControl :entityTypeGuid="entityTypeGuid?.value" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />`;
+        const etgProp = ` entityTypeGuid="${entityTypeGuid.value}"`;
+        const ekProp = ` entityKey="${entityKey.value}"`;
+        const btgProp = ` badgeTypeGuid="${badgeTypeGuid.value}"`;
+        return `<BadgeControl${etgProp}${ekProp}${btgProp} />`;
     });
 </script>
