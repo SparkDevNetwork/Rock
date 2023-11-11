@@ -16,13 +16,13 @@
         /** The unique identifier of the type of entity to be rendered. */
         entityTypeGuid: {
             type: String as PropType<Guid>,
-            required: false
+            required: true
         },
 
         /** The identifier key of the entity to be rendered. */
         entityKey: {
             type: String as PropType<string>,
-            required: false
+            required: true
         },
 
         /** The badge type unique identifier to be rendered. */
