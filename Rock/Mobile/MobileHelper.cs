@@ -194,6 +194,7 @@ namespace Rock.Mobile
                 PersonGuid = person.Guid,
                 PersonId = person.Id,
                 AlternateId = alternateId,
+                IdKey = person.IdKey,
                 AttributeValues = GetMobileAttributeValues( person, personAttributes )
             };
         }
