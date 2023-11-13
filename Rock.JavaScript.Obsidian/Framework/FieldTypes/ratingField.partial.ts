@@ -71,6 +71,10 @@ export class RatingFieldType extends FieldTypeBase {
         return html;
     }
 
+    public override getCondensedHtmlValue(value: string, _configurationValues: Record<string, string>): string {
+        return this.getHtmlValue(value,_configurationValues);
+    }
+
     public override getEditComponent(): Component {
         return editComponent;
     }
