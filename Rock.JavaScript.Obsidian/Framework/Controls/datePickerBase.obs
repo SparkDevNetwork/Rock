@@ -87,6 +87,16 @@
         container: {
             type: HTMLElement as PropType<HTMLElement | null>,
             required: false
+        },
+
+        /**
+         * The horizontal orientation of the popup. Left will attempt to keep
+         * the left edge aligned with the control and right will attempt to
+         * keep the right edge aligned with the control.
+         */
+        horizontalOrientation: {
+            type: String as PropType<"left" | "right">,
+            required: false
         }
     });
 
@@ -153,7 +163,8 @@
             onChangeScript: () => {
                 internalValue.value = input.value;
             },
-            container: props.container ?? "body"
+            container: props.container ?? "body",
+            orientation: props.horizontalOrientation || "auto"
         });
     }
 
@@ -193,6 +204,5 @@
         });
     });
 
-        // #endregion
-
+    // #endregion
 </script>
