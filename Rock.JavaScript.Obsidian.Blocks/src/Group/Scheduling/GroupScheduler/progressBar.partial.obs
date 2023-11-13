@@ -26,27 +26,29 @@
 
 <!-- These styles cannot be scoped since they're being used in a tooltip. -->
 <style>
-.new-group-scheduler {
-    .progress-bar-tooltip {
-        min-width: 130px;
+.new-group-scheduler .progress-bar-tooltip {
+    min-width: 130px;
+}
 
-        .progress-bar-tooltip-responses {
-            margin-top: 12px;
-        }
+.new-group-scheduler .progress-bar-tooltip-label {
+    font-weight: bold;
+}
 
-        .progress-bar-tooltip-counts {
-            margin-top: 4px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
+.new-group-scheduler .progress-bar-tooltip-responses {
+    margin-top: 12px;
+}
 
-            > span {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-        }
-    }
+.new-group-scheduler .progress-bar-tooltip-counts {
+    margin-top: 4px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.new-group-scheduler .progress-bar-tooltip-counts > span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 </style>
 
@@ -74,7 +76,7 @@
         return `
 <div class='progress-bar-tooltip'>
     <div class='progress-bar-tooltip-configured'>
-        <b>Configured</b>
+        <span class="progress-bar-tooltip-label">Configured</span>
         <div class='progress-bar-tooltip-counts'>
             <span>
                 <i class='far fa-minus-square'></i>
@@ -91,7 +93,7 @@
         </div>
     </div>
     <div class='progress-bar-tooltip-responses'>
-        <b>Responses</b>
+        <span class="progress-bar-tooltip-label">Responses</span>
         <div class='progress-bar-tooltip-counts'>
             <span><i class='far fa-calendar-check'></i> ${confirmedCount.value}</span>
             <span><i class='fa fa-question'></i> ${pendingCount.value}</span>
