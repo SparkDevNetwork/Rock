@@ -279,6 +279,8 @@ export const FieldType = {
     Ssn: "4722C99A-C078-464A-968F-13AB5E8E318F",
     /** Step Program field type */
     StepProgram: "33875369-7D2B-4CD7-BB89-ABC29906CCAE",
+    /** Step Program Step Status field type */
+    StepProgramStepStatus: "F8E85355-2780-4772-9B21-30B84741E6D1",
     /** Streak Type field type */
     StreakType: "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
     /** Streak Type field type */
