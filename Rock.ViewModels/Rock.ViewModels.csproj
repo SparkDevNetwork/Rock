@@ -67,6 +67,7 @@
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\FollowingSuggestionTypeList\FollowingSuggestionTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\NoteWatchDetail\NoteWatchBag.cs" />
     <Compile Include="Blocks\Core\NoteWatchDetail\NoteWatchDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
