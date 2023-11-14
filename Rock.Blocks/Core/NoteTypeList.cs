@@ -26,27 +26,41 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Cms.BlockList;
+using Rock.ViewModels.Blocks.Core.NoteTypeList;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Cms
+namespace Rock.Blocks.Core
 {
     /// <summary>
-    /// Displays a list of blocks.
+    /// Displays a list of note types.
     /// </summary>
 
-    [DisplayName( "Block List" )]
-    [Category( "CMS" )]
-    [Description( "Displays a list of blocks." )]
+    [DisplayName( "Note Type List" )]
+    [Category( "Core" )]
+    [Description( "Displays a list of note types." )]
     [IconCssClass( "fa fa-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "9cf1aa10-24e4-4530-a345-57da4cfe9595" )]
-    [Rock.SystemGuid.BlockTypeGuid( "ea8be085-d420-4d1b-a538-2c0d4d116e0a" )]
+    [LinkedPage( "Detail Page",
+        Description = "The page that will show the note type details.",
+        Key = AttributeKey.DetailPage )]
+
+    [Rock.SystemGuid.EntityTypeGuid( "ca07cfe0-ac86-4ad5-a4e2-03a90b0281f5" )]
+    [Rock.SystemGuid.BlockTypeGuid( "23e3ca31-6a1f-43cb-ac06-374bd9cb9fa5" )]
     [CustomizedGrid]
-    public class BlockList : RockEntityListBlockType<Block>
+    public class NoteTypeList : RockEntityListBlockType<NoteType>
     {
         #region Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        private static class NavigationUrlKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
 
         #endregion Keys
 
@@ -55,11 +69,13 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new ListBlockBox<BlockListOptionsBag>();
+            var box = new ListBlockBox<NoteTypeListOptionsBag>();
             var builder = GetGridBuilder();
 
+            box.IsAddEnabled = GetIsAddEnabled();
             box.IsDeleteEnabled = true;
             box.ExpectedRowCount = null;
+            box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
 
@@ -70,41 +86,57 @@ namespace Rock.Blocks.Cms
         /// Gets the box options required for the component to render the list.
         /// </summary>
         /// <returns>The options that provide additional details to the block.</returns>
-        private BlockListOptionsBag GetBoxOptions()
+        private NoteTypeListOptionsBag GetBoxOptions()
         {
-            var options = new BlockListOptionsBag();
+            var options = new NoteTypeListOptionsBag();
 
             return options;
         }
 
-        /// <inheritdoc/>
-        protected override IQueryable<Block> GetListQueryable( RockContext rockContext )
+        /// <summary>
+        /// Determines if the add button should be enabled in the grid.
+        /// <summary>
+        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
+        private bool GetIsAddEnabled()
         {
-            if ( int.TryParse( RequestContext.PageParameters["layoutId"], out int layoutId ) )
+            var entity = new NoteType();
+
+            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Gets the box navigation URLs required for the page to operate.
+        /// </summary>
+        /// <returns>A dictionary of key names and URL values.</returns>
+        private Dictionary<string, string> GetBoxNavigationUrls()
+        {
+            return new Dictionary<string, string>
             {
-                return base.GetListQueryable( rockContext )
-                    .Include( a => a.BlockType )
-                    .Include( a => a.Layout )
-                    .Include( a => a.Page )
-                    .Include( a => a.Site )
-                    .Where( a => a.LayoutId == layoutId ); 
-            }
-            else
-            {
-                return new List<Block>().AsQueryable();
-            }
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "NoteTypeId", "((Key))" )
+            };
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<Block> GetGridBuilder()
+        protected override IQueryable<NoteType> GetListQueryable( RockContext rockContext )
         {
-            return new GridBuilder<Block>()
+            return base.GetListQueryable( rockContext )
+                .Include( a => a.EntityType );
+        }
+
+        /// <inheritdoc/>
+        protected override GridBuilder<NoteType> GetGridBuilder()
+        {
+            return new GridBuilder<NoteType>()
                 .WithBlock( this )
-                .AddField( "id", a => a.Id )
+                .AddField("id", a => a.Id)
                 .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "entityType", a => a.EntityType?.FriendlyName )
                 .AddTextField( "name", a => a.Name )
-                .AddTextField( "path", a => a.BlockType.Path )
-                .AddTextField( "zone", a => a.Zone )
+                .AddTextField( "iconCssClass", a => a.IconCssClass )
+                .AddField( "userSelectable", a => a.UserSelectable )
+                .AddField( "allowsWatching", a => a.AllowsWatching )
+                .AddField( "allowsReplies", a => a.AllowsReplies )
+                .AddField( "allowsAttachments", a => a.AllowsAttachments )
                 .AddField( "isSystem", a => a.IsSystem )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );
@@ -124,17 +156,17 @@ namespace Rock.Blocks.Cms
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new BlockService( rockContext );
+                var entityService = new NoteTypeService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( entity == null )
                 {
-                    return ActionBadRequest( $"{Block.FriendlyTypeName} not found." );
+                    return ActionBadRequest( $"{NoteType.FriendlyTypeName} not found." );
                 }
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${Block.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete ${NoteType.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

@@ -3,8 +3,8 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="id"
-          itemTerm="Layout"
-          :entityTypeGuid="EntityType.Layout"
+          itemTerm="Device"
+          :entityTypeGuid="EntityType.Device"
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
@@ -15,31 +15,52 @@
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="10%" />
+                    width="20%"/>
 
-        <TextColumn name="fileName"
-                    title="File Name"
-                    field="fileName"
+        <TextColumn name="deviceType"
+                    title="Device Type"
+                    field="deviceType"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="25%" />
+                    width="20%"/>
 
-        <TextColumn name="description"
-                    title="Description"
-                    field="description"
+        <TextColumn name="kioskType"
+                    title="Kiosk Type"
+                    field="kioskType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="ipAddress"
+                    title="IP Address / Hostname"
+                    field="ipAddress"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="10%" />
+                    width="15%"/>
 
-        <BooleanColumn name="isSystem"
-                       title="Is System"
-                       field="isSystem"
+        <TextColumn name="printTo"
+                    title="Print To"
+                    field="printTo"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="printFrom"
+                    title="Print From"
+                    field="printFrom"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="printerDevice"
+                    title="Printer"
+                    field="printerDevice"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="15%"/>
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
                        visiblePriority="xs"
-                       width="5%" />
-
-        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
-
-        <SecurityColumn />
+                       width="5%"/>
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -48,15 +69,15 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { LayoutListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LayoutList/layoutListOptionsBag";
+    import { DeviceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DeviceList/deviceListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./LayoutList/types.partial";
+    import { NavigationUrlKey } from "./DeviceList/types.partial";
     import { reactive, ref } from "vue";
 
-    const config = useConfigurationValues<ListBlockBox<LayoutListOptionsBag>>();
+    const config = useConfigurationValues<ListBlockBox<DeviceListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
@@ -76,7 +97,6 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-            console.log(gridData.rows?.[0]);
             return gridData;
         }
         else {
@@ -118,7 +138,7 @@
             }
         }
         else {
-            await alert(result.errorMessage ?? "Unknown error while trying to delete layout.");
+            await alert(result.errorMessage ?? "Unknown error while trying to delete device.");
         }
     }
 

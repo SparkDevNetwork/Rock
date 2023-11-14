@@ -1,0 +1,239 @@
+
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <Grid :definition="config.gridDefinition ?? undefined"
+              :data="gridDataSource"
+              itemTerm="Nameless People"
+              stickyHeader
+              liveUpdates
+              :showLaunchWorkflow="false">
+
+            <TextColumn name="personLabel"
+                        title="Phone Number"
+                        field="personLabel"
+                        :filter="textValueFilter"
+                        visiblePriority="xs" />
+
+            <ButtonColumn :iconClass="icon" :action="getClickHandler"></ButtonColumn>
+        </Grid>
+    </div>
+    <div>
+        <!-- Modal Dialog -->
+        <Modal :onCloseModal="closeModal" :saveText="'Save'" :onSave="savePerson" :modelValue="isModalVisible" :title="`Link Phone Numbers ${selectedPhoneNumber} To Person`">
+            <NotificationBox :style="'font-weight: 600'" :alertType="AlertType.Info" :dismissible="false">
+                To prevent data loss and to ensure the highest level of security, a merge request will be created upon pressing Save.
+            </NotificationBox>
+            <div class="tabs">
+                <TabbedBar :onUpdate:modelValue="swapTabContent" :type="'pills'" :tabs="tabItems" :modelValue="currentTab" />
+            </div>
+            <!-- Add New Person Tab -->
+            <div v-if="currentTab === 'Add New Person'">
+                <PersonBasicEditor v-model="newPerson" :personGuid="selectedPersonGuid" />
+            </div>
+            <!-- Link Existing Person Tab -->
+            <div v-else="currentTab === 'Link Existing Person'" class="form-group">
+                <div class="col-md-6">
+                    <PersonPicker @update:modelValue="onPersonSelected" label="Person" help="Select a Person to link to this phone number" rules="required" />
+                </div>
+            </div>
+        </Modal>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import Grid, { TextColumn, textValueFilter, ButtonColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { NamelessPersonListOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/NamelessPersonList/namelessPersonListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PersonBasicEditor from "@Obsidian/Controls/personBasicEditor.obs";
+    import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag";
+
+    // #region Values
+    const config = useConfigurationValues<ListBlockBox<NamelessPersonListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const selectedPhoneNumber = ref<string | unknown>("");
+    const selectedPersonGuid = ref<string>("");
+    const selectedNamelessPersonId = ref<number>(0);
+    const selectedExistingPersonGuid = ref<number>(0);
+    const icon = "fa fa-user";
+    const isModalVisible = ref(false);
+
+    // Modal state
+    const currentTab = ref("Add New Person");
+
+    const tabItems: ListItemBag[] = [
+        {
+            text: "Add New Person",
+            value: "Add New Person"
+        },
+        {
+            text: "Link Existing Person",
+            value: "Link Existing Person"
+        },
+    ];
+
+    // Person Editor state
+    const newPerson = ref<PersonBasicEditorBag>({
+        personTitle: null,
+        personConnectionStatus: null,
+        personSuffix: null,
+        personMaritalStatus: null,
+        firstName: "",
+        lastName: "",
+        email: "",
+        mobilePhoneNumber: "",
+        mobilePhoneCountryCode: "",
+        isMessagingEnabled: false,
+        personRace: null,
+        personGender: undefined,
+        personBirthDate: null,
+        personEthnicity: null,
+        personGradeOffset: null,
+        personGroupRole: null,
+    });
+    // #endregion
+
+    // #region Functions
+    /**
+     * Invokes the specified block action with the specified parameters.
+     * @param actionName The name of the block action to invoke.
+     * @param parameters The parameters to pass to the block action.
+     */
+
+    const invokeSaveNewPerson = async (): Promise<void> => {
+        const personBag = {
+            personTitle: newPerson.value.personTitle,
+            firstName: newPerson.value.firstName,
+            lastName: newPerson.value.lastName,
+            personSuffix: newPerson.value.personSuffix,
+            email: newPerson.value.email,
+            mobilePhoneNumber: newPerson.value.mobilePhoneNumber,
+            mobilePhoneCountryCode: newPerson.value.mobilePhoneCountryCode,
+            isMessagingEnabled: newPerson.value.isMessagingEnabled,
+            personConnectionStatus: newPerson.value.personConnectionStatus,
+            personGroupRole: newPerson.value.personGroupRole,
+            personBirthDate: {
+                month: newPerson.value.personBirthDate?.month,
+                day: newPerson.value.personBirthDate?.day,
+                year: newPerson.value.personBirthDate?.year
+            },
+            personGender: newPerson.value.personGender ?? null,
+            personGradeOffset: newPerson.value.personGradeOffset,
+            personMaritalStatus: newPerson.value.personMaritalStatus,
+            personRace: newPerson.value.personRace,
+            personEthnicity: newPerson.value.personEthnicity,
+            validProperties: newPerson.value.validProperties
+        };
+
+        const namelessPersonId = selectedNamelessPersonId.value;
+
+        // Invoke the "Save" block action
+        const result = await invokeBlockAction("Save", { personBag, namelessPersonId });
+        handleResult(result);
+    };
+
+    const invokeLinkToExistingPerson = async (): Promise<void> => {
+        const existingPersonAliasGuid = selectedExistingPersonGuid.value;
+        const namelessPersonId = selectedNamelessPersonId.value;
+
+        if (selectedExistingPersonGuid.value && selectedNamelessPersonId.value) {
+            const result = await invokeBlockAction("LinkToExistingPerson", { existingPersonAliasGuid, namelessPersonId });
+            handleResult(result);
+        }
+    };
+
+    // Generic method to handle results from block actions
+    const handleResult = (result): void => {
+        if (result.statusCode === 200 && result.data) {
+            // Redirecting to the merge page
+            const redirectUrl = result.data as string;
+            window.location.href = makeUrlRedirectSafe(redirectUrl);
+        }
+        else {
+            // Handle errors
+            console.error("Error in operation:", result.errorMessage);
+        }
+    };
+
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+        if (result.isSuccess && result.data) {
+            gridData = result.data;
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+    // #endregion
+
+    // #region Event Handlers
+    const closeModal = (): void => {
+        isModalVisible.value = false;
+    };
+
+    const swapTabContent = (): void => {
+        if (currentTab.value === "Add New Person") {
+            currentTab.value = "Link Existing Person";
+        }
+        else {
+            currentTab.value = "Add New Person";
+        }
+    };
+
+    const onPersonSelected = (selectedPerson): void => {
+        if (selectedPerson && selectedPerson.value) {
+            // Capture the ID of the selected person
+            selectedExistingPersonGuid.value = selectedPerson.value;
+        }
+    };
+
+    /**
+    * Event handler for the modals's Save event. Sends the data to the server
+    * to be saved, then creates a merge request. Finally, redirects to the merge page.
+    *
+    */
+    const savePerson = async (): Promise<void> => {
+        if (currentTab.value === "Add New Person") {
+            // Invoke the "Save" block action
+            await invokeSaveNewPerson();
+        }
+        else if (currentTab.value === "Link Existing Person") {
+            // Invoke the "LinkToExistingPerson" block action
+            await invokeLinkToExistingPerson();
+        }
+    };
+
+    /**
+     * Event handler for the grid's row click event. Opens the modal dialog.
+     * @param row The row that was clicked.
+     */
+    const getClickHandler = (row: object): void => {
+        selectedPhoneNumber.value = row["phoneNumber"];
+        selectedPersonGuid.value = row["guid"];
+        selectedNamelessPersonId.value = row["id"];
+        isModalVisible.value = true;
+    };
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>
+<style scoped>
+.tabs {
+    margin-bottom: 2rem;
+    position: relative;
+    margin-left: -3%;
+}
+</style>

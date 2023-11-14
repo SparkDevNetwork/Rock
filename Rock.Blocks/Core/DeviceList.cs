@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.IO;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -27,31 +26,29 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Cms.LayoutList;
+using Rock.ViewModels.Blocks.Core.DeviceList;
 using Rock.Web.Cache;
-using Rock;
-using Rock.Web;
 
-namespace Rock.Blocks.Cms
+namespace Rock.Blocks.Core
 {
     /// <summary>
-    /// Displays a list of layouts.
+    /// Displays a list of devices.
     /// </summary>
 
-    [DisplayName( "Layout List" )]
-    [Category( "CMS" )]
-    [Description( "Displays a list of layouts." )]
+    [DisplayName( "Device List" )]
+    [Category( "Core" )]
+    [Description( "Displays a list of devices." )]
     [IconCssClass( "fa fa-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
-        Description = "The page that will show the layout details.",
+        Description = "The page that will show the device details.",
         Key = AttributeKey.DetailPage )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "6e1d987d-de38-4440-b54f-717c102795fe" )]
-    [Rock.SystemGuid.BlockTypeGuid( "6a10a280-65b8-4988-96b2-974fcd80604b" )]
+    [Rock.SystemGuid.EntityTypeGuid( "dc43ae74-09d8-4080-9074-2ca91b6119d2" )]
+    [Rock.SystemGuid.BlockTypeGuid( "7686a42f-a2c4-4c15-9331-8b364f24bd0f" )]
     [CustomizedGrid]
-    public class LayoutList : RockEntityListBlockType<Layout>
+    public class DeviceList : RockEntityListBlockType<Device>
     {
         #region Keys
 
@@ -72,7 +69,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new ListBlockBox<LayoutListOptionsBag>();
+            var box = new ListBlockBox<DeviceListOptionsBag>();
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
@@ -89,9 +86,9 @@ namespace Rock.Blocks.Cms
         /// Gets the box options required for the component to render the list.
         /// </summary>
         /// <returns>The options that provide additional details to the block.</returns>
-        private LayoutListOptionsBag GetBoxOptions()
+        private DeviceListOptionsBag GetBoxOptions()
         {
-            var options = new LayoutListOptionsBag();
+            var options = new DeviceListOptionsBag();
 
             return options;
         }
@@ -102,7 +99,7 @@ namespace Rock.Blocks.Cms
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new Layout();
+            var entity = new Device();
 
             return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
@@ -115,52 +112,34 @@ namespace Rock.Blocks.Cms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl(AttributeKey.DetailPage, "LayoutId", "((Key))")
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "DeviceId", "((Key))" )
             };
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<Layout> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<Device> GetListQueryable( RockContext rockContext )
         {
-            int siteId = int.Parse(RequestContext.PageParameters["siteId"]);
-            var site = new SiteService(rockContext).Get(siteId);
-
-            if (site != null)
-            {
-                var layouts = new LayoutService(rockContext)
-                    .Queryable()
-                    .Include(l => l.Site)
-                    .Where(l => l.SiteId == siteId);
-
-                return layouts;
-            }
-
-            return base.GetListQueryable( rockContext );
-        }
-
-        protected override List<Layout> GetListItems(IQueryable<Layout> queryable, RockContext rockContext)
-        {
-            var layouts = queryable.ToList();
-            foreach (var layout in layouts)
-            {
-                layout.FileName = $"~/Themes/{layout.Site.Theme}/Layouts/{layout.FileName}.aspx";
-            }
-            return layouts;
+            return base.GetListQueryable( rockContext )
+                .Include( a => a.DeviceType )
+                .Include( a => a.PrinterDevice );
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<Layout> GetGridBuilder()
+        protected override GridBuilder<Device> GetGridBuilder()
         {
-            return new GridBuilder<Layout>()
+            return new GridBuilder<Device>()
                 .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
                 .AddField( "id", a => a.Id )
-                .AddTextField( "theme", a => a.Site.Theme )
+                .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
-                .AddTextField( "fileName", a => a.FileName )
+                .AddTextField( "deviceType", a => a.DeviceType?.Value )
+                .AddTextField( "ipAddress", a => a.IPAddress )
+                .AddTextField( "printerDevice", a => a.PrinterDevice?.Name )
                 .AddTextField( "description", a => a.Description )
-                .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isActive", a => a.IsActive )
+                .AddTextField( "printTo", a => a.PrintToOverride == 0 ? string.Empty : a.PrintToOverride.ToString() )
+                .AddTextField( "printFrom", a => a.PrintFrom == 0 ? string.Empty : a.PrintFrom.ToString() )
+                .AddTextField( "kioskType", a => a.KioskType.HasValue ? a.KioskType.Value.GetDescription() : string.Empty )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -178,17 +157,17 @@ namespace Rock.Blocks.Cms
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new LayoutService( rockContext );
+                var entityService = new DeviceService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( entity == null )
                 {
-                    return ActionBadRequest( $"{Layout.FriendlyTypeName} not found." );
+                    return ActionBadRequest( $"{Device.FriendlyTypeName} not found." );
                 }
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${Layout.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete ${Device.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

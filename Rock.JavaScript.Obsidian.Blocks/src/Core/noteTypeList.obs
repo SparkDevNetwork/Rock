@@ -1,38 +1,62 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <NotificationBox :alertType="AlertType.Info" :dismissible="true">
+        Note: Select a specific entity type filter in order to reorder note types.
+    </NotificationBox>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="id"
-          itemTerm="Layout"
-          :entityTypeGuid="EntityType.Layout"
+          itemTerm="Note Type"
+          :entityTypeGuid="EntityType.NoteType"
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :showLaunchWorkflow="false"
           @selectItem="onSelectItem">
 
-        <TextColumn name="name"
-                    title="Name"
-                    field="name"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="10%" />
-
-        <TextColumn name="fileName"
-                    title="File Name"
-                    field="fileName"
+        <TextColumn name="entityType"
+                    title="Entity Type"
+                    field="entityType"
                     :filter="textValueFilter"
                     visiblePriority="xs"
                     width="25%" />
 
-        <TextColumn name="description"
-                    title="Description"
-                    field="description"
+        <TextColumn name="name"
+                    title="Note Type"
+                    field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="10%" />
+                    width="25%" />
+
+        <TextColumn name="iconCssClass"
+                    title="Icon Css Class"
+                    field="iconCssClass"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="20%" />
+
+        <BooleanColumn name="userSelectable"
+                       title="User Selectable"
+                       field="userSelectable"
+                       visiblePriority="xs" />
+
+        <BooleanColumn name="allowsWatching"
+                       title="Allows Watching"
+                       field="allowsWatching"
+                       visiblePriority="xs" />
+
+        <BooleanColumn name="allowsReplies"
+                       title="Allows Replies"
+                       field="allowsReplies"
+                       visiblePriority="xs" />
+
+        <BooleanColumn name="allowsAttachments"
+                       title="Allows Attachments"
+                       field="allowsAttachments"
+                       visiblePriority="xs" />
 
         <BooleanColumn name="isSystem"
-                       title="Is System"
+                       title="System"
                        field="isSystem"
                        visiblePriority="xs"
                        width="5%" />
@@ -50,13 +74,15 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { LayoutListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LayoutList/layoutListOptionsBag";
+    import { NoteTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteTypeList/noteTypeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./LayoutList/types.partial";
+    import { NavigationUrlKey } from "./NoteTypeList/types.partial";
     import { reactive, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
-    const config = useConfigurationValues<ListBlockBox<LayoutListOptionsBag>>();
+    const config = useConfigurationValues<ListBlockBox<NoteTypeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
@@ -76,7 +102,6 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-            console.log(gridData.rows?.[0]);
             return gridData;
         }
         else {
@@ -118,7 +143,7 @@
             }
         }
         else {
-            await alert(result.errorMessage ?? "Unknown error while trying to delete layout.");
+            await alert(result.errorMessage ?? "Unknown error while trying to delete note type.");
         }
     }
 

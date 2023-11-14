@@ -3,43 +3,51 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="id"
-          itemTerm="Layout"
-          :entityTypeGuid="EntityType.Layout"
+          itemTerm="Note Watch"
+          :entityTypeGuid="EntityType.NoteWatch"
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :showLaunchWorkflow="false"
           @selectItem="onSelectItem">
 
-        <TextColumn name="name"
-                    title="Name"
-                    field="name"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="10%" />
-
-        <TextColumn name="fileName"
-                    title="File Name"
-                    field="fileName"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="25%" />
-
-        <TextColumn name="description"
-                    title="Description"
-                    field="description"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="10%" />
-
-        <BooleanColumn name="isSystem"
-                       title="Is System"
-                       field="isSystem"
+        <BooleanColumn name="isWatching"
+                       title="Watching"
+                       field="isWatching"
                        visiblePriority="xs"
-                       width="5%" />
+                       width="5%"/>
+
+        <PersonColumn name="watcher"
+                      title="Watcher Person"
+                      field="watcher"
+                      :filter="pickExistingValueFilter"
+                      visiblePriority="xs" />
+
+        <TextColumn name="watcherGroup"
+                    title="Watcher Group"
+                    field="watcherGroup"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="noteType"
+                    title="Watching Note Type"
+                    field="noteType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="entityType"
+                    title="Watching Entity Type"
+                    field="entityType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <BooleanColumn name="allowOverride"
+                       title="Allow Override"
+                       field="allowOverride"
+                       visiblePriority="xs"
+                       width="5%"/>
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
-
-        <SecurityColumn />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -48,15 +56,15 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { LayoutListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LayoutList/layoutListOptionsBag";
+    import { NoteWatchListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchList/noteWatchListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./LayoutList/types.partial";
+    import { NavigationUrlKey } from "./NoteWatchList/types.partial";
     import { reactive, ref } from "vue";
 
-    const config = useConfigurationValues<ListBlockBox<LayoutListOptionsBag>>();
+    const config = useConfigurationValues<ListBlockBox<NoteWatchListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
@@ -76,7 +84,6 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-            console.log(gridData.rows?.[0]);
             return gridData;
         }
         else {
@@ -118,7 +125,7 @@
             }
         }
         else {
-            await alert(result.errorMessage ?? "Unknown error while trying to delete layout.");
+            await alert(result.errorMessage ?? "Unknown error while trying to delete note watch.");
         }
     }
 

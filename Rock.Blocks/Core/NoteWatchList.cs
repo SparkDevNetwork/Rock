@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.IO;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -27,31 +26,29 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Cms.LayoutList;
+using Rock.ViewModels.Blocks.Core.NoteWatchList;
 using Rock.Web.Cache;
-using Rock;
-using Rock.Web;
 
-namespace Rock.Blocks.Cms
+namespace Rock.Blocks.Core
 {
     /// <summary>
-    /// Displays a list of layouts.
+    /// Displays a list of note watches.
     /// </summary>
 
-    [DisplayName( "Layout List" )]
-    [Category( "CMS" )]
-    [Description( "Displays a list of layouts." )]
+    [DisplayName( "Note Watch List" )]
+    [Category( "Core" )]
+    [Description( "Displays a list of note watches." )]
     [IconCssClass( "fa fa-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
-        Description = "The page that will show the layout details.",
+        Description = "The page that will show the note watch details.",
         Key = AttributeKey.DetailPage )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "6e1d987d-de38-4440-b54f-717c102795fe" )]
-    [Rock.SystemGuid.BlockTypeGuid( "6a10a280-65b8-4988-96b2-974fcd80604b" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8fdb4340-bdde-4797-b173-ea456a825b2a" )]
+    [Rock.SystemGuid.BlockTypeGuid( "ed4cd6ae-ed86-4607-a252-f15971e4f2e3" )]
     [CustomizedGrid]
-    public class LayoutList : RockEntityListBlockType<Layout>
+    public class NoteWatchList : RockEntityListBlockType<NoteWatch>
     {
         #region Keys
 
@@ -72,7 +69,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new ListBlockBox<LayoutListOptionsBag>();
+            var box = new ListBlockBox<NoteWatchListOptionsBag>();
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
@@ -89,9 +86,9 @@ namespace Rock.Blocks.Cms
         /// Gets the box options required for the component to render the list.
         /// </summary>
         /// <returns>The options that provide additional details to the block.</returns>
-        private LayoutListOptionsBag GetBoxOptions()
+        private NoteWatchListOptionsBag GetBoxOptions()
         {
-            var options = new LayoutListOptionsBag();
+            var options = new NoteWatchListOptionsBag();
 
             return options;
         }
@@ -102,7 +99,7 @@ namespace Rock.Blocks.Cms
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new Layout();
+            var entity = new NoteWatch();
 
             return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
@@ -115,52 +112,50 @@ namespace Rock.Blocks.Cms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl(AttributeKey.DetailPage, "LayoutId", "((Key))")
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "NoteWatchId", "((Key))" )
             };
         }
 
-        /// <inheritdoc/>
-        protected override IQueryable<Layout> GetListQueryable( RockContext rockContext )
+        private string FormatEntityType( EntityType entityType, int? entityId )
         {
-            int siteId = int.Parse(RequestContext.PageParameters["siteId"]);
-            var site = new SiteService(rockContext).Get(siteId);
-
-            if (site != null)
+            var entityTypeName = entityType?.FriendlyName ?? "Unknown";
+            if ( entityId.HasValue && entityType != null )
             {
-                var layouts = new LayoutService(rockContext)
-                    .Queryable()
-                    .Include(l => l.Site)
-                    .Where(l => l.SiteId == siteId);
-
-                return layouts;
+                var rockContext = new RockContext();
+                var entity = new EntityTypeService( rockContext ).GetEntity( entityType.Id, entityId.Value );
+                if ( entity != null )
+                {
+                    var entityName = entity.ToString(); 
+                    return $"{entityTypeName} ({entityName})";
+                }
             }
 
-            return base.GetListQueryable( rockContext );
-        }
-
-        protected override List<Layout> GetListItems(IQueryable<Layout> queryable, RockContext rockContext)
-        {
-            var layouts = queryable.ToList();
-            foreach (var layout in layouts)
-            {
-                layout.FileName = $"~/Themes/{layout.Site.Theme}/Layouts/{layout.FileName}.aspx";
-            }
-            return layouts;
+            return entityTypeName;
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<Layout> GetGridBuilder()
+        protected override IQueryable<NoteWatch> GetListQueryable( RockContext rockContext )
         {
-            return new GridBuilder<Layout>()
+            return base.GetListQueryable( rockContext )
+                .Include( a => a.WatcherPersonAlias )
+                .Include( a => a.WatcherGroup )
+                .Include( a => a.NoteType )
+                .Include( a => a.EntityType );
+        }
+
+        /// <inheritdoc/>
+        protected override GridBuilder<NoteWatch> GetGridBuilder()
+        {
+            return new GridBuilder<NoteWatch>()
                 .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
                 .AddField( "id", a => a.Id )
-                .AddTextField( "theme", a => a.Site.Theme )
-                .AddTextField( "name", a => a.Name )
-                .AddTextField( "fileName", a => a.FileName )
-                .AddTextField( "description", a => a.Description )
-                .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddField( "isWatching", a => a.IsWatching )
+                .AddPersonField( "watcher", a => a.WatcherPersonAlias?.Person )
+                .AddTextField( "watcherGroup", a => a.WatcherGroup?.Name )
+                .AddTextField( "noteType", a => a.NoteType?.Name )
+                .AddTextField("entityType", a => FormatEntityType(a.EntityType, a.EntityId))
+                .AddField( "allowOverride", a => a.AllowOverride )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -178,17 +173,17 @@ namespace Rock.Blocks.Cms
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new LayoutService( rockContext );
+                var entityService = new NoteWatchService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( entity == null )
                 {
-                    return ActionBadRequest( $"{Layout.FriendlyTypeName} not found." );
+                    return ActionBadRequest( $"{NoteWatch.FriendlyTypeName} not found." );
                 }
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${Layout.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete ${NoteWatch.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

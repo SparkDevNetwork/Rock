@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -60,6 +60,8 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Bus\ConsumerList.cs" />
+    <Compile Include="Bus\QueueList.cs" />
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
@@ -73,12 +75,16 @@
     <Compile Include="Core\CampusList.cs" />
     <Compile Include="Communication\EmailPreferenceEntry.cs" />
     <Compile Include="Core\DeviceDetail.cs" />
+    <Compile Include="Core\DeviceList.cs" />
     <Compile Include="Core\FollowingSuggestionTypeList.cs" />
     <Compile Include="Core\Notes.cs" />
+    <Compile Include="Core\NoteTypeList.cs" />
     <Compile Include="Core\NoteWatchDetail.cs" />
+    <Compile Include="Core\NoteWatchList.cs" />
     <Compile Include="Core\NotificationMessageList.cs" />
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />
+    <Compile Include="Crm\NamelessPersonList.cs" />
     <Compile Include="Crm\SignalTypeDetail.cs" />
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
