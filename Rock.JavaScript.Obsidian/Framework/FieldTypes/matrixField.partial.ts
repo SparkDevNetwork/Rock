@@ -66,10 +66,10 @@ export class MatrixFieldType extends FieldTypeBase {
 
         try {
             const val = JSON.parse(value) as ListItemBag;
-            return escapeHtml(val.text ?? "");
+            return val.text ?? "";
         }
         catch {
-            return escapeHtml(value);
+            return value;
         }
     }
 
