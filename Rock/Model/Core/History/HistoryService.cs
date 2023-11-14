@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using Rock.Data;
+using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -34,7 +35,9 @@ namespace Rock.Model
         #region HistorySummary methods
 
         /// <summary>
-        /// Gets the timeline HTML.
+        /// Gets the timeline HTML. This method does not filter histories based on the current person's authorization level,
+        /// use <see cref="GetTimelineHtml(string, EntityTypeCache, int, EntityTypeCache, Dictionary{string, object}, Person)"/>
+        /// if History summaries outside of the current person's authorization level should be filtered out
         /// </summary>
         /// <param name="timelineLavaTemplate">The timeline lava template.</param>
         /// <param name="primaryEntityType">Type of the primary entity.</param>
@@ -43,6 +46,22 @@ namespace Rock.Model
         /// <param name="additionalMergeFields">The additional merge fields.</param>
         /// <returns></returns>
         public string GetTimelineHtml( string timelineLavaTemplate, EntityTypeCache primaryEntityType, int entityId, EntityTypeCache secondaryEntityType, Dictionary<string, object> additionalMergeFields )
+        {
+            return GetTimelineHtml( timelineLavaTemplate, primaryEntityType, entityId, secondaryEntityType, additionalMergeFields, null, false );
+        }
+
+        /// <summary>
+        /// Gets the timeline HTML.
+        /// </summary>
+        /// <param name="timelineLavaTemplate">The timeline lava template.</param>
+        /// <param name="primaryEntityType">Type of the primary entity.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="secondaryEntityType">Type of the secondary entity.</param>
+        /// <param name="additionalMergeFields">The additional merge fields.</param>
+        /// <param name="currentPerson">The current person viewing the timeline</param>
+        /// <param name="enforceSecurity">Set to true if the History Summaries should be filtered based on the current persons authorization.</param>
+        /// <returns></returns>
+        public string GetTimelineHtml( string timelineLavaTemplate, EntityTypeCache primaryEntityType, int entityId, EntityTypeCache secondaryEntityType, Dictionary<string, object> additionalMergeFields, Person currentPerson, bool enforceSecurity = true )
         {
             RockContext rockContext = this.Context as RockContext;
             HistoryService historyService = new HistoryService( rockContext );
@@ -75,7 +94,7 @@ namespace Rock.Model
                     || ( a.RelatedEntityTypeId == entityTypeIdPrimary && a.EntityTypeId == entityTypeIdSecondary && a.RelatedEntityId == entityId ) );
             }
 
-            var historySummaryList = historyService.GetHistorySummary( historyQry );
+            var historySummaryList = historyService.GetHistorySummary( historyQry, currentPerson, enforceSecurity );
             var historySummaryByDateList = historyService.GetHistorySummaryByDateTime( historySummaryList, dateSummaryGranularity );
             historySummaryByDateList = historySummaryByDateList.OrderByDescending( a => a.SummaryDateTime ).ToList();
             var historySummaryByDateByVerbList = historyService.GetHistorySummaryByDateTimeAndVerb( historySummaryByDateList );
@@ -187,11 +206,25 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Converts a history query grouped into a List of HistorySummary objects
+        /// Converts a history query grouped into a List of HistorySummary objects. This method does not filter histories based on the current person's authorization level,
+        /// use <see cref="GetHistorySummary(IQueryable{History}, Person, bool)"/>
+        /// if History summaries outside of the current person's authorization level should be filtered out
         /// </summary>
         /// <param name="historyQry">The history qry.</param>
         /// <returns></returns>
         public List<HistorySummary> GetHistorySummary( IQueryable<History> historyQry )
+        {
+            return GetHistorySummary( historyQry, null );
+        }
+
+        /// <summary>
+        /// Converts a history query grouped into a List of HistorySummary objects
+        /// </summary>
+        /// <param name="historyQry">The history qry.</param>
+        /// <param name="currentPerson">The current person viewing the history summaries.</param>
+        /// <param name="enforceSecurity">Set to true if the History Summaries should be filtered based on the current persons authorization.</param>
+        /// <returns></returns>
+        public List<HistorySummary> GetHistorySummary( IQueryable<History> historyQry, Person currentPerson, bool enforceSecurity = true )
         {
             // group the history into into summaries of records that were saved at the same time (for the same Entity, Category, etc)
             var historySummaryQry = historyQry.Where( a => a.CreatedDateTime.HasValue )
@@ -222,6 +255,11 @@ namespace Rock.Model
             var historySummaryList = historySummaryQry.ToList();
 
             PopulateHistorySummaryEntities( historyQry, historySummaryList );
+
+            if ( enforceSecurity )
+            {
+                historySummaryList = historySummaryList.Where( hs => !( hs.RelatedEntity is ISecured secured ) || secured.IsAuthorized( Authorization.VIEW, currentPerson ) ).ToList();
+            }
 
             return historySummaryList;
         }

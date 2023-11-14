@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Groups
             additionalMergeFields.Add( "GroupHistoryGridPage", LinkedPageRoute( "GroupHistoryGridPage" ) );
             additionalMergeFields.Add( "GroupMemberHistoryPage", LinkedPageRoute( "GroupMemberHistoryPage" ) );
 
-            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, primaryEntityType, entityId, secondaryEntityType, additionalMergeFields );
+            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, primaryEntityType, entityId, secondaryEntityType, additionalMergeFields, CurrentPerson );
             lTimelineHtml.Text = timelineHtml;
         }
 
