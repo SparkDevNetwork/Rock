@@ -281,6 +281,8 @@ export const FieldType = {
     StepProgram: "33875369-7D2B-4CD7-BB89-ABC29906CCAE",
     /** Step Program Step Status field type */
     StepProgramStepStatus: "F8E85355-2780-4772-9B21-30B84741E6D1",
+    /** Step Program Step Type field type */
+    StepProgramStepType: "B00149C7-08D6-448C-AF21-948BF453DF7E",
     /** Streak Type field type */
     StreakType: "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
     /** Streak Type field type */

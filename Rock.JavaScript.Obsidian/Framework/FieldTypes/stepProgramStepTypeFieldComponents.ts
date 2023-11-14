@@ -16,54 +16,54 @@
 
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
-import StepProgramStepStatusPicker from "@Obsidian/Controls/stepProgramStepStatusPicker.obs";
-import { StepProgramStepStatus } from "./stepProgramStepStatusField.partial";
+import StepProgramStepTypePicker from "@Obsidian/Controls/stepProgramStepTypePicker.obs";
+import { StepProgramStepType } from "./stepProgramStepTypeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 
 export const EditComponent = defineComponent({
-    name: "StepProgramStepStatusField.Edit",
+    name: "StepProgramStepTypeField.Edit",
 
     components: {
-        StepProgramStepStatusPicker
+        StepProgramStepTypePicker
     },
 
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-        const internalValue = ref({} as StepProgramStepStatus);
+        const internalValue = ref({} as StepProgramStepType);
         const stepProgram = ref({} as ListItemBag);
-        const stepStatus = ref({} as ListItemBag);
+        const stepType = ref({} as ListItemBag);
 
         watch(() => props.modelValue, () => {
             if (props.modelValue) {
                 internalValue.value = JSON.parse(props.modelValue || "{}");
                 stepProgram.value = internalValue.value.stepProgram;
-                stepStatus.value = internalValue.value.stepStatus;
+                stepType.value = internalValue.value.stepType;
             }
         }, { immediate: true });
 
-        watch(() => [stepProgram.value, stepStatus.value], () => {
+        watch(() => [stepProgram.value, stepType.value], () => {
             const newValue = {
                 stepProgram: stepProgram.value ?? null,
-                stepStatus: stepStatus.value ?? null
+                stepType: stepType.value ?? null
             };
             emit("update:modelValue", JSON.stringify(newValue));
         }, { deep: true });
 
         return {
             stepProgram,
-            stepStatus
+            stepType
         };
     },
 
     template: `
-<StepProgramStepStatusPicker v-model="stepStatus" v-model:stepProgram="stepProgram" />
+<StepProgramStepTypePicker v-model="stepType" v-model:stepProgram="stepProgram" />
 `
 });
 
 export const ConfigurationComponent = defineComponent({
-    name: "StepProgramStepStatusField.Configuration",
+    name: "StepProgramStepTypeField.Configuration",
 
     template: ``
 });

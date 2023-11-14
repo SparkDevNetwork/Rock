@@ -326,6 +326,9 @@ registerFieldType(FieldTypeGuids.Step, new StepFieldType());
 import { StepProgramStepStatusFieldType } from "./stepProgramStepStatusField.partial";
 registerFieldType(FieldTypeGuids.StepProgramStepStatus, new StepProgramStepStatusFieldType());
 
+import { StepProgramStepTypeFieldType } from "./stepProgramStepTypeField.partial";
+registerFieldType(FieldTypeGuids.StepProgramStepType, new StepProgramStepTypeFieldType());
+
 import { StreakTypeFieldType } from "./streakTypeField.partial";
 registerFieldType(FieldTypeGuids.StreakType, new StreakTypeFieldType());
 
