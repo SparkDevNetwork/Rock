@@ -248,6 +248,7 @@ import AttributeMatrixEditorGallery from "./ControlGallery/attributeMatrixEditor
 import BadgeControlGallery from "./ControlGallery/badgeControlGallery.partial.obs";
 import BadgeGallery from "./ControlGallery/badgeGallery.partial.obs";
 import WarningBlockGallery from "./ControlGallery/warningBlockGallery.partial.obs";
+import KeyValueListGallery from "./ControlGallery/keyValueListGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -5090,71 +5091,6 @@ const javaScriptAnchorGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates javascript anchor */
-const keyValueListGallery = defineComponent({
-    name: "KeyValueListGallery",
-    components: {
-        GalleryAndResult,
-        KeyValueList,
-        CheckBox,
-        TextBox
-    },
-    setup() {
-        const limitValues = ref(false);
-        const displayValueFirst = ref(false);
-        const options: ListItemBag[] = [
-            {
-                text: "Option 1",
-                value: "1"
-            },
-            {
-                text: "Option 2",
-                value: "2"
-            },
-            {
-                text: "Option 3",
-                value: "3"
-            },
-        ];
-
-        const valueOptions = computed(() => limitValues.value ? options : null);
-
-        return {
-            limitValues,
-            displayValueFirst,
-            valueOptions,
-            value: ref(null),
-            fullWidth: ref(false),
-            keyPlaceholder: ref("Key"),
-            valuePlaceholder: ref("Value"),
-            importCode: getControlImportPath("keyValueList"),
-            exampleCode: `<KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="{ 'output:modelValue':value, 'input:valueOptions':valueOptions }"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-
-    <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" :fullWidth="fullWidth" />
-
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-md-4" label="Limit Possible Values" v-model="limitValues" />
-            <CheckBox formGroupClasses="col-md-4" label="Show Value First" v-model="displayValueFirst" />
-            <CheckBox formGroupClasses="col-md-4" label="Full Width" v-model="fullWidth" />
-        </div>
-        <div class="row">
-            <TextBox formGroupClasses="col-md-4" label="Placeholder for Key Field" v-model="keyPlaceholder" />
-            <TextBox formGroupClasses="col-md-4" label="Placeholder for Value Field" v-model="valuePlaceholder" />
-        </div>
-    </template>
-</GalleryAndResult>`
-});
-
 /** Demonstrates loading component */
 const loadingGallery = defineComponent({
     name: "LoadingGallery",
@@ -8121,7 +8057,7 @@ const controlGalleryComponents: Record<string, Component> = [
     fieldTypeEditorGallery,
     inlineRangeSliderGallery,
     javaScriptAnchorGallery,
-    keyValueListGallery,
+    KeyValueListGallery,
     loadingGallery,
     loadingIndicatorGallery,
     numberUpDownGroupGallery,
