@@ -128,7 +128,7 @@ namespace Rock.Blocks.Core
                 return;
             }
 
-            box.IsEditable = !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
