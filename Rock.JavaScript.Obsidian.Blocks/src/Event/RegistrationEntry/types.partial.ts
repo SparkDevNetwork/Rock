@@ -185,6 +185,7 @@ export type RegistrantInfo = {
     fieldValues: Record<Guid, unknown>;
     cost: number;
     feeItemQuantities: Record<Guid, number>;
+    existingSignatureDocumentGuid?: Guid | null,
     signatureData?: string | null;
 
     guid: Guid;
