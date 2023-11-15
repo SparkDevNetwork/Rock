@@ -21,7 +21,6 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
 
 using Rock;
@@ -744,7 +743,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                         NavData.Groups.Add( navGroup );
 
-
                         /*
                                 SK - 07/02/2023
                                 Reverted back changes made via https://github.com/SparkDevNetwork/Rock/commit/a5bda143b0ba02f0897c2245513bbc23a638f156
@@ -752,7 +750,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                                 IF the other situation occurs again, we will have more details about where/why/how to handle it next.
                         */
-                        if ( !group.ParentGroupId.HasValue || groupIds.Contains( group.ParentGroupId.Value ) )
+                        if ( !group.ParentGroupId.HasValue || groupIds.Contains( group.ParentGroupId.Value ) || group.ParentGroup.GroupTypeId != group.GroupTypeId )
                         {
                             NavData.GroupTypes.Where( t => t.Id == group.GroupTypeId ).ToList()
                                 .ForEach( t => t.ChildGroupIds.Add( group.Id ) );
@@ -1331,7 +1329,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             .Distinct()
                             .ToList();
                         NavData.Groups
-                            .Where( g => groupIds.Contains( g.Id ) && g.ParentId == null )
+                        .Where( g => groupIds.Contains( g.Id ) && ( g.ParentId == null || !groupIds.Contains( g.ParentId.Value ) ) )
                             .ToList()
                             .ForEach( g => navItems.Add( g ) );
 
