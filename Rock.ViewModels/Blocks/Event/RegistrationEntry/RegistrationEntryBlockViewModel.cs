@@ -790,6 +790,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     public sealed class RegistrationEntrySignatureDocument
     {
         /// <summary>
+        /// Gets or sets the unique identifier of a previously-signed signature document that should be reused for this registrant.
+        /// </summary>
+        /// <value>
+        /// The unique identifier of a previously-signed signature document that should be reused for this registrant.
+        /// </value>
+        public Guid? ExistingSignatureDocumentGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the document HTML to be displayed on the form. This should
         /// be displayed inside an IFrame element to ensure no other CSS on the
         /// page interferes.

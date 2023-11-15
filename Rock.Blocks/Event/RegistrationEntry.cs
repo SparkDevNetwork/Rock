@@ -578,26 +578,34 @@ namespace Rock.Blocks.Event
                 bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
                 var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamily?.Guid ?? Guid.Empty, isCreatedAsRegistrant, rockContext );
 
+                var response = new RegistrationEntrySignatureDocument();
+
                 // If the person happens to have a valid signature document of the required template, we may skip this step.
                 if ( documentTemplate.IsValidInFuture && documentTemplate.ValidityDurationInDays.HasValue )
                 {
-                    var earliestSignatureDate = RockDateTime.Today.AddDays( -documentTemplate.ValidityDurationInDays.ToIntSafe() );
+                    // When thinking about date comparisons, think in terms of extremes:
+                    //  - If they signed a document today, and it's only valid for 1 day, it's still valid (at any point) today.
+                    //  - If they signed a document (at any point) yesterday or before, and it's only valid for 1 day, it's no longer valid today.
+                    // With this in mind, add one day to the specified ValidityDurationInDays before comparing.
+                    var earliestSignatureDate = RockDateTime.Today.AddDays( -documentTemplate.ValidityDurationInDays.ToIntSafe() + 1 );
                     var existingSignatureDocument = new RegistrationRegistrantService( rockContext )
                         .Queryable()
-                        .AsNoTracking()
                         .Where( r =>
                             r.PersonAlias.PersonId == person.Id &&
                             r.SignatureDocument.SignatureDocumentTemplateId == documentTemplate.Id &&
-                            r.SignatureDocument.SignedDateTime > earliestSignatureDate )
+                            r.SignatureDocument.SignedDateTime >= earliestSignatureDate )
+                        .OrderByDescending( r => r.SignatureDocument.SignedDateTime )
                         .Select( r => new
                         {
-                            r.SignatureDocument.SignatureDocumentTemplate.ValidityDurationInDays,
-                            r.SignatureDocument.SignedDateTime.Value
+                            r.SignatureDocument.Guid
                         } )
                         .FirstOrDefault();
-                    if ( existingSignatureDocument != null && existingSignatureDocument.ValidityDurationInDays >= ( int ) ( RockDateTime.Today - existingSignatureDocument.Value ).TotalDays )
+
+                    if ( existingSignatureDocument != null )
                     {
-                        return ActionOk();
+                        response.ExistingSignatureDocumentGuid = existingSignatureDocument.Guid;
+
+                        return ActionOk( response );
                     }
                 }
 
@@ -640,11 +648,10 @@ namespace Rock.Blocks.Event
                 var unencryptedSecurityToken = new[] { RockDateTime.Now.ToString( "o" ), GetSha256Hash( fieldHashToken + html ) }.ToJson();
                 var encryptedSecurityToken = Encryption.EncryptString( unencryptedSecurityToken );
 
-                return ActionOk( new RegistrationEntrySignatureDocument
-                {
-                    DocumentHtml = html,
-                    SecurityToken = encryptedSecurityToken
-                } );
+                response.DocumentHtml = html;
+                response.SecurityToken = encryptedSecurityToken;
+
+                return ActionOk( response );
             }
         }
 
@@ -2572,32 +2579,19 @@ namespace Rock.Blocks.Event
             // inline signature is not currently supported.
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired && isNewRegistration )
             {
-                var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
+                var signatureDocumentService = new SignatureDocumentService( rockContext );
 
-                // If documentTemplate is valid in future, make a query to the database to check if a valid document exists for the registrant.
-                dynamic existingSignatureDocumentForRegistrant = null;
-                if ( documentTemplate.IsValidInFuture && documentTemplate.ValidityDurationInDays.HasValue )
+                // If a previously-signed document was specified for reuse, make a query to the database to get its ID.
+                int? existingSignatureDocumentId = null;
+                if ( registrantInfo.ExistingSignatureDocumentGuid.HasValue )
                 {
-                    var earliestSignatureDate = RockDateTime.Today.AddDays( -documentTemplate.ValidityDurationInDays.ToIntSafe() );
-                    existingSignatureDocumentForRegistrant = new RegistrationRegistrantService( rockContext )
-                        .Queryable()
-                        .Where( r =>
-                            r.PersonAlias.PersonId == person.Id &&
-                            r.SignatureDocument.SignatureDocumentTemplateId == documentTemplate.Id &&
-                            r.SignatureDocument.SignedDateTime > earliestSignatureDate )
-                        .Select( r => new
-                        {
-                            r.SignatureDocument.Id,
-                            r.SignatureDocument.SignatureDocumentTemplate.ValidityDurationInDays,
-                            r.SignatureDocument.SignedDateTime.Value
-                        } )
-                        .FirstOrDefault();
+                    existingSignatureDocumentId = signatureDocumentService.GetId( registrantInfo.ExistingSignatureDocumentGuid.Value );
                 }
 
-                // If a document is found for the registrant and it happens to be valid at the instant, use it to complete the registration. Otherwise, create a new document.
-                if ( existingSignatureDocumentForRegistrant != null )
+                // If the previous document's ID was found, use it to complete the registration. Otherwise, attempt to create a new document.
+                if ( existingSignatureDocumentId.HasValue )
                 {
-                    registrant.SignatureDocumentId = existingSignatureDocumentForRegistrant.Id;
+                    registrant.SignatureDocumentId = existingSignatureDocumentId.Value;
                     rockContext.SaveChanges();
                 }
                 else
@@ -2605,10 +2599,11 @@ namespace Rock.Blocks.Event
                     var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
                     var signedBy = RequestContext.CurrentPerson ?? registrar;
 
+                    var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
                     var document = CreateSignatureDocument( documentTemplate, signedData, signedBy, registrar, person, registrant.PersonAlias?.Person?.FullName ?? person.FullName, context.RegistrationSettings.Name );
 
 
-                    new SignatureDocumentService( rockContext ).Add( document );
+                    signatureDocumentService.Add( document );
                     registrant.SignatureDocument = document;
                     rockContext.SaveChanges();
 
