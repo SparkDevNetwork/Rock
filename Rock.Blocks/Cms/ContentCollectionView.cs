@@ -1074,7 +1074,7 @@ namespace Rock.Blocks.Cms
         {
             var actions = new List<BlockCustomActionBag>();
 
-            if ( BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            if ( canAdministrate )
             {
                 actions.Add( new BlockCustomActionBag
                 {
