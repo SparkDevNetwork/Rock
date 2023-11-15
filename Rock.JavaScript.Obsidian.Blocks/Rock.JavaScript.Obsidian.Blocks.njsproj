@@ -106,6 +106,7 @@
     <Content Include="src\Engagement\achievementTypeDetail.obs" />
     <Content Include="src\Engagement\AchievementTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\AchievementTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Engagement\connectionOpportunityList.obs" />
     <Content Include="src\Engagement\stepTypeDetail.obs" />
     <Content Include="src\Engagement\StepTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\StepTypeDetail\viewPanel.partial.obs" />
@@ -340,6 +341,7 @@
     <Folder Include="src\Engagement\AchievementAttemptDetail\" />
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
+    <Folder Include="src\Engagement\ConnectionOpportunityList\" />
     <Folder Include="src\Engagement\StepTypeDetail\" />
     <Folder Include="src\Engagement\StreakDetail\" />
     <Folder Include="src\Engagement\StreakTypeDetail\" />
@@ -506,6 +508,7 @@
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Engagement\AchievementAttemptDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\AchievementTypeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Engagement\ConnectionOpportunityList\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StepTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\SignUp\SignUpFinder\signUpFilterType.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
