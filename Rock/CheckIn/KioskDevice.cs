@@ -464,6 +464,16 @@ namespace Rock.CheckIn
                     if ( kioskGroup == null )
                     {
                         kioskGroup = new KioskGroup( groupLocation.Group );
+
+                        // KioskGroup will call Clone() on the group. This
+                        // currently does not copy Attributes or AttributeValues
+                        // properties to the new object.
+                        if ( kioskGroup.Group.Attributes == null )
+                        {
+                            kioskGroup.Group.Attributes = groupLocation.Group.Attributes;
+                            kioskGroup.Group.AttributeValues = groupLocation.Group.AttributeValues;
+                        }
+
                         kioskGroupType.KioskGroups.Add( kioskGroup );
                     }
 
