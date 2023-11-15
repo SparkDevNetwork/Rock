@@ -47,6 +47,9 @@ registerFieldType(FieldTypeGuids.Badges, new BadgesFieldType());
 import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
 registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
 
+import { BenevolenceRequestFieldType } from "./benevolenceRequestField.partial";
+registerFieldType(FieldTypeGuids.BenevolenceRequest, new BenevolenceRequestFieldType());
+
 import { BinaryFileTypeFieldType } from "./binaryFileTypeField.partial";
 registerFieldType(FieldTypeGuids.BinaryFileType, new BinaryFileTypeFieldType());
 
