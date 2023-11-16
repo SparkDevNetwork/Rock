@@ -36,7 +36,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the timeline HTML. This method does not filter histories based on the current person's authorization level,
-        /// use <see cref="GetTimelineHtml(string, EntityTypeCache, int, EntityTypeCache, Dictionary{string, object}, Person)"/>
+        /// use <see cref="GetTimelineHtml(string, EntityTypeCache, int, EntityTypeCache, Dictionary{string, object}, Person, bool)"/>
         /// if History summaries outside of the current person's authorization level should be filtered out
         /// </summary>
         /// <param name="timelineLavaTemplate">The timeline lava template.</param>
