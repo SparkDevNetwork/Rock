@@ -1,0 +1,116 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="year-picker" #default="{ uniqueId, field }">
+        <div class="input-group input-width-md">
+            <input ref="inputEl" type="text" class="form-control" v-model.lazy="internalValue" :disabled="disabled" v-bind="field" :id="uniqueId" />
+            <span class="input-group-addon">
+                <i class="fa fa-calendar"></i>
+            </span>
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, PropType, watch, ref, nextTick } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", val: string): void
+    }>();
+
+    // #region Values
+
+    const internalValue = ref("");
+    const inputEl = ref<HTMLInputElement>();
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    // #endregion
+
+    // #region Functions
+
+    function initializePopup(): void {
+        const input = inputEl.value;
+
+        if (!input) {
+            return;
+        }
+
+        window.Rock.controls.yearPicker.initialize({
+            id: input.id
+        });
+
+
+        // When choosing the value via the popup it doesn't cause a standard change event or anything
+        // so the internal value doesn't get updated, so we need to listen to the custom "change"
+        // jQuery event that the plugin manually fires so we can update our internal value. This does
+        // not work using the standard browser `addEventListener`; it must be via jQuery
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const jquery = <any>window[<any>"$"];
+        jquery(input).on("change", () => internalValue.value = cleanValue(input.value));
+    }
+
+    function cleanValue(value: string | null): string {
+        if (!value) {
+            // null or empty string
+            return "";
+        }
+
+        const num = parseInt(value, 10);
+
+        if (isNaN(num)) {
+            return "";
+        }
+
+        return `${num}`;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(internalValue, () => {
+        const clean = cleanValue(internalValue.value);
+
+        if (internalValue.value != clean) {
+            internalValue.value = clean;
+        }
+        emit("update:modelValue", internalValue.value);
+    });
+
+    watch(() => props.modelValue, () => {
+        const clean = cleanValue(props.modelValue);
+
+        if (internalValue.value != clean) {
+            internalValue.value = clean;
+        }
+    }, { immediate: true });
+
+    // #endregion
+
+    // #region Lifecycle
+
+    onMounted(() => {
+        nextTick(() => {
+            initializePopup();
+        });
+    });
+
+    // #endregion
+
+</script>
