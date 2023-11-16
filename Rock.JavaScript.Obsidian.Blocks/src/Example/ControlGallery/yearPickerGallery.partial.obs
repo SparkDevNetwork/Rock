@@ -1,0 +1,19 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode">
+        <YearPicker v-model="value" />
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import YearPicker from "@Obsidian/Controls/yearPicker.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref(`${new Date().getFullYear()}`);
+
+    const importCode = getSfcControlImportPath("yearPicker");
+    const exampleCode = computed(() => {
+        return `<YearPicker v-model="value" />`;
+    });
+</script>

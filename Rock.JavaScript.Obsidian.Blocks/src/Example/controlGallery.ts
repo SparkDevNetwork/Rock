@@ -249,6 +249,7 @@ import BadgeControlGallery from "./ControlGallery/badgeControlGallery.partial.ob
 import BadgeGallery from "./ControlGallery/badgeGallery.partial.obs";
 import WarningBlockGallery from "./ControlGallery/warningBlockGallery.partial.obs";
 import KeyValueListGallery from "./ControlGallery/keyValueListGallery.partial.obs";
+import YearPickerGallery from "./ControlGallery/yearPickerGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -8133,6 +8134,7 @@ const controlGalleryComponents: Record<string, Component> = [
     BadgeControlGallery,
     BadgeGallery,
     WarningBlockGallery,
+    YearPickerGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
