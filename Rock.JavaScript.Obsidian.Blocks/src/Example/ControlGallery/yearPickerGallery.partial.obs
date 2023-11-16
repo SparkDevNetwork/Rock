@@ -1,6 +1,6 @@
 <template>
     <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode">
-        <YearPicker v-model="value" />
+        <YearPicker label="Choose a Year" v-model="value" />
     </GalleryAndResult>
 </template>
 
@@ -14,6 +14,6 @@
 
     const importCode = getSfcControlImportPath("yearPicker");
     const exampleCode = computed(() => {
-        return `<YearPicker v-model="value" />`;
+        return `<YearPicker label="Choose a Year" v-model="value" />`;
     });
 </script>
