@@ -2157,6 +2157,7 @@
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\HttpModules\Observability.cs" />
+    <Compile Include="Web\HttpModules\SignalRErrorModule.cs" />
     <Compile Include="Web\IBreadCrumb.cs" />
     <Compile Include="Blocks\IBreadCrumbBlock.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
