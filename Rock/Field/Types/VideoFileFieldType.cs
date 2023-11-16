@@ -19,10 +19,12 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Field.Types
@@ -31,7 +33,7 @@ namespace Rock.Field.Types
     /// Video file field type
     /// Stored as BinaryFile.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.VIDEO_FILE )]
     public class VideoFileFieldType : FileFieldType, IEntityReferenceFieldType
     {
@@ -55,6 +57,28 @@ namespace Rock.Field.Types
 
                 return binaryFileName ?? string.Empty;
             }
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return new BinaryFileService( new Data.RockContext() )
+                .Get( privateValue.AsGuid() )
+                .ToListItemBag()
+                .ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Extract the raw value.
+            return publicValue.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
         }
 
         /// <inheritdoc/>

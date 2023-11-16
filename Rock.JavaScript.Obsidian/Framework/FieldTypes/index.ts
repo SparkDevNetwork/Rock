@@ -358,3 +358,6 @@ registerFieldType(FieldTypeGuids.ValueList, new ValueListFieldType());
 
 import { VideoUrlFieldType } from "./videoUrlField.partial";
 registerFieldType(FieldTypeGuids.VideoUrl, new VideoUrlFieldType());
+
+import { VideoFileFieldType } from "./videoFileField.partial";
+registerFieldType(FieldTypeGuids.VideoFile, new VideoFileFieldType());
