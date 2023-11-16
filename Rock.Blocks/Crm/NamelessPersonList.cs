@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,6 +51,7 @@ namespace Rock.Blocks.Crm
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( "911EA779-AC00-4A93-B706-B6A642C727CB")]
     public class NamelessPersonList : RockListBlockType<Person>
     {
         #region Keys

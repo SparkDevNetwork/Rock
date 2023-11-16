@@ -21,6 +21,6 @@
 // </copyright>
 //
 
+/** The additional configuration options for the Note Type List block. */
 export type NoteTypeListOptionsBag = {
-    /** The additional configuration options for the Note Type List block. */
 };

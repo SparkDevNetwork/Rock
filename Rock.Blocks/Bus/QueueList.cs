@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,6 +49,7 @@ namespace Rock.Blocks.Bus
 
     [Rock.SystemGuid.BlockTypeGuid( "8a5785fc-3094-4c2c-929a-3fd6d21da7f8" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "4DB8DFAC-7D32-4D94-8F56-E547D1CAB37F")]
     public class QueueList : RockListBlockType<QueueListBag>
     {
         #region Keys

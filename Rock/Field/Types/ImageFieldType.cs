@@ -79,6 +79,7 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <inheritdoc />
         public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             var imageGuid = privateValue.AsGuidOrNull();

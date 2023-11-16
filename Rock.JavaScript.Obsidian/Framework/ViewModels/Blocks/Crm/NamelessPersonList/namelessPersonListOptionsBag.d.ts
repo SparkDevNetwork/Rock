@@ -21,6 +21,6 @@
 // </copyright>
 //
 
+/** The additional configuration options for the Nameless Person List block. */
 export type NamelessPersonListOptionsBag = {
-    /** The additional configuration options for the Nameless Person List block. */
 };

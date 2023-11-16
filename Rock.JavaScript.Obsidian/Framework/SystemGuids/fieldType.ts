@@ -31,8 +31,6 @@ export const FieldType = {
     AssessmentType: "C263513A-30BE-4823-ABF1-AC12A56F9644",
     /** Asset field type */
     Asset: "FC27D395-8F57-467E-91FF-E648F807110E",
-    /** Asset Storage Provider field type */
-    AssetStorageProvider: "1596F562-E8D0-4C5F-9A00-23B5594F17E2",
     /** Asset Storage System field type */
     AssetStorageSystem: "A57109EE-35A2-45D0-A575-02DBBDFBC0D0",
     /** Attribute field type */
@@ -275,16 +273,8 @@ export const FieldType = {
     SlidingDateRange: "55810BC5-45EA-4044-B783-0CCE0A445C6F",
     /** Social Media Account field type */
     SocialMediaAccount: "92C0E3A1-9F63-49D4-B23B-73624AC42546",
-    /** Step field type */
-    Step : "829803DB-7CA3-44F6-B1CB-669D61ED6E92",
     /** Social Security Number */
     Ssn: "4722C99A-C078-464A-968F-13AB5E8E318F",
-    /** Step Program field type */
-    StepProgram: "33875369-7D2B-4CD7-BB89-ABC29906CCAE",
-    /** Step Program Step Status field type */
-    StepProgramStepStatus: "F8E85355-2780-4772-9B21-30B84741E6D1",
-    /** Step Program Step Type field type */
-    StepProgramStepType: "B00149C7-08D6-448C-AF21-948BF453DF7E",
     /** Streak Type field type */
     StreakType: "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
     /** Streak Type field type */

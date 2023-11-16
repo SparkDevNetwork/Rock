@@ -107,6 +107,8 @@ export const ServiceJob = {
     DataMigrations161SwapBlockGroupScheduleToolboxV1: "22DBD648-79C0-40C7-B561-094E4E7637E5",
     /** The Job to run Post v16.1 Data Migrations to swap Financial Batch List web forms block with obsidian block. */
     DataMigrations161SwapFinancialBatchList: "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE",
+    /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
+    DataMigrations170RemoveCommunicationRecipientListBlock: "54CCFFFD-83A8-4BB6-A699-DDE34310BFE6",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail

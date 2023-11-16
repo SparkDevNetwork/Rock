@@ -58,7 +58,7 @@ namespace Rock.Field.Types
             return string.Empty;
         }
 
-        /// <inheritdoc>
+        /// <inheritdoc />
         public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetTextValue( privateValue, privateConfigurationValues );
