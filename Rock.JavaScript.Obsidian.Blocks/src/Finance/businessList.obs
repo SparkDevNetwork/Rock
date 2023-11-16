@@ -9,6 +9,7 @@
           stickyHeader
           liveUpdates
           @selectItem="onSelectItem"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           :personAsBusiness="true"
           :showBulkUpdate="true"
           :showCommunicate="true"
@@ -134,6 +135,16 @@
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
         }
     }
+
+    /**
+    * Called when the Add button has been clicked by the indivual.
+    */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
 
     // #endregion
 
