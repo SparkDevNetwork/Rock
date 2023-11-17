@@ -56,7 +56,6 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import EmailBox from "@Obsidian/Controls/emailBox.obs";
 import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
 import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
@@ -236,10 +235,22 @@ import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.part
 import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
 import CampusAccountAmountPickerGallery from "./ControlGallery/campusAccountAmountPickerGallery.partial.obs";
 import PersonPickerGallery from "./ControlGallery/personPickerGallery.partial.obs";
+import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
+import HighlightLabelGallery from "./ControlGallery/highlightLabelGallery.partial.obs";
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
-import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
+import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
+import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
+import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
+import PersonBasicEditorGallery from "./ControlGallery/personBasicEditorGallery.partial.obs";
+import AttributeMatrixEditorGallery from "./ControlGallery/attributeMatrixEditorGallery.partial.obs";
+import BadgeControlGallery from "./ControlGallery/badgeControlGallery.partial.obs";
+import BadgeGallery from "./ControlGallery/badgeGallery.partial.obs";
+import WarningBlockGallery from "./ControlGallery/warningBlockGallery.partial.obs";
+import KeyValueListGallery from "./ControlGallery/keyValueListGallery.partial.obs";
+import YearPickerGallery from "./ControlGallery/yearPickerGallery.partial.obs";
+import CurrencyBoxGallery from "./ControlGallery/currencyBoxGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -1555,35 +1566,6 @@ const inlineSwitchGallery = defineComponent({
     <template #settings>
         <CheckBox label="Is Bold" v-model="isBold" />
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a currency box */
-const currencyBoxGallery = defineComponent({
-    name: "CurrencyBoxGallery",
-    components: {
-        GalleryAndResult,
-        CurrencyBox
-    },
-    setup() {
-        return {
-            value: ref(1.23),
-            importCode: getControlImportPath("currencyBox"),
-            exampleCode: `<CurrencyBox label="Currency" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <CurrencyBox label="Currency" v-model="value" />
-
-    <template #settings>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Number Box</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -8046,7 +8028,7 @@ const controlGalleryComponents: Record<string, Component> = [
     socialSecurityNumberBoxGallery,
     timePickerGallery,
     ratingGallery,
-    currencyBoxGallery,
+    CurrencyBoxGallery,
     emailBoxGallery,
     numberUpDownGallery,
     staticFormControlGallery,

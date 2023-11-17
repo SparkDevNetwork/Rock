@@ -1614,6 +1614,44 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Currency Box
+
+        /// <summary>
+        /// Gets the currency info for the currency box matching the given currency code defined value Guid.
+        /// </summary>
+        /// <returns>The currency symbol and decimal places</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "CurrencyBoxGetCurrencyInfo" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6E8D0B48-EB88-4028-B03F-064A690902D4" )]
+        public IHttpActionResult CurrencyBoxGetCurrencyInfo( [FromBody] CurrencyBoxGetCurrencyInfoOptionsBag options )
+        {
+            Guid currencyCodeGuid = options.CurrencyCodeGuid;
+            RockCurrencyCodeInfo currencyInfo = null;
+
+            if ( !currencyCodeGuid.IsEmpty() )
+            {
+                var currencyCodeDefinedValueCache = DefinedValueCache.Get( currencyCodeGuid );
+                if ( currencyCodeDefinedValueCache != null )
+                {
+                    currencyInfo = new RockCurrencyCodeInfo( currencyCodeDefinedValueCache.Id );
+                }
+            }
+
+            if ( currencyInfo == null )
+            {
+                currencyInfo = new RockCurrencyCodeInfo();
+            }
+
+            return Ok( new CurrencyBoxGetCurrencyInfoResultsBag
+            {
+                Symbol = currencyInfo.Symbol,
+                DecimalPlaces = currencyInfo.DecimalPlaces
+            } );
+        }
+
+        #endregion
+
         #region Data View Picker
 
         /// <summary>
