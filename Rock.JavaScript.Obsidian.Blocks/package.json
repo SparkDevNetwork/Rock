@@ -4,7 +4,7 @@
   "scripts": {
     "build-fast": "node build/build-fast.js",
     "build": "npm run build:types && rollup --config rollup.config.cjs && echo '' > dist/.buildstamp && echo DONE",
-    "build:types": "node --max_old_space_size=4096 ./build/build-types.js",
+    "build:types": "node ./build/build-types.js",
     "watch": "rollup --config rollup.config.cjs --watch",
     "clean": "rimraf dist",
     "lint": "eslint --ext .ts src",
