@@ -302,6 +302,9 @@ registerFieldType(FieldTypeGuids.ReminderType, new ReminderTypeFieldType());
 import { ReminderTypesFieldType } from "./reminderTypesField.partial";
 registerFieldType(FieldTypeGuids.ReminderTypes, new ReminderTypesFieldType());
 
+import { ReportFieldType } from "./reportField.partial";
+registerFieldType(FieldTypeGuids.Report, new ReportFieldType());
+
 import { ScheduleFieldType } from "./scheduleField.partial";
 registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());
 
