@@ -95,29 +95,29 @@ namespace Rock.Blocks.Finance
             };
         }
 
-        protected override IQueryable<BusinessListBag> GetListQueryable(RockContext rockContext)
+        protected override IQueryable<BusinessListBag> GetListQueryable( RockContext rockContext )
         {
-            var recordTypeValueId = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid()).Id;
-            int workLocationTypeId = DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()).Id;
+            var recordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            int workLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() ).Id;
 
-            var groupTypeIdKnownRelationships = GroupTypeCache.Get(Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid()).Id;
-            var groupTypeRoleIdKnownRelationshipsOwner = GroupTypeCache.Get(Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid())
-                .Roles.FirstOrDefault(r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid()).Id;
+            var groupTypeIdKnownRelationships = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() ).Id;
+            var groupTypeRoleIdKnownRelationshipsOwner = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() )
+                .Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ).Id;
 
             // Fetch the businesses
-            var businessQueryable = new PersonService(rockContext)
-                .Queryable("PhoneNumbers, GivingGroup.GroupLocations.Location, PrimaryCampus")
-                .Where(p => p.RecordTypeValueId == recordTypeValueId);
+            var businessQueryable = new PersonService( rockContext )
+                .Queryable( "PhoneNumbers, GivingGroup.GroupLocations.Location, PrimaryCampus" )
+                .Where( p => p.RecordTypeValueId == recordTypeValueId );
 
             // Retrieve SearchTerm from the current HTTP context
-            var searchTerm = PageParameter("SearchTerm");
-            if (!string.IsNullOrWhiteSpace(searchTerm))
+            var searchTerm = PageParameter( "SearchTerm" );
+            if ( !string.IsNullOrWhiteSpace( searchTerm ) )
             {
-                businessQueryable = businessQueryable.Where(p => p.LastName.Contains(searchTerm));
+                businessQueryable = businessQueryable.Where( p => p.LastName.Contains( searchTerm ) );
             }
 
             // Project the data to BusinessListBag
-            return businessQueryable.Select(p => new BusinessListBag
+            return businessQueryable.Select( p => new BusinessListBag
             {
                 Id = p.Id,
                    BusinessName = p.LastName,
