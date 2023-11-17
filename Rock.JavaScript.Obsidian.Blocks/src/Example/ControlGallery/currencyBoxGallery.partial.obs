@@ -1,0 +1,29 @@
+<template>
+    <GalleryAndResult
+                      :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <CurrencyBox label="Currency" v-model="value" currencyCodeDefinedValueGuid="3F473DE6-435E-408D-A938-A38E48970B71" />
+
+        <template #settings>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Number Box</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref(1.23);
+
+    const importCode = getSfcControlImportPath("currencyBox");
+    const exampleCode = computed(() => {
+        return `<CurrencyBox label="Currency" v-model="value" />`;
+    });
+</script>

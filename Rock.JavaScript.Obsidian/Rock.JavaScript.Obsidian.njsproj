@@ -1207,6 +1207,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\contentChannelItemPickerGetAllForContentChannelItemOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\contentChannelItemPickerGetAllForContentChannelItemResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\contentChannelItemPickerGetContentChannelItemsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\currencyBoxGetCurrencyInfoOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\currencyBoxGetCurrencyInfoResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\dataViewPickerGetDataViewsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\componentPickerGetComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\definedValuePickerGetAttributesOptionsBag.d.ts" />

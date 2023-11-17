@@ -427,6 +427,8 @@
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Controls\RockCacheabilityBag.cs" />
     <Compile Include="Rest\Controls\BadgeControlGetBadgeOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />
+    <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoOptionsBag.cs" />
     <Compile Include="Rest\Controls\MatrixFieldDataBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorPublicItemBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueResultsBag.cs" />
