@@ -95,6 +95,8 @@
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceWorkflowBag.cs" />
+    <Compile Include="Blocks\Finance\BusinessList\BusinessListBag.cs" />
+    <Compile Include="Blocks\Finance\BusinessList\BusinessListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountParticipantBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountDetailOptionsBag.cs" />
