@@ -219,6 +219,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_161_SWAP_FINANCIAL_BATCH_LIST = "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE";
 
         /// <summary>
+        /// The Job to run Post v16.1 Data Migrations to swap AccountEntry and Login web forms blocks with obisdian blocks.
+        /// </summary>
+        public const string DATA_MIGRATIONS_161_CHOP_ACCOUNTENTRY_AND_LOGIN = "A65D26C1-229E-4198-B388-E269C3534BC0";
+
+        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
