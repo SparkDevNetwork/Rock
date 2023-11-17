@@ -96,11 +96,11 @@
     const computedRules = computed((): ValidationRule[] => {
         const rules = normalizeRules(props.rules);
 
-        if (props.maximumValue !== null && props.maximumValue !== undefined) {
+        if (props.maximumValue != null) {
             rules.push(`lte:${props.maximumValue}`);
         }
 
-        if (props.minimumValue !== null && props.minimumValue !== undefined) {
+        if (props.minimumValue != null) {
             rules.push(`gte:${props.minimumValue}`);
         }
 
