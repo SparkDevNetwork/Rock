@@ -559,6 +559,11 @@ namespace Rock.SystemGuid
         public const string PAGE_REFERENCE = "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108";
 
         /// <summary>
+        /// Persisted Dataset field type
+        /// </summary>
+        public const string PERSISTED_DATASET = "392865C4-F17B-4832-AB59-20F72BB1C9F6";
+
+        /// <summary>
         /// Person field type
         /// </summary>
         public const string PERSON = "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70";

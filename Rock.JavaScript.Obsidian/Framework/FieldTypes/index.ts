@@ -278,6 +278,9 @@ registerFieldType(FieldTypeGuids.NoteType, new NoteTypeField());
 import { NoteTypesField } from "./noteTypesField.partial";
 registerFieldType(FieldTypeGuids.NoteTypes, new NoteTypesField());
 
+import { PersistedDatasetField } from "./persistedDatasetField.partial";
+registerFieldType(FieldTypeGuids.PersistedDataset, new PersistedDatasetField());
+
 import { PhoneNumberFieldType } from "./phoneNumberField.partial";
 registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
 

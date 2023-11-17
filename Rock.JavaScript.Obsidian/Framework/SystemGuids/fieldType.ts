@@ -237,6 +237,8 @@ export const FieldType = {
     NoteTypes: "276CCA63-5670-48CA-8B5A-2AAC97E8EE5E",
     /** Page Reference field type */
     PageReference: "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108",
+    /** Persisted Dataset field type */
+    PersistedDataset: "392865C4-F17B-4832-AB59-20F72BB1C9F6",
     /** Person field type */
     Person: "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70",
     /** Person Badges field type */
