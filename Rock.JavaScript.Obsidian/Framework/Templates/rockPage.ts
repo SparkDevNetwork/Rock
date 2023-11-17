@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { App, Component, createApp, defineComponent, h, markRaw, onMounted, VNode } from "vue";
+import { App, Component, createApp, defineComponent, h, markRaw, onMounted, provide, VNode } from "vue";
 import RockBlock from "./rockBlock.partial";
 import { useStore } from "@Obsidian/PageState";
 import "@Obsidian/ValidationRules";
@@ -24,6 +24,11 @@ import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockCo
 import { PageConfig } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspense";
+import { alert } from "@Obsidian/Utility/dialogs";
+import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
+import { InvokeBlockActionFunc } from "@Obsidian/Types/Utility/block";
+import { doApiCall, provideHttp } from "@Obsidian/Utility/http";
+import { provideBlockGuid } from "@Obsidian/Utility/block";
 
 type DebugTimingConfig = {
     elementId: string;
@@ -180,10 +185,100 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
 }
 
 /**
-* This should be called once per page with data from the server that pertains to the entire page. This includes things like
-* page parameters and context entities.
-* @param {object} pageData
-*/
+ * Loads and shows a custom block action. This is a special purpose function
+ * designed to be used only by the WebForms PageZoneBlocksEditor.ascx.cs control.
+ * It will be removed once WebForms blocks are no longer supported.
+ *
+ * @param actionFileUrl The component file URL for the action handler.
+ * @param pageGuid The unique identifier of the page.
+ * @param blockGuid The unique identifier of the block.
+ */
+export async function showCustomBlockAction(actionFileUrl: string, pageGuid: string, blockGuid: string): Promise<void> {
+    let actionComponent: Component | null = null;
+
+    try {
+        const actionComponentModule = await import(actionFileUrl);
+        actionComponent = actionComponentModule ?
+            (actionComponentModule.default || actionComponentModule) :
+            null;
+    }
+    catch (e) {
+        // Log the error, but continue setting up the app so the UI will show the user an error
+        console.error(e);
+        alert("There was an error trying to show these settings.");
+        return;
+    }
+
+    const name = `Action${actionFileUrl.replace(/\//g, ".")}`;
+
+    const app = createApp({
+        name,
+        components: {
+        },
+        setup() {
+            // Create a suspense provider so we can monitor any asynchronous load
+            // operations that should delay the display of the page.
+            const suspense = new BasicSuspenseProvider(undefined);
+            provideSuspense(suspense);
+
+            const httpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> => {
+                return await doApiCall<T>(method, url, params, data);
+            };
+
+            const get = async <T>(url: string, params: HttpUrlParams = undefined): Promise<HttpResult<T>> => {
+                return await httpCall<T>("GET", url, params);
+            };
+
+            const post = async <T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> => {
+                return await httpCall<T>("POST", url, params, data);
+            };
+
+            const invokeBlockAction: InvokeBlockActionFunc = async <T>(actionName: string, data: HttpBodyData = undefined) => {
+                return await post<T>(`/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`, undefined, {
+                    __context: {
+                        pageParameters: store.state.pageParameters
+                    },
+                    ...data
+                });
+            };
+
+            provideHttp({
+                doApiCall,
+                get,
+                post
+            });
+            provide("invokeBlockAction", invokeBlockAction);
+            provideBlockGuid(blockGuid);
+
+            return {
+                actionComponent,
+                onCustomActionClose
+            };
+        },
+
+        // Note: We are using a custom alert so there is not a dependency on
+        // the Controls package.
+        template: `<component :is="actionComponent" @close="onCustomActionClose" />`
+    });
+
+    function onCustomActionClose(): void {
+        app.unmount();
+        rootElement.remove();
+    }
+
+    const rootElement = document.createElement("div");
+    document.body.append(rootElement);
+
+    app.component("v-style", developerStyle);
+    app.mount(rootElement);
+}
+
+/**
+ * This should be called once per page with data from the server that pertains to the entire page. This includes things like
+ * page parameters and context entities.
+ *
+ * @param {object} pageConfig
+ */
 export async function initializePage(pageConfig: PageConfig): Promise<void> {
     await store.initialize(pageConfig);
 }

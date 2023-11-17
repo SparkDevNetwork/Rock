@@ -25,7 +25,7 @@ export default defineComponent({
         ...standardColumnProps,
 
         action: {
-            type: Function as PropType<(key: string) => void>,
+            type: Function as PropType<((key: string) => void) | ((key: object) => void)>,
             required: false
         },
 

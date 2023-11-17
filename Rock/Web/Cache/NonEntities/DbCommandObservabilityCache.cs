@@ -15,13 +15,11 @@
 // </copyright>
 //
 
-using Rock.Data;
-using System.Collections.Concurrent;
 using System;
-using DocumentFormat.OpenXml.Spreadsheet;
 using System.Collections.Generic;
-using Rock.SystemKey;
 using System.Linq;
+
+using Rock.SystemKey;
 
 namespace Rock.Web.Cache.NonEntities
 {
@@ -205,7 +203,7 @@ namespace Rock.Web.Cache.NonEntities
                 return "undefined";
             }
 
-            var indexOfFrom = commandText.IndexOfNth( "from", iterationCount, StringComparison.OrdinalIgnoreCase );
+            var indexOfFrom = commandText.IndexOfNth( "from ", iterationCount, StringComparison.OrdinalIgnoreCase );
 
             if ( indexOfFrom > 0 )
             {

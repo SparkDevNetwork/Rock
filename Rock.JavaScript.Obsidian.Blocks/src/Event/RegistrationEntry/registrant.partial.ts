@@ -26,6 +26,7 @@ import RockButton from "@Obsidian/Controls/rockButton.obs";
 import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import Captcha from "@Obsidian/Controls/captcha.obs";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import RockForm from "@Obsidian/Controls/rockForm.obs";
@@ -40,6 +41,7 @@ import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electron
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
+import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
 const store = useStore();
 
@@ -76,7 +78,8 @@ export default defineComponent({
         RockForm,
         FeeField,
         DropDownList,
-        ItemsWithPreAndPostHtml
+        ItemsWithPreAndPostHtml,
+        Captcha
     },
     props: {
         currentRegistrant: {
@@ -99,6 +102,8 @@ export default defineComponent({
         const formResetKey = ref("");
         const isNextDisabled = ref(false);
         const isSignatureDrawn = computed((): boolean => registrationEntryState.viewModel.isSignatureDrawn);
+        const isCaptchaValid = ref("");
+        const disableCaptcha = ref(registrationEntryState.viewModel.disableCaptchaSupport);
 
         for (const fee of registrationEntryState.viewModel.fees) {
             for (const feeItem of fee.items) {
@@ -117,7 +122,9 @@ export default defineComponent({
             registrationEntryState,
             signatureData,
             signatureSource,
-            signatureToken
+            signatureToken,
+            isCaptchaValid,
+            disableCaptcha
         };
     },
     updated() {
@@ -355,14 +362,18 @@ export default defineComponent({
                     });
 
                     if (result.isSuccess && result.data) {
-                        this.signatureSource = (result.data as Record<string, string>).documentHtml;
-                        this.signatureToken = (result.data as Record<string, string>).securityToken;
+                        const data = (result.data as Record<string, string>);
 
-                        lastFormIndex += 1;
+                        if (data.existingSignatureDocumentGuid) {
+                            this.currentRegistrant.existingSignatureDocumentGuid = data.existingSignatureDocumentGuid;
+                        }
+                        else {
+                            this.signatureSource = data.documentHtml;
+                            this.signatureToken = data.securityToken;
+
+                            lastFormIndex += 1;
+                        }
                     }
-                    // If the response is successful but the backend does not return a data, then the Signature Document is not required for the current
-                    // registrant. We may continue execution.
-                    else if (result.isSuccess) { }
                     else {
                         console.error(result.data);
                         return;
@@ -372,6 +383,8 @@ export default defineComponent({
                     this.isNextDisabled = false;
                 }
             }
+
+            this.registrationEntryState.isCaptchValid = asBoolean(this.isCaptchaValid);
 
             if (this.currentFormIndex >= lastFormIndex) {
                 this.$emit("next");
@@ -610,6 +623,8 @@ export default defineComponent({
                 <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" :documentTerm="signatureDocumentTerm" />
             </div>
         </div>
+
+        <Captcha v-if="!disableCaptcha" v-model="isCaptchaValid" />
 
         <div class="actions row">
             <div class="col-xs-6">

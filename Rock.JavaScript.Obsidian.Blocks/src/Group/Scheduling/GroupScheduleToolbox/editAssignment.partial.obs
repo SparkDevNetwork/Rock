@@ -52,7 +52,7 @@
 
         optionsRequest: {
             type: Object as PropType<GetAssignmentOptionsRequestBag | null>,
-            requrired: true
+            required: true
         }
     });
 
@@ -174,7 +174,7 @@
         isSavingAssignment.value = false;
 
         if (!result.isSuccess) {
-            blockActionErrorMessage.value = result.errorMessage || "Unkown error while trying to save assignment.";
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to save assignment.";
             return;
         }
 

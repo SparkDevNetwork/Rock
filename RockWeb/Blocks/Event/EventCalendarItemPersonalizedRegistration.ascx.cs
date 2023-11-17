@@ -197,16 +197,13 @@ namespace RockWeb.Blocks.Event
                                 .Select( m => m.EventItemOccurrence )
                                 .FirstOrDefault();
 
-            var registrationLinkages = eventGroup.Linkages.ToList();
+            var registrationLinkage = eventGroup?.Linkages?.FirstOrDefault();
 
-
-            if ( registrationLinkages.Count() == 0 )
+            if ( registrationLinkage == null )
             {
                 lErrors.Text = "<div class='alert alert-warning'>No registration instances exists for this event.</div>";
                 return;
             }
-
-            EventItemOccurrenceGroupMap registrationLinkage = registrationLinkages.First(); 
 
             // create new registration
             var registrationService = new RegistrationService( rockContext );
@@ -222,9 +219,12 @@ namespace RockWeb.Blocks.Event
             registration.IsTemporary = true;
 
             // add registrants
+            var registrationTemplateId = registrationLinkage.RegistrationInstance?.RegistrationTemplateId ?? 0;
+
             foreach ( int registrantId in cblRegistrants.SelectedValuesAsInt )
             {
-                RegistrationRegistrant registrant = new RegistrationRegistrant();
+                var registrant = new RegistrationRegistrant();
+                registrant.RegistrationTemplateId = registrationTemplateId;
                 registrant.PersonAliasId = registrantId;
                 registration.Registrants.Add( registrant );
             }
@@ -332,15 +332,18 @@ namespace RockWeb.Blocks.Event
 
             List<EventSummary> eventSummaries = new List<EventSummary>();
 
-            // go through campus event schedules looking for upcoming dates
+            // Add all of the upcoming dates for this Event Occurrence within the specified look-ahead period.
+            var fromDate = RockDateTime.Now;
+            var toDate = fromDate.AddDays( _daysInRange );
+
             foreach ( var eventItemOccurrence in eventItemOccurrences )
             {
-                var startDate = eventItemOccurrence.GetFirstStartDateTime();
+                var startDates = eventItemOccurrence.GetStartTimes( fromDate, toDate );
 
-                if ( startDate.HasValue && startDate > RockDateTime.Now )
+                foreach ( var startDate in startDates )
                 {
-                    EventSummary eventSummary = new EventSummary();
-                    eventSummary.StartDate = startDate.Value;
+                    var eventSummary = new EventSummary();
+                    eventSummary.StartDate = startDate;
                     eventSummary.Name = eventItemOccurrence.EventItem.Name;
                     eventSummary.Location = eventItemOccurrence.Location;
                     eventSummary.Id = eventItemOccurrence.Id;

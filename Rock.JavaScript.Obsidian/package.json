@@ -5,7 +5,7 @@
     "build-fast": "node Build/build-fast.js",
     "build": "npm run build-core && npm run build-framework && npm run copy-webforms-core && echo '' > dist/.buildstamp && echo DONE",
     "build:types": "node ./Build/build-types.js",
-    "build-framework": "npm run build:types && rollup --config Framework/rollup.config.cjs",
+    "build-framework": "npm run build:types && node build/rollup-mt.js Framework/rollup.config.cjs",
     "build-core": "webpack --no-color && lessc --js System/vendor.less dist/System/obsidian-vendor.css && cleancss --source-map dist/System/obsidian-vendor.css -o dist/System/obsidian-vendor.min.css",
     "watch": "rollup --config Framework/rollup.config.cjs --watch",
     "copy-webforms-core": "copyfiles -u 2 \"dist/System/*\" \"../RockWeb/Obsidian/\"",

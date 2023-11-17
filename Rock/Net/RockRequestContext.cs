@@ -192,11 +192,12 @@ namespace Rock.Net
         /// </summary>
         /// <param name="request">The request from an HttpContext load that we will initialize from.</param>
         /// <param name="response">The object that handles response updates.</param>
-        internal RockRequestContext( HttpRequest request, IRockResponseContext response )
+        /// <param name="currentUser">The currently logged in user.</param>
+        internal RockRequestContext( HttpRequest request, IRockResponseContext response, UserLogin currentUser )
         {
             Response = response;
 
-            CurrentUser = UserLoginService.GetCurrentUser( true );
+            CurrentUser = currentUser;
 
             RequestUri = request.UrlProxySafe();
             RootUrlPath = GetRootUrlPath( RequestUri );
@@ -241,11 +242,12 @@ namespace Rock.Net
         /// </summary>
         /// <param name="request">The request that we will initialize from.</param>
         /// <param name="response">The object that handles response updates.</param>
-        internal RockRequestContext( IRequest request, IRockResponseContext response )
+        /// <param name="currentUser">The currently logged in user.</param>
+        internal RockRequestContext( IRequest request, IRockResponseContext response, UserLogin currentUser )
         {
             Response = response;
 
-            CurrentUser = UserLoginService.GetCurrentUser( true );
+            CurrentUser = currentUser;
 
             RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
             RootUrlPath = GetRootUrlPath( RequestUri );

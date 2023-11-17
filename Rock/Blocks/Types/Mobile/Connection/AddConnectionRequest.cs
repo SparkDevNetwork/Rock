@@ -250,7 +250,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="connectionOpportunityId">The connection opportunity id.</param>
         /// <param name="rockContext">The Rock database context.</param>
         /// <returns>A list of connectors that are valid for the request.</returns>
-        private List<ListItemViewModel> GetAvailableConnectors( int connectionOpportunityId, RockContext rockContext )
+        private List<ConnectorBag> GetAvailableConnectors( int connectionOpportunityId, RockContext rockContext )
         {
             var additionalConnectorAliasIds = new List<int>();
 
@@ -260,12 +260,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 additionalConnectorAliasIds.Add( RequestContext.CurrentPerson.PrimaryAliasId.Value );
             }
 
-            return GetConnectionOpportunityConnectors( connectionOpportunityId, null, additionalConnectorAliasIds, rockContext )
-                .Select( connector => new ListItemViewModel
-                {
-                    Text = connector.FullName,
-                    Value = connector.Id
-                } ).ToList();
+            return GetConnectionOpportunityConnectors( connectionOpportunityId, null, additionalConnectorAliasIds, rockContext );
         }
 
         /// <summary>
@@ -276,7 +271,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <param name="additionalPersonAliasIds">The additional person alias ids.</param>
         /// <param name="rockContext">The Rock database context.</param>
         /// <returns>A list of connectors that are valid for the request.</returns>
-        private static List<ConnectorItemViewModel> GetConnectionOpportunityConnectors( int connectionOpportunityId, Guid? campusGuid, List<int> additionalPersonAliasIds, RockContext rockContext )
+        private static List<ConnectorBag> GetConnectionOpportunityConnectors( int connectionOpportunityId, Guid? campusGuid, List<int> additionalPersonAliasIds, RockContext rockContext )
         {
             var connectorGroupService = new ConnectionOpportunityConnectorGroupService( rockContext );
             var personAliasService = new PersonAliasService( rockContext );
@@ -287,16 +282,20 @@ namespace Rock.Blocks.Types.Mobile.Connection
             var connectorList = connectorGroupService.Queryable()
                 .Where( a => a.ConnectionOpportunityId == connectionOpportunityId
                     && ( !campusGuid.HasValue || a.ConnectorGroup.Campus.Guid == campusGuid ) )
-                .SelectMany( g => g.ConnectorGroup.Members )
-                .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                 .AsEnumerable()
-                .Select( m => new ConnectorItemViewModel
+
+                // First select the members along with the connector group CampusId.
+                .SelectMany( a => a.ConnectorGroup.Members.Select( m => new { Member = m, CampusIdKey = a.ConnectorGroup.Campus.IdKey } ) )
+                .Where( m => m.Member.GroupMemberStatus == GroupMemberStatus.Active )
+                .AsEnumerable()
+                .Select( m => new ConnectorBag
                 {
-                    Guid = m.Person.Guid,
-                    FullName = m.Person.FullName,
-                    FirstName = m.Person.NickName,
-                    LastName = m.Person.LastName,
-                    Id = m.Person.IdKey
+                    Text = m.Member.Person.FullName,
+                    Value = m.Member.Person.IdKey,
+                    FirstName = m.Member.Person.FirstName,
+                    LastName = m.Member.Person.LastName,
+                    ConnectorGroupCampusId = m.CampusIdKey,
+                    CampusGuid = m.Member.Person.PrimaryCampus?.Guid
                 } )
                 .ToList();
 
@@ -307,14 +306,14 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var additionalPeople = personAliasService.Queryable()
                     .Where( pa => additionalPersonAliasIds.Contains( pa.Id ) )
                     .AsEnumerable()
-                    .Select( pa => new ConnectorItemViewModel
+                    .Select( pa => new ConnectorBag
                     {
-                        Guid = pa.Guid,
                         FirstName = pa.Person.NickName,
-                        FullName = pa.Person.FullName,
+                        Text = pa.Person.FullName,
                         LastName = pa.Person.LastName,
-                        CampusGuid = null,
-                        Id = pa.Person.IdKey
+                        Value = pa.Person.IdKey,
+                        ConnectorGroupCampusId = null,
+                        CampusGuid = pa.Person.PrimaryCampus?.Guid
                     } )
                     .ToList();
 
@@ -324,7 +323,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             // Distinct by both the person Guid and the CampusGuid. We could
             // still have duplicate people, but that will be up to the client
             // to sort out. Then apply final sorting.
-            return connectorList.GroupBy( c => new { c.Guid, c.CampusGuid } )
+            return connectorList.GroupBy( c => new { c.Value, c.CampusGuid } )
                 .Select( g => g.First() )
                 .OrderBy( c => c.LastName )
                 .ThenBy( c => c.FirstName )
@@ -360,7 +359,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 {
                     if ( attributes.ContainsKey( kvp.Key ) )
                     {
-                        attributes[kvp.Key].Value = kvp.Value;
+                        attributes[ kvp.Key ].Value = kvp.Value;
                     }
                 } );
 
@@ -742,7 +741,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             {
                 var saveResult = SaveConnectionRequest( requestBag, rockContext );
 
-                if( saveResult.IsNullOrWhiteSpace() )
+                if ( saveResult.IsNullOrWhiteSpace() )
                 {
                     return ActionBadRequest( "There was an error creating the connection request." );
                 }

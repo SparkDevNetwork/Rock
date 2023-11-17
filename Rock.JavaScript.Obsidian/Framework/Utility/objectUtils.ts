@@ -21,3 +21,11 @@ export function fromEntries(entries: Iterable<[PropertyKey, string]>): Record<st
     }
     return res;
 }
+
+/**
+ * Clone an object/array. Only works with values that can be converted to JSON, which means no
+ * functions, self-/circular references, etc.
+ */
+export function clone<T>(obj:T) : T {
+    return JSON.parse(JSON.stringify(obj));
+}

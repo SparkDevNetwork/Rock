@@ -8,22 +8,6 @@
     </div>
 </template>
 
-<script lang="ts">
-    declare global {
-        /* eslint-disable @typescript-eslint/naming-convention */
-        interface Window {
-            Rock: {
-                controls: {
-                    datePicker: {
-                        initialize: (args: Record<string, unknown>) => void
-                    }
-                }
-            }
-        }
-        /* eslint-enable @typescript-eslint/naming-convention */
-    }
-</script>
-
 <script setup lang="ts">
     import { computed, onMounted, PropType, watch, ref, nextTick } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -86,6 +70,16 @@
          */
         container: {
             type: HTMLElement as PropType<HTMLElement | null>,
+            required: false
+        },
+
+        /**
+         * The horizontal orientation of the popup. Left will attempt to keep
+         * the left edge aligned with the control and right will attempt to
+         * keep the right edge aligned with the control.
+         */
+        horizontalOrientation: {
+            type: String as PropType<"left" | "right">,
             required: false
         }
     });
@@ -153,7 +147,8 @@
             onChangeScript: () => {
                 internalValue.value = input.value;
             },
-            container: props.container ?? "body"
+            container: props.container ?? "body",
+            orientation: props.horizontalOrientation || "auto"
         });
     }
 
@@ -193,6 +188,5 @@
         });
     });
 
-        // #endregion
-
+    // #endregion
 </script>

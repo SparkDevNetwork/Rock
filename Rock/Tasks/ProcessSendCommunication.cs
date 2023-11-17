@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Utility;
 
 namespace Rock.Tasks
 {
@@ -34,7 +35,7 @@ namespace Rock.Tasks
             using ( var rockContext = new RockContext() )
             {
                 var communication = new CommunicationService( rockContext ).Get( message.CommunicationId );
-                AsyncHelper.RunSync( () => Model.Communication.SendAsync( communication ) );
+                Task.Run( async () => await Model.Communication.SendAsync( communication ) );
             }
         }
 

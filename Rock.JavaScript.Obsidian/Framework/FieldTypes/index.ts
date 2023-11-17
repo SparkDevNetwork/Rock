@@ -32,6 +32,9 @@ registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 import { AssessmentTypesFieldType } from "./assessmentTypesField.partial";
 registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType());
 
+import { AssetStorageProviderFieldType } from "./assetStorageProviderField.partial";
+registerFieldType(FieldTypeGuids.AssetStorageProvider, new AssetStorageProviderFieldType());
+
 import { AudioFileFieldType } from "./audioFileField.partial";
 registerFieldType(FieldTypeGuids.AudioFile, new AudioFileFieldType());
 
@@ -43,6 +46,9 @@ registerFieldType(FieldTypeGuids.Badges, new BadgesFieldType());
 
 import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
 registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
+
+import { BenevolenceRequestFieldType } from "./benevolenceRequestField.partial";
+registerFieldType(FieldTypeGuids.BenevolenceRequest, new BenevolenceRequestFieldType());
 
 import { BinaryFileTypeFieldType } from "./binaryFileTypeField.partial";
 registerFieldType(FieldTypeGuids.BinaryFileType, new BinaryFileTypeFieldType());
@@ -158,6 +164,9 @@ registerFieldType(FieldTypeGuids.DefinedValue, new DefinedValueFieldType());
 import { DefinedValueRangeFieldType } from "./definedValueRangeField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldType());
 
+import { DocumentTypeFieldType } from "./documentTypeField.partial";
+registerFieldType(FieldTypeGuids.DocumentType, new DocumentTypeFieldType());
+
 import { EmailFieldType } from "./emailField.partial";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
 
@@ -239,6 +248,9 @@ registerFieldType(FieldTypeGuids.LavaCommands, new LavaCommandsFieldType());
 import { LocationListFieldType } from "./locationListField.partial";
 registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 
+import { MatrixFieldType } from "./matrixField.partial";
+registerFieldType(FieldTypeGuids.Matrix, new MatrixFieldType());
+
 import { MemoFieldType } from "./memoField.partial";
 registerFieldType(FieldTypeGuids.Memo, new MemoFieldType());
 
@@ -268,6 +280,9 @@ registerFieldType(FieldTypeGuids.NoteTypes, new NoteTypesField());
 
 import { PhoneNumberFieldType } from "./phoneNumberField.partial";
 registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
+
+import { PageReferenceFieldType } from "./pageReferenceField.partial";
+registerFieldType(FieldTypeGuids.PageReference, new PageReferenceFieldType());
 
 import { PersonFieldType } from "./personField.partial";
 registerFieldType(FieldTypeGuids.Person, new PersonFieldType());
@@ -305,8 +320,20 @@ registerFieldType(FieldTypeGuids.SocialMediaAccount, new SocialMediaAccountField
 import { SiteFieldType } from "./siteField.partial";
 registerFieldType(FieldTypeGuids.Site, new SiteFieldType());
 
+import { StepProgramFieldType } from "./stepProgramField.partial";
+registerFieldType(FieldTypeGuids.StepProgram, new StepProgramFieldType());
+
 import { SSNFieldType } from "./ssnField.partial";
 registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
+
+import { StepFieldType } from "./stepField.partial";
+registerFieldType(FieldTypeGuids.Step, new StepFieldType());
+
+import { StepProgramStepStatusFieldType } from "./stepProgramStepStatusField.partial";
+registerFieldType(FieldTypeGuids.StepProgramStepStatus, new StepProgramStepStatusFieldType());
+
+import { StepProgramStepTypeFieldType } from "./stepProgramStepTypeField.partial";
+registerFieldType(FieldTypeGuids.StepProgramStepType, new StepProgramStepTypeFieldType());
 
 import { StreakTypeFieldType } from "./streakTypeField.partial";
 registerFieldType(FieldTypeGuids.StreakType, new StreakTypeFieldType());
@@ -328,3 +355,9 @@ registerFieldType(FieldTypeGuids.UrlLink, new UrlLinkFieldType());
 
 import { ValueListFieldType } from "./valueListField.partial";
 registerFieldType(FieldTypeGuids.ValueList, new ValueListFieldType());
+
+import { VideoUrlFieldType } from "./videoUrlField.partial";
+registerFieldType(FieldTypeGuids.VideoUrl, new VideoUrlFieldType());
+
+import { VideoFileFieldType } from "./videoFileField.partial";
+registerFieldType(FieldTypeGuids.VideoFile, new VideoFileFieldType());

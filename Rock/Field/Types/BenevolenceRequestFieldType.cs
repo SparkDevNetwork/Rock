@@ -32,7 +32,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Benevolence Request
     /// Stored as BenevolenceRequest.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BENEVOLENCE_REQUEST )]
     public class BenevolenceRequestFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {

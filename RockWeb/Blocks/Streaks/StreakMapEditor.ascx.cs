@@ -358,14 +358,45 @@ namespace RockWeb.Blocks.Streaks
 
             lTitle.Text = GetTargetMapTitle();
             var map = GetTargetMap();
-            var errorMessage = string.Empty;
-            var isDaily = streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
 
             var dateRange = GetDateRange();
             var startDate = StreakTypeService.AlignDate( dateRange.Start.Value, streakTypeCache );
             var endDate = StreakTypeService.AlignDate( dateRange.End.Value, streakTypeCache );
 
-            cblCheckboxes.Label = isDaily ? "Days" : "Weeks";
+            // Change values based on streakTypeCache.OccurrenceFrequency (Days/Weeks/Months/Years).
+            string dateTimeFormat;
+            Func<DateTime, int, DateTime> dateTimeGenerator;
+
+            switch ( streakTypeCache.OccurrenceFrequency )
+            {
+                case StreakOccurrenceFrequency.Daily:
+                    cblCheckboxes.Label = "Days";
+                    // Format as "ddd, MMM dd, yyyy" (ex. Wed, Jan 02, 2019).
+                    dateTimeFormat = "ddd, MMM dd, yyyy";
+                    dateTimeGenerator = ( d, i ) => d.AddDays( i );
+                    break;
+                case StreakOccurrenceFrequency.Weekly:
+                    cblCheckboxes.Label = "Weeks";
+                    // Format as "MMM dd, yyyy" (ex. Jan 02, 2019).
+                    dateTimeFormat = "MMM dd, yyyy";
+                    dateTimeGenerator = ( d, i ) => d.AddDays( i * DaysPerWeek );
+                    break;
+                case StreakOccurrenceFrequency.Monthly:
+                    cblCheckboxes.Label = "Months";
+                    // Format as "MMM yyyy" (ex. Jan 2019).
+                    dateTimeFormat = "MMM yyyy";
+                    dateTimeGenerator = ( d, i ) => d.AddMonths( i );
+                    break;
+                case StreakOccurrenceFrequency.Yearly:
+                    cblCheckboxes.Label = "Years";
+                    // Format as "yyyy" (ex. 2019).
+                    dateTimeFormat = "yyyy";
+                    dateTimeGenerator = ( d, i ) => d.AddYears( i );
+                    break;
+                default:
+                    throw new NotImplementedException( $"StreakOccurrenceFrequency '{streakTypeCache.OccurrenceFrequency}' is not implemented" );
+            }
+
             cblCheckboxes.Items.Clear();
 
             var minDate = GetMinDate();
@@ -374,38 +405,17 @@ namespace RockWeb.Blocks.Streaks
 
             for ( var i = 0; i < checkboxCount; i++ )
             {
-                var representedDate = startDate.AddDays( isDaily ? i : ( i * DaysPerWeek ) );
-
+                var representedDate = dateTimeGenerator( startDate, i );
                 cblCheckboxes.Items.Add( new ListItem
                 {
                     Enabled = representedDate >= minDate && representedDate <= maxDate,
-                    Selected = StreakTypeService.IsBitSet( streakTypeCache, map, representedDate, out errorMessage ),
-                    Text = GetLabel( isDaily, representedDate ),
+                    Selected = StreakTypeService.IsBitSet( streakTypeCache, map, representedDate, out _ ),
+                    Text = representedDate.ToString( dateTimeFormat ),
                     Value = representedDate.ToISO8601DateString()
                 } );
             }
 
             cblCheckboxes.DataBind();
-        }
-
-        /// <summary>
-        /// Get the label for the checkbox control
-        /// </summary>
-        /// <param name="isDaily"></param>
-        /// <param name="representedDate"></param>
-        /// <returns></returns>
-        private string GetLabel( bool isDaily, DateTime representedDate )
-        {
-            if ( isDaily )
-            {
-                const string dateFormat = "ddd, MMM dd, yyyy";
-                return representedDate.ToString( dateFormat );
-            }
-            else
-            {
-                const string dateFormat = "MMM dd, yyyy";
-                return representedDate.ToString( dateFormat );
-            }
         }
 
         /// <summary>

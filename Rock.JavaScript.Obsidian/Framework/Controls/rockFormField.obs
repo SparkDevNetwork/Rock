@@ -28,6 +28,18 @@
                 required: true
             },
 
+            /**
+             * If the modelValue is an object or array and its properties get changed, normally
+             * that doesn't trigger a re-validation. If you enable this, it'll watch more deeply for
+             * changes, therefore being able to trigger on any change to the modelValue. Only use
+             * this when you actually need to because it can potentially cause performance issues
+             * and unintended side effects.
+             */
+            watchDeep: {
+                type: Boolean,
+                default: false
+            },
+
             name: {
                 type: String,
                 required: true
@@ -89,7 +101,8 @@
                     formState?.setError(uniqueId, fieldLabel.value, "");
                 }
             }, {
-                immediate: true
+                immediate: true,
+                deep: props.watchDeep
             });
 
             // If we are removed from the DOM completely, clear the error before we go.

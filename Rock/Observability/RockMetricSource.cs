@@ -262,6 +262,11 @@ namespace Rock.Observability
 
                     foreach ( DriveInfo d in allDrives )
                     {
+                        // If the device is not ready, ignore it to avoid an access error.
+                        if ( !d.IsReady )
+                        {
+                            continue;
+                        }
                         var tags = _commonTags;
                         tags.Add( "volume", d.Name );
                         measures[measureCount++] = new Measurement<double>( d.TotalFreeSpace, tags );

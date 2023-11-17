@@ -123,6 +123,7 @@ export type RegistrationEntryBlockViewModel = {
     signatureDocumentTemplateName?: string | null;
 
     hideProgressBar: boolean;
+    disableCaptchaSupport: boolean;
 };
 
 export type RegistrationEntryBlockFamilyMemberViewModel = {
@@ -185,6 +186,7 @@ export type RegistrantInfo = {
     fieldValues: Record<Guid, unknown>;
     cost: number;
     feeItemQuantities: Record<Guid, number>;
+    existingSignatureDocumentGuid?: Guid | null,
     signatureData?: string | null;
 
     guid: Guid;
@@ -215,6 +217,7 @@ export type RegistrationEntryBlockArgs = {
     gatewayToken: string | null;
     discountCode: string | null;
     amountToPayNow: number;
+    isCaptchaValid: boolean;
 };
 
 export type RegistrationEntryBlockSession = RegistrationEntryBlockArgs & {
@@ -263,4 +266,5 @@ export type RegistrationEntryState = {
     sessionExpirationDateMs: number | null;
     registrationSessionGuid: Guid;
     ownFamilyGuid: Guid;
+    isCaptchValid: boolean;
 };

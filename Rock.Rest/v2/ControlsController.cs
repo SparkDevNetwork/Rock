@@ -23,6 +23,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Http;
+
 using Rock.Attribute;
 using Rock.Badge;
 using Rock.ClientService.Core.Category;
@@ -602,6 +603,40 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Attribute Matrix Editor
+
+        /// <summary>
+        /// Take the public edit values for a given matrix item and convert them to public viewing values.
+        /// </summary>
+        /// <param name="options">The options that describe the attributes and their public edit values.</param>
+        /// <returns>The public edit values and the public viewing values.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AttributeMatrixEditorNormalizeEditValue" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1B7BA1CB-6D3F-4DE7-AC02-EAAADF89C7ED" )]
+        public IHttpActionResult AttributeMatrixEditorNormalizeEditValue( [FromBody] AttributeMatrixEditorNormalizeEditValueOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var publicValues = options.Attributes.ToDictionary( a => a.Key, a =>
+                {
+                    var attr = AttributeCache.Get( a.Value.AttributeGuid );
+
+                    var privateValue = PublicAttributeHelper.GetPrivateValue( attr, options.AttributeValues.GetValueOrDefault( a.Key, "" ) );
+                    var publicValue = PublicAttributeHelper.GetPublicValueForView( attr, privateValue );
+                    return publicValue;
+                } );
+
+                return Ok( new
+                {
+                    ViewValues = publicValues,
+                    EditValues = options.AttributeValues
+                } );
+            }
+        }
+
+        #endregion
+
         #region Audit Detail
 
         /// <summary>
@@ -674,6 +709,72 @@ namespace Rock.Rest.v2
             } );
 
             return Ok( componentsList );
+        }
+
+        #endregion
+
+        #region Badge Control
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="options">The options that describe badge to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the badge components.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BadgeControlGetBadge" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "D9840506-7251-4F41-A1B2-D3168FB3AFDA" )]
+        public IHttpActionResult BadgeControlGetBadge( [FromBody] BadgeControlGetBadgeOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
+                var entityType = entityTypeCache?.GetEntityType();
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // Verify that we found the entity type.
+                if ( entityType == null )
+                {
+                    return BadRequest( "Unknown entity type." );
+                }
+
+                // Load the entity and verify we got one.
+                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey );
+
+                if ( entity == null )
+                {
+                    return NotFound();
+                }
+
+                // If the entity can be secured, ensure the person has access to it.
+                if ( entity is ISecured securedEntity )
+                {
+                    var isAuthorized = securedEntity.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( entity, Authorization.VIEW ) == true;
+
+                    if ( !isAuthorized )
+                    {
+                        return Unauthorized();
+                    }
+                }
+
+                BadgeCache badge = BadgeCache.Get( options.BadgeTypeGuid );
+
+                if ( badge == null || badge.EntityTypeId.Value != entityTypeCache.Id )
+                {
+                    return NotFound();
+                }
+
+                var isBadgeAuthorized = badge.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                    || grant?.IsAccessGranted( badge, Authorization.VIEW ) == true;
+
+                if ( !isBadgeAuthorized )
+                {
+                    return Unauthorized();
+                }
+
+                return Ok( badge.RenderBadge( entity ) );
+            }
         }
 
         #endregion
@@ -1054,9 +1155,9 @@ namespace Rock.Rest.v2
         /// Gets saved captcha Site Key
         /// </summary>
         [HttpPost]
-        [System.Web.Http.Route("CaptchaControlGetConfiguration")]
+        [System.Web.Http.Route( "CaptchaControlGetConfiguration" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid("9e066058-13d9-4b4d-8457-07ba8e2cacd3")]
+        [Rock.SystemGuid.RestActionGuid( "9e066058-13d9-4b4d-8457-07ba8e2cacd3" )]
         public IHttpActionResult CaptchaControlGetConfiguration()
         {
             var bag = new CaptchaControlConfigurationBag()

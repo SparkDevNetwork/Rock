@@ -2,7 +2,7 @@
 <template>
     <div>
         <RockButton
-            @click="actionFunction(props.grid.getRowKey(row))"
+            @click="actionFunction(row)"
             :title="column.props.title">
             <i :class="column.props.iconClass"></i>
         </RockButton>
@@ -18,11 +18,9 @@ const props = defineProps({
     ...standardCellProps
 });
 
-const column = props.column;
+const { column, row } = props;
 
-const actionFunction = computed(() => {
-    return typeof column.props.action === "function" ? column.props.action : () => {};
-});
+const actionFunction = column.props.action as (row: object) => void;
 
 </script>
 

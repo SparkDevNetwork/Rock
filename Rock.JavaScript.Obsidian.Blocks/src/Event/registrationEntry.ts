@@ -139,7 +139,8 @@ export default defineComponent({
             amountToPayToday: 0,
             sessionExpirationDateMs: null,
             registrationSessionGuid: viewModel.session?.registrationSessionGuid || newGuid(),
-            ownFamilyGuid: viewModel.currentPersonFamilyGuid || newGuid()
+            ownFamilyGuid: viewModel.currentPersonFamilyGuid || newGuid(),
+            isCaptchValid: false
         };
         const registrationEntryState = reactive(staticRegistrationEntryState);
 
@@ -156,7 +157,8 @@ export default defineComponent({
                 registrar: registrationEntryState.registrar,
                 registrants: registrationEntryState.registrants,
                 amountToPayNow: registrationEntryState.amountToPayToday,
-                registrationGuid: viewModel.session?.registrationGuid || null
+                registrationGuid: viewModel.session?.registrationGuid || null,
+                isCaptchaValid: registrationEntryState.isCaptchValid
             };
         };
 

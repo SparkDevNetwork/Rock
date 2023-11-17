@@ -33,6 +33,7 @@ using Owin;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.HttpModules;
 
 namespace Rock.RealTime.AspNet
 {
@@ -56,6 +57,7 @@ namespace Rock.RealTime.AspNet
         /// <param name="app">The application.</param>
         public static void Configure( IAppBuilder app )
         {
+            GlobalHost.HubPipeline.AddModule( new SignalRErrorModule() );
             app.MapSignalR();
 
             /* 02/18/2022 MDP

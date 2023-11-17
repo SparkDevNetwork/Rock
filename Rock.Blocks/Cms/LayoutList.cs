@@ -115,10 +115,9 @@ namespace Rock.Blocks.Cms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = "/admin/cms/sites/layouts/((Key))"
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl(AttributeKey.DetailPage, "LayoutId", "((Key))")
             };
         }
-
 
         /// <inheritdoc/>
         protected override IQueryable<Layout> GetListQueryable( RockContext rockContext )

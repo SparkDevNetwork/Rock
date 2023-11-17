@@ -31,6 +31,7 @@ type ButtonOptions = {
     key: string;
     label: string;
     className: string;
+    autoFocus?: boolean;
 };
 
 /**
@@ -152,6 +153,7 @@ function showDialog(options: DialogOptions): Promise<string> {
         let timer: NodeJS.Timeout | null = null;
         const container = document.fullscreenElement || document.body;
         const body = document.createElement("div");
+        let autoFocus: null | HTMLElement = null;
         body.innerText = options.message;
 
         const buttons: HTMLElement[] = [];
@@ -203,6 +205,9 @@ function showDialog(options: DialogOptions): Promise<string> {
             btn.addEventListener("click", () => {
                 clearDialog(button.key);
             });
+            if (button.autoFocus) {
+                autoFocus = btn;
+            }
             buttons.push(btn);
         }
 
@@ -222,6 +227,10 @@ function showDialog(options: DialogOptions): Promise<string> {
         container.appendChild(dialog);
         container.appendChild(backdrop);
         modal.style.marginTop = `-${modal.offsetHeight / 2.0}px`;
+
+        if (autoFocus) {
+            autoFocus.focus();
+        }
 
         // Show the backdrop and the modal.
         backdrop.classList.add("in");
@@ -265,7 +274,8 @@ export async function confirm(message: string): Promise<boolean> {
             {
                 key: "ok",
                 label: "OK",
-                className: "btn btn-primary"
+                className: "btn btn-primary",
+                autoFocus: true
             },
             {
                 key: "cancel",

@@ -445,6 +445,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowSmsOptIn { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether captcha support should be disabled for this block.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable captcha support]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisableCaptchaSupport { get; set; }
     }
 
     /// <summary>
@@ -781,6 +789,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// </summary>
     public sealed class RegistrationEntrySignatureDocument
     {
+        /// <summary>
+        /// Gets or sets the unique identifier of a previously-signed signature document that should be reused for this registrant.
+        /// </summary>
+        /// <value>
+        /// The unique identifier of a previously-signed signature document that should be reused for this registrant.
+        /// </value>
+        public Guid? ExistingSignatureDocumentGuid { get; set; }
+
         /// <summary>
         /// Gets or sets the document HTML to be displayed on the form. This should
         /// be displayed inside an IFrame element to ensure no other CSS on the

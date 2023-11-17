@@ -66,12 +66,14 @@
     <Content Include="src\Core\followingEventTypeDetail.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\followingSuggestionTypeList.obs" />
     <Content Include="src\Core\interactionChannelDetail.obs" />
     <Content Include="src\Core\InteractionChannelDetail\editPanel.partial.obs" />
     <Content Include="src\Core\InteractionChannelDetail\viewPanel.partial.obs" />
     <Content Include="src\Core\noteWatchDetail.obs" />
     <Content Include="src\Core\NoteWatchDetail\editPanel.partial.obs" />
     <Content Include="src\Core\NoteWatchDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\signalTypeList.obs" />
     <Content Include="src\Core\suggestionDetail.obs" />
     <Content Include="src\Core\SuggestionDetail\editPanel.partial.obs" />
     <Content Include="src\Core\scheduleDetail.obs" />
@@ -105,6 +107,7 @@
     <Content Include="src\Engagement\achievementTypeDetail.obs" />
     <Content Include="src\Engagement\AchievementTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\AchievementTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Engagement\connectionOpportunityList.obs" />
     <Content Include="src\Engagement\stepTypeDetail.obs" />
     <Content Include="src\Engagement\StepTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\StepTypeDetail\viewPanel.partial.obs" />
@@ -153,6 +156,7 @@
     <Content Include="src\Group\Scheduling\GroupScheduler\occurrence.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\occurrenceDate.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\progressBar.partial.obs" />
+    <Content Include="src\Group\Scheduling\GroupScheduler\provideLocations.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\resourceNotes.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\schedule.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\scheduledResource.partial.obs" />
@@ -317,8 +321,10 @@
     <Folder Include="src\Core\CategoryDetail\" />
     <Folder Include="src\Core\DeviceDetail\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
+    <Folder Include="src\Core\FollowingSuggestionTypeList\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
     <Folder Include="src\Core\NoteWatchDetail\" />
+    <Folder Include="src\Core\SignalTypeList\" />
     <Folder Include="src\Core\SuggestionDetail\" />
     <Folder Include="src\Core\ScheduleDetail\" />
     <Folder Include="src\Core\TaggedItemDetail\" />
@@ -337,6 +343,7 @@
     <Folder Include="src\Engagement\AchievementAttemptDetail\" />
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
+    <Folder Include="src\Engagement\ConnectionOpportunityList\" />
     <Folder Include="src\Engagement\StepTypeDetail\" />
     <Folder Include="src\Engagement\StreakDetail\" />
     <Folder Include="src\Engagement\StreakTypeDetail\" />
@@ -471,8 +478,10 @@
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\DeviceDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\FollowingSuggestionTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\NoteWatchDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\SignalTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SuggestionDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\ScheduleDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\TaggedItemDetail\types.partial.ts" />
@@ -502,6 +511,7 @@
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Engagement\AchievementAttemptDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\AchievementTypeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Engagement\ConnectionOpportunityList\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StepTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\SignUp\SignUpFinder\signUpFilterType.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
@@ -517,6 +527,7 @@
     <TypeScriptCompile Include="src\Group\GroupMemberScheduleTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupRequirementTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\utils.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduleToolbox\types.partial.ts" />
     <TypeScriptCompile Include="src\Prayer\PrayerRequestDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Bus\QueueDetail\types.partial.ts" />

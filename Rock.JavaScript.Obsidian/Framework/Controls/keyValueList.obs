@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="internalValues"
+    <RockFormField :modelValue="internalValues"
                    formGroupClasses="key-value-list"
                    name="key-value-list">
         <template #default="{ uniqueId }">
@@ -10,20 +9,26 @@
                     <span class="key-value-rows">
                         <div v-for="(value, valueIndex) in internalValues" :class="rowClasses">
                             <template v-if="!displayValueFirst">
-                                <input v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
+                                <select v-if="hasKeys" v-model="value.key" :class="valueInputClasses">
+                                    <option v-for="option in keyOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                </select>
+                                <input v-else v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
 
                                 <select v-if="hasValues" v-model="value.value" :class="valueInputClasses">
-                                    <option v-for="option in options" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                    <option v-for="option in valueOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
                                 </select>
                                 <input v-else v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePlaceholder">
                             </template>
                             <template v-else>
                                 <select v-if="hasValues" v-model="value.value" :class="valueInputClasses">
-                                    <option v-for="option in options" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                    <option v-for="option in valueOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
                                 </select>
                                 <input v-else v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePlaceholder">
 
-                                <input v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
+                                <select v-if="hasKeys" v-model="value.key" :class="valueInputClasses">
+                                    <option v-for="option in keyOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                </select>
+                                <input v-else v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
                             </template>
 
                             <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
@@ -52,7 +57,12 @@
 
         valueOptions: {
             type: Array as PropType<ListItemBag[]>,
-            required: false
+            default: []
+        },
+
+        keyOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
         },
 
         keyPlaceholder: {
@@ -82,10 +92,8 @@
 
     const internalValues = ref(props.modelValue ?? []);
 
-    /** The options to choose from in the drop down list */
-    const options = computed((): ListItemBag[] => props.valueOptions ?? []);
-
-    const hasValues = computed((): boolean => options.value.length > 0);
+    const hasKeys = computed((): boolean => props.keyOptions.length > 0);
+    const hasValues = computed((): boolean => props.valueOptions.length > 0);
 
     const rowClasses = computed((): string => {
         let classes = "controls controls-row form-control-group";
@@ -128,13 +136,18 @@
     });
 
     function onAddClick(): void {
+        let defaultKey = "";
         let defaultValue = "";
 
-        if (hasValues.value) {
-            defaultValue = options.value[0].value ?? "";
+        if (hasKeys.value) {
+            defaultKey = props.keyOptions[0].value ?? "";
         }
 
-        internalValues.value.push({ key: "", value: defaultValue });
+        if (hasValues.value) {
+            defaultValue = props.valueOptions[0].value ?? "";
+        }
+
+        internalValues.value.push({ key: defaultKey, value: defaultValue });
     }
 
     function onRemoveClick(index: number): void {

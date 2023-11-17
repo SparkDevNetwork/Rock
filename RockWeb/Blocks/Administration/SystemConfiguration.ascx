@@ -63,12 +63,23 @@
 
                     <Rock:NotificationBox ID="nbObservabilityMessages" runat="server" />
                     <asp:ValidationSummary ID="valObservabilityValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Observability" />
+
+                    <Rock:RockCheckBox ID="cbEnableObservaility" runat="server" Label="Enable Observability" ValidationGroup="Observability" Help="Enables the observability feature set." />
+
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbEnableObservaility" runat="server" Label="Enable Observability" ValidationGroup="Observability" Help="Enables the observability feature set." />
                             <Rock:UrlLinkBox ID="urlObservabilityEndpoint" runat="server" Label="Endpoint" ValidationGroup="Observability" Help="The URL for sending observability telemetry to." CausesValidation="true" />
-                            <Rock:KeyValueList ID="kvlEndpointHeaders" runat="server" Label="Endpoint Headers" ValidationGroup="Observability" Help="List of HTTP headers to be added to the HTTP calls when sending telemetry." />
                             <Rock:ButtonDropDownList ID="ddlEndpointProtocol" runat="server" Label="Endpoint Protocol" ValidationGroup="Observability" Help="The protocol to use to encode the telemetry data when sending it to the endpoint." />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:NumberBox ID="nbObservabilitySpanCountLimit" runat="server" Label="Span Count Limit" Help="Some data collectors have a limit on the number of spans that can be attached to a single trace. Once a trace reaches this many spans it will truncate any additional spans before sending. If blank then 9,900 will be used." ValidationGroup="Observability" CausesValidation="true" />
+                            <Rock:NumberBox ID="nbObservabilityMaxAttributeLength" runat="server" Label="Maximum Attribute Length" Help="Some collectors will drop spans if they have attributes that exceed this length. Rock will limit attribute values to this length. If blank then 4,000 will be used." ValidationGroup="Observability" CausesValidation="true" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:KeyValueList ID="kvlEndpointHeaders" runat="server" Label="Endpoint Headers" ValidationGroup="Observability" Help="List of HTTP headers to be added to the HTTP calls when sending telemetry." />
                         </div>
                         <div class="col-md-6">
                             <Rock:ValueList ID="vlTargetedQueries" runat="server" Label="Targeted Queries" ValidationGroup="Observability" Help="List of query hashes that will report more in depth metrics for." />

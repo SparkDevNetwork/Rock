@@ -61,7 +61,7 @@ namespace Rock.Rest
             // Initialize as lazy since very few API calls use this yet. Once
             // it becomes more common the lazy part can be removed.
             var responseContext = new RockMessageResponseContext();
-            _rockRequestContext = new Lazy<RockRequestContext>( () => new RockRequestContext( new HttpRequestMessageWrapper( controllerContext.Request ), responseContext ) );
+            _rockRequestContext = new Lazy<RockRequestContext>( () => new RockRequestContext( new HttpRequestMessageWrapper( controllerContext.Request ), responseContext, UserLoginService.GetCurrentUser( false ) ) );
 
             var responseMessage = await base.ExecuteAsync( controllerContext, cancellationToken );
 
