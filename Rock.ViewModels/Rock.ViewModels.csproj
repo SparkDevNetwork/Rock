@@ -143,6 +143,9 @@
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\MetricValueDetail\MetricValueBag.cs" />
+    <Compile Include="Blocks\Reporting\MetricValueDetail\MetricValueDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\MetricValueDetail\MetricValuePartitionBag.cs" />
     <Compile Include="Blocks\Security\Login\PasswordlessLoginMfaBag.cs" />
     <Compile Include="Blocks\Security\Login\CredentialLoginMfaBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\AppleTvPageBag.cs" />
