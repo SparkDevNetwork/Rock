@@ -113,6 +113,9 @@ registerFieldType(FieldTypeGuids.ContentChannels, new ContentChannelsFieldType()
 import { ConnectionActivityTypeField } from "./connectionActivityTypeField.partial";
 registerFieldType(FieldTypeGuids.ConnectionActivityType, new ConnectionActivityTypeField());
 
+import { ConnectionRequestFieldType } from "./connectionRequestField.partial";
+registerFieldType(FieldTypeGuids.ConnectionRequest, new ConnectionRequestFieldType());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
