@@ -207,8 +207,21 @@ namespace Rock.Observability
 
             if ( observabilityEnabled && endpointUri != null )
             {
+                var nodeName = RockMessageBus.NodeName.ToLower();
+                var machineName = _machineName.Value;
+                string instanceId;
+
+                if ( nodeName != machineName )
+                {
+                    instanceId = $"{machineName} ({nodeName})";
+                }
+                else
+                {
+                    instanceId = machineName;
+                }
+
                 _currentMeterProvider = Sdk.CreateMeterProviderBuilder()
-                    .SetResourceBuilder( ResourceBuilder.CreateDefault().AddService( serviceName: serviceName, serviceVersion: "1.0.0" ) )
+                    .SetResourceBuilder( ResourceBuilder.CreateDefault().AddService( serviceName: serviceName, serviceVersion: "1.0.0", serviceInstanceId: instanceId ) )
                     .AddMeter( serviceName )
                     .AddOtlpExporter( o =>
                     {
