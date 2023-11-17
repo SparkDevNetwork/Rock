@@ -299,6 +299,9 @@ registerFieldType(FieldTypeGuids.RangeSlider, new RangeSliderFieldType());
 import { RatingFieldType } from "./ratingField.partial";
 registerFieldType(FieldTypeGuids.Rating, new RatingFieldType());
 
+import { RegistrationInstanceField } from "./registrationInstanceField.partial";
+registerFieldType(FieldTypeGuids.RegistrationInstance, new RegistrationInstanceField());
+
 import { RegistryEntryFieldType } from "./registryEntryField.partial";
 registerFieldType(FieldTypeGuids.RegistryEntry, new RegistryEntryFieldType());
 
