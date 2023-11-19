@@ -100,8 +100,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Common", "Rock.Common\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Update", "Rock.Update\Rock.Update.csproj", "{B62B27C8-1F77-43CF-8EE7-30DE7F93FACD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Common.NG", "Rock.Common\Rock.Common.NG.csproj", "{D722BDC5-08AF-4475-B7B8-84368F2FC88F}"
-EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.EditorJs", "Rock.JavaScript.EditorJs\Rock.JavaScript.EditorJs.njsproj", "{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.DotLiquid", "Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj", "{79AA470A-DC63-4CB4-B0B6-77285F60C69B}"
@@ -255,10 +253,6 @@ Global
 		{B62B27C8-1F77-43CF-8EE7-30DE7F93FACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B62B27C8-1F77-43CF-8EE7-30DE7F93FACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B62B27C8-1F77-43CF-8EE7-30DE7F93FACD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D722BDC5-08AF-4475-B7B8-84368F2FC88F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D722BDC5-08AF-4475-B7B8-84368F2FC88F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D722BDC5-08AF-4475-B7B8-84368F2FC88F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D722BDC5-08AF-4475-B7B8-84368F2FC88F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}.Release|Any CPU.ActiveCfg = Release|Any CPU
