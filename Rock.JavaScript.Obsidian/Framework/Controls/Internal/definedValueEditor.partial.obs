@@ -1,0 +1,134 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockLabel :help="help">{{ label }}</RockLabel>
+    <Loading :isLoading="isLoading" class="well">
+        <NotificationBox v-if="fetchError" alertType="danger">Error: {{ fetchError }}</NotificationBox>
+        <NotificationBox v-else-if="saveError" alertType="danger">Error: {{ saveError }}</NotificationBox>
+
+        <RockForm v-else @submit="saveNewValue">
+            <TextBox label="Value" v-model="newValue" rules="required" />
+            <TextBox label="Description" v-model="newDescription" textMode="multiline" />
+            <AttributeValuesContainer v-if="attributes != null" v-model="attributeValues" :attributes="attributes" isEditMode :showCategoryLabel="false" />
+            <RockButton type="submit" :btnType="BtnType.Primary" :btnSize="BtnSize.ExtraSmall">Add</RockButton>
+            <RockButton type="button" :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" @click="emit('cancel')">Cancel</RockButton>
+        </RockForm>
+
+        <RockButton v-if="fetchError || saveError" :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" @click="emit('cancel')">Cancel</RockButton>
+    </Loading>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { Guid } from "@Obsidian/Types";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { DefinedValueEditorSaveNewValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValueEditorSaveNewValueOptionsBag";
+    import { DefinedValueEditorGetAttributesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValueEditorGetAttributesOptionsBag";
+    import { DefinedValueEditorGetAttributesResultsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValueEditorGetAttributesResultsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import RockLabel from "../rockLabel.obs";
+    import RockForm from "../rockForm.obs";
+    import AttributeValuesContainer from "../attributeValuesContainer.obs";
+    import TextBox from "../textBox.obs";
+    import RockButton from "../rockButton.obs";
+    import Loading from "../loading.obs";
+    import NotificationBox from "../notificationBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+
+    const props = defineProps({
+        definedTypeGuid: {
+            type: String as PropType<Guid>,
+            required: false
+        },
+
+        label: {
+            type: String,
+            default: ""
+        },
+
+        help: {
+            type: String,
+            default: ""
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "save", value: ListItemBag | null): void,
+        (e: "cancel"): void
+    }>();
+
+
+    const securityGrantToken = useSecurityGrantToken();
+    const attributes = ref<Record<string, PublicAttributeBag> | null>(null);
+    const attributeValues = ref<Record<string, string>>({});
+    const newValue = ref("");
+    const newDescription = ref("");
+
+    const http = useHttp();
+    const isLoading = ref(false);
+    const fetchError = ref<false | string>(false);
+    const saveError = ref<false | string>(false);
+
+    async function loadAttributes(): Promise<void> {
+        if (attributes.value == null) {
+            isLoading.value = true;
+            fetchError.value = false;
+            saveError.value = false;
+
+            const options: Partial<DefinedValueEditorGetAttributesOptionsBag> = {
+                definedTypeGuid: props.definedTypeGuid,
+                securityGrantToken: securityGrantToken.value
+            };
+            const url = "/api/v2/Controls/DefinedValueEditorGetAttributes";
+            const result = await http.post<DefinedValueEditorGetAttributesResultsBag>(url, undefined, options);
+
+            if (result.isSuccess && result.data) {
+                attributes.value = result.data.attributes ?? {};
+
+                attributeValues.value = result.data.defaultValues ?? {};
+            }
+            else {
+                attributes.value = null;
+                fetchError.value = "Unable to fetch attribute data.";
+            }
+
+            isLoading.value = false;
+        }
+    }
+
+    async function saveNewValue(): Promise<void> {
+        isLoading.value = true;
+        saveError.value = false;
+
+        const options: Partial<DefinedValueEditorSaveNewValueOptionsBag> = {
+            definedTypeGuid: props.definedTypeGuid,
+            securityGrantToken: securityGrantToken.value,
+            value: newValue.value,
+            description: newDescription.value,
+            attributeValues: attributeValues.value
+        };
+        const url = "/api/v2/Controls/DefinedValueEditorSaveNewValue";
+        const result = await http.post<ListItemBag>(url, undefined, options);
+
+        if (result.isSuccess && result.data) {
+            emit("save", result.data);
+
+            newValue.value = "";
+            newDescription.value = "";
+            attributeValues.value = {};
+            saveError.value = false;
+        }
+        else {
+            saveError.value = "Unable to save new Defined Value.";
+        }
+
+        isLoading.value = false;
+    }
+
+    loadAttributes();
+
+    // #endregion
+</script>

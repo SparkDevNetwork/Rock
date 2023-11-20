@@ -24,7 +24,7 @@ namespace Rock.ViewModels.Rest.Controls
     /// The options that can be passed to the SaveNewValue API action of
     /// the DefinedValuePicker control for adding a new Defined Value
     /// </summary>
-    public class DefinedValuePickerSaveNewValueOptionsBag
+    public class DefinedValueEditorSaveNewValueOptionsBag
     {
         /// <summary>
         /// The GUID of the defined type of the value we're saving
@@ -44,7 +44,7 @@ namespace Rock.ViewModels.Rest.Controls
         /// <summary>
         /// A collection of attribute values for the new defined value
         /// </summary>
-        public Dictionary<string, string> AttributeValues{ get; set; }
+        public Dictionary<string, string> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets or sets the security grant token to use when performing authorization checks.

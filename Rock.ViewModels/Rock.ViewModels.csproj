@@ -429,6 +429,7 @@
     <Compile Include="Rest\Controls\BadgeControlGetBadgeOptionsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DefinedValueEditorGetAttributesResultsBag.cs" />
     <Compile Include="Rest\Controls\MatrixFieldDataBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorPublicItemBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueResultsBag.cs" />
@@ -576,8 +577,8 @@
     <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CampusPickerGetCampusesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
-    <Compile Include="Rest\Controls\DefinedValuePickerGetAttributesOptionsBag.cs" />
-    <Compile Include="Rest\Controls\DefinedValuePickerSaveNewValueOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DefinedValueEditorGetAttributesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DefinedValueEditorSaveNewValueOptionsBag.cs" />
     <Compile Include="Rest\Controls\GeoPickerGetSettingsOptionsBag.cs" />
     <Compile Include="Rest\Controls\GeoPickerSettingsBag.cs" />
     <Compile Include="Rest\Controls\GeoPickerGoogleMapSettingsBag.cs" />

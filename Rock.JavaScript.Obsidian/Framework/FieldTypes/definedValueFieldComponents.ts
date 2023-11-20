@@ -24,8 +24,8 @@ import RockFormField from "@Obsidian/Controls/rockFormField.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
 import Loading from "@Obsidian/Controls/loading.obs";
-import { DefinedValuePickerGetAttributesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetAttributesOptionsBag";
-import { DefinedValuePickerSaveNewValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerSaveNewValueOptionsBag";
+import { DefinedValueEditorGetAttributesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValueEditorGetAttributesOptionsBag";
+import { DefinedValueEditorSaveNewValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValueEditorSaveNewValueOptionsBag";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -175,11 +175,11 @@ export const EditComponent = defineComponent({
                 fetchError.value = false;
                 saveError.value = false;
 
-                const options: Partial<DefinedValuePickerGetAttributesOptionsBag> = {
+                const options: Partial<DefinedValueEditorGetAttributesOptionsBag> = {
                     definedTypeGuid:  props.configurationValues[ConfigurationValueKey.DefinedType],
                     securityGrantToken: securityGrantToken.value
                 };
-                const url = "/api/v2/Controls/DefinedValuePickerGetAttributes";
+                const url = "/api/v2/Controls/DefinedValueEditorGetAttributes";
                 const result = await http.post<PublicAttributeBag[]>(url, undefined, options);
 
                 if (result.isSuccess && result.data) {
@@ -207,7 +207,7 @@ export const EditComponent = defineComponent({
             isLoading.value = true;
             saveError.value = false;
 
-            const options: Partial<DefinedValuePickerSaveNewValueOptionsBag> = {
+            const options: Partial<DefinedValueEditorSaveNewValueOptionsBag> = {
                 definedTypeGuid: props.configurationValues[ConfigurationValueKey.DefinedType],
                 securityGrantToken: securityGrantToken.value,
                 value: newValue.value,
@@ -215,7 +215,7 @@ export const EditComponent = defineComponent({
                 attributeValues: attributeValues.value,
                 updateAttributeGuid: attributeGuid.value
             };
-            const url = "/api/v2/Controls/DefinedValuePickerSaveNewValue";
+            const url = "/api/v2/Controls/DefinedValueEditorSaveNewValue";
             const result = await http.post<ListItemBag>(url, undefined, options);
 
             if (result.isSuccess && result.data) {
@@ -323,8 +323,6 @@ export const EditComponent = defineComponent({
     </template>
     </div>
 </RockFormField>
-
-
 `
 });
 
