@@ -1910,6 +1910,9 @@ mission. We are so grateful for your commitment.</p>
                 // If a person key was supplied then try to get that person
                 _targetPerson = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "transaction" );
 
+                // Pre-load campus to avoid lazy loading later when the _targetPerson field is utilized.
+                _targetPerson.GetCampus();
+
                 if ( allowImpersonation )
                 {
                     // If impersonation is allowed then ensure the supplied person key was valid
