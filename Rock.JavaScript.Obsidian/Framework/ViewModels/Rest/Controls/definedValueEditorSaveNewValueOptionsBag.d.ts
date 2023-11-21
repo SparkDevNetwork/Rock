@@ -27,7 +27,7 @@ import { Guid } from "@Obsidian/Types";
  * The options that can be passed to the SaveNewValue API action of
  * the DefinedValuePicker control for adding a new Defined Value
  */
-export type DefinedValuePickerSaveNewValueOptionsBag = {
+export type DefinedValueEditorSaveNewValueOptionsBag = {
     /** A collection of attribute values for the new defined value */
     attributeValues?: Record<string, string> | null;
 

@@ -15,27 +15,25 @@
 // </copyright>
 //
 
-using System;
+using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to the GetAttributes API action of
-    /// the DefinedValuePicker control.
+    /// The results from the GetAttributes API action of the DefinedValuePicker control.
     /// </summary>
-    public class DefinedValuePickerGetAttributesOptionsBag
+    public class DefinedValueEditorGetAttributesResultsBag
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the defined type to get attributes of.
+        /// The attributes data.
         /// </summary>
-        /// <value>The unique identifier of the defined type to load values from.</value>
-        public Guid DefinedTypeGuid { get; set; }
+        public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
 
         /// <summary>
-        /// Gets or sets the security grant token to use when performing
-        /// authorization checks.
+        /// The default values of the attributes.
         /// </summary>
-        /// <value>The security grant token.</value>
-        public string SecurityGrantToken { get; set; }
+        public Dictionary<string, string> DefaultValues { get; set; }
     }
 }

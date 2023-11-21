@@ -1797,45 +1797,7 @@ namespace Rock.Rest.v2
 
         #endregion
 
-        #region Defined Value Picker
-
-        /// <summary>
-        /// Gets the defined values and their categories that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a tree view control.
-        /// </summary>
-        /// <param name="options">The options that describe which defined values to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of defined values.</returns>
-        [HttpPost]
-        [System.Web.Http.Route( "DefinedValuePickerGetDefinedValues" )]
-        [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "1E4A1812-8A2C-4266-8F39-3004C1DEBC9F" )]
-        public IHttpActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptionsBag options )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
-                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
-
-                if ( definedType == null || !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                {
-                    return NotFound();
-                }
-
-                var definedValues = definedType.DefinedValues
-                    .Where( v => ( v.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( v, Authorization.VIEW ) == true )
-                        && ( options.IncludeInactive || v.IsActive ) )
-                    .OrderBy( v => v.Order )
-                    .ThenBy( v => v.Value )
-                    .Select( v => new ListItemBag
-                    {
-                        Value = v.Guid.ToString(),
-                        Text = v.Value
-                    } )
-                    .ToList();
-
-                return Ok( definedValues );
-            }
-        }
+        #region Defined Value Editor
 
         /// <summary>
         /// Get the attributes for the given Defined Type
@@ -1843,10 +1805,10 @@ namespace Rock.Rest.v2
         /// <param name="options">The options needed to find the attributes for the defined type</param>
         /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
         [HttpPost]
-        [System.Web.Http.Route( "DefinedValuePickerGetAttributes" )]
+        [System.Web.Http.Route( "DefinedValueEditorGetAttributes" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "10b3fa87-756e-4dde-bf67-fb102037ddc3" )]
-        public IHttpActionResult DefinedValuePickerGetAttributes( DefinedValuePickerGetAttributesOptionsBag options )
+        [Rock.SystemGuid.RestActionGuid( "E2601583-94D5-4C21-96FA-309B9FB7E11F" )]
+        public IHttpActionResult DefinedValueEditorGetAttributes( DefinedValueEditorGetAttributesOptionsBag options )
         {
             if ( RockRequestContext.CurrentPerson == null )
             {
@@ -1860,7 +1822,25 @@ namespace Rock.Rest.v2
                 DefinedTypeId = definedType.Id
             };
 
-            return Ok( GetAttributes( definedValue ) );
+            definedValue.LoadAttributes();
+
+            var attributes = definedValue.Attributes.ToDictionary( a => a.Key, a =>
+            {
+                return PublicAttributeHelper.GetPublicAttributeForEdit( a.Value );
+            } );
+
+            var defaultValues = definedValue.Attributes.ToDictionary( a => a.Key, a =>
+            {
+                var config = a.Value.ConfigurationValues;
+                var fieldType = a.Value.FieldType.Field;
+                return fieldType.GetPublicEditValue( a.Value.DefaultValue, config );
+            } );
+
+            return Ok( new DefinedValueEditorGetAttributesResultsBag
+            {
+                Attributes = attributes,
+                DefaultValues = defaultValues
+            } );
         }
 
         /// <summary>
@@ -1869,10 +1849,10 @@ namespace Rock.Rest.v2
         /// <param name="options">The options the new defined value</param>
         /// <returns>A <see cref="ListItemBag"/> representing the new defined value.</returns>
         [HttpPost]
-        [System.Web.Http.Route( "DefinedValuePickerSaveNewValue" )]
+        [System.Web.Http.Route( "DefinedValueEditorSaveNewValue" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "2a10eb70-cc9a-48be-8ed7-d9104fd9fdca" )]
-        public IHttpActionResult DefinedValuePickerSaveNewValue( DefinedValuePickerSaveNewValueOptionsBag options )
+        [Rock.SystemGuid.RestActionGuid( "E1AB17E0-CF28-4032-97A8-2A4279C5815A" )]
+        public IHttpActionResult DefinedValueEditorSaveNewValue( DefinedValueEditorSaveNewValueOptionsBag options )
         {
             if ( RockRequestContext.CurrentPerson == null )
             {
@@ -1941,6 +1921,48 @@ namespace Rock.Rest.v2
                 }
 
                 return Ok( new ListItemBag { Text = definedValue.Value, Value = definedValue.Guid.ToString() } );
+            }
+        }
+
+        #endregion
+
+        #region Defined Value Picker
+
+        /// <summary>
+        /// Gets the defined values and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which defined values to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of defined values.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "DefinedValuePickerGetDefinedValues" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1E4A1812-8A2C-4266-8F39-3004C1DEBC9F" )]
+        public IHttpActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( definedType == null || !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return NotFound();
+                }
+
+                var definedValues = definedType.DefinedValues
+                    .Where( v => ( v.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( v, Authorization.VIEW ) == true )
+                        && ( options.IncludeInactive || v.IsActive ) )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Guid.ToString(),
+                        Text = v.Value
+                    } )
+                    .ToList();
+
+                return Ok( definedValues );
             }
         }
 
@@ -6106,18 +6128,16 @@ namespace Rock.Rest.v2
                     entityType = entityType.BaseType;
                 }
 
-                var attributes = new List<Rock.Web.Cache.AttributeCache>();
+                var attributes = new List<AttributeCache>();
 
                 var entityTypeCache = EntityTypeCache.Get( entityType );
 
-                List<Rock.Web.Cache.AttributeCache> allAttributes = null;
+                List<AttributeCache> allAttributes = null;
                 Dictionary<int, List<int>> inheritedAttributes = null;
 
-                //
                 // If this entity can provide inherited attribute information then
                 // load that data now. If they don't provide any then generate empty lists.
-                //
-                if ( model is Rock.Attribute.IHasInheritedAttributes entityWithInheritedAttributes )
+                if ( model is IHasInheritedAttributes entityWithInheritedAttributes )
                 {
                     allAttributes = entityWithInheritedAttributes.GetInheritedAttributes( rockContext );
                     inheritedAttributes = entityWithInheritedAttributes.GetAlternateEntityIdsByType( rockContext );
@@ -6126,10 +6146,8 @@ namespace Rock.Rest.v2
                 allAttributes = allAttributes ?? new List<AttributeCache>();
                 inheritedAttributes = inheritedAttributes ?? new Dictionary<int, List<int>>();
 
-                //
                 // Get all the attributes that apply to this entity type and this entity's
                 // properties match any attribute qualifiers.
-                //
                 var entityTypeId = entityTypeCache?.Id;
 
                 if ( entityTypeCache != null )
@@ -6158,9 +6176,7 @@ namespace Rock.Rest.v2
                     }
                 }
 
-                //
                 // Append these attributes to our inherited attributes, in order.
-                //
                 foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
                 {
                     allAttributes.Add( attribute );

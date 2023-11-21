@@ -27,7 +27,7 @@ import { Guid } from "@Obsidian/Types";
  * The options that can be passed to the GetAttributes API action of
  * the DefinedValuePicker control.
  */
-export type DefinedValuePickerGetAttributesOptionsBag = {
+export type DefinedValueEditorGetAttributesOptionsBag = {
     /** Gets or sets the unique identifier of the defined type to get attributes of. */
     definedTypeGuid?: Guid | null;
 
