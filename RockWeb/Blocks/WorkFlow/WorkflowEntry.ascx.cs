@@ -1655,10 +1655,22 @@ namespace RockWeb.Blocks.WorkFlow
                      *
                      *  This would result in Ted Decker no longer having Cindy as his spouse (and vice-versa). This was discussed on 2020-11-13
                      *  and it was decided we shouldn't do anything to prevent this type of problem.
+                     *  
+                     *  2023-11-21 PA
+                     *  After further discussion we would be defaulting the marital status, if not provided, to married
 
                      */
-                    personEntryPersonSpouse.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
-                    personEntryPerson.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
+                    if( dvpMaritalStatus.SelectedDefinedValueId.HasValue )
+                    {
+                        personEntryPersonSpouse.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
+                        personEntryPerson.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
+                    }
+                    else
+                    {
+                        var maritalStatusMarriedValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
+                        personEntryPersonSpouse.MaritalStatusValueId = maritalStatusMarriedValueId;
+                        personEntryPerson.MaritalStatusValueId = maritalStatusMarriedValueId;
+                    }
 
                     PersonService.AddPersonToFamily( personEntryPersonSpouse, true, primaryFamily.Id, pePerson2.PersonGroupRoleId, personEntryRockContext );
                 }
