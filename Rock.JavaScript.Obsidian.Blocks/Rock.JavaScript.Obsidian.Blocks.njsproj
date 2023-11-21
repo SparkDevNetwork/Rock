@@ -60,6 +60,7 @@
     <Content Include="src\Core\categoryDetailCustomSettings.vue" />
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
     <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
+    <Content Include="src\Core\definedTypeList.obs" />
     <Content Include="src\Core\deviceDetail.obs" />
     <Content Include="src\Core\DeviceDetail\editPanel.partial.obs" />
     <Content Include="src\Core\DeviceDetail\viewPanel.partial.obs" />
@@ -322,6 +323,7 @@
     <Folder Include="src\Core\BinaryFileTypeDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
+    <Folder Include="src\Core\DefinedTypeList\" />
     <Folder Include="src\Core\DeviceDetail\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\FollowingSuggestionTypeList\" />
@@ -480,6 +482,7 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\DefinedTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\DeviceDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingSuggestionTypeList\types.partial.ts" />
