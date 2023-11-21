@@ -1305,6 +1305,14 @@ Rock.settings.initialize({{
                                     {
                                         control = TemplateControl.LoadControl( block.BlockType.Path );
                                         control.ClientIDMode = ClientIDMode.AutoID;
+
+                                        // This block needs Obsidian so that it can
+                                        // open the custom settings dialogs of Obsidian
+                                        // blocks on the page.
+                                        if ( block.BlockType.Path.Equals( "~/Blocks/Cms/PageZoneBlocksEditor.ascx", StringComparison.OrdinalIgnoreCase ) )
+                                        {
+                                            _pageNeedsObsidian = true;
+                                        }
                                     }
                                     else if ( block.BlockType.EntityTypeId.HasValue )
                                     {

@@ -1369,8 +1369,8 @@ namespace Rock.Blocks.Group.Scheduling
             }
 
             var today = RockDateTime.Today;
-            var startDate = bag.StartDate.Value.LocalDateTime;
-            var endDate = bag.EndDate.Value.LocalDateTime;
+            var startDate = bag.StartDate.Value.Date;
+            var endDate = bag.EndDate.Value.Date;
             if ( startDate < today && endDate < today )
             {
                 errorMessage = "Please enter a current or future date range.";
@@ -1671,7 +1671,7 @@ namespace Rock.Blocks.Group.Scheduling
             DateTime? scheduleStartDate = null;
             if ( bag.ScheduleStartDate.HasValue )
             {
-                scheduleStartDate = bag.ScheduleStartDate.Value.LocalDateTime;
+                scheduleStartDate = bag.ScheduleStartDate.Value.Date;
             }
 
             groupMember.ScheduleReminderEmailOffsetDays = bag.ScheduleReminderEmailOffsetDays.AsIntegerOrNull();

@@ -20,11 +20,8 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ImageResizer.Plugins.Basic;
-using Microsoft.Ajax.Utilities;
-using Rock.Bus;
+
+using Rock.Data;
 
 namespace Rock.Observability
 {
@@ -98,20 +95,6 @@ namespace Rock.Observability
             // Initialize the global metric
             MeterInstance = new Meter( ObservabilityHelper.ServiceName, "1.0.0" );
 
-            // Define common tags
-            var nodeName = RockMessageBus.NodeName.ToLower();
-            var machineName = _machineName.Value;
-
-            _commonTags.Add( "rock-node", nodeName );
-            if ( nodeName != machineName )
-            {
-                _commonTags.Add( "service.instance.id", $"{machineName} ({nodeName})" );
-            }
-            else
-            {
-                _commonTags.Add( "service.instance.id", machineName );
-            }
-            
             _commonTags.Add( "rock-version", _rockVersion.Value );
 
             // Create needed Performance Counters
@@ -251,7 +234,7 @@ namespace Rock.Observability
                 unit: "%",
                 description: "The percent CPU of the web VM." );
 
-            MeterInstance.CreateObservableCounter(
+            MeterInstance.CreateObservableGauge(
                 "hosting.volumes.space",
                 () =>
                 {
@@ -262,6 +245,11 @@ namespace Rock.Observability
 
                     foreach ( DriveInfo d in allDrives )
                     {
+                        // If the device is not ready, ignore it to avoid an access error.
+                        if ( !d.IsReady )
+                        {
+                            continue;
+                        }
                         var tags = _commonTags;
                         tags.Add( "volume", d.Name );
                         measures[measureCount++] = new Measurement<double>( d.TotalFreeSpace, tags );
@@ -270,7 +258,22 @@ namespace Rock.Observability
                     return measures;
                 },
                 unit: "bytes",
-                description: "Total CPU seconds broken down by different states." );
+                description: "Total number of bytes free on the volume." );
+
+            MeterInstance.CreateObservableGauge( "hosting.sql.cpu",
+                GetSqlCpuMeasure,
+                unit: "%",
+                description: "The percent of CPU being used by the SQL database." );
+
+            MeterInstance.CreateObservableGauge( "hosting.sql.dtu.total",
+                GetSqlDtuTotalMeasure,
+                unit: "dtu",
+                description: "The current DTU size of the database instance." );
+
+            MeterInstance.CreateObservableGauge( "hosting.sql.memory.usage",
+                GetSqlMemoryUsageMeasure,
+                unit: "bytes",
+                description: "The number of bytes allocated by the SQL database." );
 
         }
 
@@ -306,6 +309,94 @@ namespace Rock.Observability
         private static Measurement<float> GetCpuMeasure()
         {
             return new Measurement<float>( _cpuPerformancCounter.NextValue(), _commonTags );
+        }
+
+        /// <summary>
+        /// Gets the SQL cpu usage as a percentage between 0 and 100.
+        /// </summary>
+        /// <returns>A measurement value.</returns>
+        private static Measurement<float> GetSqlCpuMeasure()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var result = rockContext.Database.SqlQuery<double>( @"
+If EXISTS (SELECT * FROM [sys].[system_objects] WHERE [name] = 'dm_db_resource_stats')
+    SELECT TOP 1
+        CAST([avg_cpu_percent] AS FLOAT) AS [Value]
+    FROM [sys].[dm_db_resource_stats]
+    ORDER BY [end_time] DESC
+ELSE
+BEGIN TRY
+    SELECT
+        CASE WHEN [PBase].[cntr_value] = 0
+            THEN CAST(0 AS FLOAT)
+            ELSE (CAST([PCount].[cntr_value] AS FLOAT) / [PBase].[cntr_value]) * 100
+        END AS [Value]
+    FROM [sys].[dm_os_performance_counters] AS [PCount]
+    INNER JOIN [sys].[dm_os_performance_counters] AS [PBase]
+        ON [PBase].[object_name] = [PCount].[object_name]
+        AND [PBase].[instance_name] = [PCount].[instance_name]
+    WHERE [PCount].[object_name] = 'SQLServer:Resource Pool Stats'
+    AND [PCount].[instance_name] = 'default'
+    AND [PCount].[counter_name] = 'CPU usage %'
+    AND [PBase].[counter_name] = 'CPU usage % base'
+END TRY
+BEGIN CATCH
+    SELECT CAST(-1 AS FLOAT) AS [Value]
+END CATCH
+" ).FirstOrDefault();
+
+                return new Measurement<float>( ( float ) result, _commonTags );
+            }
+        }
+
+        /// <summary>
+        /// Gets the SQL total DTU reserved for the database instance. If the
+        /// database is provisioned as a 400 DTU tier database, this value will
+        /// be 400.
+        /// </summary>
+        /// <returns>A measurement value.</returns>
+        private static Measurement<float> GetSqlDtuTotalMeasure()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var result = rockContext.Database.SqlQuery<double>( @"
+If EXISTS (SELECT * FROM [sys].[system_objects] WHERE [name] = 'dm_db_resource_stats')
+    SELECT TOP 1
+        CAST([dtu_limit] AS FLOAT) AS [Value]
+        FROM [sys].[dm_db_resource_stats]
+        ORDER BY [end_time] DESC
+ELSE
+    SELECT CAST(0 AS FLOAT) AS [Value]
+" ).FirstOrDefault();
+
+                return new Measurement<float>( ( float ) result, _commonTags );
+            }
+        }
+
+        /// <summary>
+        /// Gets the SQL cpu usage as a percentage between 0 and 100.
+        /// </summary>
+        /// <returns>A measurement value.</returns>
+        private static Measurement<long> GetSqlMemoryUsageMeasure()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var result = rockContext.Database.SqlQuery<long>( @"
+BEGIN TRY
+    SELECT
+        CAST([cntr_value] AS BIGINT) * 8 * 1024 AS [Value]
+    FROM [sys].[dm_os_performance_counters]
+    WHERE [object_name] LIKE '%:Buffer Manager%'
+      AND [counter_name] = 'Database Pages'
+END TRY
+BEGIN CATCH
+    SELECT CAST(-1 AS BIGINT) AS [Value]
+END CATCH
+" ).FirstOrDefault();
+
+                return new Measurement<long>( result, _commonTags );
+            }
         }
 
         #endregion

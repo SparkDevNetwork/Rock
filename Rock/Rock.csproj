@@ -1189,6 +1189,7 @@
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
     <Compile Include="Plugin\HotFixes\188_MigrationRollupsForV17_0_0.cs" />
+    <Compile Include="Plugin\HotFixes\191_MigrationRollupsForV17_0_2.cs" />
     <Compile Include="Plugin\HotFixes\190_MigrationRollupsForV17_0_1.cs" />
     <Compile Include="Plugin\HotFixes\189_UpdateAppleDeviceList.cs" />
     <Compile Include="Plugin\HotFixes\187_MigrationRollupsForV15_2_6.cs" />
@@ -2164,6 +2165,7 @@
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\HttpModules\Observability.cs" />
+    <Compile Include="Web\HttpModules\SignalRErrorModule.cs" />
     <Compile Include="Web\IBreadCrumb.cs" />
     <Compile Include="Blocks\IBreadCrumbBlock.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />

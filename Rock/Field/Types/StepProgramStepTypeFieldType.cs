@@ -24,6 +24,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,7 +34,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) step type filtered by a selected step program
     /// Stored as "StepProgram.Guid|StepType.Guid"
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( "B00149C7-08D6-448C-AF21-948BF453DF7E" )]
     public class StepProgramStepTypeFieldType : FieldType, IEntityReferenceFieldType
     {
@@ -76,9 +77,45 @@ namespace Rock.Field.Types
             return formattedValue;
         }
 
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
         #endregion Formatting
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            GetModelsFromAttributeValue( privateValue, out var stepProgram, out var stepStatus );
+            if ( stepProgram == null || stepStatus == null )
+            {
+                return base.GetPublicEditValue( privateValue, privateConfigurationValues );
+            }
+
+            return new StepProgramStepType
+            {
+                StepProgram = stepProgram.ToListItemBag(),
+                StepType = stepStatus.ToListItemBag()
+            }
+            .ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var stepProgramStepStatus = publicValue.FromJsonOrNull<StepProgramStepType>();
+            var stepProgramGUID = stepProgramStepStatus?.StepProgram?.Value;
+            var stepTypeGUID = stepProgramStepStatus?.StepType?.Value;
+            if ( stepProgramGUID == null && stepTypeGUID == null ) // If no value is provided, return null.
+            {
+                return null;
+            }
+            return $"{stepProgramGUID}|{stepTypeGUID}";
+        }
 
         #endregion Edit Control
 
@@ -377,5 +414,14 @@ namespace Rock.Field.Types
 
 #endif
         #endregion
+
+        /// <summary>
+        /// A POCO to store the Step Program Step Status as a ListItemBag
+        /// </summary>
+        private class StepProgramStepType
+        {
+            public ListItemBag StepProgram { get; set; }
+            public ListItemBag StepType { get; set; }
+        }
     }
 }

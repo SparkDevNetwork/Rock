@@ -104,7 +104,7 @@
         }
     }
 
-    const handleClick = (key: string) => {
+    const handleClick = (key: string): void => {
         const rowId = gridData?.rows?.find(r => r["idKey"] === key)?.id;
         if (rowId) {
             Rock.controls.modal.show($(this), `/BlockProperties/${rowId}?t=Block Properties`);
@@ -120,9 +120,7 @@
      * happens only if they have confirmed the delete action.
      */
     async function onDeleteClick(key: string): Promise<void> {
-        const result = await invokeBlockAction<string>("Delete", {
-            key
-        });
+        const result = await invokeBlockAction<string>("Delete", { key });
 
         if (result.isSuccess) {
             if (gridData && gridData.rows) {

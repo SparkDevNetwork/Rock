@@ -325,9 +325,12 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\DefinedTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\DeviceDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\FollowingSuggestionTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\Notes\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\NoteWatchDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\" />
@@ -335,6 +338,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\FollowingEventTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\SignalTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\DocumentTypeDetail\" />
@@ -353,6 +357,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\ConnectionOpportunityList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpDetail\" />
@@ -403,6 +408,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\InteractionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Reporting\MetricValueDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\ForgotUserName\" />
@@ -799,12 +805,15 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\binaryFileTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\binaryFileTypeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeList\binaryFileTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusList\campusListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DefinedTypeList\definedTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\FollowingSuggestionTypeList\followingSuggestionTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\deleteNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\editNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\noteBag.d.ts" />
@@ -835,6 +844,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\scheduleExclusionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignalTypeList\signalTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateDetail\getPdfPreviewUrlRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBox.d.ts" />
@@ -874,6 +884,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\achievementTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\achievementTypeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\ConnectionOpportunityList\connectionOpportunityListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceDetailInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendeeBag.d.ts" />
@@ -1026,6 +1037,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateFileValidationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MetricValueDetail\metricValueBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MetricValueDetail\metricValueDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MetricValueDetail\metricValuePartitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetMetricsRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetMetricsResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetServiceTimesRequestBag.d.ts" />

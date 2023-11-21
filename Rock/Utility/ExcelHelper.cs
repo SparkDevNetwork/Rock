@@ -19,6 +19,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Web;
 
 using OfficeOpenXml;
 
@@ -157,10 +158,28 @@ namespace Rock.Utility
         /// <param name="columns">The number of columns populated in the worksheet</param>
         public static void FormatWorksheet( this ExcelWorksheet worksheet, string title, int headerRows, int rows, int columns )
         {
+            // By default, allow the vertical alignment to be formatted.
+            FormatWorksheet( worksheet, title, headerRows, rows, columns, preventVerticalAlignmentFormatting: false );
+        }
+
+        /// <summary>
+        /// Apply the default Rock worksheet formatting
+        /// </summary>
+        /// <param name="worksheet">The worksheet to be formatted</param>
+        /// <param name="title">The title to display in the worksheet header</param>
+        /// <param name="headerRows">The number of rows to use for the header</param>
+        /// <param name="rows">The number of rows populated in the worksheet</param>
+        /// <param name="columns">The number of columns populated in the worksheet</param>
+        /// <param name="preventVerticalAlignmentFormatting">If true, the vertical alignment is not modified.</param>
+        public static void FormatWorksheet( this ExcelWorksheet worksheet, string title, int headerRows, int rows, int columns, bool preventVerticalAlignmentFormatting )
+        {
             var range = worksheet.Cells[headerRows, 1, rows, columns];
 
-            // align text to the top of the cell
-            range.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+            if ( !preventVerticalAlignmentFormatting )
+            {
+                // align text to the top of the cell
+                range.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+            }
 
             // Remove paces and line breaks. Replace worksheet title unallowed characters with '_'.
             var tableTitle = title

@@ -1,0 +1,162 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox :alertType="AlertType.Info" :dismissible="true">
+        Note: Select a specific entity type filter in order to reorder note types.
+    </NotificationBox>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="id"
+          itemTerm="Note Type"
+          :entityTypeGuid="EntityType.NoteType"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :showLaunchWorkflow="false"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="entityType"
+                    title="Entity Type"
+                    field="entityType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="25%" />
+
+        <TextColumn name="name"
+                    title="Note Type"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="25%" />
+
+        <TextColumn name="iconCssClass"
+                    title="Icon Css Class"
+                    field="iconCssClass"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="20%" />
+
+        <BooleanColumn name="userSelectable"
+                       title="User Selectable"
+                       field="userSelectable"
+                       visiblePriority="xs" />
+
+        <BooleanColumn name="allowsWatching"
+                       title="Allows Watching"
+                       field="allowsWatching"
+                       visiblePriority="xs" />
+
+        <BooleanColumn name="allowsReplies"
+                       title="Allows Replies"
+                       field="allowsReplies"
+                       visiblePriority="xs" />
+
+        <BooleanColumn name="allowsAttachments"
+                       title="Allows Attachments"
+                       field="allowsAttachments"
+                       visiblePriority="xs" />
+
+        <BooleanColumn name="isSystem"
+                       title="System"
+                       field="isSystem"
+                       visiblePriority="xs"
+                       width="5%" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <SecurityColumn />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { NoteTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteTypeList/noteTypeListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./NoteTypeList/types.partial";
+    import { reactive, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const config = useConfigurationValues<ListBlockBox<NoteTypeListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete note type.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

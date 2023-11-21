@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -60,6 +60,8 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Bus\ConsumerList.cs" />
+    <Compile Include="Bus\QueueList.cs" />
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
@@ -70,20 +72,30 @@
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
     <Compile Include="Core\BinaryFileTypeDetail.cs" />
+    <Compile Include="Core\BinaryFileTypeList.cs" />
     <Compile Include="Core\CampusList.cs" />
     <Compile Include="Communication\EmailPreferenceEntry.cs" />
+    <Compile Include="Core\DefinedTypeList.cs" />
     <Compile Include="Core\DeviceDetail.cs" />
+    <Compile Include="Core\DeviceList.cs" />
+    <Compile Include="Core\FollowingSuggestionTypeList.cs" />
     <Compile Include="Core\Notes.cs" />
+    <Compile Include="Core\NoteTypeList.cs" />
     <Compile Include="Core\NoteWatchDetail.cs" />
+    <Compile Include="Core\NoteWatchList.cs" />
     <Compile Include="Core\NotificationMessageList.cs" />
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />
+    <Compile Include="Core\SignalTypeList.cs" />
+    <Compile Include="Crm\NamelessPersonList.cs" />
     <Compile Include="Crm\SignalTypeDetail.cs" />
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
     <Compile Include="Engagement\AchievementTypeDetail.cs" />
+    <Compile Include="Engagement\ConnectionOpportunityList.cs" />
     <Compile Include="Finance\BenevolenceTypeDetail.cs" />
+    <Compile Include="Finance\BusinessList.cs" />
     <Compile Include="Finance\FinancialAccountDetail.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
@@ -96,6 +108,7 @@
     <Compile Include="Group\GroupRequirementTypeDetail.cs" />
     <Compile Include="Reporting\InteractionDetail.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
+    <Compile Include="Reporting\MetricValueDetail.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
     <Compile Include="Engagement\StepTypeDetail.cs" />
     <Compile Include="Tv\AppleTvAppDetail.cs" />

@@ -52,7 +52,7 @@ export type FamilyPreRegistrationSaveRequestBag = {
     /** Gets or sets the family unique identifier. */
     familyGuid?: Guid | null;
 
-    /** Gets or sets the full name. */
+    /** Gets or sets a value indicating whether the solved captcha is valid. */
     isCaptchaValid: boolean;
 
     /** Gets or sets the planned visit date. */

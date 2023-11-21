@@ -44,6 +44,11 @@ namespace Rock.SystemGuid
         public const string ASSET = "FC27D395-8F57-467E-91FF-E648F807110E";
 
         /// <summary>
+        /// Asset storage provider field type
+        /// </summary>
+        public const string ASSET_STORAGE_PROVIDER = "1596F562-E8D0-4C5F-9A00-23B5594F17E2";
+
+        /// <summary>
         /// Asset Storage System field type
         /// </summary>
         public const string ASSET_STORAGE_SYSTEM = "A57109EE-35A2-45D0-A575-02DBBDFBC0D0";
@@ -554,6 +559,11 @@ namespace Rock.SystemGuid
         public const string PAGE_REFERENCE = "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108";
 
         /// <summary>
+        /// Persisted Dataset field type
+        /// </summary>
+        public const string PERSISTED_DATASET = "392865C4-F17B-4832-AB59-20F72BB1C9F6";
+
+        /// <summary>
         /// Person field type
         /// </summary>
         public const string PERSON = "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70";
@@ -652,6 +662,26 @@ namespace Rock.SystemGuid
         /// Social Security Number
         /// </summary>
         public const string SSN = "4722C99A-C078-464A-968F-13AB5E8E318F";
+
+        /// <summary>
+        /// Step field type.
+        /// </summary>
+        public const string STEP = "829803DB-7CA3-44F6-B1CB-669D61ED6E92";
+
+        /// <summary>
+        /// Step program field type.
+        /// </summary>
+        public const string STEP_PROGRAM = "33875369-7D2B-4CD7-BB89-ABC29906CCAE";
+
+        /// <summary>
+        /// Step propgram step status field type.
+        /// </summary>
+        public const string STEP_PROGRAM_STEP_STATUS = "F8E85355-2780-4772-9B21-30B84741E6D1";
+
+        /// <summary>
+        /// Step program step type field type.
+        /// </summary>
+        public const string STEP_PROGRAM_STEP_TYPE = "B00149C7-08D6-448C-AF21-948BF453DF7E";
 
         /// <summary>
         /// Streak Type field type

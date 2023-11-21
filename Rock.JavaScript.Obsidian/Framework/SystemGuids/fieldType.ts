@@ -31,6 +31,8 @@ export const FieldType = {
     AssessmentType: "C263513A-30BE-4823-ABF1-AC12A56F9644",
     /** Asset field type */
     Asset: "FC27D395-8F57-467E-91FF-E648F807110E",
+    /** Asset storage provider field type */
+    AssetStorageProvider: "1596F562-E8D0-4C5F-9A00-23B5594F17E2",
     /** Asset Storage System field type */
     AssetStorageSystem: "A57109EE-35A2-45D0-A575-02DBBDFBC0D0",
     /** Attribute field type */
@@ -235,6 +237,8 @@ export const FieldType = {
     NoteTypes: "276CCA63-5670-48CA-8B5A-2AAC97E8EE5E",
     /** Page Reference field type */
     PageReference: "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108",
+    /** Persisted Dataset field type */
+    PersistedDataset: "392865C4-F17B-4832-AB59-20F72BB1C9F6",
     /** Person field type */
     Person: "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70",
     /** Person Badges field type */
@@ -273,12 +277,16 @@ export const FieldType = {
     SlidingDateRange: "55810BC5-45EA-4044-B783-0CCE0A445C6F",
     /** Social Media Account field type */
     SocialMediaAccount: "92C0E3A1-9F63-49D4-B23B-73624AC42546",
-    /** Step field type */
-    Step : "829803DB-7CA3-44F6-B1CB-669D61ED6E92",
     /** Social Security Number */
     Ssn: "4722C99A-C078-464A-968F-13AB5E8E318F",
-    /** Step Program field type */
+    /** Step field type. */
+    Step: "829803DB-7CA3-44F6-B1CB-669D61ED6E92",
+    /** Step program field type. */
     StepProgram: "33875369-7D2B-4CD7-BB89-ABC29906CCAE",
+    /** Step propgram step status field type. */
+    StepProgramStepStatus: "F8E85355-2780-4772-9B21-30B84741E6D1",
+    /** Step program step type field type. */
+    StepProgramStepType: "B00149C7-08D6-448C-AF21-948BF453DF7E",
     /** Streak Type field type */
     StreakType: "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
     /** Streak Type field type */

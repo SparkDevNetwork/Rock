@@ -33,6 +33,10 @@ namespace Rock.Observability
     /// </summary>
     public static class ObservabilityHelper
     {
+        private static string DefaultTracesPath = "v1/traces";
+        private static string DefaultMetricsPath = "v1/metrics";
+        private static string DefaultLogsPath = "v1/logs";
+
         private static TracerProvider _currentTracerProvider;
         private static MeterProvider _currentMeterProvider;
 
@@ -142,12 +146,16 @@ namespace Rock.Observability
             // Clear out the current trace provider
             _currentTracerProvider?.Dispose();
 
-            Uri endpointUri = null;
-            Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out endpointUri );
+            Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out var endpointUri );
             var observabilityEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
             var endpointHeaders = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS )?.Replace( "^", "=" ).Replace( "|", "," );
             var endpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ).ToString().ConvertToEnumOrNull<OpenTelemetry.Exporter.OtlpExportProtocol>() ?? OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
             var serviceName = ObservabilityHelper.ServiceName;
+
+            if ( endpointUri != null && endpointProtocol == OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf )
+            {
+                endpointUri = AppendPathIfNotEndsWith( endpointUri, DefaultTracesPath );
+            }
 
             if ( observabilityEnabled && endpointUri != null )
             {
@@ -183,23 +191,37 @@ namespace Rock.Observability
         /// <returns></returns>
         public static MeterProvider ConfigureMeterProvider()
         {
-            // Determine if a trace provider is already configured.
-            var metricProviderPreviouslyConfigured = _currentMeterProvider != null;
-
             // Clear out the current trace provider
             _currentMeterProvider?.Dispose();
 
-            Uri endpointUri = null;
-            Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out endpointUri );
+            Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out var endpointUri );
             var observabilityEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
             var endpointHeaders = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS )?.Replace( "^", "=" ).Replace( "|", "," );
             var endpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ).ToString().ConvertToEnumOrNull<OpenTelemetry.Exporter.OtlpExportProtocol>() ?? OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
             var serviceName = ObservabilityHelper.ServiceName;
 
+            if ( endpointUri != null && endpointProtocol == OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf )
+            {
+                endpointUri = AppendPathIfNotEndsWith( endpointUri, DefaultMetricsPath );
+            }
+
             if ( observabilityEnabled && endpointUri != null )
             {
+                var nodeName = RockMessageBus.NodeName.ToLower();
+                var machineName = _machineName.Value;
+                string instanceId;
+
+                if ( nodeName != machineName )
+                {
+                    instanceId = $"{machineName} ({nodeName})";
+                }
+                else
+                {
+                    instanceId = machineName;
+                }
+
                 _currentMeterProvider = Sdk.CreateMeterProviderBuilder()
-                    .SetResourceBuilder( ResourceBuilder.CreateDefault().AddService( serviceName: serviceName, serviceVersion: "1.0.0" ) )
+                    .SetResourceBuilder( ResourceBuilder.CreateDefault().AddService( serviceName: serviceName, serviceVersion: "1.0.0", serviceInstanceId: instanceId ) )
                     .AddMeter( serviceName )
                     .AddOtlpExporter( o =>
                     {
@@ -284,6 +306,39 @@ namespace Rock.Observability
             }
 
             return activity;
+        }
+
+        /// <summary>
+        /// Appends the path to the URI if it doesn't already end with the path.
+        /// </summary>
+        /// <param name="uri">The URI to be modified.</param>
+        /// <param name="path">The path to be appended.</param>
+        /// <returns>A new <see cref="Uri"/> if the path is modified, otherwise the original <paramref name="uri"/> is returned.</returns>
+        private static Uri AppendPathIfNotEndsWith( Uri uri, string path )
+        {
+            var absoluteUri = uri.AbsoluteUri;
+            var separator = string.Empty;
+
+            if ( absoluteUri.EndsWith( "/" ) )
+            {
+                // Endpoint already ends with 'path/'
+                if ( absoluteUri.EndsWith( string.Concat( path, "/" ), StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return uri;
+                }
+            }
+            else
+            {
+                // Endpoint already ends with 'path'
+                if ( absoluteUri.EndsWith( path, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return uri;
+                }
+
+                separator = "/";
+            }
+
+            return new Uri( string.Concat( uri.AbsoluteUri, separator, path ) );
         }
     }
 }

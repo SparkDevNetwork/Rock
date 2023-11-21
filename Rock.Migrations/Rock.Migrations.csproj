@@ -104,6 +104,18 @@
     <Compile Include="Migrations\202311022055184_CodeGenerated_20231101.designer.cs">
       <DependentUpon>202311022055184_CodeGenerated_20231101.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202311162105098_Rollup_20231116.cs" />
+    <Compile Include="Migrations\202311162105098_Rollup_20231116.designer.cs">
+      <DependentUpon>202311162105098_Rollup_20231116.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202311162232335_CodeGenerated_20231116.cs" />
+    <Compile Include="Migrations\202311162232335_CodeGenerated_20231116.designer.cs">
+      <DependentUpon>202311162232335_CodeGenerated_20231116.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202311201535330_AddIsDirtyToPersonalizationSegment.cs" />
+    <Compile Include="Migrations\202311201535330_AddIsDirtyToPersonalizationSegment.designer.cs">
+      <DependentUpon>202311201535330_AddIsDirtyToPersonalizationSegment.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.designer.cs">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>
@@ -1899,6 +1911,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202311022055184_CodeGenerated_20231101.resx">
       <DependentUpon>202311022055184_CodeGenerated_20231101.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202311162105098_Rollup_20231116.resx">
+      <DependentUpon>202311162105098_Rollup_20231116.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202311162232335_CodeGenerated_20231116.resx">
+      <DependentUpon>202311162232335_CodeGenerated_20231116.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202311201535330_AddIsDirtyToPersonalizationSegment.resx">
+      <DependentUpon>202311201535330_AddIsDirtyToPersonalizationSegment.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.resx">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>

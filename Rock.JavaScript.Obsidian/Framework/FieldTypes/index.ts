@@ -32,6 +32,9 @@ registerFieldType(FieldTypeGuids.Address, new AddressFieldType());
 import { AssessmentTypesFieldType } from "./assessmentTypesField.partial";
 registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType());
 
+import { AssetStorageProviderFieldType } from "./assetStorageProviderField.partial";
+registerFieldType(FieldTypeGuids.AssetStorageProvider, new AssetStorageProviderFieldType());
+
 import { AudioFileFieldType } from "./audioFileField.partial";
 registerFieldType(FieldTypeGuids.AudioFile, new AudioFileFieldType());
 
@@ -43,6 +46,9 @@ registerFieldType(FieldTypeGuids.Badges, new BadgesFieldType());
 
 import { BackgroundCheckFieldType } from "./backgroundCheckField.partial";
 registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType());
+
+import { BenevolenceRequestFieldType } from "./benevolenceRequestField.partial";
+registerFieldType(FieldTypeGuids.BenevolenceRequest, new BenevolenceRequestFieldType());
 
 import { BinaryFileTypeFieldType } from "./binaryFileTypeField.partial";
 registerFieldType(FieldTypeGuids.BinaryFileType, new BinaryFileTypeFieldType());
@@ -106,6 +112,9 @@ registerFieldType(FieldTypeGuids.ContentChannels, new ContentChannelsFieldType()
 
 import { ConnectionActivityTypeField } from "./connectionActivityTypeField.partial";
 registerFieldType(FieldTypeGuids.ConnectionActivityType, new ConnectionActivityTypeField());
+
+import { ConnectionRequestFieldType } from "./connectionRequestField.partial";
+registerFieldType(FieldTypeGuids.ConnectionRequest, new ConnectionRequestFieldType());
 
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
@@ -272,6 +281,9 @@ registerFieldType(FieldTypeGuids.NoteType, new NoteTypeField());
 import { NoteTypesField } from "./noteTypesField.partial";
 registerFieldType(FieldTypeGuids.NoteTypes, new NoteTypesField());
 
+import { PersistedDatasetField } from "./persistedDatasetField.partial";
+registerFieldType(FieldTypeGuids.PersistedDataset, new PersistedDatasetField());
+
 import { PhoneNumberFieldType } from "./phoneNumberField.partial";
 registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
 
@@ -287,6 +299,9 @@ registerFieldType(FieldTypeGuids.RangeSlider, new RangeSliderFieldType());
 import { RatingFieldType } from "./ratingField.partial";
 registerFieldType(FieldTypeGuids.Rating, new RatingFieldType());
 
+import { RegistrationInstanceField } from "./registrationInstanceField.partial";
+registerFieldType(FieldTypeGuids.RegistrationInstance, new RegistrationInstanceField());
+
 import { RegistryEntryFieldType } from "./registryEntryField.partial";
 registerFieldType(FieldTypeGuids.RegistryEntry, new RegistryEntryFieldType());
 
@@ -295,6 +310,9 @@ registerFieldType(FieldTypeGuids.ReminderType, new ReminderTypeFieldType());
 
 import { ReminderTypesFieldType } from "./reminderTypesField.partial";
 registerFieldType(FieldTypeGuids.ReminderTypes, new ReminderTypesFieldType());
+
+import { ReportFieldType } from "./reportField.partial";
+registerFieldType(FieldTypeGuids.Report, new ReportFieldType());
 
 import { ScheduleFieldType } from "./scheduleField.partial";
 registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());
@@ -323,6 +341,12 @@ registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
 import { StepFieldType } from "./stepField.partial";
 registerFieldType(FieldTypeGuids.Step, new StepFieldType());
 
+import { StepProgramStepStatusFieldType } from "./stepProgramStepStatusField.partial";
+registerFieldType(FieldTypeGuids.StepProgramStepStatus, new StepProgramStepStatusFieldType());
+
+import { StepProgramStepTypeFieldType } from "./stepProgramStepTypeField.partial";
+registerFieldType(FieldTypeGuids.StepProgramStepType, new StepProgramStepTypeFieldType());
+
 import { StreakTypeFieldType } from "./streakTypeField.partial";
 registerFieldType(FieldTypeGuids.StreakType, new StreakTypeFieldType());
 
@@ -343,3 +367,9 @@ registerFieldType(FieldTypeGuids.UrlLink, new UrlLinkFieldType());
 
 import { ValueListFieldType } from "./valueListField.partial";
 registerFieldType(FieldTypeGuids.ValueList, new ValueListFieldType());
+
+import { VideoUrlFieldType } from "./videoUrlField.partial";
+registerFieldType(FieldTypeGuids.VideoUrl, new VideoUrlFieldType());
+
+import { VideoFileFieldType } from "./videoFileField.partial";
+registerFieldType(FieldTypeGuids.VideoFile, new VideoFileFieldType());

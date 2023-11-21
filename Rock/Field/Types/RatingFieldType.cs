@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;

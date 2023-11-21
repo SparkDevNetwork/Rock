@@ -28,7 +28,7 @@
                 </RockButton>
 
                 <RockButton type="button"
-                            :btnType="BtnType.Primary"
+                            :btnType="BtnType.Success"
                             :disabled="isRowDisabled"
                             @click="onPerformAction(ToolboxScheduleRowActionType.Accept)">
                     Accept

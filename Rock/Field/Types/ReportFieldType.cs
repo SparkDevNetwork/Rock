@@ -16,14 +16,17 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,11 +36,13 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of reports
     /// Stored as Report.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REPORT )]
     public class ReportFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Formatting
+
+        private const string VALUES_PUBLIC_KEY = "values";
 
         /// <inheritdoc/>
         public override string GetTextValue( string value, Dictionary<string, string> privateConfigurationValues )
@@ -62,6 +67,51 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+            using ( var rockContext = new RockContext() )
+            {
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = new ReportService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .OrderBy( r => r.Name )
+                    .Select( r => new ListItemBag
+                    {
+                        Text = r.Name,
+                        Value = r.Guid.ToString(),
+                    } )
+                    .ToList()
+                    .ToCamelCaseJson( false, true );
+            }
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+            privateConfigurationValues.Remove( VALUES_PUBLIC_KEY );
+            return privateConfigurationValues;
+        }
 
         #endregion
 

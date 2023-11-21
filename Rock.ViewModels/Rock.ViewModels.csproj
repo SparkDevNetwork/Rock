@@ -47,6 +47,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Blocks\Bus\ConsumerList\ConsumerListBag.cs" />
+    <Compile Include="Blocks\Bus\ConsumerList\ConsumerListOptionsBag.cs" />
+    <Compile Include="Blocks\Bus\QueueList\QueueListOptionsBag.cs" />
+    <Compile Include="Blocks\Bus\QueueList\QueueListBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
@@ -65,14 +69,22 @@
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\BinaryFileTypeList\BinaryFileTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\DefinedTypeList\DefinedTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\DeviceList\DeviceListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\NoteTypeList\NoteTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\FollowingSuggestionTypeList\FollowingSuggestionTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\NoteWatchDetail\NoteWatchBag.cs" />
     <Compile Include="Blocks\Core\NoteWatchDetail\NoteWatchDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\NoteWatchList\NoteWatchListOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\SignalTypeList\SignalTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
+    <Compile Include="Blocks\Crm\NamelessPersonList\NamelessPersonListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
@@ -81,9 +93,12 @@
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\ConnectionOpportunityList\ConnectionOpportunityListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceWorkflowBag.cs" />
+    <Compile Include="Blocks\Finance\BusinessList\BusinessListBag.cs" />
+    <Compile Include="Blocks\Finance\BusinessList\BusinessListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountParticipantBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountDetailOptionsBag.cs" />
@@ -132,6 +147,9 @@
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\MetricValueDetail\MetricValueBag.cs" />
+    <Compile Include="Blocks\Reporting\MetricValueDetail\MetricValueDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\MetricValueDetail\MetricValuePartitionBag.cs" />
     <Compile Include="Blocks\Security\Login\PasswordlessLoginMfaBag.cs" />
     <Compile Include="Blocks\Security\Login\CredentialLoginMfaBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\AppleTvPageBag.cs" />
@@ -662,5 +680,6 @@
   <ItemGroup>
     <Compile Include="Blocks\Cms\PageShortLinkClickList\PageShortLinkClickListOptionsBag.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

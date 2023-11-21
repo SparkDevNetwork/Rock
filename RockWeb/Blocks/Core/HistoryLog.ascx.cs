@@ -30,6 +30,7 @@ using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -636,6 +637,10 @@ namespace RockWeb.Blocks.Core
                     var personAttributes = new AttributeService( rockContext ).GetByEntityTypeId( TargetEntityTypeId ).ToList().Select( a => AttributeCache.Get( a ) );
                     var allowedAttributeIds = GetAuthorizedPersonAttributes( rockContext ).Select( a => a.Id ).ToList();
                     historyQry = historyQry.Where( a => ( a.RelatedEntityTypeId == attributeEntity.Id ) ? allowedAttributeIds.Contains( a.RelatedEntityId.Value ) : true );
+
+                    // as per issue #5332(https://github.com/SparkDevNetwork/Rock/issues/5332), ensure user is Authorized to view related entity.
+                    var allowedRelatedEntityIds = GetAuthorizedRelatedEntityIds( historyService, historyQry ).ToList();
+                    historyQry = historyQry.Where( a => !a.RelatedEntityId.HasValue || allowedRelatedEntityIds.Contains( a.RelatedEntityId.Value ) );
                 }
                 else
                 {
@@ -720,6 +725,34 @@ namespace RockWeb.Blocks.Core
                 }
 
                 return allowedPersonAttributes;
+            }
+
+            /// <summary>
+            /// Gets the ids of related entities the current user is authorized to view.
+            /// </summary>
+            /// <param name="historyService">The history service.</param>
+            /// <param name="historyQry">The history qry.</param>
+            /// <returns></returns>
+            private List<int> GetAuthorizedRelatedEntityIds( HistoryService historyService, IQueryable<History> historyQry )
+            {
+                var relatedEntityIds = new List<int>();
+                var relatedEntityTypeIdList = historyQry.Where( a => a.RelatedEntityTypeId.HasValue ).Select( a => a.RelatedEntityTypeId.Value ).Distinct().ToList();
+
+                // find all the EntityTypes that are used as the History.RelatedEntityTypeId records
+                foreach ( var relatedEntityTypeId in relatedEntityTypeIdList )
+                {
+                    // for each entityType, query whatever it is (for example Person) so that we can get that Entity and its Id to check if the current user can view it.
+                    var entityLookup = historyService.GetEntityQuery( relatedEntityTypeId ).AsNoTracking()
+                        .Where( a => historyQry.Any( h => h.RelatedEntityTypeId == relatedEntityTypeId && h.RelatedEntityId == a.Id ) )
+                        .AsEnumerable()
+                        .ToDictionary( k => k.Id, v => v );
+
+                    var authorizedEntitiesLookup = entityLookup.Where( el => !( el.Value is ISecured secured ) || secured.IsAuthorized( Authorization.VIEW, CurrentPerson ) ).ToList();
+
+                    relatedEntityIds.AddRange( authorizedEntitiesLookup.Select( e => e.Key ) );
+                }
+
+                return relatedEntityIds;
             }
 
             #region Support Classes
