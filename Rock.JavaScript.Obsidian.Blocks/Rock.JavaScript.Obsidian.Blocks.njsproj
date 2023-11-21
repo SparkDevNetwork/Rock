@@ -56,6 +56,7 @@
     <Content Include="src\Core\binaryFileTypeDetail.obs" />
     <Content Include="src\Core\BinaryFileTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\binaryFileTypeList.obs" />
     <Content Include="src\Core\categoryDetail.vue" />
     <Content Include="src\Core\categoryDetailCustomSettings.vue" />
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
@@ -321,6 +322,7 @@
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
     <Folder Include="src\Core\BinaryFileTypeDetail\" />
+    <Folder Include="src\Core\BinaryFileTypeList\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
     <Folder Include="src\Core\DefinedTypeList\" />
@@ -477,6 +479,7 @@
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileTypeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\BinaryFileTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\types.partial.ts" />

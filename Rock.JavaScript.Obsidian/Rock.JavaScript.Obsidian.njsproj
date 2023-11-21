@@ -325,6 +325,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\DefinedTypeList\" />
@@ -804,6 +805,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\binaryFileTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\binaryFileTypeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeList\binaryFileTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
