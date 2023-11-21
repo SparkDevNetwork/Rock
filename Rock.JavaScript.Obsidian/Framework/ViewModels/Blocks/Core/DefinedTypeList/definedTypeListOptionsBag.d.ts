@@ -23,4 +23,6 @@
 
 /** The additional configuration options for the Defined Type List block. */
 export type DefinedTypeListOptionsBag = {
+    /** Determines if the category column should be displayed. */
+    showCategoryColumn: boolean;
 };

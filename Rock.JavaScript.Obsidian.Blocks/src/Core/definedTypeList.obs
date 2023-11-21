@@ -5,6 +5,7 @@
           keyField="idKey"
           itemTerm="Defined Type"
           :entityTypeGuid="EntityType.DefinedType"
+          :showLaunchWorkflow="false"
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
@@ -14,6 +15,7 @@
                     title="Category"
                     field="category"
                     :filter="textValueFilter"
+                    :hideOnScreen="!config.options?.showCategoryColumn"
                     visiblePriority="xs" />
 
         <TextColumn name="name"

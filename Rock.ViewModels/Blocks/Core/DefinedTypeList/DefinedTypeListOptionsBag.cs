@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,5 +22,9 @@ namespace Rock.ViewModels.Blocks.Core.DefinedTypeList
     /// </summary>
     public class DefinedTypeListOptionsBag
     {
+        /// <summary>
+        /// Determines if the category column should be displayed.
+        /// </summary>
+        public bool ShowCategoryColumn { get; set; }
     }
 }

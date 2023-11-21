@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,14 @@ namespace Rock.Blocks.Core
         Description = "The page that will show the defined type details.",
         Key = AttributeKey.DetailPage )]
 
+    [CategoryField( AttributeKey.Categories,
+        Description = "If block should only display Defined Types from specific categories, select the categories here.",
+        AllowMultiple = true,
+        EntityTypeName = "Rock.Model.DefinedType",
+        Order = 1,
+        IsRequired = false,
+        Key = AttributeKey.Categories )]
+
     [Rock.SystemGuid.EntityTypeGuid( "6508dcc1-ada8-4299-9147-dc37095c2aff" )]
     [Rock.SystemGuid.BlockTypeGuid( "7faf32d3-c577-462a-bc0b-d34de3316a5b" )]
     [CustomizedGrid]
@@ -55,6 +63,7 @@ namespace Rock.Blocks.Core
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string Categories = "Categories";
         }
 
         private static class NavigationUrlKey
@@ -89,7 +98,7 @@ namespace Rock.Blocks.Core
         private DefinedTypeListOptionsBag GetBoxOptions()
         {
             var options = new DefinedTypeListOptionsBag();
-
+            options.ShowCategoryColumn = GetAttributeValue( AttributeKey.Categories ).IsNullOrWhiteSpace();
             return options;
         }
 
@@ -119,8 +128,16 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<DefinedType> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext )
+            var definedTypeQry = base.GetListQueryable( rockContext )
                 .Include( a => a.Category );
+
+            var categoryGuids = GetAttributeValue( AttributeKey.Categories ).SplitDelimitedValues().AsGuidList();
+            if ( categoryGuids.Any() )
+            {
+                definedTypeQry = definedTypeQry.Where( a => a.Category != null && categoryGuids.Contains( a.Category.Guid ) );
+            }
+
+            return definedTypeQry;
         }
 
         /// <inheritdoc/>
