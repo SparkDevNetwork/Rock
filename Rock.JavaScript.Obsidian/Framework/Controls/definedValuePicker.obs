@@ -28,7 +28,7 @@
     import { PropType, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import RockButton from "./rockButton.obs";
-    import DefinedValueEditor from "./Internal/definedValueEditor.partial.obs";
+    import DefinedValueEditor from "./Internal/definedValueEditor.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 
     const props = defineProps({
@@ -101,6 +101,10 @@
     const isShowingAddForm = ref(false);
 
     function showAddForm(): void {
+        if (!props.allowAdd) {
+            return;
+        }
+
         isShowingAddForm.value = true;
     }
 

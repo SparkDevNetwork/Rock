@@ -41,6 +41,11 @@
     const props = defineProps({
         definedTypeGuid: {
             type: String as PropType<Guid>,
+            required: true
+        },
+
+        updateAttributeGuid: {
+            type: String as PropType<Guid>,
             required: false
         },
 
@@ -108,7 +113,8 @@
             securityGrantToken: securityGrantToken.value,
             value: newValue.value,
             description: newDescription.value,
-            attributeValues: attributeValues.value
+            attributeValues: attributeValues.value,
+            updateAttributeGuid: props.updateAttributeGuid
         };
         const url = "/api/v2/Controls/DefinedValueEditorSaveNewValue";
         const result = await http.post<ListItemBag>(url, undefined, options);
