@@ -1,0 +1,51 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TextBox v-model="internalValue" v-bind="fieldProps" :rules="rules" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { normalizeRules } from "@Obsidian/ValidationRules";
+
+    const props = defineProps({
+        modelValue: {
+            type: String,
+            required: true
+        },
+
+        /** List of strings that are not allowed to appear in the value. */
+        notAllowed: {
+            type: Array as PropType<string[]>,
+            default: []
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    const disallowedStrings = computed(() => {
+        return ["&", " & ", " and ", "-and-", "_and_", " plus ", "+"].push(...props.notAllowed);
+    });
+
+    const rules = computed(() => {
+        const rules = normalizeRules(props.rules);
+
+        rules.push((value) => {
+            /////// TODO: disallow strings
+            disallowedStrings.value == value;
+        });
+
+        return rules;
+    });
+
+</script>
