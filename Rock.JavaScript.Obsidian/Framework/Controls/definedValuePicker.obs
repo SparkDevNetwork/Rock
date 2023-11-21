@@ -37,18 +37,17 @@
             required: false
         },
 
-        disabled: {
-            type: Boolean as PropType<boolean>,
-            required: false,
-            default: false
-        },
-
         definedTypeGuid: {
             type: String as PropType<Guid>,
-            required: false
+            required: true
         },
 
         allowAdd: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        disabled: {
             type: Boolean as PropType<boolean>,
             default: false
         },
