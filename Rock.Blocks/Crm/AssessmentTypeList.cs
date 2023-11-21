@@ -134,7 +134,7 @@ namespace Rock.Blocks.Crm
         {
             return new GridBuilder<AssessmentType>()
                 .WithBlock( this )
-                .AddField("id", a => a.Id)
+                .AddField( "id", a => a.Id )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "title", a => a.Title )
                 .AddField( "requiresRequest", a => a.RequiresRequest )
