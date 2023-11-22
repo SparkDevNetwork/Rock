@@ -391,7 +391,7 @@ namespace Rock.Field.Types
                 return;
             }
 
-            Location location;
+            Location location = null;
             Guid guid;
             var isGuid = Guid.TryParse( value, out guid );
 
@@ -403,15 +403,18 @@ namespace Rock.Field.Types
             {
                 // Try to parse the value as a partial address.
                 var fieldValue = value.FromJsonOrNull<AddressFieldValue>();
-                location = new Location()
+                if ( fieldValue != null )
                 {
-                    Street1 = fieldValue.Street1,
-                    Street2 = fieldValue.Street2,
-                    City = fieldValue.City,
-                    State = fieldValue.State,
-                    PostalCode = fieldValue.PostalCode,
-                    Country = fieldValue.Country
-                };
+                    location = new Location()
+                    {
+                        Street1 = fieldValue.Street1,
+                        Street2 = fieldValue.Street2,
+                        City = fieldValue.City,
+                        State = fieldValue.State,
+                        PostalCode = fieldValue.PostalCode,
+                        Country = fieldValue.Country
+                    };
+                }
 
             }
             if ( location != null )
