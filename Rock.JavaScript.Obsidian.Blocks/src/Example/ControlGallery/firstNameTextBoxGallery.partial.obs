@@ -1,7 +1,10 @@
 <template>
     <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
-        <FirstNameTextBox v-model="value" />
+        <RockForm>
+            <FirstNameTextBox v-model="value" label="First Name" />
+            <RockButton type="submit">Validate</RockButton>
+        </RockForm>
 
         <template #settings>
             <div class="row">
@@ -16,16 +19,14 @@
     import { computed, ref } from "vue";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
     import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { getSfcControlImportPath } from "./utils.partial";
 
-    const value = ref([]);
-    const someBool = ref(false);
-    const someVal = ref("hi");
+    const value = ref("");
 
     const importCode = getSfcControlImportPath("firstNameTextBox");
     const exampleCode = computed(() => {
-        const someBoolProp = someBool.value ? " someBool" : "";
-        const someValProp = someVal.value ? ` someVal="${someVal.value}"` : "";
-        return `<FirstNameTextBox v-model="value"${someBoolProp}${someValProp} />`;
+        return `<FirstNameTextBox v-model="value" label="First Name" />`;
     });
 </script>

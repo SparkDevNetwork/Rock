@@ -34,15 +34,37 @@
     const fieldProps = useStandardRockFormFieldProps(props);
 
     const disallowedStrings = computed(() => {
-        return ["&", " & ", " and ", "-and-", "_and_", " plus ", "+"].push(...props.notAllowed);
+        const strings = ["&", " and ", "-and-", "_and_", " plus ", "+"];
+        strings.push(...props.notAllowed);
+        return strings;
     });
 
     const rules = computed(() => {
         const rules = normalizeRules(props.rules);
 
-        rules.push((value) => {
-            /////// TODO: disallow strings
-            disallowedStrings.value == value;
+        rules.push((value): string | boolean => {
+            if (typeof value != "string") {
+                return true;
+            }
+
+            const found = disallowedStrings.value.filter(dont => value.includes(dont));
+            let foundSentenceList = "";
+
+            if (found.length == 1) {
+                foundSentenceList = `"${found[0]}"`;
+            }
+            else if (found.length == 2) {
+                foundSentenceList = `"${found[0]}" or "${found[1]}"`;
+            }
+            else if (found.length > 2) {
+                foundSentenceList = `"${found.slice(0, -1).join(`", "`)}", or "${found[found.length - 1]}"`;
+            }
+
+            if (found.length > 0) {
+                return "cannot contain " + foundSentenceList;
+            }
+
+            return true;
         });
 
         return rules;
