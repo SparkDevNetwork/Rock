@@ -22,4 +22,12 @@
 //
 
 export type PrayerRequestDetailAddPersonResponseBag = {
+    /** Gets the value of the Nick name of the person */
+    nickName?: string | null;
+
+    /** Gets the value of the last name of the person */
+    lastName?: string | null;
+
+    /** Gets the value of the last email of the person */
+    email?: string | null;
 };
