@@ -326,5 +326,10 @@ namespace Rock.SystemGuid
         /// The post update data migration job to remove obsidian group schedule toolbox back buttons.
         /// </summary>
         public const string DATA_MIGRATIONS_161_REMOVE_OBSIDIAN_GROUP_SCHEDULE_TOOLBOX_BACK_BUTTONS = "781F2D3B-E5E4-41D5-9145-1D70DDB3EE04";
+
+        /// <summary>
+        /// The post update data migration job to chop the Login and Account Entry blocks.
+        /// </summary>
+        public const string DATA_MIGRATIONS_161_CHOP_SECURITY_BLOCKS = "A65D26C1-229E-4198-B388-E269C3534BC0";
     }
 }

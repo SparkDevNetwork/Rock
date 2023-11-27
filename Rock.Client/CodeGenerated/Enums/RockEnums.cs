@@ -1562,6 +1562,35 @@ namespace Rock.Client.Enums.Blocks.Group.Scheduling
 
     /// <summary>
     /// </summary>
+    public enum ToolboxActionType
+    {
+        ViewCurrent = 0x0,
+        UpdatePreferences = 0x1,
+        SignUp = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ToolboxScheduleRowActionType
+    {
+        Accept = 0x0,
+        Decline = 0x1,
+        Cancel = 0x2,
+        Delete = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ToolboxScheduleRowConfirmationStatus
+    {
+        Pending = 0x0,
+        Confirmed = 0x1,
+        Declined = 0x2,
+        Unavailable = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum UpdateSchedulePreferenceMode
     {
         ReplacePreference = 0x0,

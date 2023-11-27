@@ -88,6 +88,42 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<AdaptiveMessage>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessage.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AdaptiveMessage>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessage.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AdaptiveMessageAdaptation>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessageAdaptation.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AdaptiveMessageAdaptation>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessageAdaptation.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AdaptiveMessageAdaptationSegment>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessageAdaptationSegment.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AdaptiveMessageAdaptationSegment>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessageAdaptationSegment.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Assessment>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Assessment.FriendlyTypeName );

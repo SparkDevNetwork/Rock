@@ -131,11 +131,13 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
             target.IsActive = source.IsActive;
+            target.IsValidInFuture = source.IsValidInFuture;
             target.LavaTemplate = source.LavaTemplate;
             target.Name = source.Name;
             target.ProviderEntityTypeId = source.ProviderEntityTypeId;
             target.ProviderTemplateKey = source.ProviderTemplateKey;
             target.SignatureType = source.SignatureType;
+            target.ValidityDurationInDays = source.ValidityDurationInDays;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
