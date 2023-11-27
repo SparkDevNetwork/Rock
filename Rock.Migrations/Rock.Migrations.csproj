@@ -64,57 +64,61 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202310051734463_Rollup_20231005.cs" />
-    <Compile Include="Migrations\202310051734463_Rollup_20231005.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310051734463_Rollup_20231005.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310051734463_Rollup_20231005.designer.cs">
       <DependentUpon>202310051734463_Rollup_20231005.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202310052028000_CodeGenerated_20231005.cs" />
-    <Compile Include="Migrations\202310052028000_CodeGenerated_20231005.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310052028000_CodeGenerated_20231005.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310052028000_CodeGenerated_20231005.designer.cs">
       <DependentUpon>202310052028000_CodeGenerated_20231005.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202310140012542_AddAuthClientScopeApprovalExpiration.cs" />
-    <Compile Include="Migrations\202310140012542_AddAuthClientScopeApprovalExpiration.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310140012542_AddAuthClientScopeApprovalExpiration.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310140012542_AddAuthClientScopeApprovalExpiration.designer.cs">
       <DependentUpon>202310140012542_AddAuthClientScopeApprovalExpiration.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202310191717043_Rollup_20231019.cs" />
-    <Compile Include="Migrations\202310191717043_Rollup_20231019.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310191717043_Rollup_20231019.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310191717043_Rollup_20231019.designer.cs">
       <DependentUpon>202310191717043_Rollup_20231019.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202310191751018_CodeGenerated_20231019.cs" />
-    <Compile Include="Migrations\202310191751018_CodeGenerated_20231019.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310191751018_CodeGenerated_20231019.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310191751018_CodeGenerated_20231019.designer.cs">
       <DependentUpon>202310191751018_CodeGenerated_20231019.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202310231631563_AddAdaptiveMessage.cs" />
-    <Compile Include="Migrations\202310231631563_AddAdaptiveMessage.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310231631563_AddAdaptiveMessage.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310231631563_AddAdaptiveMessage.designer.cs">
       <DependentUpon>202310231631563_AddAdaptiveMessage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202310241831421_AddPinTopTopFlagForNotes.cs" />
-    <Compile Include="Migrations\202310241831421_AddPinTopTopFlagForNotes.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310241831421_AddPinTopTopFlagForNotes.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310241831421_AddPinTopTopFlagForNotes.designer.cs">
       <DependentUpon>202310241831421_AddPinTopTopFlagForNotes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.cs" />
-    <Compile Include="Migrations\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.designer.cs">
       <DependentUpon>202310272113028_AssignSignatureDocumentToRegistrationRegistrant.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202311021741313_Rollup_20231101.cs" />
-    <Compile Include="Migrations\202311021741313_Rollup_20231101.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311021741313_Rollup_20231101.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311021741313_Rollup_20231101.designer.cs">
       <DependentUpon>202311021741313_Rollup_20231101.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202311022055184_CodeGenerated_20231101.cs" />
-    <Compile Include="Migrations\202311022055184_CodeGenerated_20231101.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311022055184_CodeGenerated_20231101.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311022055184_CodeGenerated_20231101.designer.cs">
       <DependentUpon>202311022055184_CodeGenerated_20231101.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202311162105098_Rollup_20231116.cs" />
-    <Compile Include="Migrations\202311162105098_Rollup_20231116.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311162105098_Rollup_20231116.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311162105098_Rollup_20231116.designer.cs">
       <DependentUpon>202311162105098_Rollup_20231116.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202311162232335_CodeGenerated_20231116.cs" />
-    <Compile Include="Migrations\202311162232335_CodeGenerated_20231116.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311162232335_CodeGenerated_20231116.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311162232335_CodeGenerated_20231116.designer.cs">
       <DependentUpon>202311162232335_CodeGenerated_20231116.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202311201535330_AddIsDirtyToPersonalizationSegment.cs" />
-    <Compile Include="Migrations\202311201535330_AddIsDirtyToPersonalizationSegment.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311201535330_AddIsDirtyToPersonalizationSegment.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311201535330_AddIsDirtyToPersonalizationSegment.designer.cs">
       <DependentUpon>202311201535330_AddIsDirtyToPersonalizationSegment.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311271854592_Rollup_20231127.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311271854592_Rollup_20231127.designer.cs">
+      <DependentUpon>202311271854592_Rollup_20231127.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.designer.cs">
@@ -1882,44 +1886,47 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202310051734463_Rollup_20231005.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310051734463_Rollup_20231005.resx">
       <DependentUpon>202310051734463_Rollup_20231005.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202310052028000_CodeGenerated_20231005.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310052028000_CodeGenerated_20231005.resx">
       <DependentUpon>202310052028000_CodeGenerated_20231005.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202310140012542_AddAuthClientScopeApprovalExpiration.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310140012542_AddAuthClientScopeApprovalExpiration.resx">
       <DependentUpon>202310140012542_AddAuthClientScopeApprovalExpiration.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202310191717043_Rollup_20231019.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310191717043_Rollup_20231019.resx">
       <DependentUpon>202310191717043_Rollup_20231019.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202310191751018_CodeGenerated_20231019.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310191751018_CodeGenerated_20231019.resx">
       <DependentUpon>202310191751018_CodeGenerated_20231019.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202310231631563_AddAdaptiveMessage.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310231631563_AddAdaptiveMessage.resx">
       <DependentUpon>202310231631563_AddAdaptiveMessage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202310241831421_AddPinTopTopFlagForNotes.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310241831421_AddPinTopTopFlagForNotes.resx">
       <DependentUpon>202310241831421_AddPinTopTopFlagForNotes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310272113028_AssignSignatureDocumentToRegistrationRegistrant.resx">
       <DependentUpon>202310272113028_AssignSignatureDocumentToRegistrationRegistrant.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202311021741313_Rollup_20231101.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311021741313_Rollup_20231101.resx">
       <DependentUpon>202311021741313_Rollup_20231101.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202311022055184_CodeGenerated_20231101.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311022055184_CodeGenerated_20231101.resx">
       <DependentUpon>202311022055184_CodeGenerated_20231101.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202311162105098_Rollup_20231116.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311162105098_Rollup_20231116.resx">
       <DependentUpon>202311162105098_Rollup_20231116.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202311162232335_CodeGenerated_20231116.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311162232335_CodeGenerated_20231116.resx">
       <DependentUpon>202311162232335_CodeGenerated_20231116.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202311201535330_AddIsDirtyToPersonalizationSegment.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311201535330_AddIsDirtyToPersonalizationSegment.resx">
       <DependentUpon>202311201535330_AddIsDirtyToPersonalizationSegment.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311271854592_Rollup_20231127.resx">
+      <DependentUpon>202311271854592_Rollup_20231127.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.0\202309211800387_Rollup_20230921.resx">
       <DependentUpon>202309211800387_Rollup_20230921.cs</DependentUpon>

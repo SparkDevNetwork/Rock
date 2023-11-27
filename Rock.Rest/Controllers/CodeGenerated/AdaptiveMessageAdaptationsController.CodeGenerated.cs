@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// AdaptiveMessageAdaptations REST API
     /// </summary>
-    [RestControllerGuid( "37A1E5F4-83B3-4D8B-839C-25D2BB94344D" )]
+    [RestControllerGuid( "D9C25C74-1DF3-4077-A337-8E53679835DC" )]
     public partial class AdaptiveMessageAdaptationsController : Rock.Rest.ApiController<Rock.Model.AdaptiveMessageAdaptation>
     {
         /// <summary>

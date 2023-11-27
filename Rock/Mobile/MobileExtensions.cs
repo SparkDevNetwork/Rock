@@ -146,7 +146,7 @@ namespace Rock.Mobile
         #region Keyboard Input Mode
 
         /// <summary>
-        /// Converts the <see cref="Rock.Enums.KeyboardInputMode" /> to the mobile counterpart.
+        /// Converts the <see cref="Rock.Enums.Core.KeyboardInputMode" /> to the mobile counterpart.
         /// </summary>
         /// <param name="keyboardInputMode"></param>
         /// <returns></returns>
