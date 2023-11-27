@@ -118,6 +118,10 @@ namespace Rock.Mobile
             }
         }
 
+        #endregion
+
+        #region Email Preference
+
         /// <summary>
         /// Convert the Email Preference Enum to Mobile Specific Email Preference
         /// </summary>
@@ -134,6 +138,38 @@ namespace Rock.Mobile
 
                 default:
                     return EmailPreference.EmailAllowed;
+            }
+        }
+
+        #endregion
+
+        #region Keyboard Input Mode
+
+        /// <summary>
+        /// Converts the <see cref="Rock.Enums.KeyboardInputMode" /> to the mobile counterpart.
+        /// </summary>
+        /// <param name="keyboardInputMode"></param>
+        /// <returns></returns>
+        public static Rock.Common.Mobile.Enums.KeyboardInputMode ToMobile( this Rock.Model.KeyboardInputMode keyboardInputMode )
+        {
+            switch ( keyboardInputMode )
+            {
+                case Model.KeyboardInputMode.Default:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Default;
+                case Model.KeyboardInputMode.Email:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Email;
+                case Model.KeyboardInputMode.Numeric:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Numeric;
+                case Model.KeyboardInputMode.Decimal:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Decimal;
+                case Model.KeyboardInputMode.Telephone:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Telephone;
+                case Model.KeyboardInputMode.Text:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Text;
+                case Model.KeyboardInputMode.Url:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Url;
+                default:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Default;
             }
         }
 
@@ -165,7 +201,6 @@ namespace Rock.Mobile
             }
         }
     }
-
 
     /// <summary>
     /// Extension methods for <see cref="Rock.Common.Mobile.Enums.CommunicationType"/>.

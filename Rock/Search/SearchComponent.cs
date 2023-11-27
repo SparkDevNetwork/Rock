@@ -19,6 +19,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Extension;
+using Rock.Model;
 
 namespace Rock.Search
 {
@@ -63,6 +64,21 @@ namespace Rock.Search
                 {
                     return string.Empty;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Sets the preferred keyboard mode for this search component.
+        /// </summary>
+        /// <remarks>
+        /// <para>This is a suggestion to the interface, and it may not be honored in some cases.</para>
+        /// <para>Currently, this is only utilized in Rock Mobile and may be expanded later.</para>
+        /// </remarks>
+        public virtual KeyboardInputMode PreferredKeyboardMode
+        {
+            get
+            {
+                return KeyboardInputMode.Default;
             }
         }
 
