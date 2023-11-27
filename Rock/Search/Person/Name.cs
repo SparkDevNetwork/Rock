@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums;
 using Rock.Model;
 using Rock.Web.Cache;
 
