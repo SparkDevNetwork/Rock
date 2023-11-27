@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Enums;
+using Rock.Enums.Core;
 using Rock.Model;
 
 namespace Rock.Search.Person

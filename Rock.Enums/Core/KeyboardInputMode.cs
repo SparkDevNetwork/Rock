@@ -1,9 +1,8 @@
-﻿namespace Rock.Model
+﻿namespace Rock.Enums.Core
 {
     /// <summary>
     /// Specifies a keyboard mode for an input field.
     /// </summary>
-    [Enums.EnumDomain( "Core" )]
     public enum KeyboardInputMode
     {
         /// <summary>
