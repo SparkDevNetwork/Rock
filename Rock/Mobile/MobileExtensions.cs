@@ -150,23 +150,23 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="keyboardInputMode"></param>
         /// <returns></returns>
-        public static Rock.Common.Mobile.Enums.KeyboardInputMode ToMobile( this Rock.Model.KeyboardInputMode keyboardInputMode )
+        public static Rock.Common.Mobile.Enums.KeyboardInputMode ToMobile( this Rock.Enums.Core.KeyboardInputMode keyboardInputMode )
         {
             switch ( keyboardInputMode )
             {
-                case Model.KeyboardInputMode.Default:
+                case Enums.Core.KeyboardInputMode.Default:
                     return Rock.Common.Mobile.Enums.KeyboardInputMode.Default;
-                case Model.KeyboardInputMode.Email:
+                case Enums.Core.KeyboardInputMode.Email:
                     return Rock.Common.Mobile.Enums.KeyboardInputMode.Email;
-                case Model.KeyboardInputMode.Numeric:
+                case Enums.Core.KeyboardInputMode.Numeric:
                     return Rock.Common.Mobile.Enums.KeyboardInputMode.Numeric;
-                case Model.KeyboardInputMode.Decimal:
+                case Enums.Core.KeyboardInputMode.Decimal:
                     return Rock.Common.Mobile.Enums.KeyboardInputMode.Decimal;
-                case Model.KeyboardInputMode.Telephone:
+                case Enums.Core.KeyboardInputMode.Telephone:
                     return Rock.Common.Mobile.Enums.KeyboardInputMode.Telephone;
-                case Model.KeyboardInputMode.Text:
+                case Enums.Core.KeyboardInputMode.Text:
                     return Rock.Common.Mobile.Enums.KeyboardInputMode.Text;
-                case Model.KeyboardInputMode.Url:
+                case Enums.Core.KeyboardInputMode.Url:
                     return Rock.Common.Mobile.Enums.KeyboardInputMode.Url;
                 default:
                     return Rock.Common.Mobile.Enums.KeyboardInputMode.Default;

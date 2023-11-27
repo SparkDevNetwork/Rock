@@ -18,6 +18,7 @@ using System;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Enums.Core;
 using Rock.Extension;
 using Rock.Model;
 
