@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Enums;
 using Rock.Model;
 
 namespace Rock.Search.Person
@@ -49,6 +50,11 @@ namespace Rock.Search.Person
                 return defaults;
             }
         }
+
+        /// <summary>
+        /// The preferred keyboard mode for this search component.
+        /// </summary>
+        public override KeyboardInputMode PreferredKeyboardMode => KeyboardInputMode.Email;
 
         /// <summary>
         /// Gets the search result entity queryable that matches the search term.
