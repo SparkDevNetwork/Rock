@@ -72,15 +72,15 @@ namespace Rock.Model
                 updateStatusAction?.Invoke( $"Syncing group '{syncInfo.GroupName}'" );
 
                 // Use a fresh rockContext per sync so that ChangeTracker doesn't get bogged down
+                using ( var rockContext = new RockContext() )
                 using ( var rockContextReadOnly = new RockContextReadOnly() )
                 {
-                    // increase the timeout just in case the data view source is slow
-                    rockContextReadOnly.Database.CommandTimeout = commandTimeout ?? 30;
-                    rockContextReadOnly.SourceOfChange = "Group Sync";
-
-                    // Get the Sync
-                    var sync = new GroupSyncService( rockContextReadOnly )
-                        .Queryable( "Group, SyncDataView" )
+                    // Always use the non-readonly context to get the sync object graph, so we know whether the
+                    // actual sync process should use the readonly context or not, based on the latest settings.
+                    var sync = new GroupSyncService( rockContext )
+                        .Queryable()
+                        .Include( s => s.Group )
+                        .Include( s => s.SyncDataView )
                         .AsNoTracking()
                         .FirstOrDefault( s => s.Id == syncId );
 
@@ -89,6 +89,14 @@ namespace Rock.Model
                         // invalid sync or invalid SyncDataView
                         continue;
                     }
+
+                    var syncContext = sync.SyncDataView.DisableUseOfReadOnlyContext
+                        ? rockContext
+                        : rockContextReadOnly;
+
+                    // increase the timeout just in case the data view source is slow
+                    syncContext.Database.CommandTimeout = commandTimeout ?? 30;
+                    syncContext.SourceOfChange = "Group Sync";
 
                     dataViewName = sync.SyncDataView.Name;
                     groupName = sync.Group.Name;
@@ -106,7 +114,7 @@ namespace Rock.Model
                             this DbContext will stay set to the rockContextReadOnly that was passed in.
 
                          */
-                        DbContext = rockContextReadOnly,
+                        DbContext = syncContext,
                         DatabaseTimeoutSeconds = commandTimeout
                     };
 
@@ -133,7 +141,7 @@ namespace Rock.Model
                     // so we don't try to delete anyone who's already archived, and
                     // it must include deceased members so we can remove them if they
                     // are no longer in the data view.
-                    var existingGroupMemberPersonList = new GroupMemberService( rockContextReadOnly )
+                    var existingGroupMemberPersonList = new GroupMemberService( syncContext )
                         .Queryable( true, true ).AsNoTracking()
                         .Where( gm => gm.GroupId == sync.GroupId && gm.GroupRoleId == sync.GroupTypeRoleId )
                         .Select( gm => new
