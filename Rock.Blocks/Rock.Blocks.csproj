@@ -71,6 +71,7 @@
     <Compile Include="Cms\BlockList.cs" />
     <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\SiteList.cs" />
+    <Compile Include="Core\AttributeMatrixTemplateDetail.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
     <Compile Include="Core\BinaryFileTypeDetail.cs" />
     <Compile Include="Core\BinaryFileTypeList.cs" />
