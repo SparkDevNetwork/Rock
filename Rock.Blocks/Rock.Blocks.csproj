@@ -89,6 +89,7 @@
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />
     <Compile Include="Core\SignalTypeList.cs" />
+    <Compile Include="Crm\AssessmentTypeList.cs" />
     <Compile Include="Crm\NamelessPersonList.cs" />
     <Compile Include="Crm\SignalTypeDetail.cs" />
     <Compile Include="Core\SuggestionDetail.cs" />
