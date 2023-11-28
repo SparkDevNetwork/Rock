@@ -33,7 +33,7 @@ namespace Rock.Tasks
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = 600;
+                rockContext.Database.CommandTimeout = 300;
 
                 var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
                 var personalizationSegment = personalizationSegmentService.Get( message.PersonalizationSegmentId );
