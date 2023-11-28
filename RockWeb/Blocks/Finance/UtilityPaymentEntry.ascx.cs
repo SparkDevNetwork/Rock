@@ -584,7 +584,6 @@ namespace RockWeb.Blocks.Finance
 
             // Advanced Category
             public const string AllowAccountOptionsInURL = "AllowAccountOptionsInURL";
-            public const string InvalidAccountInURLMessage = "InvalidAccountInURLMessage";
             public const string OnlyPublicAccountsInURL = "OnlyPublicAccountsInURL";
             public const string InvalidAccountMessage = "InvalidAccountMessage";
             public const string AccountCampusContext = "AccountCampusContext";
@@ -1170,6 +1169,7 @@ mission. We are so grateful for your commitment.</p>
                 .Select( a => a.Id ).ToArray();
 
             caapPromptForAccountAmounts.IncludedCampusTypeIds = includedCampusTypeIds;
+            caapPromptForAccountAmounts.AllowPrivateSelectableAccounts = !GetAttributeValue( AttributeKey.OnlyPublicAccountsInURL ).AsBoolean();
 
             if ( allowAccountsInUrl )
             {
@@ -1177,7 +1177,7 @@ mission. We are so grateful for your commitment.</p>
                 if ( parameterAccountOptions.Any() )
                 {
                     selectableAccountIds = parameterAccountOptions.Select( a => a.AccountId ).ToList();
-                    string invalidAccountInURLMessage = this.GetAttributeValue( AttributeKey.InvalidAccountInURLMessage );
+                    string invalidAccountInURLMessage = this.GetAttributeValue( AttributeKey.InvalidAccountMessage );
                     if ( invalidAccountInURLMessage.IsNotNullOrWhiteSpace() )
                     {
                         var validAccountUrlIdsQuery = new FinancialAccountService( rockContext ).GetByIds( selectableAccountIds )
@@ -1195,6 +1195,7 @@ mission. We are so grateful for your commitment.</p>
 
                         if ( selectableAccountIds.Where( a => !validAccountIds.Contains( a ) ).Any() )
                         {
+                            nbConfigurationNotification.Title = "";
                             nbConfigurationNotification.Text = invalidAccountInURLMessage;
                             nbConfigurationNotification.NotificationBoxType = NotificationBoxType.Validation;
                             nbConfigurationNotification.Visible = true;
