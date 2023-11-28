@@ -21,15 +21,14 @@ using System.Linq;
 using System.Text;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Humanizer;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -250,8 +249,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var givingId = Person.GivingId;
 
+            // Get the past 3 years of monthly giving history.
             var threeYearsAgo = RockDateTime.Now.AddMonths( -35 ).StartOfMonth();
-            List<MonthlyAccountGivingHistory> threeYearsOfMonthlyAccountGiving = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistory( givingId, threeYearsAgo, true );
+            var threeYearsOfMonthlyAccountGiving = GetMonthlyGivingHistory( threeYearsAgo );
 
             if ( threeYearsOfMonthlyAccountGiving.Any() )
             {
@@ -304,7 +304,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ShowMessageIfStale();
 
-            BindYearlySummary();
+            BindYearlySummary( threeYearsOfMonthlyAccountGiving );
 
             var eraFirstGave = Person.GetAttributeValue( "core_EraFirstGave" ).AsDateTime();
             bdgFirstGift.Text = $"First Gift: {eraFirstGave.ToElapsedString()}";
@@ -315,6 +315,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             bdgLastGift.ToolTip = eraLastGive.ToShortDateString();
 
             ShowGivingAlerts();
+        }
+
+        private List<MonthlyAccountGivingHistory> GetMonthlyGivingHistory( DateTime? startDate = null )
+        {
+            var rockContext = new RockContext();
+            var givingId = Person.GivingId;
+
+            var financialTransactionService = new FinancialTransactionService( rockContext );
+            var givingHistories = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistory( givingId, startDate, includeNegativeTransactions:true );
+            return givingHistories;
         }
 
         /// <summary>
@@ -668,7 +678,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
         /// <summary>
         /// Binds the yearly summary.
         /// </summary>
-        private void BindYearlySummary()
+        private void BindYearlySummary( List<MonthlyAccountGivingHistory> givingHistories = null )
         {
             var givingId = Person.GivingId;
             using ( var rockContext = new RockContext() )
@@ -684,13 +694,26 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                     startDate = null;
                 }
 
-                var monthlyAccountGivingHistoryList = new FinancialTransactionService( rockContext ).GetGivingAutomationMonthlyAccountGivingHistory( givingId, startDate, true );
+                // If a list of giving histories is not supplied, retrieve it now.
+                if ( givingHistories == null )
+                {
+                    givingHistories = GetMonthlyGivingHistory( startDate );
+                }
+
+                var previousYearMonthlyGivingSummaries = givingHistories;
+
+                if ( startDate != null )
+                {
+                    previousYearMonthlyGivingSummaries = givingHistories
+                        .Where( s => s.Year == startDate.Value.Year )
+                        .ToList();
+                }
 
                 var financialAccounts = new FinancialAccountService( rockContext ).Queryable()
                     .AsNoTracking()
                     .ToDictionary( k => k.Id, v => v.Name );
 
-                var summaryList = monthlyAccountGivingHistoryList
+                var summaryList = previousYearMonthlyGivingSummaries
                     .GroupBy( a => new { a.Year, a.AccountId } )
                     .Select( t => new SummaryRecord
                     {
