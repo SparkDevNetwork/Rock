@@ -1106,6 +1106,7 @@
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumberService.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
     <Compile Include="Model\Core\AssetStorageProvider\AssetStorageProvider.Logic.cs" />
+    <Compile Include="Model\Core\Attribute\Attribute.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
@@ -1417,7 +1418,7 @@
     <Compile Include="Model\Core\AttributeValue\AttributeValue.Logic.cs" />
     <Compile Include="Model\Core\AttributeValue\AttributeValue.SaveHook.cs" />
     <Compile Include="Model\Core\Attribute\Attribute.Logic.cs" />
-    <Compile Include="Model\Core\Attribute\Attribute.SaveHook.cs" />
+    <Compile Include="Model\Core\AttributeMatrixTemplate\AttributeMatrixTemplate.SaveHook.cs" />
     <Compile Include="Model\Core\Auth\Auth.SaveHook.cs" />
     <Compile Include="Model\Core\BinaryFileType\BinaryFileType.Logic.cs" />
     <Compile Include="Model\Core\BinaryFile\BinaryFile.Logic.cs" />
