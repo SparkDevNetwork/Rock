@@ -1,0 +1,239 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Step Program"
+          :entityTypeGuid="EntityType.StepProgram"
+          stickyHeader
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          liveUpdates
+          :showLaunchWorkflow="false"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <ReorderColumn @orderChanged="onOrderChanged" />
+
+        <Column name="icon"
+                visiblePriority="xs"
+                width="5%">
+            <template #format="{ row }">
+                <div>
+                    <div>
+                        <span :class="row.icon"></span>
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="35%" />
+
+        <TextColumn name="category"
+                    title="Category"
+                    field="category"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="20%" />
+
+        <NumberColumn name="stepType"
+                      title="Step Types"
+                      field="stepType"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs"
+                      width="20%" />
+
+        <NumberColumn name="stepsTaken"
+                      title="Steps Taken"
+                      field="stepsTaken"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs"
+                      width="20%" />
+
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <SecurityColumn />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :categories="categoryOptions" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, Column } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { StepProgramListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramList/stepProgramListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./StepProgramList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./StepProgramList/gridSettingsModal.partial.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<ListBlockBox<StepProgramListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+    const categoryOptions = ref<ListItemBag[]>([]);
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const isGridSettingsVisible = ref(false);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        active: preferences.getValue(PreferenceKey.FilterActive),
+        category: preferences.getValue(PreferenceKey.FilterCategory),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Returns `true` if the grid settings filters are active; otherwise `false`.
+     */
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.active
+            || !!gridSettings.value.category;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+     * Watch for changes to the grid settings and update the preferences as needed.
+     */
+    watch(gridSettings, async () => {
+        // Handle the potential null or undefined values for each setting
+        const activeValue = gridSettings.value.active ?? "";
+        const categoryValue = gridSettings.value.category ?? "";
+
+        // Set the preferences with the appropriate values
+        preferences.setValue(PreferenceKey.FilterActive, activeValue);
+        preferences.setValue(PreferenceKey.FilterCategory, categoryValue);
+
+        // Save the preferences
+        await preferences.save();
+
+        // Reload the grid data
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+
+            // Extract the categories from the grid data
+            const uniqueCategories = new Set(gridData.rows?.map(row => row.category as string));
+
+            categoryOptions.value = Array.from(uniqueCategories).map(category => {
+                return {
+                    text: category,
+                    value: category
+                };
+            });
+
+            console.log("ayyyy", categoryOptions.value);
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete step program.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            idKey: item["idKey"],
+            beforeIdKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>
