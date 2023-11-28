@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Core
                 var defaultCampusId = CampusCache.GetId( defaultCampusGuid.Value );
                 if ( defaultCampusId.HasValue )
                 {
-                    currentCampus = SetCampusContext( defaultCampusId.Value, false );
+                    currentCampus = SetCampusContext( defaultCampusId.Value, true );
                 }
             }
 
