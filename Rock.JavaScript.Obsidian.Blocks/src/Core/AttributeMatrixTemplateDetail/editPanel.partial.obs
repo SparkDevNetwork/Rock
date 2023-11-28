@@ -63,7 +63,7 @@
                         theme="rock"
                         mode="lava"
                         help="This will determine how the Matrix Attribute Field will display its formatted value."
-                        :disabled="!isEditable"/>
+                        :disabled="!isEditable" />
         </Panel>
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
@@ -167,9 +167,20 @@
         return {
             key: attribute.key,
             name: attribute.name,
-            type: getFieldTypeByValue(attribute.fieldTypeGuid),
+            type: splitPascalCase(getFieldTypeByValue(attribute.fieldTypeGuid)),
             guid: attribute.guid
         };
+    }
+
+    function splitPascalCase(input: string | undefined): string | undefined {
+        if (input) {
+            const regex = /($[a-z])|[A-Z][^A-Z]+/g;
+            return input.match(regex)?.join(" ");
+        }
+        else {
+            return input;
+        }
+
     }
     // #endregion
 
@@ -197,6 +208,7 @@
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
         templateAttributes.value = templateAttributes.value.filter(s => s.key !== key);
+        reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== key);
 
         // Update the grid.
         if (attributesGridData.rows) {
