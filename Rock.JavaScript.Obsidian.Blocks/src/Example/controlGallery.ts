@@ -94,7 +94,6 @@ import Rating from "@Obsidian/Controls/rating.obs";
 import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
-import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
 import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker.obs";
 import AssessmentTypePicker from "@Obsidian/Controls/assessmentTypePicker.obs";
@@ -251,6 +250,7 @@ import KeyValueListGallery from "./ControlGallery/keyValueListGallery.partial.ob
 import YearPickerGallery from "./ControlGallery/yearPickerGallery.partial.obs";
 import CurrencyBoxGallery from "./ControlGallery/currencyBoxGallery.partial.obs";
 import FirstNameTextBoxGallery from "./ControlGallery/firstNameTextBoxGallery.partial.obs";
+import ImageUploaderGallery from "./ControlGallery/imageUploaderGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -2136,54 +2136,6 @@ const fileUploaderGallery = defineComponent({
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
-});
-
-/** Demonstrates the image uploader component. */
-const imageUploaderGallery = defineComponent({
-    name: "ImageUploaderGallery",
-    components: {
-        GalleryAndResult,
-        CheckBox,
-        ImageUploader,
-        TextBox
-    },
-    setup() {
-        return {
-            binaryFileTypeGuid: ref(BinaryFiletype.Default),
-            showDeleteButton: ref(true),
-            uploadAsTemporary: ref(true),
-            uploadButtonText: ref("Upload"),
-            value: ref(null),
-            importCode: getControlImportPath("imageUploader"),
-            exampleCode: `<ImageUploader v-model="value" label="Image Uploader" :uploadAsTemporary="true" :binaryFileTypeGuid="BinaryFiletype.Default" uploadButtonText="Upload" :showDeleteButton="true" />`
-        };
-    },
-    template: `
-    <GalleryAndResult
-        :value="value"
-        :importCode="importCode"
-        :exampleCode="exampleCode"
-        enableReflection >
-        <ImageUploader v-model="value"
-            label="Image Uploader"
-            :uploadAsTemporary="uploadAsTemporary"
-            :binaryFileTypeGuid="binaryFileTypeGuid"
-            :uploadButtonText="uploadButtonText"
-            :showDeleteButton="showDeleteButton" />
-
-        <template #settings>
-            <div class="row">
-                <CheckBox formGroupClasses="col-sm-4" v-model="uploadAsTemporary" label="Upload As Temporary" />
-                <TextBox formGroupClasses="col-sm-8" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
-            </div>
-            <div class="row">
-                <CheckBox formGroupClasses="col-sm-4" v-model="showDeleteButton" label="Show Delete Button" />
-                <TextBox formGroupClasses="col-sm-8" v-model="uploadButtonText" label="Upload Button Text" />
-            </div>
-
-            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-        </template>
-    </GalleryAndResult>`
 });
 
 /** Demonstrates a sliding date range picker */
@@ -7982,7 +7934,7 @@ const controlGalleryComponents: Record<string, Component> = [
     panelGallery,
     PersonPickerGallery,
     fileUploaderGallery,
-    imageUploaderGallery,
+    ImageUploaderGallery,
     slidingDateRangePickerGallery,
     definedValuePickerGallery,
     campusPickerGallery,

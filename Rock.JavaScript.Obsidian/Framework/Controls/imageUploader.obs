@@ -90,6 +90,11 @@
         thumbnailWidth: {
             type: Number,
             default: 100
+        },
+
+        uploadUrl: {
+            type: String,
+            default: "/ImageUploader.ashx"
         }
     });
 
@@ -130,7 +135,7 @@
 
     /** The CSS styles to use for the thumbnail element. */
     const thumbnailStyle = computed((): Record<string, string> => {
-        const imageUrl = fileGuid.value ? `/GetImage.ashx?guid=${fileGuid.value}&width=500` : props.noPictureUrl;
+        const imageUrl = fileGuid.value ? `/GetImage.ashx?guid=${fileGuid.value}&width=${props.thumbnailWidth}` : props.noPictureUrl;
 
         return {
             backgroundImage: `url('${imageUrl}')`,
@@ -158,7 +163,7 @@
         try {
             // Perform the actual file upload using the helper function.
             const result = await uploadBinaryFile(file, props.binaryFileTypeGuid || BinaryFiletype.Default, {
-                baseUrl: "/ImageUploader.ashx",
+                baseUrl: props.uploadUrl,
                 isTemporary: props.uploadAsTemporary,
                 progress: (progress, total, percent) => {
                     uploadProgressText.value = `${percent}%`;
