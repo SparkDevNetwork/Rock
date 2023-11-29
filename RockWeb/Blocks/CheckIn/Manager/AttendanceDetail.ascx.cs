@@ -45,6 +45,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
         IsRequired = false,
         Order = 6
         )]
+
+    [BooleanField(
+    "Allow Editing Start and End Times",
+        Key = AttributeKey.AllowEditingStartAndEndTimes,
+        Description = "This allows editing the start and end datetime to be edited",
+        DefaultBooleanValue = false,
+        Order = 7 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "CA59CE67-9313-4B9F-8593-380044E5AE6A" )]
     public partial class AttendanceDetail : RockBlock
     {
@@ -53,6 +61,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         private static class AttributeKey
         {
             public const string PersonProfilePage = "PersonProfilePage";
+            public const string AllowEditingStartAndEndTimes = "AllowEditingStartAndEndTimes";
         }
 
         #endregion
@@ -86,6 +95,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            pnlCheckInCheckOutEdit.Visible = GetAttributeValue( AttributeKey.AllowEditingStartAndEndTimes ).AsBoolean();
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -440,6 +451,31 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
             }
 
+            if ( dtpStart.SelectedDateTime.HasValue || dtpEnd.SelectedDateTime.HasValue )
+            {
+                var newAttendanceStartDateTime = dtpStart.SelectedDateTime ?? attendance.StartDateTime;
+
+                // Add the record to history if updated
+                var personAttendanceHistoryChangeList = new History.HistoryChangeList();
+                History.EvaluateChange( personAttendanceHistoryChangeList, "Check-in", attendance.StartDateTime, newAttendanceStartDateTime, includeTime: true );
+                History.EvaluateChange( personAttendanceHistoryChangeList, "Check-out", attendance.EndDateTime, dtpEnd.SelectedDateTime, includeTime: true );
+                HistoryService.SaveChanges( rockContext,
+                    typeof( Rock.Model.Person ), // Specifying the full path the person model to avoid ambiguity.
+                    Rock.SystemGuid.Category.HISTORY_ATTENDANCE_CHANGES.AsGuid(),
+                    attendance.PersonAlias.PersonId,
+                    personAttendanceHistoryChangeList,
+                    $"Attendance {attendanceId}",
+                    typeof( Rock.Model.Attendance ),
+                    attendanceId,
+                    true,
+                    CurrentPersonAliasId,
+                    rockContext.SourceOfChange
+                    );
+
+                attendance.StartDateTime = newAttendanceStartDateTime;
+                attendance.EndDateTime = dtpEnd.SelectedDateTime;
+            }
+
             var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
             var newRoomsOccurrence = attendanceOccurrenceService.GetOrAdd( selectedOccurrenceDate, selectedGroupId, selectedLocationId, selectedScheduleId );
             attendance.OccurrenceId = newRoomsOccurrence.Id;
@@ -550,7 +586,26 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             ShowAttendanceDetails( attendance );
 
+            var historyService = new HistoryService( rockContext );
+            var attendanceEntityTypeId = EntityTypeCache.GetId<Rock.Model.Attendance>();
+            var personEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
+            rptHistoryList.DataSource = historyService.Queryable()
+                .Where( h => h.EntityId == attendance.PersonAlias.PersonId
+                && h.EntityTypeId == personEntityTypeId
+                && h.RelatedEntityTypeId == attendanceEntityTypeId
+                && h.RelatedEntityId == attendance.Id )
+                .ToList()
+                .Select( h => new ChangeHistoryData
+                {
+                    CreatedPersonName = h.CreatedByPersonName,
+                    CreatedPersonId = h.CreatedByPersonId.ToStringSafe(),
+                    CreatedDateTime = h.CreatedDateTime.ToElapsedString( false, true ) ?? "",
+                    Description = h.ToStringSafe()
+                } )
+                .ToList();
+
             btnEdit.Enabled = this.IsUserAuthorized( Rock.Security.Authorization.EDIT );
+            rptHistoryList.DataBind();
             btnDelete.Enabled = this.IsUserAuthorized( Rock.Security.Authorization.EDIT );
         }
 
@@ -618,6 +673,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             SetCheckinInfoLabel( rockContext, attendance.StartDateTime, attendance.CheckedInByPersonAliasId, lCheckinTime );
+            dtpStart.SelectedDateTime = attendance.StartDateTime;
 
             if ( attendance.PresentDateTime.HasValue )
             {
@@ -631,8 +687,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             if ( attendance.EndDateTime.HasValue )
             {
+                pnlCheckedOutDetails.Visible = true;
                 lCheckedOutTime.Visible = true;
                 SetCheckinInfoLabel( rockContext, attendance.EndDateTime, attendance.CheckedOutByPersonAliasId, lCheckedOutTime );
+                dtpEnd.SelectedDateTime = attendance.EndDateTime;
             }
             else
             {
@@ -642,5 +700,16 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         #endregion Methods
+    }
+
+    /// <summary>
+    /// POCO for storing the data to be displayed on the change history tab.
+    /// </summary>
+    public class ChangeHistoryData
+    {
+        public string CreatedPersonName;
+        public string CreatedPersonId;
+        public string CreatedDateTime;
+        public string Description;
     }
 }
