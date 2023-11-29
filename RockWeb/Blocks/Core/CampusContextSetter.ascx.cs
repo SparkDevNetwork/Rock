@@ -321,7 +321,29 @@ namespace RockWeb.Blocks.Core
                 if ( !string.IsNullOrWhiteSpace( PageParameter( "CampusId" ) ) || GetAttributeValue( AttributeKey.DisplayQueryStrings ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-                    queryString.Set( "CampusId", campusId.ToString() );
+
+                    /*
+                        11/28/2023 - JPH
+
+                        Only set the "CampusId" page parameter if the current campusId value is > 0.
+
+                        Otherwise, the old behavior of setting "CampusId=-1" can wreak havoc with the newly-added
+                        "Default Campus" block setting when the individual clears out the campus selection. In that
+                        scenario, the default campus would not be auto-selected because it would be overridden by the
+                        "-1" in the query string. Furthermore, if the current campusId value is <= 0, let's go so far
+                        as to try amd remove it from the query string to ensure a stale value doesn't stick around.
+
+                        Reason: Added "Default Campus" block setting.
+                     */
+                    if ( campusId > 0 )
+                    {
+                        queryString.Set( "CampusId", campusId.ToString() );
+                    }
+                    else
+                    {
+                        queryString.Remove( "CampusId" );
+                    }
+
                     Response.Redirect( string.Format( "{0}?{1}", Request.UrlProxySafe().AbsolutePath, queryString ), false );
                 }
                 else

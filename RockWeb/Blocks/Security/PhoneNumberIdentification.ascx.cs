@@ -545,13 +545,12 @@ namespace RockWeb.Blocks.Security
             }
 
             var returnUrl = PageParameter( "returnUrl" );
-            if ( returnUrl.IsNullOrWhiteSpace() )
+            if ( returnUrl.IsNullOrWhiteSpace() || returnUrl.RedirectUrlContainsXss() )
             {
                 returnUrl = "/";
             }
             else
             {
-                returnUrl = returnUrl.ScrubEncodedStringForXSSObjects();
                 returnUrl = Server.UrlDecode( returnUrl );
             }
 
