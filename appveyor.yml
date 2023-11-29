@@ -49,8 +49,8 @@ install:
 
 # directories to preserve between builds
 cache:
-#- node_modules
-#- packages
+- node_modules
+- packages
 
 # scripts to run before build
 # (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe', "$nugetDir\NuGet.exe")
