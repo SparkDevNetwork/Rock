@@ -451,30 +451,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
             }
 
-            if ( dtpStart.SelectedDateTime.HasValue || dtpEnd.SelectedDateTime.HasValue )
+            attendance.StartDateTime = dtpStart.SelectedDateTime ?? attendance.StartDateTime;
+
+            if ( dtpEnd.SelectedDateTime.HasValue && dtpEnd.SelectedDateTime < attendance.StartDateTime )
             {
-                var newAttendanceStartDateTime = dtpStart.SelectedDateTime ?? attendance.StartDateTime;
-
-                // Add the record to history if updated
-                var personAttendanceHistoryChangeList = new History.HistoryChangeList();
-                History.EvaluateChange( personAttendanceHistoryChangeList, "Check-in", attendance.StartDateTime, newAttendanceStartDateTime, includeTime: true );
-                History.EvaluateChange( personAttendanceHistoryChangeList, "Check-out", attendance.EndDateTime, dtpEnd.SelectedDateTime, includeTime: true );
-                HistoryService.SaveChanges( rockContext,
-                    typeof( Rock.Model.Person ), // Specifying the full path the person model to avoid ambiguity.
-                    Rock.SystemGuid.Category.HISTORY_ATTENDANCE_CHANGES.AsGuid(),
-                    attendance.PersonAlias.PersonId,
-                    personAttendanceHistoryChangeList,
-                    $"Attendance {attendanceId}",
-                    typeof( Rock.Model.Attendance ),
-                    attendanceId,
-                    true,
-                    CurrentPersonAliasId,
-                    rockContext.SourceOfChange
-                    );
-
-                attendance.StartDateTime = newAttendanceStartDateTime;
-                attendance.EndDateTime = dtpEnd.SelectedDateTime;
+                nbError.Visible = true;
+                nbError.Text = "Check-out Date/Time should be after the Check-in Date/Time.";
+                return;
             }
+            attendance.EndDateTime = dtpEnd.SelectedDateTime;
 
             var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
             var newRoomsOccurrence = attendanceOccurrenceService.GetOrAdd( selectedOccurrenceDate, selectedGroupId, selectedLocationId, selectedScheduleId );
