@@ -54,7 +54,8 @@
 
         <Rock:ModalDialog ID="mdMovePerson" runat="server" Title="Edit Attendance" SaveButtonText="Move" OnSaveClick="mdMovePerson_SaveClick">
             <Content>
-                 <asp:Panel ID="pnlCheckInCheckOutEdit" runat="server" class="row" Visible="false">
+                <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
+                <asp:Panel ID="pnlCheckInCheckOutEdit" runat="server" class="row" Visible="false">
                      <div class="col-md-6">
                          <Rock:DateTimePicker ID="dtpStart" runat="server" SourceTypeName="Rock.Model.Attendance" PropertyName="StartDateTime" Required="false" Label="Check-in Date/Time" />
                      </div>

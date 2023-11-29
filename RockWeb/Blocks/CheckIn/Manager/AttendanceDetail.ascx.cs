@@ -450,7 +450,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     return;
                 }
             }
+
             attendance.StartDateTime = dtpStart.SelectedDateTime ?? attendance.StartDateTime;
+
+            if ( dtpEnd.SelectedDateTime.HasValue && dtpEnd.SelectedDateTime < attendance.StartDateTime )
+            {
+                nbError.Visible = true;
+                nbError.Text = "Check-out Date/Time should be after the Check-in Date/Time.";
+                return;
+            }
             attendance.EndDateTime = dtpEnd.SelectedDateTime;
 
             var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
