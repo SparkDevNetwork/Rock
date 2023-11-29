@@ -26,33 +26,35 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Core.BinaryFileTypeList;
+using Rock.ViewModels.Blocks.Cms.MediaFolderList;
 using Rock.Web.Cache;
 
-using static Rock.Blocks.Cms.AdaptiveMessageList;
-using static Rock.Blocks.Core.BinaryFileTypeList;
+using static Rock.Blocks.Cms.MediaAccountList;
+using static Rock.Blocks.Cms.MediaFolderList;
+using static Rock.Blocks.Finance.FinancialBatchList;
 
-namespace Rock.Blocks.Core
+namespace Rock.Blocks.Cms
 {
     /// <summary>
-    /// Displays a list of binary file types.
+    /// Displays a list of media folders.
     /// </summary>
 
-    [DisplayName( "Binary File Type List" )]
-    [Category( "Core" )]
-    [Description( "Displays a list of binary file types." )]
+    [DisplayName( "Media Folder List" )]
+    [Category( "CMS" )]
+    [Description( "Displays a list of media folders." )]
     [IconCssClass( "fa fa-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
-        Description = "The page that will show the binary file type details.",
+        Description = "The page that will show the media folder details.",
         Key = AttributeKey.DetailPage )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "94ac60ce-b192-4559-88a0-af0cc143f631" )]
-    [Rock.SystemGuid.BlockTypeGuid( "000ca534-6164-485e-b405-ba0fa6ae92f9" )]
+    [Rock.SystemGuid.EntityTypeGuid( "af4fa9d1-c8e7-47a6-a522-d40a7370517c" )]
+    [Rock.SystemGuid.BlockTypeGuid( "75133c37-547f-47fa-991c-6d957b2ea92d" )]
     [CustomizedGrid]
-    public class BinaryFileTypeList : RockListBlockType<BinaryFileTypeData>
+    public class MediaFolderList : RockListBlockType<MediaFolderData>
     {
         #region Keys
 
@@ -68,6 +70,7 @@ namespace Rock.Blocks.Core
 
         #endregion Keys
 
+
         #region Fields
 
         /// <summary>
@@ -82,7 +85,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new ListBlockBox<BinaryFileTypeListOptionsBag>();
+            var box = new ListBlockBox<MediaFolderListOptionsBag>();
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
@@ -99,9 +102,9 @@ namespace Rock.Blocks.Core
         /// Gets the box options required for the component to render the list.
         /// </summary>
         /// <returns>The options that provide additional details to the block.</returns>
-        private BinaryFileTypeListOptionsBag GetBoxOptions()
+        private MediaFolderListOptionsBag GetBoxOptions()
         {
-            var options = new BinaryFileTypeListOptionsBag();
+            var options = new MediaFolderListOptionsBag();
 
             return options;
         }
@@ -112,7 +115,7 @@ namespace Rock.Blocks.Core
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new BinaryFileType();
+            var entity = new MediaFolder();
 
             return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
@@ -125,55 +128,74 @@ namespace Rock.Blocks.Core
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "BinaryFileTypeId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "MediaFolderId", "((Key))" )
             };
         }
 
-        /// <summary>
-        /// Get a queryable for binary file type that is properly filtered.
-        /// </summary>
-        /// <param name="rockContext">The database context.</param>
-        /// <returns>A queryable for <see cref="BinaryFileType"/>.</returns>
-        private IQueryable<BinaryFileType> GetBinaryFileTypeQueryable( RockContext rockContext )
+        /// <inheritdoc/>
+        private IQueryable<MediaFolder> GetMediaFolderListQueryable( RockContext rockContext )
         {
-            var qry = new BinaryFileTypeService( rockContext )
-                .Queryable()
-                .Include( a => a.StorageEntityType );
+            var qry = new MediaFolderService( rockContext )
+               .Queryable()
+               .Include( "MediaElements" );
 
             return qry;
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<BinaryFileTypeData> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<MediaFolderData> GetListQueryable( RockContext rockContext )
         {
-            var binaryFileQry = new BinaryFileService( rockContext ).Queryable();
-            return GetBinaryFileTypeQueryable( rockContext ).Select( b => new BinaryFileTypeData
+            return GetMediaFolderListQueryable( rockContext ).Select( b => new MediaFolderData
             {
-                BinaryFileType = b,
-                FileCount = binaryFileQry.Where( a => a.BinaryFileTypeId == b.Id ).Count()
+                MediaFolder = b,
+                VideoCount = b.MediaElements.Count(),
             } );
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<BinaryFileTypeData> GetGridBuilder()
+        protected override List<MediaFolderData> GetListItems( IQueryable<MediaFolderData> queryable, RockContext rockContext )
         {
-            var blockOptions = new GridBuilderGridOptions<BinaryFileTypeData>
+            // Load all the batches into memory.
+            var items = queryable.ToList();
+
+            // Load any attribute column configuration.
+            var gridAttributeIds = _gridAttributes.Value.Select( a => a.Id ).ToList();
+            Helper.LoadFilteredAttributes( items.Select( d => d.MediaFolder ), rockContext, a => gridAttributeIds.Contains( a.Id ) );
+            var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
+            var mediaElementQry = new MediaElementService( rockContext ).Queryable();
+            var interactionComponentQry = new InteractionComponentService( rockContext )
+                .Queryable()
+                .Where( c => c.InteractionChannelId == interactionChannelId );
+            var watchCountQry = new InteractionService( rockContext )
+                .Queryable()
+                .Where( a => a.Operation == "Watch" );
+            foreach ( var item in items )
             {
-                LavaObject = row => row.BinaryFileType
+                var mediaElementIdQry = mediaElementQry.Where( a => a.MediaFolderId == item.MediaFolder.Id ).Select( a => ( int? ) a.Id );
+                var interactionComponentSelectQry = interactionComponentQry.Where( c => mediaElementIdQry.Contains( c.EntityId ) )
+                .Select( a => a.Id );
+                item.WatchCount = watchCountQry.Where( b => interactionComponentSelectQry.Contains( b.InteractionComponentId ) ).Count();
+            }
+
+            return items;
+        }
+
+        /// <inheritdoc/>
+        protected override GridBuilder<MediaFolderData> GetGridBuilder()
+        {
+            var blockOptions = new GridBuilderGridOptions<MediaFolderData>
+            {
+                LavaObject = row => row.MediaFolder
             };
 
-            return new GridBuilder<BinaryFileTypeData>()
+            return new GridBuilder<MediaFolderData>()
                 .WithBlock( this, blockOptions )
-                .AddTextField( "idKey", a => a.BinaryFileType.IdKey )
-                .AddTextField( "name", a => a.BinaryFileType.Name )
-                .AddTextField( "description", a => a.BinaryFileType.Description )
-                .AddTextField( "storageEntityType", a => a.BinaryFileType.StorageEntityType?.FriendlyName )
-                .AddField( "fileCount", p => p.FileCount )
-                .AddField( "isSystem", a => a.BinaryFileType.IsSystem )
-                .AddField( "cacheToServerFileSystem", a => a.BinaryFileType.CacheToServerFileSystem )
-                .AddField( "requiresViewSecurity", a => a.BinaryFileType.RequiresViewSecurity )
-                .AddField( "isSecurityDisabled", a => !a.BinaryFileType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-                .AddAttributeFieldsFrom( a => a.BinaryFileType, _gridAttributes.Value );
+                .AddTextField( "idKey", a => a.MediaFolder.IdKey )
+                .AddTextField( "name", a => a.MediaFolder.Name )
+                .AddField( "isContentChannelSyncEnabled", a => a.MediaFolder.IsContentChannelSyncEnabled )
+                .AddField( "watchCount", a => a.WatchCount )
+                .AddField( "videoCount", a => a.VideoCount )
+                .AddAttributeFieldsFrom( a => a.MediaFolder, _gridAttributes.Value );
         }
 
         /// <summary>
@@ -185,7 +207,7 @@ namespace Rock.Blocks.Core
         /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
         private static List<AttributeCache> BuildGridAttributes()
         {
-            var entityTypeId = EntityTypeCache.Get<BinaryFileType>( false )?.Id;
+            var entityTypeId = EntityTypeCache.Get<MediaFolder>( false )?.Id;
 
             if ( entityTypeId.HasValue )
             {
@@ -209,17 +231,17 @@ namespace Rock.Blocks.Core
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new BinaryFileTypeService( rockContext );
+                var entityService = new MediaFolderService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( entity == null )
                 {
-                    return ActionBadRequest( $"{BinaryFileType.FriendlyTypeName} not found." );
+                    return ActionBadRequest( $"{MediaFolder.FriendlyTypeName} not found." );
                 }
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${BinaryFileType.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete ${MediaFolder.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -236,29 +258,38 @@ namespace Rock.Blocks.Core
 
         #endregion
 
+
         #region Support Classes
 
         /// <summary>
         /// The temporary data format to use when building the results for the
         /// grid.
         /// </summary>
-        public class BinaryFileTypeData
+        public class MediaFolderData
         {
             /// <summary>
-            /// Gets or sets the whole binary file type object from the database.
+            /// Gets or sets the whole media folder object from the database.
             /// </summary>
             /// <value>
-            /// The whole binary file type object from the database.
+            /// The whole media folder object from the database.
             /// </value>
-            public BinaryFileType BinaryFileType { get; set; }
+            public MediaFolder MediaFolder { get; set; }
 
             /// <summary>
-            /// Gets or sets the number of file in this binary file type.
+            /// Gets or sets the watch count for this media folder.
             /// </summary>
             /// <value>
-            /// The number of file in this binary file type.
+            /// The  watch count for this media folder.
             /// </value>
-            public int FileCount { get; set; }
+            public int WatchCount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the number of video in this media folder.
+            /// </summary>
+            /// <value>
+            /// The number of video in this media folder.
+            /// </value>
+            public int VideoCount { get; set; }
         }
 
         #endregion

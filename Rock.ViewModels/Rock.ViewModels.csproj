@@ -57,6 +57,7 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />

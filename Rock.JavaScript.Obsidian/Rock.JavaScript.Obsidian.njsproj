@@ -312,6 +312,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaAccountList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\MediaFolderList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PageShortLinkDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PageRouteDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\" />
@@ -784,6 +785,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaAccountList\mediaAccountListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\mediaFolderBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\mediaFolderDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaFolderList\mediaFolderListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PageShortLinkDetail\pageShortLinkBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PageShortLinkDetail\pageShortLinkDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PageRouteDetail\pageRouteBag.d.ts" />

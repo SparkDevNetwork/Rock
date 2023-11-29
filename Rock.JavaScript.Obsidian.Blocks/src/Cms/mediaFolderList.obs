@@ -3,8 +3,8 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Media Account"
-          :entityTypeGuid="EntityType.MediaAccount"
+          itemTerm="Media Folder"
+          :entityTypeGuid="EntityType.MediaFolder"
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
@@ -16,30 +16,6 @@
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs" />
-
-        <TextColumn name="componentEntityType"
-                    title="Component Entity Type"
-                    field="componentEntityType"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
-
-        <DateTimeColumn name="lastRefreshDateTime"
-                        title="Last Refresh Date/Time"
-                        field="lastRefreshDateTime"
-                        :filter="textValueFilter"
-                        visiblePriority="xs" />
-
-        <NumberColumn name="folderCount"
-                      title="Folders"
-                      field="folderCount"
-                      :filter="numberValueFilter"
-                      visiblePriority="sm">
-            <template #format="{ row }">
-                <div class="flex-grow-1">
-                    {{ row.folderCount }}
-                </div>
-            </template>
-        </NumberColumn>
 
         <NumberColumn name="videoCount"
                       title="Videos"
@@ -53,6 +29,23 @@
             </template>
         </NumberColumn>
 
+        <BooleanColumn name="isContentChannelSyncEnabled"
+                       title="Is Content Channel Sync Enabled"
+                       field="isContentChannelSyncEnabled"
+                       visiblePriority="xs" />
+
+        <NumberColumn name="watchCount"
+                      title="Watch Count"
+                      field="watchCount"
+                      :filter="numberValueFilter"
+                      visiblePriority="sm">
+            <template #format="{ row }">
+                <div class="flex-grow-1">
+                    {{ row.watchCount }}
+                </div>
+            </template>
+        </NumberColumn>
+
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
@@ -62,15 +55,15 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, SelectColumn, NumberColumn, numberValueFilter, DateTimeColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn, NumberColumn, numberValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { MediaAccountListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountList/mediaAccountListOptionsBag";
+    import { MediaFolderListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaFolderList/mediaFolderListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./MediaAccountList/types.partial";
+    import { NavigationUrlKey } from "./MediaFolderList/types.partial";
     import { reactive, ref } from "vue";
 
-    const config = useConfigurationValues<ListBlockBox<MediaAccountListOptionsBag>>();
+    const config = useConfigurationValues<ListBlockBox<MediaFolderListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
@@ -131,7 +124,7 @@
             }
         }
         else {
-            await alert(result.errorMessage ?? "Unknown error while trying to delete media account.");
+            await alert(result.errorMessage ?? "Unknown error while trying to delete media folder.");
         }
     }
 
