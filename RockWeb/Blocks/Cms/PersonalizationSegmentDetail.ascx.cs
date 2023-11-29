@@ -493,12 +493,21 @@ namespace RockWeb.Blocks.Cms
         /// Shows the page view filter dialog.
         /// </summary>
         /// <param name="pageViewFilterSegmentFilter">The page view filter segment filter.</param>
-        private void ShowPageViewFilterDialog( Rock.Personalization.SegmentFilters.PageViewSegmentFilter pageViewFilterSegmentFilter )
+        private void ShowPageViewFilterDialog( PageViewSegmentFilter pageViewFilterSegmentFilter )
         {
             if ( pageViewFilterSegmentFilter == null )
             {
                 pageViewFilterSegmentFilter = new PageViewSegmentFilter();
                 pageViewFilterSegmentFilter.Guid = Guid.NewGuid();
+
+                pageViewFilterSegmentFilter.PageUrlComparisonType = ComparisonType.StartsWith;
+                pageViewFilterSegmentFilter.PageReferrerComparisonType = ComparisonType.StartsWith;
+                pageViewFilterSegmentFilter.SourceComparisonType = ComparisonType.StartsWith;
+                pageViewFilterSegmentFilter.MediumComparisonType = ComparisonType.StartsWith;
+                pageViewFilterSegmentFilter.CampaignComparisonType = ComparisonType.StartsWith;
+                pageViewFilterSegmentFilter.ContentComparisonType = ComparisonType.StartsWith;
+                pageViewFilterSegmentFilter.TermComparisonType = ComparisonType.StartsWith;
+
                 mdPageViewFilterConfiguration.Title = "Add Page View Filter";
             }
             else
@@ -530,7 +539,27 @@ namespace RockWeb.Blocks.Cms
             ddlPageReferrerFilterComparisonType.SetValue( pageViewFilterSegmentFilter.PageReferrerComparisonType.ConvertToInt() );
             rtbPageReferrerCompareValue.Text = pageViewFilterSegmentFilter.PageReferrerComparisonValue;
 
-            if ( pageViewFilterSegmentFilter.PageUrlComparisonValue.IsNotNullOrWhiteSpace() || pageViewFilterSegmentFilter.PageReferrerComparisonValue.IsNotNullOrWhiteSpace() )
+            ComparisonHelper.PopulateComparisonControl( ddlPageSourceFilterComparisonType, ComparisonHelper.StringFilterComparisonTypes, true );
+            ddlPageSourceFilterComparisonType.SetValue( pageViewFilterSegmentFilter.SourceComparisonType.ConvertToInt() );
+            rtbPageSourceCompareValue.Text = pageViewFilterSegmentFilter.SourceComparisonValue;
+
+            ComparisonHelper.PopulateComparisonControl( ddlMediumComparisonType, ComparisonHelper.StringFilterComparisonTypes, true );
+            ddlMediumComparisonType.SetValue( pageViewFilterSegmentFilter.MediumComparisonType.ConvertToInt() );
+            rtbMediumCompareValue.Text = pageViewFilterSegmentFilter.MediumComparisonValue;
+
+            ComparisonHelper.PopulateComparisonControl( ddlCampaignComparisonType, ComparisonHelper.StringFilterComparisonTypes, true );
+            ddlCampaignComparisonType.SetValue( pageViewFilterSegmentFilter.CampaignComparisonType.ConvertToInt() );
+            rtbCampaignCompareValue.Text = pageViewFilterSegmentFilter.CampaignComparisonValue;
+
+            ComparisonHelper.PopulateComparisonControl( ddlContentComparisonType, ComparisonHelper.StringFilterComparisonTypes, true );
+            ddlContentComparisonType.SetValue( pageViewFilterSegmentFilter.ContentComparisonType.ConvertToInt() );
+            rtbContentCompareValue.Text = pageViewFilterSegmentFilter.ContentComparisonValue;
+
+            ComparisonHelper.PopulateComparisonControl( ddlTermComparisonType, ComparisonHelper.StringFilterComparisonTypes, true );
+            ddlTermComparisonType.SetValue( pageViewFilterSegmentFilter.TermComparisonType.ConvertToInt() );
+            rtbTermCompareValue.Text = pageViewFilterSegmentFilter.TermComparisonValue;
+
+            if ( pageViewFilterSegmentFilter.PageUrlComparisonValue.IsNotNullOrWhiteSpace() || pageViewFilterSegmentFilter.PageReferrerComparisonValue.IsNotNullOrWhiteSpace() || pageViewFilterSegmentFilter.SourceComparisonValue.IsNotNullOrWhiteSpace() || pageViewFilterSegmentFilter.MediumComparisonValue.IsNotNullOrWhiteSpace() || pageViewFilterSegmentFilter.CampaignComparisonValue.IsNotNullOrWhiteSpace() || pageViewFilterSegmentFilter.ContentComparisonValue.IsNotNullOrWhiteSpace() || pageViewFilterSegmentFilter.TermComparisonValue.IsNotNullOrWhiteSpace() )
             {
                 lbPageViewAdvancedOptions.Visible = false;
                 pnlAdvancedOptions.Visible = true;
@@ -552,16 +581,18 @@ namespace RockWeb.Blocks.Cms
         protected void mdPageViewFilterConfiguration_SaveClick( object sender, EventArgs e )
         {
             var pageViewFilterGuid = hfPageViewFilterGuid.Value.AsGuid();
-            var pageViewFilter = this.AdditionalFilterConfiguration.PageViewSegmentFilters.Where( a => a.Guid == pageViewFilterGuid ).FirstOrDefault();
+            var pageViewFilter = this.AdditionalFilterConfiguration.PageViewSegmentFilters.FirstOrDefault( a => a.Guid == pageViewFilterGuid );
+
             if ( pageViewFilter == null )
             {
                 pageViewFilter = new PageViewSegmentFilter();
-                pageViewFilter.Guid = hfPageViewFilterGuid.Value.AsGuid();
+                pageViewFilter.Guid = pageViewFilterGuid;
                 this.AdditionalFilterConfiguration.PageViewSegmentFilters.Add( pageViewFilter );
             }
 
             pageViewFilter.ComparisonType = ddlPageViewFilterComparisonType.SelectedValueAsEnumOrNull<ComparisonType>() ?? ComparisonType.GreaterThanOrEqualTo;
             pageViewFilter.ComparisonValue = nbPageViewFilterCompareValue.Text.AsInteger();
+
             pageViewFilter.SiteGuids = lstPageViewFilterWebSites.SelectedValuesAsGuid;
             pageViewFilter.PageGuids = ppPageViewFilterPages.SelectedIds.Select( a => PageCache.Get( a )?.Guid ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
 
@@ -571,6 +602,22 @@ namespace RockWeb.Blocks.Cms
             pageViewFilter.PageReferrerComparisonValue = rtbPageReferrerCompareValue.Text;
 
             pageViewFilter.SlidingDateRangeDelimitedValues = drpPageViewFilterSlidingDateRange.DelimitedValues;
+
+            pageViewFilter.SourceComparisonType = ddlPageSourceFilterComparisonType.SelectedValueAsEnumOrNull<ComparisonType>() ?? ComparisonType.StartsWith;
+            pageViewFilter.SourceComparisonValue = rtbPageSourceCompareValue.Text;
+
+            pageViewFilter.MediumComparisonType = ddlMediumComparisonType.SelectedValueAsEnumOrNull<ComparisonType>() ?? ComparisonType.StartsWith;
+            pageViewFilter.MediumComparisonValue = rtbMediumCompareValue.Text;
+
+            pageViewFilter.CampaignComparisonType = ddlCampaignComparisonType.SelectedValueAsEnumOrNull<ComparisonType>() ?? ComparisonType.StartsWith;
+            pageViewFilter.CampaignComparisonValue = rtbCampaignCompareValue.Text;
+
+            pageViewFilter.ContentComparisonType = ddlContentComparisonType.SelectedValueAsEnumOrNull<ComparisonType>() ?? ComparisonType.StartsWith;
+            pageViewFilter.ContentComparisonValue = rtbContentCompareValue.Text;
+
+            pageViewFilter.TermComparisonType = ddlTermComparisonType.SelectedValueAsEnumOrNull<ComparisonType>() ?? ComparisonType.StartsWith;
+            pageViewFilter.TermComparisonValue = rtbTermCompareValue.Text;
+
             mdPageViewFilterConfiguration.Hide();
             BindPageViewFiltersGrid();
         }
