@@ -450,31 +450,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     return;
                 }
             }
-
-            if ( dtpStart.SelectedDateTime.HasValue || dtpEnd.SelectedDateTime.HasValue )
-            {
-                var newAttendanceStartDateTime = dtpStart.SelectedDateTime ?? attendance.StartDateTime;
-
-                // Add the record to history if updated
-                var personAttendanceHistoryChangeList = new History.HistoryChangeList();
-                History.EvaluateChange( personAttendanceHistoryChangeList, "Check-in", attendance.StartDateTime, newAttendanceStartDateTime, includeTime: true );
-                History.EvaluateChange( personAttendanceHistoryChangeList, "Check-out", attendance.EndDateTime, dtpEnd.SelectedDateTime, includeTime: true );
-                HistoryService.SaveChanges( rockContext,
-                    typeof( Rock.Model.Person ), // Specifying the full path the person model to avoid ambiguity.
-                    Rock.SystemGuid.Category.HISTORY_ATTENDANCE_CHANGES.AsGuid(),
-                    attendance.PersonAlias.PersonId,
-                    personAttendanceHistoryChangeList,
-                    $"Attendance {attendanceId}",
-                    typeof( Rock.Model.Attendance ),
-                    attendanceId,
-                    true,
-                    CurrentPersonAliasId,
-                    rockContext.SourceOfChange
-                    );
-
-                attendance.StartDateTime = newAttendanceStartDateTime;
-                attendance.EndDateTime = dtpEnd.SelectedDateTime;
-            }
+            attendance.StartDateTime = dtpStart.SelectedDateTime ?? attendance.StartDateTime;
+            attendance.EndDateTime = dtpEnd.SelectedDateTime;
 
             var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
             var newRoomsOccurrence = attendanceOccurrenceService.GetOrAdd( selectedOccurrenceDate, selectedGroupId, selectedLocationId, selectedScheduleId );
