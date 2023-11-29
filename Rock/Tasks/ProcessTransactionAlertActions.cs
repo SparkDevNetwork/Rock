@@ -81,8 +81,9 @@ namespace Rock.Tasks
                     var workflowAttributeValues = new Dictionary<string, string>();
                     workflowAttributeValues.Add( nameof( FinancialTransactionAlert ), alert.Guid.ToString() );
                     workflowAttributeValues.Add( nameof( FinancialTransactionAlertType ), alertType.Guid.ToString() );
+                    workflowAttributeValues.Add( "FinancialTransactionId", alert.FinancialTransaction.Id.ToStringSafe() );
                     workflowAttributeValues.Add( nameof( Person ), person.Guid.ToString() );
-                    alert.LaunchWorkflow( alertType.WorkflowTypeId, string.Empty, workflowAttributeValues, null );
+                    alert.LaunchWorkflow( alertType.WorkflowTypeId, string.Empty, workflowAttributeValues, alert.PersonAliasId );
                 }
 
                 // Add the person to a connection opportunity if configured
