@@ -12,14 +12,11 @@ Write-Output "Web root folder: $webroot"
 Write-Output "Running script as: $env:userdomain\$env:username"
 
 # stop execution of the deploy if the moves fail
-# $ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
 # backup web.config file
-If (Test-Path "$webroot\web.config"){
-	Write-Output "Test"
-	Write-Host "Moving web.config to temp dir"
-	Copy-Item "$webroot\web.config" "$rootfolder\temp" -force
-}
+Write-Host "Moving web.config to temp dir"
+Copy-Item "$webroot\web.config" "$rootfolder\temp" -force
 
 # backup connection string file
 If (Test-Path "$webroot\web.connectionstrings.config"){
