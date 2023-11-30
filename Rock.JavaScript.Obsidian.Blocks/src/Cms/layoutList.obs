@@ -76,7 +76,6 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-            console.log(gridData.rows?.[0]);
             return gridData;
         }
         else {

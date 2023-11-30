@@ -160,8 +160,6 @@
                 };
             });
 
-            console.log("ayyyy", categoryOptions.value);
-
             return gridData;
         }
         else {
