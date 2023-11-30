@@ -16,6 +16,7 @@ $ErrorActionPreference = "Stop"
 
 # backup web.config file
 If (Test-Path "$webroot\web.config"){
+	Write-Output "Test"
 	Write-Host "Moving web.config to temp dir"
 	Copy-Item "$webroot\web.config" "$rootfolder\temp" -force
 }
