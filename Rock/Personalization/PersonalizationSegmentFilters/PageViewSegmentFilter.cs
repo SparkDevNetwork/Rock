@@ -253,9 +253,7 @@ namespace Rock.Personalization.SegmentFilters
                 requestDetails += $"and referrer {PageReferrerComparisonType.ConvertToString()} {PageReferrerComparisonValue}";
             }
 
-            string sourceFilterDescription = string.Empty;
-
-            var description = $"{comparisonPhrase} {onTheSites} {inTheDateRange} {limitedToPages} {requestDetails}";
+            var description = $"{comparisonPhrase} {onTheSites} {inTheDateRange} {limitedToPages} {requestDetails}".Trim();
 
             if ( SourceComparisonValue.IsNotNullOrWhiteSpace() )
             {
@@ -374,34 +372,33 @@ namespace Rock.Personalization.SegmentFilters
             return result;
         }
 
-        void ApplyComparisonFilter<T>( ref IQueryable<Interaction> interactionQuery, ComparisonType comparisonType, string comparisonValue, Expression<Func<Interaction, T>> interactionProperty )
+        private void ApplyComparisonFilter<T>( ref IQueryable<Interaction> interactionQuery, ComparisonType comparisonType, string comparisonValue, Func<Interaction, T> interactionPropertyGetter )
         {
-            Func<Interaction, T> interactionPropertyGetter = interactionProperty.Compile();
             switch ( comparisonType )
             {
                 case ComparisonType.EqualTo:
-                    interactionQuery = interactionQuery.Where( i => i.InteractionData.ToUpper() == comparisonValue.ToUpper() );
+                    interactionQuery = interactionQuery.Where( i => interactionPropertyGetter( i ).ToString().ToUpper() == comparisonValue.ToUpper() );
                     break;
                 case ComparisonType.NotEqualTo:
-                    interactionQuery = interactionQuery.Where( i => i.InteractionData.ToUpper() != comparisonValue.ToUpper() );
+                    interactionQuery = interactionQuery.Where( i => interactionPropertyGetter( i ).ToString().ToUpper() != comparisonValue.ToUpper() );
                     break;
                 case ComparisonType.StartsWith:
-                    interactionQuery = interactionQuery.Where( i => i.InteractionData.StartsWith( comparisonValue ) );
+                    interactionQuery = interactionQuery.Where( i => interactionPropertyGetter( i ).ToString().StartsWith( comparisonValue ) );
                     break;
                 case ComparisonType.Contains:
-                    interactionQuery = interactionQuery.Where( i => i.InteractionData.Contains( comparisonValue ) );
+                    interactionQuery = interactionQuery.Where( i => interactionPropertyGetter( i ).ToString().Contains( comparisonValue ) );
                     break;
                 case ComparisonType.DoesNotContain:
-                    interactionQuery = interactionQuery.Where( i => !i.InteractionData.Contains( comparisonValue ) );
+                    interactionQuery = interactionQuery.Where( i => !interactionPropertyGetter( i ).ToString().Contains( comparisonValue ) );
                     break;
                 case ComparisonType.IsBlank:
-                    interactionQuery = interactionQuery.Where( i => string.IsNullOrWhiteSpace( i.InteractionData ) );
+                    interactionQuery = interactionQuery.Where( i => string.IsNullOrWhiteSpace( interactionPropertyGetter( i ).ToString() ) );
                     break;
                 case ComparisonType.IsNotBlank:
-                    interactionQuery = interactionQuery.Where( i => !string.IsNullOrWhiteSpace( i.InteractionData ) );
+                    interactionQuery = interactionQuery.Where( i => !string.IsNullOrWhiteSpace( interactionPropertyGetter( i ).ToString() ) );
                     break;
                 case ComparisonType.EndsWith:
-                    interactionQuery = interactionQuery.Where( i => i.InteractionData.EndsWith( comparisonValue ) );
+                    interactionQuery = interactionQuery.Where( i => interactionPropertyGetter( i ).ToString().EndsWith( comparisonValue ) );
                     break;
             }
         }
