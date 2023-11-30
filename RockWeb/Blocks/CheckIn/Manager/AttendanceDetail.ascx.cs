@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [BooleanField(
     "Allow Editing Start and End Times",
         Key = AttributeKey.AllowEditingStartAndEndTimes,
-        Description = "This allows editing the start and end datetime to be edited",
+        Description = "This allows editing the start and end datetime to be edited.",
         DefaultBooleanValue = false,
         Order = 7 )]
 
