@@ -56,14 +56,14 @@ export type NoteBag = {
     /** Gets or sets a value indicating whether this note is an alert note. */
     isAlert: boolean;
 
-    /** Gets or sets a value indicating whether this note should be pinned to top. */
-    isPinned: boolean;
-
     /** Gets or sets a value indicating whether this note is deletable. */
     isDeletable: boolean;
 
     /** Gets or sets a value indicating whether this note is editable. */
     isEditable: boolean;
+
+    /** Gets or sets a value indicating whether this note should be pinned to top */
+    isPinned: boolean;
 
     /** Gets or sets a value indicating whether this note is a private note. */
     isPrivate: boolean;

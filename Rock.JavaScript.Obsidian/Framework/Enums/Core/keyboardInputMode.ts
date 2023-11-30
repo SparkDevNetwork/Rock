@@ -21,20 +21,46 @@
 // </copyright>
 //
 
-using Rock.Model;
-using Rock.SystemGuid;
+/** Specifies a keyboard mode for an input field. */
+export const KeyboardInputMode = {
+    /** The default keyboard mode. */
+    Default: 0,
 
-namespace Rock.Rest.Controllers
-{
-    /// <summary>
-    /// AdaptiveMessages REST API
-    /// </summary>
-    [RestControllerGuid( "442B0B44-BB59-4DC7-BC89-EE89E10C5AA4" )]
-    public partial class AdaptiveMessagesController : Rock.Rest.ApiController<Rock.Model.AdaptiveMessage>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AdaptiveMessagesController"/> class.
-        /// </summary>
-        public AdaptiveMessagesController() : base( new Rock.Model.AdaptiveMessageService( new Rock.Data.RockContext() ) ) { } 
-    }
-}
+    /** The email keyboard mode. */
+    Email: 1,
+
+    /** The numeric keyboard mode. */
+    Numeric: 2,
+
+    /** The decimal keyboard mode. */
+    Decimal: 3,
+
+    /** The telephone keyboard mode. */
+    Telephone: 4,
+
+    /** The text keyboard mode. */
+    Text: 5,
+
+    /** The url keyboard mode. */
+    Url: 6
+} as const;
+
+/** Specifies a keyboard mode for an input field. */
+export const KeyboardInputModeDescription: Record<number, string> = {
+    0: "Default",
+
+    1: "Email",
+
+    2: "Numeric",
+
+    3: "Decimal",
+
+    4: "Telephone",
+
+    5: "Text",
+
+    6: "Url"
+};
+
+/** Specifies a keyboard mode for an input field. */
+export type KeyboardInputMode = typeof KeyboardInputMode[keyof typeof KeyboardInputMode];

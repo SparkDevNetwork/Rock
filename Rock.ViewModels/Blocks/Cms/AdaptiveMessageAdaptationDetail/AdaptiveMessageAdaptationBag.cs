@@ -20,6 +20,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageAdaptationDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class AdaptiveMessageAdaptationBag : EntityBagBase
     {
         /// <summary>
