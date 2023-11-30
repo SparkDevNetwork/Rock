@@ -1297,6 +1297,19 @@ namespace Rock.Client.Enums.Core
 
     /// <summary>
     /// </summary>
+    public enum KeyboardInputMode
+    {
+        Default = 0x0,
+        Email = 0x1,
+        Numeric = 0x2,
+        Decimal = 0x3,
+        Telephone = 0x4,
+        Text = 0x5,
+        Url = 0x6,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum NoteFormatType
     {
         Unknown = 0x0,

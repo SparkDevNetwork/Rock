@@ -23,6 +23,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class AdaptiveMessageBag : EntityBagBase
     {
         /// <summary>

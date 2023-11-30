@@ -19,6 +19,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class AdaptiveMessageDetailOptionsBag
     {
         /// <summary>
