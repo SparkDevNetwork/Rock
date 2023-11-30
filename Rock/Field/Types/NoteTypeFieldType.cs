@@ -137,6 +137,14 @@ namespace Rock.Field.Types
             return publicConfigurationValues;
         }
 
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+            privateConfigurationValues.Remove( VALUES_PUBLIC_KEY );
+            return privateConfigurationValues;
+        }
+
         #endregion
 
         #region Formatting

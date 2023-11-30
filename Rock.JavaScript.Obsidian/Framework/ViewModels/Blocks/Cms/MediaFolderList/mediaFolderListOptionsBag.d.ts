@@ -21,19 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
-/**
- * The options that can be passed to the GetAttributes API action of
- * the DefinedValuePicker control.
- */
-export type DefinedValuePickerGetAttributesOptionsBag = {
-    /** Gets or sets the unique identifier of the defined type to get attributes of. */
-    definedTypeGuid?: Guid | null;
-
-    /**
-     * Gets or sets the security grant token to use when performing
-     * authorization checks.
-     */
-    securityGrantToken?: string | null;
+/** The additional configuration options for the Media Folder List block. */
+export type MediaFolderListOptionsBag = {
 };

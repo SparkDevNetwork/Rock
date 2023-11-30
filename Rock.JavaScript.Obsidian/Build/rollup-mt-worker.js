@@ -22,6 +22,7 @@ async function compile(option) {
     try {
         const bundle = await rollup.rollup(option);
         const writeResult = await bundle.write(option.output[0]);
+        await bundle.close();
         const duration = Math.floor(performance.now() - compileStartTime);
 
         return {

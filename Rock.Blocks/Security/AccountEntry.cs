@@ -1092,7 +1092,7 @@ namespace Rock.Blocks.Security
             // Remove the http and https schemes before checking if URL contains XSS objects.
             if ( decodedUrl.Replace( "https://", string.Empty )
                 .Replace( "http://", string.Empty )
-                .HasXssObjects() )
+                .RedirectUrlContainsXss() )
             {
                 return null;
             }

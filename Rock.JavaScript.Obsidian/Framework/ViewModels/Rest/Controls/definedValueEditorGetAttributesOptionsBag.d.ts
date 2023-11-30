@@ -24,28 +24,16 @@
 import { Guid } from "@Obsidian/Types";
 
 /**
- * The options that can be passed to the SaveNewValue API action of
- * the DefinedValuePicker control for adding a new Defined Value
+ * The options that can be passed to the GetAttributes API action of
+ * the DefinedValuePicker control.
  */
-export type DefinedValuePickerSaveNewValueOptionsBag = {
-    /** A collection of attribute values for the new defined value */
-    attributeValues?: Record<string, string> | null;
-
-    /** The GUID of the defined type of the value we're saving */
+export type DefinedValueEditorGetAttributesOptionsBag = {
+    /** Gets or sets the unique identifier of the defined type to get attributes of. */
     definedTypeGuid?: Guid | null;
 
-    /** The description property of the new defined value */
-    description?: string | null;
-
-    /** Gets or sets the security grant token to use when performing authorization checks. */
-    securityGrantToken?: string | null;
-
     /**
-     * Gets or sets the attribute identifier that should be updated. This
-     * must be null or represent a Defined Value field type attribute.
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
      */
-    updateAttributeGuid?: Guid | null;
-
-    /** The value property of the new defined value */
-    value?: string | null;
+    securityGrantToken?: string | null;
 };

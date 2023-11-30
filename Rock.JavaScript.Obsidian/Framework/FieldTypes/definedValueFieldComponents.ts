@@ -21,11 +21,7 @@ import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import RockFormField from "@Obsidian/Controls/rockFormField.obs";
-import TextBox from "@Obsidian/Controls/textBox.obs";
-import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-import Loading from "@Obsidian/Controls/loading.obs";
-import { DefinedValuePickerGetAttributesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetAttributesOptionsBag";
-import { DefinedValuePickerSaveNewValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerSaveNewValueOptionsBag";
+import DefinedValueEditor from "@Obsidian/Controls/Internal/definedValueEditor.obs";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -33,10 +29,6 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./definedValueField.partial";
 import { getFieldEditorProps } from "./utils";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-import { useHttp } from "@Obsidian/Utility/http";
-import { useSecurityGrantToken } from "@Obsidian/Utility/block";
 import { useFieldTypeAttributeGuid } from "@Obsidian/Utility/fieldTypes";
 
 function parseModelValue(modelValue: string | undefined): string {
@@ -76,11 +68,9 @@ export const EditComponent = defineComponent({
     components: {
         RockFormField,
         DropDownList,
-        CheckBoxList,
         RockButton,
-        TextBox,
-        AttributeValuesContainer,
-        Loading
+        CheckBoxList,
+        DefinedValueEditor
     },
 
     props: getFieldEditorProps(),
@@ -89,14 +79,8 @@ export const EditComponent = defineComponent({
         const internalValue = ref(parseModelValue(props.modelValue));
         const internalValues = ref(parseModelValue(props.modelValue).split(",").filter(v => v !== ""));
         const isShowingAddForm = ref(false);
-        const isLoading = ref(false);
-        const attributes = ref<Record<string, PublicAttributeBag> | null>(null);
-        const attributeValues = ref<Record<string, string>>({});
         const fetchError = ref<false | string>(false);
         const saveError = ref<false | string>(false);
-        const securityGrantToken = useSecurityGrantToken();
-        const newValue = ref("");
-        const newDescription = ref("");
         const valueOptions = computed((): ValueItem[] => {
             try {
                 const valueOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
@@ -115,9 +99,10 @@ export const EditComponent = defineComponent({
 
         const addedOptions = ref<ValueItem[]>([]);
 
-        const displayDescription = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.DisplayDescription]));
-        const allowAdd = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.AllowAddingNewValues]));
-        const http = useHttp();
+        const displayDescription = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.DisplayDescription]));
+        const allowAdd = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.AllowAddingNewValues]));
+        const definedTypeGuid = computed(() => props.configurationValues[ConfigurationValueKey.DefinedType]);
+        const updateAttributeGuid = useFieldTypeAttributeGuid();
 
         /** The options to choose from */
         const options = computed((): ListItemBag[] => {
@@ -129,18 +114,8 @@ export const EditComponent = defineComponent({
             });
         });
 
-        const isMultiple = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultiple]));
-        const attributeGuid = useFieldTypeAttributeGuid();
-        const configAttributes = computed((): Record<string, unknown> => {
-            const attributes: Record<string, unknown> = {};
-
-            const enhancedConfig = props.configurationValues[ConfigurationValueKey.EnhancedSelection];
-            if (enhancedConfig) {
-                attributes.enhanceForLongLists = asBoolean(enhancedConfig);
-            }
-
-            return attributes;
-        });
+        const isMultiple = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultiple]));
+        const enhanceForLongLists = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.EnhancedSelection]));
 
         /** The number of columns wide the checkbox list will be. */
         const repeatColumns = computed((): number => toNumber(props.configurationValues[ConfigurationValueKey.RepeatColumns]));
@@ -167,34 +142,9 @@ export const EditComponent = defineComponent({
         });
 
         async function showAddForm(): Promise<void> {
-            if (!allowAdd) return;
+            if (!allowAdd.value) return;
 
             isShowingAddForm.value = true;
-            if (attributes.value == null) {
-                isLoading.value = true;
-                fetchError.value = false;
-                saveError.value = false;
-
-                const options: Partial<DefinedValuePickerGetAttributesOptionsBag> = {
-                    definedTypeGuid:  props.configurationValues[ConfigurationValueKey.DefinedType],
-                    securityGrantToken: securityGrantToken.value
-                };
-                const url = "/api/v2/Controls/DefinedValuePickerGetAttributes";
-                const result = await http.post<PublicAttributeBag[]>(url, undefined, options);
-
-                if (result.isSuccess && result.data) {
-                    attributes.value = result.data.reduce(function (acc, val) {
-                        acc[val.key as string] = val;
-                        return acc;
-                    }, {});
-                }
-                else {
-                    attributes.value = null;
-                    fetchError.value = "Unable to fetch attribute data.";
-                }
-
-                isLoading.value = false;
-            }
         }
 
         function hideAddForm(): void {
@@ -203,63 +153,43 @@ export const EditComponent = defineComponent({
             saveError.value = false;
         }
 
-        async function saveNewValue(): Promise<void> {
-            isLoading.value = true;
-            saveError.value = false;
+        function selectNewValue(newValue: ListItemBag | null): void {
+            if (!newValue) {
+                return;
+            }
 
-            const options: Partial<DefinedValuePickerSaveNewValueOptionsBag> = {
-                definedTypeGuid: props.configurationValues[ConfigurationValueKey.DefinedType],
-                securityGrantToken: securityGrantToken.value,
-                value: newValue.value,
-                description: newDescription.value,
-                attributeValues: attributeValues.value,
-                updateAttributeGuid: attributeGuid.value
-            };
-            const url = "/api/v2/Controls/DefinedValuePickerSaveNewValue";
-            const result = await http.post<ListItemBag>(url, undefined, options);
-
-            if (result.isSuccess && result.data) {
-                addedOptions.value.push({value: result.data.value ?? "", text: result.data.text ?? "", description: ""});
-                if (isMultiple) {
-                    if (Array.isArray(internalValues.value)) {
-                        internalValues.value.push(result.data.value ?? "");
-                        const clientValue = getClientValue(internalValues.value, valueOptions.value);
-                        emit("update:modelValue", JSON.stringify(clientValue));
-                    }
-                    else {
-                        internalValue.value = result.data.value ?? "";
-                        const clientValue = getClientValue(internalValue.value, valueOptions.value);
-                        emit("update:modelValue", JSON.stringify(clientValue));
-
-                    }
+            addedOptions.value.push({value: newValue.value ?? "", text: newValue.text ?? "", description: ""});
+            if (isMultiple.value) {
+                if (Array.isArray(internalValues.value)) {
+                    internalValues.value.push(newValue.value ?? "");
+                    const clientValue = getClientValue(internalValues.value, valueOptions.value);
+                    emit("update:modelValue", JSON.stringify(clientValue));
                 }
                 else {
-                    internalValue.value = result.data.value ?? "";
+                    internalValue.value = newValue.value ?? "";
+                    const clientValue = getClientValue(internalValue.value, valueOptions.value);
+                    emit("update:modelValue", JSON.stringify(clientValue));
+
                 }
-
-                const selectableValues = (props.configurationValues[ConfigurationValueKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
-                if(selectableValues.length > 0 && result.data.value){
-                    selectableValues.push(result.data.value);
-
-                    emit("updateConfigurationValue", "selectableValues", selectableValues.join(","));
-                }
-
-                emit("updateConfiguration");
-
-                hideAddForm();
-                newValue.value = "";
-                newDescription.value = "";
-                attributeValues.value = {};
             }
             else {
-                saveError.value = "Unable to save new Defined Value.";
+                internalValue.value = newValue.value ?? "";
             }
 
-            isLoading.value = false;
+            const selectableValues = (props.configurationValues[ConfigurationValueKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
+            if(selectableValues.length > 0 && newValue.value){
+                selectableValues.push(newValue.value);
+
+                emit("updateConfigurationValue", "selectableValues", selectableValues.join(","));
+            }
+
+            emit("updateConfiguration");
+
+            hideAddForm();
         }
 
         return {
-            configAttributes,
+            enhanceForLongLists,
             internalValue,
             internalValues,
             isMultiple,
@@ -270,61 +200,46 @@ export const EditComponent = defineComponent({
             BtnType,
             showAddForm,
             isShowingAddForm,
-            isLoading,
-            BtnSize,
             hideAddForm,
-            saveNewValue,
-            newValue,
-            newDescription
+            selectNewValue,
+            definedTypeGuid,
+            updateAttributeGuid
         };
     },
 
     template: `
-    <RockFormField
-        v-model="internalValue"
-        formGroupClasses="rock-defined-value"
-        name="definedvalue"
-        #default="{uniqueId}"
-        :rules="computedRules">
+<template v-if="allowAdd && isShowingAddForm">
+    <DefinedValueEditor :definedTypeGuid="definedTypeGuid" :updateAttributeGuid="updateAttributeGuid" :label="label" :help="help" @save="selectNewValue" @cancel="hideAddForm" />
+</template>
+<template v-else>
+    <RockFormField v-model="internalValue"
+                formGroupClasses="rock-defined-value"
+                name="definedvalue"
+                #default="{uniqueId}"
+                :rules="computedRules">
         <div :id="uniqueId">
-        <template v-if="allowAdd && isShowingAddForm">
-        <RockLabel :help="help">{{ label }}</RockLabel>
-        <Loading :isLoading="isLoading" class="well">
-            <NotificationBox v-if="fetchError" alertType="danger">Error: {{ fetchError }}</NotificationBox>
-            <NotificationBox v-else-if="saveError" alertType="danger">Error: {{ saveError }}</NotificationBox>
-
-            <RockForm v-else>
-                <TextBox label="Value" v-model="newValue" rules="required" />
-                <TextBox label="Description" v-model="newDescription" textMode="multiline" />
-                <AttributeValuesContainer v-if="attributes != null" v-model="attributeValues" :attributes="attributes" isEditMode :showCategoryLabel="false" />
-                <RockButton :btnType="BtnType.Primary" :btnSize="BtnSize.ExtraSmall"  @click="saveNewValue">Add</RockButton>
-                <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" @click="hideAddForm">Cancel</RockButton>
-            </RockForm>
-
-            <RockButton v-if="fetchError || saveError" :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" @click="hideAddForm">Cancel</RockButton>
-        </Loading>
-    </template>
-    <template v-else>
-
-        <DropDownList v-if="!isMultiple || (isMultiple && configAttributes.enhanceForLongLists)" :multiple="isMultiple" v-model="internalValue" v-bind="configAttributes" :items="options">
-            <template #inputGroupAppend v-if="allowAdd">
-                <span class="input-group-btn">
+            <DropDownList v-if="!isMultiple" :multiple="isMultiple" v-model="internalValue" :items="options">
+                <template #inputGroupAppend v-if="allowAdd">
+                    <span class="input-group-btn">
+                        <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                    </span>
+                </template>
+            </DropDownList>
+            <DropDownList v-else-if="isMultiple && enhanceForLongLists" :multiple="isMultiple" v-model="internalValues" enhanceForLongLists :items="options">
+                <template #inputGroupAppend v-if="allowAdd">
+                    <span class="input-group-btn">
+                        <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                    </span>
+                </template>
+            </DropDownList>
+            <CheckBoxList v-else v-model="internalValues" :items="options" horizontal :repeatColumns="repeatColumns">
+                <template #append v-if="allowAdd">
                     <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
-                </span>
-            </template>
-        </DropDownList>
-        <CheckBoxList v-else v-model="internalValues" :items="options" horizontal :repeatColumns="repeatColumns">
-            <template #append v-if="allowAdd">
-                <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
-             </template>
-        </CheckBoxList>
-
-
-    </template>
-    </div>
-</RockFormField>
-
-
+                </template>
+            </CheckBoxList>
+        </div>
+    </RockFormField>
+</template>
 `
 });
 
@@ -524,9 +439,9 @@ export const ConfigurationComponent = defineComponent({
     <CheckBox v-model="displayDescriptions" label="Display Descriptions" text="Yes" help="When set, the defined value descriptions will be displayed instead of the values." />
     <CheckBox v-model="enhanceForLongLists" label="Enhance For Long Lists" text="Yes" />
     <CheckBox v-model="includeInactive" label="Include Inactive" text="Yes" />
-    <NumberBox v-model="repeatColumns" label="Repeat Columns" />
-    <CheckBoxList v-if="hasValues" v-model="selectableValues" label="Selectable Values" :items="definedValueOptions" :horizontal="true" />
     <CheckBox v-model="allowAddingNewValues" label="Allow Adding New Values" text="Yes" help="When set the defined type picker can be used to add new defined types." />
+    <NumberBox v-model="repeatColumns" label="Repeat Columns" />
+    <CheckBoxList v-if="hasValues" v-model="selectableValues" label="Selectable Values" :items="definedValueOptions" :horizontal="true" :repeatColumns="4" />
 </div>
 `
 });

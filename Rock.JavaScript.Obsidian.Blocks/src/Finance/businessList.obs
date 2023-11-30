@@ -1,0 +1,182 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          :entityTypeGuid="entityTypeGuid"
+          keyField="id"
+          personKeyField="id"
+          itemTerm="Business"
+          stickyHeader
+          liveUpdates
+          @selectItem="onSelectItem"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :personAsBusiness="true"
+          :showBulkUpdate="true"
+          :showCommunicate="true"
+          :showPersonMerge="true">
+
+        <SelectColumn />
+
+        <TextColumn name="businessName"
+                    title="Business Name"
+                    field="businessName"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="10%" />
+
+        <Column name="contactInformation"
+                title="Contact Information"
+                :filter="textValueFilter"
+                visiblePriority="xs"
+                width="20%">
+            <template #format="{ row }">
+                <div>
+                    <div>
+                        <span>{{ row.phoneNumber }}</span>
+                    </div>
+                    <div v-if="row.email">
+                        {{ row.email }}
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="address"
+                title="Address"
+                :filter="textValueFilter"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div>
+                    <div>
+                        <span>{{ row.street }}</span>
+                    </div>
+                    <div>
+                        <span>{{ row.city }},&nbsp;</span>
+                        <span>{{ row.state }}&nbsp;</span>
+                        <span>{{ row.zip }}</span>
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <TextColumn name="contacts"
+                    title="Contacts"
+                    field="contacts"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+
+        <TextColumn name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import Grid, { Column, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { BusinessListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessList/businessListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { reactive, ref, watch, watchEffect } from "vue";
+    import { NavigationUrlKey } from "./BusinessList/types.partial";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    // #region Values
+
+    const config = useConfigurationValues<ListBlockBox<BusinessListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    const entityTypeGuid = EntityType.Person;
+
+    // Retrieves search term from URL
+    const params = new URLSearchParams(window.location.search);
+    const searchTerm = ref(params.get("SearchTerm"));
+    let gridData = ref<GridDataBag>();
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(searchTerm: string | null): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData", { searchTerm });
+        if (result.isSuccess && result.data) {
+            gridData.value = reactive(result.data);
+            return gridData.value;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // Watch for changes in searchTerm and reload grid data
+    watch(gridData, () => {
+        if (gridData.value?.rows?.length === 1 && searchTerm.value) {
+            const businessId = gridData.value.rows[0].id as number;
+            if (typeof businessId === "number") {
+                navigateToDetailPage(businessId);
+            }
+        }
+    });
+
+    // Automatically navigate to detail page if one business is found
+    watch(searchTerm, async () => {
+        gridDataSource.value = loadGridData(searchTerm.value);
+    }, { immediate: true });
+
+    function navigateToDetailPage(businessId: number): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", businessId.toString());
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (gridData && gridData.value?.rows?.length === 1 && searchTerm.value) {
+            const businessId = gridData.value?.rows[0].id as number;
+            navigateToDetailPage(businessId);
+        }
+        else if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+    * Called when the Add button has been clicked by the indivual.
+    */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    watchEffect(() => {
+        gridDataSource.value = loadGridData(searchTerm.value);
+    });
+
+    // #endregion
+
+</script>

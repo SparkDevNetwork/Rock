@@ -113,6 +113,9 @@ registerFieldType(FieldTypeGuids.ContentChannels, new ContentChannelsFieldType()
 import { ConnectionActivityTypeField } from "./connectionActivityTypeField.partial";
 registerFieldType(FieldTypeGuids.ConnectionActivityType, new ConnectionActivityTypeField());
 
+import { ConnectionRequestFieldType } from "./connectionRequestField.partial";
+registerFieldType(FieldTypeGuids.ConnectionRequest, new ConnectionRequestFieldType());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
@@ -278,6 +281,9 @@ registerFieldType(FieldTypeGuids.NoteType, new NoteTypeField());
 import { NoteTypesField } from "./noteTypesField.partial";
 registerFieldType(FieldTypeGuids.NoteTypes, new NoteTypesField());
 
+import { PersistedDatasetField } from "./persistedDatasetField.partial";
+registerFieldType(FieldTypeGuids.PersistedDataset, new PersistedDatasetField());
+
 import { PhoneNumberFieldType } from "./phoneNumberField.partial";
 registerFieldType(FieldTypeGuids.PhoneNumber, new PhoneNumberFieldType());
 
@@ -293,6 +299,9 @@ registerFieldType(FieldTypeGuids.RangeSlider, new RangeSliderFieldType());
 import { RatingFieldType } from "./ratingField.partial";
 registerFieldType(FieldTypeGuids.Rating, new RatingFieldType());
 
+import { RegistrationInstanceField } from "./registrationInstanceField.partial";
+registerFieldType(FieldTypeGuids.RegistrationInstance, new RegistrationInstanceField());
+
 import { RegistryEntryFieldType } from "./registryEntryField.partial";
 registerFieldType(FieldTypeGuids.RegistryEntry, new RegistryEntryFieldType());
 
@@ -301,6 +310,9 @@ registerFieldType(FieldTypeGuids.ReminderType, new ReminderTypeFieldType());
 
 import { ReminderTypesFieldType } from "./reminderTypesField.partial";
 registerFieldType(FieldTypeGuids.ReminderTypes, new ReminderTypesFieldType());
+
+import { ReportFieldType } from "./reportField.partial";
+registerFieldType(FieldTypeGuids.Report, new ReportFieldType());
 
 import { ScheduleFieldType } from "./scheduleField.partial";
 registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());

@@ -44,6 +44,9 @@
     <Compile Include="CodeGenerated\AchievementAttempt.cs" />
     <Compile Include="CodeGenerated\AchievementType.cs" />
     <Compile Include="CodeGenerated\AchievementTypePrerequisite.cs" />
+    <Compile Include="CodeGenerated\AdaptiveMessageAdaptationSegment.cs" />
+    <Compile Include="CodeGenerated\AdaptiveMessageAdaptation.cs" />
+    <Compile Include="CodeGenerated\AdaptiveMessage.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimCampus.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
@@ -361,7 +364,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

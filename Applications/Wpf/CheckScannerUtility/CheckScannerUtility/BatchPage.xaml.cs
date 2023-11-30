@@ -1048,16 +1048,6 @@ namespace Rock.Apps.CheckScannerUtility
                 lblBatchDate.Style = labelStyle;
                 result = result != false;
             }
-            if ( cboCampus.SelectedItem == null )
-            {
-                lblCampus.Style = labelStyleError;
-                result = false;
-            }
-            else
-            {
-                lblCampus.Style = labelStyle;
-                result = result != false;
-            }
 
             // Capture Amount Required Validation
             if ( rockConfig.CaptureAmountOnScan == true )

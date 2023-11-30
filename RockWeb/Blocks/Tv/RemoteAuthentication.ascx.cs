@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Tv
         false,
         @"<div>
     <h1>Success!</h1>
-    <span>{{ CurrentPerson.NickName }}, you have successfully authenicated to your application.</span>
+    <span>{{ CurrentPerson.NickName }}, you have successfully authenticated to your application.</span>
 </div>",
         "default",
         3,

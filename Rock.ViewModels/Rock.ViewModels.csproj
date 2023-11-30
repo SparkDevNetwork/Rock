@@ -56,6 +56,8 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />
@@ -65,10 +67,14 @@
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveResponseBag.cs" />
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerDownloadItemBag.cs" />
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerValidationResultsBag.cs" />
+    <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateBag.cs" />
+    <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\BinaryFileTypeList\BinaryFileTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\DefinedTypeList\DefinedTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceList\DeviceListOptionsBag.cs" />
@@ -82,6 +88,7 @@
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignalTypeList\SignalTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
+    <Compile Include="Blocks\Crm\AssessmentTypeList\AssessmentTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\NamelessPersonList\NamelessPersonListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeDetailOptionsBag.cs" />
@@ -92,9 +99,13 @@
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\ConnectionOpportunityList\ConnectionOpportunityListOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceWorkflowBag.cs" />
+    <Compile Include="Blocks\Finance\BusinessList\BusinessListBag.cs" />
+    <Compile Include="Blocks\Finance\BusinessList\BusinessListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountParticipantBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountDetailOptionsBag.cs" />
@@ -143,6 +154,9 @@
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\MetricValueDetail\MetricValueBag.cs" />
+    <Compile Include="Blocks\Reporting\MetricValueDetail\MetricValueDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\MetricValueDetail\MetricValuePartitionBag.cs" />
     <Compile Include="Blocks\Security\Login\PasswordlessLoginMfaBag.cs" />
     <Compile Include="Blocks\Security\Login\CredentialLoginMfaBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\AppleTvPageBag.cs" />
@@ -438,6 +452,9 @@
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Controls\RockCacheabilityBag.cs" />
     <Compile Include="Rest\Controls\BadgeControlGetBadgeOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />
+    <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DefinedValueEditorGetAttributesResultsBag.cs" />
     <Compile Include="Rest\Controls\MatrixFieldDataBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorPublicItemBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueResultsBag.cs" />
@@ -585,8 +602,8 @@
     <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CampusPickerGetCampusesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
-    <Compile Include="Rest\Controls\DefinedValuePickerGetAttributesOptionsBag.cs" />
-    <Compile Include="Rest\Controls\DefinedValuePickerSaveNewValueOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DefinedValueEditorGetAttributesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DefinedValueEditorSaveNewValueOptionsBag.cs" />
     <Compile Include="Rest\Controls\GeoPickerGetSettingsOptionsBag.cs" />
     <Compile Include="Rest\Controls\GeoPickerSettingsBag.cs" />
     <Compile Include="Rest\Controls\GeoPickerGoogleMapSettingsBag.cs" />
