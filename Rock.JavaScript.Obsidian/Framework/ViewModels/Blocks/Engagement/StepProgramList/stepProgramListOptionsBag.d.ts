@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** The additional configuration options for the Step Program List block. */
 export type StepProgramListOptionsBag = {
 };

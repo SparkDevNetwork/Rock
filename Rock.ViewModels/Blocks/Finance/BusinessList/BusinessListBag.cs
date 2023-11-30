@@ -22,6 +22,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.BusinessList
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class BusinessListBag
     {
         /// <summary>

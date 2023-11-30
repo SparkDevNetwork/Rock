@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace Rock.Blocks.Finance
 
     [Rock.SystemGuid.BlockTypeGuid( "1e60c390-98c4-404d-aee8-f9e3e9c69705" )]
     [CustomizedGrid]
+    [Rock.SystemGuid.EntityTypeGuid( "1214E9D9-3D0C-49AD-BD99-58C427A8A7D2")]
     public class BusinessList : RockListBlockType<BusinessListBag>
     {
         #region Keys

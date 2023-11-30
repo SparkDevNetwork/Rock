@@ -21,20 +21,26 @@
 // </copyright>
 //
 
-using Rock.Model;
-using Rock.SystemGuid;
+/**  Represents an entry in the list of Step Programs. */
+export type StepProgramListBag = {
+    /** Gets or sets the category name */
+    category?: string | null;
 
-namespace Rock.Rest.Controllers
-{
-    /// <summary>
-    /// AdaptiveMessages REST API
-    /// </summary>
-    [RestControllerGuid( "922A702B-5153-496B-AA45-0864446087B2" )]
-    public partial class AdaptiveMessagesController : Rock.Rest.ApiController<Rock.Model.AdaptiveMessage>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AdaptiveMessagesController"/> class.
-        /// </summary>
-        public AdaptiveMessagesController() : base( new Rock.Model.AdaptiveMessageService( new Rock.Data.RockContext() ) ) { } 
-    }
-}
+    /** Gets or sets the icon */
+    iconCssClass?: string | null;
+
+    /** Gets or sets the ID */
+    id: number;
+
+    /** Gets or sets the Name */
+    name?: string | null;
+
+    /** Gets or sets the order */
+    order: number;
+
+    /** Gets or sets the steps taken count */
+    stepCompletedCount: number;
+
+    /** Gets or sets the step types count */
+    stepTypeCount: number;
+};

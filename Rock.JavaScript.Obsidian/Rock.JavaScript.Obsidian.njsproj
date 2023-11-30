@@ -366,6 +366,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\StepProgramList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\Steps\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StepTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakDetail\" />
@@ -907,6 +908,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\signUpRegisterRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\signUpRegisterResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\signUpRegistrantBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StepProgramList\stepProgramListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramEdgeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramNodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramSettingsBag.d.ts" />
