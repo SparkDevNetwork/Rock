@@ -38,6 +38,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Rock.SystemGuid.BlockTypeGuid( "8C94620B-0FC1-4C39-9474-1714546E7D9E" )]
     public partial class PersonEditControl : Rock.Web.UI.PersonBlock
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
 
+            divEditButton.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+        }
     }
 }
