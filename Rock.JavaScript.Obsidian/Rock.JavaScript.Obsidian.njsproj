@@ -548,6 +548,7 @@
     <TypeScriptCompile Include="Framework\Enums\Core\Grid\pickExistingFilterMethod.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\Grid\textFilterMethod.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\jobNotificationStatus.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\keyboardInputMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\kioskType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\matchFlag.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\moveType.ts" />

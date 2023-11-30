@@ -101,6 +101,12 @@ export const ServiceJob = {
     DataMigrations160UpdateWorkflowidColumns: "2222F9D2-4771-4B21-A630-E696DB0C329A",
     /** The post update data migration job to chop the Group Schedule Toolbox V2. */
     DataMigrations161ChopBlockGroupScheduleToolboxV2: "7F989E9F-913C-45E4-9EB1-EC70AC220939",
+    /** The Job to run Post v16.1 Data Migrations to swap AccountEntry and Login web forms blocks with obisdian blocks. */
+    DataMigrations161ChopAccountentryAndLogin: "A65D26C1-229E-4198-B388-E269C3534BC0",
+    /** The post update data migration job to chop the Group Schedule Toolbox V2. */
+    DataMigrations161ChopBlockGroupScheduleToolboxV2: "7F989E9F-913C-45E4-9EB1-EC70AC220939",
+    /** The post update data migration job to chop the Login and Account Entry blocks. */
+    DataMigrations161ChopSecurityBlocks: "A65D26C1-229E-4198-B388-E269C3534BC0",
     /** The post update data migration job to remove obsidian group schedule toolbox back buttons. */
     DataMigrations161RemoveObsidianGroupScheduleToolboxBackButtons: "781F2D3B-E5E4-41D5-9145-1D70DDB3EE04",
     /** The post update data migration job to swap the Group Schedule Toolbox V1. */
