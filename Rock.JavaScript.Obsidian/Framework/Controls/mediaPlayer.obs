@@ -1,0 +1,86 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-if="label" :modelValue="watchedPercentage" v-bind="fieldProps" name="media-player">
+        Media player as form control
+    </RockFormField>
+    <template v-else>
+        Plain media player
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { MediaPlayerInterfaceType } from "@Obsidian/Enums/Controls/mediaPlayerInterfaceType";
+    // import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        watchedPercentage: {
+            type: Number,
+            required: true
+        },
+
+        //TODO
+        disableAutoPause: {
+            type: Boolean
+        },
+
+        //TODO
+        autoPlay: {
+            type: Boolean
+        },
+
+        //TODO
+        autoResumeInDays: {
+            type: Number,
+            default: 7
+        },
+
+        //TODO
+        disableClickToPlay: {
+            type: Boolean
+        },
+
+        //TODO
+        enableDebug: {
+            type: Boolean
+        },
+
+        // TODO
+        disableAutoHideControls: {
+            type: Boolean
+        },
+
+        //TODO
+        /** CSS length value of the maximum width the video play should be */
+        maxVideoWith: {
+            type: String,
+            default: ""
+        },
+
+        //TODO
+        mediaElementId: {
+            type: Number
+        },
+
+        // TODO
+        mediaType: {
+            type: Number as PropType<MediaPlayerInterfaceType>,
+            default: MediaPlayerInterfaceType.Audio
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:watchedPercentage", value: number): void
+    }>();
+
+    const watchedPercentage = useVModelPassthrough(props, "watchedPercentage", emit);
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+
+
+</script>
