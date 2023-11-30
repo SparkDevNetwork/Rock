@@ -314,7 +314,6 @@
 				{% endif %}
 			{% endif %}
 		</div>
-		</p>
 	{% endif %}
 
 {% else %}
