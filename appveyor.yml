@@ -21,7 +21,7 @@ branches:
 skip_tags: true
 
 # operating system (build VM template)
-image: Visual Studio 2022
+image: Visual Studio 2019
 configuration: Release
 platform: Any CPU
 
@@ -49,8 +49,8 @@ install:
 
 # directories to preserve between builds
 cache:
-- node_modules
-- packages
+#- node_modules
+#- packages
 
 # scripts to run before build
 # (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe', "$nugetDir\NuGet.exe")
@@ -69,7 +69,7 @@ build_script:
 - cmd: >-
     nuget restore
 
-    "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv"
+    "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv"
     "c:\projects\Rock\rock.sln" /build Release
 
 # flag to stop building if an error throws
