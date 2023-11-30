@@ -1,0 +1,171 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Page"
+          :entityTypeGuid="EntityType.Page"
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false">
+
+        <NumberColumn name="id"
+                      title="Id"
+                      field="id"
+                      :filter="numberValueFilter"
+                      :hideOnScreen="!config.options?.showPageId"
+                      visiblePriority="xs"
+                      width="5%" />
+
+        <TextColumn name="pageTitle"
+                    title="Page Title"
+                    field="pageTitle"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="20%" />
+
+        <TextColumn name="description"
+                    title="Description"
+                    field="description"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="30%" />
+
+        <TextColumn name="layout"
+                    title="Layout"
+                    field="layout"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="10%" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :layouts="layoutOptions" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, NumberColumn, numberValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { PageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageList/pageListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { computed, reactive, ref, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { GridSettingsOptions, PreferenceKey } from "./PageList/types.partial";
+    import GridSettingsModal from "./PageList/gridSettingsModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<PageListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+    const layoutOptions = ref<ListItemBag[]>([]);
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const isGridSettingsVisible = ref(false);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        layout: preferences.getValue(PreferenceKey.FilterLayout),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Returns `true` if the grid settings filters are active; otherwise `false`.
+     */
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.layout;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+     * Watch for changes to the grid settings and update the preferences as needed.
+     */
+    watch(gridSettings, async () => {
+        const layoutValue = gridSettings.value.layout ?? "";
+
+        // Set the preferences with the appropriate values
+        preferences.setValue(PreferenceKey.FilterLayout, layoutValue);
+
+        // Save the preferences
+        await preferences.save();
+
+        // Reload the grid data
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+
+            // Extract the layouts from the grid data
+            const layoutData = new Set(gridData.rows?.map(row => row.layout as string));
+
+            layoutOptions.value = Array.from(layoutData).map(layout => {
+                return {
+                    text: layout,
+                    value: layout
+                };
+            });
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete page.");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>
