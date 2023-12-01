@@ -866,6 +866,16 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Loads the referenced entity dependency cache if it is empty. This can be called
+        /// before an Attribute is created, modified or deleted if there is the possibility
+        /// the cache might be empty to prevent a deadlock.
+        /// </summary>
+        internal static void GetReferencedEntityDependencies()
+        {
+            RockCache.GetOrAddExisting( AttributePropertyDependenciesCacheKey, GetAttributePropertyDependencies );
+        }
+
+        /// <summary>
         /// Gets the dependencies that all attributes have on entity types
         /// whose properties get modified.
         /// </summary>

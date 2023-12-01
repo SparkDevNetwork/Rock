@@ -799,11 +799,11 @@ namespace Rock.UI {
         private wireEvents() {
             const self = this;
             const pageHideHandler = function () {
-                self.writeInteraction(false);
+                self.writeInteraction(true);
             };
             const visibilityChangeHandler = function () {
                 if (document.visibilityState === "hidden") {
-                    self.writeInteraction(false);
+                    self.writeInteraction(true);
                 }
             };
 
@@ -835,6 +835,13 @@ namespace Rock.UI {
                 window.addEventListener("visibilitychange", visibilityChangeHandler);
 
                 this.writeDebugMessage("Event 'play' called.");
+
+                if (!this.options.interactionGuid) {
+                    // Force a write, this will make sure we have an interaction
+                    // guid for later beacon saves.
+                    this.watchBitsDirty = true;
+                    this.writeInteraction(false);
+                }
             });
 
             // Define pause event
@@ -854,7 +861,7 @@ namespace Rock.UI {
 
                 this.emit(EventType.Pause);
 
-                this.writeInteraction(true);
+                this.writeInteraction(false);
 
                 this.writeDebugMessage("Event 'pause' called.");
             });
@@ -904,9 +911,9 @@ namespace Rock.UI {
         /**
          * Writes the watch map interaction to the server.
          *
-         * @param async If true then the call is made asynchronously.
+         * @param beacon If true then the call is made asynchronously using beacons.
          */
-        private writeInteraction(async: boolean) {
+        private writeInteraction(beacon: boolean) {
             // Check for the required mediaElementGuid value.
             if (this.options.writeInteraction === false || this.options.mediaElementGuid === undefined || this.options.mediaElementGuid.length === 0) {
                 return;
@@ -930,7 +937,7 @@ namespace Rock.UI {
                 PageId: (Rock as any).settings.get("pageId")
             }
 
-            if (typeof navigator.sendBeacon !== "undefined" && !async) {
+            if (typeof navigator.sendBeacon !== "undefined" && beacon && this.options.interactionGuid) {
                 var beaconData = new Blob([JSON.stringify(data)], { type: 'application/json; charset=UTF-8' });
 
                 navigator.sendBeacon("/api/MediaElements/WatchInteraction", beaconData);
@@ -940,7 +947,7 @@ namespace Rock.UI {
             // Initialize the API request.
             const xmlRequest = new XMLHttpRequest();
             const self = this;
-            xmlRequest.open("POST", "/api/MediaElements/WatchInteraction", async);
+            xmlRequest.open("POST", "/api/MediaElements/WatchInteraction");
             xmlRequest.setRequestHeader("Content-Type", "application/json");
 
             // Add a handler for when the state changes.

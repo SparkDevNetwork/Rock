@@ -338,7 +338,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         "discountMaxRegistrants": 0,
         "discountPercentage": 0.0,
         "previouslyPaid": 0.0,
-        "savedAccountGuid": null
+        "savedAccountGuid": null,
+        "isCaptchaValid": false
     },
     "isUnauthorized": false,
     "instructionsHtml": "",
@@ -693,5 +694,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
             "disabled": null
         }
     ],
-    "hideProgressBar": false
+    "hideProgressBar": false,
+    "showSmsOptIn": false,
+    "disableCaptchaSupport": true
 };

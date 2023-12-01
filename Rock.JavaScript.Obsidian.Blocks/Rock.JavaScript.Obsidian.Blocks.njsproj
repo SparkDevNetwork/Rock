@@ -50,6 +50,11 @@
     <Content Include="src\Cms\LibraryViewer\itemListSort.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemPreview.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
+    <Content Include="src\Core\attributeMatrixTemplateDetail.obs" />
+    <Content Include="src\Core\AttributeMatrixTemplateDetail\editPanel.partial.obs" />
+    <Content Include="src\Core\AttributeMatrixTemplateDetail\viewPanel.partial.obs" />
+    <Content Include="src\Cms\mediaAccountList.obs" />
+    <Content Include="src\Cms\mediaFolderList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
@@ -308,7 +313,9 @@
     <Folder Include="src\Cms\LayoutDetail\" />
     <Folder Include="src\Cms\LibraryViewer\" />
     <Folder Include="src\Cms\MediaAccountDetail\" />
+    <Folder Include="src\Cms\MediaAccountList\" />
     <Folder Include="src\Cms\MediaFolderDetail\" />
+    <Folder Include="src\Cms\MediaFolderList\" />
     <Folder Include="src\Cms\PageShortLinkDetail\" />
     <Folder Include="src\Cms\PageRouteDetail\" />
     <Folder Include="src\Cms\PersistedDatasetDetail\" />
@@ -320,6 +327,7 @@
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
+    <Folder Include="src\Core\AttributeMatrixTemplateDetail\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
     <Folder Include="src\Core\BinaryFileTypeDetail\" />
     <Folder Include="src\Core\BinaryFileTypeList\" />
@@ -445,10 +453,12 @@
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\types.partail.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\MediaAccountList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\mediaFolderDetail.ts" />
     <TypeScriptCompile Include="src\Cms\MediaFolderDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\MediaFolderDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\MediaFolderDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\MediaFolderList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\pageShortLinkDetail.ts" />
     <TypeScriptCompile Include="src\Cms\PageShortLinkDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PageShortLinkDetail\types.partial.ts" />
@@ -476,6 +486,7 @@
     <TypeScriptCompile Include="src\Communication\SnippetDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\AttributeMatrixTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileTypeDetail\types.partial.ts" />

@@ -551,9 +551,9 @@ namespace Rock.Blocks.Prayer
 
                 return ActionOk( new PrayerRequestDetailAddPersonResponseBag
                 {
-                    nickName = person.NickName,
-                    lastName = person.LastName,
-                    email = person.Email
+                    NickName = person.NickName,
+                    LastName = person.LastName,
+                    Email = person.Email
                 } )
                 ;
             }

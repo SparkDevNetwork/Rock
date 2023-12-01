@@ -65,11 +65,14 @@
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
+    <Compile Include="Cms\MediaAccountList.cs" />
+    <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
     <Compile Include="Cms\BlockList.cs" />
     <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\SiteList.cs" />
+    <Compile Include="Core\AttributeMatrixTemplateDetail.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
     <Compile Include="Core\BinaryFileTypeDetail.cs" />
     <Compile Include="Core\BinaryFileTypeList.cs" />
@@ -87,6 +90,7 @@
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />
     <Compile Include="Core\SignalTypeList.cs" />
+    <Compile Include="Crm\AssessmentTypeList.cs" />
     <Compile Include="Crm\NamelessPersonList.cs" />
     <Compile Include="Crm\SignalTypeDetail.cs" />
     <Compile Include="Core\SuggestionDetail.cs" />
@@ -94,6 +98,7 @@
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
     <Compile Include="Engagement\AchievementTypeDetail.cs" />
     <Compile Include="Engagement\ConnectionOpportunityList.cs" />
+    <Compile Include="Engagement\StepProgramList.cs" />
     <Compile Include="Finance\BenevolenceTypeDetail.cs" />
     <Compile Include="Finance\BusinessList.cs" />
     <Compile Include="Finance\FinancialAccountDetail.cs" />

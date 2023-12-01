@@ -122,6 +122,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
+            target.IsDirty = source.IsDirty;
             target.Name = source.Name;
             target.SegmentKey = source.SegmentKey;
             target.CreatedDateTime = source.CreatedDateTime;

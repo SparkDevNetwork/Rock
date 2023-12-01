@@ -21,6 +21,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Reporting.MetricValueDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class MetricValuePartitionBag
     {
         /// <summary>

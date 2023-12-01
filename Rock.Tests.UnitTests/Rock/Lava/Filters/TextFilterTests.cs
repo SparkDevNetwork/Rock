@@ -192,6 +192,27 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( "Leader", "{{ 'Leader' | PluralizeForQuantity:1 }}" );
         }
 
+        /// <summary>
+        /// PluralizeForQuantity should return correct plural form for negative and positive decimals.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "-2", "degrees" )]
+        [DataRow( "-1.5", "degrees" )]
+        [DataRow( "-1", "degree" )]
+        [DataRow( "-0.5", "degrees" )]
+        [DataRow( "0", "degrees" )]
+        [DataRow( "0.5", "degrees" )]
+        [DataRow( "1", "degree" )]
+        [DataRow( "1.5", "degrees" )]
+        [DataRow( "2", "degrees" )]
+        public void PluralizeForQuantity_QuantityOfPositiveOrNegative_ProducesCorrectPluralizedTerm( string input, string expected )
+        {
+            var template = "{% assign x = <input> %}{{ 'degree' | PluralizeForQuantity:x }}"
+               .Replace( "<input>", input );
+
+            TestHelper.AssertTemplateOutput( expected, template );
+        }
+
         #endregion
 
         /// <summary>

@@ -11,7 +11,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  :entityTypeName="panelName"
-                 :isAuditHidden="false"
+                 :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
@@ -80,6 +80,10 @@
     // #endregion
 
     // #region Computed Values
+
+    const isAuditHidden = computed((): boolean => {
+        return panelMode.value != DetailPanelMode.View;
+    });
 
     /**
      * The entity name to display in the block panel.

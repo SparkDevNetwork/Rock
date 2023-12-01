@@ -183,7 +183,7 @@ namespace Rock.Blocks.Tv
                 IsSystem = entity.IsSystem,
                 Name = entity.Name,
                 Description = entity.Description,
-                EnablePageViews = entity.EnablePageViews,
+                EnablePageViews = entity.Id != 0 && entity.EnablePageViews,
                 LoginPage = new ViewModels.Rest.Controls.PageRouteValueBag()
                 {
                     Page = entity.LoginPage.ToListItemBag(),

@@ -163,7 +163,7 @@ namespace Rock.Blocks.Core
             };
 
             return new GridBuilder<BinaryFileTypeData>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.BinaryFileType.IdKey )
                 .AddTextField( "name", a => a.BinaryFileType.Name )
                 .AddTextField( "description", a => a.BinaryFileType.Description )

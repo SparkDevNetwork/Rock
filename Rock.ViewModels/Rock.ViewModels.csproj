@@ -56,6 +56,8 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />
@@ -65,6 +67,8 @@
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveResponseBag.cs" />
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerDownloadItemBag.cs" />
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerValidationResultsBag.cs" />
+    <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateBag.cs" />
+    <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeBag.cs" />
@@ -84,6 +88,7 @@
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignalTypeList\SignalTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
+    <Compile Include="Blocks\Crm\AssessmentTypeList\AssessmentTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\NamelessPersonList\NamelessPersonListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeDetailOptionsBag.cs" />
@@ -94,6 +99,8 @@
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\ConnectionOpportunityList\ConnectionOpportunityListOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceWorkflowBag.cs" />

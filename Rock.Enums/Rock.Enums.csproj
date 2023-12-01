@@ -126,6 +126,7 @@
     <Compile Include="Crm\AuthenticationServiceType.cs" />
     <Compile Include="Crm\EmailPreference.cs" />
     <Compile Include="Crm\Gender.cs" />
+    <Compile Include="Core\KeyboardInputMode.cs" />
     <Compile Include="Crm\PersonalizationType.cs" />
     <Compile Include="Engagement\StreakOccurrenceFrequency.cs" />
     <Compile Include="Engagement\StreakStructureType.cs" />
@@ -179,6 +180,5 @@
     <Compile Include="Workflow\WorkflowTriggerType.cs" />
     <Compile Include="Workflow\WorkflowTriggerValueChangeType.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

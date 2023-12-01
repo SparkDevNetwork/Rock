@@ -21,12 +21,16 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type MetricValuePartitionBag = {
     /** Gets or sets the configuration details of the entity type as an attribute so a matching field type control is rendered. */
     attribute?: PublicAttributeBag | null;
 
+    /** Gets or sets the metric partition unique identifier. */
+    metricPartitionGuid?: Guid | null;
+
     /** Gets or sets the saved entity value. */
-    value?: string;
+    value?: string | null;
 };

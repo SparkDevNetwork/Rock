@@ -26,6 +26,9 @@ namespace Rock.ViewModels.Blocks.Reporting.MetricValueDetail
     /// </summary>
     public class MetricValueDetailOptionsBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public List<ListItemBag> MetricValueTypes { get; set; }
     }
 }

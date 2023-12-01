@@ -531,6 +531,7 @@ namespace Rock.Blocks.Finance
                 }
 
                 var isNew = entity.Id == 0;
+                var isStatusChanged = box.Entity.Status != entity.Status;
 
                 var changes = new History.HistoryChangeList();
                 if ( isNew )
@@ -580,6 +581,22 @@ namespace Rock.Blocks.Finance
                 if ( isNew )
                 {
                     return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                    {
+                        [PageParameterKey.BatchId] = entity.IdKey
+                    } ) );
+                }
+
+                /**
+                 * 11/18/2023 - KA
+                 * If the status has been updated return current page url to trigger
+                 * a page refresh on the client. The Batch Detail block is typically
+                 * used with the Transaction List block and an update may be required
+                 * to reflect the change in the batch's status. This will required some
+                 * refactoring once Obsidian blocks can signal each other.
+                 */
+                if ( isStatusChanged )
+                {
+                    return ActionOk( this.GetCurrentPageUrl( new Dictionary<string, string>
                     {
                         [PageParameterKey.BatchId] = entity.IdKey
                     } ) );
