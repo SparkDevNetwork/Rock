@@ -317,7 +317,7 @@ FROM (
                                 if ( !string.IsNullOrWhiteSpace( metric.SourceSql ) )
                                 {
                                     string formattedSql = metric.SourceSql.ResolveMergeFields( metric.GetMergeObjects( scheduleDateTime ) );
-                                    var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
+                                    var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null, commandTimeout );
 
                                     if ( tableResult.Columns.Count >= 2 && tableResult.Columns[1].ColumnName == "MetricValueDateTime" )
                                     {
