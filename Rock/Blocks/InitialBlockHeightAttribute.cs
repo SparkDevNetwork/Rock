@@ -35,7 +35,7 @@ namespace Rock.Blocks
         /// Initializes a new instance of the <see cref="InitialBlockHeightAttribute"/> class.
         /// </summary>
         /// <param name="height">The initial height of the block in pixels.</param>
-        public InitialBlockHeightAttribute( int? height )
+        public InitialBlockHeightAttribute( int height )
         {
             Height = height;
         }
