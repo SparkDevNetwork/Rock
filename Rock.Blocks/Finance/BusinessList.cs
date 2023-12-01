@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -43,7 +44,7 @@ namespace Rock.Blocks.Finance
 
     [Rock.SystemGuid.BlockTypeGuid( "1e60c390-98c4-404d-aee8-f9e3e9c69705" )]
     [CustomizedGrid]
-    [Rock.SystemGuid.EntityTypeGuid( "1214E9D9-3D0C-49AD-BD99-58C427A8A7D2")]
+    [Rock.SystemGuid.EntityTypeGuid( "1214E9D9-3D0C-49AD-BD99-58C427A8A7D2" )]
     public class BusinessList : RockListBlockType<BusinessListBag>
     {
         #region Keys
@@ -58,7 +59,24 @@ namespace Rock.Blocks.Finance
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PreferenceKey
+        {
+            public const string FilterBusinessName = "filter-business-name";
+
+            public const string FilterActive = "filter-active";
+        }
+
         #endregion Keys
+
+        #region Properties
+
+        protected string FilterBusinessName => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterBusinessName );
+
+        protected string FilterActive => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterActive );
+
+        #endregion
 
         #region Methods
 
@@ -85,7 +103,7 @@ namespace Rock.Blocks.Finance
 
         private bool GetIsAddEnabled()
         {
-            return BlockCache.IsAuthorized(Authorization.EDIT, RequestContext.CurrentPerson);
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         private Dictionary<string, string> GetBoxNavigationUrls()
@@ -110,6 +128,36 @@ namespace Rock.Blocks.Finance
                 .Queryable( "PhoneNumbers, GivingGroup.GroupLocations.Location, PrimaryCampus" )
                 .Where( p => p.RecordTypeValueId == recordTypeValueId );
 
+            // Filter by Business Name
+            if ( !string.IsNullOrWhiteSpace( FilterBusinessName ) )
+            {
+                businessQueryable = businessQueryable.Where( p => p.LastName.Contains( FilterBusinessName ) );
+            }
+
+            // Filter by Active Status
+            if ( !string.IsNullOrWhiteSpace( FilterActive ) )
+            {
+                int statusValueId = 0;
+
+                if ( FilterActive.Equals( "Active", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    statusValueId = 3;
+                }
+                else if ( FilterActive.Equals( "Inactive", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    statusValueId = 4;
+                }
+                else if ( FilterActive.Equals( "Pending", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    statusValueId = 5;
+                }
+
+                if ( statusValueId != 0 )
+                {
+                    businessQueryable = businessQueryable.Where( p => p.RecordStatusValueId == statusValueId );
+                }
+            }
+
             // Retrieve SearchTerm from the current HTTP context
             var searchTerm = PageParameter( "SearchTerm" );
             if ( !string.IsNullOrWhiteSpace( searchTerm ) )
@@ -121,21 +169,21 @@ namespace Rock.Blocks.Finance
             return businessQueryable.Select( p => new BusinessListBag
             {
                 Id = p.Id,
-                   BusinessName = p.LastName,
-                   Email = p.Email,
-                   Phone = p.PhoneNumbers.FirstOrDefault() != null ? p.PhoneNumbers.FirstOrDefault().NumberFormatted : string.Empty,
-                   Street = p.GivingGroup.GroupLocations.Any( gl => gl.GroupLocationTypeValueId == workLocationTypeId ) ? p.GivingGroup.GroupLocations.FirstOrDefault( gl => gl.GroupLocationTypeValueId == workLocationTypeId ).Location.Street1 : string.Empty,
-                   City = p.GivingGroup.GroupLocations.Any( gl => gl.GroupLocationTypeValueId == workLocationTypeId ) ? p.GivingGroup.GroupLocations.FirstOrDefault( gl => gl.GroupLocationTypeValueId == workLocationTypeId ).Location.City : string.Empty,
-                   State = p.GivingGroup.GroupLocations.Any( gl => gl.GroupLocationTypeValueId == workLocationTypeId ) ? p.GivingGroup.GroupLocations.FirstOrDefault( gl => gl.GroupLocationTypeValueId == workLocationTypeId ).Location.State : string.Empty,
-                   Zip = p.GivingGroup.GroupLocations.Any( gl => gl.GroupLocationTypeValueId == workLocationTypeId ) ? p.GivingGroup.GroupLocations.FirstOrDefault( gl => gl.GroupLocationTypeValueId == workLocationTypeId ).Location.PostalCode : string.Empty,
-                   Campus = new ListItemBag { Value = p.PrimaryCampus.Id.ToString(), Text = p.PrimaryCampus.Name },
-                   Contacts = p.Members
+                BusinessName = p.LastName,
+                Email = p.Email,
+                Phone = p.PhoneNumbers.FirstOrDefault() != null ? p.PhoneNumbers.FirstOrDefault().NumberFormatted : string.Empty,
+                Street = p.GivingGroup.GroupLocations.Any( gl => gl.GroupLocationTypeValueId == workLocationTypeId ) ? p.GivingGroup.GroupLocations.FirstOrDefault( gl => gl.GroupLocationTypeValueId == workLocationTypeId ).Location.Street1 : string.Empty,
+                City = p.GivingGroup.GroupLocations.Any( gl => gl.GroupLocationTypeValueId == workLocationTypeId ) ? p.GivingGroup.GroupLocations.FirstOrDefault( gl => gl.GroupLocationTypeValueId == workLocationTypeId ).Location.City : string.Empty,
+                State = p.GivingGroup.GroupLocations.Any( gl => gl.GroupLocationTypeValueId == workLocationTypeId ) ? p.GivingGroup.GroupLocations.FirstOrDefault( gl => gl.GroupLocationTypeValueId == workLocationTypeId ).Location.State : string.Empty,
+                Zip = p.GivingGroup.GroupLocations.Any( gl => gl.GroupLocationTypeValueId == workLocationTypeId ) ? p.GivingGroup.GroupLocations.FirstOrDefault( gl => gl.GroupLocationTypeValueId == workLocationTypeId ).Location.PostalCode : string.Empty,
+                Campus = new ListItemBag { Value = p.PrimaryCampus.Id.ToString(), Text = p.PrimaryCampus.Name },
+                Contacts = p.Members
                        .Where( m => m.Group.GroupTypeId == groupTypeIdKnownRelationships )
                        .SelectMany( m => m.Group.Members )
                        .Where( member => member.GroupRoleId == groupTypeRoleIdKnownRelationshipsOwner && member.PersonId != p.Id )
                        .Select( member => member.Person.LastName + ", " + member.Person.NickName )
                        .FirstOrDefault()
-               } );
+            } );
         }
 
         protected override GridBuilder<BusinessListBag> GetGridBuilder()
@@ -143,6 +191,7 @@ namespace Rock.Blocks.Finance
             return new GridBuilder<BusinessListBag>()
                 .WithBlock( this )
                 .AddField( "id", b => b.Id )
+                .AddTextField("idKey", b => b.IdKey)
                 .AddTextField( "businessName", b => b.BusinessName )
                 .AddTextField( "email", b => b.Email )
                 .AddTextField( "phoneNumber", b => b.Phone )

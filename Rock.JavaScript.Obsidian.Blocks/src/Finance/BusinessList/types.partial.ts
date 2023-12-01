@@ -18,3 +18,15 @@
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
+
+export const enum PreferenceKey {
+    FilterBusinessName = "filter-business-name",
+
+    FilterActive = "filter-active",
+}
+
+export type GridSettingsOptions = {
+    businessName?: string | null;
+
+    active?: string | null;
+};
