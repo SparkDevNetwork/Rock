@@ -22,14 +22,14 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
                      <strong><i class="fa fa-exclamation-triangle"></i> .NET Framework Update Required</strong>
-                     <p>As of Rock McKinley v13, Rock requires Microsoft .NET Framework 4.7.2 or greater on the hosting server.
+                     <p>As of Rock v13, Rock requires Microsoft .NET Framework 4.7.2 or greater on the hosting server.
                         This framework version was released by Microsoft on April 30th, 2018.</p>
                 </Rock:NotificationBox>
                 <Rock:NotificationBox ID="nbSqlServerVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
                     <strong><i class="fa fa-exclamation-triangle"></i> Microsoft SQL Server Update Required</strong>
                     <p>
-                        As of Rock McKinley v16, Rock requires Microsoft SQL Azure or SQL Server 2016 or greater.
-                        You will need to upgrade your database in order to proceed with that update.
+                        As of Rock v16, Rock requires Microsoft Azure SQL or SQL Server 2016 (or higher), and it must have compatibility level 130 (SQL Server 2016) or higher.
+                        You will need to upgrade your database in order to proceed with additional updates.
                     </p>
                 </Rock:NotificationBox>
                 <Rock:NotificationBox ID="nbLavaEngineIssue" runat="server" NotificationBoxType="Warning" Visible="false">
