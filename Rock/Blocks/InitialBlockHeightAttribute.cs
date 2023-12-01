@@ -19,8 +19,17 @@ using System;
 namespace Rock.Blocks
 {
     /// <summary>
+    /// <para>
     /// Defines the initial height of a web block while it waits for
     /// JavaScript to initialize.
+    /// </para>
+    /// <para>
+    /// A value of <c>0</c> means the initial height will be 0 pixels.
+    /// </para>
+    /// <para>
+    /// A value less than <c>0</c> means that no initial height will be used,
+    /// the block will be it's native rendered height.
+    /// </para>
     /// </summary>
     [AttributeUsage( AttributeTargets.Class )]
     public class InitialBlockHeightAttribute : System.Attribute
@@ -37,7 +46,7 @@ namespace Rock.Blocks
         /// <param name="height">The initial height of the block in pixels.</param>
         public InitialBlockHeightAttribute( int height )
         {
-            Height = height;
+            Height = height >= 0 ? height : ( int? ) null;
         }
     }
 }
