@@ -9,10 +9,11 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
+    import { onBeforeMount, PropType, ref } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { MediaPlayerInterfaceType } from "@Obsidian/Enums/Controls/mediaPlayerInterfaceType";
-    // import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MediaPlayerControls } from "@Obsidian/Enums/Controls/mediaPlayerControls";
+    import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
@@ -32,6 +33,10 @@
         },
 
         //TODO
+        /**
+         * The number of days back to look for an existing watch map to auto-resume from. Pass -1
+         * to mean forever or 0 to disable.
+         */
         autoResumeInDays: {
             type: Number,
             default: 7
@@ -59,15 +64,108 @@
             default: ""
         },
 
-        //TODO
+        //TODO - GUID?
         mediaElementId: {
             type: Number
+        },
+
+        //TODO
+        mediaUrl: {
+            type: String
         },
 
         // TODO
         mediaType: {
             type: Number as PropType<MediaPlayerInterfaceType>,
             default: MediaPlayerInterfaceType.Audio
+        },
+
+        //TODO
+        muted: {
+            type: Boolean
+        },
+
+        //TODO
+        /** Comma-delimited string list of MediaPlayerControl values */
+        playerControls: {
+            type: String,
+            default: () => [
+                MediaPlayerControls.PlayLarge,
+                MediaPlayerControls.Play,
+                MediaPlayerControls.Progress,
+                MediaPlayerControls.CurrentTime,
+                MediaPlayerControls.Mute,
+                MediaPlayerControls.Volume,
+                MediaPlayerControls.Captions,
+                MediaPlayerControls.Settings,
+                MediaPlayerControls.PictureInPicture,
+                MediaPlayerControls.Airplay,
+                MediaPlayerControls.Fullscreen
+            ].join(",")
+        },
+
+        //TODO
+        /** CSS color value used to color some elements */
+        primaryColor: {
+            type: String,
+            default: "var(--color-primary)"
+        },
+
+        //TODO
+        /** GUID? */
+        relatedEntityId: {
+            type: Number
+        },
+
+        //TODO
+        /** GUID? */
+        relatedEntityTypeId: {
+            type: Number
+        },
+
+        //TODO
+        /** Percentage represented as a decimal number between 0 and 1 (0% to 100%). */
+        requiredWatchPercentage: {
+            type: Number,
+            default: .9
+        },
+
+        //TODO
+        /** The number of seconds to seek forward/backward when the fast-forward or rewind buttons are pressed */
+        seekTime: {
+            type: Number,
+            default: 10
+        },
+
+        //TODO
+        thumbnailUrl: {
+            type: String
+        },
+
+        //TODO
+        /**
+         * Determines if an anonymous playback session should be tracked and stored as an
+         * Interaction in the system. If true, the tracking will NOT take place.
+         * Leave false in order to provide play metrics.
+         */
+        disableAnonymousSessionTracking: {
+            type: Boolean
+        },
+
+        //TODO
+        /**
+         * Determines if the user's playback session should be tracked and stored as an
+         * Interaction in the system. If true, the tracking will NOT take place.
+         * Leave false in order to provide play metrics as well as use the resume later feature.
+         */
+        disableSessionTracking: {
+            type: Boolean
+        },
+
+        //TODO
+        volume: {
+            type: Number,
+            default: 1
         },
 
         ...standardRockFormFieldProps
@@ -78,9 +176,16 @@
     }>();
 
     const watchedPercentage = useVModelPassthrough(props, "watchedPercentage", emit);
-
     const fieldProps = useStandardRockFormFieldProps(props);
+    const areScriptsLoaded = ref(false);
 
+    onBeforeMount(async (): Promise<void> => {
+        const loadingPlyr = loadJavaScriptAsync(`/Scripts/Rock/plyr.js`, () => "Plyr" in window, {}, true);
+        const loadingMediaPlayer = loadJavaScriptAsync(`/Scripts/Rock/UI/mediaplayer/mediaplayer.js`, () => typeof (window.Rock?.UI?.MediaPlayer) == "function", {}, true);
 
+        await Promise.all([loadingPlyr, loadingMediaPlayer]);
+
+        areScriptsLoaded.value = true;
+    });
 
 </script>

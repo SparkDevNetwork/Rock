@@ -7,6 +7,14 @@ interface Window {
             },
             yearPicker: {
                 initialize: (args: Record<string, unknown>) => void
+            },
+            mediaplayer: {
+                initialize: (args: Record<string, unknown>) => void
+            }
+        },
+        UI: {
+            MediaPlayer: {
+                AllPlayers: unknown[]
             }
         }
     }
