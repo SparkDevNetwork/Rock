@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        <Rock:ModalDialog ID="mdMovePerson" runat="server" Title="Edit Attendance" SaveButtonText="Move" OnSaveClick="mdMovePerson_SaveClick">
+        <Rock:ModalDialog ID="mdMovePerson" runat="server" Title="Edit Attendance" SaveButtonText="Save" OnSaveClick="mdMovePerson_SaveClick">
             <Content>
                 <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <asp:Panel ID="pnlCheckInCheckOutEdit" runat="server" class="row" Visible="false">
