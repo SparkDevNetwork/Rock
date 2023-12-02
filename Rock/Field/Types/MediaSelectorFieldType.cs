@@ -15,11 +15,18 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Media;
+using Rock.Model;
+using Rock.SystemGuid;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -29,7 +36,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MEDIA_SELECTOR )]
-    public class MediaSelectorFieldType : FieldType
+    public class MediaSelectorFieldType : FieldType, ILinkableFieldType
     {
         #region Configuration
 
@@ -75,6 +82,111 @@ namespace Rock.Field.Types
             }
 
             return privateConfigurationValues;
+        }
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetPublicEditValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var url = string.Empty;
+            var keyValuePair = privateValue.Split( new char[] { '^' } );
+            if ( keyValuePair.Length == 2 )
+            {
+                url = keyValuePair[1];
+            }
+
+            return url;
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Don't truncate the value.
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Don't truncate the value.
+            return GetHtmlValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <summary>
+        /// Formats the value extended.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public string UrlLink( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var url = string.Empty;
+            if ( configurationValues.ContainsKey( MEDIA_ITEMS ) )
+            {
+                string[] keyValuePair = value.Split( new char[] { '^' } );
+                if ( keyValuePair.Length == 2 )
+                {
+                    url = keyValuePair[1];
+                }
+            }
+
+            return url;
+        }
+
+
+        #endregion
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetPublicEditValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( publicValue.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var customValues = privateConfigurationValues[MEDIA_ITEMS].AsDictionary();
+
+            // If there are any custom values, then ensure that all values we
+            // got from the public device are valid. If not, ignore them.
+            if ( customValues.Any() && customValues.ContainsKey( publicValue ) )
+            {
+                return $"{publicValue}^{customValues[publicValue]}";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var keyValuePair = privateValue.Split( new char[] { '^' } );
+            var publicValue = string.Empty;
+            if ( keyValuePair.Length == 2 )
+            {
+                publicValue = keyValuePair[0];
+            }
+
+            return publicValue;
         }
 
         #endregion
@@ -196,7 +308,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var control = new Web.UI.Controls.MediaSelector { ID = id };
-            
+
             if ( configurationValues != null )
             {
                 if ( configurationValues.ContainsKey( MODE_TYPE ) )
@@ -228,7 +340,8 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is MediaSelector )
             {
-                return ( ( MediaSelector ) control ).Value;
+                var name = ( ( MediaSelector ) control ).Value;
+                return GetPrivateEditValue( name, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
             }
 
             return null;
@@ -244,11 +357,25 @@ namespace Rock.Field.Types
         {
             if ( value != null )
             {
-                if ( control != null && control is MediaSelector )
+                string[] nameAndValue = value.Split( new char[] { '^' } );
+                if ( nameAndValue.Length == 2 )
                 {
-                    ( ( MediaSelector ) control ).Value = value;
+                    ( ( MediaSelector ) control ).Value = nameAndValue[0];
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )?.EncodeHtml();
         }
 
 #endif
