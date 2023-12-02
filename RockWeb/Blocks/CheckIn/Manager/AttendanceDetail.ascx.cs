@@ -457,8 +457,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 // Add the record to history if updated
                 var personAttendanceHistoryChangeList = new History.HistoryChangeList();
-                History.EvaluateChange( personAttendanceHistoryChangeList, "Check-in", attendance.StartDateTime, newAttendanceStartDateTime, includeTime: true );
-                History.EvaluateChange( personAttendanceHistoryChangeList, "Check-out", attendance.EndDateTime, dtpEnd.SelectedDateTime, includeTime: true );
+                History.EvaluateChange( personAttendanceHistoryChangeList, "Check-in", attendance.StartDateTime.ToShortTimeString(), newAttendanceStartDateTime.ToShortTimeString() );
+                History.EvaluateChange( personAttendanceHistoryChangeList, "Check-out", attendance.EndDateTime?.ToShortTimeString(), dtpEnd.SelectedDateTime?.ToShortTimeString());
                 HistoryService.SaveChanges( rockContext,
                     typeof( Rock.Model.Person ), // Specifying the full path the person model to avoid ambiguity.
                     Rock.SystemGuid.Category.HISTORY_ATTENDANCE_CHANGES.AsGuid(),
