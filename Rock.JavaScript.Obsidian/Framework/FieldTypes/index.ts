@@ -353,6 +353,9 @@ registerFieldType(FieldTypeGuids.StreakType, new StreakTypeFieldType());
 import { StructureContentEditorFieldType } from "./structureContentEditorField.partial";
 registerFieldType(FieldTypeGuids.StructureContentEditor, new StructureContentEditorFieldType());
 
+import { SystemCommunicationFieldType } from "./systemCommunicationField.partial";
+registerFieldType(FieldTypeGuids.SystemCommunication, new SystemCommunicationFieldType());
+
 import { TextFieldType } from "./textField.partial";
 registerFieldType(FieldTypeGuids.Text, new TextFieldType());
 
