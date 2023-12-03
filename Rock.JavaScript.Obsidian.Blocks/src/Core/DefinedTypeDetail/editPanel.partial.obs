@@ -1,0 +1,118 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <TextBox v-model="helpText"
+                 label="Help text"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <CategoryPicker v-model="category" label="Category" :entityTypeGuid="EntityType.DefinedType" />
+            </div>
+            <div class="col-md-6">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox v-model="categorizedValuesEnabled"
+                          label="Enable Categorized Values"
+                          help="Enables adding categories to the defined values of this type. This allows for categorical selection of the defined values." />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { DefinedTypeBag } from "@Obsidian/ViewModels/Blocks/Core/DefinedTypeDetail/definedTypeBag";
+    import { DefinedTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DefinedTypeDetail/definedTypeDetailOptionsBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<DefinedTypeBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<DefinedTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: DefinedTypeBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const helpText = propertyRef(props.modelValue.helpText ?? "", "HelpText");
+    const category = propertyRef(props.modelValue.category ?? {}, "CategoryId");
+    const categorizedValuesEnabled = propertyRef(props.modelValue.categorizedValuesEnabled ?? false, "CategorizedValuesEnabled");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, description, helpText, category, categorizedValuesEnabled];
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(helpText, props.modelValue.helpText ?? "");
+        updateRefValue(category, props.modelValue.category ?? {});
+        updateRefValue(categorizedValuesEnabled, props.modelValue.categorizedValuesEnabled ?? false);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: DefinedTypeBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            name: name.value,
+            description: description.value,
+            helpText: helpText.value,
+            category: category.value,
+            categorizedValuesEnabled: categorizedValuesEnabled.value,
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -79,6 +79,7 @@
     <Compile Include="Core\CampusList.cs" />
     <Compile Include="Communication\EmailPreferenceEntry.cs" />
     <Compile Include="Core\DefinedTypeList.cs" />
+    <Compile Include="Core\DefinedTypeDetail.cs" />
     <Compile Include="Core\DeviceDetail.cs" />
     <Compile Include="Core\DeviceList.cs" />
     <Compile Include="Core\FollowingSuggestionTypeList.cs" />

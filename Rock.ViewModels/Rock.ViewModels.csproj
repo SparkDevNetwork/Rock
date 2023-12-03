@@ -75,6 +75,8 @@
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeList\BinaryFileTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\DefinedTypeList\DefinedTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\DefinedTypeDetail\DefinedTypeBag.cs" />
+    <Compile Include="Blocks\Core\DefinedTypeDetail\DefinedTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceList\DeviceListOptionsBag.cs" />

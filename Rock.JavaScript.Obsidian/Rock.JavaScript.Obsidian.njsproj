@@ -331,6 +331,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\DefinedTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\DefinedTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\DeviceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\FollowingSuggestionTypeList\" />
@@ -820,6 +821,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusList\campusListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DefinedTypeDetail\definedTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DefinedTypeDetail\definedTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DefinedTypeList\definedTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceDetailOptionsBag.d.ts" />
