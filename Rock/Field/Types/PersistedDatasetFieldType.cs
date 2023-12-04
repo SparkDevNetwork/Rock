@@ -85,7 +85,7 @@ namespace Rock.Field.Types
         {
             var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            if ( !configurationValues.ContainsKey( VALUES ) )
+            if ( usage != ConfigurationValueUsage.View && !configurationValues.ContainsKey( VALUES ) )
             {
                 configurationValues[VALUES] = PersistedDatasetCache.All()
                     .OrderBy( a => a.Name )

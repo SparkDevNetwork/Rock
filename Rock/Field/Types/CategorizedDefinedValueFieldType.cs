@@ -219,66 +219,70 @@ namespace Rock.Field.Types
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
             var definedTypes = new List<DefinedTypeCache>();
 
-            if ( publicConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
+            if ( usage != ConfigurationValueUsage.View )
             {
-                var selectedValueIds = publicConfigurationValues[SELECTABLE_VALUES_KEY].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList();
-                publicConfigurationValues[SELECTABLE_VALUES_KEY] = selectedValueIds.ConvertAll( i => DefinedValueCache.Get( i )?.Guid ).ToCamelCaseJson( false, true );
-            }
-
-            if ( publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
-            {
-                var definedTypeValue = publicConfigurationValues[DEFINED_TYPE_KEY];
-                if ( int.TryParse( definedTypeValue, out int definedTypeId ) )
+                if ( publicConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
                 {
-                    var definedType = DefinedTypeCache.Get( definedTypeId );
-                    if ( definedType != null )
-                    {
-                        publicConfigurationValues[DEFINED_TYPE_KEY] = new ListItemBag()
-                        {
-                            Text = definedType.Name,
-                            Value = definedType.Guid.ToString()
-                        }.ToCamelCaseJson( false, true );
+                    var selectedValueIds = publicConfigurationValues[SELECTABLE_VALUES_KEY].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList();
+                    publicConfigurationValues[SELECTABLE_VALUES_KEY] = selectedValueIds.ConvertAll( i => DefinedValueCache.Get( i )?.Guid ).ToCamelCaseJson( false, true );
+                }
 
-                        // If in Edit mode add CategorizedDefinedTypes if any so we get its DefinedValues.
-                        if ( usage == ConfigurationValueUsage.Edit && definedType != null )
+                if ( publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
+                {
+                    var definedTypeValue = publicConfigurationValues[DEFINED_TYPE_KEY];
+                    if ( int.TryParse( definedTypeValue, out int definedTypeId ) )
+                    {
+                        var definedType = DefinedTypeCache.Get( definedTypeId );
+                        if ( definedType != null )
                         {
-                            definedTypes.Add( definedType );
+                            publicConfigurationValues[DEFINED_TYPE_KEY] = new ListItemBag()
+                            {
+                                Text = definedType.Name,
+                                Value = definedType.Guid.ToString()
+                            }.ToCamelCaseJson( false, true );
+
+                            // If in Edit mode add CategorizedDefinedTypes if any so we get its DefinedValues.
+                            if ( usage == ConfigurationValueUsage.Edit && definedType != null )
+                            {
+                                definedTypes.Add( definedType );
+                            }
                         }
                     }
                 }
-            }
 
-            // If in Configure mode get all CategorizedDefinedTypes so we can get their DefinedValues
-            if ( usage == ConfigurationValueUsage.Configure )
-            {
-                definedTypes = DefinedTypeCache.All()
-                    .Where( x => x.CategorizedValuesEnabled ?? false )
-                    .OrderBy( d => d.Order )
-                    .ToList();
-
-                publicConfigurationValues[DEFINED_TYPES_KEY] = definedTypes.ConvertAll( dt => new ListItemBag()
+                // If in Configure mode get all CategorizedDefinedTypes so we can get their DefinedValues
+                if ( usage == ConfigurationValueUsage.Configure )
                 {
-                    Text = dt.Name,
-                    Value = dt.Guid.ToString()
-                } ).ToCamelCaseJson( false, true );
-            }
+                    definedTypes = DefinedTypeCache.All()
+                        .Where( x => x.CategorizedValuesEnabled ?? false )
+                        .OrderBy( d => d.Order )
+                        .ToList();
 
-            var definedValues = new Dictionary<string, string>();
-            foreach ( var definedType in definedTypes )
-            {
-                var definedValueValues = definedType.DefinedValues
-                    .ConvertAll( g => new ListItemBag()
+                    publicConfigurationValues[DEFINED_TYPES_KEY] = definedTypes.ConvertAll( dt => new ListItemBag()
                     {
-                        Text = g.Value,
-                        Value = g.Guid.ToString(),
-                        Category = CategoryCache.Get( g.CategoryId ?? 0 )?.Name ?? "All Categories"
-                    } );
-                definedValues.Add( definedType.Guid.ToString(), definedValueValues.ToCamelCaseJson( false, true ) );
+                        Text = dt.Name,
+                        Value = dt.Guid.ToString()
+                    } ).ToCamelCaseJson( false, true );
+                }
+
+                var definedValues = new Dictionary<string, string>();
+                foreach ( var definedType in definedTypes )
+                {
+                    var definedValueValues = definedType.DefinedValues
+                        .ConvertAll( g => new ListItemBag()
+                        {
+                            Text = g.Value,
+                            Value = g.Guid.ToString(),
+                            Category = CategoryCache.Get( g.CategoryId ?? 0 )?.Name ?? "All Categories"
+                        } );
+                    definedValues.Add( definedType.Guid.ToString(), definedValueValues.ToCamelCaseJson( false, true ) );
+                }
+
+                publicConfigurationValues.Add( DEFINED_TYPE_VALUES_KEY, definedValues.ToCamelCaseJson( false, true ) );
+
+                publicConfigurationValues[CONFIGURATION_MODE_KEY] = usage.ToString();
+
             }
-
-            publicConfigurationValues.Add( DEFINED_TYPE_VALUES_KEY, definedValues.ToCamelCaseJson( false, true ) );
-
-            publicConfigurationValues[CONFIGURATION_MODE_KEY] = usage.ToString();
 
             return publicConfigurationValues;
         }
