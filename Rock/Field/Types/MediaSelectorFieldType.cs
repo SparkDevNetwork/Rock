@@ -98,10 +98,13 @@ namespace Rock.Field.Types
         public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             var url = string.Empty;
-            var keyValuePair = privateValue.Split( new char[] { '^' } );
-            if ( keyValuePair.Length == 2 )
+            if ( privateValue.IsNotNullOrWhiteSpace() )
             {
-                url = keyValuePair[1];
+                var keyValuePair = privateValue.Split( new char[] { '^' } );
+                if ( keyValuePair.Length == 2 )
+                {
+                    url = keyValuePair[1];
+                }
             }
 
             return url;
@@ -131,12 +134,15 @@ namespace Rock.Field.Types
         public string UrlLink( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var url = string.Empty;
-            if ( configurationValues.ContainsKey( MEDIA_ITEMS ) )
+            if ( value.IsNotNullOrWhiteSpace() )
             {
-                string[] keyValuePair = value.Split( new char[] { '^' } );
-                if ( keyValuePair.Length == 2 )
+                if ( configurationValues.ContainsKey( MEDIA_ITEMS ) )
                 {
-                    url = keyValuePair[1];
+                    string[] keyValuePair = value.Split( new char[] { '^' } );
+                    if ( keyValuePair.Length == 2 )
+                    {
+                        url = keyValuePair[1];
+                    }
                 }
             }
 
@@ -179,11 +185,14 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var keyValuePair = privateValue.Split( new char[] { '^' } );
             var publicValue = string.Empty;
-            if ( keyValuePair.Length == 2 )
+            if ( privateValue.IsNotNullOrWhiteSpace() )
             {
-                publicValue = keyValuePair[0];
+                var keyValuePair = privateValue.Split( new char[] { '^' } );
+                if ( keyValuePair.Length == 2 )
+                {
+                    publicValue = keyValuePair[0];
+                }
             }
 
             return publicValue;
