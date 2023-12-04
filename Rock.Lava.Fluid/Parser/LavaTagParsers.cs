@@ -350,7 +350,7 @@ namespace Rock.Lava.Fluid
                 // If the number of start and end tags do not match, the block is invalid.
                 if ( openTags != 0 )
                 {
-                    return false;
+                    throw new ParseException( $"Unclosed tag '{_tagName}'", context.Scanner.Cursor.Position );
                 }
 
                 // Store the text content of the block in the parser result.
@@ -400,14 +400,16 @@ namespace Rock.Lava.Fluid
                 {
                     tagParser = LavaShortcodeStart
                         .And( Terms.Text( _tagName ) )
+                        .AndSkip( Literals.WhiteSpace() )
                         .And( AnyCharBefore( LavaShortcodeEnd, canBeEmpty: true ) )
                         .And( LavaShortcodeEnd );
                 }
                 else
                 {
                     tagParser = LiquidTagStart
-                        .And( Terms.Text( _tagName ) ).
-                        And( AnyCharBefore( LavaFluidParser.LavaTokenEndParser, canBeEmpty: true ) )
+                        .And( Terms.Text( _tagName ) )
+                        .AndSkip( Literals.WhiteSpace() )
+                        .And( AnyCharBefore( LavaFluidParser.LavaTokenEndParser, canBeEmpty: true ) )
                         .And( LavaFluidParser.LavaTokenEndParser );
                 }
 

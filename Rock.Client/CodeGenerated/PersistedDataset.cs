@@ -80,6 +80,9 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public int? PersistedScheduleId { get; set; }
+
+        /// <summary />
         public int? RefreshIntervalMinutes { get; set; }
 
         /// <summary />
@@ -119,6 +122,7 @@ namespace Rock.Client
             this.LastRefreshDateTime = source.LastRefreshDateTime;
             this.MemoryCacheDurationMS = source.MemoryCacheDurationMS;
             this.Name = source.Name;
+            this.PersistedScheduleId = source.PersistedScheduleId;
             this.RefreshIntervalMinutes = source.RefreshIntervalMinutes;
             this.ResultData = source.ResultData;
             this.ResultFormat = source.ResultFormat;
