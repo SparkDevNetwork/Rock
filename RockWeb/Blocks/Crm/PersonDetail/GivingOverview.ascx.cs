@@ -345,7 +345,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 .Select( a => new
                 {
                     TransactionDateTime = a.TransactionDateTime,
-                    TotalAmountBeforeRefund = a.TransactionDetails.Where(td => td.Account.IsTaxDeductible == true).Sum( d => d.Amount ),
+                    TotalAmountBeforeRefund = a.TransactionDetails
+                        .Where( td => td.Account.IsTaxDeductible == true )
+                        .Select( d => d.Amount )
+                        .DefaultIfEmpty( 0.0M )
+                        .Sum(),
                     // For each Refund (there could be more than one) get the refund amount for each if the refunds's Detail records for the Account.
                     // Then sum that up for the total refund amount for the account
                     TotalRefundAmount = a
@@ -409,7 +413,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var last90DayCountText = $"{last90DayCount} {"gift".PluralizeIf( last90DayCount != 1 )}";
 
             var last90DaysSubValue =
-$@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ? "success" : "danger" )}"">
+$@"<span title=""{growthPercentText}"" class=""small text-{( isGrowthPositive ? "success" : "danger" )}"">
     <i class=""fa {( isGrowthPositive ? "fa-arrow-up" : "fa-arrow-down" )}""></i>
     {growthPercentDisplay}
 </span>
