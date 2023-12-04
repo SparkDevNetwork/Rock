@@ -1781,7 +1781,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                 }
 
                 MethodInfo getMethod = contextService.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                if ( getMethod == null )
+                if ( getMethod != null )
                 {
                     continue;  // Couldn't find method to fetch Entity.
                 }

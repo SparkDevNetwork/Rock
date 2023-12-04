@@ -193,15 +193,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// If enabled private accounts in the  <see cref="SelectableAccountIds"/> will be rendered.
-        /// </summary>
-        public bool AllowPrivateSelectableAccounts
-        {
-            get => ViewState["AllowPrivateAccounts"] as bool? ?? false;
-            set => ViewState["AllowPrivateAccounts"] = value;
-        }
-
-        /// <summary>
         /// Class to specify an amount for a selected AccountId
         /// </summary>
         public class AccountIdAmount
@@ -769,16 +760,13 @@ namespace Rock.Web.UI.Controls
             // limit to active, public accounts, and don't include ones that aren't within the date range
             accountsQry = accountsQry.Where( f =>
                     f.IsActive &&
+                    f.IsPublic.HasValue &&
+                    f.IsPublic.Value &&
                     ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
-                    ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) );
+                    ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
+                .OrderBy( f => f.Order );
 
-            // Only allow Private accounts from the provided selectableAccountIds.
-            if ( !AllowPrivateSelectableAccounts || !selectableAccountIds.Any() )
-            {
-                accountsQry = accountsQry.Where( f => f.IsPublic == true );
-            }
-
-            var accountsList = accountsQry.OrderBy( f => f.Order ).AsNoTracking().ToList();
+            var accountsList = accountsQry.AsNoTracking().ToList();
 
             _ddlAccountSingle.Items.Clear();
 
