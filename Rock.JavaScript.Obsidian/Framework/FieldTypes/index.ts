@@ -362,6 +362,9 @@ registerFieldType(FieldTypeGuids.SystemCommunication, new SystemCommunicationFie
 import { SystemEmailFieldType } from "./systemEmailField.partial";
 registerFieldType(FieldTypeGuids.SystemEmail, new SystemEmailFieldType());
 
+import { SystemPhoneNumberFieldType } from "./systemPhoneNumberField.partial";
+registerFieldType(FieldTypeGuids.SystemPhoneNumber, new SystemPhoneNumberFieldType());
+
 import { TextFieldType } from "./textField.partial";
 registerFieldType(FieldTypeGuids.Text, new TextFieldType());
 
