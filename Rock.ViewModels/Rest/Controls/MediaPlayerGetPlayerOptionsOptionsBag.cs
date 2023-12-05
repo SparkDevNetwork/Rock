@@ -25,22 +25,27 @@ namespace Rock.ViewModels.Rest.Controls
     public class MediaPlayerGetPlayerOptionsOptionsBag
     {
         /// <summary>
-        /// Get the child accounts for the account of this GUID. Empty Guid gets the root level accounts
+        /// The initial set of options to pass to the media player
         /// </summary>
         public MediaPlayerOptionsBag PlayerOptions { get; set; }
 
         /// <summary>
-        /// Whether or not to include inactive accounts
+        /// Identifier for the Media Element to play
         /// </summary>
         public Guid MediaElementGuid { get; set; }
 
         /// <summary>
-        /// Whether or not to display the public name (vs the normal name)
+        /// The number of days back to look for an existing interaction
+        /// for the media element. Will be used to find where the user left off
+        /// previously and resume from that point.
         /// </summary>
         public int AutoResumeInDays { get; set; }
 
         /// <summary>
-        /// Whether or not to load the full tree instead of just this level
+        /// The number of days back to look for an existing
+        /// interaction for the media element that should be updated. If one
+        /// is not found then a new interaction will be created. Set to
+        /// <c>0</c> to always create a new interaction.
         /// </summary>
         public int CombinePlayStatisticsInDays { get; set; }
     }

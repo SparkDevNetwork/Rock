@@ -83,7 +83,6 @@
             type: Boolean
         },
 
-        //TODO
         /** CSS length value of the maximum width the video play should be */
         maxVideoWidth: {
             type: String,
@@ -133,7 +132,6 @@
             ]
         },
 
-        //TODO
         /** CSS color value used to color some elements */
         primaryColor: {
             type: String,

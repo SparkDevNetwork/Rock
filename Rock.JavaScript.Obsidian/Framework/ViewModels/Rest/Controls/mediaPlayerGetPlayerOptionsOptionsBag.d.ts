@@ -26,15 +26,24 @@ import { MediaPlayerOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mediaP
 
 /** The options that can be passed to the GetPlayerOptions API action of the MediaPlayer control. */
 export type MediaPlayerGetPlayerOptionsOptionsBag = {
-    /** Whether or not to display the public name (vs the normal name) */
+    /**
+     * The number of days back to look for an existing interaction
+     * for the media element. Will be used to find where the user left off
+     * previously and resume from that point.
+     */
     autoResumeInDays: number;
 
-    /** Whether or not to load the full tree instead of just this level */
+    /**
+     * The number of days back to look for an existing
+     * interaction for the media element that should be updated. If one
+     * is not found then a new interaction will be created. Set to
+     * 0 to always create a new interaction.
+     */
     combinePlayStatisticsInDays: number;
 
-    /** Whether or not to include inactive accounts */
+    /** Identifier for the Media Element to play */
     mediaElementGuid?: Guid | null;
 
-    /** Get the child accounts for the account of this GUID. Empty Guid gets the root level accounts */
+    /** The initial set of options to pass to the media player */
     playerOptions?: MediaPlayerOptionsBag | null;
 };
