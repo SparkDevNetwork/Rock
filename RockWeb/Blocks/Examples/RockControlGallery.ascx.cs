@@ -26,7 +26,6 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Media;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -85,10 +84,10 @@ namespace RockWeb.Blocks.Examples
                     example.Controls.Add( new LiteralControl( string.Format( "<pre class='prettyprint'>{0}</pre>", Server.HtmlEncode( list[i] ) ) ) );
                 }
 
-                if ( example.NamingContainer == this && ( example.TagName == "h1" || example.TagName == "h2" || example.TagName == "h3" ) )
+                if ( example.NamingContainer == this && (example.TagName == "h1" || example.TagName == "h2" || example.TagName == "h3") )
                 {
                     example.Attributes["class"] = "rollover-container";
-                    example.Controls.AddAt( 0, new LiteralControl( string.Format( "<a name='{0}' class='anchor rollover-item' href='#{0}'><i class='fa fa-link rlink icon-link'></i></a>", BuildAnchorForHref( ( HtmlGenericControl ) example ) ) ) );
+                    example.Controls.AddAt( 0, new LiteralControl( string.Format( "<a name='{0}' class='anchor rollover-item' href='#{0}'><i class='fa fa-link rlink icon-link'></i></a>", BuildAnchorForHref( (HtmlGenericControl)example ) ) ) );
                 }
             }
         }
@@ -222,8 +221,6 @@ namespace RockWeb.Blocks.Examples
 
                 TagLiteral4.Text = "TagLiteral4: This text is set via code.";
                 BindGrid();
-
-                mediaex.MediaType = MediaPlayerInterfaceType.Video;
             }
         }
 
@@ -451,7 +448,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnMarkdownPreview_Click( object sender, EventArgs e )
         {
-            lMarkdownHtml.Text = mdMarkdownEditor.Text.ConvertMarkdownToHtml( true );
+            lMarkdownHtml.Text = mdMarkdownEditor.Text.ConvertMarkdownToHtml(true);
         }
 
         /// <summary>
