@@ -26,7 +26,6 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Media;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -222,8 +221,6 @@ namespace RockWeb.Blocks.Examples
 
                 TagLiteral4.Text = "TagLiteral4: This text is set via code.";
                 BindGrid();
-
-                mediaex.MediaType = MediaPlayerInterfaceType.Video;
             }
         }
 

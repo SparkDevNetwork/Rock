@@ -51,12 +51,6 @@
 
                     <h1 runat="server">General Information</h1>
 
-                    <Rock:MediaPlayer ID="mediaex" runat="server"
-                        MediaUrl="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
-                        MaxVideoWidth="50%"
-                        Required="true"
-                    />
-
                     <h2 id="input-sizing">Input Sizing Rules</h2>
 
                     <div class="alert alert-warning">
@@ -205,9 +199,9 @@
 
 <div runat="server" class="r-example">
 <div class="form-group">
-	<label class="control-label">Group</label> 
+	<label class="control-label">Group</label>
 	<div class="control-wrapper">
-		<p>A/V Team</p>	
+		<p>A/V Team</p>
 	</div>
 </div>
 </div>
@@ -869,11 +863,11 @@
                     <p>Need special color indicators on the buttons? Set ActiveButtonCssClass to <code>.btn-info</code>, <code>.btn-success</code>, <code>.btn-danger</code> or <code>.btn-warning</code></p>
                     <div runat="server" class="r-example">
                         <Rock:Toggle ID="tglExample1" runat="server" />
-                        <Rock:Toggle ID="tglExample4" runat="server" ActiveButtonCssClass="btn-danger" />
-                        <Rock:Toggle ID="tglExample6" runat="server" ActiveButtonCssClass="btn-primary" />
-                        <Rock:Toggle ID="tglExample5" runat="server" ActiveButtonCssClass="btn-warning" />
-                        <Rock:Toggle ID="tglExample3" runat="server" ActiveButtonCssClass="btn-success" />
                         <Rock:Toggle ID="tglExample2" runat="server" ActiveButtonCssClass="btn-info" />
+                        <Rock:Toggle ID="tglExample3" runat="server" ActiveButtonCssClass="btn-success" />
+                        <Rock:Toggle ID="tglExample4" runat="server" ActiveButtonCssClass="btn-danger" />
+                        <Rock:Toggle ID="tglExample5" runat="server" ActiveButtonCssClass="btn-warning" />
+                        <Rock:Toggle ID="tglExample6" runat="server" ActiveButtonCssClass="btn-primary" />
                     </div>
 
                     <a id="ToggleOnOffStyles"></a>
