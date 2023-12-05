@@ -40,10 +40,6 @@ install:
 
     Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
 
-    git clone -q --depth=1 https://github.com/NewSpring/rock-f1.git c:\projects\rock-f1
-
-    git clone -q --depth=1 https://github.com/NewSpring/rock-cache-sync.git c:\projects\rock-cache-sync
-
     git clone -q --depth=1 https://github.com/NewSpring/apollos-onesignal.git c:\projects\apollos-onesignal
 
 
