@@ -35,6 +35,7 @@ using Rock.Extension;
 using Rock.Field.Types;
 using Rock.Financial;
 using Rock.Lava;
+using Rock.Media;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -4140,6 +4141,51 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return mediaElements;
+        }
+
+        #endregion
+
+        #region Media Player
+
+        /// <summary>
+        /// Gets the media accounts that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <returns>A List of <see cref="TreeItemBag" /> objects that represent media accounts.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MediaPlayerGetPlayerOptions" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "85EF9540-0B5E-4816-9A13-9B09BF1ECA4F" )]
+        public IHttpActionResult MediaPlayerGetPlayerOptions( [FromBody] MediaPlayerGetPlayerOptionsOptionsBag options )
+        {
+            if ( options.PlayerOptions == null || options.MediaElementGuid == null )
+            {
+                return BadRequest( "Player Options and MediaElementGuid are Required." );
+            }
+
+            var playerOptions = new MediaPlayerOptions
+            {
+                Autoplay = options.PlayerOptions.Autoplay,
+                Autopause = options.PlayerOptions.Autopause,
+                ClickToPlay = options.PlayerOptions.ClickToPlay,
+                Controls = options.PlayerOptions.Controls,
+                Debug = options.PlayerOptions.Debug,
+                HideControls = options.PlayerOptions.HideControls,
+                MediaUrl = options.PlayerOptions.MediaUrl,
+                Muted = options.PlayerOptions.Muted,
+                PosterUrl = options.PlayerOptions.PosterUrl,
+                RelatedEntityId = options.PlayerOptions.RelatedEntityId,
+                RelatedEntityTypeId = options.PlayerOptions.RelatedEntityTypeId,
+                SeekTime = options.PlayerOptions.SeekTime,
+                TrackProgress = options.PlayerOptions.TrackProgress,
+                Type = options.PlayerOptions.Type,
+                Volume = options.PlayerOptions.Volume,
+                WriteInteraction = options.PlayerOptions.WriteInteraction
+            };
+
+            playerOptions.UpdateValuesFromMedia( null, options.MediaElementGuid, options.AutoResumeInDays, options.CombinePlayStatisticsInDays, RockRequestContext.CurrentPerson, RockRequestContext.CurrentVisitorId );
+
+            return Ok( playerOptions );
         }
 
         #endregion

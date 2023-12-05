@@ -451,6 +451,8 @@
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Controls\RockCacheabilityBag.cs" />
+    <Compile Include="Rest\Controls\MediaPlayerOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MediaPlayerGetPlayerOptionsOptionsBag.cs" />
     <Compile Include="Rest\Controls\BadgeControlGetBadgeOptionsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoOptionsBag.cs" />

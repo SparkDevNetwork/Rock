@@ -1,38 +1,52 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-if="label" :modelValue="watchedPercentage" v-bind="fieldProps" name="media-player">
-        Media player as form control
+    <RockFormField v-if="label || isRequired || help" :modelValue="watchedPercentage" v-bind="fieldProps" :rules="augmentedRules" name="media-player">
+        <div class="js-media-player" :id="id">
+            <div :id="id + '_player'" :style="styles"></div>
+        </div>
     </RockFormField>
     <template v-else>
-        Plain media player
+        <div class="js-media-player" :id="id">
+            <div :id="id + '_player'" :style="styles"></div>
+        </div>
     </template>
 </template>
 
 <script setup lang="ts">
-    import { onBeforeMount, PropType, ref } from "vue";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { Guid } from "@Obsidian/Types";
     import { MediaPlayerInterfaceType } from "@Obsidian/Enums/Controls/mediaPlayerInterfaceType";
     import { MediaPlayerControls } from "@Obsidian/Enums/Controls/mediaPlayerControls";
+    import { MediaPlayerGetPlayerOptionsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mediaPlayerGetPlayerOptionsOptionsBag";
+    import { MediaPlayerOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mediaPlayerOptionsBag";
+    import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
-    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { useStore } from "@Obsidian/PageState";
 
     const props = defineProps({
+        /**
+         * Read-only v-model. Any values passed in are ignored. Technically you shouldn't be using this props at all.
+         * Instead you should just be listening for the "update:watchedPercentage" event, but this is here to make it
+         * possible to use the simpler and more familiar v-model syntax.
+         */
         watchedPercentage: {
-            type: Number,
-            required: true
+            type: Number
         },
 
-        //TODO
+        /** By default, starting a video will pause other videos playing on the page. Set this to true to disable that */
         disableAutoPause: {
             type: Boolean
         },
 
-        //TODO
+        /** Set this to true to have the video play as soon as it's loaded and ready. */
         autoPlay: {
             type: Boolean
         },
 
-        //TODO
         /**
          * The number of days back to look for an existing watch map to auto-resume from. Pass -1
          * to mean forever or 0 to disable.
@@ -42,53 +56,67 @@
             default: 7
         },
 
-        //TODO
+        /**
+         * The number of days back to look for an existing interaction for the media element that should be updated.
+         * If one is not found then a new interaction will be created. Set to 0 to always create a new interaction.
+         */
+        combinePlayStatisticsInDays: {
+            type: Number,
+            default: 7
+        },
+
+        /** Set this to true to disable being able to click anywhere on the video to play/pause it */
         disableClickToPlay: {
             type: Boolean
         },
 
-        //TODO
-        enableDebug: {
+        /** Set to true to enable logging debug data to the console. */
+        debug: {
             type: Boolean
         },
 
-        // TODO
+        /**
+         * Set to true to prevent interface controls from automatically hiding after brief time without
+         * interaction on the media player
+         */
         disableAutoHideControls: {
             type: Boolean
         },
 
         //TODO
         /** CSS length value of the maximum width the video play should be */
-        maxVideoWith: {
+        maxVideoWidth: {
             type: String,
             default: ""
         },
 
-        //TODO - GUID?
-        mediaElementId: {
-            type: Number
+        /**
+         * Media element identifier to use for determining which video to play and save interactions for.
+         * Overrides mediaUrl prop if both are present.
+         */
+        mediaElementGuid: {
+            type: String as PropType<Guid>
         },
 
-        //TODO
+        /** Direct URL of a media file to play. mediaElementGuid prop will override this if present. */
         mediaUrl: {
             type: String
         },
 
-        // TODO
+        /** Is audio or video? */
         mediaType: {
-            type: Number as PropType<MediaPlayerInterfaceType>,
-            default: MediaPlayerInterfaceType.Audio
+            type: String as PropType<MediaPlayerInterfaceType>,
+            default: MediaPlayerInterfaceType.Automatic
         },
 
-        //TODO
+        /** Set to true to mute player on load. */
         muted: {
             type: Boolean
         },
 
-        //TODO
-        /** Comma-delimited string list of MediaPlayerControl values */
+        /** List of MediaPlayerControl values */
         playerControls: {
-            type: String,
+            type: Array as PropType<MediaPlayerControls[]>,
             default: () => [
                 MediaPlayerControls.PlayLarge,
                 MediaPlayerControls.Play,
@@ -100,8 +128,9 @@
                 MediaPlayerControls.Settings,
                 MediaPlayerControls.PictureInPicture,
                 MediaPlayerControls.Airplay,
-                MediaPlayerControls.Fullscreen
-            ].join(",")
+                MediaPlayerControls.Fullscreen,
+                MediaPlayerControls.FastForward
+            ]
         },
 
         //TODO
@@ -111,38 +140,39 @@
             default: "var(--color-primary)"
         },
 
-        //TODO
-        /** GUID? */
+        /** Identifier of the related entity to store with session tracking interaction */
         relatedEntityId: {
             type: Number
         },
 
-        //TODO
-        /** GUID? */
+        /** Identifier of the related entity type to store with session tracking interaction */
         relatedEntityTypeId: {
             type: Number
         },
 
-        //TODO
-        /** Percentage represented as a decimal number between 0 and 1 (0% to 100%). */
+        /**
+         * Percentage represented as a decimal number between 0 and 1 (0% to 100%). If required, this is how much of the
+         * video must be watched before it will be valid.
+         */
         requiredWatchPercentage: {
             type: Number,
             default: .9
         },
 
-        //TODO
         /** The number of seconds to seek forward/backward when the fast-forward or rewind buttons are pressed */
         seekTime: {
             type: Number,
             default: 10
         },
 
-        //TODO
+        /**
+         * URL of the image to show before the video is played. If the mediaElementGuid prop is used and it has a
+         * thumbnail associated with it, then this prop will be ignored.
+         */
         thumbnailUrl: {
             type: String
         },
 
-        //TODO
         /**
          * Determines if an anonymous playback session should be tracked and stored as an
          * Interaction in the system. If true, the tracking will NOT take place.
@@ -152,7 +182,6 @@
             type: Boolean
         },
 
-        //TODO
         /**
          * Determines if the user's playback session should be tracked and stored as an
          * Interaction in the system. If true, the tracking will NOT take place.
@@ -162,10 +191,16 @@
             type: Boolean
         },
 
-        //TODO
+        /** Decimal number between 0 (0%) and 1 (100%) representing the initial volume level. */
         volume: {
             type: Number,
             default: 1
+        },
+
+        /** Unique identifier for the elements and this media player */
+        id: {
+            type: String,
+            default: () => "mp" + newGuid()
         },
 
         ...standardRockFormFieldProps
@@ -175,17 +210,103 @@
         (e: "update:watchedPercentage", value: number): void
     }>();
 
-    const watchedPercentage = useVModelPassthrough(props, "watchedPercentage", emit);
+    const watchedPercentage = ref(0);
     const fieldProps = useStandardRockFormFieldProps(props);
-    const areScriptsLoaded = ref(false);
+    const playerOptions = ref<MediaPlayerOptionsBag>();
+    let player: InstanceType<Window["Rock"]["UI"]["MediaPlayer"]> | null = null;
 
-    onBeforeMount(async (): Promise<void> => {
+    const http = useHttp();
+    const currentPerson = useStore().state.currentPerson;
+
+    const isRequired = computed(() => {
+        return containsRequiredRule(props.rules);
+    });
+
+    const augmentedRules = computed(() => {
+        if (isRequired.value) {
+            const rules = normalizeRules(props.rules);
+            rules.push((value: unknown) => {
+                if (value as number >= props.requiredWatchPercentage) {
+                    return true;
+                }
+
+                return "You did not watch enough of the video in order for it to be considered complete.";
+            });
+            return rules;
+        }
+        else {
+            return props.rules;
+        }
+    });
+
+    const basePlayerOptions = computed<MediaPlayerOptionsBag>(() => {
+        return {
+            autoplay: props.autoPlay,
+            autopause: !props.disableAutoPause,
+            clickToPlay: !props.disableClickToPlay,
+            controls: props.playerControls.join(","),
+            debug: props.debug,
+            hideControls: !props.disableAutoHideControls,
+            mediaUrl: props.mediaUrl,
+            muted: props.muted,
+            posterUrl: props.thumbnailUrl,
+            relatedEntityId: props.relatedEntityId,
+            relatedEntityTypeId: props.relatedEntityTypeId,
+            seekTime: props.seekTime,
+            trackProgress: true,
+            type: props.mediaType,
+            volume: props.volume,
+            writeInteraction: currentPerson ? !props.disableSessionTracking : !props.disableAnonymousSessionTracking
+        };
+    });
+
+    const styles = computed(() => {
+        let styles: Record<string, string> = { "--plyr-color-main": props.primaryColor };
+        if (props.maxVideoWidth) {
+            styles["max-width"] = props.maxVideoWidth;
+        }
+
+        return styles;
+    });
+
+    watch(watchedPercentage, () => {
+        emit("update:watchedPercentage", watchedPercentage.value);
+    });
+
+    function loadDependencies(): Promise<unknown> {
         const loadingPlyr = loadJavaScriptAsync(`/Scripts/Rock/plyr.js`, () => "Plyr" in window, {}, true);
         const loadingMediaPlayer = loadJavaScriptAsync(`/Scripts/Rock/UI/mediaplayer/mediaplayer.js`, () => typeof (window.Rock?.UI?.MediaPlayer) == "function", {}, true);
 
-        await Promise.all([loadingPlyr, loadingMediaPlayer]);
+        return Promise.all([loadingPlyr, loadingMediaPlayer]);
+    }
 
-        areScriptsLoaded.value = true;
+    async function fetchOptions(): Promise<void> {
+        const options: MediaPlayerGetPlayerOptionsOptionsBag = {
+            playerOptions: basePlayerOptions.value,
+            mediaElementGuid: props.mediaElementGuid,
+            autoResumeInDays: props.autoResumeInDays,
+            combinePlayStatisticsInDays: props.combinePlayStatisticsInDays
+        };
+
+        const response = await http.post<MediaPlayerOptionsBag>("/api/v2/Controls/MediaPlayerGetPlayerOptions", undefined, options);
+
+        if (response.isSuccess && response.data != null) {
+            playerOptions.value = response.data;
+        }
+        else {
+            playerOptions.value = basePlayerOptions.value;
+        }
+    }
+
+    /** Initialize the media player */
+    onMounted(async () => {
+        await Promise.all([loadDependencies(), fetchOptions()]);
+
+        player = new window.Rock.UI.MediaPlayer(`#${props.id}_player`, playerOptions.value as Record<string, unknown>);
+
+        player?.on("progress", () => {
+            updateRefValue(watchedPercentage, player?.percentWatched ?? 0);
+        });
     });
 
 </script>

@@ -1,3 +1,10 @@
+declare class MediaPlayer {
+    constructor(playerSelector: string, options: Record<string, unknown>);
+    on(event: string, cb: (args?) => void): void;
+    off(event: string, cb?: (args?) => void): void;
+    percentWatched: number;
+}
+
 /* eslint-disable @typescript-eslint/naming-convention */
 interface Window {
     Rock: {
@@ -13,9 +20,7 @@ interface Window {
             }
         },
         UI: {
-            MediaPlayer: {
-                AllPlayers: unknown[]
-            }
+            MediaPlayer: typeof MediaPlayer
         }
     }
 }

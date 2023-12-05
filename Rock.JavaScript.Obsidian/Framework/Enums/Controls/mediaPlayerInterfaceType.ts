@@ -17,9 +17,9 @@
 
 /** The type of the alert box to display. Ex: 'success' will appear green and as if something good happened. */
 export const MediaPlayerInterfaceType = {
-    Automatic: 0,
-    Video: 1,
-    Audio: 2
+    Automatic: "",
+    Video: "video",
+    Audio: "audio"
 } as const;
 
 /** The type of the alert box to display. Ex: 'success' will appear green and as if something good happened. */
