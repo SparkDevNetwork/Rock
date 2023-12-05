@@ -356,6 +356,9 @@ registerFieldType(FieldTypeGuids.StructureContentEditor, new StructureContentEdi
 import { SystemCommunicationFieldType } from "./systemCommunicationField.partial";
 registerFieldType(FieldTypeGuids.SystemCommunication, new SystemCommunicationFieldType());
 
+import { SystemEmailFieldType } from "./systemEmailField.partial";
+registerFieldType(FieldTypeGuids.SystemEmail, new SystemEmailFieldType());
+
 import { TextFieldType } from "./textField.partial";
 registerFieldType(FieldTypeGuids.Text, new TextFieldType());
 

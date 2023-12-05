@@ -26,15 +26,15 @@ export const enum ConfigurationValueKey {
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
-    return (await import("./systemCommunicationFieldComponents")).EditComponent;
+    return (await import("./systemEmailFieldComponents")).EditComponent;
 });
 
 // The configuration component can be quite large, so load it only as needed.
 const configurationComponent = defineAsyncComponent(async () => {
-    return (await import("./systemCommunicationFieldComponents")).ConfigurationComponent;
+    return (await import("./systemEmailFieldComponents")).ConfigurationComponent;
 });
 
-export class SystemCommunicationFieldType extends FieldTypeBase {
+export class SystemEmailFieldType extends FieldTypeBase {
     public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         if (value === undefined || value === null || value === "") {
             return "";
