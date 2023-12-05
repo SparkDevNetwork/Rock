@@ -167,6 +167,9 @@ registerFieldType(FieldTypeGuids.Decimal, new DecimalFieldType());
 import { DecimalRangeFieldType } from "./decimalRangeField.partial";
 registerFieldType(FieldTypeGuids.DecimalRange, new DecimalRangeFieldType());
 
+import { DefinedTypeFieldType } from "./definedTypeField.partial";
+registerFieldType(FieldTypeGuids.DefinedType, new DefinedTypeFieldType());
+
 import { DefinedValueFieldType } from "./definedValueField.partial";
 registerFieldType(FieldTypeGuids.DefinedValue, new DefinedValueFieldType());
 
