@@ -16,19 +16,15 @@
 //
 using System;
 
-namespace Rock.Media
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The configuration options that are available for Rock's JavaScript
-    /// media player.
+    /// The options that can be passed to the GetChildren API action of the AccountPicker control.
     ///
-    /// NOTE: This is copied to Rock.ViewModels/Rest/Controls/MediaPlayerOptionsBag.cs.
-    /// If making any changes to this, be sure to update that as well
+    /// NOTE: This is copied from Rock/Media/MediaPlayerOptions.cs.
+    /// If making any changes to this, be sure to update that as well.
     /// </summary>
-    [Newtonsoft.Json.JsonObject(
-        NamingStrategyType = typeof( Newtonsoft.Json.Serialization.CamelCaseNamingStrategy ),
-        ItemNullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore )]
-    internal class MediaPlayerOptions
+    public class MediaPlayerOptionsBag
     {
         /// <summary>
         /// Gets or sets a value indicating whether to automatically pause
