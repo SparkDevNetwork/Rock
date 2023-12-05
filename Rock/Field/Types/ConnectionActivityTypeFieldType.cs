@@ -124,11 +124,11 @@ namespace Rock.Field.Types
                         }
                     }
 
-                    var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].AsBoolean();
-                    var query = new ConnectionActivityTypeService( new RockContext() )
-                        .Queryable()
-                        .Where( ca => ca.IsActive || includeInactive )
-                        .AsNoTracking();
+                var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].AsBoolean();
+                var query = new ConnectionActivityTypeService( rockContext )
+                    .Queryable()
+                    .Where( ca => ca.IsActive || includeInactive )
+                    .AsNoTracking();
 
                     var clientValues = query.OrderBy( o => o.ConnectionType.Name )
                         .ThenBy( o => o.Name )
