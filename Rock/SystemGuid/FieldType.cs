@@ -444,6 +444,11 @@ namespace Rock.SystemGuid
         public const string INTERACTION_CHANNEL = "5EE5D193-60B6-4808-9BE9-C5FFDDF444E4";
 
         /// <summary>
+        /// Interaction Channel Interaction Component field type
+        /// </summary>
+        public const string INTERACTION_CHANNEL_INTERACTION_COMPONENT = "299F8444-BB47-4B6C-B523-235156BF96DC";
+
+        /// <summary>
         /// Interaction Channels field type
         /// </summary>
         public const string INTERACTION_CHANNELS = "D5781EB0-3A2A-4FBB-AF8E-E14664147003";

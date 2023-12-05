@@ -242,6 +242,9 @@ registerFieldType(FieldTypeGuids.InteractionChannel, new InteractionChannelField
 import { InteractionChannelsFieldType } from "./interactionChannelsField.partial";
 registerFieldType(FieldTypeGuids.InteractionChannels, new InteractionChannelsFieldType());
 
+import { InteractionChannelInteractionComponentFieldType } from "./interactionChannelInteractionComponentField.partial";
+registerFieldType(FieldTypeGuids.InteractionChannelInteractionComponent, new InteractionChannelInteractionComponentFieldType());
+
 import { KeyValueListFieldType } from "./keyValueListField.partial";
 registerFieldType(FieldTypeGuids.KeyValueList, new KeyValueListFieldType());
 
