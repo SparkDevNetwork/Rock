@@ -125,6 +125,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests.Performance", "R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.AI.OpenAI", "Rock.AI.OpenAI\Rock.AI.OpenAI.csproj", "{BAB8BF5E-6457-4668-ADF1-B917100BA7CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests.Benchmarks", "Rock.Tests.Benchmarks\Rock.Tests.Benchmarks.csproj", "{027005F4-531F-4618-9953-AF8C931EA178}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -295,6 +297,10 @@ Global
 		{BAB8BF5E-6457-4668-ADF1-B917100BA7CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAB8BF5E-6457-4668-ADF1-B917100BA7CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAB8BF5E-6457-4668-ADF1-B917100BA7CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{027005F4-531F-4618-9953-AF8C931EA178}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{027005F4-531F-4618-9953-AF8C931EA178}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{027005F4-531F-4618-9953-AF8C931EA178}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{027005F4-531F-4618-9953-AF8C931EA178}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
