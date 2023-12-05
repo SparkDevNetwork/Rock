@@ -25,10 +25,6 @@ image: Visual Studio 2022
 configuration: Release
 platform: Any CPU
 
-# scripts that are called at very beginning, before repo cloning
-init:
-  - git config --global core.autocrlf true
-
 # clone directory and depth
 clone_depth: 1
 clone_folder: C:\projects\Rock
@@ -44,13 +40,17 @@ install:
 
     Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
 
+    git clone -q --depth=1 https://github.com/NewSpring/rock-f1.git c:\projects\rock-f1
+
+    git clone -q --depth=1 https://github.com/NewSpring/rock-cache-sync.git c:\projects\rock-cache-sync
+
     git clone -q --depth=1 https://github.com/NewSpring/apollos-onesignal.git c:\projects\apollos-onesignal
 
 
 # directories to preserve between builds
 cache:
-- packages -> **\packages.config  # preserve "packages" directory in the root of build folder but will reset it if packages.config is modified
-- node_modules                    # local npm modules
+#- node_modules
+#- packages
 
 # scripts to run before build
 # (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe', "$nugetDir\NuGet.exe")
@@ -68,8 +68,9 @@ build:
 build_script:
 - cmd: >-
     nuget restore
+
     "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv"
-    "C:\projects\Rock\Rock.sln" /build Release
+    "c:\projects\Rock\rock.sln" /build Release
 
 # flag to stop building if an error throws
 matrix:
