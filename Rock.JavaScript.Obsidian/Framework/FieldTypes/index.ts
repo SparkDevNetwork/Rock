@@ -86,6 +86,9 @@ registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 import { ColorSelectorFieldType } from "./colorSelectorField.partial";
 registerFieldType(FieldTypeGuids.ColorSelector, new ColorSelectorFieldType());
 
+import { ConnectionOpportunityFieldType } from "./connectionOpportunityField.partial";
+registerFieldType(FieldTypeGuids.ConnectionOpportunity, new ConnectionOpportunityFieldType());
+
 import { ConnectionTypeField } from "./connectionTypeField.partial";
 registerFieldType(FieldTypeGuids.ConnectionType, new ConnectionTypeField());
 
