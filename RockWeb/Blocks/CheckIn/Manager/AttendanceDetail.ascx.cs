@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [BooleanField(
     "Allow Editing Start and End Times",
         Key = AttributeKey.AllowEditingStartAndEndTimes,
-        Description = "This allows editing the start and end datetime to be edited.",
+        Description = "This allows editing the start and end datetime.",
         DefaultBooleanValue = false,
         Order = 7 )]
 
@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             /*
              * 2023-06-22 ETD
-             * 
+             *
              * In order to make the selection based on the schedule and not the location we need to reverse the normal FK relationship. Instead
              * of starting out with a group and location, we need to start with a schedule, and then load the GroupLocationSchedules.
              */

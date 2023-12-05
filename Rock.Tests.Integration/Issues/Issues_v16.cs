@@ -265,5 +265,37 @@ StartTimeOfDay (Formatted): 10:30 AM +11:00
 
             _TestHelper.AssertTemplateOutput( expectedOutput, template, options );
         }
+
+        [TestMethod]
+        public void Issue5687_CannotNestEntityCommands()
+        {
+            /* The Fluid Lava Engine throws a parsing exception when trying to process embedded entity commands
+             * with the same root prefix.
+             * For details, see https://github.com/SparkDevNetwork/Rock/issues/5687.
+             * 
+             * Resolution: This issue occurred because the custom Lava tag parser for Fluid introduced in v16
+             * did not detect or require a whitespace delimiter for the tag identifier.
+             * The new parser was introduced to replace the existing less performant RegEx parser.
+             */
+
+            var input = @"
+{% assign registrationInstanceId = 1 %}
+{% registration where:'RegistrationInstanceId == {{ registrationInstanceId }}' %}
+    {% assign currentRegistrantCount = 0 %}
+    {% for registration in registrationItems %}
+        {% assign registrationId = registration.Id %}
+        {% registrationregistrant where:'RegistrationId == ""{{ registrationId }}""' %}
+            {% for registrationregistrant in registrationregistrantItems %}
+                {% assign currentRegistrantCount = currentRegistrantCount | Plus:1 %}
+            {% endfor %}
+        {% endregistrationregistrant %}
+    {% endfor %}
+{% endregistration %}
+";
+
+            // Confirm that the template is parsed correctly, but ignore the output.
+            var options = new LavaTestRenderOptions() { EnabledCommands = "RockEntity" };
+            TestHelper.AssertTemplateOutput( string.Empty, input, options );
+        }
     }
 }
