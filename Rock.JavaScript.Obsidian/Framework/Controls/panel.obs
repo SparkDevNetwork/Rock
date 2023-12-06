@@ -4,13 +4,22 @@
         <div :class="panelClass" ref="panelElement" v-bind="$attrs" :tabIndex="panelTabIndex" @keydown="onPanelKeyDown">
 
             <div :class="panelHeadingClass" @click="onPanelHeadingClick">
-                <h1 class="panel-title">
-                    <slot v-if="$slots.title" name="title" />
-                    <template v-else>
-                        <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
-                        {{ title }}
-                    </template>
-                </h1>
+                <div class="flex-grow-1 px-4">
+                    <TransitionVerticalCollapse>
+                        <h1 class="panel-title" v-if="(!isPanelOpen && $slots.headerControls) || !$slots.headerControls || !hasCollapse">
+                            <slot v-if="$slots.title" name="title" />
+                            <template v-else>
+                                <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
+                                {{ title }}
+                            </template>
+                        </h1>
+                    </TransitionVerticalCollapse>
+                    <TransitionVerticalCollapse v-if="$slots.headerControls && hasCollapse">
+                        <div v-if="isPanelOpen && $slots.headerControls">
+                            <slot name="headerControls" />
+                        </div>
+                    </TransitionVerticalCollapse>
+                </div>
 
                 <div class="panel-header-actions" @click.prevent.stop="onIgnoreClick">
                     <slot name="headerActions" />
