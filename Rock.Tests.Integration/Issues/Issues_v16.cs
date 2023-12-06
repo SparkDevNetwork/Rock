@@ -295,7 +295,7 @@ StartTimeOfDay (Formatted): 10:30 AM +11:00
 
             // Confirm that the template is parsed correctly, but ignore the output.
             var options = new LavaTestRenderOptions() { EnabledCommands = "RockEntity" };
-            TestHelper.AssertTemplateOutput( string.Empty, input, options );
+            _TestHelper.AssertTemplateOutput( string.Empty, input, options );
         }
     }
 }

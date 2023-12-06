@@ -242,8 +242,11 @@ namespace RockWeb.Blocks.Reporting
             var dataItems = new List<DataItem>();
             var peopleWithAgeQry = qry.Where( p => p.BirthDate.HasValue );
 
-            var zeroTo12RangeSql = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ZeroToTwelve );
-            dataItems.Add( new DataItem( "0-12", zeroTo12RangeSql.ToString() ) );
+            var zeroToFiveRangeSql = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ZeroToFive );
+            dataItems.Add( new DataItem( "0-5", zeroToFiveRangeSql.ToString() ) );
+
+            var sixToTwelveRangeSql = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.SixToTwelve );
+            dataItems.Add( new DataItem( "6-12", sixToTwelveRangeSql.ToString() ) );
 
             var thirteenToSeventeenRangeSql = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ThirteenToSeventeen );
             dataItems.Add( new DataItem( "13-17", thirteenToSeventeenRangeSql.ToString() ) );
