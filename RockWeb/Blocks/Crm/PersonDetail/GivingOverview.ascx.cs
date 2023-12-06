@@ -705,13 +705,13 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                 if ( startDate != null )
                 {
                     previousYearMonthlyGivingSummaries = givingHistories
-                        .Where( s => s.Year == startDate.Value.Year )
+                        .Where( s => s.Year >= startDate.Value.Year )
                         .ToList();
                 }
 
                 var financialAccounts = new FinancialAccountService( rockContext ).Queryable()
                     .AsNoTracking()
-                    .ToDictionary( k => k.Id, v => v.Name );
+                    .ToDictionary( k => k.Id, v => new FinancialAccountInfo { Name = v.Name, Order = v.Order } );
 
                 var summaryList = previousYearMonthlyGivingSummaries
                     .GroupBy( a => new { a.Year, a.AccountId } )
@@ -724,17 +724,36 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                     .OrderByDescending( a => a.Year )
                     .ToList();
 
+                // Create yearly contribution summaries by account.
                 var contributionSummaries = new List<ContributionSummary>();
                 foreach ( var item in summaryList.GroupBy( a => a.Year ) )
                 {
                     var contributionSummary = new ContributionSummary();
                     contributionSummary.Year = item.Key;
-                    contributionSummary.SummaryRecords = new List<SummaryRecord>();
+
+                    var summaryRecords = new List<SummaryRecord>();
                     foreach ( var a in item )
                     {
-                        a.AccountName = financialAccounts.ContainsKey( a.AccountId ) ? financialAccounts[a.AccountId] : string.Empty;
-                        contributionSummary.SummaryRecords.Add( a );
+                        if ( financialAccounts.ContainsKey( a.AccountId ) )
+                        {
+                            var account = financialAccounts[a.AccountId];
+                            a.AccountName = account.Name;
+                            a.Order = account.Order;
+                        }
+                        else
+                        {
+                            a.AccountName = string.Empty;
+                            a.Order = 0;
+                        }
+
+                        summaryRecords.Add( a );
                     }
+
+                    // Display the accounts in the order specified by the Accounts list.
+                    contributionSummary.SummaryRecords = summaryRecords
+                        .OrderBy( s => s.Order )
+                        .ThenBy( s => s.AccountName )
+                        .ToList();
 
                     contributionSummary.TotalAmount = item.Sum( a => a.TotalAmount );
                     contributionSummaries.Add( contributionSummary );
@@ -770,6 +789,8 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
             public string AccountName { get; set; }
 
             public decimal TotalAmount { get; set; }
+
+            public int Order { get; set; }
         }
 
         /// <summary>
@@ -782,6 +803,13 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
             public List<SummaryRecord> SummaryRecords { get; set; }
 
             public decimal TotalAmount { get; set; }
+        }
+
+        private class FinancialAccountInfo
+        {
+            public string Name { get; set; }
+
+            public int Order { get; set; }
         }
     }
 }
