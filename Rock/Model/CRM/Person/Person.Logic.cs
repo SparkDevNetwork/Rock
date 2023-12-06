@@ -1817,9 +1817,13 @@ namespace Rock.Model
                 return AgeBracket.Unknown;
             }
 
-            if ( age >= 0 && age <= 12 )
+            if ( age >= 0 && age <= 5 )
             {
-                return Enums.Crm.AgeBracket.ZeroToTwelve;
+                return Enums.Crm.AgeBracket.ZeroToFive;
+            }
+            else if ( age >= 6 && age <= 12 )
+            {
+                return Enums.Crm.AgeBracket.SixToTwelve;
             }
             else if ( age >= 13 && age <= 17 )
             {
