@@ -45,8 +45,8 @@ install:
 
 # directories to preserve between builds
 cache:
-#- node_modules
-#- packages
+- packages -> **\packages.config # preserve "packages" directory in the root of build folder but will reset it if packages.config is modified
+- node_modules # local npm modules
 
 # scripts to run before build
 # (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe', "$nugetDir\NuGet.exe")
