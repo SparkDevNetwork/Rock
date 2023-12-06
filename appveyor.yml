@@ -25,9 +25,13 @@ image: Visual Studio 2022
 configuration: Release
 platform: Any CPU
 
+# scripts that are called at very beginning, before repo cloning
+init:
+  - git config --global core.autocrlf true
+
 # clone directory and depth
-clone_depth: 1
 clone_folder: C:\projects\Rock
+clone_depth: 1
 
 # scripts that run after cloning repository
 install:
