@@ -124,7 +124,8 @@ namespace Rock.Rest.Controllers
             {
                 // See if the cookie contains a campus context value.
                 var contextItems = contextCookie.Value.FromJsonOrNull<Dictionary<string, string>>();
-                if ( contextItems?.TryGetValue( "Rock.Model.Campus", out string contextItem ) != true )
+                string contextItem = null;
+                if ( contextItems?.TryGetValue( "Rock.Model.Campus", out contextItem ) != true )
                 {
                     return 0;
                 }
