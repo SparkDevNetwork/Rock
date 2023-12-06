@@ -1986,10 +1986,6 @@ const panelGallery = defineComponent({
                 {
                     value: "helpContent",
                     text: "Help Content"
-                },
-                {
-                    value: "largeBody",
-                    text: "Large Body"
                 }
             ],
             simulateDrawer: computed((): boolean => simulateValues.value.includes("drawer")),
@@ -1998,7 +1994,6 @@ const panelGallery = defineComponent({
             simulateSubheaderRight: computed((): boolean => simulateValues.value.includes("subheaderRight")),
             simulateFooterActions: computed((): boolean => simulateValues.value.includes("footerActions")),
             simulateFooterSecondaryActions: computed((): boolean => simulateValues.value.includes("footerSecondaryActions")),
-            simulateLargeBody: computed((): boolean => simulateValues.value.includes("largeBody")),
             simulateHelp: computed((): boolean => simulateValues.value.includes("helpContent")),
             isFullscreenPageOnly: ref(true),
             value: ref(true),
@@ -2023,6 +2018,10 @@ const panelGallery = defineComponent({
     <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsibleValue" :hasZoom="hasZoom" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title" :headerSecondaryActions="headerSecondaryActions">
         <template v-if="simulateHelp" #helpContent>
             This is some help text.
+        </template>
+
+        <template #headerControls>
+            Header controls slot
         </template>
 
         <template v-if="simulateDrawer" #drawer>
