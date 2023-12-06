@@ -72,7 +72,11 @@ If (Test-Path "$webroot\app_offline-template.htm"){
 #	Remove-Item "$rootfolder\temp\Content" -Force -Confirm:$False -Recurse
 #}
 
-# move content folder to temp
+If (Test-Path "$webroot\Plugins"){
+	Write-Host "Moving plugins folder to temp directory"
+	Move-Item "$webroot\Plugins" "$rootfolder\temp\Plugins"
+}
+
 If (Test-Path "$webroot\Content"){
 	Write-Host "Moving content folder to temp directory"
 	Move-Item "$webroot\Content" "$rootfolder\temp\Content"
