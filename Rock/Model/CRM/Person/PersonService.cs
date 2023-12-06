@@ -191,19 +191,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities 
-        /// using the options specified the <see cref="PersonQueryOptions"/> (default is to exclude deceased people and nameless person records)
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities
+        /// using the options specified in the <see cref="PersonQueryOptions"/> (default is to exclude deceased people, nameless person records and the anonymous visitor).
         /// </summary>
         /// <param name="personQueryOptions">The person query options.</param>
         /// <returns></returns>
         public IQueryable<Person> Queryable( PersonQueryOptions personQueryOptions )
         {
-            return this.Queryable( null, personQueryOptions );
+            return this.Queryable( ( string ) null, personQueryOptions );
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities with eager loading of properties that are included in the includes parameter.
-        /// using the option specified the <see cref="PersonQueryOptions"/> (default is to exclude deceased people, nameless person records and the anonymous visitor. )
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities with eager loading of properties that are included in the includes parameter
+        /// using the options specified in the <see cref="PersonQueryOptions"/> (default is to exclude deceased people, nameless person records and the anonymous visitor).
         /// </summary>
         /// <param name="includes">The includes.</param>
         /// <param name="personQueryOptions">The person query options.</param>
@@ -211,6 +211,20 @@ namespace Rock.Model
         private IQueryable<Person> Queryable( string includes, PersonQueryOptions personQueryOptions )
         {
             var qry = base.Queryable( includes );
+
+            return AmendQueryable( qry, personQueryOptions );
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities, building on the provided queryable (or defaulting to the base queryable if not provided)
+        /// using the options specified in the <see cref="PersonQueryOptions"/> (default is to exclude deceased people, nameless person records and the anonymous visitor.)
+        /// </summary>
+        /// <param name="qry"></param>
+        /// <param name="personQueryOptions"></param>
+        /// <returns></returns>
+        internal IQueryable<Person> AmendQueryable( IQueryable<Person> qry, PersonQueryOptions personQueryOptions )
+        {
+            qry = qry ?? base.Queryable();
             List<int> excludedPersonRecordTypeIds = new List<int>();
 
             personQueryOptions = personQueryOptions ?? new PersonQueryOptions();
