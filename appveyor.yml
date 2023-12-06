@@ -65,6 +65,9 @@ build_script:
 - cmd: >-
     nuget restore
 
+    rem -- Allow TypeScript to have more memory for building.
+    set NODE_OPTIONS=--max-old-space-size=1536
+
     "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv"
     "c:\projects\Rock\rock.sln" /build Release
 
