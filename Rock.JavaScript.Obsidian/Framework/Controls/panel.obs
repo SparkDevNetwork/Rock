@@ -6,7 +6,7 @@
             <div :class="panelHeadingClass" @click="onPanelHeadingClick">
                 <div class="flex-grow-1 px-4">
                     <TransitionVerticalCollapse>
-                        <h1 class="panel-title" v-if="(!isPanelOpen && $slots.headerControls) || !$slots.headerControls">
+                        <h1 class="panel-title" v-if="(!isPanelOpen && $slots.headerControls) || !$slots.headerControls || !hasCollapse">
                             <slot v-if="$slots.title" name="title" />
                             <template v-else>
                                 <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
@@ -14,7 +14,7 @@
                             </template>
                         </h1>
                     </TransitionVerticalCollapse>
-                    <TransitionVerticalCollapse v-if="$slots.headerControls">
+                    <TransitionVerticalCollapse v-if="$slots.headerControls && hasCollapse">
                         <div v-if="isPanelOpen && $slots.headerControls">
                             <slot name="headerControls" />
                         </div>
