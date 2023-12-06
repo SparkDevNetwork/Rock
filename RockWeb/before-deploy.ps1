@@ -14,7 +14,7 @@ Write-Output "Running script as: $env:userdomain\$env:username"
 # stop execution of the deploy if the moves fail
 $ErrorActionPreference = "Stop"
 
-$webroot Get-ChildItem
+Get-ChildItem -Path $webroot
 
 # backup web.config file
 If (Test-Path "$webroot\web.config"){
