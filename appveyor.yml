@@ -73,7 +73,7 @@ build_script:
     set NODE_OPTIONS=--max-old-space-size=1536
 
     "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv"
-    "c:\projects\Rock\rock.sln" /build Release
+    "C:\projects\Rock\Rock.sln" /build Release
 
 # flag to stop building if an error throws
 matrix:
