@@ -246,7 +246,12 @@ namespace RockWeb.Blocks.Core
                 d.SignatureDocumentTemplate,
                 FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "",
                 FileGuid = d.BinaryFile.Guid,
-            } ).ToList();
+            } )
+                .GroupBy( d => d.SignatureDocumentTemplate ) // grouping by the signature document template to avoid duplicate checks for authorization on the same
+                .ToList()
+                .Where( d => d.Key.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                .SelectMany( d => d )
+                .ToList();
 
             gSignatureDocuments.DataBind();
         }
