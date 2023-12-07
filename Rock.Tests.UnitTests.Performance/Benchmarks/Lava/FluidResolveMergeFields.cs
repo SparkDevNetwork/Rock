@@ -25,15 +25,15 @@ using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Benchmarks.Suites
+namespace Rock.Tests.UnitTests.Performance.Benchmarks.Lava
 {
     /// <summary>
     /// Performs some basic performance tests on the Fluid lava engine with
     /// some different merge templates.
     /// </summary>
-    [MemoryDiagnoser(false)]
+    [MemoryDiagnoser( false )]
     [Attributes.OperationsPerSecondColumn]
-    [Attributes.SummaryStyle(true, SizeUnit.KB, TimeUnit.Millisecond)]
+    [Attributes.SummaryStyle( true, SizeUnit.KB, TimeUnit.Millisecond )]
     public class FluidResolveMergeFields
     {
         private readonly Dictionary<string, object> _mergeFields = new Dictionary<string, object>();
@@ -46,40 +46,40 @@ namespace Rock.Tests.Benchmarks.Suites
         public void Setup()
         {
             LavaService.RockLiquidIsEnabled = false;
-            LavaService.SetCurrentEngine(new FluidEngine());
-            GlobalAttributesCache.Get().GetValue("DefaultEnabledLavaCommands");
+            LavaService.SetCurrentEngine( new FluidEngine() );
+            GlobalAttributesCache.Get().GetValue( "DefaultEnabledLavaCommands" );
 
-            _complexMergeFields.Add("Items", Enumerable.Range(1, 100).ToList());
+            _complexMergeFields.Add( "Items", Enumerable.Range( 1, 100 ).ToList() );
         }
 
-        [Benchmark(Baseline = true)]
+        [Benchmark( Baseline = true )]
         public string EmptyString()
         {
-            return "".ResolveMergeFields(_mergeFields, _currentPerson);
+            return "".ResolveMergeFields( _mergeFields, _currentPerson );
         }
 
         [Benchmark]
         public string NoLavaString()
         {
-            return "Hello Anonymous".ResolveMergeFields(_mergeFields, _currentPerson);
+            return "Hello Anonymous".ResolveMergeFields( _mergeFields, _currentPerson );
         }
 
         [Benchmark]
         public string SimpleLavaString()
         {
-            return "Hello {{ 'Unknown' }}".ResolveMergeFields(_mergeFields, _currentPerson);
+            return "Hello {{ 'Unknown' }}".ResolveMergeFields( _mergeFields, _currentPerson );
         }
 
         [Benchmark]
         public string NickNameLavaString()
         {
-            return "Hello {{ CurrentPerson.NickName }}".ResolveMergeFields(_mergeFields, _currentPerson);
+            return "Hello {{ CurrentPerson.NickName }}".ResolveMergeFields( _mergeFields, _currentPerson );
         }
 
         [Benchmark]
         public string ComplexLavaString()
         {
-            return "{% assign value = 0 %}{% for item in Items %}{% assign value = value | Plus:item %}{% endfor %}{{ value }}".ResolveMergeFields(_complexMergeFields, _currentPerson);
+            return "{% assign value = 0 %}{% for item in Items %}{% assign value = value | Plus:item %}{% endfor %}{{ value }}".ResolveMergeFields( _complexMergeFields, _currentPerson );
         }
     }
 }

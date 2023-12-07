@@ -16,7 +16,7 @@
 //
 using BenchmarkDotNet.Running;
 
-namespace Rock.Tests.Benchmarks
+namespace Rock.Tests.UnitTests.Performance
 {
     internal class Program
     {

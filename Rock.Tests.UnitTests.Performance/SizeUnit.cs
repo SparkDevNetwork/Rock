@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Tests.Benchmarks
+namespace Rock.Tests.UnitTests.Performance
 {
     /// <summary>
     /// Defines the size to display byte counters in the summary report.

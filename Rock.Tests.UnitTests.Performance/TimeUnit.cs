@@ -14,21 +14,31 @@
 // limitations under the License.
 // </copyright>
 //
-using BenchmarkDotNet.Attributes;
-
-namespace Rock.Tests.Benchmarks.Attributes
+namespace Rock.Tests.UnitTests.Performance
 {
     /// <summary>
-    /// Includes the Operations Per Second column in the summary report.
+    /// The unit of time to use when in the summary results.
     /// </summary>
-    internal class OperationsPerSecondColumnAttribute : ColumnConfigBaseAttribute
+    internal enum TimeUnit
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="OperationsPerSecondColumnAttribute"/> class.
+        /// Values will be displayed in nanoseconds.
         /// </summary>
-        public OperationsPerSecondColumnAttribute()
-            : base(BenchmarkDotNet.Columns.StatisticColumn.OperationsPerSecond)
-        {
-        }
+        Nanosecond,
+
+        /// <summary>
+        /// Values will be displayed in microseconds.
+        /// </summary>
+        Microsecond,
+
+        /// <summary>
+        /// Values will be displayed in milliseconds.
+        /// </summary>
+        Millisecond,
+
+        /// <summary>
+        /// Values will be displayed in seconds.
+        /// </summary>
+        Second
     }
 }

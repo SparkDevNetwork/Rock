@@ -18,7 +18,7 @@ using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Reports;
 
-namespace Rock.Tests.Benchmarks.Attributes
+namespace Rock.Tests.UnitTests.Performance.Attributes
 {
     /// <summary>
     /// Defines the summary style to use when displaying the results of the test.
@@ -38,12 +38,12 @@ namespace Rock.Tests.Benchmarks.Attributes
         /// <param name="printZeroValuesInContent">If set to <c>true</c> then zero values will be printed in the content.</param>
         /// <param name="maxParameterColumnWidth">Maximum width of the parameter column.</param>
         /// <param name="ratioStyle">The ratio style.</param>
-        public SummaryStyleAttribute(bool printUnitsInHeader, SizeUnit sizeUnit, TimeUnit timeUnit, bool printUnitsInContent = true, bool printZeroValuesInContent = false, int maxParameterColumnWidth = 20, RatioStyle ratioStyle = RatioStyle.Value)
+        public SummaryStyleAttribute( bool printUnitsInHeader, SizeUnit sizeUnit, TimeUnit timeUnit, bool printUnitsInContent = true, bool printZeroValuesInContent = false, int maxParameterColumnWidth = 20, RatioStyle ratioStyle = RatioStyle.Value )
         {
             BenchmarkDotNet.Columns.SizeUnit su;
             Perfolizer.Horology.TimeUnit tu;
 
-            switch (sizeUnit)
+            switch ( sizeUnit )
             {
                 case SizeUnit.B:
                     su = BenchmarkDotNet.Columns.SizeUnit.B;
@@ -66,10 +66,10 @@ namespace Rock.Tests.Benchmarks.Attributes
                     break;
 
                 default:
-                    throw new System.ArgumentOutOfRangeException(nameof(sizeUnit));
+                    throw new System.ArgumentOutOfRangeException( nameof( sizeUnit ) );
             }
 
-            switch (timeUnit)
+            switch ( timeUnit )
             {
                 case TimeUnit.Nanosecond:
                     tu = Perfolizer.Horology.TimeUnit.Nanosecond;
@@ -88,11 +88,11 @@ namespace Rock.Tests.Benchmarks.Attributes
                     break;
 
                 default:
-                    throw new System.ArgumentOutOfRangeException(nameof(timeUnit));
+                    throw new System.ArgumentOutOfRangeException( nameof( timeUnit ) );
             }
 
             Config = ManualConfig.CreateEmpty()
-                .WithSummaryStyle(new SummaryStyle(null, printUnitsInHeader, su, tu, printUnitsInContent, printZeroValuesInContent, maxParameterColumnWidth, ratioStyle));
+                .WithSummaryStyle( new SummaryStyle( null, printUnitsInHeader, su, tu, printUnitsInContent, printZeroValuesInContent, maxParameterColumnWidth, ratioStyle ) );
         }
     }
 }
