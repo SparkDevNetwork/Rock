@@ -4,6 +4,7 @@
     <div>
         <Grid :definition="config.gridDefinition ?? undefined"
               :data="gridDataSource"
+              keyField="idKey"
               itemTerm="Nameless People"
               stickyHeader
               liveUpdates

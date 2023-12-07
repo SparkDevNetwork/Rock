@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
-import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
     import { computed, ref } from "vue";
 
     const props = defineProps(standardCellProps);
@@ -20,7 +20,7 @@ import { isPromise } from "@Obsidian/Utility/promiseUtils";
     const isRunning = ref(false);
 
     const isDisabled = computed((): boolean => {
-        return !isRunning.value;
+        return isRunning.value;
     });
 
     const title = computed((): string | undefined => {
