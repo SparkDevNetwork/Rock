@@ -28,7 +28,7 @@
                 <Rock:NotificationBox ID="nbSqlServerVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
                     <strong><i class="fa fa-exclamation-triangle"></i> Microsoft SQL Server Update Required</strong>
                     <p>
-                        As of Rock v16, Rock requires Microsoft Azure SQL or SQL Server 2016 (or higher), and it must have compatibility level 130 (SQL Server 2016) or higher.
+                        Rock now requires Microsoft Azure SQL or SQL Server 2016 (or higher), and it must be set to compatibility level 130 (SQL Server 2016) or higher.
                         You will need to upgrade your database in order to proceed with additional updates.
                     </p>
                 </Rock:NotificationBox>
