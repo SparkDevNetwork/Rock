@@ -19,6 +19,9 @@ import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import { Component, defineComponent, PropType } from "vue";
 import EditCell from "../Cells/editCell.partial.obs";
 
+/**
+ * Shows an edit button that will call the click handler when clicked.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -49,7 +52,9 @@ export default defineComponent({
         },
 
         /**
-         * Called when the edit button has been clicked.
+         * Called when the edit button has been clicked. If a Promise is
+         * returned then the button will remain disabled until the Promise is
+         * resolved.
          */
         onClick: {
             type: Function as PropType<((key: string) => void) | ((key: string) => Promise<void>)>,
