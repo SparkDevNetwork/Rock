@@ -47,6 +47,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { FinancialBatchBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchBag";
     import { FinancialBatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchDetailOptionsBag";
+    import { addQuickReturn } from "@Obsidian/Utility/page";
 
     const config = useConfigurationValues<DetailBlockBox<FinancialBatchBag, FinancialBatchDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -310,5 +311,11 @@
     else if (!config.entity.idKey) {
         financialBatchEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
+    }
+
+    // Add a quick return link if we are in view mode and have a name - which
+    // implies that the page has a valid batch being viewed.
+    if (panelMode.value === DetailPanelMode.View && config.entity?.name) {
+        addQuickReturn(config.entity.name, "Batches", 50);
     }
 </script>
