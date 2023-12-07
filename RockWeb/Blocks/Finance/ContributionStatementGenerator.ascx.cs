@@ -164,6 +164,10 @@ namespace RockWeb.Blocks.Finance
 
             FinancialStatementGeneratorRecipient financialStatementGeneratorRecipient = new FinancialStatementGeneratorRecipient();
 
+            // It's required that we set the LocationId in order for the GetStatementGeneratorRecipientResult() to
+            // fetch all the required data for the Lava.
+            financialStatementGeneratorRecipient.LocationId = targetPerson.GetMailingLocation()?.Id;
+    
             if ( targetPerson.GivingGroupId.HasValue )
             {
                 financialStatementGeneratorRecipient.GroupId = targetPerson.GivingGroupId.Value;
