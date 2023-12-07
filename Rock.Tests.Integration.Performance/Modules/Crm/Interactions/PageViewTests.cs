@@ -12,7 +12,7 @@ using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Performance.Interactions
+namespace Rock.Tests.Integration.Performance.Interactions
 {
     [TestClass]
     [Ignore("Performance tests. These tests do not contain any Asserts.")]

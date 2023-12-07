@@ -17,7 +17,7 @@
 using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Rock.Tests.Performance.Core
+namespace Rock.Tests.Integration.Performance.Core
 {
     [TestClass]
     public class SundayDateTest

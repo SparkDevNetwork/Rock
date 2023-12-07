@@ -19,7 +19,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Rock.Tests.Performance.Rest.ControllersTests
+namespace Rock.Tests.Integration.Performance.Rest.ControllersTests
 {
     [TestClass]
     public class BenchmarkRunners

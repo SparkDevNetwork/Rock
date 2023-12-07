@@ -17,7 +17,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Performance.Core
+namespace Rock.Tests.Integration.Performance.Core
 {
     /// <summary>
     /// Tests that verify the performance of the Rock Cleanup Job.

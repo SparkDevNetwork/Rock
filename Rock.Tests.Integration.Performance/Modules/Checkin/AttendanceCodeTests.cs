@@ -21,7 +21,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Tests.Performance.Model
+namespace Rock.Tests.Integration.Performance.Model
 {
     /// <summary>
     /// Used for testing anything regarding AttendanceCode.

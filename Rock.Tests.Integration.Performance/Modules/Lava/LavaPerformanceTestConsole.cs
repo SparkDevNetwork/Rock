@@ -30,7 +30,7 @@ using Rock.Tests.Integration.Core.Lava;
 using Rock.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Performance
+namespace Rock.Tests.Integration.Performance
 {
     /// <summary>
     /// Run a series of tests to benchmark the performance of selected Lava engine implementations.

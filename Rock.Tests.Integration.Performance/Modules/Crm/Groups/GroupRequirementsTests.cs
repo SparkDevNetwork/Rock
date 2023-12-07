@@ -24,7 +24,7 @@ using Rock.Model;
 using Rock.Tests.Integration;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Performance.Crm.Groups
+namespace Rock.Tests.Integration.Performance.Crm.Groups
 {
     /// <summary>
     /// Tests that verify the operation of Group Requirements.

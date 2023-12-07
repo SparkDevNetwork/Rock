@@ -9,8 +9,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{B0DF7CC9-5300-48E7-B173-8CEE492DB2D1}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Rock.Tests.Performance</RootNamespace>
-    <AssemblyName>Rock.Tests.Performance</AssemblyName>
+    <RootNamespace>Rock.Tests.Integration.Performance</RootNamespace>
+    <AssemblyName>Rock.Tests.Integration.Performance</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

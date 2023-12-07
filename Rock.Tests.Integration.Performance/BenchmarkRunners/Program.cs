@@ -21,7 +21,7 @@ using Rock.Lava.Fluid;
 using Rock.Tests.Integration.Core.Lava;
 using Rock.Tests.UnitTests.Lava;
 
-namespace Rock.Tests.Performance
+namespace Rock.Tests.Integration.Performance
 {
     /// <summary>
     /// The main entry point for this utility application.

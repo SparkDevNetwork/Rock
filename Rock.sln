@@ -121,7 +121,7 @@ Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.Obsidian.Bl
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript", "Rock.JavaScript\Rock.JavaScript.njsproj", "{A5935F9E-DA78-46D6-806F-39C782C6A3C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests.Performance", "Rock.Tests.Performance\Rock.Tests.Performance.csproj", "{B0DF7CC9-5300-48E7-B173-8CEE492DB2D1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests.Integration.Performance", "Rock.Tests.Integration.Performance\Rock.Tests.Integration.Performance.csproj", "{B0DF7CC9-5300-48E7-B173-8CEE492DB2D1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.AI.OpenAI", "Rock.AI.OpenAI\Rock.AI.OpenAI.csproj", "{BAB8BF5E-6457-4668-ADF1-B917100BA7CD}"
 EndProject

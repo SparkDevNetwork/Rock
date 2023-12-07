@@ -16,7 +16,7 @@
 //
 using System.Collections.Generic;
 
-namespace Rock.Tests.Performance
+namespace Rock.Tests.Integration.Performance
 {
     public static class TestData
     {

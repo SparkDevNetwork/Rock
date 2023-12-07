@@ -18,7 +18,7 @@ using System.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Tests.Integration;
 
-namespace Rock.Tests.Performance
+namespace Rock.Tests.Integration.Performance
 {
     [TestClass]
     public sealed class PerformanceTestInitializer

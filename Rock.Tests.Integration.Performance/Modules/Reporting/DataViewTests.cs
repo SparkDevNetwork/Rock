@@ -23,7 +23,7 @@ using Rock.Model;
 using Rock.Tests.Integration;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Performance.Reporting
+namespace Rock.Tests.Integration.Performance.Reporting
 {
     /// <summary>
     /// Tests that verify the performance of Data Views.

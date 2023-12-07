@@ -18,7 +18,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Rock.Tests.Performance
+namespace Rock.Tests.Integration.Performance
 {
     public enum OutputMessageTypeSpecifier
     {

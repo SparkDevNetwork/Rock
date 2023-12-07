@@ -24,7 +24,7 @@ using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Performance.Crm
+namespace Rock.Tests.Integration.Performance.Crm
 {
     /// <summary>
     /// Create and manage test data for the Rock CRM module.

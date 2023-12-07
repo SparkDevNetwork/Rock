@@ -28,7 +28,7 @@ using Rock.Rest.Controllers;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Performance.Rest.ControllersTests
+namespace Rock.Tests.Integration.Performance.Rest.ControllersTests
 {
     [TestClass]
     public class PersonPickerControllerTests
