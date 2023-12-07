@@ -111,9 +111,13 @@
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountParticipantBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepStatusBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramWorkflowTriggerBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusResponseBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayBag.cs" />
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionBag.cs" />
