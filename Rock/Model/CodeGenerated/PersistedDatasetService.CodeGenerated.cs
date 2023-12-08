@@ -123,6 +123,7 @@ namespace Rock.Model
             target.MemoryCacheDurationMS = source.MemoryCacheDurationMS;
             target.Name = source.Name;
             target.PersistedScheduleId = source.PersistedScheduleId;
+            target.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             target.RefreshIntervalMinutes = source.RefreshIntervalMinutes;
             target.ResultData = source.ResultData;
             target.ResultFormat = source.ResultFormat;
