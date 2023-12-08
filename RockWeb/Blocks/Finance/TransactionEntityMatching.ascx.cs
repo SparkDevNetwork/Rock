@@ -769,14 +769,23 @@ namespace RockWeb.Blocks.Finance
                 if ( _transactionEntityType.Id == EntityTypeCache.GetId<GroupMember>() )
                 {
                     var rockContext = new RockContext();
+                    var configuredGroupTypeId = GetAttributeValue( "EntityTypeQualifierValue" ).AsInteger();
                     foreach ( var ddlGroupMember in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlGroupMember_" ) ) )
                     {
                         int? financialTransactionDetailId = ddlGroupMember.ID.Replace( "ddlGroupMember_", string.Empty ).AsInteger();
                         var dllGroup = phTableRows.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.ID == "ddlGroup_" + financialTransactionDetailId.Value.ToString() );
                         int? groupMemberId = ddlGroupMember.SelectedValue.AsIntegerOrNull();
-                        var groupId = dllGroup.SelectedValueAsId(); 
-                        var configuredGroupTypeId = GetAttributeValue( "EntityTypeQualifierValue" ).AsInteger();
-                        var isConfiguredGroupType = new GroupService( rockContext ).Queryable().Any( x => x.Id == groupId && x.GroupTypeId == configuredGroupTypeId );
+                        var isConfiguredGroupType = false;
+
+                        if ( groupMemberId == null )
+                        {
+                            var transactionDetailEntityId = _financialTransactionDetailList.Find( a => a.Id == financialTransactionDetailId )?.EntityId;
+                            isConfiguredGroupType = transactionDetailEntityId.HasValue && new GroupMemberService( rockContext ).Queryable()
+                                .Any( x => x.Id == transactionDetailEntityId.Value
+                                    && x.GroupTypeId == configuredGroupTypeId );
+                        }
+
+                        // Note only set the GroupMemberId/EntityId on the TransactionDetail to null if the GroupType configured on the block matches the GroupMember's Group
                         if ( groupMemberId != null || isConfiguredGroupType )
                         {
                             AssignEntityToTransactionDetail( groupMemberId, financialTransactionDetailId );
@@ -785,11 +794,24 @@ namespace RockWeb.Blocks.Finance
                 }
                 else if ( _transactionEntityType.Id == EntityTypeCache.GetId<Group>() )
                 {
+                    var rockContext = new RockContext();
+                    var configuredGroupTypeId = GetAttributeValue( "EntityTypeQualifierValue" ).AsInteger();
                     foreach ( var ddlGroup in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlGroup_" ) ) )
                     {
                         int? financialTransactionDetailId = ddlGroup.ID.Replace( "ddlGroup_", string.Empty ).AsInteger();
                         int? groupId = ddlGroup.SelectedValue.AsIntegerOrNull();
-                        if ( groupId != null )
+                        var isConfiguredGroupType = false;
+
+                        if ( groupId == null )
+                        {
+                            var transactionDetailEntityId = _financialTransactionDetailList.Find( a => a.Id == financialTransactionDetailId )?.EntityId;
+                            isConfiguredGroupType = transactionDetailEntityId.HasValue && new GroupService( rockContext ).Queryable()
+                                .Any( x => x.Id == transactionDetailEntityId.Value
+                                    && x.GroupTypeId == configuredGroupTypeId );
+                        }
+
+                        // Note only set the GroupId/EntityId on the TransactionDetail to null if the GroupType configured on the block matches the GroupMember's Group
+                        if ( groupId != null || isConfiguredGroupType )
                         {
                             AssignEntityToTransactionDetail( groupId, financialTransactionDetailId );
                         }
