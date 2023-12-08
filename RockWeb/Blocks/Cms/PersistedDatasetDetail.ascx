@@ -51,7 +51,7 @@
                         <Rock:DatePicker ID="dtpExpireDateTime" runat="server" Label="Expires on" Help="Set this to consider the dataset inactive after the specified date. This will mean that its value is no longer updated by the refresh job and that it will return empty when requested through Lava." />
                     </div>
                     <div class="col-md-6">
-                        <Rock:EntityTypePicker ID="etpEntityType" runat="server" Required="false" Label="Entity Type" Help="Set this to indicate which EntityType the JSON object should be associated with. This will be used by the PersistedDataset Lava Filter when entity related options such as 'AppendFollowing' are specified.'" />
+                        <Rock:EntityTypePicker ID="etpEntityType" runat="server" Required="false" Label="Entity Type" Help="Set this to indicate which EntityType the JSON object should be associated with. This will be used by the PersistedDataset Lava Filter when entity related options such as 'AppendFollowing' are specified." />
 
                         <Rock:RockCheckBox ID="cbAllowManualRefresh" runat="server" Label="Allow Manual Refresh" Help="Determines if the persisted dataset can be manually refreshed in the Persisted Dataset list." />
                     </div>

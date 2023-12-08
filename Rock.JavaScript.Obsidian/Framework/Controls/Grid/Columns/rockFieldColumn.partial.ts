@@ -43,6 +43,12 @@ function getExportValue(row: Record<string, unknown>, column: ColumnDefinition):
     return value;
 }
 
+/**
+ * Allows a single rock field value to be displayed. This is a special column and
+ * should be considered internal to Rock and not used by plugins.
+ *
+ * @private
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -57,6 +63,10 @@ export default defineComponent({
             default: getExportValue
         },
 
+        /**
+         * Defines the attribute that represents this column. It will be used
+         * to format the value for display.
+         */
         attribute: {
             type: Object as PropType<PublicAttributeBag>,
             required: true

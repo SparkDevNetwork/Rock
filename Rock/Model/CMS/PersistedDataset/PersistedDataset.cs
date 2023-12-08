@@ -212,6 +212,15 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the ID of the schedule for this PersistedDataset.
+        /// </summary>
+        /// <value>
+        /// The persisted schedule identifier.
+        /// </value>
+        [DataMember]
+        public int? PersistedScheduleId { get; set; }
+
         #endregion
     }
 

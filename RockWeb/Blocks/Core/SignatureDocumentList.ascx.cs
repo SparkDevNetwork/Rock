@@ -197,14 +197,14 @@ namespace RockWeb.Blocks.Core
             else
             {
                 int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
-                if ( documentTypeId.HasValue )
+                if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
                 {
                     var signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );
                     var signatureDocumentTemplate = signatureDocumentTemplateService.Get( documentTypeId.Value );
 
                     // Following the same logic as the Signature Document Detail to hide the Block if the Current Person is not authorized to view.
-                    bool canEdit = signatureDocumentTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                    bool canView = canEdit || signatureDocumentTemplate.IsAuthorized( Authorization.VIEW, CurrentPerson );
+                    bool canEdit = signatureDocumentTemplate?.IsAuthorized( Authorization.EDIT, CurrentPerson ) ?? false;
+                    bool canView = canEdit || ( signatureDocumentTemplate?.IsAuthorized( Authorization.VIEW, CurrentPerson ) ?? false );
 
                     if ( !canView )
                     {
@@ -246,7 +246,12 @@ namespace RockWeb.Blocks.Core
                 d.SignatureDocumentTemplate,
                 FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "",
                 FileGuid = d.BinaryFile.Guid,
-            } ).ToList();
+            } )
+                .GroupBy( d => d.SignatureDocumentTemplate ) // grouping by the signature document template to avoid duplicate checks for authorization on the same
+                .ToList()
+                .Where( d => d.Key.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                .SelectMany( d => d )
+                .ToList();
 
             gSignatureDocuments.DataBind();
         }

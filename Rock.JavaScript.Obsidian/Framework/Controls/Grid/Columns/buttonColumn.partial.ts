@@ -18,20 +18,30 @@
 import { Component, defineComponent, PropType } from "vue";
 import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import ButtonCell from "../Cells/buttonCell.partial.obs";
+import { IGridState } from "@Obsidian/Types/Controls/grid";
 
+/**
+ * A column that displays a single button with an icon on it.
+ */
 export default defineComponent({
 
     props: {
         ...standardColumnProps,
 
-        action: {
-            type: Function as PropType<((key: string) => void) | ((key: object) => void)>,
+        /**
+         * Called when the button has been clicked.
+         */
+        onClick: {
+            type: Function as PropType<(key: string, grid: IGridState) => (void | Promise<void>)>,
             required: false
         },
 
-        name: {
+        /**
+         * The icon CSS class to use as the content for the button.
+         */
+        iconClass: {
             type: String as PropType<string>,
-            default: "__button"
+            required: true
         },
 
         headerClass: {

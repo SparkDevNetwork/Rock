@@ -444,8 +444,6 @@ namespace Rock.Blocks.Cms
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new PageRouteService( rockContext );
-
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
                     return actionError;
@@ -463,28 +461,22 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( validationMessage );
                 }
 
-                var isNew = entity.Id == 0;
-
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
                     entity.SaveAttributeValues( rockContext );
                 } );
 
-                if ( isNew )
+                var pageCache = Web.Cache.PageCache.Get( entity.PageId );
+
+                if ( pageCache != null )
                 {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.PageRouteId] = entity.IdKey
-                    } ) );
+                    PageCache.FlushPage( pageCache.Id );
                 }
 
+                Rock.Web.RockRouteHandler.ReregisterRoutes();
 
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return ActionOk( this.GetParentPageUrl() );
             }
         }
 

@@ -82,20 +82,25 @@ namespace Rock.Field.Types
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
-            using ( var rockContext = new RockContext() )
+
+            if ( usage != ConfigurationValueUsage.View )
             {
-                publicConfigurationValues[VALUES_PUBLIC_KEY] = new ReportService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .OrderBy( r => r.Name )
-                    .Select( r => new ListItemBag
-                    {
-                        Text = r.Name,
-                        Value = r.Guid.ToString(),
-                    } )
-                    .ToList()
-                    .ToCamelCaseJson( false, true );
+                using ( var rockContext = new RockContext() )
+                {
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = new ReportService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .OrderBy( r => r.Name )
+                        .Select( r => new ListItemBag
+                        {
+                            Text = r.Name,
+                            Value = r.Guid.ToString(),
+                        } )
+                        .ToList()
+                        .ToCamelCaseJson( false, true );
+                }
             }
+
             return publicConfigurationValues;
         }
 

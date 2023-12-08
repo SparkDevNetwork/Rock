@@ -493,15 +493,22 @@ namespace Rock.Financial
                         // get the location that was specified for the recipient
                         mailingAddress = new LocationService( rockContext ).Get( locationId.Value );
                     }
-                    /*  JME 9/22/2023
+                    /*  
+                        12/7/2023 - NA
+                        We discoverd the 'else' below was compensating for the fact that the ContributionStatementGenerator
+                        block was failing to include the LocationId in the financialStatementGeneratorRecipientRequest.
+                        Therefore, we're fixing it in that block.
+
+                        9/22/2023 - JME 
                         This query below was taking 4 seconds on the Life.Church server and appears to be redundant to the original query. Said
                         a different way, if the request above didn't find a location this one won't either.
-                    else
-                    {
-                        // for backwards compatibility, get the first address
-                        IQueryable<GroupLocation> groupLocationsQry = FinancialStatementGeneratorHelper.GetGroupLocationQuery( rockContext );
-                        mailingAddress = groupLocationsQry.Where( a => a.GroupId == groupId ).Select( a => a.Location ).FirstOrDefault();
-                    }
+
+                        else
+                        {
+                            // for backwards compatibility, get the first address
+                            IQueryable<GroupLocation> groupLocationsQry = FinancialStatementGeneratorHelper.GetGroupLocationQuery( rockContext );
+                            mailingAddress = groupLocationsQry.Where( a => a.GroupId == groupId ).Select( a => a.Location ).FirstOrDefault();
+                        }
                     */
 
                     mergeFields.Add( MergeFieldKey.MailingAddress, mailingAddress );

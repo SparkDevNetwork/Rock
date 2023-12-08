@@ -39,6 +39,7 @@
                 <Toggle v-model="isApproved"
                           trueText="Approved"
                           falseText="Pending"
+                          btnSize="xs"
                           onButtonActiveCssClass="btn-success"
                           offButtonActiveCssClass="btn-warning"
                           label="Status" />
@@ -50,7 +51,8 @@
                 <CategoryPicker v-model="category"
                         label="Category"
                         :entityTypeGuid="prayerRequestEntityTypeGuid"
-                        rules="required" />
+                        rules="required"
+                        autoExpand />
                 <TextBox v-model="request"
                           label="Request"
                           textMode="multiline"

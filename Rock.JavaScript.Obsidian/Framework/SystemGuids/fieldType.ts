@@ -191,6 +191,8 @@ export const FieldType = {
     IntegerRange: "9D5F21E0-DEA0-4E8E-BA42-71151F6A8ED4",
     /** Interaction Channel field type */
     InteractionChannel: "5EE5D193-60B6-4808-9BE9-C5FFDDF444E4",
+    /** Interaction Channel Interaction Component field type */
+    InteractionChannelInteractionComponent: "299F8444-BB47-4B6C-B523-235156BF96DC",
     /** Interaction Channels field type */
     InteractionChannels: "D5781EB0-3A2A-4FBB-AF8E-E14664147003",
     /** Key Value List field type */

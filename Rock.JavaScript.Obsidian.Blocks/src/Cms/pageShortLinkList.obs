@@ -30,7 +30,7 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <CopyColumn :getValueToCopy="linkToCopy" />
+        <CopyColumn field="shortLink" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -131,15 +131,6 @@
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
-    }
-
-    /**
-    * The function to copy a specific website link to the clipboard.
-    *
-    * @param row The row whose link is to be copied.
-    */
-    function linkToCopy(row: Record<string, unknown>): string {
-        return row.shortLink as string;
     }
 
     // #endregion
