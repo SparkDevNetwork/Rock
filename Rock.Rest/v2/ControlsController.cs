@@ -3086,6 +3086,121 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group Member Requirement Card
+
+        /// <summary>
+        /// Gets the group members that can be displayed in the group member picker.
+        /// </summary>
+        /// <param name="realOptions">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the group members.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardGetConfig" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "E3981034-6A58-48CB-85ED-F9900AA99934" )]
+        public IHttpActionResult GroupMemberRequirementCardGetConfig( [FromBody] GroupMemberRequirementCardGetConfigOptionsBag realOptions )
+        {
+            var groupMemberGuid = new Guid( "6FCDC1E6-D5D0-49D1-AF77-C28D5906F823" );
+
+            var options = new GroupMemberRequirementCardGetConfigOptionsBag
+            {
+                GroupRequirementGuid = new Guid( "3493C2B5-6573-41B1-A503-A7C135ED2B7C" ),
+                GroupMemberRequirementGuid = new Guid( "C7E8D53C-0394-409C-A596-8A1E55A0B609" ),
+                MeetsGroupRequirement = Rock.Enums.Controls.MeetsGroupRequirement.NotMet
+            };
+
+            if ( options.GroupRequirementGuid.IsEmpty() || options.GroupMemberRequirementGuid.IsEmpty() )
+            {
+                return BadRequest( "GroupRequirementGuid and GroupMemberRequirementGuid are required." );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var currentPerson = RockRequestContext.CurrentPerson;
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
+                var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( options.GroupMemberRequirementGuid );
+                var groupRequirementType = groupRequirement.GroupRequirementType;
+
+                var results = new GroupMemberRequirementCardGetConfigResultsBag();
+
+
+
+
+
+                if ( groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
+                {
+                    results.ManualRequirementControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirement.GroupRequirementType.CheckboxLabel.IsNotNullOrWhiteSpace()
+                            ? groupRequirement.GroupRequirementType.CheckboxLabel
+                            : groupRequirement.GroupRequirementType.Name,
+                        Icon = "fa fa-check-circle-o fa-fw"
+                    };
+                }
+
+                if ( options.CanOverride )
+                {
+                    results.OverrideRequirementControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = "Mark as Met",
+                        Icon = "fa fa-check-circle-o fa-fw"
+                    };
+                }
+
+                // Workflow linkbutton controls
+
+                // Add workflow link if:
+                // the Group Requirement Type has a workflow type ID,
+                // the workflow is NOT auto initiated, and
+                // the requirement status matches the workflow purpose (Meets with Warning or Not Met).
+                var hasNotMetWorkflow = groupRequirementType.DoesNotMeetWorkflowTypeId.HasValue
+                    && !groupRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow
+                    && options.MeetsGroupRequirement == Rock.Enums.Controls.MeetsGroupRequirement.NotMet;
+
+                var hasWarningWorkflow = groupRequirementType.WarningWorkflowTypeId.HasValue
+                    && !groupRequirementType.ShouldAutoInitiateWarningWorkflow
+                    && options.MeetsGroupRequirement == Rock.Enums.Controls.MeetsGroupRequirement.MeetsWithWarning;
+
+                if ( hasNotMetWorkflow )
+                {
+                    results.NotMetWorkflowControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace()
+                            ? groupRequirementType.DoesNotMeetWorkflowLinkText
+                            : "Requirement Not Met",
+                        Icon = "fa fa-play-circle-o fa-fw"
+                    };
+                }
+
+                if ( hasWarningWorkflow )
+                {
+                    results.WarningWorkflowControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
+                            groupRequirementType.WarningWorkflowLinkText :
+                            "Requirement Met With Warning",
+                        Icon = "fa fa-play-circle-o fa-fw"
+                    };
+                }
+
+
+
+
+
+
+
+                return Ok( results );
+            }
+
+
+            //var groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
+        }
+
+        #endregion
+
         #region Group Type Group Picker
 
         /// <summary>

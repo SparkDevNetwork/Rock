@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -219,7 +220,7 @@ namespace Rock.Web.UI.Controls
                     Controls.Add( _lbManualRequirement );
                 }
 
-                if ( groupRequirement.IsAuthorized( Authorization.OVERRIDE, currentPerson ) )
+                if ( groupRequirement.GroupRequirementType.IsAuthorized( Authorization.OVERRIDE, currentPerson ) )
                 {
                     _lbMarkAsMet = new LinkButton
                     {
