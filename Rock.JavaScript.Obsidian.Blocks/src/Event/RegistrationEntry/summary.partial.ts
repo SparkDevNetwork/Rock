@@ -55,6 +55,7 @@ export default defineComponent({
 
         /** An error message received from a bad submission */
         const submitErrorMessage = ref("");
+        const hasError = ref(false);
 
         const persistSession = inject("persistSession") as (force: boolean) => Promise<void>;
 
@@ -82,6 +83,7 @@ export default defineComponent({
 
         return {
             loading,
+            hasError,
             submitErrorMessage,
             getRegistrationEntryBlockArgs,
             hasPaymentCost,
@@ -198,6 +200,10 @@ export default defineComponent({
 
             return result.data || "";
         },
+
+        onCostErrorState(error: boolean): void {
+            this.hasError = error;
+        }
     },
 
     template: `
@@ -209,7 +215,7 @@ export default defineComponent({
         <div v-if="hasPaymentCost">
             <h4>Payment Summary</h4>
             <DiscountCodeForm />
-            <CostSummary />
+            <CostSummary @errorState="onCostErrorState" />
         </div>
 
         <div v-if="!hasPaymentCost" class="margin-b-md">
@@ -223,11 +229,11 @@ export default defineComponent({
 
         <NotificationBox v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</NotificationBox>
 
-        <div class="actions text-right">
+        <div class="actions text-right clearfix">
             <RockButton v-if="viewModel.allowRegistrationUpdates" class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
                 Previous
             </RockButton>
-            <RockButton btnType="primary" type="submit" :isLoading="loading" autoDisable>
+            <RockButton v-if="!hasError" btnType="primary" type="submit" :isLoading="loading" autoDisable>
                 {{finishButtonText}}
             </RockButton>
         </div>
