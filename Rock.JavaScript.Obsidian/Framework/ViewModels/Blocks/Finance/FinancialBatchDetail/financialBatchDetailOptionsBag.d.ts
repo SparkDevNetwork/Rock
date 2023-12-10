@@ -52,4 +52,7 @@ export type FinancialBatchDetailOptionsBag = {
 
     /** Gets or sets the transaction item count. */
     transactionItemCount: number;
+
+    /** Gets the GUID of the defined type for the batch names if specified in the block attribute. */
+    batchNameDefinedTypeGuid: string | null;
 };

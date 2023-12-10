@@ -55,6 +55,7 @@ namespace Rock.Blocks.Finance
         IsRequired = false,
         DefaultValue = "",
         Category = "",
+        Key = AttributeKey.BatchNames,
         Order = 3 )]
     #endregion
 
@@ -65,6 +66,14 @@ namespace Rock.Blocks.Finance
         private const string AuthorizationReopenBatch = "ReopenBatch";
 
         #region Keys
+
+        /// <summary>
+        /// Keys to use for Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string BatchNames = "BatchNames";
+        }
 
         private static class PageParameterKey
         {
@@ -106,7 +115,7 @@ namespace Rock.Blocks.Finance
                 SetBoxInitialEntityState( box, rockContext );
 
                 // this computation is redundant for this block. But, keeping it as it was generated as part of the code generator.
-                int id = Rock.Utility.IdHasher.Instance.GetId( box.Entity.IdKey ) ?? 0;
+                int id = Rock.Utility.IdHasher.Instance.GetId( box.Entity?.IdKey ) ?? 0;
 
                 box.NavigationUrls = GetBoxNavigationUrls( id );
                 box.Options = GetBoxOptions( box.Entity, rockContext );
@@ -126,6 +135,12 @@ namespace Rock.Blocks.Finance
         private FinancialBatchDetailOptionsBag GetBoxOptions( FinancialBatchBag entity, RockContext rockContext )
         {
             var options = new FinancialBatchDetailOptionsBag();
+            options.IsReopenAuthorized = IsReopenAuthorized;
+
+            if ( entity == null )
+            {
+                return options;
+            }
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var batchTransactionsQuery = financialTransactionService.Queryable()
                 .Where( a => a.BatchId.HasValue && a.BatchId.Value == entity.Id );
@@ -174,7 +189,11 @@ namespace Rock.Blocks.Finance
             // copying the logic from the web forms
             options.IsStatusChangeDisabled = entity.IsAutomated && entity.Status == BatchStatus.Pending || IsReopenDisabled;
 
-            options.IsReopenAuthorized = IsReopenAuthorized;
+            // The Attribute Value for Batch Name needs to be sent only if a new Financial Batch is being created.
+            if ( entity.Id == 0 )
+            {
+                options.BatchNameDefinedTypeGuid = GetAttributeValue( AttributeKey.BatchNames );
+            }
 
             return options;
         }
@@ -190,6 +209,11 @@ namespace Rock.Blocks.Finance
         private bool ValidateFinancialBatch( FinancialBatch financialBatch, RockContext rockContext, out string errorMessage )
         {
             errorMessage = null;
+            if ( !financialBatch.IsValid )
+            {
+                errorMessage = string.Join( "</br>", financialBatch.ValidationResults.Select( v => v.ErrorMessage ) );
+                return false;
+            }
 
             return true;
         }
@@ -530,6 +554,12 @@ namespace Rock.Blocks.Finance
                     return actionError;
                 }
 
+                string errorMessage;
+                if ( !entity.IsValidBatchStatusChange( entity.Status, box.Entity.Status.GetValueOrDefault(), RequestContext.CurrentPerson, out errorMessage ) )
+                {
+                    return ActionUnauthorized( errorMessage );
+                }
+
                 var isNew = entity.Id == 0;
                 var isStatusChanged = box.Entity.Status != entity.Status;
 
@@ -539,8 +569,9 @@ namespace Rock.Blocks.Finance
                     changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
                 }
 
-                History.EvaluateChange( changes, "Batch Name", entity.Name, box.Entity.Name );
-                History.EvaluateChange( changes, "Campus", entity?.Campus?.Name ?? "None", box.Entity?.Campus?.Text ?? "None" );
+                History.EvaluateChange( changes, "Batch Name", entity.Name, box.Entity?.Name );
+                var currentCampusName = CampusCache.Get( entity.CampusId ?? 0 )?.Name ?? "None";
+                History.EvaluateChange( changes, "Campus", currentCampusName, box.Entity?.Campus?.Text ?? "None" );
                 History.EvaluateChange( changes, "Status", entity?.Status, box.Entity?.Status );
                 History.EvaluateChange( changes, "Start Date/Time", entity.BatchStartDateTime, box.Entity?.BatchStartDateTime );
                 History.EvaluateChange( changes, "End Date/Time", entity.BatchEndDateTime, box.Entity?.BatchEndDateTime );
@@ -606,6 +637,9 @@ namespace Rock.Blocks.Finance
                 entity = entityService.Get( entity.Id );
 
                 entity.LoadAttributes( rockContext );
+
+                var contextEntity = RequestContext.GetContextEntity<FinancialBatch>();
+                contextEntity.CopyPropertiesFrom( entity );
 
                 return ActionOk( GetEntityBagForView( entity ) );
             }
