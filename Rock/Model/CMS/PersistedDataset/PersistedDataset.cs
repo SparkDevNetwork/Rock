@@ -199,6 +199,16 @@ namespace Rock.Model
         [DataMember]
         public DateTime? ExpireDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the persisted schedule interval minutes.
+        /// If this is null, then the DataView is not persisted.
+        /// </summary>
+        /// <value>
+        /// The persisted schedule interval minutes.
+        /// </value>
+        [DataMember]
+        public int? PersistedScheduleIntervalMinutes { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation properties
@@ -221,6 +231,14 @@ namespace Rock.Model
         [DataMember]
         public int? PersistedScheduleId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the schedule associated with this PersistedDataset.
+        /// </summary>
+        /// <value>
+        /// A schedule entity.
+        /// </value>
+        public virtual Schedule PersistedSchedule { get; set; }
+
         #endregion
     }
 
@@ -235,6 +253,8 @@ namespace Rock.Model
         public PesistedDatasetConfiguration()
         {
             this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
+
+            this.HasOptional( a => a.PersistedSchedule ).WithMany().HasForeignKey( a => a.PersistedScheduleId ).WillCascadeOnDelete( false );
         }
     }
 }
