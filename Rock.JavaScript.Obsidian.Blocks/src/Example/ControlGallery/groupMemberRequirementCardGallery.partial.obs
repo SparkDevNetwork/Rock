@@ -1,0 +1,34 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <GroupMemberRequirementCard groupRequirementGuid="3493C2B5-6573-41B1-A503-A7C135ED2B7C"
+                                    groupMemberRequirementGuid="C7E8D53C-0394-409C-A596-8A1E55A0B609"
+                                    :meetsGroupRequirement="0"
+                                    canOverride />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GroupMemberRequirementCard from "@Obsidian/Controls/Internal/groupMemberRequirementCard.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref([]);
+    const someBool = ref(false);
+    const someVal = ref("hi");
+
+    const importCode = getSfcControlImportPath("groupMemberRequirementCard");
+    const exampleCode = computed(() => {
+        const someBoolProp = someBool.value ? " someBool" : "";
+        const someValProp = someVal.value ? ` someVal="${someVal.value}"` : "";
+        return `<GroupMemberRequirementCard v-model="value"${someBoolProp}${someValProp} />`;
+    });
+</script>

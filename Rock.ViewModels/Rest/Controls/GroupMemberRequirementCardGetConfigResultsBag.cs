@@ -41,5 +41,17 @@ namespace Rock.ViewModels.Rest.Controls
         /// Control for running a workflow when requirement has a warning
         /// </summary>
         public GroupMemberRequirementCardSubControlConfigBag WarningWorkflowControl { get; set; } = new GroupMemberRequirementCardSubControlConfigBag();
+
+        public bool IsOverridden { get; set; } = false;
+
+        public string OverriddenBy { get; set; } = string.Empty;
+
+        public string OverriddenAt { get; set; } = string.Empty;
+
+        public string Message { get; set; } = string.Empty;
+
+        public string Summary { get; set; } = string.Empty;
+
+
     }
 }

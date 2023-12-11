@@ -3091,22 +3091,23 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the group members that can be displayed in the group member picker.
         /// </summary>
-        /// <param name="realOptions">The options that describe which items to load.</param>
+        /// <param name="options">The options that describe which items to load.</param>
         /// <returns>A List of <see cref="ListItemBag"/> objects that represent the group members.</returns>
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementCardGetConfig" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "E3981034-6A58-48CB-85ED-F9900AA99934" )]
-        public IHttpActionResult GroupMemberRequirementCardGetConfig( [FromBody] GroupMemberRequirementCardGetConfigOptionsBag realOptions )
+        public IHttpActionResult GroupMemberRequirementCardGetConfig( [FromBody] GroupMemberRequirementCardGetConfigOptionsBag options )
         {
-            var groupMemberGuid = new Guid( "6FCDC1E6-D5D0-49D1-AF77-C28D5906F823" );
+            //var groupMemberGuid = new Guid( "6FCDC1E6-D5D0-49D1-AF77-C28D5906F823" );
 
-            var options = new GroupMemberRequirementCardGetConfigOptionsBag
-            {
-                GroupRequirementGuid = new Guid( "3493C2B5-6573-41B1-A503-A7C135ED2B7C" ),
-                GroupMemberRequirementGuid = new Guid( "C7E8D53C-0394-409C-A596-8A1E55A0B609" ),
-                MeetsGroupRequirement = Rock.Enums.Controls.MeetsGroupRequirement.NotMet
-            };
+            //var unusedOptions = new GroupMemberRequirementCardGetConfigOptionsBag
+            //{
+            //    GroupRequirementGuid = new Guid( "3493C2B5-6573-41B1-A503-A7C135ED2B7C" ),
+            //    GroupMemberRequirementGuid = new Guid( "C7E8D53C-0394-409C-A596-8A1E55A0B609" ),
+            //    MeetsGroupRequirement = MeetsGroupRequirement.Meets,
+            //    CanOverride = true
+            //};
 
             if ( options.GroupRequirementGuid.IsEmpty() || options.GroupMemberRequirementGuid.IsEmpty() )
             {
@@ -3118,15 +3119,29 @@ namespace Rock.Rest.v2
                 var currentPerson = RockRequestContext.CurrentPerson;
                 var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
                 var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( options.GroupMemberRequirementGuid );
-                var groupRequirementType = groupRequirement.GroupRequirementType;
 
+                if ( groupMemberRequirement == null || groupRequirement == null )
+                {
+                    return NotFound();
+                }
+
+
+                var LabelKey = new
+                {
+                    RequirementMet = " Requirement Met",
+                    RequirementNotMet = " Requirement Not Met",
+                    RequirementMetWithWarning = "Requirement Met With Warning"
+                };
+                var groupRequirementType = groupRequirement.GroupRequirementType;
                 var results = new GroupMemberRequirementCardGetConfigResultsBag();
 
 
 
 
-
-                if ( groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
+                if (
+                    groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual
+                    && options.MeetsGroupRequirement != MeetsGroupRequirement.Meets
+                )
                 {
                     results.ManualRequirementControl = new GroupMemberRequirementCardSubControlConfigBag
                     {
@@ -3138,7 +3153,7 @@ namespace Rock.Rest.v2
                     };
                 }
 
-                if ( options.CanOverride )
+                if ( options.CanOverride && options.MeetsGroupRequirement != MeetsGroupRequirement.Meets )
                 {
                     results.OverrideRequirementControl = new GroupMemberRequirementCardSubControlConfigBag
                     {
@@ -3156,11 +3171,11 @@ namespace Rock.Rest.v2
                 // the requirement status matches the workflow purpose (Meets with Warning or Not Met).
                 var hasNotMetWorkflow = groupRequirementType.DoesNotMeetWorkflowTypeId.HasValue
                     && !groupRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow
-                    && options.MeetsGroupRequirement == Rock.Enums.Controls.MeetsGroupRequirement.NotMet;
+                    && options.MeetsGroupRequirement == MeetsGroupRequirement.NotMet;
 
                 var hasWarningWorkflow = groupRequirementType.WarningWorkflowTypeId.HasValue
                     && !groupRequirementType.ShouldAutoInitiateWarningWorkflow
-                    && options.MeetsGroupRequirement == Rock.Enums.Controls.MeetsGroupRequirement.MeetsWithWarning;
+                    && options.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning;
 
                 if ( hasNotMetWorkflow )
                 {
@@ -3186,11 +3201,29 @@ namespace Rock.Rest.v2
                     };
                 }
 
+                if ( groupMemberRequirement.WasOverridden )
+                {
+                    results.IsOverridden = true;
+                    results.OverriddenBy = groupMemberRequirement.OverriddenByPersonAlias.Person.FullName;
+                    results.OverriddenAt = groupMemberRequirement.OverriddenDateTime.ToShortDateString();
+                }
 
+                results.Message = "Issue With Requirement.";
 
+                switch ( options.MeetsGroupRequirement )
+                {
+                    case MeetsGroupRequirement.Meets:
+                        results.Message = groupRequirementType.PositiveLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.PositiveLabel : LabelKey.RequirementMet;
+                        break;
+                    case MeetsGroupRequirement.NotMet:
+                        results.Message = groupRequirementType.NegativeLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.NegativeLabel : LabelKey.RequirementNotMet;
+                        break;
+                    case MeetsGroupRequirement.MeetsWithWarning:
+                        results.Message = groupRequirementType.WarningLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.WarningLabel : LabelKey.RequirementMetWithWarning;
+                        break;
+                }
 
-
-
+                results.Summary = groupRequirementType.Summary;
 
                 return Ok( results );
             }

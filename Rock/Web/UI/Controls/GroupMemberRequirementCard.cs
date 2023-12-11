@@ -24,7 +24,6 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -161,10 +160,18 @@ namespace Rock.Web.UI.Controls
             this._canOverride = canOverride;
         }
 
+
+
+
+
         /// <summary>
         /// Requirement Results for the Group Requirement
         /// </summary>
         public IEnumerable<GroupRequirementStatus> RequirementResults { get; set; }
+
+
+
+
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -186,6 +193,10 @@ namespace Rock.Web.UI.Controls
 
             EnsureChildControls();
         }
+
+
+
+
 
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
@@ -220,7 +231,7 @@ namespace Rock.Web.UI.Controls
                     Controls.Add( _lbManualRequirement );
                 }
 
-                if ( groupRequirement.GroupRequirementType.IsAuthorized( Authorization.OVERRIDE, currentPerson ) )
+                if ( _canOverride )
                 {
                     _lbMarkAsMet = new LinkButton
                     {
@@ -318,6 +329,10 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
+
+
+
 
         /// <summary>
         /// Renders this Group Member Requirement Card control.

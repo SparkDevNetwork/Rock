@@ -85,7 +85,6 @@
     <Compile Include="Connection\ConnectionWorkflowTriggerType.cs" />
     <Compile Include="Connection\GroupRequirementsFilter.cs" />
     <Compile Include="Controls\MediaSelectorMode.cs" />
-    <Compile Include="Controls\MeetsGroupRequirement.cs" />
     <Compile Include="Core\Grid\BooleanFilterMethod.cs" />
     <Compile Include="Core\Grid\DateFilterMethod.cs" />
     <Compile Include="Core\Grid\NumberFilterMethod.cs" />

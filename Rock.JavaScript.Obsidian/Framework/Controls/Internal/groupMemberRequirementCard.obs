@@ -1,0 +1,111 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="col-xs-12 col-sm-6 col-md-4 requirement-item">
+        <div class="alert alert-success alert-requirement">
+            <span class="flex-shrink-0"><i class="fa fa-vuejs fa-fw icon"></i></span>
+            <div class="flex-fill">
+                <span class="requirement-title h6">Driver's License</span><a class="help" href="#" tabindex="-1" data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true" title="" data-original-title="Requirement Marked Met by Zim Admin on 12/11/2023"><i class="fa fa-user-check fa-fw"></i></a>
+                <div class="requirement-message">
+                    Soooo meets requirements
+                </div>
+                <div class="requirement-summary">
+                    Summary: You need a driver's license.
+                </div>
+                <ul class="list-unstyled list-requirements">
+
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <pre>{{ JSON.stringify(results, null, 4) }}</pre>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { GroupMemberRequirementCardGetConfigOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardGetConfigOptionsBag";
+    import { GroupMemberRequirementCardGetConfigResultsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardGetConfigResultsBag";
+    import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        title: {
+            type: String
+        },
+
+        canOverride: {
+            type: Boolean
+        },
+
+        groupRequirementGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        groupMemberGuid: {
+            type: String as PropType<Guid>
+        },
+
+        groupMemberRequirementGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        isSummaryHidden: {
+            type: Boolean
+        },
+
+        isInteractionDisabled: {
+            type: Boolean
+        },
+
+        groupMemberRequirementDueDate: {
+            type: Date
+        },
+
+        workflowEntryLinkedPageValue: {
+            type: String
+        },
+
+        typeIconCssClass: {
+            type: String
+        },
+
+        meetsGroupRequirement: {
+            type: Number as PropType<MeetsGroupRequirement>,
+            required: true
+        }
+    });
+
+    const http = useHttp();
+
+    const results = ref();
+
+    // #region Functions
+
+    /**
+     * Loads the items from the server.
+     */
+    async function loadConfig(): Promise<void> {
+        const options: Partial<GroupMemberRequirementCardGetConfigOptionsBag> = {
+            groupMemberRequirementGuid: props.groupMemberRequirementGuid,
+            groupRequirementGuid: props.groupRequirementGuid,
+            meetsGroupRequirement: props.meetsGroupRequirement,
+            canOverride: props.canOverride
+        };
+        const result = await http.post<GroupMemberRequirementCardGetConfigResultsBag>("/api/v2/Controls/GroupMemberRequirementCardGetConfig", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            console.table(result.data);
+            results.value = result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
+
+    // #endregion
+
+loadConfig();
+</script>

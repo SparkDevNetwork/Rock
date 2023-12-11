@@ -17,7 +17,7 @@
 
 using System;
 
-using Rock.Enums.Controls;
+using Rock.Model;
 
 namespace Rock.ViewModels.Rest.Controls
 {
@@ -38,18 +38,13 @@ namespace Rock.ViewModels.Rest.Controls
         public Guid GroupMemberRequirementGuid { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// Identifier for the GroupRequirement
+        /// Requirement status: met, not met, met but has a warning, etc.
         /// </summary>
         public MeetsGroupRequirement MeetsGroupRequirement { get; set; }
 
         /// <summary>
-        /// Identifier for the GroupRequirement
+        /// Whether or not the current user is able to override the requirement
         /// </summary>
         public bool CanOverride { get; set; } = false;
-
-        /// <summary>
-        /// Gets or sets the security grant token to use when performing authorization checks.
-        /// </summary>
-        public string SecurityGrantToken { get; set; }
     }
 }
