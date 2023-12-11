@@ -123,6 +123,9 @@ namespace Rock.Tests.Integration
 
             var databaseExists = DatabaseExists( connectionString );
 
+            var lastMigration = string.Empty;
+            var targetMigration = string.Empty;
+
             csb.InitialCatalog = "master";
             using ( var connection = new SqlConnection( csb.ConnectionString ) )
             {
@@ -130,14 +133,17 @@ namespace Rock.Tests.Integration
 
                 var migrateDatabase = false;
                 var createDatabase = false;
+                var autoMigrationEnabled = false;
 
                 if ( databaseExists )
                 {
                     TestHelper.Log( "Verifying migrations..." );
 
                     var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
-                    var lastMigration = migrator.GetDatabaseMigrations().FirstOrDefault();
-                    var targetMigration = GetTargetMigration();
+                    lastMigration = migrator.GetDatabaseMigrations().FirstOrDefault();
+                    targetMigration = GetTargetMigration();
+
+                    autoMigrationEnabled = migrator.Configuration.AutomaticMigrationsEnabled;
 
                     migrateDatabase = lastMigration != targetMigration;
 
@@ -156,7 +162,7 @@ BACKUP DATABASE [{dbName}]
 
                         TestHelper.Log( $"Deleting existing database..." );
 
-                        DeleteDatabase( connectionString ); // connection, dbName );
+                        DeleteDatabase( connectionString );
 
                         createDatabase = true;
                     }
@@ -188,11 +194,19 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 {
                     if ( !createDatabase )
                     {
-                        TestHelper.Log( $"Target database migration level does not match the current Rock version." );
+                        TestHelper.Log( $"Target database migration level does not match the current Rock version. [TargetMigration={targetMigration}, LatestMigration={lastMigration}]" );
                     }
-                    TestHelper.Log( $"Running migrations..." );
 
-                    MigrateDatabase();
+                    if ( autoMigrationEnabled )
+                    {
+                        TestHelper.Log( $"Running migrations..." );
+
+                        MigrateDatabase();
+                    }
+                    else
+                    {
+                        TestHelper.Log( $"Automatic migrations are disabled." );
+                    }
                 }
 
                 if ( createDatabase )
@@ -314,6 +328,11 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         private static void MigrateDatabase()
         {
             var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+
+            if ( !migrator.Configuration.AutomaticMigrationsEnabled )
+            {
+                return;
+            }
             try
             {
                 migrator.Update();
