@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,7 +25,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Defines the properties of a template from which multiples instances of an <see cref="AttributeMatrix"/> can be created.
     /// </summary>
     [RockDomain( "Core" )]
     [Table( "AttributeMatrixTemplate" )]
