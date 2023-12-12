@@ -54,20 +54,11 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var guids = new List<Guid>();
-
-                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                {
-                    Guid? guid = guidValue.AsGuidOrNull();
-                    if ( guid.HasValue )
-                    {
-                        guids.Add( guid.Value );
-                    }
-                }
+                var guids = value.SplitDelimitedValues().AsGuidList();
 
                 if ( guids.Any() )
                 {
-                    formattedValue =  guids.Select( a => AssessmentTypeCache.Get( a ) ).Select(a=>a.Title).JoinStrings( ", " );
+                    formattedValue = guids.Select( a => AssessmentTypeCache.Get( a ) ).Select( a => a.Title ).JoinStrings( ", " );
                 }
             }
 
@@ -92,7 +83,7 @@ namespace Rock.Field.Types
 
             if ( assessmentTypeValues != null && assessmentTypeValues.Any() )
             {
-                return string.Join( ",", assessmentTypeValues.Select( s => s.Value ) );
+                return assessmentTypeValues.Select( s => s.Value ).JoinStrings( ", " );
             }
 
             return string.Empty;
@@ -103,14 +94,8 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
-                var assessmentTypeValues = new List<ListItemBag>();
-                var guidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
-                    .Select( a => a.AsGuid() )
-                    .Where( a => a != Guid.Empty )
-                    .ToList();
-                var assessmentTypes = AssessmentTypeCache.All().Where( a => guidList.Contains( a.Guid ) );
-                assessmentTypeValues = assessmentTypes.ToListItemBagList();
-
+                var guidList = privateValue.SplitDelimitedValues().AsGuidList();
+                var assessmentTypeValues = AssessmentTypeCache.All().Where( a => guidList.Contains( a.Guid ) ).ToListItemBagList();
                 if ( assessmentTypeValues.Any() )
                 {
                     return assessmentTypeValues.ToCamelCaseJson( false, true );
@@ -161,7 +146,7 @@ namespace Rock.Field.Types
 
             using ( var rockContext = new RockContext() )
             {
-                var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+                var valueGuidList = privateValue.SplitDelimitedValues().AsGuidList();
 
                 var ids = new AssessmentTypeService( rockContext )
                     .Queryable()
