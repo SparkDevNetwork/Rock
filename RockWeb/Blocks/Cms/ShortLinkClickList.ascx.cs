@@ -99,6 +99,7 @@ namespace RockWeb.Blocks.Cms
 
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = 180;
                 var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER );
                 if ( dv != null )
                 {
