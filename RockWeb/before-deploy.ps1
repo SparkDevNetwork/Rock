@@ -2,8 +2,8 @@
 Import-Module WebAdministration
 
 
-$rootfolder = "$env:application_path\..\"
-$webroot = "$env:application_path"
+$rootfolder = "f:\"
+$webroot = "$rootfolder\wwwroot"
 
 Write-Output "Running pre-deploy script"
 Write-Output "--------------------------------------------------"
