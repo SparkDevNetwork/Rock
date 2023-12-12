@@ -14,13 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { asBoolean, asTrueFalseOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./documentTypeField.partial";
 import { getFieldEditorProps } from "./utils";
+import { updateRefValue } from "@Obsidian/Utility/component";
 
 export const EditComponent = defineComponent({
     name: "DocumentTypeField.Edit",
@@ -32,20 +33,33 @@ export const EditComponent = defineComponent({
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-        const internalValue = ref<Array<string>>([]);
-        const allowMultipleValues = ref(props.configurationValues[ConfigurationValueKey.AllowMultiple]);
+        const internalValue = ref<string[] | string>([]);
         const options = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
 
+        const allowMultipleValues = computed((): boolean => {
+            return asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultiple]);
+        });
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
-            internalValue.value = props.modelValue.split(",");
+            if (allowMultipleValues.value) {
+                internalValue.value = props.modelValue.split(",");
+            }
+            else {
+                updateRefValue(internalValue, props.modelValue);
+            }
+
         }, {
             immediate: true
         });
 
         // Watch for changes from the text editor and update the parent component.
         watch(internalValue, () => {
-            emit("update:modelValue", internalValue.value.join(","));
+            if (Array.isArray(internalValue.value)) {
+                emit("update:modelValue", internalValue.value.join(","));
+            }
+            else {
+                emit("update:modelValue", internalValue.value);
+            }
         });
 
         return {
