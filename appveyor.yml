@@ -86,10 +86,3 @@ test:
 artifacts:
 - path: RockWeb
   name: NewSpringRockKit
-
-# deployment configuration
-deploy:
-- provider: Environment
-  name: Alpha (alpha-rock.newspring.cc)
-  on:
-    branch: alpha
