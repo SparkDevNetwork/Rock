@@ -61,6 +61,7 @@
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PersonalLinkSectionList\PersonalLinkSectionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntryInitializationBox.cs" />
