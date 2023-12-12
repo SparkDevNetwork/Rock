@@ -186,6 +186,11 @@ function getDateFromString(value: string): RockDateTime | null {
  */
 function getDateTimeFromString(value: string): RockDateTime | null {
     if (value.length < 15 || value[8] !== "T") {
+
+        // If the value happens to be from the webforms Schedule Builder, return the date.
+        if(value.length === 12 && value[8] === "/") {
+            return getDateFromString(value);
+        }
         return null;
     }
 

@@ -721,7 +721,7 @@
             }
         }
 
-        if (event.startDateTime && event.endDateTime && duration.value !== null && duration.value > 0) {
+        if (event.startDateTime && event.endDateTime) {
             const calendar = new Calendar();
             calendar.events.push(event);
 
