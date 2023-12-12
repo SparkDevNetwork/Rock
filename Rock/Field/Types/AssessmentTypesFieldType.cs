@@ -67,11 +67,7 @@ namespace Rock.Field.Types
 
                 if ( guids.Any() )
                 {
-                    var assessmentTypes = guids.Select( a => AssessmentTypeCache.Get( a ) ).ToList();
-                    if ( assessmentTypes.Any() )
-                    {
-                        formattedValue = string.Join( ", ", ( from assessmentType in assessmentTypes select assessmentType?.Title ) );
-                    }
+                    formattedValue =  guids.Select( a => AssessmentTypeCache.Get( a ) ).Select(a=>a.Title).JoinStrings( ", " );
                 }
             }
 
@@ -108,25 +104,12 @@ namespace Rock.Field.Types
             if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
                 var assessmentTypeValues = new List<ListItemBag>();
-
-                foreach ( string guidValue in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                {
-                    Guid? guid = guidValue.AsGuidOrNull();
-                    if ( guid.HasValue )
-                    {
-                        var assessmentType = AssessmentTypeCache.Get( guid.Value );
-                        if ( assessmentType != null )
-                        {
-                            var scheduleValue = new ListItemBag()
-                            {
-                                Text = assessmentType.Title,
-                                Value = assessmentType.Guid.ToString(),
-                            };
-
-                            assessmentTypeValues.Add( scheduleValue );
-                        }
-                    }
-                }
+                var guidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
+                    .Select( a => a.AsGuid() )
+                    .Where( a => a != Guid.Empty )
+                    .ToList();
+                var assessmentTypes = AssessmentTypeCache.All().Where( a => guidList.Contains( a.Guid ) );
+                assessmentTypeValues = assessmentTypes.ToListItemBagList();
 
                 if ( assessmentTypeValues.Any() )
                 {
