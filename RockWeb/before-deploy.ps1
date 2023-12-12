@@ -2,8 +2,8 @@
 Import-Module WebAdministration
 
 
-$rootfolder = "f:\"
-$webroot = "$rootfolder\wwwroot"
+$rootfolder = "$env:application_path\..\"
+$webroot = "$env:application_path"
 
 Write-Output "Running pre-deploy script"
 Write-Output "--------------------------------------------------"
@@ -72,11 +72,7 @@ If (Test-Path "$webroot\app_offline-template.htm"){
 #	Remove-Item "$rootfolder\temp\Content" -Force -Confirm:$False -Recurse
 #}
 
-If (Test-Path "$webroot\Plugins"){
-	Write-Host "Moving plugins folder to temp directory"
-	Move-Item "$webroot\Plugins" "$rootfolder\temp\Plugins"
-}
-
+# move content folder to temp
 If (Test-Path "$webroot\Content"){
 	Write-Host "Moving content folder to temp directory"
 	Move-Item "$webroot\Content" "$rootfolder\temp\Content"

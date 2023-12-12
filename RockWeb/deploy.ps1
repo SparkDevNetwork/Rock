@@ -16,11 +16,7 @@ If (Test-Path "$webroot\Content"){
 	Remove-Item "$webroot\Content" -Force -Confirm:$False -Recurse
 }
 
-If (Test-Path "$rootfolder\temp\Plugins"){
-	Write-Host "Moving Pluginss folder back from temp directory"
-	Move-Item "$rootfolder\temp\Plugins" "$webroot"
-}
-
+# move content directory back from temp
 If (Test-Path "$rootfolder\temp\Content"){
 	Write-Host "Moving Contents folder back from temp directory"
 	Move-Item "$rootfolder\temp\Content" "$webroot"
