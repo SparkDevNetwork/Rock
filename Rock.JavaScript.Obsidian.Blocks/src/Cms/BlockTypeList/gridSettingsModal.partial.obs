@@ -1,0 +1,336 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="name"
+                         label="Name" />
+            </div>
+
+            <div class="col-md-4">
+                <TextBox v-model="path"
+                         label="Path" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="category" :items="categories"
+                              label="Category" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox v-model="excludeSystemTypes"
+                          label="Exclude 'System' Types?"
+                          text="Yes" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const categories: ListItemBag[] = [
+        {
+            text: "Accounts",
+            value: "Accounts"
+        },
+        {
+            text: "Achievement",
+            value: "Achievement"
+        },
+        {
+            text: "Administration",
+            value: "Administration"
+        },
+        {
+            text: "Assessments",
+            value: "Assessments"
+        },
+        {
+            text: "Bulk Import",
+            value: "Bulk Import"
+        },
+        {
+            text: "Bus",
+            value: "Bus"
+        },
+        {
+            text: "Check-in",
+            value: "Check-in"
+        },
+        {
+            text: "Check-in > Configuration",
+            value: "Check-in > Configuration"
+        },
+        {
+            text: "Check-in > Manager",
+            value: "Check-in > Manager"
+        },
+        {
+            text: "CMS",
+            value: "CMS"
+        },
+        {
+            text: "Communication",
+            value: "Communication"
+        },
+        {
+            text: "Connection",
+            value: "Connection"
+        },
+        {
+            text: "Connection > WebView",
+            value: "Connection > WebView"
+        },
+        {
+            text: "Core",
+            value: "Core"
+        },
+        {
+            text: "CRM",
+            value: "CRM"
+        },
+        {
+            text: "CRM > Person Detail",
+            value: "CRM > Person Detail"
+        },
+        {
+            text: "CRM > Person Edit",
+            value: "CRM > Person Edit"
+        },
+        {
+            text: "CRM > PhotoRequest",
+            value: "CRM > PhotoRequest"
+        },
+        {
+            text: "CSV Import",
+            value: "CSV Import"
+        },
+        {
+            text: "Engagement",
+            value: "Engagement"
+        },
+        {
+            text: "Engagement > Sign-Up",
+            value: "Engagement > Sign-Up"
+        },
+        {
+            text: "Event",
+            value: "Event"
+        },
+        {
+            text: "Event > Interactive Experiences",
+            value: "Event > Interactive Experiences"
+        },
+        {
+            text: "Example",
+            value: "Example"
+        },
+        {
+            text: "Examples",
+            value: "Examples"
+        },
+        {
+            text: "Farm",
+            value: "Farm"
+        },
+        {
+            text: "Finance",
+            value: "Finance"
+        },
+        {
+            text: "Follow",
+            value: "Follow"
+        },
+        {
+            text: "Fundraising",
+            value: "Fundraising"
+        },
+        {
+            text: "Group",
+            value: "Group"
+        },
+        {
+            text: "Group Scheduling",
+            value: "Group Scheduling"
+        },
+        {
+            text: "Groups",
+            value: "Groups"
+        },
+        {
+            text: "Mobile",
+            value: "Mobile"
+        },
+        {
+            text: "Mobile > Cms",
+            value: "Mobile > Cms"
+        },
+        {
+            text: "Mobile > Communication",
+            value: "Mobile > Communication"
+        },
+        {
+            text: "Mobile > Connection",
+            value: "Mobile > Connection"
+        },
+        {
+            text: "Mobile > Core",
+            value: "Mobile > Core"
+        },
+        {
+            text: "Mobile > Crm",
+            value: "Mobile > Crm"
+        },
+        {
+            text: "Mobile > Events",
+            value: "Mobile > Events"
+        },
+        {
+            text: "Mobile > Groups",
+            value: "Mobile > Groups"
+        },
+        {
+            text: "Mobile > Prayer",
+            value: "Mobile > Prayer"
+        },
+        {
+            text: "Mobile > Security",
+            value: "Mobile > Security"
+        },
+        {
+            text: "Obsidian > Example",
+            value: "Obsidian > Example"
+        },
+        {
+            text: "Prayer",
+            value: "Prayer"
+        },
+        {
+            text: "Reminders",
+            value: "Reminders"
+        },
+        {
+            text: "Reporting",
+            value: "Reporting"
+        },
+        {
+            text: "Reporting > Dashboard",
+            value: "Reporting > Dashboard"
+        },
+        {
+            text: "RSVP",
+            value: "RSVP"
+        },
+        {
+            text: "Security",
+            value: "Security"
+        },
+        {
+            text: "Security > Background Check",
+            value: "Security > Background Check"
+        },
+        {
+            text: "Security > OIDC",
+            value: "Security > OIDC"
+        },
+        {
+            text: "Steps",
+            value: "Steps"
+        },
+        {
+            text: "Store",
+            value: "Store"
+        },
+        {
+            text: "Streaks",
+            value: "Streaks"
+        },
+        {
+            text: "TV > TV App",
+            value: "TV > TV App"
+        },
+        {
+            text: "Utility",
+            value: "Utility"
+        },
+        {
+            text: "WebFarm",
+            value: "WebFarm"
+        },
+        {
+            text: "Workflow",
+            value: "Workflow"
+        },
+        {
+            text: "Workflow > FormBuilder",
+            value: "Workflow > FormBuilder"
+        }
+    ];
+
+    const name = ref(props.modelValue.name ?? "");
+    const path = ref(props.modelValue.path ?? "");
+    const category = ref(props.modelValue.category ?? "");
+    const excludeSystemTypes = ref(props.modelValue.excludeSystemTypes ?? false);
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            name: name.value,
+            path: path.value,
+            category: category.value,
+            excludeSystemTypes: excludeSystemTypes.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        name.value = props.modelValue.name ?? "";
+        path.value = props.modelValue.path ?? "";
+        category.value = props.modelValue.category ?? "";
+        excludeSystemTypes.value = props.modelValue.excludeSystemTypes ?? false;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>
