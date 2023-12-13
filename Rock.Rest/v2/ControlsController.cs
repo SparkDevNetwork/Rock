@@ -3090,10 +3090,10 @@ namespace Rock.Rest.v2
         #region Group Member Requirement Card
 
         /// <summary>
-        /// TODO
+        /// Get the data needed to properly display the GroupMemberRequirementCard control
         /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the group members.</returns>
+        /// <param name="options">The options that describe which data to load.</param>
+        /// <returns>A <see cref="GroupMemberRequirementCardGetConfigResultsBag"/> containing everything the card needs to be displayed.</returns>
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementCardGetConfig" )]
         [Authenticate]
@@ -3211,10 +3211,9 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// TODO
+        /// Manually mark a GroupMemberRequirement as met
         /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the group members.</returns>
+        /// <param name="options">The options that describe which item to mark met</param>
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementCardMarkMetManually" )]
         [Authenticate]
@@ -3257,10 +3256,9 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// TODO
+        /// Manually override a GroupMemberRequirement as met
         /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the group members.</returns>
+        /// <param name="options">The options that describe which item to override</param>
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementCardOverrideMarkMet" )]
         [Authenticate]
@@ -3303,10 +3301,9 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// TODO
+        /// Run the "not met" workflow for the given GroupMemberRequirement
         /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the group members.</returns>
+        /// <param name="options">The options that describe which requirement to run the workflow on</param>
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementCardRunNotMetWorkflow" )]
         [Authenticate]
@@ -3422,10 +3419,9 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// TODO
+        /// Run the "warning" workflow for the given GroupMemberRequirement
         /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the group members.</returns>
+        /// <param name="options">The options that describe which requirement to run the workflow on</param>
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementCardRunWarningWorkflow" )]
         [Authenticate]

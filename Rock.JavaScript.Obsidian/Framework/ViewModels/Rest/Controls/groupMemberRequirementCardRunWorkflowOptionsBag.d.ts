@@ -23,13 +23,20 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/** TODO */
+/**
+ * The options that can be passed to the RunNotMetWorkflow and RunWarningWorkflow
+ * API actions of the GroupMemberRequirementCard control.
+ */
 export type GroupMemberRequirementCardRunWorkflowOptionsBag = {
+    /** Identifier for the GroupMember */
     groupMemberGuid?: Guid | null;
 
+    /** Identifier for the GroupMemberRequirement */
     groupMemberRequirementGuid?: Guid | null;
 
+    /** Identifier for the GroupRequirement */
     groupRequirementGuid?: Guid | null;
 
+    /** A URL or page identifier for the page where the workflow should be run */
     workflowEntryLinkedPageValue?: string | null;
 };

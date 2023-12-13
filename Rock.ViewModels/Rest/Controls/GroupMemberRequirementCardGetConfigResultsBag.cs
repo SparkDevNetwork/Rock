@@ -42,14 +42,29 @@ namespace Rock.ViewModels.Rest.Controls
         /// </summary>
         public GroupMemberRequirementCardSubControlConfigBag WarningWorkflowControl { get; set; } = new GroupMemberRequirementCardSubControlConfigBag();
 
+        /// <summary>
+        /// Whether this requirement has been overridden as complete or not
+        /// </summary>
         public bool IsOverridden { get; set; } = false;
 
+        /// <summary>
+        /// If overridden, this contains the display name of the person who overrode the requirement
+        /// </summary>
         public string OverriddenBy { get; set; } = string.Empty;
 
+        /// <summary>
+        /// If overridden, this contains the display date of when the override took place
+        /// </summary>
         public string OverriddenAt { get; set; } = string.Empty;
 
+        /// <summary>
+        /// The message declaring the status of this requirement
+        /// </summary>
         public string Message { get; set; } = string.Empty;
 
+        /// <summary>
+        /// The summary of what the requirement is
+        /// </summary>
         public string Summary { get; set; } = string.Empty;
 
 

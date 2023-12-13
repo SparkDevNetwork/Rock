@@ -25,23 +25,28 @@ import { GroupMemberRequirementCardSubControlConfigBag } from "@Obsidian/ViewMod
 
 /** The results of the GetConfig API action of the GroupMemberRequirementCard control. */
 export type GroupMemberRequirementCardGetConfigResultsBag = {
+    /** Whether this requirement has been overridden as complete or not */
     isOverridden: boolean;
 
     /** Control for manually marking a requirement as met */
     manualRequirementControl?: GroupMemberRequirementCardSubControlConfigBag | null;
 
+    /** The message declaring the status of this requirement */
     message?: string | null;
 
     /** Control for running a workflow when requirement is not met */
     notMetWorkflowControl?: GroupMemberRequirementCardSubControlConfigBag | null;
 
+    /** If overridden, this contains the display date of when the override took place */
     overriddenAt?: string | null;
 
+    /** If overridden, this contains the display name of the person who overrode the requirement */
     overriddenBy?: string | null;
 
     /** Control for overriding the need for a requirement to be met */
     overrideRequirementControl?: GroupMemberRequirementCardSubControlConfigBag | null;
 
+    /** The summary of what the requirement is */
     summary?: string | null;
 
     /** Control for running a workflow when requirement has a warning */

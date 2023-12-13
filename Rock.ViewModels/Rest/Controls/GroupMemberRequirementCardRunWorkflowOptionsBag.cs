@@ -20,16 +20,29 @@ using System;
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// TODO
+    /// The options that can be passed to the RunNotMetWorkflow and RunWarningWorkflow
+    /// API actions of the GroupMemberRequirementCard control.
     /// </summary>
     public class GroupMemberRequirementCardRunWorkflowOptionsBag
     {
+        /// <summary>
+        /// Identifier for the GroupMember
+        /// </summary>
         public Guid GroupMemberGuid { get; set; } = Guid.Empty;
 
+        /// <summary>
+        /// Identifier for the GroupMemberRequirement
+        /// </summary>
         public Guid GroupMemberRequirementGuid { get; set; } = Guid.Empty;
 
+        /// <summary>
+        /// Identifier for the GroupRequirement
+        /// </summary>
         public Guid GroupRequirementGuid { get; set; } = Guid.Empty;
 
+        /// <summary>
+        /// A URL or page identifier for the page where the workflow should be run
+        /// </summary>
         public string WorkflowEntryLinkedPageValue { get; set; } = String.Empty;
     }
 }

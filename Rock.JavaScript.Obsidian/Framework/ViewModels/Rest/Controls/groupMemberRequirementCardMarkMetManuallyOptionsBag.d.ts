@@ -23,11 +23,17 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/** TODO */
+/**
+ * The options that can be passed to the MarkMetManually and OverrideMarkMet
+ * API actions of the GroupMemberRequirementCard control.
+ */
 export type GroupMemberRequirementCardMarkMetManuallyOptionsBag = {
+    /** Identifier for the GroupMember */
     groupMemberGuid?: Guid | null;
 
+    /** Identifier for the GroupMemberRequirement */
     groupMemberRequirementGuid?: Guid | null;
 
+    /** Identifier for the GroupRequirement */
     groupRequirementGuid?: Guid | null;
 };

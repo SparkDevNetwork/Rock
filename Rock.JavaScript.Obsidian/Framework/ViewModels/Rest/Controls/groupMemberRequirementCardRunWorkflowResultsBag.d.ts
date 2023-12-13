@@ -21,11 +21,18 @@
 // </copyright>
 //
 
-/** TODO */
+/**
+ * The results of the RunNotMetWorkflow and RunWarningWorkflow API actions of
+ * the GroupMemberRequirementCard control. This tells the front end what it
+ * should do now that the workflow has been handled.
+ */
 export type GroupMemberRequirementCardRunWorkflowResultsBag = {
+    /** If set, show this string as an alert */
     alert?: string | null;
 
+    /** If set, will navigate the window/tab to this URL */
     goTo?: string | null;
 
+    /** If set, will open this URL in a new window/tab */
     open?: string | null;
 };

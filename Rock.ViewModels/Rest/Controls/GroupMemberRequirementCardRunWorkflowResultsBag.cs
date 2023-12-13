@@ -18,14 +18,25 @@
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// TODO
+    /// The results of the RunNotMetWorkflow and RunWarningWorkflow API actions of
+    /// the GroupMemberRequirementCard control. This tells the front end what it
+    /// should do now that the workflow has been handled.
     /// </summary>
     public class GroupMemberRequirementCardRunWorkflowResultsBag
     {
+        /// <summary>
+        /// If set, show this string as an alert
+        /// </summary>
         public string Alert { get; set; }
 
+        /// <summary>
+        /// If set, will open this URL in a new window/tab
+        /// </summary>
         public string Open { get; set; }
 
+        /// <summary>
+        /// If set, will navigate the window/tab to this URL
+        /// </summary>
         public string GoTo { get; set; }
     }
 }

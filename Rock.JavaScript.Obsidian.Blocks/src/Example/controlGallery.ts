@@ -252,7 +252,6 @@ import CurrencyBoxGallery from "./ControlGallery/currencyBoxGallery.partial.obs"
 import FirstNameTextBoxGallery from "./ControlGallery/firstNameTextBoxGallery.partial.obs";
 import ImageUploaderGallery from "./ControlGallery/imageUploaderGallery.partial.obs";
 import MediaPlayerGallery from "./ControlGallery/mediaPlayerGallery.partial.obs";
-import GroupMemberRequirementCardGallery from "./ControlGallery/groupMemberRequirementCardGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -8063,7 +8062,6 @@ const controlGalleryComponents: Record<string, Component> = [
     YearPickerGallery,
     FirstNameTextBoxGallery,
     MediaPlayerGallery,
-    GroupMemberRequirementCardGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

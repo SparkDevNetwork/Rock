@@ -20,14 +20,24 @@ using System;
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// TODO
+    /// The options that can be passed to the MarkMetManually and OverrideMarkMet
+    /// API actions of the GroupMemberRequirementCard control.
     /// </summary>
     public class GroupMemberRequirementCardMarkMetManuallyOptionsBag
     {
+        /// <summary>
+        /// Identifier for the GroupMember
+        /// </summary>
         public Guid GroupMemberGuid { get; set; } = Guid.Empty;
 
+        /// <summary>
+        /// Identifier for the GroupMemberRequirement
+        /// </summary>
         public Guid GroupMemberRequirementGuid { get; set; } = Guid.Empty;
 
+        /// <summary>
+        /// Identifier for the GroupRequirement
+        /// </summary>
         public Guid GroupRequirementGuid { get; set; } = Guid.Empty;
     }
 }
