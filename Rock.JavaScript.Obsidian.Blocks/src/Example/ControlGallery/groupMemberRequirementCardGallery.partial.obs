@@ -1,10 +1,15 @@
 <template>
-    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
         <GroupMemberRequirementCard groupRequirementGuid="3493C2B5-6573-41B1-A503-A7C135ED2B7C"
-                                    groupMemberRequirementGuid="C7E8D53C-0394-409C-A596-8A1E55A0B609"
-                                    :meetsGroupRequirement="0"
-                                    canOverride />
+                                    groupMemberRequirementGuid="214785DD-B35F-48E6-B57B-734F9FAB5B6C"
+                                    groupMemberGuid="BF8A6BAE-CD4A-4A02-BEC2-D3C0ED8BACD6"
+                                    :meetsGroupRequirement="meets"
+                                    title="Driver's License"
+                                    typeIconCssClass="fa fa-vuejs"
+                                    canOverride
+                                    workflowEntryLinkedPageValue="0550D2AA-A705-4400-81FF-AB124FDF83D7"
+                                    @status-changed="console.log('CHANGED')" />
 
         <template #settings>
             <div class="row">
@@ -21,14 +26,15 @@
     import GroupMemberRequirementCard from "@Obsidian/Controls/Internal/groupMemberRequirementCard.obs";
     import { getSfcControlImportPath } from "./utils.partial";
 
-    const value = ref([]);
-    const someBool = ref(false);
-    const someVal = ref("hi");
+    const meets = ref<0 | 1 | 2 | 3>(1);
 
     const importCode = getSfcControlImportPath("groupMemberRequirementCard");
     const exampleCode = computed(() => {
-        const someBoolProp = someBool.value ? " someBool" : "";
-        const someValProp = someVal.value ? ` someVal="${someVal.value}"` : "";
-        return `<GroupMemberRequirementCard v-model="value"${someBoolProp}${someValProp} />`;
+        return `<GroupMemberRequirementCard />`;
     });
+
+    // NOAH
+    // groupMemberRequirementGuid="975A1BA8-B3AB-4D34-B8DA-2AECE84B8D92"
+    // CINDY
+    // groupMemberRequirementGuid="C7E8D53C-0394-409C-A596-8A1E55A0B609"
 </script>

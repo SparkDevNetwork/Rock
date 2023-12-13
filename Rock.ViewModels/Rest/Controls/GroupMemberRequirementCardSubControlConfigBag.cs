@@ -36,5 +36,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// Icon class for the label of the control
         /// </summary>
         public string Icon { get; set; } = "";
+
+        /// <summary>
+        /// Used by the front end to indicate the action for this control is currently running
+        /// </summary>
+        public bool IsLoading { get; set; } = false;
     }
 }

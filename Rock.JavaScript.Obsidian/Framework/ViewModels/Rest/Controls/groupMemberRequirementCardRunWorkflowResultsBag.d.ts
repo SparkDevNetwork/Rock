@@ -21,17 +21,11 @@
 // </copyright>
 //
 
-/** Used to define a sub-control (child control) configuration of the GroupMemberRequirementCard */
-export type GroupMemberRequirementCardSubControlConfigBag = {
-    /** Whether or not this control is enabled */
-    enabled: boolean;
+/** TODO */
+export type GroupMemberRequirementCardRunWorkflowResultsBag = {
+    alert?: string | null;
 
-    /** Icon class for the label of the control */
-    icon?: string | null;
+    goTo?: string | null;
 
-    /** Used by the front end to indicate the action for this control is currently running */
-    isLoading: boolean;
-
-    /** Label text for the control */
-    label?: string | null;
+    open?: string | null;
 };

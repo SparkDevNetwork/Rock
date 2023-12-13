@@ -21,17 +21,13 @@
 // </copyright>
 //
 
-/** Used to define a sub-control (child control) configuration of the GroupMemberRequirementCard */
-export type GroupMemberRequirementCardSubControlConfigBag = {
-    /** Whether or not this control is enabled */
-    enabled: boolean;
+import { Guid } from "@Obsidian/Types";
 
-    /** Icon class for the label of the control */
-    icon?: string | null;
+/** TODO */
+export type GroupMemberRequirementCardMarkMetManuallyOptionsBag = {
+    groupMemberGuid?: Guid | null;
 
-    /** Used by the front end to indicate the action for this control is currently running */
-    isLoading: boolean;
+    groupMemberRequirementGuid?: Guid | null;
 
-    /** Label text for the control */
-    label?: string | null;
+    groupRequirementGuid?: Guid | null;
 };

@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { MeetsGroupRequirement } from "@Obsidian/Enums/Controls/meetsGroupRequirement";
+import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
 import { Guid } from "@Obsidian/Types";
 
 /**
@@ -29,7 +29,7 @@ import { Guid } from "@Obsidian/Types";
  * the GroupMemberRequirementCard control.
  */
 export type GroupMemberRequirementCardGetConfigOptionsBag = {
-    /** Identifier for the GroupRequirement */
+    /** Whether or not the current user is able to override the requirement */
     canOverride: boolean;
 
     /** Identifier for the GroupRequirement */
@@ -38,9 +38,6 @@ export type GroupMemberRequirementCardGetConfigOptionsBag = {
     /** Identifier for the GroupRequirement */
     groupRequirementGuid?: Guid | null;
 
-    /** Identifier for the GroupRequirement */
+    /** Requirement status: met, not met, met but has a warning, etc. */
     meetsGroupRequirement: MeetsGroupRequirement;
-
-    /** Gets or sets the security grant token to use when performing authorization checks. */
-    securityGrantToken?: string | null;
 };
