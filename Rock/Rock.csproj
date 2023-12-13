@@ -998,6 +998,7 @@
     <Compile Include="Plugin\HotFixes\166_MigrationRollupsForV14_2_0.cs" />
     <Compile Include="Plugin\HotFixes\165_EnableTextToGiveMultiAcct.cs" />
     <Compile Include="Plugin\HotFixes\159_AddStaffFormsWorkflowCategory.cs" />
+    <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
