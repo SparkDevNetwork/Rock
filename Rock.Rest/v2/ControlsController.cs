@@ -45,6 +45,7 @@ using Rock.ViewModels.Controls;
 using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
@@ -3082,6 +3083,457 @@ namespace Rock.Rest.v2
             }
 
             return Ok( list );
+        }
+
+        #endregion
+
+        #region Group Member Requirement Card
+
+        /// <summary>
+        /// Get the data needed to properly display the GroupMemberRequirementCard control
+        /// </summary>
+        /// <param name="options">The options that describe which data to load.</param>
+        /// <returns>A <see cref="GroupMemberRequirementCardGetConfigResultsBag"/> containing everything the card needs to be displayed.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardGetConfig" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "E3981034-6A58-48CB-85ED-F9900AA99934" )]
+        public IHttpActionResult GroupMemberRequirementCardGetConfig( [FromBody] GroupMemberRequirementCardGetConfigOptionsBag options )
+        {
+            if ( options.GroupRequirementGuid.IsEmpty() || options.GroupMemberRequirementGuid.IsEmpty() )
+            {
+                return BadRequest( "GroupRequirementGuid and GroupMemberRequirementGuid are required." );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var currentPerson = RockRequestContext.CurrentPerson;
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
+                var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( options.GroupMemberRequirementGuid );
+
+                if ( groupMemberRequirement == null || groupRequirement == null )
+                {
+                    return NotFound();
+                }
+
+                var LabelKey = new
+                {
+                    RequirementMet = " Requirement Met",
+                    RequirementNotMet = " Requirement Not Met",
+                    RequirementMetWithWarning = "Requirement Met With Warning"
+                };
+                var groupRequirementType = groupRequirement.GroupRequirementType;
+                var results = new GroupMemberRequirementCardGetConfigResultsBag();
+
+                if (
+                    groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual
+                    && options.MeetsGroupRequirement != MeetsGroupRequirement.Meets
+                )
+                {
+                    results.ManualRequirementControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirement.GroupRequirementType.CheckboxLabel.IsNotNullOrWhiteSpace()
+                            ? groupRequirement.GroupRequirementType.CheckboxLabel
+                            : groupRequirement.GroupRequirementType.Name,
+                        Icon = "fa fa-square-o fa-fw"
+                    };
+                }
+
+                if ( options.CanOverride && options.MeetsGroupRequirement != MeetsGroupRequirement.Meets )
+                {
+                    results.OverrideRequirementControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = "Mark as Met",
+                        Icon = "fa fa-check-circle-o fa-fw"
+                    };
+                }
+
+                var hasNotMetWorkflow = groupRequirementType.WarningWorkflowTypeId.HasValue
+                    && !groupRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow
+                    && options.MeetsGroupRequirement == MeetsGroupRequirement.NotMet;
+
+                var hasWarningWorkflow = groupRequirementType.WarningWorkflowTypeId.HasValue
+                    && !groupRequirementType.ShouldAutoInitiateWarningWorkflow
+                    && options.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning;
+
+                if ( hasNotMetWorkflow )
+                {
+                    results.NotMetWorkflowControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace()
+                            ? groupRequirementType.DoesNotMeetWorkflowLinkText
+                            : "Requirement Not Met",
+                        Icon = "fa fa-play-circle-o fa-fw"
+                    };
+                }
+
+                if ( hasWarningWorkflow )
+                {
+                    results.WarningWorkflowControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
+                            groupRequirementType.WarningWorkflowLinkText :
+                            "Requirement Met With Warning",
+                        Icon = "fa fa-play-circle-o fa-fw"
+                    };
+                }
+
+                if ( groupMemberRequirement.WasOverridden )
+                {
+                    results.IsOverridden = true;
+                    results.OverriddenBy = groupMemberRequirement.OverriddenByPersonAlias.Person.FullName;
+                    results.OverriddenAt = groupMemberRequirement.OverriddenDateTime.ToShortDateString();
+                }
+
+                results.Message = "Issue With Requirement.";
+
+                switch ( options.MeetsGroupRequirement )
+                {
+                    case MeetsGroupRequirement.Meets:
+                        results.Message = groupRequirementType.PositiveLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.PositiveLabel : LabelKey.RequirementMet;
+                        break;
+                    case MeetsGroupRequirement.NotMet:
+                        results.Message = groupRequirementType.NegativeLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.NegativeLabel : LabelKey.RequirementNotMet;
+                        break;
+                    case MeetsGroupRequirement.MeetsWithWarning:
+                        results.Message = groupRequirementType.WarningLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.WarningLabel : LabelKey.RequirementMetWithWarning;
+                        break;
+                }
+
+                results.Summary = groupRequirementType.Summary;
+
+                return Ok( results );
+            }
+        }
+
+        /// <summary>
+        /// Manually mark a GroupMemberRequirement as met
+        /// </summary>
+        /// <param name="options">The options that describe which item to mark met</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardMarkMetManually" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "AE5A418A-645C-4EA5-A870-AA74F7109354" )]
+        public IHttpActionResult GroupMemberRequirementCardMarkMetManually( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                {
+                    // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                    var groupRequirementService = new GroupRequirementService( rockContext );
+                    var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+
+                    var groupMemberService = new GroupMemberService( rockContext );
+                    var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                    if ( groupRequirement != null && groupMember != null )
+                    {
+                        groupMemberRequirement = new GroupMemberRequirement
+                        {
+                            GroupRequirementId = groupRequirement.Id,
+                            GroupMemberId = groupMember.Id
+                        };
+                        groupMemberRequirementService.Add( groupMemberRequirement );
+                    }
+                }
+
+                groupMemberRequirement.WasManuallyCompleted = true;
+                groupMemberRequirement.ManuallyCompletedByPersonAliasId = RockRequestContext.CurrentPerson.PrimaryAliasId;
+                groupMemberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
+                groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges();
+
+                return Ok();
+            }
+        }
+
+        /// <summary>
+        /// Manually override a GroupMemberRequirement as met
+        /// </summary>
+        /// <param name="options">The options that describe which item to override</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardOverrideMarkMet" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "DA54A9CE-840F-4629-B270-7FCBAC86312C" )]
+        public IHttpActionResult GroupMemberRequirementCardOverrideMarkMet( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                {
+                    // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                    var groupRequirementService = new GroupRequirementService( rockContext );
+                    var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+
+                    var groupMemberService = new GroupMemberService( rockContext );
+                    var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                    if ( groupRequirement != null && groupMember != null )
+                    {
+                        groupMemberRequirement = new GroupMemberRequirement
+                        {
+                            GroupRequirementId = groupRequirement.Id,
+                            GroupMemberId = groupMember.Id
+                        };
+                        groupMemberRequirementService.Add( groupMemberRequirement );
+                    }
+                }
+
+                groupMemberRequirement.WasOverridden = true;
+                groupMemberRequirement.OverriddenByPersonAliasId = RockRequestContext.CurrentPerson.PrimaryAliasId;
+                groupMemberRequirement.OverriddenDateTime = RockDateTime.Now;
+                groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges();
+
+                return Ok();
+            }
+        }
+
+        /// <summary>
+        /// Run the "not met" workflow for the given GroupMemberRequirement
+        /// </summary>
+        /// <param name="options">The options that describe which requirement to run the workflow on</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardRunNotMetWorkflow" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "A9202026-CAF8-4B68-BE95-263FAE77F92D" )]
+        public IHttpActionResult GroupMemberRequirementCardRunNotMetWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                var groupRequirementType = groupMemberRequirement.GroupRequirement.GroupRequirementType;
+
+                if ( !groupRequirementType.DoesNotMeetWorkflowTypeId.HasValue )
+                {
+                    return BadRequest();
+                }
+
+                // Begin the workflow.
+                var workflowType = WorkflowTypeCache.Get( groupRequirementType.DoesNotMeetWorkflowTypeId.Value );
+
+                // If a workflow type is not persisted, let the user know that it did not work.
+                if ( !workflowType.IsPersisted )
+                {
+                    return Ok( new
+                    {
+                        Alert = $"The Workflow Type '{workflowType.Name}' is not configured to be automatically persisted, and could not be started."
+                    } );
+                }
+
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
+                    Rock.Model.Workflow workflow;
+                    if ( groupMemberRequirement != null && groupMemberRequirement.DoesNotMeetWorkflowId.HasValue )
+                    {
+                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
+                        var qryParams = new Dictionary<string, string>
+                            {
+                                { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                { "WorkflowGuid", workflow.Guid.ToString() }
+                            };
+                        var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                        return Ok( new
+                        {
+                            GoTo = workflowLink.BuildUrl()
+                        } );
+                    }
+                    else
+                    {
+                        if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                        {
+                            // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                            var groupRequirementService = new GroupRequirementService( rockContext );
+                            var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                            if ( groupRequirement != null && groupMember != null )
+                            {
+                                groupMemberRequirement = new GroupMemberRequirement
+                                {
+                                    GroupRequirementId = groupRequirement.Id,
+                                    GroupMemberId = groupMember.Id
+                                };
+                                groupMemberRequirementService.Add( groupMemberRequirement );
+                            }
+                        }
+
+                        workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                        workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
+
+                        if ( processed )
+                        {
+                            // Update the group member requirement with the workflow - could potentially overwrite an existing workflow ID, but that is expected.
+                            groupMemberRequirement.DoesNotMeetWorkflowId = workflow.Id;
+                            groupMemberRequirement.RequirementFailDateTime = RockDateTime.Now;
+                            rockContext.SaveChanges();
+
+                            if ( workflow.HasActiveEntryForm( RockRequestContext.CurrentPerson ) )
+                            {
+                                var message = $"A '{workflowType.Name}' workflow has been started.<br /><br />The new workflow has an active form that is ready for input.";
+
+                                var qryParams = new Dictionary<string, string>
+                                {
+                                    { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                    { "WorkflowGuid", workflow.Guid.ToString() }
+                                };
+
+                                var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                                return Ok( new
+                                {
+                                    Open = workflowLink.BuildUrl(),
+                                    Alert = message
+                                } );
+                            }
+                            else
+                            {
+                                return Ok( new
+                                {
+                                    Alert = $"A '{workflowType.Name}' workflow was started."
+                                } );
+                            }
+                        }
+                    }
+                }
+
+                return Ok();
+            }
+        }
+
+        /// <summary>
+        /// Run the "warning" workflow for the given GroupMemberRequirement
+        /// </summary>
+        /// <param name="options">The options that describe which requirement to run the workflow on</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardRunWarningWorkflow" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "CD7F3FAF-975D-4BDA-8A2D-5E236E7942DD" )]
+        public IHttpActionResult GroupMemberRequirementCardRunWarningWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                var groupRequirementType = groupMemberRequirement.GroupRequirement.GroupRequirementType;
+
+                if ( !groupRequirementType.WarningWorkflowTypeId.HasValue )
+                {
+                    return BadRequest();
+                }
+
+                // Begin the workflow.
+                var workflowType = WorkflowTypeCache.Get( groupRequirementType.WarningWorkflowTypeId.Value );
+
+                // If a workflow type is not persisted, let the user know that it did not work.
+                if ( !workflowType.IsPersisted )
+                {
+                    return Ok( new
+                    {
+                        Alert = $"The Workflow Type '{workflowType.Name}' is not configured to be automatically persisted, and could not be started."
+                    } );
+                }
+
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
+                    Rock.Model.Workflow workflow;
+                    if ( groupMemberRequirement != null && groupMemberRequirement.WarningWorkflowId.HasValue )
+                    {
+                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
+                        var qryParams = new Dictionary<string, string>
+                            {
+                                { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                { "WorkflowGuid", workflow.Guid.ToString() }
+                            };
+                        var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                        return Ok( new
+                        {
+                            GoTo = workflowLink.BuildUrl()
+                        } );
+                    }
+                    else
+                    {
+                        if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                        {
+                            // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                            var groupRequirementService = new GroupRequirementService( rockContext );
+                            var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                            if ( groupRequirement != null && groupMember != null )
+                            {
+                                groupMemberRequirement = new GroupMemberRequirement
+                                {
+                                    GroupRequirementId = groupRequirement.Id,
+                                    GroupMemberId = groupMember.Id
+                                };
+                                groupMemberRequirementService.Add( groupMemberRequirement );
+                            }
+                        }
+
+                        workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                        workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
+
+                        if ( processed )
+                        {
+                            // Update the group member requirement with the workflow - could potentially overwrite an existing workflow ID, but that is expected.
+                            groupMemberRequirement.WarningWorkflowId = workflow.Id;
+                            groupMemberRequirement.RequirementWarningDateTime = RockDateTime.Now;
+                            rockContext.SaveChanges();
+
+                            if ( workflow.HasActiveEntryForm( RockRequestContext.CurrentPerson ) )
+                            {
+                                var message = $"A '{workflowType.Name}' workflow has been started.<br /><br />The new workflow has an active form that is ready for input.";
+
+                                var qryParams = new Dictionary<string, string>
+                                {
+                                    { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                    { "WorkflowGuid", workflow.Guid.ToString() }
+                                };
+
+                                var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                                return Ok( new
+                                {
+                                    Open = workflowLink.BuildUrl(),
+                                    Alert = message
+                                } );
+                            }
+                            else
+                            {
+                                return Ok( new
+                                {
+                                    Alert = $"A '{workflowType.Name}' workflow was started."
+                                } );
+                            }
+                        }
+                    }
+                }
+
+                return Ok();
+            }
         }
 
         #endregion
