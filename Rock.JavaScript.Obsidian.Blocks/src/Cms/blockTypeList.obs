@@ -1,0 +1,290 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid ref="gridElement"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :customActions="customActions"
+          itemTerm="Block Type"
+          :entityTypeGuid="EntityType.BlockType"
+          stickyHeader
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          liveUpdates>
+
+        <Column name="name"
+                title="Name"
+                field="name"
+                :filter="textValueFilter"
+                :filterValue="getRowNameFilterValue"
+                :quickFilterValue="getRowNameFilterValue"
+                visiblePriority="xs"
+                width="30%">
+            <template #format="{ row }">
+                <div>
+                    <div>
+                        <span class="text-semibold">{{ row.name }}</span>
+                    </div>
+                    <div v-if="row.path">
+                        {{ row.path }}
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <TextColumn name="category"
+                    title="Category"
+                    field="category"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="15%" />
+
+        <Column name="Usage"
+                title="Usage"
+                :filter="textValueFilter"
+                visiblePriority="xs"
+                width="5%">
+            <template #format="{ row }">
+                <div>
+                    <div v-if="row.blocksCount > '1'">
+                        <span class="badge badge-success">{{ row.blocksCount }}</span>
+                    </div>
+                    <div v-else-if="row.blocksCount === '1'">
+                        <span class="badge badge-info">{{ row.blocksCount }}</span>
+                    </div>
+                    <div v-else>
+                        <span class="badge badge-danger">{{ row.blocksCount }}</span>
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="Status"
+                title="Status"
+                :filter="textValueFilter"
+                visiblePriority="xs"
+                width="25%">
+            <template #format="{ row }">
+                <div>
+                    <div v-if="row.status === 'Found'">
+                        <span class="label label-success">{{ row.status }}</span>
+                    </div>
+                    <div v-else-if="row.status === 'Missing'">
+                        <span class="label label-danger">{{ row.status }}</span>
+                    </div>
+                    <div v-else>
+                        <span class="label label-info">{{ row.status }}</span>
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <BooleanColumn name="isSystem"
+                       title="System"
+                       field="isSystem"
+                       visiblePriority="xs"
+                       width="2%" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, Column } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { BlockTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/BlockTypeList/blockTypeListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey, Row } from "./BlockTypeList/types.partial";
+    import { computed, ref, watch } from "vue";
+    import { GridAction } from "@Obsidian/Types/Controls/grid";
+    import GridSettingsModal from "./BlockTypeList/gridSettingsModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<BlockTypeListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridElement = ref<InstanceType<typeof Grid>>();
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    const isGridSettingsVisible = ref(false);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        name: preferences.getValue(PreferenceKey.FilterName),
+        path: preferences.getValue(PreferenceKey.FilterPath),
+        category: preferences.getValue(PreferenceKey.FilterCategory),
+        excludeSystemTypes: preferences.getValue(PreferenceKey.FilterSystemTypes) === "true",
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+    * The custom actions supported by this grid.
+    */
+    const customActions = computed((): GridAction[] => {
+        return [
+            {
+                title: "Reload All Block Type Attributes",
+                iconCssClass: "fa fa-refresh",
+                handler: onReloadAttributesClick
+            },
+        ];
+    });
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.name
+            || !!gridSettings.value.path
+            || !!gridSettings.value.category
+            || gridSettings.value.excludeSystemTypes;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+     * Watch for changes to the grid settings and update the preferences as needed.
+     */
+    watch(gridSettings, async () => {
+        // Handle the potential null or undefined values for each setting
+        const nameValue = gridSettings.value.name ?? "";
+        const pathValue = gridSettings.value.path ?? "";
+        const categoryValue = gridSettings.value.category ?? "";
+        const excludeSystemTypesValue = gridSettings.value.excludeSystemTypes ? "true" : "false";
+
+        // Set the preferences with the appropriate values
+        preferences.setValue(PreferenceKey.FilterName, nameValue);
+        preferences.setValue(PreferenceKey.FilterPath, pathValue);
+        preferences.setValue(PreferenceKey.FilterCategory, categoryValue);
+        preferences.setValue(PreferenceKey.FilterSystemTypes, excludeSystemTypesValue);
+
+        // Save the preferences
+        await preferences.save();
+
+        // Reload the grid data
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+    * Gets the filter value text to use for the name column.
+     *
+     * @param row The row to be filtered.
+     * @returns The text to use for the filter value.
+     */
+    function getRowNameFilterValue(row: Record<string, unknown>): string {
+        const r = row as Row;
+
+        return `${r.name} ${r.path ?? ""}`;
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+
+        const result = await invokeBlockAction<GridDataBag>("GetGridData", {
+            // Pass in filter settings
+            name: gridSettings.value.name,
+            path: gridSettings.value.path,
+            category: gridSettings.value.category,
+            systemTypes: gridSettings.value.excludeSystemTypes
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridElement.value) {
+                gridElement.value.deleteRow(key);
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete block type.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when the Reload All Block Type Attributes button has been clicked by the indivual.
+     */
+    async function onReloadAttributesClick(): Promise<void> {
+        const result = await invokeBlockAction("ReloadAllBlockTypeAttributes");
+
+        if (result.isSuccess) {
+            await alert("Block type attributes have been successfully reloaded");
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Error occured while reloading block type attribtues.");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>
