@@ -1223,6 +1223,7 @@
     <Compile Include="Plugin\HotFixes\160_SetupReminders.cs" />
     <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
+    <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
