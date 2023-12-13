@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <li v-if="resource" class="list-group-item text-sm">
-        <img :src="imgSrc" :class="imgCssClass" draggable="false">
+    <li v-if="resource" :class="resourceCssClass">
+        <img :src="imgSrc" class="avatar" draggable="false">
         <span class="resource-name">
             {{ personName }}
             <i v-if="conflictTooltip"
@@ -148,8 +148,12 @@
         return props.resource?.ConfirmationStatus ?? "";
     });
 
-    const imgCssClass = computed((): string => {
-        return `avatar avatar-status${(status.value ? ` ${status.value.toLowerCase()}` : "")}`;
+    const statusCssClass = computed((): string => {
+        return `status-${(status.value ? `${status.value.toLowerCase()}` : "unknown")}`;
+    });
+
+    const resourceCssClass = computed((): string => {
+        return `list-group-item text-sm ${statusCssClass.value}`;
     });
 
     const attendanceId = computed((): number => {
