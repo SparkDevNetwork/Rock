@@ -318,7 +318,7 @@ namespace Rock.Data.Interception
                 // Add observability metric
                 var tags = RockMetricSource.CommonTags;
                 tags.Add( "operation", observabilityInfo.CommandType );
-                RockMetricSource.DatabaseQueriesCounter.Add( 1, tags );
+                RockMetricSource.DatabaseQueriesCounter?.Add( 1, tags );
             }
 
             if ( context is RockContext rockContext )
