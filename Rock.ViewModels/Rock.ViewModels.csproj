@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -56,11 +56,14 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\BlockTypeList\BlockTypeListBag.cs" />
+    <Compile Include="Blocks\Cms\BlockTypeList\BlockTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PersonalLinkSectionList\PersonalLinkSectionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntryInitializationBox.cs" />
@@ -75,6 +78,8 @@
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeList\BinaryFileTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\DefinedTypeList\DefinedTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\DefinedTypeDetail\DefinedTypeBag.cs" />
+    <Compile Include="Blocks\Core\DefinedTypeDetail\DefinedTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceList\DeviceListOptionsBag.cs" />
@@ -109,13 +114,18 @@
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountParticipantBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountDetail\FinancialAccountDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepStatusBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramWorkflowTriggerBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusResponseBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayBag.cs" />
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialGatewayList\FinancialGatewayListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialStatementTemplateDetail\FinancialStatementTemplateBag.cs" />
     <Compile Include="Blocks\Finance\FinancialStatementTemplateDetail\FinancialStatementTemplateDetailOptionsBag.cs" />
@@ -151,6 +161,7 @@
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\SignUpOccurrenceBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\SignUpOccurrenceLocationBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\SignUpsBag.cs" />
+    <Compile Include="Blocks\Reporting\InteractionComponentDetail\InteractionComponentDetailInitializationBox.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
@@ -451,6 +462,14 @@
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Controls\RockCacheabilityBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberRequirementCardRunWorkflowResultsBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberRequirementCardRunWorkflowOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberRequirementCardMarkMetManuallyOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberRequirementCardSubControlConfigBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberRequirementCardGetConfigResultsBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberRequirementCardGetConfigOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MediaPlayerOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MediaPlayerGetPlayerOptionsOptionsBag.cs" />
     <Compile Include="Rest\Controls\BadgeControlGetBadgeOptionsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoOptionsBag.cs" />

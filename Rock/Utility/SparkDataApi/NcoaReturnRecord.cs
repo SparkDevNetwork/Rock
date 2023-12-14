@@ -856,6 +856,13 @@ namespace Rock.Utility.SparkDataApi
         public NcoaHistory ToNcoaHistory()
         {
             var ids = InputIndividualId?.Split( '_' );
+
+            double? adjustedMoveDistance = MoveDistance;
+            if ( adjustedMoveDistance.HasValue && adjustedMoveDistance.Value >= 10_000 )
+            {
+                adjustedMoveDistance = 9_999.99;
+            }
+
             var ncoaHistory = new NcoaHistory()
             {
                 //PersonId = ( ids?[0] ).AsInteger(),
@@ -864,7 +871,7 @@ namespace Rock.Utility.SparkDataApi
                 LocationId = ( ids?[3] ).AsInteger(),
                 AddressStatus = AddressStatus == "V" ? Model.AddressStatus.Valid : Model.AddressStatus.Invalid,
                 MoveDate = NcoaDateToDateTime( MoveDate ),
-                MoveDistance = (decimal?)MoveDistance,
+                MoveDistance = ( decimal? ) adjustedMoveDistance,
                 NcoaNote = DeliveryPointVerificationNotes,
                 NcoaRunDateTime = NcoaRunDateTime,
                 OriginalCity = InputAddressCity,

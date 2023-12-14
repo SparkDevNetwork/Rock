@@ -64,13 +64,25 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202311301719499_Rollup_20231130.cs" />
-    <Compile Include="Migrations\202311301719499_Rollup_20231130.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.designer.cs">
       <DependentUpon>202311301719499_Rollup_20231130.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202311301818327_CodeGenerated_20231130.cs" />
-    <Compile Include="Migrations\202311301818327_CodeGenerated_20231130.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301818327_CodeGenerated_20231130.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301818327_CodeGenerated_20231130.designer.cs">
       <DependentUpon>202311301818327_CodeGenerated_20231130.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312012300370_AddPersistedScheduleIdToPersistedDataset.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312012300370_AddPersistedScheduleIdToPersistedDataset.designer.cs">
+      <DependentUpon>202312012300370_AddPersistedScheduleIdToPersistedDataset.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312051622324_AddScheduleForeignKeyToPersistedDataset.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312051622324_AddScheduleForeignKeyToPersistedDataset.designer.cs">
+      <DependentUpon>202312051622324_AddScheduleForeignKeyToPersistedDataset.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312071731394_AddPersistedScheduleIntervalMinutesToPersistedDataset.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.1\202312071731394_AddPersistedScheduleIntervalMinutesToPersistedDataset.designer.cs">
+      <DependentUpon>202312071731394_AddPersistedScheduleIntervalMinutesToPersistedDataset.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310051734463_Rollup_20231005.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.1\202310051734463_Rollup_20231005.designer.cs">
@@ -1894,11 +1906,20 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202311301719499_Rollup_20231130.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.resx">
       <DependentUpon>202311301719499_Rollup_20231130.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202311301818327_CodeGenerated_20231130.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311301818327_CodeGenerated_20231130.resx">
       <DependentUpon>202311301818327_CodeGenerated_20231130.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202312012300370_AddPersistedScheduleIdToPersistedDataset.resx">
+      <DependentUpon>202312012300370_AddPersistedScheduleIdToPersistedDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202312051622324_AddScheduleForeignKeyToPersistedDataset.resx">
+      <DependentUpon>202312051622324_AddScheduleForeignKeyToPersistedDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202312071731394_AddPersistedScheduleIntervalMinutesToPersistedDataset.resx">
+      <DependentUpon>202312071731394_AddPersistedScheduleIntervalMinutesToPersistedDataset.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202310051734463_Rollup_20231005.resx">
       <DependentUpon>202310051734463_Rollup_20231005.cs</DependentUpon>

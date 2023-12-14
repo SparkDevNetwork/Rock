@@ -283,14 +283,20 @@ namespace Rock.Blocks.Cms
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.MemoryCacheDurationHours ),
-                () => entity.MemoryCacheDurationMS = ( int ) TimeSpan.FromHours( box.Entity.MemoryCacheDurationHours.Value ).TotalMilliseconds );
+            if ( box.Entity.MemoryCacheDurationHours.HasValue )
+            {
+                box.IfValidProperty( nameof( box.Entity.MemoryCacheDurationHours ),
+                    () => entity.MemoryCacheDurationMS = ( int ) TimeSpan.FromHours( box.Entity.MemoryCacheDurationHours.Value ).TotalMilliseconds );
+            }
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
 
-            box.IfValidProperty( nameof( box.Entity.RefreshIntervalHours ),
-                () => entity.RefreshIntervalMinutes = ( int ) TimeSpan.FromHours( box.Entity.RefreshIntervalHours.Value ).TotalMinutes );
+            if( box.Entity.RefreshIntervalHours.HasValue )
+            {
+                box.IfValidProperty( nameof( box.Entity.RefreshIntervalHours ),
+                    () => entity.RefreshIntervalMinutes = ( int ) TimeSpan.FromHours( box.Entity.RefreshIntervalHours.Value ).TotalMinutes );
+            }
 
             return true;
         }

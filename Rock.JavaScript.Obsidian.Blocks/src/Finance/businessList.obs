@@ -8,6 +8,9 @@
           itemTerm="Business"
           stickyHeader
           liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
           @selectItem="onSelectItem"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           :personAsBusiness="true"
@@ -82,47 +85,76 @@
                     visiblePriority="xs"
                     width="5%" />
     </Grid>
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import Grid, { Column, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { BusinessListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessList/businessListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { reactive, ref, watch, watchEffect } from "vue";
-    import { NavigationUrlKey } from "./BusinessList/types.partial";
+    import { computed, reactive, ref, watch, watchEffect } from "vue";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./BusinessList/types.partial";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import GridSettingsModal from "./BusinessList/gridSettingsModal.partial.obs";
+
 
     // #region Values
 
     const config = useConfigurationValues<ListBlockBox<BusinessListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const gridDataSource = ref<Promise<GridDataBag>>();
+    const preferences = usePersonPreferences().blockPreferences;
     const entityTypeGuid = EntityType.Person;
 
     // Retrieves search term from URL
     const params = new URLSearchParams(window.location.search);
     const searchTerm = ref(params.get("SearchTerm"));
     let gridData = ref<GridDataBag>();
+    const isGridSettingsVisible = ref(false);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        businessName: preferences.getValue(PreferenceKey.FilterBusinessName),
+        active: preferences.getValue(PreferenceKey.FilterActive),
+    });
 
     // #endregion
 
-    // #region Functions
+    // #region Computed Values
 
     /**
-     * Called when the grid is requesting the row data be loaded.
+     * Returns `true` if the grid settings filters are active; otherwise `false`.
      */
-    async function loadGridData(searchTerm: string | null): Promise<GridDataBag> {
-        const result = await invokeBlockAction<GridDataBag>("GetGridData", { searchTerm });
-        if (result.isSuccess && result.data) {
-            gridData.value = reactive(result.data);
-            return gridData.value;
-        }
-        else {
-            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
-        }
-    }
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.businessName
+            || !!gridSettings.value.active;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+     * Watch for changes to the grid settings and update the preferences as needed.
+     */
+    watch(gridSettings, async () => {
+        // Handle the potential null or undefined values for each setting
+        const businessNameValue = gridSettings.value.businessName ?? "";
+        const activeValue = gridSettings.value.active ?? "";
+
+        // Set the preferences with the appropriate values
+        preferences.setValue(PreferenceKey.FilterBusinessName, businessNameValue);
+        preferences.setValue(PreferenceKey.FilterActive, activeValue);
+
+        // Save the preferences
+        await preferences.save();
+
+        // Reload the grid data
+        gridDataSource.value = loadGridData(searchTerm.value);
+    });
 
     // Watch for changes in searchTerm and reload grid data
     watch(gridData, () => {
@@ -142,6 +174,24 @@
     function navigateToDetailPage(businessId: number): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", businessId.toString());
+        }
+    }
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(searchTerm: string | null): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData", { searchTerm });
+        if (result.isSuccess && result.data) {
+            gridData.value = reactive(result.data);
+            return gridData.value;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
     }
 

@@ -4,7 +4,7 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
-    <DetailBlock v-if="!blockError"
+    <DetailBlock v-if="!blockError && isBlockVisible"
                  v-model:mode="panelMode"
                  :name="panelName"
                  :title="panelName"
@@ -15,7 +15,8 @@
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
-                 :isEditVisible="isEditable"
+                 :isEditVisible="false"
+
                  :isFollowVisible="false"
                  :isSecurityHidden="false"
                  @cancelEdit="onCancelEdit"
@@ -61,7 +62,7 @@
     const categoryEditBag = ref<CategoryBag>({} as CategoryBag);
 
     const entityTypeGuid = EntityType.Category;
-
+    const isBlockVisible = ref(true);
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
     // The properties that are being edited in the UI. This is used to
@@ -242,6 +243,8 @@
 
     provideSecurityGrant(securityGrant);
 
+    const params = new URLSearchParams(window.location.search);
+    const categoryId = params.get("CategoryId");
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -249,8 +252,11 @@
     else if (!config.entity) {
         blockError.value = "The specified category could not be viewed.";
     }
-    else if (!config.entity.idKey) {
+    else if (!config.entity.idKey && categoryId) {
         categoryEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
+    }
+    else if (!categoryId) {
+        isBlockVisible.value = false;
     }
 </script>

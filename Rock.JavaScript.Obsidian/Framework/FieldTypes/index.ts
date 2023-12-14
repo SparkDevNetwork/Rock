@@ -86,6 +86,9 @@ registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 import { ColorSelectorFieldType } from "./colorSelectorField.partial";
 registerFieldType(FieldTypeGuids.ColorSelector, new ColorSelectorFieldType());
 
+import { ConnectionOpportunityFieldType } from "./connectionOpportunityField.partial";
+registerFieldType(FieldTypeGuids.ConnectionOpportunity, new ConnectionOpportunityFieldType());
+
 import { ConnectionTypeField } from "./connectionTypeField.partial";
 registerFieldType(FieldTypeGuids.ConnectionType, new ConnectionTypeField());
 
@@ -94,6 +97,9 @@ registerFieldType(FieldTypeGuids.ConnectionTypes, new ConnectionTypesField());
 
 import { ConnectionStateFieldType } from "./connectionStateField.partial";
 registerFieldType(FieldTypeGuids.ConnectionState, new ConnectionStateFieldType());
+
+import { ConnectionStatusFieldType } from "./connectionStatusField.partial";
+registerFieldType(FieldTypeGuids.ConnectionStatus, new ConnectionStatusFieldType());
 
 import { ContentChannelFieldType } from "./contentChannelField.partial";
 registerFieldType(FieldTypeGuids.ContentChannel, new ContentChannelFieldType());
@@ -160,6 +166,9 @@ registerFieldType(FieldTypeGuids.Decimal, new DecimalFieldType());
 
 import { DecimalRangeFieldType } from "./decimalRangeField.partial";
 registerFieldType(FieldTypeGuids.DecimalRange, new DecimalRangeFieldType());
+
+import { DefinedTypeFieldType } from "./definedTypeField.partial";
+registerFieldType(FieldTypeGuids.DefinedType, new DefinedTypeFieldType());
 
 import { DefinedValueFieldType } from "./definedValueField.partial";
 registerFieldType(FieldTypeGuids.DefinedValue, new DefinedValueFieldType());
@@ -235,6 +244,9 @@ registerFieldType(FieldTypeGuids.InteractionChannel, new InteractionChannelField
 
 import { InteractionChannelsFieldType } from "./interactionChannelsField.partial";
 registerFieldType(FieldTypeGuids.InteractionChannels, new InteractionChannelsFieldType());
+
+import { InteractionChannelInteractionComponentFieldType } from "./interactionChannelInteractionComponentField.partial";
+registerFieldType(FieldTypeGuids.InteractionChannelInteractionComponent, new InteractionChannelInteractionComponentFieldType());
 
 import { KeyValueListFieldType } from "./keyValueListField.partial";
 registerFieldType(FieldTypeGuids.KeyValueList, new KeyValueListFieldType());
@@ -352,6 +364,15 @@ registerFieldType(FieldTypeGuids.StreakType, new StreakTypeFieldType());
 
 import { StructureContentEditorFieldType } from "./structureContentEditorField.partial";
 registerFieldType(FieldTypeGuids.StructureContentEditor, new StructureContentEditorFieldType());
+
+import { SystemCommunicationFieldType } from "./systemCommunicationField.partial";
+registerFieldType(FieldTypeGuids.SystemCommunication, new SystemCommunicationFieldType());
+
+import { SystemEmailFieldType } from "./systemEmailField.partial";
+registerFieldType(FieldTypeGuids.SystemEmail, new SystemEmailFieldType());
+
+import { SystemPhoneNumberFieldType } from "./systemPhoneNumberField.partial";
+registerFieldType(FieldTypeGuids.SystemPhoneNumber, new SystemPhoneNumberFieldType());
 
 import { TextFieldType } from "./textField.partial";
 registerFieldType(FieldTypeGuids.Text, new TextFieldType());

@@ -71,7 +71,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            if ( publicConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) && Guid.TryParse( publicConfigurationValues[BINARY_FILE_TYPE], out Guid binaryFileTypeGuid ) )
+            if ( usage != ConfigurationValueUsage.View && publicConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) && Guid.TryParse( publicConfigurationValues[BINARY_FILE_TYPE], out Guid binaryFileTypeGuid ) )
             {
                 publicConfigurationValues[BINARY_FILE_TYPE] = new ListItemBag()
                 {

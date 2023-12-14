@@ -118,7 +118,7 @@ namespace Rock.Field.Types
         {
             var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            if ( configurationValues.ContainsKey( REGISTRATION_TEMPLATE_KEY ) )
+            if ( usage != ConfigurationValueUsage.View && configurationValues.ContainsKey( REGISTRATION_TEMPLATE_KEY ) )
             {
                 var id = configurationValues[REGISTRATION_TEMPLATE_KEY].AsIntegerOrNull();
                 if ( id.HasValue )

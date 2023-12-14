@@ -2,20 +2,13 @@
 <template>
     <RockFormField v-bind="fieldProps" :rules="computedRules" name="captchaContent" :modelValue="modelValue">
         <div class="control-wrapper">
-            <div id="turnstile-box"></div>
+            <div :id="turnstileBoxId"></div>
         </div>
     </RockFormField>
 </template>
 
-<script lang="ts">
-    declare global {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-var
-        var turnstile: any | undefined;
-    }
-</script>
-
 <script setup lang="ts">
-    import { PropType, computed, onMounted, ref, } from "vue";
+    import { PropType, computed, onMounted, onUnmounted, ref, } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { useHttp } from "@Obsidian/Utility/http";
     import { ValidationResult, containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
@@ -25,6 +18,13 @@
     import { CaptchaControlValidateTokenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlValidateTokenOptionsBag";
     import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    interface ITurnstile {
+        render(elementQuery: string, options: unknown): string;
+        reset(widgetId: string): void;
+        remove(widgetId: string): void;
+    }
 
     const props = defineProps({
         /** the returned token */
@@ -45,7 +45,8 @@
     const fieldProps = useStandardRockFormFieldProps(props);
     const http = useHttp();
     const widgetId = ref("");
-    const loadJavascriptPromise = loadJavaScriptAsync("https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback", () => window.turnstile);
+    const turnstileBoxId = `turnstile-box-${newGuid()}`;
+    let turnstile: ITurnstile | undefined;
 
     // #endregion
 
@@ -111,16 +112,14 @@
     * Renders the captcha control in the selected element after the turnstile script has been injected.
     */
     function renderCaptchaControl(siteKey: string): void {
-        /* eslint-disable */
-        // @ts-ignore
-        window.onloadTurnstileCallback = () => {
-            widgetId.value = window.turnstile?.render("#turnstile-box", {
+        if (turnstile) {
+            widgetId.value = turnstile.render(`#${turnstileBoxId}`, {
                 sitekey: siteKey,
                 "callback": callback,
                 "error-callback": errorCallback,
                 "expired-callback": expiredCallback
             });
-        };
+        }
     }
 
     /**
@@ -144,7 +143,7 @@
     * Callback function invoked when the token expires and does not reset the widget.
     */
     function expiredCallback(): void {
-        if (widgetId.value) {
+        if (widgetId.value && turnstile) {
             turnstile.reset(widgetId.value);
         }
     }
@@ -152,7 +151,7 @@
     /**
      * Ensures that the Captcha was solved and verified successfully.
      */
-     function requiredValidator(value: unknown): ValidationResult {
+    function requiredValidator(value: unknown): ValidationResult {
         const invalidMessage = "is required";
 
         if (!asBoolean(value)) {
@@ -166,9 +165,16 @@
 
     onMounted(async () => {
         const config = await getConfiguration();
-        await loadJavascriptPromise;
         if (config?.siteKey) {
+            await loadJavaScriptAsync("https://challenges.cloudflare.com/turnstile/v0/api.js", () => !!window["turnstile"]);
+            turnstile = window["turnstile"];
             renderCaptchaControl(config.siteKey);
+        }
+    });
+
+    onUnmounted(() => {
+        if (widgetId.value && turnstile) {
+            turnstile.remove(widgetId.value);
         }
     });
 </script>

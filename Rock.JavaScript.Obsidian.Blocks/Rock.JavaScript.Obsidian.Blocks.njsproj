@@ -55,6 +55,7 @@
     <Content Include="src\Core\AttributeMatrixTemplateDetail\viewPanel.partial.obs" />
     <Content Include="src\Cms\mediaAccountList.obs" />
     <Content Include="src\Cms\mediaFolderList.obs" />
+    <Content Include="src\Cms\personalLinkSectionList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
@@ -67,6 +68,9 @@
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
     <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
     <Content Include="src\Core\definedTypeList.obs" />
+    <Content Include="src\Core\definedTypeDetail.obs" />
+    <Content Include="src\Core\DefinedTypeDetail\editPanel.partial.obs" />
+    <Content Include="src\Core\DefinedTypeDetail\viewPanel.partial.obs" />
     <Content Include="src\Core\deviceDetail.obs" />
     <Content Include="src\Core\DeviceDetail\editPanel.partial.obs" />
     <Content Include="src\Core\DeviceDetail\viewPanel.partial.obs" />
@@ -115,6 +119,9 @@
     <Content Include="src\Engagement\AchievementTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\AchievementTypeDetail\viewPanel.partial.obs" />
     <Content Include="src\Engagement\connectionOpportunityList.obs" />
+    <Content Include="src\Engagement\stepProgramDetail.obs" />
+    <Content Include="src\Engagement\StepProgramDetail\editPanel.partial.obs" />
+    <Content Include="src\Engagement\StepProgramDetail\viewPanel.partial.obs" />
     <Content Include="src\Engagement\stepTypeDetail.obs" />
     <Content Include="src\Engagement\StepTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\StepTypeDetail\viewPanel.partial.obs" />
@@ -149,6 +156,7 @@
     <Content Include="src\Finance\financialGatewayDetail.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\viewPanel.partial.obs" />
+    <Content Include="src\Finance\financialGatewayList.obs" />
     <Content Include="src\Group\groupMemberScheduleTemplateDetail.obs" />
     <Content Include="src\Group\GroupMemberScheduleTemplateDetail\editPanel.partial.obs" />
     <Content Include="src\Group\GroupMemberScheduleTemplateDetail\viewPanel.partial.obs" />
@@ -320,6 +328,7 @@
     <Folder Include="src\Cms\PageRouteDetail\" />
     <Folder Include="src\Cms\PersistedDatasetDetail\" />
     <Folder Include="src\Cms\PersonalLinkSectionDetail\" />
+    <Folder Include="src\Cms\PersonalLinkSectionList\" />
     <Folder Include="src\Cms\SiteDetail\" />
     <Folder Include="src\Communication\" />
     <Folder Include="src\Communication\SnippetDetail\" />
@@ -333,6 +342,7 @@
     <Folder Include="src\Core\BinaryFileTypeList\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
+    <Folder Include="src\Core\DefinedTypeDetail\" />
     <Folder Include="src\Core\DefinedTypeList\" />
     <Folder Include="src\Core\DeviceDetail\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
@@ -359,6 +369,7 @@
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
     <Folder Include="src\Engagement\ConnectionOpportunityList\" />
+    <Folder Include="src\Engagement\StepProgramDetail\" />
     <Folder Include="src\Engagement\StepTypeDetail\" />
     <Folder Include="src\Engagement\StreakDetail\" />
     <Folder Include="src\Engagement\StreakTypeDetail\" />
@@ -371,6 +382,7 @@
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialBatchList\" />
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
+    <Folder Include="src\Finance\FinancialGatewayList\" />
     <Folder Include="src\Finance\FinancialStatementTemplateDetail\" />
     <Folder Include="src\Group\GroupMemberScheduleTemplateDetail\" />
     <Folder Include="src\Group\GroupRequirementTypeDetail\" />
@@ -475,6 +487,7 @@
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\PersonalLinkSectionList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\siteDetail.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\types.partial.ts" />
@@ -496,6 +509,7 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\DefinedTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\DefinedTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\DeviceDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
@@ -533,6 +547,7 @@
     <TypeScriptCompile Include="src\Engagement\AchievementAttemptDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\AchievementTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\ConnectionOpportunityList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Engagement\StepProgramDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StepTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\SignUp\SignUpFinder\signUpFilterType.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
@@ -544,6 +559,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialAccountDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\FinancialGatewayList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupMemberScheduleTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupRequirementTypeDetail\types.partial.ts" />

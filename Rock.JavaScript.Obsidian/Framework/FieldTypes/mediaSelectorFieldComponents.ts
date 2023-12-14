@@ -201,7 +201,7 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that only require a local UI update.
         watch(mode, () => maybeUpdateConfiguration(ConfigurationValueKey.Mode, mode.toString() ?? MediaSelectorMode.Image));
-        watch(mediaItems, () => maybeUpdateConfiguration(ConfigurationValueKey.MediaItems, JSON.stringify(mediaItems.value) ?? ""));
+        watch(mediaItems, () => maybeUpdateConfiguration(ConfigurationValueKey.MediaItems, JSON.stringify(mediaItems.value) ?? ""), {deep : true});
         watch(itemWidth, () => maybeUpdateConfiguration(ConfigurationValueKey.ItemWidth, itemWidth.value ?? "50px"));
 
         return {

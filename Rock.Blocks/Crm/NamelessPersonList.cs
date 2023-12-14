@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,7 +51,7 @@ namespace Rock.Blocks.Crm
 
     #endregion
 
-    [Rock.SystemGuid.EntityTypeGuid( "911EA779-AC00-4A93-B706-B6A642C727CB")]
+    [Rock.SystemGuid.EntityTypeGuid( "911EA779-AC00-4A93-B706-B6A642C727CB" )]
     public class NamelessPersonList : RockListBlockType<Person>
     {
         #region Keys
@@ -252,8 +252,9 @@ namespace Rock.Blocks.Crm
         {
             return new GridBuilder<Person>()
                 .WithBlock( this )
-                .AddTextField( "guid", a => a.Guid.ToString() ) 
-                .AddField( "id", a => a.Id)
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "guid", a => a.Guid.ToString() )
+                .AddField( "id", a => a.Id )
                 .AddTextField( "phoneNumber", a => a.PhoneNumbers.Select( pn => pn.NumberFormatted ).FirstOrDefault() )
                 .AddTextField( "personLabel", a => a.PhoneNumbers.Any() ? $"{ a.PhoneNumbers.Select( pn => pn.NumberFormatted ).FirstOrDefault() } (Unknown Person)" : "Unknown Person" );
         }

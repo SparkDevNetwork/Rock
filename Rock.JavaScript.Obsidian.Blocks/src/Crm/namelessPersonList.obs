@@ -4,6 +4,7 @@
     <div>
         <Grid :definition="config.gridDefinition ?? undefined"
               :data="gridDataSource"
+              keyField="idKey"
               itemTerm="Nameless People"
               stickyHeader
               liveUpdates
@@ -15,7 +16,9 @@
                         :filter="textValueFilter"
                         visiblePriority="xs" />
 
-            <ButtonColumn :iconClass="icon" :action="getClickHandler"></ButtonColumn>
+            <ButtonColumn name="showModal"
+                          :iconClass="icon"
+                          @click="onShowModal" />
         </Grid>
     </div>
     <div>
@@ -218,14 +221,18 @@
 
     /**
      * Event handler for the grid's row click event. Opens the modal dialog.
-     * @param row The row that was clicked.
+     * @param row The unique key of the row that was clicked.
      */
-    const getClickHandler = (row: object): void => {
-        selectedPhoneNumber.value = row["phoneNumber"];
-        selectedPersonGuid.value = row["guid"];
-        selectedNamelessPersonId.value = row["id"];
-        isModalVisible.value = true;
-    };
+    function onShowModal(key: string): void {
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+
+        if (row) {
+            selectedPhoneNumber.value = row["phoneNumber"];
+            selectedPersonGuid.value = row["guid"] as string;
+            selectedNamelessPersonId.value = row["id"] as number;
+            isModalVisible.value = true;
+        }
+    }
     // #endregion
 
     gridDataSource.value = loadGridData();

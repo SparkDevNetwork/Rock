@@ -63,7 +63,7 @@
                          <Rock:DateTimePicker ID="dtpEnd" runat="server" SourceTypeName="Rock.Model.Attendance" PropertyName="EndDateTime" Required="false" Label="Check-out Date/Time" />
                      </div>
                 </asp:Panel>
-                <div class="well">
+                <div class="well mb-0">
                     <h4>Move Individual</h4>
                     <div class="row">
                         <div class="col-md-4">

@@ -76,13 +76,10 @@ namespace Rock.Field.Types
             if ( Guid.TryParse( privateValue, out Guid guid ) )
             {
                 var schedule = NamedScheduleCache.Get( guid );
+                
                 if ( schedule != null )
                 {
-                    return new ListItemBag()
-                    {
-                        Value = schedule.Guid.ToString(),
-                        Text = schedule.Name,
-                    }.ToCamelCaseJson( false, true );
+                    return schedule.ToListItemBag().ToCamelCaseJson( false, true );
                 }
             }
 

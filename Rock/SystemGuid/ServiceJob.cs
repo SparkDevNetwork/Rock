@@ -164,6 +164,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_152_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS = "4232194C-90AE-4B44-93E7-1E5DE984A9E1";
 
         /// <summary>
+        /// The Job to run Post v15.4 to update the AgeBracket values to reflect the new values after spliting the 0 - 12 bracket.
+        /// </summary>
+        public const string DATA_MIGRATIONS_154_UPDATE_AGE_BRACKET_VALUES = "C1234A63-09A6-45C1-96D8-0DE03EC4A7A1";
+
+        /// <summary>
         /// The Job to run Post v16.0 Move Person Preferences.
         /// </summary>
         public const string DATA_MIGRATIONS_160_MOVE_PERSON_PREFERENCES = "C8591D15-9D37-49D3-8DF8-1DB72EE42D29";
@@ -336,5 +341,10 @@ namespace Rock.SystemGuid
         /// The post update data migration job to chop the Login and Account Entry blocks.
         /// </summary>
         public const string DATA_MIGRATIONS_161_CHOP_SECURITY_BLOCKS = "A65D26C1-229E-4198-B388-E269C3534BC0";
+
+        /// <summary>
+        /// The post update data migraiton job to remove legacy preference attributes.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_REMOVE_LEGACY_PREFERENCES = "46d98280-7611-4588-831d-6924e2be9da6";
     }
 }

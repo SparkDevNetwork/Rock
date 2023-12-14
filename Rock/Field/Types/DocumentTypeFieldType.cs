@@ -76,7 +76,7 @@ namespace Rock.Field.Types
             }
 
             // This is a list of IDs, we'll want it to be document type names instead
-            var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( int.Parse ).ToList();
+            var selectedValues = privateValue.SplitDelimitedValues().Select( int.Parse ).ToList();
 
             return DocumentTypeCache.All()
                 .Where( v => selectedValues.Contains( v.Id ) )
@@ -94,10 +94,9 @@ namespace Rock.Field.Types
         {
             // The database stores the Document Type AttirbuteValues by their Ids.
             // However, the remote device needs the Guid to display them. So we are doing the following conversions.
-            var documentTypeGuids = privateValue.Split( ',' )
+            return privateValue.SplitDelimitedValues()
                 .Select( g => DocumentTypeCache.GetGuid( g.ToIntSafe() ).ToString() )
-                .ToList();
-            return string.Join( ",", documentTypeGuids );
+                .JoinStrings( "," );
         }
 
         /// <inheritdoc />
@@ -105,10 +104,9 @@ namespace Rock.Field.Types
         {
             // The publicValue which is sent by the remote device is a GUID. However, the database only stores the integer values in the database.
             // So for each DocumentTypeGuid from the remote device, we convert it to the corresponding Id
-            var documentTypeIds = publicValue.Split( ',' )
+            return publicValue.SplitDelimitedValues()
                 .Select( g => DocumentTypeCache.GetId( g.AsGuid() ).ToString() )
-                .ToList();
-            return string.Join( ",", documentTypeIds );
+                .JoinStrings( "," );
         }
 
         #endregion Edit Control
@@ -153,6 +151,7 @@ namespace Rock.Field.Types
         }
 
         #endregion
+
         #region WebForms
 #if WEBFORMS
 

@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity.Core;
 using System.Linq;
 
 using Rock.Attribute;
@@ -333,9 +334,13 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var mediaAccountId = RequestContext.GetPageParameter( PageParameterKey.MediaAccountId );
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.MediaAccountId] = mediaAccountId
+                } )
             };
         }
 

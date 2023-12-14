@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
@@ -224,9 +225,19 @@ namespace Rock.Reporting
                     entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.SINGLE_SELECT.AsGuid() );
 
                     var list = new List<string>();
-                    foreach ( var value in Enum.GetValues( property.PropertyType ) )
+                    foreach ( var name in Enum.GetNames( property.PropertyType ) )
                     {
-                        list.Add( string.Format( "{0}^{1}", value, value.ToString().SplitCase() ) );
+                        // ignore Obsolete Enum values
+                        object value = Enum.Parse( property.PropertyType, name );
+                        var fieldInfo = value.GetType().GetField( name );
+                        if ( fieldInfo?.GetCustomAttribute<ObsoleteAttribute>() != null )
+                        {
+                            continue;
+                        }
+
+                        // if the Enum has a [Description] attribute, use the description text
+                        var description = fieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name.SplitCase();
+                        list.Add( string.Format( "{0}^{1}", value, description ) );
                     }
 
                     var listSource = string.Join( ",", list );

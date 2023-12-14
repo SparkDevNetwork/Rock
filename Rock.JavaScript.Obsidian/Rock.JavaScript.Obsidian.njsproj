@@ -317,6 +317,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\PageRouteDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\SiteDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\" />
@@ -331,6 +332,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\DefinedTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\DefinedTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\DeviceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\FollowingSuggestionTypeList\" />
@@ -367,6 +369,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StepProgramList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\StepProgramDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\Steps\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StepTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakDetail\" />
@@ -390,6 +393,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
@@ -411,6 +415,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
+    <Folder Include="Framework\ViewModels\Blocks\Reporting\InteractionComponentDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\InteractionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MetricValueDetail\" />
@@ -526,6 +531,7 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\detailPanelMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\gatewayEmitStrings.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\mediaSelectorMode.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\meetsGroupRequirement.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\mergeTemplateOwnership.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\modalAlertType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\pickerDisplayStyle.ts" />
@@ -796,6 +802,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\persistedDatasetDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\personalLinkSectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\personalLinkSectionDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionList\personalLinkSectionListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\SiteDetail\siteBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\SiteDetail\siteDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveRequestBag.d.ts" />
@@ -820,6 +827,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusList\campusListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DefinedTypeDetail\definedTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DefinedTypeDetail\definedTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DefinedTypeList\definedTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceDetailOptionsBag.d.ts" />
@@ -909,6 +918,11 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\signUpRegisterResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\signUpRegistrantBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StepProgramList\stepProgramListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StepProgramDetail\stepProgramBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StepProgramDetail\stepProgramDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StepProgramDetail\stepProgramWorkflowTriggerBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StepProgramDetail\stepStatusBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StepProgramDetail\workflowTriggerBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramEdgeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramNodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramSettingsBag.d.ts" />
@@ -961,6 +975,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\setBulkBatchStatusResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\financialGatewayBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\financialGatewayDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayList\financialGatewayListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\financialStatementTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\financialStatementTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBag.d.ts" />
@@ -1045,6 +1060,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntryInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\InteractionComponentDetail\interactionComponentDetailInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\InteractionDetail\interactionDetailInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateDetailOptionsBag.d.ts" />
@@ -1265,6 +1281,12 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\gradePickerGetGradesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupAndRolePickerGetRolesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberPickerGetGroupMembersOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberRequirementCardGetConfigOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberRequirementCardGetConfigResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberRequirementCardMarkMetManuallyOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberRequirementCardRunWorkflowOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberRequirementCardRunWorkflowResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberRequirementCardSubControlConfigBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupRolePickerGetAllForGroupRoleOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupRolePickerGetAllForGroupRoleResultsBag.d.ts" />
@@ -1282,6 +1304,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaFoldersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaTreeOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaElementPickerGetMediaTreeResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaPlayerGetPlayerOptionsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mediaPlayerOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mergeFieldPickerFormatSelectedValueOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mergeFieldPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\mergeTemplatePickerGetMergeTemplatesOptionsBag.d.ts" />
