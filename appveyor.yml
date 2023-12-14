@@ -21,7 +21,7 @@ branches:
 skip_tags: true
 
 # operating system (build VM template)
-image: Visual Studio 2019
+image: Visual Studio 2022
 configuration: Release
 platform: Any CPU
 
@@ -39,10 +39,6 @@ install:
     $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
 
     Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
-
-    git clone -q --depth=1 https://github.com/NewSpring/rock-f1.git c:\projects\rock-f1
-
-    git clone -q --depth=1 https://github.com/NewSpring/rock-cache-sync.git c:\projects\rock-cache-sync
 
     git clone -q --depth=1 https://github.com/NewSpring/apollos-onesignal.git c:\projects\apollos-onesignal
 
@@ -69,7 +65,7 @@ build_script:
 - cmd: >-
     nuget restore
 
-    "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv"
+    "C:\Program Files)\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv"
     "c:\projects\Rock\rock.sln" /build Release
 
 # flag to stop building if an error throws
