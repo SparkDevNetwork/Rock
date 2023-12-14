@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** The additional configuration options for the Block Type List block. */
 export type BlockTypeListOptionsBag = {
 };
