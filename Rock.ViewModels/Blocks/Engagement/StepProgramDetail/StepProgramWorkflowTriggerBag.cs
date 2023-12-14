@@ -21,6 +21,9 @@ using System;
 
 namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class StepProgramWorkflowTriggerBag
     {
         /// <summary>

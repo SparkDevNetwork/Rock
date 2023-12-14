@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class StepProgramDetailOptionsBag
     {
         /// <summary>
