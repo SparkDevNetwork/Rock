@@ -21,6 +21,8 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Security;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -30,10 +32,51 @@ namespace Rock.Field.Types
     /// Field Type used to display a checkbox list of MEF Components of a specific type
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REMOTE_AUTHS )]
     public class RemoteAuthsFieldType : FieldType
     {
+        #region Configuration
+
+        private const string VALUES_PUBLIC_KEY = "values";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            var values = new List<ListItemBag>();
+            foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+
+                if ( component.IsActive && component.RequiresRemoteAuthentication )
+                {
+                    var entityType = EntityTypeCache.Get( component.GetType() );
+                    if ( entityType != null && entityType.Guid != SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() )
+                    {
+                        values.Add( new ListItemBag() { Text = entityType.FriendlyName, Value = entityType.Guid.ToString() } );
+                    }
+                }
+            }
+
+            configurationValues[VALUES_PUBLIC_KEY] = values.ToCamelCaseJson( false, true );
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            configurationValues.Remove( VALUES_PUBLIC_KEY );
+
+            return configurationValues;
+        }
+
+        #endregion
+
         #region Formatting
 
         /// <inheritdoc/>
