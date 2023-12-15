@@ -143,6 +143,9 @@ registerFieldType(FieldTypeGuids.Component, new ComponentFieldType());
 import { CurrencyFieldType } from "./currencyField.partial";
 registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());
 
+import { DataEntryRequirementLevelFieldType } from "./dataEntryRequirementLevelField.partial";
+registerFieldType(FieldTypeGuids.DataEntryRequirementLevel, new DataEntryRequirementLevelFieldType());
+
 import { DataViewFieldType } from "./dataViewField.partial";
 registerFieldType(FieldTypeGuids.DataView, new DataViewFieldType());
 
