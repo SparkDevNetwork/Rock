@@ -35,6 +35,9 @@ registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType())
 import { AssetStorageProviderFieldType } from "./assetStorageProviderField.partial";
 registerFieldType(FieldTypeGuids.AssetStorageProvider, new AssetStorageProviderFieldType());
 
+import { AttributeFieldType } from "./attributeField.partial";
+registerFieldType(FieldTypeGuids.Attribute, new AttributeFieldType());
+
 import { AudioFileFieldType } from "./audioFileField.partial";
 registerFieldType(FieldTypeGuids.AudioFile, new AudioFileFieldType());
 
