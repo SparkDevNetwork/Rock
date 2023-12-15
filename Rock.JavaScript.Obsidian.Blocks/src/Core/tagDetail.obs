@@ -12,7 +12,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="Tag"
-                 :isAuditHidden="false"
+                 :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
@@ -145,6 +145,10 @@
 
     const options = computed((): TagDetailOptionsBag => {
         return config.options ?? {};
+    });
+
+    const isAuditHidden = computed((): boolean => {
+        return panelMode.value == DetailPanelMode.Add;
     });
 
     // #endregion

@@ -5,7 +5,7 @@
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
-                         rules="required" />
+                         :rules="tagnameValidators" />
             </div>
 
             <div class="col-md-6">
@@ -53,7 +53,7 @@
 
                 <ColorPicker v-model="backgroundColor"
                              label="Background Color"
-                             help="The background color to use when displaying tag."/>
+                             help="The background color to use when displaying tag." />
             </div>
         </div>
 
@@ -77,6 +77,7 @@
     import { TagDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/TagDetail/tagDetailOptionsBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidationResult, ValidationRule } from "@Obsidian/Types/validationRules";
 
     const props = defineProps({
         modelValue: {
@@ -137,13 +138,26 @@
         return isPersonal;
     });
 
+    const tagNameBlackListRegex = computed((() => props.options.tagNameBlackListRegex ? new RegExp(props.options.tagNameBlackListRegex) : null));
+
     // #endregion
 
     // #region Functions
 
-    // #endregion
+    const tagnameValidators: ValidationRule[] = [
+        "required",
+        (value: unknown, _params: unknown[] | undefined): ValidationResult => {
+            if (typeof value !== "string" || !value?.trim()) {
+                return "Name is required.";
+            }
 
-    // #region Event Handlers
+            if (tagNameBlackListRegex.value && !tagNameBlackListRegex.value.test(value)) {
+                return "Invalid characters have been entered for the tag name. Angle brackets, percent, and ampersand are not allowed.";
+            }
+
+            return true;
+        }
+    ];
 
     // #endregion
 
