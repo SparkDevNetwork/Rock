@@ -401,6 +401,9 @@ registerFieldType(FieldTypeGuids.VideoUrl, new VideoUrlFieldType());
 import { VideoFileFieldType } from "./videoFileField.partial";
 registerFieldType(FieldTypeGuids.VideoFile, new VideoFileFieldType());
 
+import { WorkflowFieldType } from "./workflowField.partial";
+registerFieldType(FieldTypeGuids.Workflow, new WorkflowFieldType());
+
 import { WorkflowActivityFieldType } from "./workflowActivityField.partial";
 registerFieldType(FieldTypeGuids.WorkflowActivity, new WorkflowActivityFieldType());
 
