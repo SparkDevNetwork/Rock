@@ -310,7 +310,7 @@ export default defineComponent({
         const internalHeaderSecondaryActions = computed((): PanelAction[] => {
             const actions: PanelAction[] = [];
 
-            if (!props.isAuditHidden) {
+            if (!props.isAuditHidden && internalMode.value !== DetailPanelMode.Add) {
                 actions.push({
                     type: "default",
                     title: "Audit Details",
