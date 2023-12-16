@@ -458,6 +458,11 @@
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Controls\RockCacheabilityBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberRequirementCardConfigBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberRequirementCategoryBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberRequirementContainerGetDataResultsBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberRequirementErrorBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberRequirementContainerGetDataOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupMemberRequirementCardRunWorkflowResultsBag.cs" />
     <Compile Include="Rest\Controls\GroupMemberRequirementCardRunWorkflowOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupMemberRequirementCardMarkMetManuallyOptionsBag.cs" />
