@@ -35,6 +35,9 @@ registerFieldType(FieldTypeGuids.AssessmentType, new AssessmentTypesFieldType())
 import { AssetStorageProviderFieldType } from "./assetStorageProviderField.partial";
 registerFieldType(FieldTypeGuids.AssetStorageProvider, new AssetStorageProviderFieldType());
 
+import { AttributeFieldType } from "./attributeField.partial";
+registerFieldType(FieldTypeGuids.Attribute, new AttributeFieldType());
+
 import { AudioFileFieldType } from "./audioFileField.partial";
 registerFieldType(FieldTypeGuids.AudioFile, new AudioFileFieldType());
 
@@ -140,6 +143,9 @@ registerFieldType(FieldTypeGuids.Component, new ComponentFieldType());
 import { CurrencyFieldType } from "./currencyField.partial";
 registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());
 
+import { DataEntryRequirementLevelFieldType } from "./dataEntryRequirementLevelField.partial";
+registerFieldType(FieldTypeGuids.DataEntryRequirementLevel, new DataEntryRequirementLevelFieldType());
+
 import { DataViewFieldType } from "./dataViewField.partial";
 registerFieldType(FieldTypeGuids.DataView, new DataViewFieldType());
 
@@ -187,6 +193,9 @@ registerFieldType(FieldTypeGuids.Entity, new EntityFieldType());
 
 import { EntityTypeFieldType } from "./entityTypeField.partial";
 registerFieldType(FieldTypeGuids.Entitytype, new EntityTypeFieldType());
+
+import { EventCalendarFieldType } from "./eventCalendarField.partial";
+registerFieldType(FieldTypeGuids.EventCalendar, new EventCalendarFieldType());
 
 import { EventItemFieldType } from "./eventItemField.partial";
 registerFieldType(FieldTypeGuids.EventItem, new EventItemFieldType());
@@ -323,6 +332,9 @@ registerFieldType(FieldTypeGuids.ReminderType, new ReminderTypeFieldType());
 import { ReminderTypesFieldType } from "./reminderTypesField.partial";
 registerFieldType(FieldTypeGuids.ReminderTypes, new ReminderTypesFieldType());
 
+import { RemoteAuthsFieldType } from "./remoteAuthsField.partial";
+registerFieldType(FieldTypeGuids.RemoteAuths, new RemoteAuthsFieldType());
+
 import { ReportFieldType } from "./reportField.partial";
 registerFieldType(FieldTypeGuids.Report, new ReportFieldType());
 
@@ -394,3 +406,18 @@ registerFieldType(FieldTypeGuids.VideoUrl, new VideoUrlFieldType());
 
 import { VideoFileFieldType } from "./videoFileField.partial";
 registerFieldType(FieldTypeGuids.VideoFile, new VideoFileFieldType());
+
+import { WorkflowFieldType } from "./workflowField.partial";
+registerFieldType(FieldTypeGuids.Workflow, new WorkflowFieldType());
+
+import { WorkflowActivityFieldType } from "./workflowActivityField.partial";
+registerFieldType(FieldTypeGuids.WorkflowActivity, new WorkflowActivityFieldType());
+
+import { WorkflowAttributeFieldType } from "./workflowAttributeField.partial";
+registerFieldType(FieldTypeGuids.WorkflowAttribute, new WorkflowAttributeFieldType());
+
+import { WorkflowTypeFieldType } from "./workflowTypeField.partial";
+registerFieldType(FieldTypeGuids.WorkflowType, new WorkflowTypeFieldType());
+
+import { WorkflowTypesFieldType } from "./workflowTypesField.partial";
+registerFieldType(FieldTypeGuids.WorkflowTypes, new WorkflowTypesFieldType());

@@ -21,7 +21,7 @@ import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const enum ConfigurationValueKey {
-    ClientValues = "values",
+    Values = "values",
     RepeatColumns = "repeatColumns",
     AllowMultiple = "allowMultiple",
     IncludeInactive = "includeInactive"
@@ -44,7 +44,7 @@ export class SystemPhoneNumberFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.ClientValues] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
             const userValues = value.split(",");
             const selectedValues = values.filter(o => userValues.includes(o.value ?? ""));
 

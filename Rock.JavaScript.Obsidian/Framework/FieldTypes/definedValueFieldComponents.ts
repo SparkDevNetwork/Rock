@@ -35,7 +35,7 @@ function parseModelValue(modelValue: string | undefined): string {
     try {
         const clientValue = JSON.parse(modelValue ?? "") as ClientValue;
 
-        return clientValue.value;
+        return clientValue.value ?? "";
     }
     catch {
         return "";

@@ -42,7 +42,7 @@ export const EditComponent = defineComponent({
 
         // The options to choose from.
         const options = computed((): ListItemBag[] => {
-            const selectedPhoneNumbers = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
+            const selectedPhoneNumbers = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] || "[]") as ListItemBag[];
             return selectedPhoneNumbers;
         });
 
@@ -128,7 +128,7 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationValueKey.AllowMultiple] = asTrueOrFalseString(allowMultiple.value);
             newValue[ConfigurationValueKey.IncludeInactive] = asTrueOrFalseString(includeInactive.value);
             newValue[ConfigurationValueKey.RepeatColumns] = numberOfColumns.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.ClientValues] = props.modelValue[ConfigurationValueKey.ClientValues];
+            newValue[ConfigurationValueKey.Values] = props.modelValue[ConfigurationValueKey.Values];
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.AllowMultiple] !== (props.modelValue[ConfigurationValueKey.AllowMultiple])
@@ -177,7 +177,7 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that only require a local UI update.
         watch(allowMultiple, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowMultiple, asTrueOrFalseString(allowMultiple.value)));
-        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowMultiple, asTrueOrFalseString(includeInactive.value)));
+        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeInactive, asTrueOrFalseString(includeInactive.value)));
         watch(numberOfColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, numberOfColumns.value?.toString() ?? ""));
 
         return {
@@ -190,6 +190,6 @@ export const ConfigurationComponent = defineComponent({
     template: `
 <CheckBox v-model="allowMultiple" label="Allow Multiple Values" text="Yes" help="When set, allows multiple system phone numbers to be selected." />
 <CheckBox v-model="includeInactive" label="Include Inactive" text="Yes" help="When set, inactive system phone numbers will be included in the list." />
-<NumberBox v-model="numberOfColumns" label="Repeat Columns" help="Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space." />
+<NumberBox v-model="numberOfColumns" label="Repeat Columns" help="Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add constraints due to available space." />
 `
 });

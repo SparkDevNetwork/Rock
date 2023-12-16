@@ -39,8 +39,7 @@ namespace Rock.Observability
         // Performance counters
         private static PerformanceCounter _cpuPerformancCounter = null;
 
-        private static readonly Lazy<string> _rockVersion = new Lazy<string>( () => VersionInfo.VersionInfo.GetRockProductVersionFullName() );
-        private static readonly Lazy<string> _machineName = new Lazy<string>( () => Environment.MachineName.ToLower() );
+        private static readonly string _rockVersion = VersionInfo.VersionInfo.GetRockProductVersionFullName();
 
         #endregion
 
@@ -95,7 +94,7 @@ namespace Rock.Observability
             // Initialize the global metric
             MeterInstance = new Meter( ObservabilityHelper.ServiceName, "1.0.0" );
 
-            _commonTags.Add( "rock-version", _rockVersion.Value );
+            _commonTags.Add( "rock-version", _rockVersion );
 
             // Create needed Performance Counters
             _cpuPerformancCounter = new PerformanceCounter( "Processor", "% Processor Time", "_Total" );

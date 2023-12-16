@@ -55,6 +55,7 @@
     <Content Include="src\Core\AttributeMatrixTemplateDetail\viewPanel.partial.obs" />
     <Content Include="src\Cms\mediaAccountList.obs" />
     <Content Include="src\Cms\mediaFolderList.obs" />
+    <Content Include="src\Cms\personalLinkSectionList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
@@ -155,6 +156,7 @@
     <Content Include="src\Finance\financialGatewayDetail.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\viewPanel.partial.obs" />
+    <Content Include="src\Finance\financialGatewayList.obs" />
     <Content Include="src\Group\groupMemberScheduleTemplateDetail.obs" />
     <Content Include="src\Group\GroupMemberScheduleTemplateDetail\editPanel.partial.obs" />
     <Content Include="src\Group\GroupMemberScheduleTemplateDetail\viewPanel.partial.obs" />
@@ -326,6 +328,7 @@
     <Folder Include="src\Cms\PageRouteDetail\" />
     <Folder Include="src\Cms\PersistedDatasetDetail\" />
     <Folder Include="src\Cms\PersonalLinkSectionDetail\" />
+    <Folder Include="src\Cms\PersonalLinkSectionList\" />
     <Folder Include="src\Cms\SiteDetail\" />
     <Folder Include="src\Communication\" />
     <Folder Include="src\Communication\SnippetDetail\" />
@@ -379,6 +382,7 @@
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialBatchList\" />
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
+    <Folder Include="src\Finance\FinancialGatewayList\" />
     <Folder Include="src\Finance\FinancialStatementTemplateDetail\" />
     <Folder Include="src\Group\GroupMemberScheduleTemplateDetail\" />
     <Folder Include="src\Group\GroupRequirementTypeDetail\" />
@@ -483,6 +487,7 @@
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\PersonalLinkSectionList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\siteDetail.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\types.partial.ts" />
@@ -554,6 +559,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialAccountDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\FinancialGatewayList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupMemberScheduleTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupRequirementTypeDetail\types.partial.ts" />

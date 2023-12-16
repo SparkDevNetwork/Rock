@@ -181,6 +181,7 @@
     <Compile Include="Issues\Issues_v16.cs" />
     <Compile Include="Issues\Issues_v15.cs" />
     <Compile Include="Modules\Core\Field.Types\PhoneNumberFieldTypeTests.cs" />
+    <Compile Include="Modules\Core\AttributeMatrixTests.cs" />
     <Compile Include="Modules\Core\Lava\Engine\TypeConversionTests.cs" />
     <Compile Include="Modules\Core\MergeTemplateTests.cs" />
     <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />

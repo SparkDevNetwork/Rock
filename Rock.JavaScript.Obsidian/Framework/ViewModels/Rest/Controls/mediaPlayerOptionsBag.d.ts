@@ -52,8 +52,7 @@ export type MediaPlayerOptionsBag = {
 
     /**
      * Gets or sets the user interface controls to display on the player.
-     * This should be a comma delimited list of values taken from
-     * MediaPlayerControls.
+     * This should be a comma delimited list of values taken from MediaPlayerControls.
      */
     controls?: string | null;
 
@@ -150,7 +149,7 @@ export type MediaPlayerOptionsBag = {
 
     /**
      * Determines if the user's session should be tracked and stored as an
-     * Rock.Model.Interaction in the system. This is required
+     * Interaction in the system. This is required
      * to provide play metrics as well as use the resume feature later.
      */
     writeInteraction: boolean;

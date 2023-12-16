@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +35,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of attributes
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ATTRIBUTE )]
     public class AttributeFieldType : FieldType, ICachedEntitiesFieldType, IEntityFieldType, IEntityReferenceFieldType
     {
@@ -44,6 +45,74 @@ namespace Rock.Field.Types
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
         private const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
         private const string QUALIFIER_VALUE_KEY = "qualifierValue";
+        private const string CLIENT_VALUES = "values";
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( usage != ConfigurationValueUsage.View && configurationValues.TryGetValue( ENTITY_TYPE_KEY, out string entityTypeIdString ) )
+            {
+                Guid? entityTypeGuid = entityTypeIdString.AsGuidOrNull();
+                if ( entityTypeGuid.HasValue )
+                {
+                    var attributes = new List<ListItemBag>();
+                    var entityType = EntityTypeCache.Get( entityTypeGuid.Value );
+                    if ( entityType != null )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            Rock.Model.AttributeService attributeService = new Model.AttributeService( rockContext );
+                            IQueryable<Rock.Model.Attribute> attributeQuery;
+                            if ( configurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) && configurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
+                            {
+                                attributeQuery = attributeService
+                                    .GetByEntityTypeQualifier( entityType.Id, configurationValues[QUALIFIER_COLUMN_KEY], configurationValues[QUALIFIER_VALUE_KEY], true );
+                            }
+                            else
+                            {
+                                attributeQuery = attributeService.GetByEntityTypeId( entityType.Id, true );
+                            }
+
+                            List<AttributeCache> attributeList = attributeQuery.ToAttributeCacheList();
+
+                            if ( attributeList.Any() )
+                            {
+                                foreach ( var attribute in attributeList.OrderBy( a => a.Name ) )
+                                {
+                                    attributes.Add( new ListItemBag() { Text = attribute.Name, Value = attribute.Guid.ToString() } );
+                                }
+                            }
+
+                            configurationValues[CLIENT_VALUES] = attributes.ToCamelCaseJson( false, true );
+                            configurationValues[ENTITY_TYPE_KEY] = entityType.ToListItemBag().ToCamelCaseJson( false, true );
+                        }
+                    }
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( configurationValues.TryGetValue( ENTITY_TYPE_KEY, out string entityTypeJsonString ) )
+            {
+                var jsonValue = entityTypeJsonString.FromJsonOrNull<ListItemBag>();
+                if ( jsonValue != null )
+                {
+                    configurationValues[ENTITY_TYPE_KEY] = jsonValue.Value;
+                }
+            }
+
+            configurationValues.Remove( CLIENT_VALUES );
+
+            return configurationValues;
+        }
 
         #endregion
 
@@ -135,6 +204,33 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var attributes = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+            return attributes.ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var jsonValue = publicValue.FromJsonOrNull<List<string>>();
+
+            if ( jsonValue != null )
+            {
+                return jsonValue.JoinStrings( "," );
+            }
+
+            // If value is not an array of string then allowMultiple is probably set to false so save single guid value.
+            return publicValue;
+        }
 
         #endregion
 
