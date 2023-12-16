@@ -3,7 +3,7 @@
     <div class="group-member-requirements-container">
         <NotificationBox v-if="errorBoxes && errorBoxes.length > 0" v-for="box of errorBoxes" :key="box.text ?? ''" alertType="danger">
             {{ box.text }}
-            <template #details>box.details</template>
+            <template #details>{{ box.details }}</template>
         </NotificationBox>
         <div v-for="category of categories" :key="category.id ?? 0" :class="`row d-flex flex-wrap requirement-category requirement-category-${category.id}`">
             <div v-if="category.name?.trim()" class="col-xs-12">
@@ -85,7 +85,7 @@
 
         if (result.isSuccess && result.data) {
             const data = result.data;
-            errorBoxes.value = /*data.errors ??*/[{ text: "Some test Text", details: "Here are some test detal" }];
+            errorBoxes.value = data.errors ?? [];
             categories.value = data.categorizedRequirements ?? [];
         }
         else {
