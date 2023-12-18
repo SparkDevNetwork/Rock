@@ -100,8 +100,6 @@
                     </div>
 
                     <Rock:PanelWidget ID="wpConnectionTypeAttributes" runat="server" Title="Connection Type Attributes" CssClass="connection-type-attribute-panel">
-                        <Rock:NotificationBox ID="NotificationBox2" runat="server" NotificationBoxType="Info"
-                            Text="Connection Type Attributes apply to all of the connections of this type.  Each Connection will have the same value equal to what is set as the default value here." />
                         <div class="grid">
                             <Rock:Grid ID="gConnectionTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Connection Type Attribute">
                                 <Columns>
