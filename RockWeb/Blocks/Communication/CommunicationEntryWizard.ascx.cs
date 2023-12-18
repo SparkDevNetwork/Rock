@@ -16,10 +16,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -197,6 +199,35 @@ namespace RockWeb.Blocks.Communication
         private bool _pushTransportEnabled = false;
         #endregion
 
+        #region Events
+
+        private delegate void OnPropertyChangedHandler( object sender, PropertyChangedEventArgs e );
+
+        private event OnPropertyChangedHandler OnPropertyChanged;
+
+        /// <summary>
+        /// Sets a view state property and raises the <see cref="OnPropertyChanged"/> event.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value">The value.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        private void SetViewState<T>( T value, [CallerMemberName] string propertyName = null )
+        {
+            ViewState[propertyName] = value;
+            RaisePropertyChanged( propertyName );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="OnPropertyChanged"/> event.
+        /// </summary>
+        /// <param name="propertyName">Name of the property.</param>
+        private void RaisePropertyChanged( [CallerMemberName] string propertyName = null )
+        {
+            OnPropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
+        }
+
+        #endregion
+
         #region Properties
 
         private CommunicationType SelectedCommunicationType
@@ -209,33 +240,72 @@ namespace RockWeb.Blocks.Communication
             set
             {
                 rblCommunicationMedium.SelectedValue = value.ConvertToInt().ToString();
+                RaisePropertyChanged();
             }
         }
 
         /// <summary>
         /// Gets or sets the individual recipient person ids.
         /// </summary>
+        /// <remarks>
+        /// These are the manually selected recipients.
+        /// </remarks>
         /// <value>
         /// The individual recipient person ids.
         /// </value>
-        protected List<int> IndividualRecipientPersonIds
+        protected ObservableCollection<int> IndividualRecipientPersonIds
         {
             get
             {
-                var recipients = ViewState["IndividualRecipientPersonIds"] as List<int>;
-                if ( recipients == null )
+                if ( ViewState["IndividualRecipientPersonIds"] is ObservableCollection<int> recipientPersonIds )
                 {
-                    recipients = new List<int>();
-                    ViewState["IndividualRecipientPersonIds"] = recipients;
+                    // Make sure the change event handlers trigger the property changed event.
+                    recipientPersonIds.CollectionChanged -= IndividualRecipientPersonIds_CollectionChanged;
+                    recipientPersonIds.CollectionChanged += IndividualRecipientPersonIds_CollectionChanged;
+                }
+                else
+                {
+                    recipientPersonIds = new ObservableCollection<int>();
+                    recipientPersonIds.CollectionChanged += IndividualRecipientPersonIds_CollectionChanged;
+                    SetViewState( recipientPersonIds );
                 }
 
-                return recipients;
+                return recipientPersonIds;
             }
 
             set
             {
                 ViewState["IndividualRecipientPersonIds"] = value;
             }
+        }
+
+        private int _recipientCount;
+        private int RecipientCount
+        {
+            get
+            {
+                return _recipientCount;
+            }
+            set
+            {
+                _recipientCount = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Handles the CollectionChanged event of the IndividualRecipientPersonIds collection.
+        /// </summary>
+        /// <remarks>
+        /// When an item is added, removed, or when the collection is cleared,
+        /// the <see cref="OnPropertyChanged"/> event is raised indicating
+        /// the <see cref="IndividualRecipientPersonIds"/> property changed.
+        /// </remarks>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Collections.Specialized.NotifyCollectionChangedEventArgs"/> instance containing the event data.</param>
+        private void IndividualRecipientPersonIds_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            RaisePropertyChanged( nameof( IndividualRecipientPersonIds ) );
         }
 
         #endregion
@@ -249,6 +319,9 @@ namespace RockWeb.Blocks.Communication
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            
+            this.OnPropertyChanged -= CommunicationEntryWizard_OnPropertyChanged;
+            this.OnPropertyChanged += CommunicationEntryWizard_OnPropertyChanged;
 
             RockPage.AddCSSLink( "~/Styles/Blocks/Communication/EmailEditor.css", true );
             RockPage.AddCSSLink( "~/Styles/Blocks/Shared/Devices.css", true );
@@ -327,6 +400,22 @@ namespace RockWeb.Blocks.Communication
             RegisterTaskActivityScript();
         }
 
+        /// <summary>
+        /// Handles the <see cref="OnPropertyChanged"/> event of the CommunicationEntryWizard control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PropertyChangedEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void CommunicationEntryWizard_OnPropertyChanged( object sender, PropertyChangedEventArgs e )
+        {
+            var isBulkDependencies = new List<string> { nameof( RecipientCount ), nameof( SelectedCommunicationType ) };
+            if ( isBulkDependencies.Contains( e.PropertyName ) )
+            {
+                // If one of the "Is Bulk" dependencies change, then show or hide the bulk option.
+                ShowHideIsBulkOption();
+            }
+        }
+
         private void RegisterTaskActivityScript()
         {
             // Create a callback function to update the View Communication link when the task is complete.
@@ -351,6 +440,9 @@ function onTaskCompleted( resultData )
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+            
+            this.OnPropertyChanged -= CommunicationEntryWizard_OnPropertyChanged;
+            this.OnPropertyChanged += CommunicationEntryWizard_OnPropertyChanged;
 
             // register navigation event to enable support for the back button
             var scriptManager = ScriptManager.GetCurrent( Page );
@@ -440,6 +532,7 @@ function onTaskCompleted( resultData )
             Rock.Model.Communication communication = null;
             var rockContext = new RockContext();
             var pushCommunication = new CommunicationDetails();
+            var emailMedium = GetEmailMediumWithActiveTransport();
 
             if ( communicationId != 0 )
             {
@@ -544,7 +637,13 @@ function onTaskCompleted( resultData )
 
             if ( communication.ListGroupId == null )
             {
-                IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().AsNoTracking().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
+                var recipientIds = new CommunicationRecipientService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( r => r.CommunicationId == communication.Id )
+                    .Select( a => a.PersonAlias.PersonId )
+                    .ToList();
+                IndividualRecipientPersonIds = new ObservableCollection<int>( recipientIds );
             }
 
             int? personId = null;
@@ -1141,9 +1240,11 @@ function onTaskCompleted( resultData )
         /// </summary>
         private void BindIndividualRecipientsPanelControls()
         {
-            var panelModel = new IndividualRecipientsPanelViewModel();
-            panelModel.RecipientPersonIdList = this.IndividualRecipientPersonIds;
-            panelModel.SortProperty = gIndividualRecipients.SortProperty;
+            var panelModel = new IndividualRecipientsPanelViewModel
+            {
+                RecipientPersonIdList = this.IndividualRecipientPersonIds.ToList(),
+                SortProperty = gIndividualRecipients.SortProperty
+            };
 
             var showIndividualRecipientsSummary = panelModel.RecipientPersonIdList.Count > 1000;
 
@@ -1326,6 +1427,9 @@ function onTaskCompleted( resultData )
             lIndividualRecipientListCount.Text = string.Format( "Recipients: {0}", listCount );
 
             pnlIndividualRecipientListCount.Visible = listCount > 0;
+            
+            // Keep track of the recipient count.
+            this.RecipientCount = listCount;
         }
 
         /// <summary>
@@ -1361,12 +1465,12 @@ function onTaskCompleted( resultData )
 
             if ( removeAll )
             {
-                IndividualRecipientPersonIds.Clear();
+                this.IndividualRecipientPersonIds.Clear();
             }
             else
             {
                 var selectedPersonIds = gIndividualRecipients.SelectedKeys.OfType<int>().ToList();
-                IndividualRecipientPersonIds.RemoveAll( a => selectedPersonIds.Contains( a ) );
+                this.IndividualRecipientPersonIds.RemoveAll( selectedPersonIds );
             }
 
             BindIndividualRecipientsPanelControls();
@@ -1416,7 +1520,7 @@ function onTaskCompleted( resultData )
             }
             else
             {
-                hfRSVPPersonIDs.Value = this.IndividualRecipientPersonIds.AsDelimited( "," );
+                hfRSVPPersonIDs.Value = this.IndividualRecipientPersonIds.ToList().AsDelimited( "," );
             }
 
             pnlIndividualRecipientPanel.Visible = false;
@@ -2251,6 +2355,21 @@ function onTaskCompleted( resultData )
             mdEmailPreview.Show();
         }
 
+        private Rock.Communication.Medium.Email GetEmailMediumWithActiveTransport()
+        {
+            var emailMediumWithActiveTransport = MediumContainer
+                .GetActiveMediumComponentsWithActiveTransports()
+                .Where( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )
+                .FirstOrDefault();
+
+            if ( emailMediumWithActiveTransport == null )
+            {
+                return null;
+            }
+
+            return emailMediumWithActiveTransport as Rock.Communication.Medium.Email;
+        }
+
         private string GetEmailPreviewHtml( Rock.Model.Communication communication, Person currentPerson, Dictionary<string, object> mergeFields )
         {
             var emailMediumWithActiveTransport = MediumContainer
@@ -2466,6 +2585,25 @@ function onTaskCompleted( resultData )
             nbSMSTestResult.Visible = false;
             pnlMobileTextEditor.Visible = true;
             SetNavigationHistory( pnlMobileTextEditor );
+        }
+
+        /// <summary>
+        /// Shows or hides the bulk option.
+        /// </summary>
+        private void ShowHideIsBulkOption()
+        {
+            if ( this.SelectedCommunicationType == CommunicationType.Email
+                 && GetEmailMediumWithActiveTransport() is Rock.Communication.Medium.Email emailMediumComponent
+                 && emailMediumComponent.IsBulkEmailThresholdExceeded( this.RecipientCount ) )
+            {
+                // Override to unchecked when bulk communication is prevented.
+                swBulkCommunication.Checked = false;
+                swBulkCommunication.Visible = false;
+            }
+            else
+            {
+                swBulkCommunication.Visible = true;
+            }
         }
 
         /// <summary>
@@ -3288,7 +3426,7 @@ function onTaskCompleted( resultData )
         /// <returns></returns>
         private string ConvertNameToWords( string name )
         {
-            return Regex.Replace( name, @"(\B[A-Z]+?(?=[A-Z][^A-Z])|\B[A-Z]+?(?=[^A-Z]))", " $1" );
+            return Regex.Replace( name, @"(\B[A-Z]+?(?=[A-Z][^A-Z])|\B[A-Z]+?(?=[^A-Z]))", " 1" );
         }
 
         /// <summary>
@@ -3459,7 +3597,7 @@ function onTaskCompleted( resultData )
                 return;
             }
 
-            List<int> recipientPersonIdList;
+            IEnumerable<int> recipientPersonIdList;
 
             if ( IndividualRecipientPersonIds.Count == 0 )
             {

@@ -5069,5 +5069,102 @@ AND GroupTypeId = ${familyGroupType.Id}
                 .Where( person => person.ForeignKey == foreignSystemKey && person.ForeignId == foreignSystemPersonId )
                 .FirstOrDefault();
         }
+
+        /// <summary>
+        /// Unsubscribes a person from email communications.
+        /// <para>If Email Preference is "Email Allowed" then it will be set to "No Mass Emails".</para>
+        /// <para>If Email Preference is "No Mass Emails" then it will be set to "Do Not Email".</para>
+        /// </summary>
+        /// <param name="person">The person to update.</param>
+        public void UnsubscribeFromEmail( Person person )
+        {
+            if ( person == null )
+            {
+                throw new ArgumentNullException( nameof( person ), "Person is required" );
+            }
+
+            var oldValue = person.EmailPreference;
+
+            // Make the email preference more restrictive based on the current preference.
+            if ( person.EmailPreference == EmailPreference.EmailAllowed )
+            {
+                person.EmailPreference = EmailPreference.NoMassEmails;
+            }
+            else if ( person.EmailPreference == EmailPreference.NoMassEmails )
+            {
+                person.EmailPreference = EmailPreference.DoNotEmail;
+            }
+
+            if ( oldValue != person.EmailPreference )
+            {
+                // Add the change to history.
+                var changes = new History.HistoryChangeList();
+                changes.AddChange( History.HistoryVerb.EmailUnsubscribed, History.HistoryChangeType.Property, "Email Preference" );
+
+                // The person unsubscribed themself, so manually set them as the modified by person.
+                person.ModifiedByPersonAliasId = person.PrimaryAliasId;
+                person.ModifiedAuditValuesAlreadyUpdated = true;
+
+                // Write a history record for the email unsubscription.
+                HistoryService.SaveChanges(
+                    ( RockContext ) this.Context,
+                    typeof( Person ),
+                    Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(),
+                    person.Id,
+                    changes,
+                    "Unsubscribed",
+                    relatedModelType: null,
+                    relatedEntityId: null,
+                    modifiedByPersonAliasId: person.PrimaryAliasId,
+                    commitSave: false );
+            }
+        }
+
+        /// <summary>
+        /// Unsubscribes a person from an email communication list.
+        /// </summary>
+        /// <param name="person">The person to update.</param>
+        /// <param name="communicationListsQuery">The query of communication list(s) from which to unsubscribe.</param>
+        /// <exception cref="ArgumentException">If person is null</exception>
+        /// <exception cref="ArgumentException">If communication lists query is null</exception>
+        public void UnsubscribeFromEmail( Person person, IQueryable<Group> communicationListsQuery )
+        {
+            if ( person == null )
+            {
+                throw new ArgumentNullException( nameof( person ), "Person is required" );
+            }
+
+            if ( communicationListsQuery == null )
+            {
+                throw new ArgumentNullException( nameof( communicationListsQuery ), "Communication lists query is required" );
+            }
+
+            // Get the communication list recipient records for this person to inactivate.
+            var recipientRecordsToInactivate = communicationListsQuery
+                 // Ensure the Group(s) are Communication List(s).
+                .IsCommunicationList()
+                 // Only retrieve the group memberships for the unsubscribing person.
+                .SelectMany( cl => cl.Members )
+                .Where( m => m.PersonId == person.Id )
+                // Only retrieve the recipient records that are not already Inactive.
+                .Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                .ToList();
+
+            // This person should only have one recipient record for each communication list,
+            // but set each one as inactive in case there are multiple per communication list.
+            var personPrimaryAliasId = person.PrimaryAliasId;
+            foreach ( var recipientToInactivate in recipientRecordsToInactivate )
+            {
+                recipientToInactivate.GroupMemberStatus = GroupMemberStatus.Inactive;
+                if ( recipientToInactivate.Note.IsNullOrWhiteSpace() )
+                {
+                    recipientToInactivate.Note = "Unsubscribed";
+                }
+
+                // The person unsubscribed themself, so manually set them as the modified by person.
+                recipientToInactivate.ModifiedByPersonAliasId = personPrimaryAliasId;
+                recipientToInactivate.ModifiedAuditValuesAlreadyUpdated = true;
+            }
+        }
     }
 }

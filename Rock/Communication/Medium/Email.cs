@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace Rock.Communication.Medium
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
+        Key = AttributeKey.UnsubscribeHTML,
         DefaultValue = @"
 <a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}'>Unsubscribe</a>",
         Order = 2 )]
@@ -57,16 +58,56 @@ You can view an online version of this email here:
 ",
         Category = "",
         Order = 3,
-        Key = "DefaultPlainText" )]
+        Key = AttributeKey.DefaultPlainText )]
 
     [BooleanField( "CSS Inlining Enabled",
         Description = "Enable to move CSS styles to inline attributes. This can help maximize compatibility with email clients.",
         DefaultBooleanValue = true,
-        Key = "CSSInliningEnabled",
+        Key = AttributeKey.CSSInliningEnabled,
         Order = 4)]
+
+    [IntegerField( "Bulk Email Threshold",
+        Description = "Auto-hides the 'Is Bulk Email' option when starting a new communication if the recipient count exceeds the specified threshold.",
+        IsRequired = false,
+        Key = AttributeKey.BulkEmailThreshold,
+        Order = 5 )]
+
+    [EmailField( "Request Unsubscribe E-mail",
+        Description = "Used for the 'Mailto Method' of the List-Unsubscribe email header. When blank, the global 'Organization Email' setting is used.",
+        IsRequired = false,
+        Key = AttributeKey.RequestUnsubscribeEmail,
+        Order = 6 )]
+
+    [BooleanField( "Enable One-Click Unsubscribe",
+        Description = "When enabled, email clients will use the native one-click to unsubscribe feature to remove themselves from lists.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.EnableOneClickUnsubscribe,
+        Order = 7 )]
+
+    [UrlLinkField( "Unsubscribe URL",
+        Description = "Used in the List-Unsubscribe email header when the one-click option is disabled.",
+        IsRequired = false,
+        Key = AttributeKey.UnsubscribeURL,
+        Order = 8 )]
+
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL )]
     public class Email : MediumComponent
     {
+        #region Keys
+
+        private static class AttributeKey
+        {
+            public const string UnsubscribeHTML = "UnsubscribeHTML";
+            public const string DefaultPlainText = "DefaultPlainText";
+            public const string CSSInliningEnabled = "CSSInliningEnabled";
+            public const string BulkEmailThreshold = "BulkEmailThreshold";
+            public const string RequestUnsubscribeEmail = "RequestUnsubscribeEmail";
+            public const string EnableOneClickUnsubscribe = "EnableOneClickUnsubscribe";
+            public const string UnsubscribeURL = "UnsubscribeURL";
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the type of the communication.
         /// </summary>
@@ -88,6 +129,24 @@ You can view an online version of this email here:
         public override MediumControl GetControl( bool useSimpleMode )
         {
             return new Rock.Web.UI.Controls.Communication.Email( useSimpleMode );
+        }
+
+        /// <summary>
+        /// Checks whether the bulk email threshold has been exceeded.
+        /// </summary>
+        /// <param name="recipientCount">The number of communication recipients.</param>
+        /// <returns><see langword="true"/> if the bulk email threshold has been exceeded; otherwise, <see langword="false"/>.</returns>
+        public bool IsBulkEmailThresholdExceeded( int recipientCount )
+        {
+            var threshold = GetAttributeValue( AttributeKey.BulkEmailThreshold ).AsIntegerOrNull();
+
+            if ( !threshold.HasValue )
+            {
+                // No threshold so return false.
+                return false;
+            }
+
+            return recipientCount > threshold.Value;
         }
     }
 }
