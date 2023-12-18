@@ -60,6 +60,7 @@ import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
 import ListBox from "@Obsidian/Controls/listBox.obs";
+import ListItems from "@Obsidian/Controls/listItems.obs";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
 import AddressControl from "@Obsidian/Controls/addressControl.obs";
@@ -1040,6 +1041,37 @@ const mediaSelectorGallery = defineComponent({
             <KeyValueList label="Media Items" v-model="mediaItems" />
             <DropDownList label="Mode" v-model="mode" :items="modeOptions" />
         </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a list box */
+const listItemsGallery = defineComponent({
+    name: "ListItemsGallery",
+    components: {
+        GalleryAndResult,
+        ListItems,
+        TextBox
+    },
+    setup() {
+        return {
+            value: ref([]),
+            valuePrompt: ref(""),
+            importCode: getControlImportPath("listItems"),
+            exampleCode: `<ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{'output:modelValue': value, 'input:items': options}"
+    hasMultipleValues
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />
+
+    <template #settings>
+        <TextBox label="Value Prompt" v-model="valuePrompt" />
     </template>
 </GalleryAndResult>`
 });
@@ -7912,6 +7944,7 @@ const controlGalleryComponents: Record<string, Component> = [
     checkBoxListGallery,
     mediaSelectorGallery,
     listBoxGallery,
+    listItemsGallery,
     phoneNumberBoxGallery,
     dropDownListGallery,
     helpBlockGallery,
