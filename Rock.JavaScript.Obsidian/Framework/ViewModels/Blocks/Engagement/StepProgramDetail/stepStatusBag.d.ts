@@ -26,12 +26,15 @@ import { Guid } from "@Obsidian/Types";
 export type StepStatusBag = {
     guid?: Guid | null;
 
+    /** The Id of the Step Status */
     id: number;
 
+    /** Is Step Status Active */
     isActive: boolean;
 
     isCompleteStatus: boolean;
 
+    /** The name of the Step Status */
     name?: string | null;
 
     statusColor?: string | null;

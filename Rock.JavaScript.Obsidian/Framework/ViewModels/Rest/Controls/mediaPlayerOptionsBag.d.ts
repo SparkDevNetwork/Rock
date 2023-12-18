@@ -52,8 +52,7 @@ export type MediaPlayerOptionsBag = {
 
     /**
      * Gets or sets the user interface controls to display on the player.
-     * This should be a comma delimited list of values taken from
-     * MediaPlayerControls.
+     * This should be a comma delimited list of values taken from MediaPlayerControls.
      */
     controls?: string | null;
 
@@ -135,9 +134,9 @@ export type MediaPlayerOptionsBag = {
 
     /**
      * Gets or sets a value indicating whether progress tracking should be
-     * enabled. This is different than WriteInteraction. This
+     * enabled. This is different than Rock.ViewModels.Rest.Controls.MediaPlayerOptionsBag.WriteInteraction. This
      * value determines if the internal logic for monitoring playback
-     * progress should be used or not. It is required for WriteInteraction
+     * progress should be used or not. It is required for Rock.ViewModels.Rest.Controls.MediaPlayerOptionsBag.WriteInteraction
      * to function.
      */
     trackProgress: boolean;
