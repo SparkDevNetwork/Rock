@@ -50,6 +50,9 @@
                     <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <h1 runat="server">General Information</h1>
+                        <Rock:RockRadioButton ID="rbAlwaysUpdate" runat="server" Text="Always Update" GroupName="ImportOptions" Checked="true" DisplayInline="false" />
+                        <Rock:RockRadioButton ID="rbOnlyAddNewRecords" runat="server" Text="Only Add New Records" GroupName="ImportOptions" DisplayInline="false" />
+                        <Rock:RockRadioButton ID="rbMostRecentWins" runat="server" Text="Most Recent Wins" GroupName="ImportOptions" DisplayInline="false" />
 
                     <h2 id="input-sizing">Input Sizing Rules</h2>
 
