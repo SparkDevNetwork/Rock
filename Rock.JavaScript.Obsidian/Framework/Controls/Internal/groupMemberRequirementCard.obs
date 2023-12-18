@@ -93,7 +93,7 @@
     });
 
     const emit = defineEmits<{
-        (event: "status-changed"): void
+        (event: "statusChanged"): void
     }>();
 
     const http = useHttp();
@@ -112,7 +112,7 @@
 
     const meetsGroupRequirement = ref(props.meetsGroupRequirement);
 
-    const isMet = computed(() => meetsGroupRequirement.value == MeetsGroupRequirement.Meets);
+    const isMet = computed(() => meetsGroupRequirement.value === MeetsGroupRequirement.Meets);
     const areActionsShown = computed(() => {
         return !props.isInteractionDisabled
             && (manualRequirementControl.value.enabled
@@ -178,7 +178,7 @@
             const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardMarkMetManually", undefined, options);
 
             if (result.isSuccess) {
-                emit("status-changed");
+                emit("statusChanged");
             }
         }
         finally {
@@ -200,7 +200,7 @@
                 const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardMarkMetManually", undefined, options);
 
                 if (result.isSuccess) {
-                    emit("status-changed");
+                    emit("statusChanged");
                 }
             }
             finally {

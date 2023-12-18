@@ -21,7 +21,7 @@
                                         :workflowEntryLinkedPageValue="workflowEntryLinkedPageValue"
                                         :isSummaryHidden="isSummaryHidden"
                                         :isInteractionDisabled="isInteractionDisabled"
-                                        @status-changed="loadRequirementCardData" />
+                                        @statusChanged="loadRequirementCardData" />
         </div>
     </div>
 </template>
