@@ -21,8 +21,5 @@
 // </copyright>
 //
 
-/** Additional Configuration for the TagDetail block. */
 export type TagDetailOptionsBag = {
-    /** The Regular Expression used to determine a valid tag name. This regex will return true if the string does not contain angle brackets, percent, or ampersand. */
-    tagNameBlackListRegex?: string | null;
 };
