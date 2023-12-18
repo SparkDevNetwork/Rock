@@ -26,6 +26,14 @@ namespace Rock.ViewModels.Blocks.Communication.EmailPreferenceEntry
     public class EmailPreferenceEntryInitializationBox : BlockBox
     {
         /// <summary>
+        /// Gets or sets the successfully unsubscribed text.
+        /// </summary>
+        /// <value>
+        /// The successfully unsubscribed text.
+        /// </value>
+        public string SuccessfullyUnsubscribedText { get; set; }
+
+        /// <summary>
         /// Gets or sets the unsubscribe text.
         /// </summary>
         /// <value>

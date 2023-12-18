@@ -73,6 +73,9 @@ export type EmailPreferenceEntryInitializationBox = {
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
 
+    /** Gets or sets the successfully unsubscribed text. */
+    successfullyUnsubscribedText?: string | null;
+
     /** Gets or sets the unsubscribe from list. */
     unsubscribeFromList?: ListItemBag[] | null;
 
