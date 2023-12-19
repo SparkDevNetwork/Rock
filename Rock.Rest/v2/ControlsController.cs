@@ -3311,7 +3311,7 @@ namespace Rock.Rest.v2
                 }
 
                 groupMemberRequirement.WasOverridden = true;
-                groupMemberRequirement.OverriddenByPersonAliasId = RockRequestContext.CurrentPerson.PrimaryAliasId;
+                groupMemberRequirement.OverriddenByPersonAliasId = currentPerson.PrimaryAliasId;
                 groupMemberRequirement.OverriddenDateTime = RockDateTime.Now;
                 groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
 
