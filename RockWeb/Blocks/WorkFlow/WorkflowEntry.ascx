@@ -139,4 +139,4 @@
     </ContentTemplate>
 </asp:UpdatePanel>
 
-<Rock:Captcha ID="cpCaptcha" runat="server" />
+<Rock:Captcha ID="cpCaptcha" runat="server" OnTokenReceived="cpCaptcha_TokenReceived" />
