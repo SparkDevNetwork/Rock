@@ -40,7 +40,7 @@ namespace Rock.Communication.Medium
         IsRequired = false,
         Key = AttributeKey.UnsubscribeHTML,
         DefaultValue = @"
-<a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}'>Unsubscribe</a>",
+<a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}?CommunicationId={{ Communication.Id }}'>Unsubscribe</a>",
         Order = 2 )]
 
     [CodeEditorField( "Non-HTML Content",
