@@ -54,7 +54,7 @@
 
         <Rock:ModalDialog ID="mdMovePerson" runat="server" Title="Edit Attendance" SaveButtonText="Save" OnSaveClick="mdMovePerson_SaveClick">
             <Content>
-                 <asp:Panel ID="pnlCheckInCheckOutEdit" runat="server" class="row" Visible="false">
+                <asp:Panel ID="pnlCheckInCheckOutEdit" runat="server" class="row" Visible="false">
                      <div class="col-md-6">
                          <Rock:DateTimePicker ID="dtpStart" runat="server" SourceTypeName="Rock.Model.Attendance" PropertyName="StartDateTime" Required="false" Label="Check-in Date/Time" />
                      </div>
@@ -72,7 +72,7 @@
                             <Rock:RockDropDownList ID="ddlMovePersonLocation" runat="server" Label="Location" AutoPostBack="true" Required="true" OnSelectedIndexChanged="ddlMovePersonLocation_SelectedIndexChanged" />
                         </div>
                         <div class="col-md-4">
-                            <Rock:RockDropDownList ID="ddlMovePersonGroup" runat="server" Label="Group" AutoPostBack="true" Required="true" />
+                            <Rock:RockDropDownList ID="ddlMovePersonGroup" runat="server" Label="Group" AutoPostBack="true" Required="true" OnSelectedIndexChanged="ddlMovePersonGroup_SelectedIndexChanged" />
                         </div>
                     </div>
                 </div>
