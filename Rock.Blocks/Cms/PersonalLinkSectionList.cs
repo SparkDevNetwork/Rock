@@ -70,6 +70,11 @@ namespace Rock.Blocks.Cms
             public const string DetailPage = "DetailPage";
         }
 
+        private static class UserPreferenceKey
+        {
+            public const string Name = "Name";
+        }
+
         #endregion Keys
 
         #region Methods
@@ -154,7 +159,6 @@ namespace Rock.Blocks.Cms
         /// <summary>
         /// Gets the grid data source list (ordered)
         /// </summary>
-        /// <param name="queryable">The queryable.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         private IQueryable<PersonalLinkSectionListBag> GetGridDataSourceList( RockContext rockContext )
@@ -162,11 +166,18 @@ namespace Rock.Blocks.Cms
             var limitToSharedSections = GetAttributeValue( AttributeKey.SharedSections ).AsBoolean();
             List<PersonalLinkSection> personalLinkSectionList;
             Dictionary<int, PersonalLinkSectionOrder> currentPersonSectionOrderLookupBySectionId = null;
+            var nameFilter = GetBlockPersonPreferences().GetValue( UserPreferenceKey.Name );
 
             if ( limitToSharedSections )
             {
                 // only show shared sections in this mode
                 var sharedPersonalLinkSectionsQuery = new PersonalLinkSectionService( rockContext ).Queryable().Where( a => a.IsShared );
+
+                if ( nameFilter.IsNotNullOrWhiteSpace() )
+                {
+                    sharedPersonalLinkSectionsQuery = sharedPersonalLinkSectionsQuery.Where( p => p.Name.Contains( nameFilter ) );
+                }
+
                 personalLinkSectionList = sharedPersonalLinkSectionsQuery.Include( a => a.PersonalLinks ).OrderBy( a => a.Name ).AsNoTracking().ToList();
             }
             else
@@ -184,7 +195,9 @@ namespace Rock.Blocks.Cms
                     .Include( a => a.PersonalLinks )
                     .AsNoTracking()
                     .AsEnumerable()
-                    .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.GetCurrentPerson() ) )
+                    .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.GetCurrentPerson() )
+                        && ( string.IsNullOrWhiteSpace( nameFilter ) || a.Name.Contains( nameFilter ) )
+                    )
                     .ToList();
 
                 // NOTE: We might be making changes when resorting this, so don't use AsNoTracking()
