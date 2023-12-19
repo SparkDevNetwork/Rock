@@ -932,7 +932,7 @@ namespace Rock.Communication
             recipientEmail.MessageMetaData["communication_recipient_guid"] = communicationRecipient.Guid.ToString();
 
             // List-Unsubscribe & List-Unsubscribe-Post
-            AddListUnsubscribeEmailHeaders( recipientEmail, communication, communicationRecipient, mediumAttributes, globalAttributes );
+            AddListUnsubscribeEmailHeaders( recipientEmail, communication, communicationRecipient, mediumAttributes, globalAttributes, mergeFields );
 
             // List-Id
             AddListIdEmailHeaders( recipientEmail, communication, globalAttributes );
@@ -955,7 +955,7 @@ namespace Rock.Communication
             }
         }
 
-        private void AddListUnsubscribeEmailHeaders( RockEmailMessage recipientEmail, Rock.Model.Communication communication, CommunicationRecipient communicationRecipient, IDictionary<string, string> mediumAttributes, GlobalAttributesCache globalAttributes )
+        private void AddListUnsubscribeEmailHeaders( RockEmailMessage recipientEmail, Rock.Model.Communication communication, CommunicationRecipient communicationRecipient, IDictionary<string, string> mediumAttributes, GlobalAttributesCache globalAttributes, IDictionary<string, object> mergeFields )
         {
             var listUnsubscribeHeaderValues = new List<string>();
 
@@ -982,7 +982,11 @@ namespace Rock.Communication
                       && unsubscribeUrl.IsNotNullOrWhiteSpace() )
             {
                 // If Enable One-Click Unsubscribe is false, then use the UnsubscribeURL value.
-                listUnsubscribeHeaderValues.Add( $"<{unsubscribeUrl}>" );
+                var httpValue = unsubscribeUrl.ResolveMergeFields( mergeFields, recipientEmail.CurrentPerson, recipientEmail.EnabledLavaCommands );
+                if ( httpValue.IsNotNullOrWhiteSpace() )
+                {
+                    listUnsubscribeHeaderValues.Add( $"<{httpValue}>" );
+                }
             }
 
             if ( listUnsubscribeHeaderValues.Any() )

@@ -33,18 +33,18 @@ namespace Rock.Communication.Medium
     [ExportMetadata( "ComponentName", "Email" )]
 
     [CodeEditorField( "Unsubscribe HTML",
-        Description = "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubscribe HTML' merge field is used, or if not used, at the end of the email in email contents.",
+        Description = "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubscribe HTML' merge field is used, or if not used, at the end of the email in email contents. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Key = AttributeKey.UnsubscribeHTML,
         DefaultValue = @"
-<a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}'>Unsubscribe</a>",
+<a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}?CommunicationId={{ Communication.Id }}'>Unsubscribe</a>",
         Order = 2 )]
 
     [CodeEditorField( "Non-HTML Content",
-        Description = "The text to display for email clients that do not support html content.",
+        Description = "The text to display for email clients that do not support html content. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
@@ -84,8 +84,9 @@ You can view an online version of this email here:
         Key = AttributeKey.EnableOneClickUnsubscribe,
         Order = 7 )]
 
-    [UrlLinkField( "Unsubscribe URL",
-        Description = "Used in the List-Unsubscribe email header when the one-click option is disabled.",
+    [TextField( "Unsubscribe URL",
+        Description = "Used in the List-Unsubscribe email header when the one-click option is disabled. <span class='tip tip-lava'></span>",
+        DefaultValue = "{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}?CommunicationId={{ Communication.Id }}",
         IsRequired = false,
         Key = AttributeKey.UnsubscribeURL,
         Order = 8 )]

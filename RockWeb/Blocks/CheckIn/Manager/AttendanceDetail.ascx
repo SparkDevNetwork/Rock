@@ -73,7 +73,7 @@
                             <Rock:RockDropDownList ID="ddlMovePersonLocation" runat="server" Label="Location" AutoPostBack="true" Required="true" OnSelectedIndexChanged="ddlMovePersonLocation_SelectedIndexChanged" />
                         </div>
                         <div class="col-md-4">
-                            <Rock:RockDropDownList ID="ddlMovePersonGroup" runat="server" Label="Group" AutoPostBack="true" Required="true" />
+                            <Rock:RockDropDownList ID="ddlMovePersonGroup" runat="server" Label="Group" AutoPostBack="true" Required="true" OnSelectedIndexChanged="ddlMovePersonGroup_SelectedIndexChanged" />
                         </div>
                     </div>
                 </div>
