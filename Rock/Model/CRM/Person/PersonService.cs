@@ -5074,6 +5074,7 @@ AND GroupTypeId = ${familyGroupType.Id}
         /// Unsubscribes a person from email communications.
         /// <para>If Email Preference is "Email Allowed" then it will be set to "No Mass Emails".</para>
         /// <para>If Email Preference is "No Mass Emails" then it will be set to "Do Not Email".</para>
+        /// <para>If Email Preference is "Do Not Email" then no changes are made.</para>
         /// </summary>
         /// <param name="person">The person to update.</param>
         public void UnsubscribeFromEmail( Person person )
@@ -5082,8 +5083,6 @@ AND GroupTypeId = ${familyGroupType.Id}
             {
                 throw new ArgumentNullException( nameof( person ), "Person is required" );
             }
-
-            var oldValue = person.EmailPreference;
 
             // Make the email preference more restrictive based on the current preference.
             if ( person.EmailPreference == EmailPreference.EmailAllowed )
@@ -5094,10 +5093,29 @@ AND GroupTypeId = ${familyGroupType.Id}
             {
                 person.EmailPreference = EmailPreference.DoNotEmail;
             }
+        }
+        
+        /// <summary>
+        /// Unsubscribes a person from email communications and writes a one-click email unsubscription history record.
+        /// <para>If Email Preference is "Email Allowed" then it will be set to "No Mass Emails".</para>
+        /// <para>If Email Preference is "No Mass Emails" then it will be set to "Do Not Email".</para>
+        /// <para>If Email Preference is "Do Not Email" then no changes are made and no history is written.</para>
+        /// </summary>
+        /// <param name="person">The person to update.</param>
+        public void OneClickUnsubscribeFromEmail( Person person )
+        {
+            if ( person == null )
+            {
+                throw new ArgumentNullException( nameof( person ), "Person is required" );
+            }
 
+            var oldValue = person.EmailPreference;
+
+            UnsubscribeFromEmail( person );
+
+            // Write a history record for the one-click email unsubscription.            
             if ( oldValue != person.EmailPreference )
             {
-                // Add the change to history.
                 var changes = new History.HistoryChangeList();
                 changes.AddChange( History.HistoryVerb.EmailUnsubscribed, History.HistoryChangeType.Property, "Email Preference" );
 
@@ -5105,7 +5123,6 @@ AND GroupTypeId = ${familyGroupType.Id}
                 person.ModifiedByPersonAliasId = person.PrimaryAliasId;
                 person.ModifiedAuditValuesAlreadyUpdated = true;
 
-                // Write a history record for the email unsubscription.
                 HistoryService.SaveChanges(
                     ( RockContext ) this.Context,
                     typeof( Person ),

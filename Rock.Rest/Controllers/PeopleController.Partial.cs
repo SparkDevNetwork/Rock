@@ -616,7 +616,7 @@ namespace Rock.Rest.Controllers
             }
             else
             {
-                personService.UnsubscribeFromEmail( person );
+                personService.OneClickUnsubscribeFromEmail( person );
             }
             rockContext.SaveChanges();
 
