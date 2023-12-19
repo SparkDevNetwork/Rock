@@ -3245,7 +3245,7 @@ namespace Rock.Rest.v2
                 }
 
                 groupMemberRequirement.WasManuallyCompleted = true;
-                groupMemberRequirement.ManuallyCompletedByPersonAliasId = RockRequestContext.CurrentPerson.PrimaryAliasId;
+                groupMemberRequirement.ManuallyCompletedByPersonAliasId = RockRequestContext.CurrentPerson?.PrimaryAliasId;
                 groupMemberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
                 groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
 
@@ -3269,12 +3269,33 @@ namespace Rock.Rest.v2
             {
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                 var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                var groupRequirementService = new GroupRequirementService( rockContext );
+                var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+                var currentPerson = RockRequestContext.CurrentPerson;
+
+                // Determine if current person is authorized to override
+                if ( currentPerson == null )
+                {
+                    return Unauthorized();
+                }
+
+                var currentPersonIsLeaderOfCurrentGroup = new GroupMemberService( rockContext )
+                    .GetByGroupId( groupRequirement.Group.Id )
+                    .Where( m => m.GroupRole.IsLeader )
+                    .Select( m => m.PersonId )
+                    .Contains( currentPerson.Id );
+
+                bool currentPersonCanOverride = groupRequirement.AllowLeadersToOverride && currentPersonIsLeaderOfCurrentGroup;
+                var hasPermissionToOverride = groupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.OVERRIDE, currentPerson );
+
+                if ( !( currentPersonCanOverride || hasPermissionToOverride ) )
+                {
+                    return Unauthorized();
+                }
+
                 if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
                 {
                     // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
-                    var groupRequirementService = new GroupRequirementService( rockContext );
-                    var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
-
                     var groupMemberService = new GroupMemberService( rockContext );
                     var groupMember = groupMemberService.Get( options.GroupMemberGuid );
 
@@ -3538,7 +3559,7 @@ namespace Rock.Rest.v2
 
         #endregion
 
-        #region Group Member Requirement Container
+        #region Group Member Requirements Container
 
         /// <summary>
         /// Get the data for each of the cards in the GroupMemberRequirementContainer

@@ -42,6 +42,7 @@
             type: String as PropType<Guid>
         },
 
+        /** The role of the group member */
         groupRoleGuid: {
             type: String as PropType<Guid>
         },
@@ -50,6 +51,7 @@
             type: String as PropType<Guid>
         },
 
+        /** The Guid of the person who is the group member */
         personGuid: {
             type: String as PropType<Guid>
         },

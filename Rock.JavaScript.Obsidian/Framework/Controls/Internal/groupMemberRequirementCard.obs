@@ -197,7 +197,7 @@
                     groupRequirementGuid: props.groupRequirementGuid,
                     groupMemberGuid: props.groupMemberGuid
                 };
-                const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardMarkMetManually", undefined, options);
+                const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardOverrideMarkMet", undefined, options);
 
                 if (result.isSuccess) {
                     emit("statusChanged");
