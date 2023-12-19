@@ -84,8 +84,9 @@ You can view an online version of this email here:
         Key = AttributeKey.EnableOneClickUnsubscribe,
         Order = 7 )]
 
-    [UrlLinkField( "Unsubscribe URL",
-        Description = "Used in the List-Unsubscribe email header when the one-click option is disabled.",
+    [TextField( "Unsubscribe URL",
+        Description = "Used in the List-Unsubscribe email header when the one-click option is disabled. <span class='tip tip-lava'></span>",
+        DefaultValue = "{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}?CommunicationId={{ Communication.Id }}",
         IsRequired = false,
         Key = AttributeKey.UnsubscribeURL,
         Order = 8 )]
