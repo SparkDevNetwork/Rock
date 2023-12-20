@@ -801,7 +801,6 @@
     <Compile Include="Chart\ChartJs\IChartJsCategorySeriesDataPoint.cs" />
     <Compile Include="Chart\ChartJs\IChartJsTimeSeriesDataPoint.cs" />
     <Compile Include="Chart\ChartDataFactory.cs" />
-    <Compile Include="CheckIn\CheckInEntityListItem.cs" />
     <Compile Include="CheckIn\CheckInGroupLocationSchedule.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
     <Compile Include="ClientService\ClientServiceBase.cs" />
@@ -1026,7 +1025,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateWorkflowIds.cs" />
     <Compile Include="Jobs\PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV152CreateAttributeValue_ValueAsPersonId_Index.cs" />
-	<Compile Include="Jobs\PostV154DataMigrationsUpdateAgeBracketValues.cs" />
+    <Compile Include="Jobs\PostV154DataMigrationsUpdateAgeBracketValues.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV141AddMissingIndexes.cs" />
