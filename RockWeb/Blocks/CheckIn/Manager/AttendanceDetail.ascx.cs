@@ -25,8 +25,10 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -103,9 +105,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private const string GroupListItemKeyDelimiter = "|";
 
-        private List<EntityListItem> _scheduleListItems = new List<EntityListItem>();
-        private Dictionary<string, List<EntityListItem>> _locationListItemsBySchedule = new Dictionary<string, List<EntityListItem>>();
-        private Dictionary<string, List<EntityListItem>> _groupListItemsByScheduleAndLocation = new Dictionary<string, List<EntityListItem>>();
+        private List<ListItemBag> _scheduleListItems = new List<ListItemBag>();
+        private Dictionary<string, List<ListItemBag>> _locationListItemsBySchedule = new Dictionary<string, List<ListItemBag>>();
+        private Dictionary<string, List<ListItemBag>> _groupListItemsByScheduleAndLocation = new Dictionary<string, List<ListItemBag>>();
 
         #endregion Fields
 
@@ -122,31 +124,31 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var json = ViewState[ViewStateKey.ScheduleListItems] as string;
             if ( json.IsNullOrWhiteSpace() )
             {
-                _scheduleListItems = new List<EntityListItem>();
+                _scheduleListItems = new List<ListItemBag>();
             }
             else
             {
-                _scheduleListItems = JsonConvert.DeserializeObject<List<EntityListItem>>( json ) ?? new List<EntityListItem>();
+                _scheduleListItems = JsonConvert.DeserializeObject<List<ListItemBag>>( json ) ?? new List<ListItemBag>();
             }
 
             json = ViewState[ViewStateKey.LocationListItems] as string;
             if ( json.IsNullOrWhiteSpace() )
             {
-                _locationListItemsBySchedule = new Dictionary<string, List<EntityListItem>>();
+                _locationListItemsBySchedule = new Dictionary<string, List<ListItemBag>>();
             }
             else
             {
-                _locationListItemsBySchedule = JsonConvert.DeserializeObject<Dictionary<string, List<EntityListItem>>>( json ) ?? new Dictionary<string, List<EntityListItem>>();
+                _locationListItemsBySchedule = JsonConvert.DeserializeObject<Dictionary<string, List<ListItemBag>>>( json ) ?? new Dictionary<string, List<ListItemBag>>();
             }
 
             json = ViewState[ViewStateKey.GroupListItems] as string;
             if ( json.IsNullOrWhiteSpace() )
             {
-                _groupListItemsByScheduleAndLocation = new Dictionary<string, List<EntityListItem>>();
+                _groupListItemsByScheduleAndLocation = new Dictionary<string, List<ListItemBag>>();
             }
             else
             {
-                _groupListItemsByScheduleAndLocation = JsonConvert.DeserializeObject<Dictionary<string, List<EntityListItem>>>( json ) ?? new Dictionary<string, List<EntityListItem>>();
+                _groupListItemsByScheduleAndLocation = JsonConvert.DeserializeObject<Dictionary<string, List<ListItemBag>>>( json ) ?? new Dictionary<string, List<ListItemBag>>();
             }
         }
 
@@ -276,242 +278,19 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="attendance">The attendance instance.</param>
         private void GetMovePersonOptions( RockContext rockContext, Attendance attendance )
         {
-            var groupLocationSchedules = GetGroupLocationSchedules( rockContext, attendance );
+            var groupLocationSchedules = CheckinManagerHelper.GetGroupLocationSchedulesForPersonMove( rockContext, attendance );
             if ( groupLocationSchedules?.Any() != true )
             {
                 return;
             }
 
-            _scheduleListItems = new List<EntityListItem>();
-            _locationListItemsBySchedule = new Dictionary<string, List<EntityListItem>>();
-            _groupListItemsByScheduleAndLocation = new Dictionary<string, List<EntityListItem>>();
-
-            // Collect unique schedules.
-            var uniqueSchedules = new List<Schedule>();
-            foreach ( var schedule in groupLocationSchedules.Select( gls => gls.Schedule ) )
-            {
-                if ( uniqueSchedules.Any( s => s.Id == schedule.Id ) )
-                {
-                    continue;
-                }
-
-                uniqueSchedules.Add( schedule );
-            }
-
-            // Sort schedules before adding.
-            foreach ( var schedule in uniqueSchedules.OrderByOrderAndNextScheduledDateTime() )
-            {
-                // Add the schedule list item.
-                var scheduleIdString = schedule.Id.ToString();
-                _scheduleListItems.Add( new EntityListItem { Id = scheduleIdString, Name = schedule.Name } );
-
-                // Create and add the location list item collection for this schedule.
-                var locationListItems = new List<EntityListItem>();
-                _locationListItemsBySchedule.Add( scheduleIdString, locationListItems );
-
-                // Collect, sort and add unique locations for this schedule.
-                foreach ( var sortedLocation in groupLocationSchedules.Where( gls => gls.Schedule.Id == schedule.Id )
-                                                                      .Select( gls => new
-                                                                      {
-                                                                          gls.GroupLocationOrder,
-                                                                          gls.Location
-                                                                      } )
-                                                                      .OrderBy( l => l.GroupLocationOrder )
-                                                                      .ThenBy( l => l.Location.Name )
-                                                                      .ToList() )
-                {
-                    var location = sortedLocation.Location;
-                    var locationIdString = location.Id.ToString();
-
-                    // Ensure we haven't already added this location for this schedule.
-                    if ( locationListItems.Any( l => l.Id == locationIdString ) )
-                    {
-                        continue;
-                    }
-
-                    // Add the location list item.
-                    locationListItems.Add( new EntityListItem { Id = locationIdString, Name = location.Name } );
-
-                    // Create and add the group list item collection for this schedule and location combination.
-                    var groupListItems = new List<EntityListItem>();
-                    var groupListItemKey = $"{scheduleIdString}{GroupListItemKeyDelimiter}{locationIdString}";
-                    _groupListItemsByScheduleAndLocation.Add( groupListItemKey, groupListItems );
-
-                    // Collect, sort and add unique groups for this schedule and location combination.
-                    foreach ( var group in groupLocationSchedules.Where( gls => gls.Schedule.Id == schedule.Id && gls.Location.Id == location.Id )
-                                                                 .Select( gls => gls.Group )
-                                                                 .OrderBy( g => g.Order )
-                                                                 .ThenBy( g => g.Name ) )
-                    {
-                        var groupIdString = group.Id.ToString();
-
-                        // Ensure we haven't already added this group for this schedule and location combination.
-                        if ( groupListItems.Any( g => g.Id == groupIdString ) )
-                        {
-                            continue;
-                        }
-
-                        groupListItems.Add( new EntityListItem { Id = groupIdString, Name = group.Name } );
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Queries the database for the available group, location and schedule combinations to which an individual may be moved.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="attendance">The attendance instance.</param>
-        /// <returns>The available group, location and schedule combinations to which an individual may be moved.</returns>
-        private List<GroupLocationScheduleViewModel> GetGroupLocationSchedules( RockContext rockContext, Attendance attendance )
-        {
-            var groupLocationSchedules = new List<GroupLocationScheduleViewModel>();
-
-            // Get the attendance occurrence's current check-in area.
-            var checkInArea = GroupTypeCache.Get( attendance.Occurrence.Group.GroupTypeId );
-            if ( checkInArea == null )
-            {
-                return groupLocationSchedules;
-            }
-
-            // Get all related check-in areas; those that belong to the same check-in configuration.
-            var relatedCheckInAreas = GetRelatedCheckInAreas( rockContext, checkInArea );
-            if ( relatedCheckInAreas?.Any() != true )
-            {
-                return groupLocationSchedules;
-            }
-
-            var groupTypeIds = relatedCheckInAreas
-                .Select( gt => gt.Id )
-                .Distinct()
-                .ToList();
-
-            // Get group locations belonging to any group within this check-in configuration.
-            var groupLocationsQuery = new GroupLocationService( rockContext )
-                .Queryable()
-                .AsNoTracking()
-                .Where( gl => groupTypeIds.Contains( gl.Group.GroupTypeId ) );
-
-            if ( attendance.CampusId.HasValue )
-            {
-                // If the attendance belongs to a particular campus, only include those
-                // group locations that belong to the same campus.
-                var campusLocationId = CampusCache.Get( attendance.CampusId.Value )?.LocationId;
-                if ( campusLocationId.HasValue )
-                {
-                    var campusLocationIds = new LocationService( rockContext )
-                        .GetAllDescendentIds( campusLocationId.Value )
-                        .ToList();
-
-                    groupLocationsQuery = groupLocationsQuery.Where( gl => campusLocationIds.Contains( gl.LocationId ) );
-                }
-            }
-
-            // Finalize query filters according to the following:
-            //  1. Group is active and not archived;
-            //  2. Location is active and named;
-            //  3. Schedule is active and named.
-            groupLocationSchedules = groupLocationsQuery
-                .SelectMany( gl => gl.Schedules, ( gl, s ) => new
-                {
-                    GroupLocationOrder = gl.Order,
-                    gl.Group,
-                    gl.Location,
-                    Schedule = s
-                } )
-                .Where( gls =>
-                    gls.Group.IsActive
-                    && !gls.Group.IsArchived
-                    && gls.Location.IsActive
-                    && gls.Location.Name != null
-                    && gls.Location.Name != string.Empty
-                    && gls.Schedule.IsActive
-                    && gls.Schedule.Name != null
-                    && gls.Schedule.Name != string.Empty
-                )
-                .Select( gls => new GroupLocationScheduleViewModel
-                {
-                    GroupLocationOrder = gls.GroupLocationOrder,
-                    Group = gls.Group,
-                    Location = gls.Location,
-                    Schedule = gls.Schedule
-                } )
-                .ToList();
-
-            return groupLocationSchedules;
-        }
-
-        /// <summary>
-        /// Gets all related (ancestor, sibling and descendant) check-in areas for the provided check-in area,
-        /// based on its ancestor check-in configuration.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="checkInArea">The check-in area for which to get related check-in areas.</param>
-        /// <returns>All related (ancestor, sibling and descendant) check-in areas for the provided check-in area.</returns>
-        private List<GroupTypeCache> GetRelatedCheckInAreas( RockContext rockContext, GroupTypeCache checkInArea )
-        {
-            var checkInConfiguration = GetCheckInConfiguration( checkInArea );
-            if ( checkInConfiguration == null )
-            {
-                return null;
-            }
-
-            return new GroupTypeService( rockContext ).GetCheckinAreaDescendants( checkInConfiguration.Id );
-        }
-
-        /// <summary>
-        /// Gets the check-in configuration (the first ancestor group type with purpose == "Check-in Template")
-        /// for the specified check-in area.
-        /// </summary>
-        /// <param name="checkInArea">The check-in area for which to get the check-in configuration.</param>
-        /// <returns>The check-in configuration for the specified check-in area, or <c>null</c> if not found.</returns>
-        private GroupTypeCache GetCheckInConfiguration( GroupTypeCache checkInArea )
-        {
-            var alreadyEncounteredGroupTypeIds = new List<int>();
-            return FindAncestorCheckInConfiguration( checkInArea, ref alreadyEncounteredGroupTypeIds );
-        }
-
-        /// <summary>
-        /// Recursively searches the ancestor group type path to find the first one whose purpose == "Check-in Template".
-        /// </summary>
-        /// <param name="checkInArea">The current [check-in area] group type whose ancestors should be searched.</param>
-        /// <param name="alreadyEncounteredGroupTypeIds">The list of group type IDs we've already encountered and searched,
-        /// to prevent infinite loops caused by circular references.</param>
-        /// <returns>The first ancestor group type whose purpose == "Check-in Template".</returns>
-        private GroupTypeCache FindAncestorCheckInConfiguration( GroupTypeCache checkInArea, ref List<int> alreadyEncounteredGroupTypeIds )
-        {
-            GroupTypeCache checkInConfiguration = null;
-            var checkInTemplatePurposeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
-
-            foreach ( var parentGroupType in checkInArea.ParentGroupTypes )
-            {
-                // If we've already encountered this group type, we have a circular reference; continue to the next one.
-                if ( alreadyEncounteredGroupTypeIds.Contains( parentGroupType.Id ) )
-                {
-                    continue;
-                }
-
-                // Take note of this group type's ID so we only check it once.
-                alreadyEncounteredGroupTypeIds.Add( parentGroupType.Id );
-
-                if ( parentGroupType.GroupTypePurposeValueId == checkInTemplatePurposeValueId )
-                {
-                    // We found it; set it and break out of this loop.
-                    checkInConfiguration = parentGroupType;
-                    break;
-                }
-
-                // Continue recursively up the group type path.
-                checkInConfiguration = FindAncestorCheckInConfiguration( parentGroupType, ref alreadyEncounteredGroupTypeIds );
-
-                // If we found it recursively, no need to continue searching.
-                if ( checkInConfiguration != null )
-                {
-                    break;
-                }
-            }
-
-            return checkInConfiguration;
+            CheckinManagerHelper.GroupAndSortMovePersonOptions(
+                groupLocationSchedules,
+                out _scheduleListItems,
+                out _locationListItemsBySchedule,
+                out _groupListItemsByScheduleAndLocation,
+                GroupListItemKeyDelimiter
+            );
         }
 
         /// <summary>
@@ -526,10 +305,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 foreach ( var scheduleListItem in _scheduleListItems )
                 {
-                    ddlMovePersonSchedule.Items.Add( new ListItem( scheduleListItem.Name, scheduleListItem.Id ) );
+                    ddlMovePersonSchedule.Items.Add( new ListItem( scheduleListItem.Text, scheduleListItem.Value ) );
                 }
 
-                if ( currentScheduleId.HasValue && _scheduleListItems.Any( s => s.Id == currentScheduleId.Value.ToString() ) )
+                if ( currentScheduleId.HasValue && _scheduleListItems.Any( s => s.Value == currentScheduleId.Value.ToString() ) )
                 {
                     // If the currently-selected value is still an option, auto-select it.
                     ddlMovePersonSchedule.SetValue( currentScheduleId );
@@ -539,7 +318,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     // If there is only a single possible selection, auto-select that option.
                     if ( _scheduleListItems.Count == 1 )
                     {
-                        ddlMovePersonSchedule.SetValue( _scheduleListItems.First().Id );
+                        ddlMovePersonSchedule.SetValue( _scheduleListItems.First().Value );
                         return;
                     }
 
@@ -559,15 +338,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var selectedScheduleId = ddlMovePersonSchedule.SelectedValue;
 
-            List<EntityListItem> locationListItems = null;
+            List<ListItemBag> locationListItems = null;
             if ( _locationListItemsBySchedule?.TryGetValue( selectedScheduleId, out locationListItems ) == true && locationListItems?.Any() == true )
             {
                 foreach ( var locationListItem in locationListItems )
                 {
-                    ddlMovePersonLocation.Items.Add( new ListItem( locationListItem.Name, locationListItem.Id ) );
+                    ddlMovePersonLocation.Items.Add( new ListItem( locationListItem.Text, locationListItem.Value ) );
                 }
 
-                if ( currentLocationId.HasValue && locationListItems.Any( l => l.Id == currentLocationId.Value.ToString() ) )
+                if ( currentLocationId.HasValue && locationListItems.Any( l => l.Value == currentLocationId.Value.ToString() ) )
                 {
                     // If the currently-selected value is still an option, auto-select it.
                     ddlMovePersonLocation.SetValue( currentLocationId );
@@ -577,7 +356,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     // If there is only a single possible selection, auto-select that option.
                     if ( locationListItems.Count == 1 )
                     {
-                        ddlMovePersonLocation.SetValue( locationListItems.First().Id );
+                        ddlMovePersonLocation.SetValue( locationListItems.First().Value );
                         return;
                     }
 
@@ -597,15 +376,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var groupListItemKey = $"{ddlMovePersonSchedule.SelectedValue}{GroupListItemKeyDelimiter}{ddlMovePersonLocation.SelectedValue}";
 
-            List<EntityListItem> groupListItems = null;
+            List<ListItemBag> groupListItems = null;
             if ( _groupListItemsByScheduleAndLocation?.TryGetValue( groupListItemKey, out groupListItems ) == true && groupListItems?.Any() == true )
             {
                 foreach ( var groupListItem in groupListItems )
                 {
-                    ddlMovePersonGroup.Items.Add( new ListItem( groupListItem.Name, groupListItem.Id ) );
+                    ddlMovePersonGroup.Items.Add( new ListItem( groupListItem.Text, groupListItem.Value ) );
                 }
 
-                if ( currentGroupId.HasValue && groupListItems.Any( g => g.Id == currentGroupId.Value.ToString() ) )
+                if ( currentGroupId.HasValue && groupListItems.Any( g => g.Value == currentGroupId.Value.ToString() ) )
                 {
                     // If the currently-selected value is still an option, auto-select it.
                     ddlMovePersonGroup.SetValue( currentGroupId );
@@ -615,7 +394,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     // If there is only a single possible selection, auto-select that option.
                     if ( groupListItems.Count == 1 )
                     {
-                        ddlMovePersonGroup.SetValue( groupListItems.First().Id );
+                        ddlMovePersonGroup.SetValue( groupListItems.First().Value );
                         return;
                     }
 
@@ -754,48 +533,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             mdMovePerson.Hide();
             ShowDetail( GetAttendanceId() );
-        }
-
-        /// <summary>
-        /// A runtime object to represent an entity list item that may be selected.
-        /// </summary>
-        private class EntityListItem
-        {
-            /// <summary>
-            /// The entity identifier.
-            /// </summary>
-            public string Id { get; set; }
-
-            /// <summary>
-            /// The entity name.
-            /// </summary>
-            public string Name { get; set; }
-        }
-
-        /// <summary>
-        /// A runtime object to represent a group, location, schedule combination.
-        /// </summary>
-        private class GroupLocationScheduleViewModel
-        {
-            /// <summary>
-            /// The group location sort order.
-            /// </summary>
-            public int GroupLocationOrder { get; set; }
-
-            /// <summary>
-            /// The group entity.
-            /// </summary>
-            public Group Group { get; set; }
-
-            /// <summary>
-            /// The location entity.
-            /// </summary>
-            public Location Location { get; set; }
-
-            /// <summary>
-            /// The schedule entity.
-            /// </summary>
-            public Schedule Schedule { get; set; }
         }
 
         #endregion Move Person
