@@ -115,8 +115,8 @@ namespace Rock.Model
                     // Add the checkin and the checkout to the history if
                     var previousCheckInValue = ( DateTime? ) Entry.OriginalValues.GetReadOnlyValueOrDefault( "StartDateTime", null );
                     var previousCheckOutValue = ( DateTime? ) Entry.OriginalValues.GetReadOnlyValueOrDefault( "EndDateTime", null );
-                    History.EvaluateChange( PersonAttendanceHistoryChangeList, "Check-in", attendance.StartDateTime.ToShortDateTimeString(), previousCheckInValue?.ToShortDateTimeString() );
-                    History.EvaluateChange( PersonAttendanceHistoryChangeList, "Check-out", attendance.EndDateTime?.ToShortDateTimeString(), previousCheckOutValue?.ToShortDateTimeString() );
+                    History.EvaluateChange( PersonAttendanceHistoryChangeList, "Check-in", previousCheckInValue?.ToShortDateTimeString(), attendance.StartDateTime.ToShortDateTimeString() );
+                    History.EvaluateChange( PersonAttendanceHistoryChangeList, "Check-out", previousCheckOutValue?.ToShortDateTimeString(), attendance.EndDateTime?.ToShortDateTimeString() );
                 }
                 else if ( State == EntityContextState.Deleted )
                 {

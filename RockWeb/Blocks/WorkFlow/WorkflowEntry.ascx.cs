@@ -2406,7 +2406,12 @@ namespace RockWeb.Blocks.WorkFlow
             if ( formNotificationEmailDestination == FormNotificationEmailDestination.EmailAddress
                 && notificationEmailSettings.EmailAddress.IsNotNullOrWhiteSpace() )
             {
-                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( notificationEmailSettings.EmailAddress, workflowMergeFields ) );
+                string[] recipientEmailAddresses = notificationEmailSettings.EmailAddress.Replace( ";", "," ).Split( ',' );
+
+                foreach ( var eachRcipient in recipientEmailAddresses )
+                {
+                    recipients.Add( RockEmailMessageRecipient.CreateAnonymous( eachRcipient, workflowMergeFields ) );
+                }
             }
             else if ( formNotificationEmailDestination == FormNotificationEmailDestination.SpecificIndividual
                 && notificationEmailSettings.RecipientAliasId.HasValue )

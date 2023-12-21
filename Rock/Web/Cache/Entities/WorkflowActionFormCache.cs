@@ -326,7 +326,9 @@ namespace Rock.Web.Cache
             var actionForm = this;
 
             FormPersonEntrySettings formPersonEntrySettings;
-            if ( workflowFormBuilderTemplate != null )
+
+            // Use the settings from the template if PersonEntry is enabled on the template (those settings override the form).
+            if ( workflowFormBuilderTemplate != null && workflowFormBuilderTemplate.AllowPersonEntry )
             {
                 formPersonEntrySettings = workflowFormBuilderTemplate.PersonEntrySettingsJson?.FromJsonOrNull<Rock.Workflow.FormBuilder.FormPersonEntrySettings>();
             }
@@ -366,10 +368,12 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public bool GetAllowPersonEntry( WorkflowFormBuilderTemplateCache workflowFormBuilderTemplate )
         {
-            if ( workflowFormBuilderTemplate != null )
+            // If we have a template which if which has PersonEntry enabled then person entry is allowed
+            if ( workflowFormBuilderTemplate != null && workflowFormBuilderTemplate.AllowPersonEntry )
             {
-                return workflowFormBuilderTemplate.AllowPersonEntry;
+                return true;
             }
+            // Otherwise the form gets to decide if person entry is enabled.
             else
             {
                 return this.AllowPersonEntry;
