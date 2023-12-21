@@ -63,10 +63,10 @@ export const ComparisonType = {
 
     /** The left value must match the regular expression defined in the right value. */
     RegularExpression: 0x2000
-};
+} as const;
 
 /**
  * The type of comparison operations that can be used when building custom
  * filtering logic.
  */
-export type ComparisonType = number;
+export type ComparisonType = typeof ComparisonType[keyof typeof ComparisonType];

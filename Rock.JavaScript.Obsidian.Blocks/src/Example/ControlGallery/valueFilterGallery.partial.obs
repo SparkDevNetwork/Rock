@@ -1,0 +1,37 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <ValueFilter v-model="value" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import ValueFilter from "@Obsidian/Controls/valueFilter.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { ComparisonItem, ValueFilterBag, ValueFilterFilterItem } from "@Obsidian/ViewModels/Controls/valueFilter.d";
+
+    const value = ref<ValueFilterBag>({
+        expressionType: 1,
+        filters: [
+            { value: "hello", comparison: 1 }
+        ]
+    });
+    const someBool = ref(false);
+    const someVal = ref("hi");
+
+    const importCode = getSfcControlImportPath("valueFilter");
+    const exampleCode = computed(() => {
+        const someBoolProp = someBool.value ? " someBool" : "";
+        const someValProp = someVal.value ? ` someVal="${someVal.value}"` : "";
+        return `<ValueFilter v-model="value"${someBoolProp}${someValProp} />`;
+    });
+</script>

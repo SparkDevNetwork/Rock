@@ -1,0 +1,69 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="x-field">
+        <div class="text-right" v-show="!hideFilterMode">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-xs btn-info" @click="'TODO'">Any</button>
+                <button type="button" class="btn btn-default btn-xs" @click="'TODO'">All</button>
+            </div>
+        </div>
+        <div>
+            <ValueFilterItem v-for="(filterItem, i) of internalValue.filters" :key="i" v-model="internalValue.filters[i]" :items="items" @delete="deleteFilterItem(i)" />
+        </div>
+        <div class="text-right">
+            <button class="btn btn-default btn-square btn-sm" @click.prevent="addFilterItem"><i class="fa fa-plus"></i></button>
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import ValueFilterItem from "./Internal/valueFilterItem.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ComparisonItem, ValueFilterBag } from "@Obsidian/ViewModels/Controls/valueFilter.d";
+
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValueFilterBag>,
+            required: true
+        },
+
+        hideFilterMode: {
+            type: Boolean
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    const items: ComparisonItem[] = [
+        { text: "Equal To", value: 1 },
+        { text: "Not Equal To", value: 2 },
+        { text: "Starts With", value: 4 },
+        { text: "Contains", value: 8 },
+        { text: "Does Not Contain", value: 16 },
+        { text: "Is Blank", value: 32 },
+        { text: "Is Not Blank", value: 64 },
+    ];
+
+    function deleteFilterItem(index: number): void {
+        // TODO
+        console.info("DELETE", index);
+    }
+
+    function addFilterItem(): void {
+        // TODO
+        console.info("ADD");
+    }
+
+</script>
