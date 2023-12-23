@@ -256,5 +256,34 @@ namespace Rock.Tests.UnitTests.Rock.Utility.ExtensionMethods
             Assert.AreEqual( "two", descendants[1].InnerText );
             Assert.AreEqual( "three", descendants[2].InnerText );
         }
+
+        #region SanitizeHtml
+
+        [TestMethod]
+        public void SanitizeHtml_WhereInputIncludesHtmlComment_CommentIsRemoved()
+        {
+            var html = @"
+<!-- Comment 1 -->
+<p>Para 1</p>
+<!-- Comment 2 -->
+<p>Para 2</p>
+<!-- Comment 3 -->
+";
+
+            var output = html.SanitizeHtml( strict: true );
+
+            Assert.IsFalse( output.Contains("Comment") );
+        }
+
+        [TestMethod]
+        public void SanitizeHtml_WhereInputIsNull_ReturnsEmptyString()
+        {
+            string html = null;
+            var output = html.SanitizeHtml( strict: true );
+
+            Assert.AreEqual( string.Empty, output );
+        }
+
+        #endregion
     }
 }
