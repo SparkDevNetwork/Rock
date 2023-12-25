@@ -307,7 +307,11 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnLoad( e );
 
-            nbMessage.Visible = false;
+            // If PostBack is triggered by captcha leave message notification as is.
+            if ( this.Page.Request.Params["__EVENTARGUMENT"] != "TokenReceived" )
+            {
+                nbMessage.Visible = false;
+            }
 
             if ( !Page.IsPostBack )
             {
