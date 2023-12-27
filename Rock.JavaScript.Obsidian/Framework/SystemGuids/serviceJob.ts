@@ -79,6 +79,8 @@ export const ServiceJob = {
     DataMigrations152IxValueAsPersonId: "5DC19FB3-AB0B-48F3-817D-9023C65C5F8A",
     /** The Job to run Post v15.2 to replace web forms blocks with Obsidian blocks. */
     DataMigrations152ReplaceWebFormsBlocksWithObsidianBlocks: "4232194C-90AE-4B44-93E7-1E5DE984A9E1",
+    /** The Job to run Post v15.4 to update the AgeBracket values to reflect the new values after spliting the 0 - 12 bracket. */
+    DataMigrations154UpdateAgeBracketValues: "C1234A63-09A6-45C1-96D8-0DE03EC4A7A1",
     /** The Job to get NCOA */
     GetNcoa: "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
     /** Use Rock.SystemGuid.ServiceJob.GIVING_AUTOMATION instead */
