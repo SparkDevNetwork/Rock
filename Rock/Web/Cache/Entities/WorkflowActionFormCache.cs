@@ -368,12 +368,12 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public bool GetAllowPersonEntry( WorkflowFormBuilderTemplateCache workflowFormBuilderTemplate )
         {
-            // If we have a template which if which has PersonEntry enabled then person entry is allowed
+            // If there is a form builder template that has 'Person Entry Settings' enabled, then 'person entry' is allowed
             if ( workflowFormBuilderTemplate != null && workflowFormBuilderTemplate.AllowPersonEntry )
             {
                 return true;
             }
-            // Otherwise the form gets to decide if person entry is enabled.
+            // Otherwise the form gets to decide if 'person entry' is enabled.
             else
             {
                 return this.AllowPersonEntry;
