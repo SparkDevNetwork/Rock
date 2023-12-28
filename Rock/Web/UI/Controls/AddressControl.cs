@@ -290,7 +290,6 @@ namespace Rock.Web.UI.Controls
         private string _LocalityLabel;
         private string _StateLabel;
         private string _PostalCodeLabel;
-        private bool _ShowCountrySelection = false;
 
         #endregion
 
@@ -738,8 +737,6 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
             base.OnInit( e );
 
-            _ShowCountrySelection = GlobalAttributesCache.Get().GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull() ?? false;
-
             BindCountries();
         }
 
@@ -1029,24 +1026,6 @@ namespace Rock.Web.UI.Controls
 
             this.ApplyRequiredFieldConfiguration();
 
-            // Country
-            if ( _ShowCountrySelection )
-            {
-                writer.AddAttribute( "class", "form-row" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.AddAttribute( "class", "form-group col-sm-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _ddlCountry.RenderControl( writer );
-                writer.RenderEndTag();  // div.form-group
-
-                writer.AddAttribute( "class", "form-group col-sm-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.RenderEndTag();  // div.form-group
-
-                writer.RenderEndTag();  // div.row
-            }
-
             // Address Fields
             writer.AddAttribute( "class", "address-control js-addressControl " + this.CssClass );
             writer.AddAttribute( "data-required", this.Required.ToTrueFalse().ToLower() );
@@ -1066,11 +1045,11 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "col-sm-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _ddlCountry.RenderControl( writer );
-                writer.RenderEndTag();  // div.form-group
+                writer.RenderEndTag();
 
                 writer.AddAttribute( "class", "col-sm-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.RenderEndTag();  // div.form-group
+                writer.RenderEndTag();
 
                 writer.RenderEndTag();  // div.form-row
 
