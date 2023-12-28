@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) EventCalendarFieldType
     /// Stored as EventCalendar's Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.EVENT_CALENDAR )]
     public class EventCalendarFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

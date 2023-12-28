@@ -51,6 +51,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of RequirementLevels
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DATA_ENTRY_REQUIREMENT_LEVEL )]
     public class DataEntryRequirementLevelFieldType : EnumFieldType<DataEntryRequirementLevelSpecifier>

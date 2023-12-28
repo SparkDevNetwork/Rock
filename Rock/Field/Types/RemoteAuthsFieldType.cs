@@ -32,6 +32,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a checkbox list of MEF Components of a specific type
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REMOTE_AUTHS )]
     public class RemoteAuthsFieldType : FieldType

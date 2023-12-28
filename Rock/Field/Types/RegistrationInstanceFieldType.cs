@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) registration instance filtered by a selected registration template
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REGISTRATION_INSTANCE )]
     public class RegistrationInstanceFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

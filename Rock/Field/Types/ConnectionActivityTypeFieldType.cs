@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Connection Activity Types.
     /// The selected value is stored as a Guid.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_ACTIVITY_TYPE )]
     public class ConnectionActivityTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
