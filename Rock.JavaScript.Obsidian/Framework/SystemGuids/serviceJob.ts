@@ -124,8 +124,6 @@ export const ServiceJob = {
     DataMigrationsChopBlocksGroup1: "54FACAE5-2175-4FE0-AC9F-5CDA957BCFB5",
     /** The Post Update Data Migration Job to swap the Notes Block */
     DataMigrationsSwapNotesBlock: "8390C1AC-88D6-474A-AC05-8FFBD358F75D",
-    /** The Job to run Post v15.4 to update the AgeBracket values to reflect the new values after spliting the 0 - 12 bracket. */
-    DataMigrations154UpdateAgeBracketValues: "C1234A63-09A6-45C1-96D8-0DE03EC4A7A1",
     /** The Job to get NCOA */
     GetNcoa: "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
     /** Use Rock.SystemGuid.ServiceJob.GIVING_AUTOMATION instead */
