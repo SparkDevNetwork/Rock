@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// Field Type used to display Assessment type check boxes.
     /// Stored as Assessment type's Guid.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian  )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ASSESSMENT_TYPE )]
     public class AssessmentTypesFieldType : SelectFromListFieldType, IEntityReferenceFieldType

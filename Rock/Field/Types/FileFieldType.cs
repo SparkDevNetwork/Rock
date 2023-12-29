@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// Field used to display or upload a new binary file of a specific type
     /// Stored as BinaryFile.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M13.47,9.75a.66.66,0,0,1,.66.66v2A2.63,2.63,0,0,1,11.5,15h-7a2.63,2.63,0,0,1-2.63-2.63v-2a.66.66,0,0,1,1.32,0v2A1.32,1.32,0,0,0,4.5,13.69h7a1.32,1.32,0,0,0,1.31-1.32v-2A.66.66,0,0,1,13.47,9.75ZM7.55,1.18,3.83,4.65a.69.69,0,0,0,0,.95.65.65,0,0,0,.93,0L7.34,3.17V10a.66.66,0,0,0,1.32,0V3.17l2.61,2.46a.65.65,0,0,0,.93,0,.63.63,0,0,0,.18-.45.64.64,0,0,0-.21-.47L8.45,1.2A.63.63,0,0,0,7.55,1.18Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FILE )]

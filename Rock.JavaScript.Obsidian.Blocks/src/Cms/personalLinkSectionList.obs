@@ -7,7 +7,10 @@
           :entityTypeGuid="EntityType.PersonalLinkSection"
           stickyHeader
           liveUpdates
+          :gridSettings="isSharedSection"
+          :showLaunchWorkflow="false"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @gridSettingsClick="onClickGridSetting"
           @selectItem="onSelectItem">
 
         <ReorderColumn v-if="!isSharedSection" :onOrderChanged="onOrderChanged" />
@@ -21,7 +24,6 @@
         <TextColumn name="linkCount"
                     title="Link Count"
                     field="linkCount"
-                    :filter="textValueFilter"
                     visiblePriority="xs" />
 
         <BooleanColumn name="isShared"
@@ -31,27 +33,58 @@
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersonalLinkSectionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinkSectionList/personalLinkSectionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./PersonalLinkSectionList/types.partial";
-    import { reactive, ref } from "vue";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./PersonalLinkSectionList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import { ColumnFilter } from "@Obsidian/Types/Controls/grid";
+    import GridSettingsModal from "./PersonalLinkSectionList/gridSettingsModal.partial.obs";
 
     const config = useConfigurationValues<ListBlockBox<PersonalLinkSectionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
     const isSharedSection = config.options?.isSharedSections;
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        name: preferences.getValue(PreferenceKey.FilterName),
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+    * Watch for changes to the grid settings and update the preferences as needed.
+    */
+    watch(gridSettings, async () => {
+        // Handle the potential null or undefined values for each setting
+        const nameValue = gridSettings.value.name ?? "";
+
+        // Set the preferences with the appropriate values
+        preferences.setValue(PreferenceKey.FilterName, nameValue);
+
+        // Save the preferences
+        await preferences.save();
+
+        // Reload the grid data
+        gridDataSource.value = loadGridData();
+    });
 
     // #endregion
 
@@ -88,6 +121,14 @@
     }
 
     /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onClickGridSetting(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    /**
      * Called when a row's delete button has been clicked by the individual. This
      * happens only if they have confirmed the delete action.
      */
@@ -119,14 +160,14 @@
         }
     }
 
-     /**
-     * Called when a row has been dragged from one position to a new position.
-     *
-     * @param item The item that was moved to a new position.
-     * @param beforeItem The item that the first item was dropped before.
-     *
-     * @returns `true` if the operation succeeded; otherwise `false`.
-     */
+    /**
+    * Called when a row has been dragged from one position to a new position.
+    *
+    * @param item The item that was moved to a new position.
+    * @param beforeItem The item that the first item was dropped before.
+    *
+    * @returns `true` if the operation succeeded; otherwise `false`.
+    */
     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         const result = await invokeBlockAction<string>("ReorderItem", {
             key: item["idKey"],

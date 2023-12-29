@@ -29,6 +29,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of step programs and allow a single selection.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( "33875369-7D2B-4CD7-BB89-ABC29906CCAE" )]
     public class StepProgramFieldType : EntitySingleSelectionListFieldTypeBase<Rock.Model.StepProgram>, IEntityReferenceFieldType

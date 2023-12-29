@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of attributes
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ATTRIBUTE )]
     public class AttributeFieldType : FieldType, ICachedEntitiesFieldType, IEntityFieldType, IEntityReferenceFieldType

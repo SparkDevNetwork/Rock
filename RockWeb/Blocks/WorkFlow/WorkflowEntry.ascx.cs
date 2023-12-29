@@ -171,6 +171,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string WorkflowTypeDeterminedByBlockAttribute = "WorkflowTypeDeterminedByBlockAttribute";
             public const string InteractionStartDateTime = "InteractionStartDateTime";
             public const string SignatureDocumentHtml = "SignatureDocumentHtml";
+            public const string IsCaptchaValid = "IsCaptchaValid";
         }
 
         #region Fields
@@ -259,6 +260,12 @@ namespace RockWeb.Blocks.WorkFlow
             set { ViewState[ViewStateKey.SignatureDocumentHtml] = value; }
         }
 
+        public bool IsCaptchaValid
+        {
+            get { return ViewState[ViewStateKey.IsCaptchaValid] as bool? ?? false; }
+            set { ViewState[ViewStateKey.IsCaptchaValid] = value; }
+        }
+
         #endregion Properties
 
         #region Base Control Methods
@@ -300,7 +307,11 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnLoad( e );
 
-            nbMessage.Visible = false;
+            // If PostBack is triggered by captcha leave message notification as is.
+            if ( this.Page.Request.Params["__EVENTARGUMENT"] != "TokenReceived" )
+            {
+                nbMessage.Visible = false;
+            }
 
             if ( !Page.IsPostBack )
             {
@@ -358,7 +369,7 @@ namespace RockWeb.Blocks.WorkFlow
         public void RaisePostBackEvent( string eventArgument )
         {
             var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
-            if ( !disableCaptchaSupport && !cpCaptcha.IsResponseValid() )
+            if ( !disableCaptchaSupport && cpCaptcha.IsAvailable && !IsCaptchaValid )
             {
                 ShowMessage( NotificationBoxType.Validation, string.Empty, "There was an issue processing your request. Please try again. If the issue persists please contact us." );
                 return;
@@ -398,6 +409,22 @@ namespace RockWeb.Blocks.WorkFlow
             
             SetWorkflowFormAttributeValues();
             CompleteFormAction( eventArgument );
+        }
+
+        /// <summary>
+        /// Event raised after the Captcha control receives a token for a solved Captcha.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void cpCaptcha_TokenReceived( object sender, Captcha.TokenReceivedEventArgs e )
+        {
+            if ( e.IsValid )
+            {
+                cpCaptcha.Visible = false;
+                AddSubmitButtons( _actionType?.WorkflowForm );
+            }
+
+            IsCaptchaValid = e.IsValid;
         }
 
         #endregion Events
@@ -1195,52 +1222,11 @@ namespace RockWeb.Blocks.WorkFlow
                 ShowNotes( false );
             }
 
-            phActions.Controls.Clear();
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
 
-            var buttons = WorkflowActionFormUserAction.FromUriEncodedString( form.Actions );
-
-            foreach ( var button in buttons )
+            if ( disableCaptcha || IsCaptchaValid )
             {
-                // Get the button HTML. If actionParts has a guid at [1],
-                // get the buttonHtml from the DefinedValue with that Guid.
-                // Otherwise, use a default
-                string buttonHtml = string.Empty;
-                DefinedValueCache buttonDefinedValue = null;
-
-                Guid? buttonHtmlDefinedValueGuid = button.ButtonTypeGuid.AsGuidOrNull();
-                if ( buttonHtmlDefinedValueGuid.HasValue )
-                {
-                    buttonDefinedValue = DefinedValueCache.Get( buttonHtmlDefinedValueGuid.Value );
-                }
-
-                if ( buttonDefinedValue != null )
-                {
-                    buttonHtml = buttonDefinedValue.GetAttributeValue( "ButtonHTML" );
-                }
-
-                if ( buttonHtml.IsNullOrWhiteSpace() )
-                {
-                    buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
-                }
-
-                var buttonMergeFields = new Dictionary<string, object>();
-                var buttonText = button.ActionName.EncodeHtml();
-                buttonMergeFields.Add( "ButtonText", buttonText );
-
-                string buttonClickScript = string.Format(
-                    "handleWorkflowActionButtonClick('{0}', {1});",
-                    BlockValidationGroup,
-                    button.CausesValidation.ToJavaScriptValue() );
-
-                buttonMergeFields.Add( "ButtonClick", buttonClickScript );
-
-                var buttonLinkScript = Page.ClientScript.GetPostBackClientHyperlink( this, button.ActionName );
-                buttonMergeFields.Add( "ButtonLink", buttonLinkScript );
-
-                buttonHtml = buttonHtml.ResolveMergeFields( buttonMergeFields );
-
-                phActions.Controls.Add( new LiteralControl( buttonHtml ) );
-                phActions.Controls.Add( new LiteralControl( " " ) );
+                AddSubmitButtons( form );
             }
         }
 
@@ -2424,7 +2410,12 @@ namespace RockWeb.Blocks.WorkFlow
             if ( formNotificationEmailDestination == FormNotificationEmailDestination.EmailAddress
                 && notificationEmailSettings.EmailAddress.IsNotNullOrWhiteSpace() )
             {
-                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( notificationEmailSettings.EmailAddress, workflowMergeFields ) );
+                string[] recipientEmailAddresses = notificationEmailSettings.EmailAddress.Replace( ";", "," ).Split( ',' );
+
+                foreach ( var eachRcipient in recipientEmailAddresses )
+                {
+                    recipients.Add( RockEmailMessageRecipient.CreateAnonymous( eachRcipient, workflowMergeFields ) );
+                }
             }
             else if ( formNotificationEmailDestination == FormNotificationEmailDestination.SpecificIndividual
                 && notificationEmailSettings.RecipientAliasId.HasValue )
@@ -2598,6 +2589,66 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     RockPage.PageIcon = blockTitleIconCssClass;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Adds the Submit button to the WorkflowEntry form
+        /// </summary>
+        /// <param name="form"></param>
+        private void AddSubmitButtons( WorkflowActionFormCache form )
+        {
+            if ( form == null )
+            {
+                return;
+            }
+
+            phActions.Controls.Clear();
+
+            var buttons = WorkflowActionFormUserAction.FromUriEncodedString( form.Actions );
+
+            foreach ( var button in buttons )
+            {
+                // Get the button HTML. If actionParts has a guid at [1],
+                // get the buttonHtml from the DefinedValue with that Guid.
+                // Otherwise, use a default
+                string buttonHtml = string.Empty;
+                DefinedValueCache buttonDefinedValue = null;
+
+                Guid? buttonHtmlDefinedValueGuid = button.ButtonTypeGuid.AsGuidOrNull();
+                if ( buttonHtmlDefinedValueGuid.HasValue )
+                {
+                    buttonDefinedValue = DefinedValueCache.Get( buttonHtmlDefinedValueGuid.Value );
+                }
+
+                if ( buttonDefinedValue != null )
+                {
+                    buttonHtml = buttonDefinedValue.GetAttributeValue( "ButtonHTML" );
+                }
+
+                if ( buttonHtml.IsNullOrWhiteSpace() )
+                {
+                    buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
+                }
+
+                var buttonMergeFields = new Dictionary<string, object>();
+                var buttonText = button.ActionName.EncodeHtml();
+                buttonMergeFields.Add( "ButtonText", buttonText );
+
+                string buttonClickScript = string.Format(
+                    "handleWorkflowActionButtonClick('{0}', {1});",
+                    BlockValidationGroup,
+                    button.CausesValidation.ToJavaScriptValue() );
+
+                buttonMergeFields.Add( "ButtonClick", buttonClickScript );
+
+                var buttonLinkScript = Page.ClientScript.GetPostBackClientHyperlink( this, button.ActionName );
+                buttonMergeFields.Add( "ButtonLink", buttonLinkScript );
+
+                buttonHtml = buttonHtml.ResolveMergeFields( buttonMergeFields );
+
+                phActions.Controls.Add( new LiteralControl( buttonHtml ) );
+                phActions.Controls.Add( new LiteralControl( " " ) );
             }
         }
 

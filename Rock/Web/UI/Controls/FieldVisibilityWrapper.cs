@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Field;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -269,7 +270,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public static void ApplyFieldVisibilityRules( Control parentControl )
         {
-            var fieldVisibilityWrappers = parentControl.ControlsOfTypeRecursive<FieldVisibilityWrapper>().ToDictionary( k => k.FormFieldId, v => v );
+            var fieldVisibilityWrappers = parentControl.ControlsOfTypeRecursive<FieldVisibilityWrapper>()
+                .Where( f => !string.IsNullOrEmpty( f.EditValue ) ) // Skip the controls if the edit control is not present. Fixes Issue #5602.
+                .ToDictionary( k => k.FormFieldId, v => v );
             var attributeValues = new Dictionary<int, AttributeValueCache>();
             var personFieldValues = new Dictionary<RegistrationPersonFieldType, string>();
 

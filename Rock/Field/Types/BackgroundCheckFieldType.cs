@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// Field used to display or upload a new binary file of a specific type.
     /// Stored as BinaryFile.Guid.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BACKGROUNDCHECK )]
     public class BackgroundCheckFieldType : BinaryFileFieldType, IEntityReferenceFieldType

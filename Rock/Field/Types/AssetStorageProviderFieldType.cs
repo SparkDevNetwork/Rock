@@ -38,6 +38,7 @@ namespace Rock.Field.Types
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
     /// <seealso cref="Rock.Field.IEntityFieldType" />
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( "1596F562-E8D0-4C5F-9A00-23B5594F17E2" )]
     public class AssetStorageProviderFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

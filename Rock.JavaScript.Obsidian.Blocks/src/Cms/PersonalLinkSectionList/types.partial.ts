@@ -18,3 +18,11 @@
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
+
+export type GridSettingsOptions = {
+    name?: string | null;
+};
+
+export const enum PreferenceKey {
+    FilterName = "Name"
+}
