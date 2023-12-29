@@ -23,12 +23,13 @@ export type ComparisonItem = {
     text: string
 };
 
-export type ValueFilterFilterItem = {
+export type ComparisonFilterExpression = {
     value: string,
+    value2?: string | null,
     comparison: ComparisonType
 };
 
-export type ValueFilterBag = {
+export type CompoundFilterExpression = {
     expressionType: FilterExpressionType,
-    filters: ValueFilterFilterItem[]
+    filters: ComparisonFilterExpression[]
 };

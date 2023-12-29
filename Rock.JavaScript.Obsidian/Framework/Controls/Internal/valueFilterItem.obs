@@ -1,13 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="input-group margin-b-sm">
+    <div class="input-group mb-2">
         <input type="text" class="form-control" v-model="internalValue.value">
         <span class="input-group-btn" :class="{ open: isDropDownOpen }" ref="dropdownElement">
             <button type="button" class="btn btn-default dropdown-toggle filter-dropdown-toggle" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen">
                 <span>{{ selectedText }}</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-right">
-                <li v-for="item of items" :key="item.value ?? 0" @click.stop="selectComparisonType(item.value)" role="button">
+                <li v-for="item of comparisonTypes" :key="item.value ?? 0" @click.stop="selectComparisonType(item.value)" role="button">
                     <a href="#" @click.prevent>{{ item.text }}</a>
                 </li>
             </ul>
@@ -21,19 +21,20 @@
 <script setup lang="ts">
     import { PropType, computed, ref, watch } from "vue";
     import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
-    import { ComparisonItem, ValueFilterFilterItem } from "@Obsidian/ViewModels/Controls/valueFilter.d";
+    import { ComparisonItem, ComparisonFilterExpression } from "@Obsidian/ViewModels/Controls/valueFilter.d";
+    import { updateRefValue } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         /** The v-model value this control */
         modelValue: {
-            type: Object as PropType<ValueFilterFilterItem>,
+            type: Object as PropType<ComparisonFilterExpression>,
             required: true
         },
 
         /** The items that will be listed in the dropdown menu. */
-        items: {
+        comparisonTypes: {
             type: Array as PropType<ComparisonItem[]>,
-            default: [
+            default: () => [
                 { value: 1, text: "Equal To" },
                 { value: 2, text: "Not Equal To" },
                 { value: 4, text: "Starts With" },
@@ -62,7 +63,7 @@
     // #region Computed Values
 
     const itemsMap = computed(() => {
-        return props.items.reduce((map, item) => {
+        return props.comparisonTypes.reduce((map, item) => {
             map[item.value ?? ""] = item.text ?? "";
             return map;
         }, {} as Record<string, string>);
@@ -120,7 +121,7 @@
     }, { deep: true });
 
     watch(() => props.modelValue, () => {
-        internalValue.value = JSON.parse(JSON.stringify(internalValue.value));
+        updateRefValue(internalValue, JSON.parse(JSON.stringify(props.modelValue)));
     });
 
     // #endregion
@@ -133,7 +134,7 @@
         }
         else {
             // Backup is to use the first item in the list
-            internalValue.value.comparison = props.items[0].value;
+            internalValue.value.comparison = props.comparisonTypes[0].value;
         }
     }
 </script>
