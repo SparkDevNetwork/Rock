@@ -818,7 +818,7 @@ namespace Rock.Logging
 
         private void LoadConfiguration( IRockLogConfiguration rockLogConfiguration )
         {
-            _domains = new HashSet<string>( LogConfiguration.DomainsToLog.Select( s => s.ToUpper() ).Distinct() );
+            _domains = new HashSet<string>( ( LogConfiguration.DomainsToLog ?? new List<string>() ).Select( s => s.ToUpper() ).Distinct() );
             _logger = new LoggerConfiguration()
                  .MinimumLevel
                  .Verbose()
