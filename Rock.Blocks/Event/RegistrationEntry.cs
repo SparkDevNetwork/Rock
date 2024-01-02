@@ -3528,12 +3528,17 @@ namespace Rock.Blocks.Event
 
             transaction.Summary = context.Registration.GetSummary();
 
-            var transactionDetail = transaction.TransactionDetails?.FirstOrDefault() ?? new FinancialTransactionDetail();
+            var transactionDetail = transaction.TransactionDetails.FirstOrDefault();
+            if ( transactionDetail == null )
+            {
+                transactionDetail = new FinancialTransactionDetail();
+                transaction.TransactionDetails.Add( transactionDetail );
+            }
+
             transactionDetail.Amount = amount;
             transactionDetail.AccountId = context.RegistrationSettings.FinancialAccountId ?? transactionDetail.AccountId;
             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
             transactionDetail.EntityId = context.Registration.Id;
-            transaction.TransactionDetails.Add( transactionDetail );
 
             var batchChanges = new History.HistoryChangeList();
 
