@@ -4106,8 +4106,25 @@ namespace Rock.Blocks.Event
         {
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
+            var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
 
-            return registrationService.GetRegistrationContext( registrationInstanceId, PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull(), out errorMessage );
+            // If the URL does not have a registrationId then check if there
+            // is a registration session. Some redirect gateways drop the
+            // RegistrationId parameter from the return URL. So we'll try
+            // to get it from the session if we have one.
+            if ( !registrationId.HasValue )
+            {
+                var sessionGuid = GetRegistrationSessionPageParameter( null );
+
+                if ( sessionGuid.HasValue )
+                {
+                    var session = new RegistrationSessionService( rockContext ).Get( sessionGuid.Value );
+
+                    registrationId = session?.RegistrationId;
+                }
+            }
+
+            return registrationService.GetRegistrationContext( registrationInstanceId, registrationId, out errorMessage );
         }
 
         /// <summary>
