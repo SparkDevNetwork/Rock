@@ -2767,6 +2767,7 @@ namespace Rock.Blocks.Event
                     AmountToPayNow = session.AmountToPayNow,
                     DiscountCode = session.DiscountCode,
                     FieldValues = session.FieldValues,
+                    IsCaptchaValid = true,
                     Registrants = session.Registrants,
                     Registrar = session.Registrar,
                     RegistrationGuid = session.RegistrationGuid, // See engineering note from 9/7/2022 above.
