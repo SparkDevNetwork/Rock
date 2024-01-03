@@ -186,13 +186,6 @@
                         self.createSearchControl();
                         self.showActiveMenu();
                         self.scrollToSelectedItem();
-
-                        if ($hfItemIds && $hfItemIds.val().length > 0) {
-                            var itemIds = $hfItemIds.val().split(',');
-
-                            rockTree.setSelected(itemIds);
-                        }
-
                         self.togglePickerElements();
 
                         if (self.getViewMode() === 'selecting') {
@@ -210,6 +203,9 @@
                     })
                     .on('rockTree:fetchCompleted', function (evt, data) {
                         // intentionally empty
+                    })
+                    .on('rockTree:childrenSelected', function (evt, data) {
+                        self.setViewMode('clear');
                     });
 
                 $control.find('.picker-label').on('click', function (e) {

@@ -798,6 +798,8 @@
                     // Reset the list of selected nodes
                     self.selectedNodes = newSelectedNodes;
 
+                    self.$el.trigger('rockTree:childrenSelected');
+
                     // Rerender the tree
                     self.render();
                 });
