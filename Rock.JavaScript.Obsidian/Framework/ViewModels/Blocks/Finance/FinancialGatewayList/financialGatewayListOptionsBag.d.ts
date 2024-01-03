@@ -23,6 +23,9 @@
 
 /** The additional configuration options for the Financial Gateway List block. */
 export type FinancialGatewayListOptionsBag = {
+    /** Gets or sets a value indicating whether the workflow launcher button should be displayed. */
+    enableWorkflowLauncher: boolean;
+
     /** Gets or sets a value indicating whether the inactive gateway notification should be displayed. */
     isInactiveGatewayNotificationVisible: boolean;
 };
