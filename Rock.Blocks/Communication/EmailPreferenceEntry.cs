@@ -153,8 +153,8 @@ namespace Rock.Blocks.Communication
 
     #endregion Block Attributes
 
-    [Rock.SystemGuid.EntityTypeGuid( "28265232-b692-4099-9533-4d7646bda2c1" )]
-    [Rock.SystemGuid.BlockTypeGuid( "476fba19-005c-4ff4-996b-ca1b165e5bc8" )]
+    [Rock.SystemGuid.EntityTypeGuid( "28265232-B692-4099-9533-4D7646BDA2C1" )]
+    [Rock.SystemGuid.BlockTypeGuid( "476FBA19-005C-4FF4-996B-CA1B165E5BC8" )]
     public class EmailPreferenceEntry : RockBlockType
     {
         #region Keys

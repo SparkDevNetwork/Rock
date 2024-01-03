@@ -203,6 +203,7 @@ namespace RockWeb.Blocks.Communication
 
         private bool _fullMode = true;
         private bool _editingApproved = false;
+        private bool _isBulkCommunicationForced = false;
 
         #endregion
 
@@ -432,7 +433,7 @@ namespace RockWeb.Blocks.Communication
             string mode = GetAttributeValue( AttributeKey.Mode );
             _fullMode = string.IsNullOrWhiteSpace( mode ) || mode != "Simple";
             ppAddPerson.Visible = _fullMode;
-            ShowOrHideIsBulkOption();
+            ShowHideIsBulkOption();
             
             ddlTemplate.Visible = _fullMode;
             dtpFutureSend.Visible = _fullMode;
@@ -457,7 +458,7 @@ namespace RockWeb.Blocks.Communication
             if ( isBulkViewStateDependencies.Contains( e.PropertyName ) )
             {
                 // If one of the "Is Bulk" dependencies change, then show or hide the bulk option.
-                ShowOrHideIsBulkOption();
+                ShowHideIsBulkOption();
             }
         }
 
@@ -1044,7 +1045,7 @@ namespace RockWeb.Blocks.Communication
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
                 communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
+                communication.IsBulkCommunication = _isBulkCommunicationForced || GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
 
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
                 if ( GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() )
@@ -1055,7 +1056,7 @@ namespace RockWeb.Blocks.Communication
 
                     if ( personId.HasValue )
                     {
-                        communication.IsBulkCommunication = false;
+                        communication.IsBulkCommunication = _isBulkCommunicationForced;
                         var context = new RockContext();
                         var person = new PersonService( context ).Get( personId.Value );
                         if ( person != null )
@@ -1114,7 +1115,7 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            cbBulk.Checked = communication.IsBulkCommunication;
+            cbBulk.Checked = _isBulkCommunicationForced || communication.IsBulkCommunication;
 
             if ( !_fullMode )
             {
@@ -1404,7 +1405,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Shows or hides the bulk option.
         /// </summary>
-        private void ShowOrHideIsBulkOption()
+        private void ShowHideIsBulkOption()
         {
             if ( MediumEntityTypeId.HasValue
                  && MediumContainer.GetComponentByEntityTypeId( MediumEntityTypeId ) is Rock.Communication.Medium.Email emailMediumComponent
@@ -1413,10 +1414,16 @@ namespace RockWeb.Blocks.Communication
                 // Override to unchecked when bulk communication is prevented.
                 cbBulk.Checked = false;
                 cbBulk.Visible = false;
+
+                // Force bulk communication since the recipient count has exceeded the threshold.
+                _isBulkCommunicationForced = true;
             }
             else
             {
                 cbBulk.Visible = _fullMode;
+                
+                // Do not force bulk communication since the recipient count has not exceeded the threshold.
+                _isBulkCommunicationForced = false;
             }
         }
 
@@ -1616,7 +1623,7 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            communication.IsBulkCommunication = cbBulk.Checked;
+            communication.IsBulkCommunication = _isBulkCommunicationForced || cbBulk.Checked;
             var medium = MediumContainer.GetComponentByEntityTypeId( MediumEntityTypeId );
             if ( medium != null )
             {
