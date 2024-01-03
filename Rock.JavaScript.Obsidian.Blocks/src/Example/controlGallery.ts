@@ -257,6 +257,7 @@ import RadioButtonGallery from "./ControlGallery/radioButtonGallery.partial.obs"
 import BulletedListGallery from "./ControlGallery/bulletedListGallery.partial.obs";
 import TermDescriptionGallery from "./ControlGallery/termDescriptionGallery.partial.obs";
 import ValueFilterGallery from "./ControlGallery/valueFilterGallery.partial.obs";
+import SecurityButtonGallery from "./ControlGallery/securityButtonGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -8103,6 +8104,7 @@ const controlGalleryComponents: Record<string, Component> = [
     BulletedListGallery,
     TermDescriptionGallery,
     ValueFilterGallery,
+    SecurityButtonGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
