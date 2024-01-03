@@ -299,6 +299,9 @@
     <Folder Include="Framework\ViewModels\Blocks\" />
     <Folder Include="Framework\ViewModels\Blocks\Bus\" />
     <Folder Include="Framework\ViewModels\Blocks\Bus\QueueDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\CheckIn\" />
+    <Folder Include="Framework\ViewModels\Blocks\CheckIn\Config\" />
+    <Folder Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageDetail\" />
@@ -756,6 +759,15 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkInAdvancedSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkInBarcodeSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkInDisplaySettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkInGeneralSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkInHeaderTextBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkInRegistrationSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkInSearchSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkinTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkinTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\adaptiveMessageAdaptationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\adaptiveMessageAdaptationDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageDetail\adaptiveMessageBag.d.ts" />
