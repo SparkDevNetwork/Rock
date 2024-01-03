@@ -197,6 +197,8 @@ namespace RockWeb.Blocks.Communication
         private bool _smsTransportEnabled = false;
         private bool _emailTransportEnabled = false;
         private bool _pushTransportEnabled = false;
+        private bool _isBulkCommunicationForced = false;
+
         #endregion
 
         #region Events
@@ -279,17 +281,15 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
-        private int _recipientCount;
         private int RecipientCount
         {
             get
             {
-                return _recipientCount;
+                return (ViewState[nameof(RecipientCount)] as int?) ?? 0;
             }
             set
             {
-                _recipientCount = value;
-                RaisePropertyChanged();
+                SetViewState( value );
             }
         }
 
@@ -447,6 +447,7 @@ function onTaskCompleted( resultData )
             // register navigation event to enable support for the back button
             var scriptManager = ScriptManager.GetCurrent( Page );
             scriptManager.Navigate += scriptManager_Navigate;
+            ShowHideIsBulkOption();
 
             if ( !Page.IsPostBack )
             {
@@ -545,12 +546,16 @@ function onTaskCompleted( resultData )
 
             if ( communication == null )
             {
-                communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
-                communication.CreatedByPersonAlias = this.CurrentPersonAlias;
-                communication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
-                communication.SenderPersonAlias = this.CurrentPersonAlias;
-                communication.SenderPersonAliasId = CurrentPersonAliasId;
-                communication.CommunicationType = CommunicationType.Email;
+                communication = new Rock.Model.Communication
+                {
+                    Status = CommunicationStatus.Transient,
+                    CreatedByPersonAlias = this.CurrentPersonAlias,
+                    CreatedByPersonAliasId = this.CurrentPersonAliasId,
+                    SenderPersonAlias = this.CurrentPersonAlias,
+                    SenderPersonAliasId = CurrentPersonAliasId,
+                    CommunicationType = CommunicationType.Email,
+                    IsBulkCommunication = _isBulkCommunicationForced
+                };
             }
             else
             {
@@ -584,7 +589,7 @@ function onTaskCompleted( resultData )
             if ( communication.Status == CommunicationStatus.Transient )
             {
                 communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
+                communication.IsBulkCommunication = _isBulkCommunicationForced || GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
             }
 
             var allowedCommunicationTypes = GetAllowedCommunicationTypes();
@@ -626,7 +631,7 @@ function onTaskCompleted( resultData )
             lTitle.Text = ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
             cbDuplicatePreventionOption.Visible = this.GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
             tbCommunicationName.Text = communication.Name;
-            swBulkCommunication.Checked = communication.IsBulkCommunication;
+            swBulkCommunication.Checked = _isBulkCommunicationForced || communication.IsBulkCommunication;
 
             var segmentDataviewGuids = communication.Segments.SplitDelimitedValues().AsGuidList();
             if ( segmentDataviewGuids.Any() )
@@ -656,7 +661,7 @@ function onTaskCompleted( resultData )
 
             if ( personId.HasValue && !communication.ListGroupId.HasValue )
             {
-                communication.IsBulkCommunication = false;
+                communication.IsBulkCommunication = _isBulkCommunicationForced;
                 var context = new RockContext();
                 var person = new PersonService( context ).Get( personId.Value );
                 if ( person != null )
@@ -2599,10 +2604,16 @@ function onTaskCompleted( resultData )
                 // Override to unchecked when bulk communication is prevented.
                 swBulkCommunication.Checked = false;
                 swBulkCommunication.Visible = false;
+
+                // Force bulk communication since the recipient count has exceeded the threshold.
+                _isBulkCommunicationForced = true;
             }
             else
             {
                 swBulkCommunication.Visible = true;
+
+                // Do not force bulk communication since the recipient count has not exceeded the threshold.
+                _isBulkCommunicationForced = false;
             }
         }
 
@@ -3524,7 +3535,7 @@ function onTaskCompleted( resultData )
             settings.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
 
             settings.CommunicationName = tbCommunicationName.Text;
-            settings.IsBulkCommunication = swBulkCommunication.Checked;
+            settings.IsBulkCommunication = _isBulkCommunicationForced || swBulkCommunication.Checked;
             settings.MediumType = SelectedCommunicationType;
 
             if ( IndividualRecipientPersonIds.Count == 0 )
@@ -3862,9 +3873,11 @@ function onTaskCompleted( resultData )
 
                 if ( communication == null )
                 {
-                    communication = new Rock.Model.Communication();
-                    communication.Status = CommunicationStatus.Transient;
-                    communication.SenderPersonAliasId = settings.SenderPersonAliasId;
+                    communication = new Rock.Model.Communication
+                    {
+                        Status = CommunicationStatus.Transient,
+                        SenderPersonAliasId = settings.SenderPersonAliasId,
+                    };
                     communicationService.Add( communication );
                 }
 
@@ -4160,25 +4173,25 @@ function onTaskCompleted( resultData )
             /// </summary>
             public class CommunicationProperties
             {
-                public int? CommunicationId;
-                public int? SenderPersonAliasId;
-                public string EnabledLavaCommands;
-                public string CommunicationName;
-                public bool IsBulkCommunication;
-                public CommunicationType MediumType;
+                public int? CommunicationId { get; set; }
+                public int? SenderPersonAliasId { get; set; }
+                public string EnabledLavaCommands { get; set; }
+                public string CommunicationName { get; set; }
+                public bool IsBulkCommunication { get; set; }
+                public CommunicationType MediumType { get; set; }
 
-                public int? CommunicationListGroupId;
-                public bool ExcludeDuplicateRecipientAddress;
-                public List<int> CommunicationGroupSegmentDataViewIds;
+                public int? CommunicationListGroupId { get; set; }
+                public bool ExcludeDuplicateRecipientAddress { get; set; }
+                public List<int> CommunicationGroupSegmentDataViewIds { get; set; }
 
-                public SegmentCriteria CommunicationGroupSegmentFilterType;
-                public int? CommunicationTemplateId;
-                public List<int> EmailBinaryFileIds;
-                public List<int> SmsBinaryFileIds;
+                public SegmentCriteria CommunicationGroupSegmentFilterType { get; set; }
+                public int? CommunicationTemplateId { get; set; }
+                public List<int> EmailBinaryFileIds { get; set; }
+                public List<int> SmsBinaryFileIds { get; set; }
 
-                public DateTime? FutureSendDateTime;
+                public DateTime? FutureSendDateTime { get; set; }
 
-                public CommunicationDetails Details = new CommunicationDetails();
+                public CommunicationDetails Details { get; set; } = new CommunicationDetails();
             }
 
             #endregion
