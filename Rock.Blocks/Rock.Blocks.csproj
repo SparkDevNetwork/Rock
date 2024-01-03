@@ -67,6 +67,7 @@
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
     <Compile Include="Cms\BlockTypeList.cs" />
+    <Compile Include="Cms\ContentChannelDetail.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
