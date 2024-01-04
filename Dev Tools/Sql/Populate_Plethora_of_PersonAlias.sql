@@ -7,19 +7,19 @@
        of this table in real-world scenarios.
     2. The last PersonAlias record added for a given Person will become the primary PersonAlias for that Person.
         2a. This process will set all other [PersonAlias].[AliasPersonId] & [PersonAlias].[AliasPersonGuid] values
-            for this Person to NULL, to ensure we exercise portions of the code intended to be tested by adding
-            all of these excessive PersonAlias records.
+            for this Person to arbitrary values representing Person records that no longer exists, to ensure we
+            exercise portions of the code intended to be tested by adding all of these excessive PersonAlias records.
 
 NOTE: This might take a while to run. Check the [Messages] tab for progress.
 
 *********************************************************************************************************************/
 
-DECLARE @EveryNPeopleQualifier [int] = 100; -- Every 10 people will get new PersonAlias records.
+DECLARE @EveryNPeopleQualifier [int] = 10; -- Every 10 people will get new PersonAlias records.
 -- OR --
 DECLARE @SpecificPersonId [int] = 0; -- A specific Person can be targeted.
 
 -- THIS ALWAYS APPLIES:
-DECLARE @NewAliasPerPersonCount [int] = 100; -- Each Person will get 100 new PersonAlias records.
+DECLARE @NewAliasPerPersonCount [int] = 100000; -- Each Person will get 100,000 new PersonAlias records.
 
 /***************************
  DON'T EDIT ANYTHING BELOW.
@@ -94,8 +94,8 @@ BEGIN
 
             -- Make all PersonAlias records for this Person non-primary.
             UPDATE [PersonAlias]
-            SET [AliasPersonId] = NULL  
-                , [AliasPersonGuid] = NULL
+            SET [AliasPersonId] = -[Id] -- Set this to an arbitrary value to represent a Person record that no longer exists.
+                , [AliasPersonGuid] = NEWID() -- Set this to an arbitrary value to represent a Person record that no longer exists.
             WHERE [PersonId] = @PersonId;
 
             -- Set this latest PersonAlias record to be primary.
@@ -125,3 +125,34 @@ BEGIN
 END
 
 SET NOCOUNT OFF;
+
+-- Select People who had PersonAlias records added, for reference.
+DECLARE @PersonAliasCounts TABLE
+(
+    [PersonId] [int] NOT NULL
+    , [PersonAliasCount] [int] NOT NULL
+);
+
+INSERT INTO @PersonAliasCounts
+SELECT p.[Id]
+    , COUNT(DISTINCT(pa.[Id]))
+FROM [PersonAlias] pa
+INNER JOIN [Person] p
+    ON p.[Id] = pa.[PersonId]
+INNER JOIN @PersonIds pids
+    ON pids.[PersonId] = p.[Id]
+GROUP BY p.[Id];
+
+SELECT p.[Id] AS [PersonId]
+    , p.[Guid] AS [PersonGuid]
+    , CONCAT(p.[NickName], ' ', p.[LastName]) AS [PersonName]
+    , FORMAT(pac.[PersonAliasCount], 'N0') AS [PersonAliasCount]
+    , pa.[Id] AS [PrimaryAliasId]
+    , pa.[Guid] AS [PrimaryAliasGuid]
+FROM @PersonAliasCounts pac
+INNER JOIN [Person] p
+    ON p.[Id] = pac.[PersonId]
+LEFT OUTER JOIN [PersonAlias] pa
+    ON pa.[PersonId] = pac.[PersonId] AND pa.[AliasPersonId] = pac.[PersonId]
+ORDER BY pac.[PersonAliasCount] DESC
+    , p.[Id];
