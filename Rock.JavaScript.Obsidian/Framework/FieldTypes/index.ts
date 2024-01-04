@@ -401,6 +401,9 @@ registerFieldType(FieldTypeGuids.TimeZone, new TimeZoneFieldType());
 import { UrlLinkFieldType } from "./urlLinkField.partial";
 registerFieldType(FieldTypeGuids.UrlLink, new UrlLinkFieldType());
 
+import { ValueFilterFieldType } from "./valueFilterField.partial";
+registerFieldType(FieldTypeGuids.ValueFilter, new ValueFilterFieldType());
+
 import { ValueListFieldType } from "./valueListField.partial";
 registerFieldType(FieldTypeGuids.ValueList, new ValueListFieldType());
 
