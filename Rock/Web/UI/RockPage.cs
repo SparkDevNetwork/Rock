@@ -775,7 +775,9 @@ namespace Rock.Web.UI
 
             var stopwatchInitEvents = Stopwatch.StartNew();
 
+#pragma warning disable 618
             ConvertLegacyContextCookiesToJSON();
+#pragma warning restore 618
 
             RequestContext = new RockRequestContext( Request, new RockResponseContext( this ), CurrentUser );
 

@@ -156,7 +156,6 @@ namespace Rock.Model
         /// Gets all related (ancestor, sibling and descendant) check-in areas for the provided check-in area,
         /// based on its ancestor check-in configuration.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="checkInArea">The check-in area for which to get related check-in areas.</param>
         /// <returns>All related (ancestor, sibling and descendant) check-in areas for the provided check-in area.</returns>
         /// <remarks>

@@ -79,6 +79,8 @@ export const ServiceJob = {
     DataMigrations152IxValueAsPersonId: "5DC19FB3-AB0B-48F3-817D-9023C65C5F8A",
     /** The Job to run Post v15.2 to replace web forms blocks with Obsidian blocks. */
     DataMigrations152ReplaceWebFormsBlocksWithObsidianBlocks: "4232194C-90AE-4B44-93E7-1E5DE984A9E1",
+    /** The Job to run Post v15.4 to update the AgeBracket values to reflect the new values after spliting the 0 - 12 bracket. */
+    DataMigrations154UpdateAgeBracketValues: "C1234A63-09A6-45C1-96D8-0DE03EC4A7A1",
     /** The post update data migration job to chop the Group Registration block */
     DataMigrations160ChopBlocksGroupRegistration: "72D9EC04-517A-4CA0-B631-9F9A41F1790D",
     /** The Job to run Post v16.0 Move Person Preferences. */
@@ -111,6 +113,8 @@ export const ServiceJob = {
     DataMigrations161SwapBlockGroupScheduleToolboxV1: "22DBD648-79C0-40C7-B561-094E4E7637E5",
     /** The Job to run Post v16.1 Data Migrations to swap Financial Batch List web forms block with obsidian block. */
     DataMigrations161SwapFinancialBatchList: "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE",
+    /** The post update data migration job to chop the Email Preference Entry block. */
+    DataMigrations162ChopEmailPreferenceEntry: "AE07C80A-80A4-48FD-908C-56DDB1CAA322",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail
@@ -118,8 +122,6 @@ export const ServiceJob = {
     DataMigrationsChopBlocksGroup1: "54FACAE5-2175-4FE0-AC9F-5CDA957BCFB5",
     /** The Post Update Data Migration Job to swap the Notes Block */
     DataMigrationsSwapNotesBlock: "8390C1AC-88D6-474A-AC05-8FFBD358F75D",
-    /** The Job to run Post v15.4 to update the AgeBracket values to reflect the new values after spliting the 0 - 12 bracket. */
-    DataMigrations154UpdateAgeBracketValues: "C1234A63-09A6-45C1-96D8-0DE03EC4A7A1",
     /** The Job to get NCOA */
     GetNcoa: "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
     /** Use Rock.SystemGuid.ServiceJob.GIVING_AUTOMATION instead */
