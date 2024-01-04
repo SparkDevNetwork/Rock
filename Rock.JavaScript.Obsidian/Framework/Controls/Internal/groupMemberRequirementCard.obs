@@ -19,7 +19,7 @@
                     <li v-if="!isMet && warningWorkflowControl.enabled">
                         <a tabindex="0" role="button" @click.prevent="runWarningWorkflow"><i :class="warningWorkflowControl.isLoading ? 'fa fa-spinner fa-spin' : warningWorkflowControl.icon"></i> {{ warningWorkflowControl.label }}</a>
                     </li>
-                    <li v-if="!isMet && overrideRequirementControl.enabled">
+                    <li v-if="!isMet && overrideRequirementControl.enabled && !isOverridden">
                         <a tabindex="0" role="button" @click.prevent="overrideMarkMet"><i :class="overrideRequirementControl.isLoading ? 'fa fa-spinner fa-spin' : overrideRequirementControl.icon"></i> {{ overrideRequirementControl.label }}</a>
                     </li>
                 </ul>
@@ -93,7 +93,7 @@
     });
 
     const emit = defineEmits<{
-        (event: "status-changed"): void
+        (event: "statusChanged"): void
     }>();
 
     const http = useHttp();
@@ -112,7 +112,7 @@
 
     const meetsGroupRequirement = ref(props.meetsGroupRequirement);
 
-    const isMet = computed(() => meetsGroupRequirement.value == MeetsGroupRequirement.Meets);
+    const isMet = computed(() => meetsGroupRequirement.value === MeetsGroupRequirement.Meets);
     const areActionsShown = computed(() => {
         return !props.isInteractionDisabled
             && (manualRequirementControl.value.enabled
@@ -178,7 +178,7 @@
             const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardMarkMetManually", undefined, options);
 
             if (result.isSuccess) {
-                emit("status-changed");
+                emit("statusChanged");
             }
         }
         finally {
@@ -197,10 +197,10 @@
                     groupRequirementGuid: props.groupRequirementGuid,
                     groupMemberGuid: props.groupMemberGuid
                 };
-                const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardMarkMetManually", undefined, options);
+                const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardOverrideMarkMet", undefined, options);
 
                 if (result.isSuccess) {
-                    emit("status-changed");
+                    emit("statusChanged");
                 }
             }
             finally {

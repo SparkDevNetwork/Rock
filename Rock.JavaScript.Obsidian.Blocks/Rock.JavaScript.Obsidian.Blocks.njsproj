@@ -35,10 +35,16 @@
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
     <Content Include="src\Bus\queueDetail.vue" />
+    <Content Include="src\CheckIn\Config\checkinTypeDetail.obs" />
+    <Content Include="src\CheckIn\Config\CheckinTypeDetail\editPanel.partial.obs" />
+    <Content Include="src\CheckIn\Config\CheckinTypeDetail\viewPanel.partial.obs" />
     <Content Include="src\Cms\adaptiveMessageAdaptationDetail.obs" />
     <Content Include="src\Cms\AdaptiveMessageAdaptationDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\AdaptiveMessageAdaptationDetail\viewPanel.partial.obs" />
     <Content Include="src\Cms\adaptiveMessageList.obs" />
+    <Content Include="src\Cms\contentChannelDetail.obs" />
+    <Content Include="src\Cms\ContentChannelDetail\editPanel.partial.obs" />
+    <Content Include="src\Cms\ContentChannelDetail\viewPanel.partial.obs" />
     <Content Include="src\Cms\lavaShortcodeDetail.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\viewPanel.partial.obs" />
@@ -310,11 +316,15 @@
     <Folder Include="build\" />
     <Folder Include="src\" />
     <Folder Include="src\Bus\QueueDetail\" />
+    <Folder Include="src\CheckIn\" />
+    <Folder Include="src\CheckIn\Config\" />
+    <Folder Include="src\CheckIn\Config\CheckinTypeDetail\" />
     <Folder Include="src\Cms\" />
     <Folder Include="src\Cms\AdaptiveMessageAdaptationDetail\" />
     <Folder Include="src\Cms\AdaptiveMessageDetail\" />
     <Folder Include="src\Cms\AdaptiveMessageList\" />
     <Folder Include="src\Cms\BlockTypeDetail\" />
+    <Folder Include="src\Cms\ContentChannelDetail\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
     <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\LavaShortcodeDetail\" />
@@ -434,6 +444,7 @@
     <Folder Include="src\WorkFlow\FormBuilder\Shared\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\CheckIn\Config\CheckinTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\AdaptiveMessageAdaptationDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\AdaptiveMessageDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\AdaptiveMessageList\types.partial.ts" />
@@ -441,6 +452,7 @@
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentChannelDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\contentCollectionDetail.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\attributeSearchFilter.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\contentSources.partial.ts" />

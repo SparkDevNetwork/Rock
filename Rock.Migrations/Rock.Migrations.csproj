@@ -64,6 +64,14 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202401041703106_Rollup_20240104.cs" />
+    <Compile Include="Migrations\202401041703106_Rollup_20240104.designer.cs">
+      <DependentUpon>202401041703106_Rollup_20240104.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202401041745490_CodeGenerated_20240104.cs" />
+    <Compile Include="Migrations\202401041745490_CodeGenerated_20240104.designer.cs">
+      <DependentUpon>202401041745490_CodeGenerated_20240104.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.designer.cs">
       <DependentUpon>202311301719499_Rollup_20231130.cs</DependentUpon>
@@ -1906,6 +1914,12 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202401041703106_Rollup_20240104.resx">
+      <DependentUpon>202401041703106_Rollup_20240104.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202401041745490_CodeGenerated_20240104.resx">
+      <DependentUpon>202401041745490_CodeGenerated_20240104.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.resx">
       <DependentUpon>202311301719499_Rollup_20231130.cs</DependentUpon>
     </EmbeddedResource>

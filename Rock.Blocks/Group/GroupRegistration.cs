@@ -746,8 +746,23 @@ namespace Rock.Blocks.Group
                         SetPhoneNumber( rockContext, person, groupRegistrationBag.MobilePhone, groupRegistrationBag.IsMessagingEnabled, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                     }
 
-                    if ( groupRegistrationBag.Address != null )
+                    if ( !string.IsNullOrWhiteSpace( groupRegistrationBag.Address?.Street1 ) )
                     {
+                        var editedLocation = new Location()
+                        {
+                            Street1 = groupRegistrationBag.Address.Street1,
+                            Street2 = groupRegistrationBag.Address.Street2,
+                            City = groupRegistrationBag.Address.City,
+                            State = groupRegistrationBag.Address.State,
+                            PostalCode = groupRegistrationBag.Address.PostalCode,
+                            Country = groupRegistrationBag.Address.Country,
+                        };
+
+                        if ( !LocationService.ValidateLocationAddressRequirements( editedLocation, out string validationMessage ) )
+                        {
+                            return ActionBadRequest( validationMessage );
+                        }
+
                         var location = new LocationService( rockContext ).Get( groupRegistrationBag.Address.Street1, groupRegistrationBag.Address.Street2, groupRegistrationBag.Address.City, groupRegistrationBag.Address.State, groupRegistrationBag.Address.PostalCode, groupRegistrationBag.Address.Country );
                         if ( location != null )
                         {

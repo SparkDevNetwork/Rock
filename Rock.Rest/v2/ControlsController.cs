@@ -3245,7 +3245,7 @@ namespace Rock.Rest.v2
                 }
 
                 groupMemberRequirement.WasManuallyCompleted = true;
-                groupMemberRequirement.ManuallyCompletedByPersonAliasId = RockRequestContext.CurrentPerson.PrimaryAliasId;
+                groupMemberRequirement.ManuallyCompletedByPersonAliasId = RockRequestContext.CurrentPerson?.PrimaryAliasId;
                 groupMemberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
                 groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
 
@@ -3269,12 +3269,33 @@ namespace Rock.Rest.v2
             {
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                 var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                var groupRequirementService = new GroupRequirementService( rockContext );
+                var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+                var currentPerson = RockRequestContext.CurrentPerson;
+
+                // Determine if current person is authorized to override
+                if ( currentPerson == null )
+                {
+                    return Unauthorized();
+                }
+
+                var currentPersonIsLeaderOfCurrentGroup = new GroupMemberService( rockContext )
+                    .GetByGroupId( groupRequirement.Group.Id )
+                    .Where( m => m.GroupRole.IsLeader )
+                    .Select( m => m.PersonId )
+                    .Contains( currentPerson.Id );
+
+                bool currentPersonCanOverride = groupRequirement.AllowLeadersToOverride && currentPersonIsLeaderOfCurrentGroup;
+                var hasPermissionToOverride = groupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.OVERRIDE, currentPerson );
+
+                if ( !( currentPersonCanOverride || hasPermissionToOverride ) )
+                {
+                    return Unauthorized();
+                }
+
                 if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
                 {
                     // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
-                    var groupRequirementService = new GroupRequirementService( rockContext );
-                    var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
-
                     var groupMemberService = new GroupMemberService( rockContext );
                     var groupMember = groupMemberService.Get( options.GroupMemberGuid );
 
@@ -3290,7 +3311,7 @@ namespace Rock.Rest.v2
                 }
 
                 groupMemberRequirement.WasOverridden = true;
-                groupMemberRequirement.OverriddenByPersonAliasId = RockRequestContext.CurrentPerson.PrimaryAliasId;
+                groupMemberRequirement.OverriddenByPersonAliasId = currentPerson.PrimaryAliasId;
                 groupMemberRequirement.OverriddenDateTime = RockDateTime.Now;
                 groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
 
@@ -3533,6 +3554,107 @@ namespace Rock.Rest.v2
                 }
 
                 return Ok();
+            }
+        }
+
+        #endregion
+
+        #region Group Member Requirements Container
+
+        /// <summary>
+        /// Get the data for each of the cards in the GroupMemberRequirementContainer
+        /// </summary>
+        /// <param name="options">The options that describe which data to load.</param>
+        /// <returns>A <see cref="GroupMemberRequirementContainerGetDataResultsBag"/> containing everything the cards need to be displayed.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementContainerGetData" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "B1F29337-BD8B-4F62-A68E-F67C32E8CFDE" )]
+        public IHttpActionResult GroupMemberRequirementContainerGetData( [FromBody] GroupMemberRequirementContainerGetDataOptionsBag options )
+        {
+            var results = new GroupMemberRequirementContainerGetDataResultsBag
+            {
+                Errors = new List<GroupMemberRequirementErrorBag>(),
+                CategorizedRequirements = new List<GroupMemberRequirementCategoryBag>()
+            };
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupRole = new GroupTypeRoleService( rockContext ).Get( options.GroupRoleGuid );
+                var person = new PersonService( rockContext ).Get( options.PersonGuid );
+                var group = new GroupService( rockContext ).Get( options.GroupGuid );
+
+                var currentPerson = RockRequestContext.CurrentPerson;
+
+                // Determine whether the current person is a leader of the chosen group.
+                var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupGuid( options.GroupGuid );
+                var currentPersonIsLeaderOfCurrentGroup = currentPerson == null ? false :
+                    groupMemberQuery.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( currentPerson.Id );
+
+                IEnumerable<GroupRequirementStatus> groupRequirementStatuses = group.PersonMeetsGroupRequirements( rockContext, person?.Id ?? 0, groupRole.Id );
+
+                // This collects the statuses by their requirement type category with empty / no category requirement types first, then it is by category name.
+                var requirementCategories = groupRequirementStatuses
+                .Select( s => new
+                {
+                    CategoryId = s.GroupRequirement.GroupRequirementType.CategoryId,
+                    Name = s.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? s.GroupRequirement.GroupRequirementType.Category.Name : string.Empty,
+                    RequirementResults = groupRequirementStatuses.Where( gr => gr.GroupRequirement.GroupRequirementType.CategoryId == s.GroupRequirement.GroupRequirementType.CategoryId ),
+                } ).OrderBy( a => a.CategoryId.HasValue ).ThenBy( a => a.Name ).DistinctBy( a => a.CategoryId );
+
+                var requirementsWithErrors = groupRequirementStatuses.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
+
+                if ( requirementsWithErrors.Any() )
+                {
+                    var nbRequirementErrors = new GroupMemberRequirementErrorBag
+                    {
+                        Text = string.Format( "An error occurred in one or more of the requirement calculations" ),
+                        Details = requirementsWithErrors.Select( a => string.Format( "{0}: {1}", a.GroupRequirement.GroupRequirementType.Name, a.CalculationException.Message ) ).ToList().AsDelimited( Environment.NewLine )
+                    };
+                    results.Errors.Add( nbRequirementErrors );
+                }
+
+                foreach ( var requirementCategory in requirementCategories )
+                {
+                    var newCategory = new GroupMemberRequirementCategoryBag
+                    {
+                        Id = requirementCategory.CategoryId,
+                        Name = requirementCategory.Name,
+                        MemberRequirements = new List<GroupMemberRequirementCardConfigBag>()
+                    };
+
+                    // Set up Security or Override access.
+
+                    // Add the Group Member Requirement Cards here.
+                    foreach ( var requirementStatus in requirementCategory.RequirementResults.OrderBy( r => r.GroupRequirement.GroupRequirementType.Name ) )
+                    {
+                        bool leaderCanOverride = requirementStatus.GroupRequirement.AllowLeadersToOverride && currentPersonIsLeaderOfCurrentGroup;
+                        var hasPermissionToOverride = requirementStatus.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.OVERRIDE, currentPerson );
+                        var isAuthorized = requirementStatus.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson );
+                        var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( requirementStatus.GroupMemberRequirementId ?? 0 );
+
+                        // Do not render cards where the current person is not authorized, or the status is "Not Applicable" or "Error".
+                        if ( isAuthorized && requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable && requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.Error )
+                        {
+                            var card = new GroupMemberRequirementCardConfigBag
+                            {
+                                Title = requirementStatus.GroupRequirement.GroupRequirementType.Name,
+                                TypeIconCssClass = requirementStatus.GroupRequirement.GroupRequirementType.IconCssClass,
+                                MeetsGroupRequirement = requirementStatus.MeetsGroupRequirement,
+                                GroupRequirementGuid = requirementStatus.GroupRequirement.Guid,
+                                GroupRequirementTypeGuid = requirementStatus.GroupRequirement.GroupRequirementType.Guid,
+                                GroupMemberRequirementGuid = groupMemberRequirement.Guid,
+                                GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate?.ToShortDateString(),
+                                CanOverride = leaderCanOverride || hasPermissionToOverride
+                            };
+
+                            newCategory.MemberRequirements.Add( card );
+                        }
+                    }
+
+                    results.CategorizedRequirements.Add( newCategory );
+                }
+                return Ok( results );
             }
         }
 

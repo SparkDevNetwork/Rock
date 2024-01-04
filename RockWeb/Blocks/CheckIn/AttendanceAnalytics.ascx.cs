@@ -667,14 +667,6 @@ namespace RockWeb.Blocks.CheckIn
             if ( pnlShowByChart.Visible )
             {
                 var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
-                double? chartDataWeekCount = null;
-                double? chartDataMonthCount = null;
-                int maxXLabelCount = 20;
-                if ( dateRange.End.HasValue && dateRange.Start.HasValue )
-                {
-                    chartDataWeekCount = ( dateRange.End.Value - dateRange.Start.Value ).TotalDays / 7;
-                    chartDataMonthCount = ( dateRange.End.Value - dateRange.Start.Value ).TotalDays / 30;
-                }
 
                 lcAttendance.TooltipContentScript = GetChartTooltipScript( groupBy );
 
@@ -684,21 +676,15 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     case ChartGroupBy.Week:
                         {
-                            if ( chartDataWeekCount < maxXLabelCount )
-                            {
-                                intervalType = "day";
-                                intervalSize = "7";
-                            }
+                            intervalType = "week";
+                            intervalSize = "1";
                         }
                         break;
 
                     case ChartGroupBy.Month:
                         {
-                            if ( chartDataMonthCount < maxXLabelCount )
-                            {
-                                intervalType = "month";
-                                intervalSize = "1";
-                            }
+                            intervalType = "month";
+                            intervalSize = "1";
                         }
                         break;
 

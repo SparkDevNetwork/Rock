@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     /// </summary>
     [Obsolete( "Use SystemCommunicationFieldType instead.", true )]
     [RockObsolete( "1.10" )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SYSTEM_EMAIL )]
     public class SystemEmailFieldType : FieldType, IEntityReferenceFieldType

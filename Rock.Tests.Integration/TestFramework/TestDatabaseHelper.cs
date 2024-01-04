@@ -398,11 +398,6 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             var migrator = new System.Data.Entity.Migrations.DbMigrator( config );
 
-            if ( !migrator.Configuration.AutomaticMigrationsEnabled )
-            {
-                return;
-            }
-
             try
             {
                 migrator.Update();

@@ -45,7 +45,7 @@ namespace Rock.Field.Types
         private const string ALLOW_MULTIPLE_KEY = "allowMultiple";
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
         private const string REPEAT_COLUMNS_KEY = "repeatColumns";
-        private const string VALUES_PUBLIC_KEY = "values";
+        private const string VALUES_KEY = "values";
 
         #endregion
 
@@ -64,7 +64,7 @@ namespace Rock.Field.Types
                     var systemPhoneNumber = SystemPhoneNumberCache.Get( guid );
                     if ( systemPhoneNumber != null )
                     {
-                        names.Add(systemPhoneNumber.Name );
+                        names.Add( systemPhoneNumber.Name );
                     }
                 }
 
@@ -90,7 +90,7 @@ namespace Rock.Field.Types
                 phoneNumbers = phoneNumbers.Where( sp => sp.IsActive ).ToList();
             }
 
-            publicConfigurationValues[VALUES_PUBLIC_KEY] = phoneNumbers.OrderBy( v => v.Name )
+            publicConfigurationValues[VALUES_KEY] = phoneNumbers.OrderBy( v => v.Name )
                 .ToListItemBagList()
                 .ToCamelCaseJson( false, true );
 
@@ -102,7 +102,7 @@ namespace Rock.Field.Types
         {
             var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
 
-            configurationValues.Remove( VALUES_PUBLIC_KEY );
+            configurationValues.Remove( VALUES_KEY );
 
             return configurationValues;
         }
@@ -260,7 +260,7 @@ namespace Rock.Field.Types
             {
                 AutoPostBack = true,
                 Label = "Repeat Columns",
-                Help = "Select how many columns the list should use before going to the next row. If 0 then the options are put next to each other and wrap around. If blank then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.",
+                Help = "Select how many columns the list should use before going to the next row. If 0 then the options are put next to each other and wrap around. If blank then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add constraints due to available space.",
                 MinimumValue = "0"
             };
 

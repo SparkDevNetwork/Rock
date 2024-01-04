@@ -60,6 +60,7 @@ import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
 import ListBox from "@Obsidian/Controls/listBox.obs";
+import ListItems from "@Obsidian/Controls/listItems.obs";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
 import AddressControl from "@Obsidian/Controls/addressControl.obs";
@@ -252,6 +253,11 @@ import CurrencyBoxGallery from "./ControlGallery/currencyBoxGallery.partial.obs"
 import FirstNameTextBoxGallery from "./ControlGallery/firstNameTextBoxGallery.partial.obs";
 import ImageUploaderGallery from "./ControlGallery/imageUploaderGallery.partial.obs";
 import MediaPlayerGallery from "./ControlGallery/mediaPlayerGallery.partial.obs";
+import RadioButtonGallery from "./ControlGallery/radioButtonGallery.partial.obs";
+import BulletedListGallery from "./ControlGallery/bulletedListGallery.partial.obs";
+import TermDescriptionGallery from "./ControlGallery/termDescriptionGallery.partial.obs";
+import ValueFilterGallery from "./ControlGallery/valueFilterGallery.partial.obs";
+import SecurityButtonGallery from "./ControlGallery/securityButtonGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -1040,6 +1046,37 @@ const mediaSelectorGallery = defineComponent({
             <KeyValueList label="Media Items" v-model="mediaItems" />
             <DropDownList label="Mode" v-model="mode" :items="modeOptions" />
         </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a list box */
+const listItemsGallery = defineComponent({
+    name: "ListItemsGallery",
+    components: {
+        GalleryAndResult,
+        ListItems,
+        TextBox
+    },
+    setup() {
+        return {
+            value: ref([]),
+            valuePrompt: ref(""),
+            importCode: getControlImportPath("listItems"),
+            exampleCode: `<ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{'output:modelValue': value, 'input:items': options}"
+    hasMultipleValues
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />
+
+    <template #settings>
+        <TextBox label="Value Prompt" v-model="valuePrompt" />
     </template>
 </GalleryAndResult>`
 });
@@ -7912,6 +7949,7 @@ const controlGalleryComponents: Record<string, Component> = [
     checkBoxListGallery,
     mediaSelectorGallery,
     listBoxGallery,
+    listItemsGallery,
     phoneNumberBoxGallery,
     dropDownListGallery,
     helpBlockGallery,
@@ -8062,6 +8100,11 @@ const controlGalleryComponents: Record<string, Component> = [
     YearPickerGallery,
     FirstNameTextBoxGallery,
     MediaPlayerGallery,
+    RadioButtonGallery,
+    BulletedListGallery,
+    TermDescriptionGallery,
+    ValueFilterGallery,
+    SecurityButtonGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

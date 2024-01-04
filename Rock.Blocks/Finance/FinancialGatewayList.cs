@@ -55,6 +55,7 @@ namespace Rock.Blocks.Finance
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string EnableDefaultWorkflowLauncherAttributeKey = "core.EnableDefaultWorkflowLauncher";
         }
 
         private static class NavigationUrlKey
@@ -72,8 +73,8 @@ namespace Rock.Blocks.Finance
             var box = new ListBlockBox<FinancialGatewayListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsAddEnabled = GetIsAddOrDeleteEnabled();
+            box.IsDeleteEnabled = GetIsAddOrDeleteEnabled();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -92,7 +93,8 @@ namespace Rock.Blocks.Finance
             {
                 var options = new FinancialGatewayListOptionsBag
                 {
-                    IsInactiveGatewayNotificationVisible = GetListQueryable( rockContext ).Any( g => !g.IsActive )
+                    IsInactiveGatewayNotificationVisible = GetListQueryable( rockContext ).Any( g => !g.IsActive ),
+                    EnableWorkflowLauncher = GetAttributeValue( AttributeKey.EnableDefaultWorkflowLauncherAttributeKey ).AsBoolean(),
                 };
                 return options;
             }
@@ -102,11 +104,9 @@ namespace Rock.Blocks.Finance
         /// Determines if the add button should be enabled in the grid.
         /// <summary>
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        private bool GetIsAddOrDeleteEnabled()
         {
-            var entity = new FinancialGateway();
-
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>

@@ -15,11 +15,11 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -27,6 +27,7 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.DefinedTypeList;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
@@ -71,7 +72,26 @@ namespace Rock.Blocks.Core
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PreferenceKey
+        {
+            public const string FilterCategory = "filter-category";
+        }
+
         #endregion Keys
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the category identifier to use when filtering the defined types.
+        /// </summary>
+        /// <value>
+        /// The category identifiers to use when filtering the defined types.
+        /// </value>
+        protected Guid? FilterCategory => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterCategory )
+            .FromJsonOrNull<ListItemBag>()?.Value.AsGuid();
+
+        #endregion
 
         #region Methods
 
@@ -135,6 +155,10 @@ namespace Rock.Blocks.Core
             if ( categoryGuids.Any() )
             {
                 definedTypeQry = definedTypeQry.Where( a => a.Category != null && categoryGuids.Contains( a.Category.Guid ) );
+            }
+            else if ( FilterCategory.HasValue )
+            {
+                definedTypeQry = definedTypeQry.Where( a => a.Category != null && a.Category.Guid == FilterCategory.Value );
             }
 
             return definedTypeQry;

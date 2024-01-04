@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as PersistedDataset.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PERSISTED_DATASET )]
     public class PersistedDatasetFieldType : FieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType

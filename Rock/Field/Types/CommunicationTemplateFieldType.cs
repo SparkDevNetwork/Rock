@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a <see cref="CommunicationTemplate" />. Stored as the CommunicationTemplate's Guid.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.COMMUNICATION_TEMPLATE )]
     public class CommunicationTemplateFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

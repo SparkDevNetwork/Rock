@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) step type filtered by a selected step program
     /// Stored as "StepProgram.Guid|StepType.Guid"
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( "B00149C7-08D6-448C-AF21-948BF453DF7E" )]
     public class StepProgramStepTypeFieldType : FieldType, IEntityReferenceFieldType

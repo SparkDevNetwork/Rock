@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// Stored as "Page.Guid" or "Page.Guid,PageRoute.Guid"
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PAGE_REFERENCE )]
     public class PageReferenceFieldType : FieldType, IEntityReferenceFieldType

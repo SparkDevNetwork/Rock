@@ -29,6 +29,7 @@ namespace Rock.Field.Types
     /// Field Type used for Volume / Page / Entry that is useful for sacraments or steps (<see cref="Rock.Model.Step"/>)
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REGISTRY_ENTRY )]
     public class RegistryEntryFieldType : FieldType
