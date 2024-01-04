@@ -113,7 +113,7 @@
         return valueBuilder.build();
     });
 
-    /** The values to display at half-width on the left side of the block. */
+    /** The values to display at half-width on the right side of the block. */
     const rightSideValues = computed((): ValueDetailListItem[] => {
         const valueBuilder = new ValueDetailListItemBuilder();
 
@@ -123,7 +123,8 @@
 
         var accountsTotalTable = `<table class="grid-table table table-auto">
                 <tbody>
-                    ${props.options.accounts?.map(a => "<tr> <td align='left'>" + a.name + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
+                    ${props.options.accounts?.map(a =>
+                        "<tr> <td align='left'>" + a.name + (a.glCode && a.glCode.length > 0 ? " <small>(" + a.glCode + ")</small>" : "") + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
                 </tbody>
             </table>`;
 

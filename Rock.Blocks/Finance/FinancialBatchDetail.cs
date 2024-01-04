@@ -157,12 +157,14 @@ namespace Rock.Blocks.Finance
                     .GroupBy( d => new
                     {
                         AccountId = d.AccountId,
-                        AccountName = d.Account.Name
+                        AccountName = d.Account.Name,
+                        GlCode = d.Account.GlCode,
                     } )
                     .Select( s => new FinancialBatchAccountTotalsBag
                     {
                         Name = s.Key.AccountName,
-                        Currency = s.Sum( a => ( decimal? ) a.Amount ) ?? 0.0M
+                        Currency = s.Sum( a => ( decimal? ) a.Amount ) ?? 0.0M,
+                        GlCode = s.Key.GlCode
                     } )
                     .OrderBy( s => s.Name )
                     .ToList();

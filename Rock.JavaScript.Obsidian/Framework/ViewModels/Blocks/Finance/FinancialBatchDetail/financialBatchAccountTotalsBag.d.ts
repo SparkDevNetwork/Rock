@@ -28,4 +28,7 @@ export type FinancialBatchAccountTotalsBag = {
 
     /** Gets or sets the name of the account to be displayed in the Accounts Total section in the view mode */
     name?: string | null;
+
+    /** Gets or set the name of the GlCode related to the Account in the Accounts Total section in the view mode */
+    glCode?: string | null;
 };
