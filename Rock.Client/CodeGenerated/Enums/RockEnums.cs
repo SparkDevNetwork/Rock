@@ -545,6 +545,7 @@ namespace Rock.Client.Enums
         StepAdded = 0x11,
         StepStatusModify = 0x12,
         StepCampusModify = 0x13,
+        EmailUnsubscribed = 0x14,
     }
 
     /// <summary>
