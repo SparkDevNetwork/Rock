@@ -14,29 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock;
+using Rock.Model;
+
 using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.UI.Controls;
-
 namespace RockWeb.Blocks.Reporting
 {
     /// <summary>
-    /// 
+    /// Helps configure and generate the AnalyticsSourceDate table for BI Analytics.
     /// </summary>
     [DisplayName( "Calendar Dimension Settings" )]
     [Category( "Reporting" )]
     [Description( "Helps configure and generate the AnalyticsSourceDate table for BI Analytics" )]
 
-    [DateField( "StartDate", "", false, "", "CustomSetting", 0 )]
-    [DateField( "EndDate", "", false, "", "CustomSetting", 0 )]
-    [IntegerField( "FiscalStartMonth", "", false, 1, "CustomSetting", 0 )]
-    [BooleanField( "GivingMonthUseSundayDate", "", false, "CustomSetting", 1 )]
     [Rock.SystemGuid.BlockTypeGuid( "7711EAE9-5CF0-46E4-A4E6-26C05A71FE43" )]
     public partial class CalendarDimensionSettings : Rock.Web.UI.RockBlock
     {
@@ -76,16 +70,18 @@ namespace RockWeb.Blocks.Reporting
         {
             LoadDropDowns();
 
-            DateTime? startDate = this.GetAttributeValue( "StartDate" ).AsDateTime() ?? new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
-            DateTime? endDate = this.GetAttributeValue( "EndDate" ).AsDateTime() ?? new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
-            
+            var startDate = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_START_DATE ).AsDateTime()
+                ?? new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
             dpStartDate.SelectedDate = startDate;
+
+            var endDate = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_END_DATE ).AsDateTime()
+                ?? new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
             dpEndDate.SelectedDate = endDate;
 
-            int? fiscalStartMonth = this.GetAttributeValue( "FiscalStartMonth" ).AsIntegerOrNull() ?? 1;
+            var fiscalStartMonth = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_FISCAL_START_MONTH ).AsIntegerOrNull() ?? 1;
             monthDropDownList.SetValue( fiscalStartMonth );
 
-            bool givingMonthUseSundayDate = this.GetAttributeValue( "GivingMonthUseSundayDate" ).AsBoolean();
+            var givingMonthUseSundayDate = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_GIVING_MONTH_USE_SUNDAY_DATE ).AsBoolean();
             cbGivingMonthUseSundayDate.Checked = givingMonthUseSundayDate;
         }
 
@@ -126,16 +122,19 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGenerate_Click( object sender, EventArgs e )
         {
-            this.SetAttributeValue( "StartDate", dpStartDate.SelectedDate.Value.ToString( "o" ) );
-            this.SetAttributeValue( "EndDate", dpEndDate.SelectedDate.Value.ToString( "o" ) );
-            this.SetAttributeValue( "FiscalStartMonth", monthDropDownList.SelectedValue );
-            this.SetAttributeValue( "GivingMonthUseSundayDate", cbGivingMonthUseSundayDate.Checked.ToTrueFalse() );
+            var startDate = dpStartDate.SelectedDate.Value;
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_START_DATE, startDate.ToString( "o" ) );
 
-            int fiscalStartMonth = monthDropDownList.SelectedValue.AsIntegerOrNull() ?? 1;
+            var endDate = dpEndDate.SelectedDate.Value;
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_END_DATE, endDate.ToString( "o" ) );
 
-            bool givingMonthUseSundayDate = cbGivingMonthUseSundayDate.Checked;
+            var fiscalStartMonth = monthDropDownList.SelectedValue.AsIntegerOrNull() ?? 1;
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_FISCAL_START_MONTH, fiscalStartMonth.ToString() );
 
-            AnalyticsSourceDate.GenerateAnalyticsSourceDateData( fiscalStartMonth, givingMonthUseSundayDate, dpStartDate.SelectedDate.Value, dpEndDate.SelectedDate.Value );
+            var givingMonthUseSundayDate = cbGivingMonthUseSundayDate.Checked;
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_GIVING_MONTH_USE_SUNDAY_DATE, givingMonthUseSundayDate.ToString() );
+
+            AnalyticsSourceDate.GenerateAnalyticsSourceDateData( fiscalStartMonth, givingMonthUseSundayDate, startDate, endDate );
 
             nbGenerateSuccess.Text = "Successfully generated AnalyticsSourceDate records";
         }

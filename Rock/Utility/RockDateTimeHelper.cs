@@ -133,9 +133,16 @@ WHERE SundayDate IS NULL
                 ////  - [AnalyticsSourceFinancialTransaction determines] SundayDate from looking up [SundayDate] in [AnalyticsSourceDate] using [AnalyticsSourceFinancialTransaction].[TransactionDateKey]
 
                 // Rebuild the data in the [AnalyticsSourceDate] table
-                var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
-                var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
-                Rock.Model.AnalyticsSourceDate.GenerateAnalyticsSourceDateData( 1, false, analyticsStartDate, analyticsEndDate );
+                var startDate = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_START_DATE ).AsDateTime()
+                    ?? new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
+
+                var endDate = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_END_DATE ).AsDateTime()
+                    ?? new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
+
+                var fiscalStartMonth = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_FISCAL_START_MONTH ).AsIntegerOrNull() ?? 1;
+                var givingMonthUseSundayDate = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_GIVING_MONTH_USE_SUNDAY_DATE ).AsBoolean();
+
+                Rock.Model.AnalyticsSourceDate.GenerateAnalyticsSourceDateData( fiscalStartMonth, givingMonthUseSundayDate, startDate, endDate );
             }
         }
 
