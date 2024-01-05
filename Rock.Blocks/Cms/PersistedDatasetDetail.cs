@@ -187,7 +187,7 @@ namespace Rock.Blocks.Cms
                 AllowManualRefresh = entity.AllowManualRefresh,
                 BuildScript = entity.BuildScript,
                 Description = entity.Description,
-                EnabledLavaCommands = entity.EnabledLavaCommands.SplitDelimitedValues(",").Select(c => new ListItemBag() { Value = c, Text = c } ).ToList(),
+                EnabledLavaCommands = entity.EnabledLavaCommands.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries ).Select( c => new ListItemBag() { Value = c, Text = c } ).ToList(),
                 EntityType = entity.EntityType.ToListItemBag(),
                 ExpireDateTime = entity.ExpireDateTime,
                 IsActive = entity.IsActive,
