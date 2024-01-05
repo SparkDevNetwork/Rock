@@ -35,6 +35,11 @@ namespace Rock.Enums.Blocks.Security.ForgotUserName
         /// <summary>
         /// Indicates that change password is not supported for account(s) associated with requested email.
         /// </summary>
-        ChangePasswordNotSupported = 2
+        ChangePasswordNotSupported = 2,
+
+        /// <summary>
+        /// Indicates that the captcha was not solved successfully.
+        /// </summary>
+        CaptchaInvalid = 3,
     }
 }
