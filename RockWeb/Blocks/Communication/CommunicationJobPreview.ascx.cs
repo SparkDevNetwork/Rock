@@ -74,6 +74,7 @@ namespace RockWeb.Blocks.Communication
     [CodeEditorField( "Lava Template Append",
         Description = "This Lava will be appended to the system communication template to help setup any data that the template needs. This data would typically be passed to the template by a job or other means.",
         DefaultValue = "",
+        IsRequired = false,
         Key = AttributeKey.LavaTemplateAppend,
         Order = 6)]
 
