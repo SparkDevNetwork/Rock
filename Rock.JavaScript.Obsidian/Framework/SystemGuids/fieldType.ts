@@ -307,6 +307,8 @@ export const FieldType = {
     TimeZone: "3FC8C1D3-3EBB-4887-A5A4-B9F300FC7B90",
     /** Url Link field type */
     UrlLink: "C0D0D7E2-C3B0-4004-ABEA-4BBFAD10D5D2",
+    /** Value Filter field type */
+    ValueFilter: "80ED0575-8FAE-4BC4-A51F-CAC211DD104F",
     /** Value List field type */
     ValueList: "7BDAE237-6E49-47AC-9961-A45AFB69E240",
     /** Video File field type */

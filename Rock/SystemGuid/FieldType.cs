@@ -739,6 +739,11 @@ namespace Rock.SystemGuid
         public const string VALUE_LIST = "7BDAE237-6E49-47AC-9961-A45AFB69E240";
 
         /// <summary>
+        /// Value Filter field type
+        /// </summary>
+        public const string VALUE_FILTER = "80ED0575-8FAE-4BC4-A51F-CAC211DD104F";
+
+        /// <summary>
         /// Video File field type
         /// </summary>
         public const string VIDEO_FILE = "F1F5B59D-F086-4627-A94A-DFA7E67950F3";

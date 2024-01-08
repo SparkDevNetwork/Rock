@@ -1,0 +1,124 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <NotificationBox v-if="showRoleMessage" alertType="warning">No role or person is configured to approve the items for this channel. Please configure one or more roles or people in the security settings under the "Approve" tab.</NotificationBox>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { ContentChannelBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelDetail/contentChannelBag";
+    import { ContentChannelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelDetail/contentChannelDetailOptionsBag";
+    import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ContentChannelBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<ContentChannelDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    const showRoleMessage = computed((): boolean => {
+        return props.modelValue?.requiresApproval == true && !props.options.isApproverConfigured;
+    });
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addTextValue("Items Require Approval", asYesNoOrNull(props.modelValue.requiresApproval) ?? "No");
+
+        if (props.options.isIndexEnabled == true) {
+            valueBuilder.addTextValue("Is Indexed", asYesNoOrNull(props.modelValue.isIndexEnabled) ?? "No");
+        }
+
+        if (props.modelValue.enableRss) {
+            if (props.modelValue.channelUrl) {
+                valueBuilder.addTextValue("Channel URL", props.modelValue.channelUrl);
+            }
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.enableRss) {
+            if (props.modelValue.itemUrl) {
+                valueBuilder.addTextValue("Item URL", props.modelValue.itemUrl ?? "");
+            }
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

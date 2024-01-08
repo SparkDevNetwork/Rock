@@ -29,5 +29,13 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialGatewayList
         ///   <c>true</c> if inactive gateway notification should be visible; otherwise, <c>false</c>.
         /// </value>
         public bool IsInactiveGatewayNotificationVisible { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the workflow launcher button should be displayed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable workflow launcher]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableWorkflowLauncher { get; set; }
     }
 }

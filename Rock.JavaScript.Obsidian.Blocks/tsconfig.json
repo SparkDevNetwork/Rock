@@ -3,6 +3,7 @@
   "include": [],
   "references": [
     { "path": "./src/Bus" },
+    { "path": "./src/CheckIn" },
     { "path": "./src/Cms" },
     { "path": "./src/Communication" },
     { "path": "./src/Core" },

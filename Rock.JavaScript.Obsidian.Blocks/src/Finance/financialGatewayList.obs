@@ -14,6 +14,7 @@
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :showLaunchWorkflow="enableWorkflowLauncher"
           @selectItem="onSelectItem">
 
         <TextColumn name="name"
@@ -57,6 +58,7 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     const isInactiveGatewayNotificationVisible = ref(config.options?.isInactiveGatewayNotificationVisible);
+    const enableWorkflowLauncher = ref(config.options?.enableWorkflowLauncher);
     let gridData: GridDataBag | undefined;
 
     // #endregion

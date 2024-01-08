@@ -602,8 +602,9 @@ namespace Rock.Blocks.Cms
             foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
                 attributeService.Delete( attr );
-                rockContext.SaveChanges();
             }
+
+            rockContext.SaveChanges();
 
             // Update the Attributes that were assigned in the UI
             foreach ( var attributeState in viewStateAttributes )

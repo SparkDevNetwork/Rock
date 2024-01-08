@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -51,6 +51,13 @@
     <Compile Include="Blocks\Bus\ConsumerList\ConsumerListOptionsBag.cs" />
     <Compile Include="Blocks\Bus\QueueList\QueueListOptionsBag.cs" />
     <Compile Include="Blocks\Bus\QueueList\QueueListBag.cs" />
+    <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInAdvancedSettingsBag.cs" />
+    <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInBarcodeSettingsBag.cs" />
+    <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInDisplaySettingsBag.cs" />
+    <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInGeneralSettingsBag.cs" />
+    <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInHeaderTextBag.cs" />
+    <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInRegistrationSettingsBag.cs" />
+    <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInSearchSettingsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
@@ -58,6 +65,8 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\BlockTypeList\BlockTypeListBag.cs" />
     <Compile Include="Blocks\Cms\BlockTypeList\BlockTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\ContentChannelDetail\ContentChannelBag.cs" />
+    <Compile Include="Blocks\Cms\ContentChannelDetail\ContentChannelDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
@@ -129,6 +138,8 @@
     <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialStatementTemplateDetail\FinancialStatementTemplateBag.cs" />
     <Compile Include="Blocks\Finance\FinancialStatementTemplateDetail\FinancialStatementTemplateDetailOptionsBag.cs" />
+    <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckinTypeBag.cs" />
+    <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckinTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutBag.cs" />
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutDetailOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateBag.cs" />

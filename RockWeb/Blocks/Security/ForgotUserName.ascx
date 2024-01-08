@@ -15,6 +15,8 @@
             <Rock:RockTextBox ID="tbEmail" runat="server" Label="Enter your email address" Required="true" DisplayRequiredIndicator="false"></Rock:RockTextBox>
         </fieldset>
 
+        <Rock:Captcha ID="cpCaptcha" runat="server" />
+
         <div class="actions">
             <asp:Button ID="btnSend" runat="server" Text="Email me reset instructions" CssClass="btn btn-primary" OnClick="btnSend_Click" />
         </div>
