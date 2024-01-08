@@ -1,0 +1,81 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="well well-pillwrap">
+        <ul class="nav nav-pills">
+            <li v-for="item in items"
+                :class="getItemClass(item)">
+                <a href="#" @click.prevent="onItemClicked(item)">{{ item.text }}</a>
+            </li>
+        </ul>
+    </div>
+</template>
+
+<style scoped>
+.panel-navigation-bar {
+    overflow-x: clip;
+    background-color: var(--panel-bg);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, onMounted } from "vue";
+    import { Nullable } from "./types.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<Nullable<string>>
+        },
+
+        items: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        },
+
+        isFirstSelectedByDefault: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    function getItemClass(item: ListItemBag): string {
+        if (internalValue.value === item.value) {
+            return "active";
+        }
+
+        return "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onItemClicked(item: ListItemBag): void {
+        internalValue.value = item.value;
+    }
+
+    // #endregion
+
+    onMounted(() => {
+        if (props.isFirstSelectedByDefault && props.items.length) {
+            internalValue.value = props.items[0].value;
+        }
+    });
+</script>

@@ -1,0 +1,17 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <slot v-if="false"></slot>
+</template>
+
+<script setup lang="ts">
+    /*
+        This component can be used to author code comments in Obsidian templates.
+        The comment can contain any valid Obsidian template code, and will never be
+        rendered to the DOM.
+
+        Note that this component can still consume memory
+        as the slotted content will still be in memory.
+    */
+
+    defineProps();
+</script>

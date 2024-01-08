@@ -1,51 +1,163 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <table class="grid-table table table-bordered table-striped table-hover">
-        <thead>
-            <!-- Implement <template v-slot="header"></template> in parent to override the header template. -->
-            <slot name="header">
-                <tr>
-                    <template v-for="propertyName in propertyNames">
-                        <!-- Implement <template v-slot="header-<propertyName>"></template> in parent to override the individual header cell templates. -->
-                        <slot :name="getHeaderSlotName(propertyName)" :propertyName="propertyName">
-                            <th>{{ toTitleCase(splitCase(propertyName)) }}</th>
-                        </slot>
+    <div class="table-responsive">
+        <table :class="[
+                'grid-table table',
+                hasAlternatingColors ? 'table-striped' : '',
+                hasBorder ? 'table-bordered' : '',
+                hasHoverEffect ? 'table-hover' : ''
+            ]">
+            <thead>
+                <Comment>
+                    <!--
+                        To override the template used to render the header,
+                        implement the following template in the parent component.
+
+                        Available slot properties: none
+                    -->
+                    <template #header>
+                        <tr>
+                            <th>Col 1</th>
+                            <th>Col 2</th>
+                            <th>Col 3</th>
+                        </tr>
                     </template>
-                </tr>
-            </slot>
-        </thead>
-        <tbody>
-            <template v-for="item in items">
-                <!-- Implement <template v-slot="row"></template> in parent to override the row template. -->
-                <slot name="row" :item="item">
+
+                    <!--
+                        If you don't need to override the entire header row,
+                        but need to override a specific header cell, for example,
+                        the header cell bound to the `firstName` property,
+                        implement the following template in the parent component.
+
+                        Available slot properties:
+                            propertyName  - the name of the item property bound to this header cell
+
+                        NOTE: Overriding #header-<propertyName> templates will have no effect if the #header template is overridden.
+                    -->
+                    <template #header-firstName="{ propertyName }">
+                        <th>{{ propertyName }}</th>
+                    </template>
+                </Comment>
+                <slot name="header">
                     <tr>
-                        <template v-for="propertyName in propertyNames">
-                            <!-- Implement <template v-slot="column-<propertyName>"></template> in parent to override the individual row cell templates. -->
-                            <slot :name="getColumnSlotName(propertyName)" :item="item" :propertyName="propertyName">
-                                <td>{{ item[propertyName] }}</td>
+                        <template v-for="propertyName in propertyNames" :key="propertyName">
+                            <slot :name="getHeaderSlotName(propertyName)" :propertyName="propertyName">
+                                <th>{{ toTitleCase(splitCamelCase(propertyName)) }}</th>
                             </slot>
                         </template>
                     </tr>
                 </slot>
-            </template>
-        </tbody>
-        <tfoot>
-            <!-- Implement <template v-slot="footer"></template> in parent to override the footer template. -->
-            <slot name="footer"></slot>
-        </tfoot>
-    </table>
-</template>
+            </thead>
+            <tbody>
+                <Comment>
+                    <!--
+                        To override template used to render each item row,
+                        implement the following template in the parent component.
 
+                        Available slot properties:
+                            item - the item bound to this row
+                     -->
+                    <template #row="{ item }">
+                        <tr>
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.firstName }}</td>
+                            <td>{{ item.lastName }}</td>
+                        </tr>
+                    </template>
+
+                    <!--
+                        If you don't need to override the entire row,
+                        but need to override a specific cell, for example,
+                        the cell bound to the `firstName` property,
+                        implement the following template in the parent component.
+
+                        Available slot properties:
+                            item          - the item bound to this row
+                            propertyName  - the name of the item property bound to this cell
+                            propertyValue - the value of the item property bound to this cell
+
+                        NOTE: Overriding #column-<propertyName> templates will have no effect if the #row template is overridden.
+                     -->
+                    <template #column-firstName="{ item, propertyName, propertyValue }">
+                        <td>{{ propertyValue }}</td>
+                    </template>
+                </Comment>
+                <template v-if="!!items?.length">
+                    <template v-for="item in items" :key="getItemKey(item)">
+                        <slot name="row" :item="item">
+                            <tr>
+                                <template v-for="propertyName in propertyNames" :key="propertyName">
+                                    <slot :name="getColumnSlotName(propertyName)" :item="item" :propertyName="propertyName" :propertyValue="item[propertyName]">
+                                        <td>{{ item[propertyName] }}</td>
+                                    </slot>
+                                </template>
+                            </tr>
+                        </slot>
+                    </template>
+                </template>
+                <template v-else>
+                    <slot name="noData">
+                        <tr>
+                            <td colspan="999">{{ noDataMessage }}</td>
+                        </tr>
+                    </slot>
+                </template>
+            </tbody>
+            <tfoot>
+                <slot name="footer">
+                    <Comment>
+                        <!--
+                            To override the footer,
+                            implement the following template in the parent component.
+
+                            Available slot properties: none
+                         -->
+                        <template #footer><!-- Any markup can go here. --></template>
+                    </Comment>
+                </slot>
+            </tfoot>
+        </table>
+    </div>
+</template>
+<!-- TODO JMH Remove generic stuff. -->
+<!-- <script setup lang="ts" generic="T"> -->
 <script setup lang="ts">
-    import { splitCase, toTitleCase } from "@Obsidian/Utility/stringUtils";
+    import { splitCamelCase, toTitleCase } from "@Obsidian/Utility/stringUtils";
     import { computed, PropType } from "vue";
+    import Comment from "./comment.partial.obs";
 
     const props = defineProps({
         items: {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            type: Array as PropType<any[] | null | undefined>,
-            required: false,
-            default: []
+            type: Array as PropType<any[]>,
+            // TODO JMH Remove generic stuff.
+            // type: Array as PropType<T[]>,
+            required: true
+        },
+
+        hasAlternatingColors: {
+            type: Boolean,
+            default: true
+        },
+
+        hasBorder: {
+            type: Boolean,
+            default: true
+        },
+
+        hasHoverEffect: {
+            type: Boolean,
+            default: true
+        },
+
+        noDataMessage: {
+            type: String,
+            default: "No Data"
+        },
+
+        getItemKey: {
+            type: Function as PropType<((item: unknown) => unknown)>,
+            required: true
         }
     });
 

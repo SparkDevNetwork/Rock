@@ -1,0 +1,173 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <BaseAsyncPicker v-model="internalValue"
+                     v-bind="standardProps"
+                     :disabled="disabled"
+                     displayStyle="auto"
+                     :enhanceForLongLists="true"
+                     :items="internalValue"
+                     :label="label"
+                     maxTagCount="responsive"
+                     :multiple="true">
+        <template #suffixIcon>
+            <i class="fa fa-plus" :style="`pointer-events: ${disabled ? 'none' : 'all'};`" @click="onOpenPopupClicked"></i>
+        </template>
+
+        <template #tagRender="{ label, value, disabled, closable }">
+            <div :class="`item label ${getLabelTypeRef(value).value} rounded-pill`" :data-original-title="getTooltipRef(value).value" :ref="setItemRef">
+                <div v-if="$slots.itemImage" class="item-image">
+                    <slot name="itemImage" v-bind="{ label, value, disabled, closable }"></slot>
+                </div>
+                <span class="item-content">
+                    <slot name="itemContent" v-bind="{ label, value, disabled, closable }">{{ label }}</slot>
+                </span>
+                <RockButton btnSize="xs"
+                            btnType="link"
+                            class="item-remove text-muted pr-0"
+                            :disabled="disabled"
+                            @click="onDeselectItemClicked(value)">
+                    <i class="fa fa-times"></i>
+                </RockButton>
+            </div>
+        </template>
+
+        <template #maxTagPlaceholder="omittedValues">
+            <div ref="maxTagPlaceholder">
+                <RockButton class="item label label-default rounded-pill"
+                            :disabled="disabled"
+                            @click.stop="onOpenPopupClicked"
+                            @mousedown.stop>
+                    <span class="item-content">{{ omittedValues.length }} more</span>
+                </RockButton>
+            </div>
+        </template>
+    </BaseAsyncPicker>
+</template>
+
+<style scoped>
+.item {
+    height: 30px;
+    margin-right: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, Ref, computed, ref, watch } from "vue";
+    import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false,
+        },
+
+        getLabelTypeRef: {
+            type: Function as PropType<(value: string) => Ref<"label-default" | "label-danger" | "label-success" | "label-info" | "label-warning">>,
+            required: false,
+            default: (_: string) => ref("label-default")
+        },
+
+        getTooltipRef: {
+            type: Function as PropType<(value: string) => Ref<string>>,
+            required: false,
+            default: (_: string) => ""
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const standardProps = useStandardAsyncPickerProps(props);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", newValue: ListItemBag[]): void,
+        (e: "openPopup"): void
+    }>();
+
+    //#region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const maxTagPlaceholder = ref<HTMLElement | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    function findAncestor(element: HTMLElement | null, selector: string): HTMLElement | null {
+        if (!element) {
+            return null;
+        }
+
+        if (typeof element.closest === "function") {
+            return element.closest(selector) || null;
+        }
+        while (element) {
+            if (!element) {
+                return null;
+            }
+
+            if (element.matches(selector)) {
+                return element;
+            }
+            element = element.parentElement;
+        }
+        return null;
+    }
+
+    function setItemRef(el: unknown): void {
+        const htmlElement = el as HTMLElement;
+        if (htmlElement) {
+            tooltip(htmlElement);
+        }
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function onOpenPopupClicked(): void {
+        emit("openPopup");
+    }
+
+    function onDeselectItemClicked(value: string): void {
+        const item = props.modelValue.find(i => i.value === value);
+        if (item) {
+            const newValue = [...props.modelValue];
+            const index = newValue.indexOf(item);
+            if (index !== -1) {
+                newValue.splice(index, 1);
+                internalValue.value = newValue;
+            }
+        }
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(maxTagPlaceholder, (newValue: HTMLElement | undefined, oldValue: HTMLElement | undefined) => {
+        if (newValue) {
+            // To get special styling, the placeholder needs to be moved to a different ancestor element.
+            const ancestor = findAncestor(newValue, ".ant-select-selection-overflow-item-rest");
+            ancestor?.replaceChildren(newValue);
+        }
+    });
+
+    //#endregion
+</script>

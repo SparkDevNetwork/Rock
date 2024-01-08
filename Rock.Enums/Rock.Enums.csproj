@@ -48,6 +48,8 @@
     </Compile>
     <Compile Include="AI\ModerationFlags.cs" />
     <Compile Include="AI\ChatMessageRole.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\MediumType.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\PushOpenActionType.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxActionType.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxScheduleRowActionType.cs" />

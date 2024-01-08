@@ -1,0 +1,118 @@
+<template>
+    <Panel type="block" title="New Communication" titleIconCssClass="fa fa-comment-o">
+        <template #headerActions>
+            <HighlightLabel v-if="statusLabel">{{ statusLabel }}</HighlightLabel>
+        </template>
+
+        <template #default>
+            <div ID="pnlEdit">
+                <PanelNavigationBar v-model="selectedMediumEntityTypeGuid"
+                                    :isFirstSelectedByDefault="true"
+                                    :items="mediums" />
+
+                <!-- <NotificationBox v-if="validationSummaryMessage"
+                                id="ValidationSummary"
+                                heading="Please correct the following:"
+                                alertType="validation">{{ validationSummaryMessage }}</NotificationBox> -->
+
+                <NotificationBox v-if="false"
+                                 id="nbInvalidTransport"
+                                 alertType="warning"
+                                 :dismissible="true"
+                                 heading="Warning" />
+
+                <CommunicationMedium :isFullMode="isFullMode"
+                                     :mediumEntityTypeGuid="selectedMediumEntityTypeGuid"
+                                     ref="communicationMedium" />
+            </div>
+
+            <div ref="resultsDiv" v-if="areResultsShown" id="pnlResult" class="js-pnl-result">
+                <NotificationBox id="nbResult" alertType="success" />
+                <br />
+                <a id="hlViewCommunication">View Communication</a>
+            </div>
+        </template>
+
+        <template #footerActions v-if="communicationMedium">
+            <RockButton id="btnSubmit"
+                        class="btn btn-primary"
+                        type="button"
+                        @click="communicationMedium.send()">Send</RockButton>
+
+            <RockButton v-if="isFullMode"
+                        id="btnTest"
+                        class="btn btn-link"
+                        type="button"
+                        @click="communicationMedium.sendTest()">Send Test</RockButton>
+
+            <RockButton v-if="isFullMode"
+                        id="btnSave"
+                        class="btn btn-link"
+                        type="button"
+                        @click="communicationMedium.saveDraft()">Save as Draft</RockButton>
+
+            <RockButton id="btnCancel"
+                        class="btn btn-link"
+                        type="button"
+                        @click="communicationMedium.cancel()">Cancel</RockButton>
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref } from "vue";
+    import CommunicationMedium from "./CommunicationEntry/communicationMedium.partial.obs";
+    import PanelNavigationBar from "./CommunicationEntry/panelNavigationBar.partial.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Nullable } from "./CommunicationEntry/types.partial";
+    import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
+
+    const config = useConfigurationValues<CommunicationEntryInitializationBox>();
+    defineProps();
+
+    //#region Values
+
+    const areResultsShown = ref<boolean>(false);
+    const isFullMode = ref<boolean>(config.isFullMode);
+    const statusLabel = ref<Nullable<string>>("Draft");
+    const resultsDiv = ref<HTMLElement | undefined>();
+    const validationSummaryMessage = ref<Nullable<string>>();
+    const communicationMedium = ref<InstanceType<typeof CommunicationMedium>>();
+    const mediums = computed<ListItemBag[]>(() => config.mediums ?? []);
+    const selectedMediumEntityTypeGuid = ref<Nullable<string>>("");
+    //#endregion
+
+    //#region Functions
+
+    function showResults(): void {
+        areResultsShown.value = true;
+
+        // Scroll on next tick so Vue can process the v-if binding that shows the elements.
+        nextTick(() => {
+            const results = resultsDiv.value;
+            if (results) {
+                results.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                    inline: "start"
+                });
+            }
+        });
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    //#endregion
+
+</script>

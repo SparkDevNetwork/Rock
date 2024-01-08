@@ -1,0 +1,29 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    communicationTemplatePicker.partial works!
+</template>
+
+<script setup lang="ts">
+    const props = defineProps();
+    
+
+    //#region Values
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    //#endregion
+</script>

@@ -1,0 +1,76 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    communicationMediumSms works!
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { Nullable } from "./types.partial";
+
+    const props = defineProps({
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        isFullMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        mediumEntityTypeGuid: {
+            type: String as PropType<Nullable<string>>,
+            required: false
+        }
+    });
+    const emit = defineEmits<{
+        (e: "update:disabled", value: boolean): void
+    }>();
+    defineExpose({
+        saveDraft,
+        send,
+        sendTest
+    });
+
+    //#region Values
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Saves the communication as a draft.
+     * If this is renamed, it must also be renamed in the other medium components.
+     */
+    function saveDraft(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    /**
+     * Sends the communication.
+     * If this is renamed, it must also be renamed in the other medium components.
+     */
+    function send(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    /**
+     * Sends the test communication.
+     * If this is renamed, it must also be renamed in the other medium components.
+     */
+    function sendTest(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    //#endregion
+</script>

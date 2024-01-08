@@ -1,0 +1,112 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <KeepAlive>
+        <Email v-if="isGuid(mediumEntityTypeGuid, EntityType.CommunicationMediumEmail)"
+               :isFullMode="isFullMode"
+               :key="EntityType.CommunicationMediumEmail"
+               :mediumEntityTypeGuid="mediumEntityTypeGuid"
+               ref="mediumComponent" />
+        <Sms v-else-if="isGuid(mediumEntityTypeGuid, EntityType.CommunicationMediumSms)"
+             :isFullMode="isFullMode"
+             :mediumEntityTypeGuid="mediumEntityTypeGuid"
+             ref="mediumComponent" />
+        <PushNotification v-else-if="isGuid(mediumEntityTypeGuid, EntityType.CommunicationMediumPushNotification)"
+                          :isFullMode="isFullMode"
+                          :mediumEntityTypeGuid="mediumEntityTypeGuid"
+                          ref="mediumComponent" />
+        <div v-else>
+            Unknown communication medium (Guid: {{ mediumEntityTypeGuid }}).
+            Options are
+            <ul>
+                <li>{{ EntityType.CommunicationMediumEmail }}</li>
+                <li>{{ EntityType.CommunicationMediumSms }}</li>
+                <li>{{ EntityType.CommunicationMediumPushNotification }}</li>
+            </ul>
+        </div>
+    </KeepAlive>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import Email from "./communicationMediumEmail.partial.obs";
+    import Sms from "./communicationMediumSms.partial.obs";
+    import PushNotification from "./communicationMediumPushNotification.partial.obs";
+    import { Nullable } from "./types.partial";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
+
+    const props = defineProps({
+        isFullMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        mediumEntityTypeGuid: {
+            type: String as PropType<Nullable<string>>,
+            required: false
+        },
+        initialOptions: {
+            type: Object as PropType<Nullable<CommunicationEntryMediumOptionsBaseBag>>,
+            required: false
+        }
+    });
+    defineExpose({
+        cancel,
+        saveDraft,
+        send,
+        sendTest,
+    });
+
+    //#region Values
+
+    const mediumComponent = ref<InstanceType<typeof Email> | InstanceType<typeof Sms> | InstanceType<typeof PushNotification> | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    function isGuid(sourceGuid: Nullable<string>, targetGuid: Nullable<string>): boolean {
+        return !!sourceGuid && !!targetGuid && sourceGuid.toLocaleLowerCase().localeCompare(targetGuid.toLocaleLowerCase(), undefined, { sensitivity: "base" }) === 0;
+    }
+
+    /**
+     * Cancels the communication entry.
+     */
+    function cancel(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    /**
+     * Saves the communication as a draft.
+     */
+    async function saveDraft(): Promise<void> {
+        await mediumComponent.value?.saveDraft();
+    }
+
+    /**
+     * Sends the communication.
+     */
+    async function send(): Promise<void> {
+        await mediumComponent.value?.send();
+    }
+
+    /**
+     * Sends a test communication.
+     */
+    async function sendTest(): Promise<void> {
+        await mediumComponent.value?.sendTest();
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    //#endregion
+</script>

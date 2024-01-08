@@ -1,0 +1,225 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="internalIsOpen"
+           cancelText="Cancel"
+           saveText="Save"
+           title="Recipient Manager"
+           @save="onSaveClicked">
+        <div class="d-flex flex-row justify-content-between align-items-center">
+            <PersonPicker @update:modelValue="onPersonPicked" label="Add Recipient" />
+            <div class="label label-info">Recipients: {{ pendingItems.length }}</div>
+        </div>
+        <hr>
+        <TextBox v-model="recipientTextFilter" label="Filter" placeholder="Filter by name, email or phone number" />
+        <SimpleGrid style="max-height: 450px; overflow-y: auto"
+                    :items="filteredRecipients"
+                    :hasAlternatingColors="false"
+                    :hasBorder="false"
+                    :hasHoverEffect="false"
+                    :getItemKey="(i) => isRecipient(i) ? i.personAliasGuid : null">
+            <template #header>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">SMS</th>
+                    <th align="center" class="text-center" scope="col">Push</th>
+                    <th align="center" class="text-center" scope="col"><!-- Empty header for delete column. --></th>
+                </tr>
+            </template>
+            <template #row="{ item }">
+                <tr>
+                    <th scope="row" :class="['align-middle', item.isDeceased ? 'text-muted' : '']">
+                        <template v-if="!item.isDeceased">
+                            {{ item.name }}
+                        </template>
+                        <template v-else>
+                            <div>
+                                <div>{{ item.name }}</div>
+                                <small class="font-weight-light">Deceased Won't Send</small>
+                            </div>
+                        </template>
+                    </th>
+                    <td :class="['align-middle', item.isDeceased ? 'text-muted' : '']">
+                        <span><i :class="['fa fa-circle', item.isDeceased ? 'text-muted' : (isBulk ? item.isBulkEmailAllowed : item.isEmailAllowed) ? 'text-success' : 'text-danger']" data-container="body" :data-original-title="getEmailTooltipRef(item).value" :ref="setItemRef"></i>&nbsp;{{ item.email }}</span>
+                    </td>
+                    <td :class="['align-middle', item.isDeceased ? 'text-muted' : '']">
+                        <span><i :class="['fa fa-circle', item.isDeceased ? 'text-muted' : item.isSmsAllowed ? 'text-success' : 'text-danger']"></i>&nbsp;{{ item.smsNumber }}</span>
+                    </td>
+                    <td align="center" :class="['align-middle text-center', item.isDeceased ? 'text-muted' : '']">
+                        <span><i :class="['fa fa-circle', item.isDeceased ? 'text-muted' : item.isPushAllowed ? 'text-success' : 'text-danger']"></i></span>
+                    </td>
+                    <td align="center" :class="['align-middle text-center', item.isDeceased ? 'text-muted' : '']">
+                        <RockButton @click="onDeselectItemClicked(item.personAliasGuid)" btnType="link" btnSize="xs"><i class="fa fa-times"></i></RockButton>
+                    </td>
+                </tr>
+            </template>
+        </SimpleGrid>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+import { PropType, computed, ref, Ref, watch } from "vue";
+import SimpleGrid from "../../Security/AccountEntry/simpleGrid.partial.obs";
+import Modal from "@Obsidian/Controls/modal.obs";
+import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+import TextBox from "@Obsidian/Controls/textBox.obs";
+import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+import { useVModelPassthrough } from "@Obsidian/Utility/component";
+import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { tooltip } from "@Obsidian/Utility/tooltip";
+
+const invokeBlockAction = useInvokeBlockAction();
+
+const props = defineProps({
+    modelValue: {
+        type: Object as PropType<boolean>,
+        required: true
+    },
+
+    items: {
+        type: Object as PropType<CommunicationEntryRecipientBag[]>,
+        required: true
+    },
+
+    isBulk: {
+        type: Boolean as PropType<boolean>,
+        required: false,
+        default: false
+    },
+
+    getEmailTooltipRef: {
+        type: Function as PropType<(value: CommunicationEntryRecipientBag | null) => Ref<string>>,
+        required: false,
+        default: (_: string) => ""
+    },
+});
+
+const emit = defineEmits<{
+    (e: "update:modelValue", newValue: boolean): void,
+    (e: "update:items", newValue: CommunicationEntryRecipientBag[]): void
+}>();
+
+const internalIsOpen = useVModelPassthrough(props, "modelValue", emit);
+const isRegex: RegExp = /\/(.+)\/(.*)/; // Matches regex strings in the form /<regex>/<flags>
+
+//#region Values
+
+const pendingItems = ref<CommunicationEntryRecipientBag[]>([...props.items]);
+const recipientTextFilter = ref<string>("");
+
+//#endregion
+
+//#region Computed Values
+
+const filteredRecipients = computed<CommunicationEntryRecipientBag[]>(() => {
+    const textFilter = recipientTextFilter.value;
+    if (!textFilter) {
+        return pendingItems.value;
+    }
+
+    const regex = tryGetRegExp(textFilter);
+
+    if (regex) {
+        return pendingItems.value.filter(recipient =>
+            (recipient.name && regex.test(recipient.name))
+                || (recipient.email && regex.test(recipient.email))
+                || (recipient.smsNumber && regex.test(recipient.smsNumber))
+        );
+    }
+    else {
+        const textFilterLowerCase = textFilter.toLocaleLowerCase();
+        return pendingItems.value.filter(recipient =>
+            (recipient.name && recipient.name.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
+                || (recipient.email && recipient.email.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
+                || (recipient.smsNumber && recipient.smsNumber.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
+        );
+    }
+});
+
+//#endregion
+
+//#region Functions
+
+function setItemRef(el: unknown): void {
+    const htmlElement = el as HTMLElement;
+    if (htmlElement) {
+        tooltip(htmlElement);
+    }
+}
+
+function tryGetRegExp(pattern: string): RegExp | undefined {
+    try {
+        const match = pattern.match(isRegex);
+
+        if (match && match.length) {
+            return new RegExp(match[1], match[2]);
+        }
+    }
+    catch {
+        // The pattern was not valid regex.
+    }
+}
+
+function isRecipient(item: unknown): item is CommunicationEntryRecipientBag {
+    return ((item as CommunicationEntryRecipientBag)?.personAliasGuid ?? null) !== null;
+}
+
+//#endregion
+
+//#region Event Handlers
+
+function onDeselectItemClicked(personAliasGuid: string | null | undefined): void {
+    if (!personAliasGuid) {
+        return;
+    }
+
+    const updatedPendingItems = [...pendingItems.value];
+
+    const index = updatedPendingItems.findIndex(i => i.personAliasGuid === personAliasGuid);
+    if (index !== -1) {
+        updatedPendingItems.splice(index, 1);
+        pendingItems.value = updatedPendingItems;
+    }
+}
+
+async function onPersonPicked(value: ListItemBag | undefined): Promise<void> {
+    if (!value) {
+        return;
+    }
+
+    const result = await invokeBlockAction<CommunicationEntryRecipientBag>("GetRecipient", { personAliasGuid: value.value });
+
+    if (!result?.isSuccess || !result.data) {
+        // TODO JMH Show error somehow.
+        console.log("Error");
+        return;
+    }
+
+    const updatedPendingItems = [...pendingItems.value];
+    const index = updatedPendingItems.findIndex(i => i.personAliasGuid === result.data?.personAliasGuid);
+    if (index === -1) {
+        updatedPendingItems.push(result.data);
+        pendingItems.value = updatedPendingItems;
+    }
+}
+
+function onSaveClicked(): void {
+    emit("update:items", pendingItems.value);
+    internalIsOpen.value = false;
+}
+
+//#endregion
+
+//#region Watchers
+
+watch(() => props.modelValue, (newValue: boolean, oldValue: boolean) => {
+    // If opening the modal, reset the pending items.
+    if (newValue && !oldValue) {
+        pendingItems.value = [...props.items];
+    }
+});
+
+//#endregion
+</script>
