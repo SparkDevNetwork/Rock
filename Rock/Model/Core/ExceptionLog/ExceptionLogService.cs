@@ -21,6 +21,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
 using Rock.Logging;
 
@@ -126,7 +129,8 @@ namespace Rock.Model
         public static void TruncateLog()
         {
             DbService.ExecuteCommand( "TRUNCATE TABLE ExceptionLog" );
-            RockLogger.Log.Information( RockLogDomains.Core, "The Exception Log Table has been truncated." );
+            RockLogger.LoggerFactory.CreateLogger<ExceptionLogService>()
+                .LogInformation( "The Exception Log Table has been truncated." );
         }
 
         /// <summary>

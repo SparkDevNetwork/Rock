@@ -126,9 +126,6 @@ namespace RockWeb
             Rock.Bus.RockMessageBus.IsRockStarted = false;
             QueueInUse = false;
 
-            // Start-up the observability features
-            ObservabilityHelper.ConfigureObservability( true );
-
             /* 2020-05-20 MDP
                 * Prior to Application_Start, Rock.WebStartup has an AssemblyInitializer class that runs as a PreApplicationStartMethod.
                 *
@@ -628,8 +625,6 @@ namespace RockWeb
                 // https://weblog.west-wind.com/posts/2013/oct/02/use-iis-application-initialization-for-keeping-aspnet-apps-alive
                 var client = new WebClient();
                 client.DownloadString( GetKeepAliveUrl() );
-
-                RockLogger.Log.Close();
             }
             catch
             {

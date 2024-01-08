@@ -15,10 +15,15 @@
 // </copyright>
 //
 using System;
-using System.Configuration;
 using System.Diagnostics;
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json.Linq;
+
 using OpenTelemetry;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -33,12 +38,13 @@ namespace Rock.Observability
     /// </summary>
     public static class ObservabilityHelper
     {
-        private static string DefaultTracesPath = "v1/traces";
-        private static string DefaultMetricsPath = "v1/metrics";
-        private static string DefaultLogsPath = "v1/logs";
+        private static readonly string DefaultTracesPath = "v1/traces";
+        private static readonly string DefaultMetricsPath = "v1/metrics";
+        private static readonly string DefaultLogsPath = "v1/logs";
 
         private static TracerProvider _currentTracerProvider;
         private static MeterProvider _currentMeterProvider;
+        private static LogExporterWrapper _exporterWrapper = new LogExporterWrapper();
 
 
         /// <summary>
@@ -109,7 +115,7 @@ namespace Rock.Observability
         /// </summary>
         public static string ServiceName
         {
-            get => ConfigurationManager.AppSettings["ObservabilityServiceName"]?.Trim() ?? string.Empty;
+            get => System.Configuration.ConfigurationManager.AppSettings["ObservabilityServiceName"]?.Trim() ?? string.Empty;
         }
         #endregion
 
@@ -117,7 +123,7 @@ namespace Rock.Observability
         /// Configures the observability TraceProvider and passes back a reference to it.
         /// </summary>
         /// <returns></returns>
-        public static TracerProvider ConfigureObservability( bool isRockStartup = false )
+        public static void ConfigureObservability( bool isRockStartup = false )
         {
             // Configure the trace provider
             ConfigureTraceProvider();
@@ -130,15 +136,15 @@ namespace Rock.Observability
             {
                 RockMetricSource.StartCoreMetrics();
             }
-            
-            return _currentTracerProvider;
+
+            ConfigureLogExporter();
         }
 
         /// <summary>
         /// Configures the trace provider.
         /// </summary>
         /// <returns></returns>
-        public static TracerProvider ConfigureTraceProvider()
+        public static void ConfigureTraceProvider()
         {
             // Determine if a trace provider is already configured.
             var traceProviderPreviouslyConfigured = _currentTracerProvider != null;
@@ -181,15 +187,13 @@ namespace Rock.Observability
                     RockActivitySource.RefreshActivitySource();
                 }
             }
-
-            return _currentTracerProvider;
         }
 
         /// <summary>
         /// Configures and returns a meter provider
         /// </summary>
         /// <returns></returns>
-        public static MeterProvider ConfigureMeterProvider()
+        public static void ConfigureMeterProvider()
         {
             // Clear out the current trace provider
             _currentMeterProvider?.Dispose();
@@ -232,10 +236,66 @@ namespace Rock.Observability
                     )
                     .Build();
             }
-
-            return _currentMeterProvider;
         }
 
+        /// <summary>
+        /// Configures and returns a new logger factory.
+        /// </summary>
+        /// <returns></returns>
+        public static void ConfigureLogExporter()
+        {
+            Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out var endpointUri );
+            var observabilityEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
+            var endpointHeaders = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS )?.Replace( "^", "=" ).Replace( "|", "," );
+            var endpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ).ToString().ConvertToEnumOrNull<OpenTelemetry.Exporter.OtlpExportProtocol>() ?? OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+
+            if ( endpointUri != null && endpointProtocol == OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf )
+            {
+                endpointUri = AppendPathIfNotEndsWith( endpointUri, DefaultLogsPath );
+            }
+
+            if ( !observabilityEnabled || endpointUri == null )
+            {
+                _exporterWrapper.Exporter = null;
+                return;
+            }
+
+            var exporter = new OpenTelemetry.Exporter.OtlpLogExporter( new OpenTelemetry.Exporter.OtlpExporterOptions
+            {
+                Endpoint = endpointUri,
+                Protocol = endpointProtocol,
+                Headers = endpointHeaders
+            } );
+
+            _exporterWrapper.Exporter = exporter;
+        }
+
+        /// <summary>
+        /// Configures and returns a new logger factory.
+        /// </summary>
+        /// <returns></returns>
+        public static void ConfigureLoggingBuilder( ILoggingBuilder builder )
+        {
+            builder.AddOpenTelemetry( cfg =>
+            {
+                var nodeName = RockMessageBus.NodeName.ToLower();
+                var machineName = _machineName.Value;
+                var instanceId = nodeName != machineName ? $"{machineName} ({nodeName})" : machineName;
+
+                var resourceBuilder = ResourceBuilder.CreateDefault()
+                    .AddService( serviceName: ServiceName, serviceVersion: "1.0.0", serviceInstanceId: instanceId );
+
+                cfg.IncludeFormattedMessage = true;
+                cfg.SetResourceBuilder( resourceBuilder );
+
+                // This processor is temporary until OpenTelemetry decides what
+                // to do with the category name. It is currently excluded in
+                // from the exporter.
+                cfg.AddProcessor( new CategoryLogProcessor() );
+
+                cfg.AddProcessor( new BatchLogRecordExportProcessor( _exporterWrapper ) );
+            } );
+        }
         /// <summary>
         /// Helper method to create a new observability activity that has a common set of attributes applied to it.
         /// </summary>

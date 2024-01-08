@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Queue;
 using Rock.Logging;
 
@@ -53,7 +55,8 @@ namespace Rock.Bus.Message
 
             _ = RockMessageBus.PublishAsync<CacheEventQueue, ClearReferencedEntityDependenciesMessage>( message );
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Published Clear Referenced Entity Dependencies message." );
+            RockLogger.LoggerFactory.CreateLogger<ClearReferencedEntityDependenciesMessage>()
+                .LogDebug( "Published Clear Referenced Entity Dependencies message." );
         }
     }
 }

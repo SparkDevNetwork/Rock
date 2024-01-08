@@ -27,6 +27,8 @@ using System.Text;
 
 using Humanizer;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Core;
 using Rock.Data;
@@ -34,7 +36,6 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Observability;
 using Rock.Web.Cache;
-using WebGrease.Css.Extensions;
 
 namespace Rock.Jobs
 {
@@ -137,6 +138,7 @@ namespace Rock.Jobs
         Order = 9,
         Key = AttributeKey.StaleAnonymousVisitorRecordRetentionPeriodInDays )]
 
+    [RockLoggingCategory]
     public class RockCleanup : RockJob
     {
         /// <summary>
@@ -2604,7 +2606,7 @@ SELECT @@ROWCOUNT
                                     innerEx = innerEx.InnerException;
                                 }
 
-                                Log( RockLogLevel.Warning, $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
+                                Logger.LogWarning( $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
 
                                 // The context we used to attempt the deletion is no
                                 // good to use now since it is in a bad state. Create

@@ -19,6 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
@@ -406,6 +409,15 @@ namespace Rock.Blocks.Prayer
         private string RequestPageParameter => this.PageParameter( PageParameterKey.Request );
 
         #endregion
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger<PrayerRequestEntry>();
 
         #endregion
 
@@ -841,7 +853,7 @@ namespace Rock.Blocks.Prayer
                 }
                 catch ( Exception ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Prayer, ex, "Unable to start workflow after prayer request was created." );
+                    _logger.LogError( ex, "Unable to start workflow after prayer request was created." );
                 }
             }
         }

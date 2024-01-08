@@ -20,6 +20,9 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Logging;
 using Rock.Model;
 
@@ -155,7 +158,7 @@ namespace Rock.Communication.Transport
             var mailMessage = GetMailMessageFromRockEmailMessage( rockEmailMessage );
             var smtpClient = GetSmtpClient();
 
-            RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: Starting to send {1} to {2}.", nameof( SendEmailAsync ), rockEmailMessage.Subject, rockEmailMessage.GetRecipients().FirstOrDefault()?.To );
+            Logger.LogDebug( "{0}: Starting to send {1} to {2}.", nameof( SendEmailAsync ), rockEmailMessage.Subject, rockEmailMessage.GetRecipients().FirstOrDefault()?.To );
             await smtpClient.SendMailAsync( mailMessage ).ConfigureAwait( false );
 
             return new EmailSendResponse

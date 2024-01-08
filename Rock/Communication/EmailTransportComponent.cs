@@ -22,6 +22,9 @@ using System.Net.Mail;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Logging;
@@ -193,7 +196,7 @@ namespace Rock.Communication
                     {
                         var getRecipientTimer = System.Diagnostics.Stopwatch.StartNew();
                         var recipient = GetNextPending( communication.Id, mediumEntityTypeId, communication.IsBulkCommunication );
-                        RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: It took {1} ticks to get the next pending recipient.", nameof( SendAsync ), getRecipientTimer.ElapsedTicks );
+                        Logger.LogDebug( "{0}: It took {1} ticks to get the next pending recipient.", nameof( SendAsync ), getRecipientTimer.ElapsedTicks );
 
                         // This means we are done, break the loop
                         if ( recipient == null )
@@ -205,7 +208,7 @@ namespace Rock.Communication
                         var startMutexWait = System.Diagnostics.Stopwatch.StartNew();
                         await mutex.WaitAsync().ConfigureAwait( false );
 
-                        RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: Starting to send {1} to {2} with a {3} tick wait.", nameof( SendAsync ), communication.Name, recipient.Id, startMutexWait.ElapsedTicks );
+                        Logger.LogDebug( "{0}: Starting to send {1} to {2} with a {3} tick wait.", nameof( SendAsync ), communication.Name, recipient.Id, startMutexWait.ElapsedTicks );
                         sendingTask.Add( ThrottleHelper.ThrottledExecute( () => SendToRecipientAsync( recipient.Id, communication, mediumEntityTypeId, mediumAttributes, mergeFields, templateEmailMessage, organizationEmail ), mutex ) );
                     }
 
@@ -1129,7 +1132,7 @@ namespace Rock.Communication
                 rockContext.SaveChanges();
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: Took {1} ticks to retrieve and send the email.", nameof( SendToRecipientAsync ), methodTimer.ElapsedTicks );
+            Logger.LogDebug( "{0}: Took {1} ticks to retrieve and send the email.", nameof( SendToRecipientAsync ), methodTimer.ElapsedTicks );
         }
 
         /// <summary>

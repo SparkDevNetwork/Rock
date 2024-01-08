@@ -18,6 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -484,6 +487,15 @@ namespace Rock.Blocks.Security
 
         #endregion
 
+        #region Fields
+
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger<Login>();
+
+        #endregion
+
         #region Page Parameter Keys
 
         private static class PageParameterKey
@@ -623,7 +635,7 @@ namespace Rock.Blocks.Security
                         // Authenticate the user in Rock as if 2FA occurred while logging
                         // an error so administrators can fix the issue without inhibiting a successful login.
                         var errors = passwordlessValidation.GetErrorMessages();
-                        RockLogger.Log.Error( RockLogDomains.Core, "Two-Factor Authentication is required but Passwordless authentication is not configured {Errors}.", errors.JoinStrings( " " ) );
+                        _logger.LogError( $"Two-Factor Authentication is required but Passwordless authentication is not configured {errors.JoinStrings( " " )}." );
 
                         Authenticate(
                             userLogin.UserName,

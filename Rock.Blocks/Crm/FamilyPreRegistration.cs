@@ -18,8 +18,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Core.Campus.Options;
@@ -724,6 +726,15 @@ namespace Rock.Blocks.Crm
 
         #endregion
 
+        #region Fields
+
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger<FamilyPreRegistration>();
+
+        #endregion
+
         public override object GetObsidianBlockInitialization()
         {
             return GetInitializationBox();
@@ -1371,7 +1382,7 @@ namespace Rock.Blocks.Crm
                             }
                             catch ( Exception ex )
                             {
-                                RockLogger.Log.Error( RockLogDomains.Crm, ex, ex.Message );
+                                _logger.LogError( ex, ex.Message );
                             }
                         }
                     }
@@ -1394,7 +1405,7 @@ namespace Rock.Blocks.Crm
                             }
                             catch ( Exception ex )
                             {
-                                RockLogger.Log.Error( RockLogDomains.Crm, ex, ex.Message );
+                                _logger.LogError( ex, ex.Message );
                             }
                         }
                     }

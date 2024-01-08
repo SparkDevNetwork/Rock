@@ -43,6 +43,7 @@ using Rock.Utility;
 using Rock.RealTime.Topics;
 using Rock.RealTime;
 using Rock.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -2370,7 +2371,8 @@ namespace RockWeb.Blocks.Crm
                                                 // Add those results to the log and then move on to the next person.
                                                 var validationMessage = string.Join( ",", groupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() );
                                                 Interlocked.Increment( ref _errorCount );
-                                                RockLogger.Log.Information( RockLogDomains.Group, validationMessage );
+                                                RockLogger.LoggerFactory.CreateLogger<BulkUpdate>()
+                                                    .LogInformation( validationMessage );
                                             }
                                         }
 

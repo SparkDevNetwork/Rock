@@ -22,6 +22,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -787,7 +789,8 @@ namespace RockWeb.Blocks.Cms
                 }
                 catch ( AddToContentLibraryException ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Cms, ex, ex.Message );
+                    RockLogger.LoggerFactory.CreateLogger<ContentChannelItemList>()
+                        .LogError( ex, ex.Message );
                     mdGridWarning.Show( ex.Message.ConvertCrLfToHtmlBr(), ModalAlertType.Alert );
                 }
             }
@@ -813,7 +816,8 @@ namespace RockWeb.Blocks.Cms
                 }
                 catch ( AddToContentLibraryException ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Cms, ex, ex.Message );
+                    RockLogger.LoggerFactory.CreateLogger<ContentChannelItemList>()
+                        .LogError( ex, ex.Message );
                     mdGridWarning.Show( ex.Message.ConvertCrLfToHtmlBr(), ModalAlertType.Alert );
                 }
             }
