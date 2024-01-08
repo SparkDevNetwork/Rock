@@ -52,4 +52,7 @@ export type FinancialBatchDetailOptionsBag = {
 
     /** Gets or sets the transaction item count. */
     transactionItemCount: number;
+
+    /** Gets or sets the value of the flag for whether the account totals section is hidden or not.*/
+    isAccountTotalsHidden: boolean;
 };
