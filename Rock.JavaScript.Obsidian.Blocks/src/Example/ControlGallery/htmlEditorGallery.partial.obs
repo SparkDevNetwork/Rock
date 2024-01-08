@@ -1,0 +1,50 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" :value="value">
+
+        <HtmlEditor v-model="value"
+                    :disabled="disabled"
+                    :editorHeight="editorHeight > 0 ? editorHeight : undefined"
+                    :initialValue="initialValue"
+                    :mergeFields="mergeFields" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <NumberBox label="Editor Height" v-model="editorHeight" help="Sets the editor height in pixels." />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <TextBox label="Merge Fields" v-model="mergeFields" help="The merge fields that are available for selection in the Merge Field toolbar button. If this is not set, then the Merge Field button will be hidden in the editor toolbar." />
+                </div>
+            </div>
+        </template>
+
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref("");
+    const disabled = ref(false);
+    const editorHeight = ref(600);
+    const mergeFields = ref("GlobalAttribute,Rock.Model.Person|Custom Person Label,MergeField1,MergeFieldWithCustomLabel|Custom Label");
+    const initialValue = ref(`<h1>Test</h1>
+<p>This is the initial value.</p>`);
+
+    const importCode = getSfcControlImportPath("htmlEditor");
+    const exampleCode = computed(() => {
+        return `<HtmlEditor
+    v-model="modelValue"${disabled.value ? `
+    :disabled="${disabled.value}"` : ""}${editorHeight.value ? `
+    :editorHeight="${editorHeight.value}"` : ""}${initialValue.value ? `
+    initialValue="${initialValue.value}"` : ""}${mergeFields.value ? `
+    mergeFields="${mergeFields.value}"` : ""} />`;
+    });
+</script>

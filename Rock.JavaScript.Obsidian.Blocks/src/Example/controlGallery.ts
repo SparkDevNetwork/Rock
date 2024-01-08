@@ -259,6 +259,7 @@ import TermDescriptionGallery from "./ControlGallery/termDescriptionGallery.part
 import ValueFilterGallery from "./ControlGallery/valueFilterGallery.partial.obs";
 import SecurityButtonGallery from "./ControlGallery/securityButtonGallery.partial.obs";
 import MarkdownEditorGallery from "./ControlGallery/markdownEditorGallery.partial.obs";
+import HtmlEditorGallery from "./ControlGallery/htmlEditorGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -8107,6 +8108,7 @@ const controlGalleryComponents: Record<string, Component> = [
     ValueFilterGallery,
     SecurityButtonGallery,
     MarkdownEditorGallery,
+    HtmlEditorGallery
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
