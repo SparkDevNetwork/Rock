@@ -2971,6 +2971,11 @@ namespace RockWeb.Blocks.Event
                 // Get each registrant
                 var index = 0;
 
+                // Keep track of the registered person IDs to prevent mistakenly merging different
+                // people (i.e. twins who share an email address) into the same person record
+                // based on an over-confident PersonService.FindPerson(...) match result.
+                var personIdsRegisteredWithinThisSession = new List<int>();
+
                 foreach ( var registrantInfo in RegistrationState.Registrants.ToList() )
                 {
                     var registrantChanges = new History.HistoryChangeList();
@@ -3077,6 +3082,25 @@ namespace RockWeb.Blocks.Event
                         // Try to find a matching person based on name, email address, mobile phone, and birthday. If these were not provided they are not considered.
                         var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
                         person = personService.FindPerson( personQuery, true );
+
+                        if ( person != null && personIdsRegisteredWithinThisSession.Contains( person.Id ) )
+                        {
+                            /*
+                                1/8/2024 - JPH
+
+                                We've seen scenarios in which different people (i.e. twins who share an email address) are
+                                mistakenly merged into a single person record because of the way our FindPerson(...) method
+                                works. Rock is correctly attempting to prevent the creation of duplicate person records,
+                                but we need to handle this unique scenario by instead keeping track of the person IDs that
+                                have already been tied to a registrant record within this specific registration session,
+                                and if the FindPerson(...) method returns the same person more than once, we'll force Rock
+                                to create a new person record, at the risk of creating duplicate people. This risk is more
+                                tolerable than the risk of failing to save a Person altogether, as in the twin example above.
+
+                                Reason: Attempt to prevent merging different people based on an over-confident match result.
+                            */
+                            person = null;
+                        }
 
                         // Try to find a matching person based on name within same family as registrar
                         if ( person == null && registrar != null && registrantInfo.FamilyGuid == RegistrationState.FamilyGuid )
@@ -3273,6 +3297,9 @@ namespace RockWeb.Blocks.Event
 
                     // Save the person ( and family if needed )
                     SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId, updateExistingCampus );
+
+                    // Take note of this registered person identifier.
+                    personIdsRegisteredWithinThisSession.Add( person.Id );
 
                     // Load the person's attributes
                     person.LoadAttributes();
