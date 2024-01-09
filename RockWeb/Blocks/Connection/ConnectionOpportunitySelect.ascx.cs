@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Connection
         EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = StatusTemplateDefaultValue,
         Order = 4,
-        Key =  AttributeKey.StatusTemplate )]
+        Key = AttributeKey.StatusTemplate )]
 
     [CodeEditorField(
         "Opportunity Summary Template",
@@ -149,8 +149,7 @@ namespace RockWeb.Blocks.Connection
     <span class='badge badge-warning'>{{ OpportunitySummary.UnassignedCount | Format:'#,###,###' }}</span>
     <span class='badge badge-critical'>{{ OpportunitySummary.CriticalCount | Format:'#,###,###' }}</span>
     <span class='badge badge-danger'>{{ OpportunitySummary.IdleCount | Format:'#,###,###' }}</span>
-</div>
-";
+</div>";
 
         #endregion Attribute Default values
 
@@ -552,7 +551,7 @@ namespace RockWeb.Blocks.Connection
                         // If the user is limited requests with specific campus(es) set the list, otherwise leave it to be null
                         opportunitySummary.CampusSpecificConnector = campusSpecificConnector;
                         opportunitySummary.ConnectorCampusIds = campusIds.Distinct().ToList();
-
+                        opportunitySummary.StatusCounts = GetStatusCountsForOpportunity( opportunity.Id, cpCampusFilter.SelectedCampusId );
                         connectionTypeSummary.Opportunities.Add( opportunitySummary );
                     }
                 }
@@ -627,13 +626,66 @@ namespace RockWeb.Blocks.Connection
             }
 
             var statusTemplate = GetAttributeValue( AttributeKey.StatusTemplate );
-            var statusMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(this.RockPage);
+            var statusMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
             statusMergeFields.Add( "ConnectionOpportunities", allOpportunities );
             statusMergeFields.Add( "ConnectionTypes", connectionTypes );
             statusMergeFields.Add( "IdleTooltip", sb.ToString().EncodeHtml() );
             lStatusBarContent.Text = statusTemplate.ResolveMergeFields( statusMergeFields );
             BindSummaryData();
         }
+
+        private List<StatusCountInfo> GetStatusCountsForOpportunity( int opportunityId, int? campusId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequestQuery = rockContext.ConnectionRequests
+                    .Where( cr => cr.ConnectionOpportunityId == opportunityId );
+
+                if ( campusId.HasValue )
+                {
+                    connectionRequestQuery = connectionRequestQuery.Where( cr => cr.CampusId == campusId.Value );
+                }
+
+                var statusCounts = connectionRequestQuery
+                    .GroupBy( cr => new { cr.ConnectionStatus.Id, cr.ConnectionStatus.Name, cr.ConnectionStatus.HighlightColor } )
+                    .Select( group => new StatusCountInfo
+                    {
+                        Id = group.Key.Id,
+                        Name = group.Key.Name,
+                        HighlightColor = group.Key.HighlightColor,
+                        Count = group.Count()
+                    } )
+                    .ToList();
+
+                return statusCounts;
+            }
+        }
+        private Dictionary<string, string> GetStatusHighlightColors( int opportunityId, RockContext rockContext )
+        {
+            var highlightColors = new Dictionary<string, string>();
+
+            // Get the ConnectionTypeId for the specified opportunity
+            var connectionTypeId = rockContext.ConnectionOpportunities
+                .Where( co => co.Id == opportunityId )
+                .Select( co => co.ConnectionTypeId )
+                .FirstOrDefault();
+
+            if ( connectionTypeId != 0 )
+            {
+                // Get the highlight colors for each status associated with the ConnectionTypeId
+                var statuses = rockContext.ConnectionStatuses
+                    .Where( co => co.ConnectionTypeId == connectionTypeId && co.IsActive )
+                    .ToList();
+
+                foreach ( var status in statuses )
+                {
+                    highlightColors.Add( status.Name, status.HighlightColor );
+                }
+            }
+
+            return highlightColors;
+        }
+
 
         /// <summary>
         /// Binds the summary data.
@@ -740,14 +792,26 @@ namespace RockWeb.Blocks.Connection
             public List<int> UnassignedConnectionRequests { get; internal set; }
             public List<int> IdleConnectionRequests { get; internal set; }
             public List<int> CriticalConnectionRequests { get; internal set; }
+            public List<StatusCountInfo> StatusCounts { get; set; } = new List<StatusCountInfo>();
             public int TotalRequests { get; internal set; }
 
-            public string FollowIconHtml {
+            public string FollowIconHtml
+            {
                 get
                 {
                     return string.Format( @"<i class=""{0} fa-star""></i>", IsFollowed ? "fas" : "far" );
                 }
             }
+
+        }
+
+        [Serializable]
+        public class StatusCountInfo : LavaDataObject
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string HighlightColor { get; set; }
+            public int Count { get; set; }
         }
 
         #endregion
