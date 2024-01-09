@@ -1087,66 +1087,66 @@ namespace Rock.Blocks.Communication
             return new NullMediumDataService();
         }
 
-        /// <summary>
-        /// Handles the Click event of the btnSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        [BlockAction( "SaveDraft" )]
-        public BlockActionResult SaveDraft( CommunicationEntrySendRequestBag bag )
-        {
-            var validationResults = Validate( bag.Communication );
+        ///// <summary>
+        ///// Handles the Click event of the btnSave control.
+        ///// </summary>
+        ///// <param name="sender">The source of the event.</param>
+        ///// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        //[BlockAction( "SaveDraft" )]
+        //public BlockActionResult SaveDraft( CommunicationEntrySendRequestBag bag )
+        //{
+        //    var validationResults = Validate( bag.Communication );
 
-            if ( validationResults.IsError )
-            {
-                return validationResults.BlockActionResult;
-            }
+        //    if ( validationResults.IsError )
+        //    {
+        //        return validationResults.BlockActionResult;
+        //    }
 
-            using ( var rockContext = new RockContext() )
-            {
-                var communication = UpdateCommunication( rockContext, bag.Communication );
+        //    using ( var rockContext = new RockContext() )
+        //    {
+        //        var communication = UpdateCommunication( rockContext, bag.Communication );
 
-                if ( communication != null )
-                {
-                    var mediumControl = GetMediumDataService( bag.Communication.MediumEntityTypeGuid );
-                    if ( mediumControl != null )
-                    {
-                        mediumControl.OnCommunicationSave( rockContext, bag.Communication );
-                    }
+        //        if ( communication != null )
+        //        {
+        //            var mediumControl = GetMediumDataService( bag.Communication.MediumEntityTypeGuid );
+        //            if ( mediumControl != null )
+        //            {
+        //                mediumControl.OnCommunicationSave( rockContext, bag.Communication );
+        //            }
 
-                    communication.Status = CommunicationStatus.Draft;
-                    rockContext.SaveChanges();
+        //            communication.Status = CommunicationStatus.Draft;
+        //            rockContext.SaveChanges();
 
 
-                    void ShowResult( string message )
-                    {
+        //            void ShowResult( string message )
+        //            {
 
-                        ShowStatus( communication );
+        //                ShowStatus( communication );
 
-                        pnlEdit.Visible = false;
+        //                pnlEdit.Visible = false;
 
-                        nbResult.Text = message;
+        //                nbResult.Text = message;
 
-                        CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, communication.Id.ToString() );
-                        hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
+        //                CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, communication.Id.ToString() );
+        //                hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 
-                        // only show the Link if there is a CommunicationDetail block type on this page
-                        hlViewCommunication.Visible = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
+        //                // only show the Link if there is a CommunicationDetail block type on this page
+        //                hlViewCommunication.Visible = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
 
-                        pnlResult.Visible = true;
+        //                pnlResult.Visible = true;
 
-                        ScriptManager.RegisterStartupScript(
-                            Page,
-                            GetType(),
-                            "scrollToResults",
-                            "scrollToResults();",
-                            true );
-                    }
+        //                ScriptManager.RegisterStartupScript(
+        //                    Page,
+        //                    GetType(),
+        //                    "scrollToResults",
+        //                    "scrollToResults();",
+        //                    true );
+        //            }
 
-                    ShowResult( "The communication has been saved", communication );
-                }
-            }
-        }
+        //            ShowResult( "The communication has been saved", communication );
+        //        }
+        //    }
+        //}
 
         //protected void btnCancel_Click( object sender, EventArgs e )
         //{

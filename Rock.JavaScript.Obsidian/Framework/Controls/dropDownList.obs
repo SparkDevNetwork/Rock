@@ -37,6 +37,7 @@
                         </template>
 
                         <template v-if="$slots.maxTagPlaceholder" #maxTagPlaceholder="slotProps">
+                            <pre><code>{{ JSON.stringify(slotProps) }}</code></pre>
                             <!-- <slot name="maxTagPlaceholder" v-bind="slotProps.map(p => ({
                                 label: p.label as string,
                                 value: p.value as string,

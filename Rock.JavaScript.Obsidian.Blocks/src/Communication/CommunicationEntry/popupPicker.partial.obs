@@ -31,15 +31,15 @@
             </div>
         </template>
 
-        <template #maxTagPlaceholder="omittedValues">
-            <div ref="maxTagPlaceholder">
+        <template #maxTagPlaceholder="omittedValues">hello
+            <!-- TODO JMH Uncomment once the intellisense is fixed. <div ref="maxTagPlaceholder">
                 <RockButton class="item label label-default rounded-pill"
                             :disabled="disabled"
                             @click.stop="onOpenPopupClicked"
                             @mousedown.stop>
                     <span class="item-content">{{ omittedValues.length }} more</span>
                 </RockButton>
-            </div>
+            </div> -->
         </template>
     </BaseAsyncPicker>
 </template>
