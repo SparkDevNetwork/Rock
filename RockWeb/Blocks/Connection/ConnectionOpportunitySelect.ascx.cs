@@ -298,6 +298,8 @@ namespace RockWeb.Blocks.Connection
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
 
+            var filteredCampusId = cpCampusFilter.SelectedCampusId.ToStringSafe();
+
             mergeFields.Add( "OpportunitySummary", opportunitySummary );
 
             string result = null;
@@ -305,7 +307,7 @@ namespace RockWeb.Blocks.Connection
             {
                 var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Queryable().AsNoTracking().FirstOrDefault( a => a.Id == opportunitySummary.Id );
                 mergeFields.Add( "ConnectionOpportunity", connectionOpportunity );
-
+                mergeFields.Add( "FilteredCampusId", filteredCampusId );
                 result = template.ResolveMergeFields( mergeFields );
             }
 
@@ -522,6 +524,19 @@ namespace RockWeb.Blocks.Connection
                                             )
                                             .Select( a => a.Id ).ToList();
 
+                        var statusCounts = connectionRequestsQry
+                                       .Where( cr => cr.ConnectionState == ConnectionState.Active ||
+                                                     ( cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < midnightToday ) )
+                                       .GroupBy( cr => new { cr.ConnectionStatus.Id, cr.ConnectionStatus.Name, cr.ConnectionStatus.HighlightColor } )
+                                       .Select( group => new StatusCountInfo
+                                       {
+                                           Id = group.Key.Id,
+                                           Name = group.Key.Name,
+                                           HighlightColor = group.Key.HighlightColor,
+                                           Count = group.Count()
+                                       } )
+                                       .ToList();
+
                         // get list of requests that have a status that is considered critical.
                         List<int> criticalConnectionRequests = connectionRequestsQry
                                                     .Where( r =>
@@ -638,7 +653,9 @@ namespace RockWeb.Blocks.Connection
         {
             using ( var rockContext = new RockContext() )
             {
-                var connectionRequestQuery = rockContext.ConnectionRequests
+                var connectionRequestService = new ConnectionRequestService( rockContext );
+                var connectionRequestQuery = connectionRequestService
+                    .Queryable().AsNoTracking()
                     .Where( cr => cr.ConnectionOpportunityId == opportunityId );
 
                 if ( campusId.HasValue )
@@ -648,44 +665,18 @@ namespace RockWeb.Blocks.Connection
 
                 var statusCounts = connectionRequestQuery
                     .GroupBy( cr => new { cr.ConnectionStatus.Id, cr.ConnectionStatus.Name, cr.ConnectionStatus.HighlightColor } )
-                    .Select( group => new StatusCountInfo
+                    .Select( sci => new StatusCountInfo
                     {
-                        Id = group.Key.Id,
-                        Name = group.Key.Name,
-                        HighlightColor = group.Key.HighlightColor,
-                        Count = group.Count()
+                        Id = sci.Key.Id,
+                        Name = sci.Key.Name,
+                        HighlightColor = sci.Key.HighlightColor ?? ConnectionStatus.DefaultHighlightColor,
+                        Count = sci.Count()
                     } )
                     .ToList();
 
                 return statusCounts;
             }
         }
-        private Dictionary<string, string> GetStatusHighlightColors( int opportunityId, RockContext rockContext )
-        {
-            var highlightColors = new Dictionary<string, string>();
-
-            // Get the ConnectionTypeId for the specified opportunity
-            var connectionTypeId = rockContext.ConnectionOpportunities
-                .Where( co => co.Id == opportunityId )
-                .Select( co => co.ConnectionTypeId )
-                .FirstOrDefault();
-
-            if ( connectionTypeId != 0 )
-            {
-                // Get the highlight colors for each status associated with the ConnectionTypeId
-                var statuses = rockContext.ConnectionStatuses
-                    .Where( co => co.ConnectionTypeId == connectionTypeId && co.IsActive )
-                    .ToList();
-
-                foreach ( var status in statuses )
-                {
-                    highlightColors.Add( status.Name, status.HighlightColor );
-                }
-            }
-
-            return highlightColors;
-        }
-
 
         /// <summary>
         /// Binds the summary data.
