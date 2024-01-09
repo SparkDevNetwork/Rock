@@ -332,15 +332,6 @@ namespace Rock.Blocks.Group
 
         #endregion
 
-        #region Fields
-
-        /// <summary>
-        /// The logger for this instance.
-        /// </summary>
-        private readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger<GroupAttendanceDetail>();
-
-        #endregion
-
         #region Block Settings
 
         /// <summary>
@@ -656,7 +647,7 @@ namespace Rock.Blocks.Group
 
                 if ( mergeTemplate == null )
                 {
-                    _logger.LogError("Error printing Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." );
+                    Logger.LogError("Error printing Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." );
                     return ActionBadRequest( "Unable to print Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." );
                 }
 
@@ -664,7 +655,7 @@ namespace Rock.Blocks.Group
 
                 if ( mergeTemplateType == null )
                 {
-                    _logger.LogError( "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." );
+                    Logger.LogError( "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." );
                     return ActionBadRequest( $"Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." );
                 }
 
@@ -676,17 +667,17 @@ namespace Rock.Blocks.Group
                 {
                     if ( mergeTemplateType.Exceptions.Count == 1 )
                     {
-                        _logger.LogError( mergeTemplateType.Exceptions[0], mergeTemplateType.Exceptions[0].Message );
+                        Logger.LogError( mergeTemplateType.Exceptions[0], mergeTemplateType.Exceptions[0].Message );
                     }
                     else if ( mergeTemplateType.Exceptions.Count > 50 )
                     {
                         var aggException = new AggregateException( $"Exceptions merging template {mergeTemplate.Name}. See InnerExceptions for top 50.", mergeTemplateType.Exceptions.Take( 50 ).ToList() );
-                        _logger.LogError( aggException, aggException.Message );
+                        Logger.LogError( aggException, aggException.Message );
                     }
                     else
                     {
                         var aggException = new AggregateException( $"Exceptions merging template {mergeTemplate.Name}. See InnerExceptions", mergeTemplateType.Exceptions.ToList() );
-                        _logger.LogError( aggException, aggException.Message );
+                        Logger.LogError( aggException, aggException.Message );
                     }
                 }
 

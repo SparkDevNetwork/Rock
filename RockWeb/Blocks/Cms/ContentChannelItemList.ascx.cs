@@ -789,8 +789,7 @@ namespace RockWeb.Blocks.Cms
                 }
                 catch ( AddToContentLibraryException ex )
                 {
-                    RockLogger.LoggerFactory.CreateLogger<ContentChannelItemList>()
-                        .LogError( ex, ex.Message );
+                    Logger.LogError( ex, ex.Message );
                     mdGridWarning.Show( ex.Message.ConvertCrLfToHtmlBr(), ModalAlertType.Alert );
                 }
             }
@@ -816,8 +815,7 @@ namespace RockWeb.Blocks.Cms
                 }
                 catch ( AddToContentLibraryException ex )
                 {
-                    RockLogger.LoggerFactory.CreateLogger<ContentChannelItemList>()
-                        .LogError( ex, ex.Message );
+                    Logger.LogError( ex, ex.Message );
                     mdGridWarning.Show( ex.Message.ConvertCrLfToHtmlBr(), ModalAlertType.Alert );
                 }
             }

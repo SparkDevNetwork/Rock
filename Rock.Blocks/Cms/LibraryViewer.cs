@@ -16,10 +16,13 @@
 //
 
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Cms;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -27,8 +30,6 @@ using Rock.Model.CMS.ContentChannelItem.Options;
 using Rock.Utility.ContentLibraryApi;
 using Rock.ViewModels.Blocks.Cms.LibraryViewer;
 using Rock.Web.Cache;
-using Rock.Cms;
-using Microsoft.Extensions.Logging;
 
 namespace Rock.Blocks.Cms
 {
@@ -47,15 +48,6 @@ namespace Rock.Blocks.Cms
         {
             public const string ContentChannelIdKey = "ContentChannelIdKey";
         }
-
-        #endregion
-
-        #region Fields
-
-        /// <summary>
-        /// The logger for this instance.
-        /// </summary>
-        private readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger<LibraryViewer>();
 
         #endregion
 
@@ -198,12 +190,12 @@ namespace Rock.Blocks.Cms
                 }
                 catch ( AddFromContentLibraryException ex )
                 {
-                    _logger.LogError( ex, ex.Message );
+                    Logger.LogError( ex, ex.Message );
                     return ActionBadRequest( ex.Message );
                 }
                 catch ( Exception ex )
                 {
-                    _logger.LogError( ex, ex.Message );
+                    Logger.LogError( ex, ex.Message );
                     return ActionInternalServerError( "An unexpected error occurred while downloading the item." );
                 }
             }

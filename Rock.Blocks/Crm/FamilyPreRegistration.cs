@@ -726,15 +726,6 @@ namespace Rock.Blocks.Crm
 
         #endregion
 
-        #region Fields
-
-        /// <summary>
-        /// The logger for this instance.
-        /// </summary>
-        private readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger<FamilyPreRegistration>();
-
-        #endregion
-
         public override object GetObsidianBlockInitialization()
         {
             return GetInitializationBox();
@@ -1382,7 +1373,7 @@ namespace Rock.Blocks.Crm
                             }
                             catch ( Exception ex )
                             {
-                                _logger.LogError( ex, ex.Message );
+                                Logger.LogError( ex, ex.Message );
                             }
                         }
                     }
@@ -1405,7 +1396,7 @@ namespace Rock.Blocks.Crm
                             }
                             catch ( Exception ex )
                             {
-                                _logger.LogError( ex, ex.Message );
+                                Logger.LogError( ex, ex.Message );
                             }
                         }
                     }

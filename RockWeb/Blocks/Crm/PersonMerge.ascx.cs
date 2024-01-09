@@ -503,7 +503,7 @@ namespace RockWeb.Blocks.Crm
 
             var oldPhotos = new List<int>();
 
-            var logger = new RockProcessLogger();
+            var logger = new RockProcessLogger( Logger );
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = 90;
 
@@ -2171,9 +2171,14 @@ AND Attendance.Id != @FirstTimeRecordId
         /// </summary>
         private class RockProcessLogger
         {
-            private readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger<PersonMerge>();
+            private readonly ILogger _logger;
 
             public string DefaultTopic { get; set; }
+
+            public RockProcessLogger( ILogger logger )
+            {
+                _logger = logger;
+            }
 
             public void Write( string message )
             {

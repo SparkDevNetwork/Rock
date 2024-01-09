@@ -136,8 +136,6 @@ namespace Rock.Blocks.Engagement.SignUp
         private GroupMemberAssignmentService _groupMemberAssignmentService = null;
         private PersonService _personService = null;
 
-        private readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger<SignUpRegister>();
-
         #endregion
 
         #region Properties
@@ -1275,7 +1273,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
                 if ( !groupRoleId.HasValue )
                 {
-                    _logger.LogWarning( $"Unable to register {registrantsToRegister} to {registrationData.Project.Name} sign-up project as no group roles could be found." );
+                    Logger.LogWarning( $"Unable to register {registrantsToRegister} to {registrationData.Project.Name} sign-up project as no group roles could be found." );
 
                     errorMessage = $"{UnableToRegisterPrefix}.";
                     return null;

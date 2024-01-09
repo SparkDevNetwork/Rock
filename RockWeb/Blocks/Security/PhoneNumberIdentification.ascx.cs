@@ -254,8 +254,7 @@ namespace RockWeb.Blocks.Security
             catch ( Exception ex )
             {
                 ShowWarningMessage( ex.Message );
-                RockLogger.LoggerFactory.CreateLogger<PhoneNumberIdentification>()
-                    .LogError( ex, ex.Message );
+                Logger.LogError( ex, ex.Message );
                 ExceptionLogService.LogException( ex );
             }
         }

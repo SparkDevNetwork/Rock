@@ -21,8 +21,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
@@ -53,6 +56,15 @@ namespace Rock.Blocks
         private const string BrowserNotSupportedMarkup = @"<div class=""alert alert-warning"">
     It looks like you are using a browser that is not supported, you will need to update before using this feature.
 </div>";
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The logger backing field for the <see cref="Logger"/> property.
+        /// </summary>
+        private ILogger _logger;
 
         #endregion
 
@@ -117,6 +129,24 @@ namespace Rock.Blocks
 
         /// <inheritdoc/>
         public virtual string ObsidianFileUrl => GetObsidianFileUrl();
+
+        /// <summary>
+        /// Gets the logger instance that can be used to write log messages for
+        /// this block.
+        /// </summary>
+        /// <value>The logger instance.</value>
+        public ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
+            }
+        }
 
         #endregion
 

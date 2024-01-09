@@ -723,7 +723,7 @@ namespace RockWeb.Blocks.Crm
                 clientId = request.ServerVariables["REMOTE_ADDR"];
             }
 
-            var processor = new PersonBulkUpdateProcessor();
+            var processor = new PersonBulkUpdateProcessor( Logger );
 
             processor.InstanceId = clientId;
 
@@ -1398,8 +1398,10 @@ namespace RockWeb.Blocks.Crm
 
             #region Constructors
 
-            public PersonBulkUpdateProcessor()
+            public PersonBulkUpdateProcessor( ILogger logger )
             {
+                _logger = logger;
+
                 this.SelectedFields = new List<string>();
                 this.PersonIdList = new List<int>();
                 this.PersonAttributeCategories = new List<Guid>();
@@ -1418,6 +1420,8 @@ namespace RockWeb.Blocks.Crm
             #region Fields and Properties
 
             private readonly static TraceSource _tracer = new TraceSource( "Rock.Crm.BulkUpdate" );
+
+            private readonly ILogger _logger;
 
             private int _currentPersonAliasId;
             private Person _currentPerson = null;
@@ -2371,8 +2375,7 @@ namespace RockWeb.Blocks.Crm
                                                 // Add those results to the log and then move on to the next person.
                                                 var validationMessage = string.Join( ",", groupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() );
                                                 Interlocked.Increment( ref _errorCount );
-                                                RockLogger.LoggerFactory.CreateLogger<BulkUpdate>()
-                                                    .LogInformation( validationMessage );
+                                                _logger.LogInformation( validationMessage );
                                             }
                                         }
 

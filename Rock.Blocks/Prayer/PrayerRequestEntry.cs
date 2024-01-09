@@ -412,15 +412,6 @@ namespace Rock.Blocks.Prayer
 
         #endregion
 
-        #region Fields
-
-        /// <summary>
-        /// The logger for this instance.
-        /// </summary>
-        private readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger<PrayerRequestEntry>();
-
-        #endregion
-
         #region IRockObsidianBlockType Implementation
 
         /// <inheritdoc/>
@@ -853,7 +844,7 @@ namespace Rock.Blocks.Prayer
                 }
                 catch ( Exception ex )
                 {
-                    _logger.LogError( ex, "Unable to start workflow after prayer request was created." );
+                    Logger.LogError( ex, "Unable to start workflow after prayer request was created." );
                 }
             }
         }

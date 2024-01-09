@@ -1603,9 +1603,8 @@ var headerText = dp.label;
             {
                 taskLogMessage += $"Task Name: {info.name}, Time To Run: {info.TimeToRun()}. ";
             }
-            var logger = RockLogger.LoggerFactory.CreateLogger<AttendanceAnalytics>();
-            logger.LogInformation( "Attendance Analytics Task Times: " + taskLogMessage );
-            logger.LogInformation( "Attendance Analytics Parameters: " +
+            Logger.LogInformation( "Attendance Analytics Task Times: " + taskLogMessage );
+            Logger.LogInformation( "Attendance Analytics Parameters: " +
                 "groupTypeIdList: {@groupTypeIdList}, groupIdList: {@groupIdList}, start: {@start}, end: {@end}, " +
                 "campusIdList: {@campusIdList}, includeNullCampus: {@includeNullCampus}, scheduleIdList: {@scheduleIdList}",
                 groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList );

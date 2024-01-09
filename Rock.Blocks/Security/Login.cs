@@ -487,15 +487,6 @@ namespace Rock.Blocks.Security
 
         #endregion
 
-        #region Fields
-
-        /// <summary>
-        /// The logger for this instance.
-        /// </summary>
-        private readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger<Login>();
-
-        #endregion
-
         #region Page Parameter Keys
 
         private static class PageParameterKey
@@ -635,7 +626,7 @@ namespace Rock.Blocks.Security
                         // Authenticate the user in Rock as if 2FA occurred while logging
                         // an error so administrators can fix the issue without inhibiting a successful login.
                         var errors = passwordlessValidation.GetErrorMessages();
-                        _logger.LogError( $"Two-Factor Authentication is required but Passwordless authentication is not configured {errors.JoinStrings( " " )}." );
+                        Logger.LogError( $"Two-Factor Authentication is required but Passwordless authentication is not configured {errors.JoinStrings( " " )}." );
 
                         Authenticate(
                             userLogin.UserName,
