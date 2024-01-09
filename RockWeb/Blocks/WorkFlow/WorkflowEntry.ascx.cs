@@ -1023,7 +1023,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 if ( formSection.Title.IsNotNullOrWhiteSpace() )
                 {
-                    var formSectionHeader = new HtmlGenericControl( "h1" );
+                    var formSectionHeader = new HtmlGenericControl( "h3" );
                     formSectionHeader.InnerText = formSection.Title;
                     formSectionControl.Controls.Add( formSectionHeader );
                 }

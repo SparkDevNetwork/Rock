@@ -709,17 +709,11 @@ namespace Rock.CheckIn
                 locationListItemsBySchedule.Add( scheduleIdString, locationListItems );
 
                 // Collect, sort and add unique locations for this schedule.
-                foreach ( var sortedLocation in groupLocationSchedules.Where( gls => gls.Schedule.Id == schedule.Id )
-                                                                      .Select( gls => new
-                                                                      {
-                                                                          gls.GroupLocationOrder,
-                                                                          gls.Location
-                                                                      } )
-                                                                      .OrderBy( l => l.GroupLocationOrder )
-                                                                      .ThenBy( l => l.Location.Name )
-                                                                      .ToList() )
+                foreach ( var location in groupLocationSchedules.Where( gls => gls.Schedule.Id == schedule.Id )
+                                                                .Select( gls => gls.Location )
+                                                                .OrderBy( l => l.Name )
+                                                                .ToList() )
                 {
-                    var location = sortedLocation.Location;
                     var locationIdString = location.Id.ToString();
 
                     // Ensure we haven't already added this location for this schedule.
@@ -739,8 +733,7 @@ namespace Rock.CheckIn
                     // Collect, sort and add unique groups for this schedule and location combination.
                     foreach ( var group in groupLocationSchedules.Where( gls => gls.Schedule.Id == schedule.Id && gls.Location.Id == location.Id )
                                                                  .Select( gls => gls.Group )
-                                                                 .OrderBy( g => g.Order )
-                                                                 .ThenBy( g => g.Name ) )
+                                                                 .OrderBy( g => g.Name ) )
                     {
                         var groupIdString = group.Id.ToString();
 
