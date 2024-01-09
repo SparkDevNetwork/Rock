@@ -49,7 +49,7 @@ namespace Rock.Blocks.Cms
     public class ContentChannelDetail : RockDetailBlockType
     {
         // This is a cache backing field and should not be accessed directly , instead use the GetItemAttributes method to access this field. 
-        private List<Rock.Model.Attribute> itemAttributes;
+        private List<Rock.Model.Attribute> _itemAttributes;
 
         #region Keys
 
@@ -415,13 +415,13 @@ namespace Rock.Blocks.Cms
 
         private List<Rock.Model.Attribute> GetItemAttributes( int id, RockContext rockContext )
         {
-            if ( itemAttributes != null )
+            if ( _itemAttributes != null )
             {
-                return itemAttributes;
+                return _itemAttributes;
             }
             else
             {
-                itemAttributes = new List<Rock.Model.Attribute>();
+                _itemAttributes = new List<Rock.Model.Attribute>();
                 AttributeService attributeService = new AttributeService( rockContext );
 
                 attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId, true ).AsQueryable()
@@ -430,9 +430,9 @@ namespace Rock.Blocks.Cms
                         a.EntityTypeQualifierValue.Equals( id.ToString() ) )
                     .OrderBy( a => a.Order )
                     .ToList()
-                    .ForEach( a => itemAttributes.Add( a ) );
+                    .ForEach( a => _itemAttributes.Add( a ) );
 
-                return itemAttributes;
+                return _itemAttributes;
             }
         }
 

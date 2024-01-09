@@ -39,7 +39,7 @@ export type ContentChannelBag = {
 
     /**
      * Gets or sets the collection of Categories that this Content Channel is associated with.
-     * NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
+     * NOTE: Since changes to Categories aren't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
      */
     categories?: ListItemBag[] | null;
 

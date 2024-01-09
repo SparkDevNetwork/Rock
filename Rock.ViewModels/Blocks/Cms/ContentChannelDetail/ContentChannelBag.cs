@@ -30,7 +30,7 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelDetail
     {
         /// <summary>
         /// Gets or sets the collection of Categories that this Content Channel is associated with.
-        /// NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
+        /// NOTE: Since changes to Categories aren't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
         /// </summary>
         public List<ListItemBag> Categories { get; set; }
 
