@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Core
             } )
                 .GroupBy( d => d.SignatureDocumentTemplate ) // grouping by the signature document template to avoid duplicate checks for authorization on the same
                 .ToList()
-                .Where( d => d.Key.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                .Where( d => d.Key.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 .SelectMany( d => d )
                 .ToList();
 
