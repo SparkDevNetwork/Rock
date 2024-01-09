@@ -1626,45 +1626,46 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                qry = financialTransactionDetailQry.Select( a => new FinancialTransactionRow
-                {
-                    Id = a.TransactionId,
-                    BatchId = a.Transaction.BatchId,
-                    TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
-                    ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
-                    AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
-                    TransactionDateTime = a.Transaction.TransactionDateTime ?? a.Transaction.FutureProcessingDateTime.Value,
-                    FutureProcessingDateTime = a.Transaction.FutureProcessingDateTime,
-                    SourceTypeValueId = a.Transaction.SourceTypeValueId,
-                    TotalAmount = a.Amount,
-                    TransactionCode = a.Transaction.TransactionCode,
-                    ForeignKey = a.Transaction.ForeignKey,
-                    Status = a.Transaction.Status,
-                    SettledDate = a.Transaction.SettledDate,
-                    SettledGroupId = a.Transaction.SettledGroupId,
-                    FinancialGatewayId = a.Transaction.FinancialGatewayId,
-                    IsReconciled = a.Transaction.IsReconciled,
-                    IsSettled = a.Transaction.IsSettled,
-                    NonCashAssetTypeValueId = a.Transaction.NonCashAssetTypeValueId,
-                    ProcessedDateTime = a.Transaction.ProcessedDateTime,
-                    ShowAsAnonymous = a.Transaction.ShowAsAnonymous,
-                    StatusMessage = a.Transaction.StatusMessage,
-                    TransactionDetail = new DetailInfo
+                qry = financialTransactionDetailQry
+                    .Select( a => new FinancialTransactionRow
                     {
-                        AccountId = a.AccountId,
-                        Amount = a.Amount,
-                        EntityId = a.EntityId,
-                        EntityTypeId = a.EntityTypeId
-                    },
-                    Summary = a.Transaction.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Transaction.Summary,
-                    FinancialPaymentDetail = new PaymentDetailInfo
-                    {
-                        Id = a.Transaction.FinancialPaymentDetail.Id,
-                        CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
-                        CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId
-                    },
-                    ForeignCurrencyCodeValueId = a.Transaction.ForeignCurrencyCodeValueId
-                } );
+                        Id = a.TransactionId,
+                        BatchId = a.Transaction.BatchId,
+                        TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
+                        ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
+                        AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
+                        TransactionDateTime = a.Transaction.TransactionDateTime ?? a.Transaction.FutureProcessingDateTime.Value,
+                        FutureProcessingDateTime = a.Transaction.FutureProcessingDateTime,
+                        SourceTypeValueId = a.Transaction.SourceTypeValueId,
+                        TotalAmount = a.Amount,
+                        TransactionCode = a.Transaction.TransactionCode,
+                        ForeignKey = a.Transaction.ForeignKey,
+                        Status = a.Transaction.Status,
+                        SettledDate = a.Transaction.SettledDate,
+                        SettledGroupId = a.Transaction.SettledGroupId,
+                        FinancialGatewayId = a.Transaction.FinancialGatewayId,
+                        IsReconciled = a.Transaction.IsReconciled,
+                        IsSettled = a.Transaction.IsSettled,
+                        NonCashAssetTypeValueId = a.Transaction.NonCashAssetTypeValueId,
+                        ProcessedDateTime = a.Transaction.ProcessedDateTime,
+                        ShowAsAnonymous = a.Transaction.ShowAsAnonymous,
+                        StatusMessage = a.Transaction.StatusMessage,
+                        TransactionDetail = new DetailInfo
+                        {
+                            AccountId = a.AccountId,
+                            Amount = a.Amount,
+                            EntityId = a.EntityId,
+                            EntityTypeId = a.EntityTypeId
+                        },
+                        Summary = a.Transaction.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Transaction.Summary,
+                        FinancialPaymentDetail = a.Transaction.FinancialPaymentDetailId != null ? new PaymentDetailInfo
+                        {
+                            Id = a.Transaction.FinancialPaymentDetail.Id,
+                            CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
+                            CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId
+                        } : null,
+                        ForeignCurrencyCodeValueId = a.Transaction.ForeignCurrencyCodeValueId
+                    } );
             }
             else
             {
