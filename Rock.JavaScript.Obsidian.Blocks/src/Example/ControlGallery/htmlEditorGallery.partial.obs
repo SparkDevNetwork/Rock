@@ -4,8 +4,8 @@
         <HtmlEditor v-model="value"
                     :disabled="disabled"
                     :editorHeight="editorHeight > 0 ? editorHeight : undefined"
-                    :initialValue="initialValue"
-                    :mergeFields="mergeFields" />
+                    :mergeFields="mergeFields"
+                    :startInCodeEditorMode="false" />
 
         <template #settings>
             <div class="row">
@@ -15,7 +15,7 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <TextBox label="Merge Fields" v-model="mergeFields" help="The merge fields that are available for selection in the Merge Field toolbar button. If this is not set, then the Merge Field button will be hidden in the editor toolbar." />
+                    <ValueList label="Merge Fields" v-model="mergeFields" help="The merge fields that are available for selection in the Merge Field toolbar button. If this is not set, then the Merge Field button will be hidden in the editor toolbar." />
                 </div>
             </div>
         </template>
@@ -27,24 +27,26 @@
     import { computed, ref } from "vue";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
     import { getSfcControlImportPath } from "./utils.partial";
 
     const value = ref("");
     const disabled = ref(false);
     const editorHeight = ref(600);
-    const mergeFields = ref("GlobalAttribute,Rock.Model.Person|Custom Person Label,MergeField1,MergeFieldWithCustomLabel|Custom Label");
-    const initialValue = ref(`<h1>Test</h1>
-<p>This is the initial value.</p>`);
+    const mergeFields = ref([
+        "GlobalAttribute",
+        "Rock.Model.Person|Custom Person Label",
+        "MergeField1",
+        "MergeFieldWithCustomLabel|Custom Label"
+    ]);
 
     const importCode = getSfcControlImportPath("htmlEditor");
     const exampleCode = computed(() => {
         return `<HtmlEditor
     v-model="modelValue"${disabled.value ? `
     :disabled="${disabled.value}"` : ""}${editorHeight.value ? `
-    :editorHeight="${editorHeight.value}"` : ""}${initialValue.value ? `
-    initialValue="${initialValue.value}"` : ""}${mergeFields.value ? `
-    mergeFields="${mergeFields.value}"` : ""} />`;
+    :editorHeight="${editorHeight.value}"` : ""}${mergeFields.value?.length ? `
+    :mergeFields="['${mergeFields.value.join(`', '`)}']"` : ""} />`;
     });
 </script>

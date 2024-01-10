@@ -7,12 +7,15 @@
                     <div class="note-editor note-frame panel panel-default">
                         <div :id="assignToolbarId(uniqueId)" class="panel-heading note-toolbar" ref="toolbar"></div>
                         <div class="note-editing-area" ref="editingArea">
-                            <div v-show="!editSourceCode" :id="assignEditorId(uniqueId)" class="note-editable"></div>
-                            <CodeEditor v-if="editSourceCode"
-                                        v-model="internalValue"
-                                        :disabled="disabled"
-                                        :editorHeight="editorHeight + yOffset"
-                                        mode="html" />
+                            <div v-show="!rockEditSourceCodePlugin.isEditSourceCodeShown.value" :id="assignEditorId(uniqueId)" class="note-editable" ref="editor"></div>
+                            <KeepAlive>
+                                <CodeEditor v-if="rockEditSourceCodePlugin.isEditSourceCodeShown.value"
+                                            v-model="internalValue"
+                                            :mergeFields="mergeFields"
+                                            :disabled="disabled"
+                                            :editorHeight="editorHeight + yOffset"
+                                            mode="lava" />
+                            </KeepAlive>
                         </div>
                         <div class="note-statusbar" ref="resizer" role="status">
                             <div class="note-resizebar" aria-label="Resize">
@@ -24,25 +27,49 @@
                     </div>
                 </div>
             </div>
-            <Modal v-model="showMergeFieldModal"
+            <Modal v-model="rockMergeFieldPlugin.modal.isShown.value"
                    cancelText="Cancel"
                    saveText="OK"
                    title="Select Merge Field"
-                   :onSave="onMergeFieldPicked">
-                <MergeFieldPicker v-model="mergeFieldValue"
-                                  :additionalFields="mergeFields ?? ''"
+                   :onSave="rockMergeFieldPlugin.modal.onMergeFieldPicked">
+                <MergeFieldPicker v-model="rockMergeFieldPlugin.modal.mergeFieldValue.value"
+                                  :additionalFields="mergeFields ? mergeFields.join(',') : ''"
                                   :multiple="false"
                                   placeholder="Add Merge Field" />
             </Modal>
-            <Modal v-model="showPasteAsPlainTextModal"
+            <Modal v-model="rockPasteAsPlainTextPlugin.modal.isShown.value"
                    title="Paste as Plain Text"
                    cancelText=""
                    saveText="Insert"
-                   :onSave="onPasteAsPlainText">
-                <TextBox v-model="pasteAsPlainTextValue"
+                   :onSave="rockPasteAsPlainTextPlugin.modal.onPlainTextInserted">
+                <TextBox v-model="rockPasteAsPlainTextPlugin.modal.pasteAsPlainTextValue.value"
                          label="Paste the content below, then press the Insert button to insert the content as plain text."
                          textMode="multiline"
                          :rows="10" />
+            </Modal>
+
+            <Modal v-model="rockImageBrowserPlugin.modal.isShown.value"
+                   title="Select Image"
+                   cancelText="Cancel"
+                   saveText="OK"
+                   :onSave="rockImageBrowserPlugin.modal.onOkClicked">
+                TODO: Add Image Browser
+            </Modal>
+
+            <Modal v-model="rockFileBrowserPlugin.modal.isShown.value"
+                   title="Select File"
+                   cancelText="Cancel"
+                   saveText="OK"
+                   :onSave="rockFileBrowserPlugin.modal.onOkClicked">
+                TODO: Add File Browser
+            </Modal>
+
+            <Modal v-model="rockAssetManagerPlugin.modal.isShown.value"
+                   title="Select Asset"
+                   cancelText="Cancel"
+                   saveText="OK"
+                   :onSave="rockAssetManagerPlugin.modal.onOkClicked">
+                TODO: Add Asset Manager
             </Modal>
         </template>
     </RockFormField>
@@ -64,6 +91,16 @@
 .note-editor .note-toolbar {
     padding: 0;
 }
+
+/* Prevent the edit source code button from showing the disabled cursor. */
+:deep(.rockeditsourcecode) {
+    cursor: pointer;
+}
+
+/* Prevent the edit source code button icon from looking disabled. */
+:deep(.tox .tox-toolbar .tox-tbtn.rockeditsourcecode svg) {
+    fill: #222f3e;
+}
 </style>
 
 <script setup lang="ts">
@@ -76,6 +113,9 @@
     import { tinymce, Editor, EditorEvent, Events, Ui } from "@Obsidian/Libs/tinymce";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { hasLavaCommandFields } from "@Obsidian/Utility/lava";
+
+    type ToolbarConfig = "light" | "full";
 
     const props = defineProps({
         /** The HTML value. */
@@ -96,11 +136,6 @@
             default: false
         },
 
-        /** Initial HTML value for the control. Not used if modelValue has a value at initialization. */
-        initialValue: {
-            type: String as PropType<string | null | undefined>,
-        },
-
         /**
          * Comma-delimited merge fields available for selection.
          * This should include either a list of entity type names (full name), or other non-object string values.
@@ -113,14 +148,30 @@
          * "FieldName^EntityType|Label" // Same as previous but with a custom label.
          */
         mergeFields: {
-            type: String as PropType<string | null | undefined>,
-            default: ""
+            type: Array as PropType<string[] | undefined>,
+            required: false
         },
 
         /** Editor height in pixels (not including toolbar). */
         editorHeight: {
             type: Number as PropType<number>,
             default: 600
+        },
+
+        /** When set to `true`, the code editor will be shown instead on initialization. */
+        startInCodeEditorMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The toolbar mode.
+         * When set to "light", the toolbar will be a lighter more airy view.
+         * When set to "full", the toolbar will display the full monty.
+         */
+        toolbar: {
+            type: String as PropType<ToolbarConfig>,
+            default: "light"
         }
     });
 
@@ -139,66 +190,95 @@
     const editingArea = ref<HTMLElement>();
     const yOffset = ref<number>(0);
     const toolbar = ref<HTMLElement>();
+    const editor = ref<HTMLElement>();
 
     // #region Plugin - Edit Source Code.
 
-    const editSourceCode = ref<boolean>(false);
     const rockEditSourceCodePlugin = {
         init(editor: Editor): void {
             // Register toolbar buttons.
-            editor.ui.registry.addToggleButton(rockEditSourceCodePlugin.toolbar.editSourceCode, {
+            editor.ui.registry.addToggleButton(rockEditSourceCodePlugin.toolbarButton.id, {
+                // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
                 icon: "sourcecode",
                 enabled: true,
-                tooltip: "Code Editor",
+                tooltip: rockEditSourceCodePlugin.toolbarButton.tooltip,
+                onSetup: (api: Ui.Toolbar.ToolbarToggleButtonInstanceApi): (api: Ui.Toolbar.ToolbarToggleButtonInstanceApi) => void => {
+                    // Expose a method to enable/disable the toolbar button.
+                    // This is needed so the `rockeditsourcecode` toolbar button can
+                    // be enabled after the entire toolbar is disabled when editing
+                    // the source code.
+                    rockEditSourceCodePlugin.toolbarButton.setEnabled.value = (isEnabled: boolean) => {
+                        api?.setEnabled(isEnabled);
+                        api?.setActive(isEnabled);
+                    };
+
+                    const toolbarButton = getToolbarButton(rockEditSourceCodePlugin.toolbarButton.tooltip);
+                    if (toolbarButton) {
+                        // Add the toolbar identifier as a CSS class to the actual button element
+                        // so CSS can be applied to this button.
+                        toolbarButton.classList.add(rockEditSourceCodePlugin.toolbarButton.id);
+                    }
+
+                    // Return a function that cleans up this button.
+                    return (_api) => {
+                        rockEditSourceCodePlugin.toolbarButton.setEnabled.value = undefined;
+                    };
+                },
                 onAction: (api: Ui.Toolbar.ToolbarToggleButtonInstanceApi): void => {
-                    editSourceCode.value = !editSourceCode.value;
-                    api.setActive(editSourceCode.value);
+                    rockEditSourceCodePlugin.isEditSourceCodeShown.value = !rockEditSourceCodePlugin.isEditSourceCodeShown.value;
+                    api.setActive(rockEditSourceCodePlugin.isEditSourceCodeShown.value);
                 }
             });
         },
-        toolbar: {
-            editSourceCode: "rockeditsourcecode"
-        } as const
+        isEditSourceCodeShown: ref<boolean>(false),
+        toolbarButton: {
+            id: "rockeditsourcecode",
+            tooltip: "Code Editor",
+            setEnabled: ref<((isEnabled: boolean) => void) | undefined>(),
+        },
     } as const;
 
     // #endregion
 
     // #region Plugin - Paste As Plain Text.
 
-    const showPasteAsPlainTextModal = ref<boolean>(false);
-    const pasteAsPlainTextValue = ref<string>("");
-    function onPasteAsPlainText(): void {
-        const editor = tinyMceInstance.value;
-        if (!editor) {
-            // Skip if the editor is not initialized.
-            return;
-        }
-
-        // Create a temporary div element that will be used to get the text content of the pasted value.
-        const temporaryDiv = document.createElement("div");
-        temporaryDiv.innerHTML = pasteAsPlainTextValue.value;
-
-        // Paste the content into the editor at the current position.
-        editor.insertContent(temporaryDiv.textContent ?? "");
-
-        // Clear the pasted value and close the modal.
-        pasteAsPlainTextValue.value = "";
-        showPasteAsPlainTextModal.value = false;
-    }
     const rockPasteAsPlainTextPlugin = {
         init: (editor: Editor): void => {
             // Register toolbar buttons.
-            editor.ui.registry.addToggleButton(rockPasteAsPlainTextPlugin.toolbar.pasteAsPlainText, {
+            editor.ui.registry.addToggleButton(rockPasteAsPlainTextPlugin.toolbarButton.id, {
+                // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
                 icon: "paste-text",
                 tooltip: "Paste Text",
                 onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
-                    showPasteAsPlainTextModal.value = true;
+                    rockPasteAsPlainTextPlugin.modal.isShown.value = true;
                 }
             });
         },
-        toolbar: {
-            pasteAsPlainText: "rockpasteasplaintext"
-        } as const
+        modal: {
+            pasteAsPlainTextValue: ref<string>(""),
+            isShown: ref<boolean>(false),
+            onPlainTextInserted: (): void => {
+                const editor = tinyMceInstance.value;
+                if (!editor) {
+                    // Skip if the editor is not initialized.
+                    return;
+                }
+
+                // Create a temporary div element that will be used to get the text content of the pasted value.
+                const temporaryDiv = document.createElement("div");
+                temporaryDiv.innerHTML = rockPasteAsPlainTextPlugin.modal.pasteAsPlainTextValue.value;
+
+                // Paste the content into the editor at the current position.
+                editor.insertContent(temporaryDiv.textContent ?? "");
+
+                // Clear the pasted value and close the modal.
+                rockPasteAsPlainTextPlugin.modal.pasteAsPlainTextValue.value = "";
+                rockPasteAsPlainTextPlugin.modal.isShown.value = false;
+            },
+        },
+        toolbarButton: {
+            id: "rockpasteasplaintext"
+        }
     } as const;
 
     // #endregion
@@ -292,7 +372,7 @@
             // This combines the functionality of the built-in `align` toolbar button
             // and the `indent` toolbar button. It also updates the toolbar icon to
             // reflect the alignment of the selected node.
-            editor.ui.registry.addMenuButton(rockParagraphPlugin.toolbar.paragraph, {
+            editor.ui.registry.addMenuButton(rockParagraphPlugin.toolbarButton.id, {
                 icon: "align-left",
                 tooltip: "Paragraph",
                 onSetup: (api: Ui.Toolbar.ToolbarMenuButtonInstanceApi) => {
@@ -426,56 +506,26 @@
             registerShortcut(paragraphButtons.outdent);
             registerShortcut(paragraphButtons.indent);
         },
-        toolbar: {
-            paragraph: "rockparagraph"
-        } as const
-    };
+        toolbarButton: {
+            id: "rockparagraph"
+        }
+    } as const;
 
     // #endregion
 
     // #region Plugin - Merge Field.
 
-    const showMergeFieldModal = ref<boolean>(false);
-    const mergeFieldValue = ref<ListItemBag | undefined>();
-
-    /** Event handler for a merge field being selected in the Select Merge Field modal. */
-    function onMergeFieldPicked(): void {
-        const editor = tinyMceInstance.value;
-
-        if (!editor) {
-            // Skip if the editor is not initialized.
-            return;
-        }
-
-        const mergeField = mergeFieldValue.value;
-
-        if (!mergeField?.value) {
-            // Skip if no merge field was selected.
-            return;
-        }
-
-        // Insert the merge field value into the editor at the current position.
-        editor.insertContent(`{{ ${mergeField.value} }}`);
-
-        // Clear the merge field and close the modal.
-        mergeFieldValue.value = undefined;
-        showMergeFieldModal.value = false;
-    }
-
-    // Define `rockmergefields` toolbar button.
     const rockMergeFieldPlugin = {
         init: (editor: Editor): void => {
-            const tooltip = "Merge Field";
-
-            function showOrHideToolbarButton(value: string | null | undefined): void {
-                const mergeFieldButton = getToolbarButton(tooltip);
+            function showOrHideToolbarButton(value: string[] | undefined): void {
+                const mergeFieldButton = getToolbarButton(rockMergeFieldPlugin.toolbarButton.tooltip);
 
                 if (mergeFieldButton) {
                     // Set the CSS display value depending on whether there is a value.
-                    const display = value ? "" : "none";
+                    const display = value?.length ? "" : "none";
                     mergeFieldButton.style.display = display;
 
-                    // Also set the toolbar button group display if this is the only button in the button group.
+                    // Also update the display of the toolbar button group if this is the only button in the button group.
                     const parentElement = mergeFieldButton.parentElement;
                     if (parentElement?.classList.contains("tox-toolbar__group") && parentElement.children.length === 1) {
                         parentElement.style.display = display;
@@ -484,15 +534,16 @@
             }
 
             // Hide or show the toolbar button when the mergeFields change.
-            const stopWatching = watch(() => props.mergeFields, (value: string | null | undefined) => {
+            const stopWatching = watch(() => props.mergeFields, (value: string[] | undefined) => {
                 showOrHideToolbarButton(value);
             });
 
-            editor.ui.registry.addButton(rockMergeFieldPlugin.toolbar.mergeField, {
+            editor.ui.registry.addButton(rockMergeFieldPlugin.toolbarButton.id, {
+                // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
                 icon: "code-sample",
-                tooltip: tooltip,
+                tooltip: rockMergeFieldPlugin.toolbarButton.tooltip,
                 onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
-                    showMergeFieldModal.value = true;
+                    rockMergeFieldPlugin.modal.isShown.value = true;
                 },
                 onSetup: (_apiAtSetup: Ui.Toolbar.ToolbarButtonInstanceApi): (api: Ui.Toolbar.ToolbarButtonInstanceApi) => void => {
                     showOrHideToolbarButton(props.mergeFields);
@@ -504,10 +555,173 @@
                 }
             });
         },
+        modal: {
+            mergeFieldValue: ref<ListItemBag | undefined>(),
+            isShown: ref<boolean>(false),
+            onMergeFieldPicked: (): void => {
+                const editor = tinyMceInstance.value;
+
+                if (editor) {
+                    const mergeField = rockMergeFieldPlugin.modal.mergeFieldValue.value;
+
+                    if (!mergeField?.value) {
+                        // Skip if no merge field was selected.
+                        rockMergeFieldPlugin.modal.mergeFieldValue.value = undefined;
+                        rockMergeFieldPlugin.modal.isShown.value = false;
+                        return;
+                    }
+
+                    // Insert the merge field value into the editor at the current position.
+                    editor.insertContent(`{{ ${mergeField.value} }}`);
+                }
+
+                // Clear the merge field and close the modal.
+                rockMergeFieldPlugin.modal.mergeFieldValue.value = undefined;
+                rockMergeFieldPlugin.modal.isShown.value = false;
+            },
+        },
+        toolbarButton: {
+            id: "rockmergefield",
+            tooltip: "Merge Field"
+        }
+    } as const;
+
+    // #endregion
+
+    // #region Plugin - Image Browser.
+
+    const rockImageBrowserPlugin = {
+        init: (editor: Editor): void => {
+            // Register toolbar buttons.
+            // TODO: Uncomment when the plugin is fully implemented.
+            // Open the modal when the toolbar button is clicked.
+            // editor.ui.registry.addToggleButton(rockImageBrowserPlugin.toolbarButton.id, {
+            //     // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
+            //     icon: "image",
+            //     tooltip: "Image Browser",
+            //     onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
+            //         rockImageBrowserPlugin.modal.isShown.value = true;
+            //     }
+            // });
+        },
+        modal: {
+            image: ref<ListItemBag | undefined>(),
+            isShown: ref<boolean>(false),
+            onOkClicked: (): void => {
+                const editor = tinyMceInstance.value;
+                const image = rockImageBrowserPlugin.modal.image.value;
+
+                if (editor && image?.value) {
+                    // TODO: Add the image to the editor assuming image.value is the image path.
+                    // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=cursor%20or%20selection.-,InsertImage,-Adds%20an%20image
+                    editor.execCommand("InsertImage", false, image.value);
+                }
+
+                // Clear the selected image and close the modal.
+                rockImageBrowserPlugin.modal.image.value = undefined;
+                rockImageBrowserPlugin.modal.isShown.value = false;
+            },
+        },
+        toolbarButton: {
+            id: "rockimagebrowser"
+        },
+    } as const;
+
+    // #endregion
+
+    // #region Plugin - File Browser.
+
+    const rockFileBrowserPlugin = {
+        init: (editor: Editor): void => {
+            // Register toolbar buttons.
+            // TODO: Uncomment when the plugin is fully implemented.
+            // Open the modal when the toolbar button is clicked.
+            // editor.ui.registry.addToggleButton(rockFileBrowserPlugin.toolbarButton.id, {
+            //     // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
+            //     icon: "new-document",
+            //     tooltip: "File Browser",
+            //     onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
+            //         rockFileBrowserPlugin.modal.isShown.value = true;
+            //     }
+            // });
+        },
+        modal: {
+            file: ref<ListItemBag | undefined>(),
+            isShown: ref<boolean>(false),
+            onOkClicked: (): void => {
+                const editor = tinyMceInstance.value;
+                const file = rockFileBrowserPlugin.modal.file.value;
+
+                if (editor && file?.value) {
+                    // TODO: Add the file to the editor assuming file.value is the file path.
+                    // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=the%20current%20selection.-,CreateLink,-Inserts%20a%20link
+                    editor.execCommand("CreateLink", false, file.value);
+                }
+
+                // Clear the selected file and close the modal.
+                rockFileBrowserPlugin.modal.file.value = undefined;
+                rockFileBrowserPlugin.modal.isShown.value = false;
+            },
+        },
+        toolbarButton: {
+            id: "rockfilebrowser"
+        },
+    } as const;
+
+    // #endregion
+
+    // #region Plugin - Asset Manager.
+
+    const rockAssetManagerPlugin = {
+        init: (editor: Editor): void => {
+            // Register toolbar buttons.
+            // TODO: Uncomment when the plugin is fully implemented.
+            // Open the modal when the toolbar button is clicked.
+            // editor.ui.registry.addToggleButton(rockAssetManagerPlugin.toolbar.assetManager, {
+            //     // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
+            //     icon: "browse",
+            //     tooltip: "Asset Manager",
+            //     onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
+            //         // TODO: Uncomment when the plugin is fully implemented.
+            //         // Open the modal when the toolbar button is clicked.
+            //         // rockAssetManagerPlugin.modal.isShown.value = true;
+            //     }
+            // });
+        },
+        modal: {
+            image: ref<ListItemBag | undefined>(),
+            isShown: ref<boolean>(false),
+            onOkClicked: (): void => {
+                function isImage(fileName: string): boolean {
+                    return !!fileName?.match(/.(jpg|jpeg|png|gif|svg)$/i);
+                }
+
+                const editor = tinyMceInstance.value;
+                const file = rockAssetManagerPlugin.modal.image?.value;
+
+                if (editor && file?.value) {
+                    // TODO: Add the file to the editor; possibly with the following format
+                    // assuming file.value is the file path and the file.text is the file name.
+                    if (isImage(file.value)) {
+                        // TODO: Add the image to the editor assuming file.value is the image path.
+                        // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=cursor%20or%20selection.-,InsertImage,-Adds%20an%20image
+                        editor.execCommand("InsertImage", false, file.value);
+                    }
+                    else {
+                        // TODO: Add the file to the editor assuming file.value is the file path.
+                        // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=the%20current%20selection.-,CreateLink,-Inserts%20a%20link
+                        editor.execCommand("CreateLink", false, file.value);
+                    }
+                }
+
+                // Close the modal.
+                rockAssetManagerPlugin.modal.isShown.value = false;
+            },
+        },
         toolbar: {
-            mergeField: "rockmergefield"
-        } as const
-    };
+            assetManager: "rockassetmanager"
+        },
+    } as const;
 
     // #endregion
 
@@ -602,9 +816,60 @@
         flush: "post"
     });
 
+    // Disable the editor toolbar when the source code is being edited.
+    watchEffect(() => {
+        if (tinyMceInstance.value) {
+            // Clear the TinyMCE selection before enabling/disabling, otherwise
+            // some of the disabled toolbar buttons can still be clicked.
+            tinyMceInstance.value.selection?.collapse();
+
+            if (rockEditSourceCodePlugin.isEditSourceCodeShown.value) {
+
+                // Disable the toolbar but keep the edit source code toolbar button enabled.
+                tinyMceInstance.value.ui.setEnabled(false);
+
+                // Enable the toolbar button on the next tick
+                rockEditSourceCodePlugin.toolbarButton.setEnabled.value?.(true);
+            }
+            else {
+                // Enable the toolbar.
+                tinyMceInstance.value.ui.setEnabled(true);
+            }
+        }
+    }, {
+        // "post" will cause the effect to initially execute after the DOM is updated (after the editor is initialized).
+        flush: "post"
+    });
+
     // Initialize the editor.
     onMounted(() => {
         if (editorId.value && toolbarId.value) {
+            // Define the toolbar buttons depending on the toolbar config (light or full).
+            // They are displayed in the order in which they are defined
+            // and grouped using pipe (|) characters; e.g.,
+            // {
+            //   "ToolbarConfig": "spaceDelimitedButtonsInGroup1 | spaceDelimitedButtonsInGroup2 | ... | spaceDelimitedButtonsInGroupN"
+            // }
+            // FYI: Pasting from Word directly in the content area formats correctly,
+            // so no need to create a rockpastefromword plugin at this point.
+            // https://www.tiny.cloud/docs/tinymce/6/available-toolbar-buttons/
+            const toolbarConfigs: Record<ToolbarConfig, string> = {
+                "light": `${rockEditSourceCodePlugin.toolbarButton.id} | bold italic strikethrough link forecolor backcolor styles numlist bullist | removeformat | ${rockParagraphPlugin.toolbarButton.id} | ${rockMergeFieldPlugin.toolbarButton.id} | ${rockImageBrowserPlugin.toolbarButton.id} ${rockFileBrowserPlugin.toolbarButton.id} ${rockAssetManagerPlugin.toolbar.assetManager} | ${rockPasteAsPlainTextPlugin.toolbarButton.id} | undo redo`,
+                "full": `${rockEditSourceCodePlugin.toolbarButton.id} | bold italic underline strikethrough numlist bullist link | undo redo | removeformat | styles forecolor backcolor | fontfamily fontsize superscript subscript table hr | ${rockParagraphPlugin.toolbarButton.id} | ${rockMergeFieldPlugin.toolbarButton.id} | ${rockImageBrowserPlugin.toolbarButton.id} ${rockFileBrowserPlugin.toolbarButton.id} ${rockAssetManagerPlugin.toolbar.assetManager} | ${rockPasteAsPlainTextPlugin.toolbarButton.id} | help`,
+            };
+
+            // Get the default system font.
+            // This will add the "Default" option to the Font Family toolbar button.
+            let defaultSystemFont: string = "";
+            if (editor.value) {
+                try {
+                    defaultSystemFont = getComputedStyle(editor.value)?.fontFamily ?? "";
+                }
+                catch {
+                    // Ignore error if unable to retrieve the default system font.
+                }
+            }
+
             tinymce.init({
                 // Add the editor directly to the target element (instead of in an iframe)
                 // by configuring an inline editor with a fixed toolbar.
@@ -633,15 +898,18 @@
                 resize: "both",
 
                 // Only include the plugins that are needed to keep TinyMCE leaner.
-                plugins: "image link lists media searchreplace table",
+                plugins: "image link lists media searchreplace table help",
 
                 // Set the toolbar buttons.
-                // They are displayed in the order in which they are defined
-                // and grouped using pipe (|) characters.
-                // FYI: Pasting from Word directly in the content area formats correctly,
-                // so so need to create a rockpastefromword plugin at this point.
-                // https://www.tiny.cloud/docs/tinymce/6/available-toolbar-buttons/
-                toolbar: `${rockEditSourceCodePlugin.toolbar.editSourceCode} | bold italic strikethrough link forecolor backcolor | styles | numlist bullist | removeformat | ${rockParagraphPlugin.toolbar.paragraph} | ${rockMergeFieldPlugin.toolbar.mergeField} | image file | ${rockPasteAsPlainTextPlugin.toolbar.pasteAsPlainText} | undo redo`,
+                toolbar: toolbarConfigs[props.toolbar],
+
+                // Define the options for the `fontfamily` toolbar button.
+                // https://www.tiny.cloud/docs/tinymce/latest/user-formatting-options/#font_family_formats
+                font_family_formats: `Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde; Comic Sans MS=comic sans ms,sans-serif; Courier New=courier new,courier;${defaultSystemFont ? ` Default=${defaultSystemFont};` : ""} Helvetica=helvetica; Impact=impact,chicago; Tahoma=tahoma,arial,helvetica,sans-serif; Times New Roman=times new roman,times; Verdana=verdana,geneva;`,
+
+                // Define the options for the `fontsize` toolbar button.
+                // https://www.tiny.cloud/docs/tinymce/latest/user-formatting-options/#font_size_formats
+                font_size_formats: "8px 9px 10px 11px 12px 14px 16px 18px 24px 36px",
 
                 // Define the options for the `styles` toolbar button.
                 // This were chosen to match the previous HTML Editor control.
@@ -658,7 +926,6 @@
                     { title: "Heading 5", format: "h5" },
                     { title: "Heading 6", format: "h6" }
                 ],
-
 
                 // Define the options for the `forecolor` and `backcolor` toolbar buttons.
                 // https://www.tiny.cloud/docs/tinymce/6/user-formatting-options/#text-color-options
@@ -759,10 +1026,9 @@
                     rockPasteAsPlainTextPlugin.init(editor);
                     rockParagraphPlugin.init(editor);
                     rockMergeFieldPlugin.init(editor);
-
-                    // TODO Add Image Browser plugin.
-                    // TODO Add File Browser plugin.
-                    // TODO Add Asset Manager plugin.
+                    rockImageBrowserPlugin.init(editor);
+                    rockFileBrowserPlugin.init(editor);
+                    rockAssetManagerPlugin.init(editor);
 
                     // Add shortcuts that were available with the previous editor library.
                     // Adding all valid shortcut combinations so we can overwrite shortcuts
@@ -783,12 +1049,34 @@
                         });
                     });
 
-                    // Set the initial value.
+                    // Handle behavior that should occur after the editor is initialized.
                     editor.on("init", () => {
-                        // If the modelValue is not set,
-                        // then initialize from the initial value.
-                        if (!props.modelValue && props.initialValue) {
-                            internalValue.value = props.initialValue;
+                        if (tinyMceInstance.value) {
+                            // Set the initial value.
+                            if (editorValue.value !== internalValue.value) {
+                                tinyMceInstance.value.setContent(internalValue.value);
+
+                                // Get the new content from the editor after setting it
+                                // just in case it gets manipulated by plugins.
+                                editorValue.value = tinyMceInstance.value.getContent();
+                            }
+
+                            // Start in code editor mode based on the supplied prop
+                            // or if the text has lava commands on initialization.
+                            const shouldStartInCodeEditorMode = props.startInCodeEditorMode || hasLavaCommandFields(internalValue.value);
+                            if (shouldStartInCodeEditorMode) {
+                                tinyMceInstance.value.once("SelectionChange", () => {
+                                    // Show the source code editor.
+                                    // This is done in the SelectionChange handler
+                                    // so the editor can properly enable and disable toolbar buttons.
+                                    rockEditSourceCodePlugin.isEditSourceCodeShown.value = true;
+                                });
+                            }
+
+                            // Clear the selection.
+                            // This will trigger the "SelectionChange" event
+                            // required to show edit source code on init.
+                            tinyMceInstance.value.selection.collapse();
                         }
                     });
 
