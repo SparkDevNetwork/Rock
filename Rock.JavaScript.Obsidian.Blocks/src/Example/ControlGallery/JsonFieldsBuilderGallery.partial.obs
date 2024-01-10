@@ -1,0 +1,179 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <JsonFieldsBuilder v-model="value"
+                           :availableProperties="availableProperties"
+                           :availableAttributes="availableAttributes" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import JsonFieldsBuilder from "@Obsidian/Controls/jsonFieldsBuilder.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { FieldSettingBag } from "@Obsidian/ViewModels/Controls/fieldSettingBag";
+
+    const value = ref<FieldSettingBag[]>([
+        {
+            id: 483800935,
+            key: "Attributes",
+            value: "{{ item.Attributes }}",
+            fieldName: "Attributes",
+            fieldSource: 0,
+            attributeFormat: 0,
+            fieldFormat: 0
+        },
+        {
+            id: 1934200521,
+            key: "DateTimeAdded",
+            value: "{{ item.DateTimeAdded }}",
+            fieldName: "DateTimeAdded",
+            fieldSource: 0,
+            attributeFormat: 0,
+            fieldFormat: 2
+        },
+        {
+            id: 1588433595,
+            key: "SomeAttr",
+            value: "{{ item | Attribute:'SomeAttr' }}",
+            fieldName: "SomeAttr",
+            fieldSource: 1,
+            attributeFormat: 0,
+            fieldFormat: 0
+        },
+        {
+            id: 1588433595,
+            key: "SomeAttr",
+            value: "{{ item | Attribute:'SomeAttr','RawValue' }}",
+            fieldName: "SomeAttr",
+            fieldSource: 1,
+            attributeFormat: 1,
+            fieldFormat: 0
+        },
+        {
+            id: -2114601030,
+            key: "stringKey",
+            value: "{{ item | Attribute:'AttributeKey' }}",
+            fieldName: "",
+            fieldSource: 2,
+            attributeFormat: 0,
+            fieldFormat: 0
+        },
+        {
+            id: -467210166,
+            key: "numberKey",
+            value: "{{ item | Attribute:'AttributeKey' }}",
+            fieldName: "",
+            fieldSource: 2,
+            attributeFormat: 0,
+            fieldFormat: 1
+        },
+        {
+            id: -1050966917,
+            key: "dateKey",
+            value: "{{ item | Attribute:'AttributeKey' }}",
+            fieldName: "",
+            fieldSource: 2,
+            attributeFormat: 0,
+            fieldFormat: 2
+        },
+        {
+            id: -1778909431,
+            key: "boolKey",
+            value: "{{ item | Attribute:'AttributeKey' }}",
+            fieldName: "",
+            fieldSource: 2,
+            attributeFormat: 0,
+            fieldFormat: 3
+        }
+    ]);
+
+    const availableProperties = [
+        { text: "AdditionalLavaFields", value: "AdditionalLavaFields" },
+        { text: "ArchivedByPersonAlias", value: "ArchivedByPersonAlias" },
+        { text: "ArchivedByPersonAliasId", value: "ArchivedByPersonAliasId" },
+        { text: "ArchivedDateTime", value: "ArchivedDateTime" },
+        { text: "Attributes", value: "Attributes" },
+        { text: "AttributeValueDefaults", value: "AttributeValueDefaults" },
+        { text: "AttributeValues", value: "AttributeValues" },
+        { text: "AvailableKeys", value: "AvailableKeys" },
+        { text: "CommunicationPreference", value: "CommunicationPreference" },
+        { text: "ContextKey", value: "ContextKey" },
+        { text: "CreatedByPersonAlias", value: "CreatedByPersonAlias" },
+        { text: "CreatedByPersonAliasId", value: "CreatedByPersonAliasId" },
+        { text: "CreatedByPersonId", value: "CreatedByPersonId" },
+        { text: "CreatedByPersonName", value: "CreatedByPersonName" },
+        { text: "CreatedDateTime", value: "CreatedDateTime" },
+        { text: "CustomSortValue", value: "CustomSortValue" },
+        { text: "DateTimeAdded", value: "DateTimeAdded" },
+        { text: "EncryptedKey", value: "EncryptedKey" },
+        { text: "EntityStringValue", value: "EntityStringValue" },
+        { text: "ForeignGuid", value: "ForeignGuid" },
+        { text: "ForeignId", value: "ForeignId" },
+        { text: "ForeignKey", value: "ForeignKey" },
+        { text: "Group", value: "Group" },
+        { text: "GroupId", value: "GroupId" },
+        { text: "GroupMemberAssignments", value: "GroupMemberAssignments" },
+        { text: "GroupMemberRequirements", value: "GroupMemberRequirements" },
+        { text: "GroupMemberStatus", value: "GroupMemberStatus" },
+        { text: "GroupOrder", value: "GroupOrder" },
+        { text: "GroupRole", value: "GroupRole" },
+        { text: "GroupRoleId", value: "GroupRoleId" },
+        { text: "GroupTypeId", value: "GroupTypeId" },
+        { text: "GuestCount", value: "GuestCount" },
+        { text: "Guid", value: "Guid" },
+        { text: "Id", value: "Id" },
+        { text: "IdKey", value: "IdKey" },
+        { text: "InactiveDateTime", value: "InactiveDateTime" },
+        { text: "IsArchived", value: "IsArchived" },
+        { text: "IsNotified", value: "IsNotified" },
+        { text: "IsSystem", value: "IsSystem" },
+        { text: "IsValid", value: "IsValid" },
+        { text: "Item", value: "Item" },
+        { text: "ModifiedAuditValuesAlreadyUpdated", value: "ModifiedAuditValuesAlreadyUpdated" },
+        { text: "ModifiedByPersonAlias", value: "ModifiedByPersonAlias" },
+        { text: "ModifiedByPersonAliasId", value: "ModifiedByPersonAliasId" },
+        { text: "ModifiedByPersonId", value: "ModifiedByPersonId" },
+        { text: "ModifiedByPersonName", value: "ModifiedByPersonName" },
+        { text: "ModifiedDateTime", value: "ModifiedDateTime" },
+        { text: "Note", value: "Note" },
+        { text: "ParentAuthority", value: "ParentAuthority" },
+        { text: "ParentAuthorityPre", value: "ParentAuthorityPre" },
+        { text: "Person", value: "Person" },
+        { text: "PersonId", value: "PersonId" },
+        { text: "ScheduleReminderEmailOffsetDays", value: "ScheduleReminderEmailOffsetDays" },
+        { text: "ScheduleStartDate", value: "ScheduleStartDate" },
+        { text: "ScheduleTemplate", value: "ScheduleTemplate" },
+        { text: "ScheduleTemplateId", value: "ScheduleTemplateId" },
+        { text: "SupportedActions", value: "SupportedActions" },
+        { text: "TypeId", value: "TypeId" },
+        { text: "TypeName", value: "TypeName" },
+        { text: "UrlEncodedKey", value: "UrlEncodedKey" },
+        { text: "ValidationResults", value: "ValidationResults" }
+    ];
+
+    const availableAttributes = [
+        { text: "CustomAttribute", value: "CustomAttribute" },
+        { text: "Something", value: "Something" },
+        { text: "Romans", value: "Romans" }
+    ];
+
+    const someBool = ref(false);
+    const someVal = ref("hi");
+
+    const importCode = getSfcControlImportPath("jsonFieldsBuilder");
+    const exampleCode = computed(() => {
+        const someBoolProp = someBool.value ? " someBool" : "";
+        const someValProp = someVal.value ? ` someVal="${someVal.value}"` : "";
+        return `<JsonFieldsBuilder v-model="value"${someBoolProp}${someValProp} />`;
+    });
+</script>

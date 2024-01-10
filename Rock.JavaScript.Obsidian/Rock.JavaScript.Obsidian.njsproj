@@ -526,6 +526,7 @@
     <TypeScriptCompile Include="Framework\Enums\Connection\connectionWorkflowTriggerType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Connection\groupRequirementsFilter.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\alertType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\attributeFormat.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\btnSize.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\btnType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\codeEditorMode.ts" />
@@ -533,6 +534,8 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\controlLazyMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\dayOfWeek.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\detailPanelMode.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\fieldFormat.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\fieldSource.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\gatewayEmitStrings.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\mediaSelectorMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\meetsGroupRequirement.ts" />
@@ -1177,6 +1180,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\campusPickerItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\datePartsPickerValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\electronicSignatureValue.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldSettingBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorGetAvailableFieldTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationResultBag.d.ts" />

@@ -1,0 +1,187 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="x-field">
+        <Grid v-show="mode == 'grid'" :data="gridData" itemTerm="Item" keyField="id" liveUpdates light @addItem="onAddButtonClick">
+            <TextColumn name="Name?" field="fieldSource" title="Source" />
+            <TextColumn name="Name?" field="key" title="Key" />
+            <TextColumn name="Name?" field="value" title="Expression" />
+            <TextColumn name="Name?" field="fieldFormat" title="Format" />
+            <EditColumn @click="onEditButtonClick" />
+            <DeleteColumn @click="onDeleteButtonClick" />
+        </Grid>
+
+        <RockForm v-if="mode == 'add' || mode == 'edit'" @submit="onSubmit" novalidate>
+            <RadioButtonList label="Field Source"
+                             :items="fieldSourceOptions"
+                             horizontal
+                             :modelValue="`${currentFieldSetting.fieldSource}`"
+                             @update:modelValue="currentFieldSetting.fieldSource = (+$event as FieldSource)" />
+
+            <div v-if="currentFieldSetting.fieldSource == FieldSource.Property">
+                <DropDownList label="Property" :items="availableProperties" v-model="(currentFieldSetting.fieldName as string)" />
+            </div>
+            <div v-else-if="currentFieldSetting.fieldSource == FieldSource.Attribute">
+                Attribute
+            </div>
+            <div v-else>
+                Lava
+            </div>
+
+            <RockButton type="submit" btnSize="xs" btnType="primary" autoDisable>Apply</RockButton>
+            <RockButton btnSize="xs" btnType="link" @click="onCancel" autoDisable>Cancel</RockButton>
+        </RockForm>
+
+        <pre class="my-5">{{ currentFieldSetting }}</pre>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, reactive, ref, watch } from "vue";
+    import RockForm from "./rockForm.obs";
+    import RockButton from "./rockButton.obs";
+    import RockFormField from "./rockFormField.obs";
+    import RadioButtonList from "./radioButtonList.obs";
+    import DropDownList from "./dropDownList.obs";
+    import Grid, { DeleteColumn, EditColumn, TextColumn } from "./grid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FieldSettingBag } from "@Obsidian/ViewModels/Controls/fieldSettingBag";
+    import { FieldSource, FieldSourceDescription } from "@Obsidian/Enums/Controls/fieldSource";
+    import { FieldFormat, FieldFormatDescription } from "@Obsidian/Enums/Controls/fieldFormat";
+    import { AttributeFormat, AttributeFormatDescription } from "@Obsidian/Enums/Controls/attributeFormat";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { createHash } from "@Obsidian/Utility/stringUtils";
+    import { toListItemBagList } from "@Obsidian/Utility/objectUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<FieldSettingBag[]>,
+            required: true
+        },
+
+        availableAttributes: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        availableProperties: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string>): void
+    }>();
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const mode = ref<"grid" | "edit" | "add">("grid");
+
+    const currentFieldSetting = reactive<FieldSettingBag>({
+        get id() {
+            return createHash(this.key ?? " ");
+        },
+        key: "",
+        value: "",
+        fieldName: "",
+        fieldSource: FieldSource.Property,
+        attributeFormat: AttributeFormat.FriendlyValue,
+        fieldFormat: FieldFormat.String
+    });
+
+    const fieldSourceOptions = toListItemBagList(FieldSource);
+    const fieldFormatOptions = toListItemBagList(FieldFormat);
+    const attributeFormatOptions = toListItemBagList(AttributeFormat);
+
+    const gridData = computed<GridDataBag>(() => {
+        return {
+            rows: internalValue.value.map(fs => {
+                const mappedSetting = JSON.parse(JSON.stringify(fs));
+
+                mappedSetting.fieldSource = FieldSourceDescription[mappedSetting.fieldSource];
+                mappedSetting.fieldFormat = FieldFormatDescription[mappedSetting.fieldFormat];
+                mappedSetting.attributeFormat = AttributeFormatDescription[mappedSetting.attributeFormat];
+
+                return mappedSetting;
+            })
+        };
+    });
+
+    /**
+     *
+     */
+    function onAddButtonClick(): void {
+        // TODO
+        resetCurrentFieldSetting();
+        mode.value = "add";
+    }
+
+    function onEditButtonClick(id: string): void {
+        // TODO
+        mode.value = "edit";
+        const fs = internalValue.value.find(x => x.id == +id);
+        if (fs) {
+            setCurrentFieldSetting(fs);
+        }
+    }
+
+    function onDeleteButtonClick(id: string): void {
+        const i = internalValue.value.findIndex(x => x.id == +id);
+        internalValue.value.splice(i, 1);
+    }
+
+    function onSubmit() {
+        // TODO
+        console.log("SUBMIT", mode.value, currentFieldSetting);
+        mode.value = "grid";
+        resetCurrentFieldSetting();
+    }
+
+    function onCancel() {
+        mode.value = "grid";
+        resetCurrentFieldSetting();
+    }
+
+    /**
+     * Copy the values from the source FieldSettingBag to currentFieldSetting.
+     */
+    function setCurrentFieldSetting(source: FieldSettingBag): void {
+        console.log("Copying this to currentFieldSetting", source);
+        Object.entries(source).forEach(([key, value]) => {
+            // Don't copy the id, since it's a getter based on key
+            if (key != "id") {
+                currentFieldSetting[key] = value;
+            }
+        });
+    }
+
+    /**
+     * Reset currentFieldSetting to its base/default values.
+     */
+    function resetCurrentFieldSetting(): void {
+        console.log("Resetting currentFieldSetting");
+        currentFieldSetting.key = "";
+        currentFieldSetting.value = "";
+        currentFieldSetting.fieldName = props.availableProperties[0]?.value ?? "";
+        currentFieldSetting.fieldSource = FieldSource.Property;
+        currentFieldSetting.attributeFormat = AttributeFormat.FriendlyValue;
+        currentFieldSetting.fieldFormat = FieldFormat.String;
+    }
+
+    watch(() => currentFieldSetting.fieldSource, () => {
+        if (currentFieldSetting.fieldSource == FieldSource.Property) {
+            currentFieldSetting.fieldName = props.availableProperties[0]?.value ?? "";
+        }
+        else if (currentFieldSetting.fieldSource == FieldSource.Attribute) {
+            currentFieldSetting.fieldName = props.availableAttributes[0]?.value ?? "";
+        }
+        else {
+            currentFieldSetting.fieldName = "";
+        }
+    });
+</script>

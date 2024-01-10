@@ -14,34 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Mobile.JsonFields
+namespace Rock.Enums.Controls
 {
     /// <summary>
-    /// Determines the field's format. This will be used to properly format the Json sent to the client.
-    /// This is copied to Rock.Enums/Controls/FieldFormat.cs. If any changes are made here,
+    /// The source of the data for the field. The two types are properties on the item model and an attribute expression.
+    /// This is copied to Rock/Mobile/JsonFields/FieldSource.cs. If any changes are made here,
     /// they may need to be copied there as well.
     /// </summary>
-    public enum FieldFormat
+    public enum FieldSource
     {
         /// <summary>
-        /// The value will be formatted as a string.
+        /// The source comes from a model property.
         /// </summary>
-        String = 0,
+        Property = 0,
 
         /// <summary>
-        /// The value will be formatted as a number.
+        /// The source comes from an attribute defined on the model.
         /// </summary>
-        Number = 1,
+        Attribute = 1,
 
         /// <summary>
-        /// The value will be formatted as a datetime.
+        /// The source comes from a custom lava expression.
         /// </summary>
-        Date = 2,
-
-        /// <summary>
-        /// The value will be formatted as a boolean.
-        /// </summary>
-        Boolean = 3
+        LavaExpression = 2
     }
 
 }

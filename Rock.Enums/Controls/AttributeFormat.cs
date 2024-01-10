@@ -14,34 +14,24 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Mobile.JsonFields
+namespace Rock.Enums.Controls
 {
     /// <summary>
-    /// Determines the field's format. This will be used to properly format the Json sent to the client.
-    /// This is copied to Rock.Enums/Controls/FieldFormat.cs. If any changes are made here,
+    /// The format to use for the attribute.
+    /// This is copied from Rock/Mobile/JsonFields/AttributeFormat.cs. If any changes are made here,
     /// they may need to be copied there as well.
     /// </summary>
-    public enum FieldFormat
+    public enum AttributeFormat
     {
         /// <summary>
-        /// The value will be formatted as a string.
+        /// The attribute's friendly value should be used.
         /// </summary>
-        String = 0,
+        FriendlyValue = 0,
 
         /// <summary>
-        /// The value will be formatted as a number.
+        /// The attribute's raw value should be used.
         /// </summary>
-        Number = 1,
-
-        /// <summary>
-        /// The value will be formatted as a datetime.
-        /// </summary>
-        Date = 2,
-
-        /// <summary>
-        /// The value will be formatted as a boolean.
-        /// </summary>
-        Boolean = 3
+        RawValue = 1
     }
 
 }
