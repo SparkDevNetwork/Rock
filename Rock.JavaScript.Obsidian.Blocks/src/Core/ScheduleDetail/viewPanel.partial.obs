@@ -89,23 +89,23 @@
                 valueBuilder.addHtmlValue("Schedule", `<label class='label label-warning'>${props.modelValue?.friendlyScheduleText ?? ""}</label> <i class='fa fa-exclamation-triangle text-warning'></i>`);
             }
              else {
-                valueBuilder.addTextValue("Schedule", props.modelValue?.friendlyScheduleText ?? "");
+                valueBuilder.addHtmlValue("Schedule", props.modelValue?.friendlyScheduleText ?? "");
             }
         }
 
-        if(props.options?.nextOccurrence) {
-            valueBuilder.addTextValue("Next Occurrence", `${RockDateTime.parseISO(props.options.nextOccurrence)?.toASPString("g") ?? ""}`);
+        if(props.modelValue?.nextOccurrence) {
+            valueBuilder.addTextValue("Next Occurrence", `${props.modelValue.nextOccurrence}`);
         }
 
         if(props.modelValue?.category) {
             valueBuilder.addTextValue("Category", props.modelValue?.category?.text ?? "");
         }
 
-        if(props.modelValue?.checkInStartOffsetMinutes) {
+        if(props.modelValue?.checkInStartOffsetMinutes != null) {
             valueBuilder.addTextValue("Check-in Starts", `${props.modelValue?.checkInStartOffsetMinutes} minutes before start of schedule`);
         }
 
-        if(props.modelValue?.checkInEndOffsetMinutes) {
+        if(props.modelValue?.checkInEndOffsetMinutes != null) {
             valueBuilder.addTextValue("Check-in Ends", `${props.modelValue?.checkInEndOffsetMinutes} minutes after start of schedule`);
         }
         return valueBuilder.build();

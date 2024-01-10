@@ -973,6 +973,7 @@
     <Compile Include="Core\NotificationMessageTypes\ConnectionRequestMention.cs" />
     <Compile Include="Core\NotificationMessageTypes\NoteMention.cs" />
     <Compile Include="Core\NotificationMessageTypes\SmsConversation.cs" />
+    <Compile Include="Data\IHasAdditionalSettings.cs" />
     <Compile Include="Data\IncludeForModelMapAttribute.cs" />
     <Compile Include="Data\EntityContextState.cs" />
     <Compile Include="Data\EntitySaveHook.cs" />
@@ -1898,6 +1899,7 @@
     <Compile Include="Utility\Enums\RockPlatform.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
     <Compile Include="Utility\Enums\UserLoginValidationState.cs" />
+    <Compile Include="Utility\ExtensionMethods\AdditionalSettingsExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\CommunicationRecipientResponseExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\IValidPropertiesBoxExtensions.cs" />

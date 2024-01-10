@@ -41,16 +41,18 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./ScheduleDetail/editPanel.partial.obs";
     import ViewPanel from "./ScheduleDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useReloadBlock, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./ScheduleDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { ScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleBag";
     import { ScheduleDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleDetailOptionsBag";
 
+
     const config = useConfigurationValues<DetailBlockBox<ScheduleBag, ScheduleDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
+    const reloadBlock = useReloadBlock();
 
     // #region Values
 
@@ -80,8 +82,7 @@
         "iCalendarContent",
         "isActive",
         "isPublic",
-        "name",
-        "order"
+        "name"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(scheduleEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -280,6 +281,8 @@
     // #endregion
 
     provideSecurityGrant(securityGrant);
+
+    onConfigurationValuesChanged(reloadBlock);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
