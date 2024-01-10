@@ -16,6 +16,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Web.UI;
 
 using Rock;
@@ -113,10 +114,17 @@ namespace RockWeb.Blocks.Finance
 
         private void DisplayResults()
         {
-            RockContext rockContext = new RockContext();
-
             Person targetPerson = CurrentPerson;
-            
+
+            if ( targetPerson == null )
+            {
+                Response.StatusCode = ( int ) HttpStatusCode.BadRequest;
+                Response.Write( "Invalid Person" );
+                Response.End();
+            }
+
+            RockContext rockContext = new RockContext();
+                        
             var statementYear = PageParameter( PageParameterKey.StatementYear ).AsIntegerOrNull() ?? RockDateTime.Now.Year;
             var personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
             var personGuid = PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
