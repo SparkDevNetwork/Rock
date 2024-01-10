@@ -402,7 +402,7 @@ namespace Rock.Model
                 if ( groupType != null && groupType.IsIndexEnabled )
                 {
                     var group = this.Entity.Group;
-                    if ( group == null && this.Entity.GroupId != null )
+                    if ( group == null )
                     {
                         group = new GroupService( this.RockContext ).Get( this.Entity.GroupId );
                     }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1662,12 +1662,12 @@ namespace RockWeb.Blocks.Finance
                             EntityTypeId = a.EntityTypeId
                         },
                         Summary = a.Transaction.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Transaction.Summary,
-                        FinancialPaymentDetail = new PaymentDetailInfo
+                        FinancialPaymentDetail = a.Transaction.FinancialPaymentDetailId != null ? new PaymentDetailInfo
                         {
                             Id = a.Transaction.FinancialPaymentDetail.Id,
                             CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
                             CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId
-                        },
+                        } : null,
                         ForeignCurrencyCodeValueId = a.Transaction.ForeignCurrencyCodeValueId
                     } );
                 }
