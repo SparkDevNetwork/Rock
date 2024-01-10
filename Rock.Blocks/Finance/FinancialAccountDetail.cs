@@ -198,7 +198,8 @@ namespace Rock.Blocks.Finance
                 PublicName = entity.PublicName,
                 StartDate = entity.StartDate,
                 Url = entity.Url,
-                AccountParticipants = GetAccountParticipantStateFromDatabase( entity.Id )
+                AccountParticipants = GetAccountParticipantStateFromDatabase( entity.Id ),
+                ImageBinaryFile = entity.ImageBinaryFile.ToListItemBag(),
             };
         }
 
@@ -216,6 +217,7 @@ namespace Rock.Blocks.Finance
 
             var bag = GetCommonEntityBag( entity );
 
+            bag.ImageUrl = RequestContext.ResolveRockUrl( $"~/GetImage.ashx?id={entity.ImageBinaryFileId}" );
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;
@@ -295,6 +297,9 @@ namespace Rock.Blocks.Finance
 
             box.IfValidProperty( nameof( box.Entity.Url ),
                 () => entity.Url = box.Entity.Url );
+
+            box.IfValidProperty( nameof( box.Entity.ImageBinaryFile ),
+                () => entity.ImageBinaryFileId = box.Entity.ImageBinaryFile.GetEntityId<BinaryFile>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -405,7 +410,6 @@ namespace Rock.Blocks.Finance
         /// <summary>
         /// Gets the account participants state from database.
         /// </summary>
-        /// <param name="purposeKeys">The purpose keys.</param>
         /// <returns>List&lt;AccountParticipantInfo&gt;.</returns>
         private List<FinancialAccountParticipantBag> GetAccountParticipantStateFromDatabase( int accountId )
         {
