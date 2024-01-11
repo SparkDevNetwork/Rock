@@ -45,6 +45,7 @@
     <Content Include="src\Cms\contentChannelDetail.obs" />
     <Content Include="src\Cms\ContentChannelDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\ContentChannelDetail\viewPanel.partial.obs" />
+    <Content Include="src\Cms\contentChannelList.obs" />
     <Content Include="src\Cms\lavaShortcodeDetail.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\viewPanel.partial.obs" />
@@ -326,6 +327,7 @@
     <Folder Include="src\Cms\AdaptiveMessageList\" />
     <Folder Include="src\Cms\BlockTypeDetail\" />
     <Folder Include="src\Cms\ContentChannelDetail\" />
+    <Folder Include="src\Cms\ContentChannelList\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
     <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\LavaShortcodeDetail\" />
@@ -455,6 +457,7 @@
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentChannelDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentChannelList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\contentCollectionDetail.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\attributeSearchFilter.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\contentSources.partial.ts" />
