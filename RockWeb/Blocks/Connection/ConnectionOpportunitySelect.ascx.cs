@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -499,11 +499,25 @@ namespace RockWeb.Blocks.Connection
 
                     // get list of idle requests (no activity in past X days)
 
-                    var connectionRequestsQry = new ConnectionRequestService( rockContext ).Queryable().Where( a => a.ConnectionOpportunityId == opportunity.Id );
+                    var connectionRequestsQry = new ConnectionRequestService( rockContext ).Queryable()
+                        .Where( a => a.ConnectionOpportunityId == opportunity.Id );
+
                     if ( cpCampusFilter.SelectedCampusId.HasValue )
                     {
                         connectionRequestsQry = connectionRequestsQry.Where( a => a.CampusId.HasValue && a.CampusId == cpCampusFilter.SelectedCampusId );
                     }
+
+                    // Calculate status counts using connectionRequestsQry
+                    var statusCounts = connectionRequestsQry
+                        .GroupBy( cr => new { cr.ConnectionStatus.Id, cr.ConnectionStatus.Name, cr.ConnectionStatus.HighlightColor } )
+                        .Select( sci => new StatusCountInfo
+                        {
+                            Id = sci.Key.Id,
+                            Name = sci.Key.Name,
+                            HighlightColor = sci.Key.HighlightColor ?? ConnectionStatus.DefaultHighlightColor,
+                            Count = sci.Count()
+                        } )
+                        .ToList();
 
                     var currentDateTime = RockDateTime.Now;
                     int activeRequestCount = connectionRequestsQry
@@ -534,19 +548,6 @@ namespace RockWeb.Blocks.Connection
                                             )
                                             .Select( a => a.Id ).ToList();
 
-                        var statusCounts = connectionRequestsQry
-                                       .Where( cr => cr.ConnectionState == ConnectionState.Active ||
-                                                     ( cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < midnightToday ) )
-                                       .GroupBy( cr => new { cr.ConnectionStatus.Id, cr.ConnectionStatus.Name, cr.ConnectionStatus.HighlightColor } )
-                                       .Select( group => new StatusCountInfo
-                                       {
-                                           Id = group.Key.Id,
-                                           Name = group.Key.Name,
-                                           HighlightColor = group.Key.HighlightColor,
-                                           Count = group.Count()
-                                       } )
-                                       .ToList();
-
                         // get list of requests that have a status that is considered critical.
                         List<int> criticalConnectionRequests = connectionRequestsQry
                                                     .Where( r =>
@@ -570,13 +571,13 @@ namespace RockWeb.Blocks.Connection
                             CriticalConnectionRequests = criticalConnectionRequests,
                             DaysUntilRequestIdle = opportunity.ConnectionType.DaysUntilRequestIdle,
                             CanEdit = canEdit,
-                            IsFollowed = followedOpportunityIds.Contains( opportunity.Id )
+                            IsFollowed = followedOpportunityIds.Contains( opportunity.Id ),
+                            StatusCounts = statusCounts,
                         };
 
                         // If the user is limited requests with specific campus(es) set the list, otherwise leave it to be null
                         opportunitySummary.CampusSpecificConnector = campusSpecificConnector;
                         opportunitySummary.ConnectorCampusIds = campusIds.Distinct().ToList();
-                        opportunitySummary.StatusCounts = GetStatusCountsForOpportunity( opportunity.Id, cpCampusFilter.SelectedCampusId );
                         connectionTypeSummary.Opportunities.Add( opportunitySummary );
                     }
                 }
@@ -657,35 +658,6 @@ namespace RockWeb.Blocks.Connection
             statusMergeFields.Add( "IdleTooltip", sb.ToString().EncodeHtml() );
             lStatusBarContent.Text = statusTemplate.ResolveMergeFields( statusMergeFields );
             BindSummaryData();
-        }
-
-        private List<StatusCountInfo> GetStatusCountsForOpportunity( int opportunityId, int? campusId )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var connectionRequestService = new ConnectionRequestService( rockContext );
-                var connectionRequestQuery = connectionRequestService
-                    .Queryable().AsNoTracking()
-                    .Where( cr => cr.ConnectionOpportunityId == opportunityId );
-
-                if ( campusId.HasValue )
-                {
-                    connectionRequestQuery = connectionRequestQuery.Where( cr => cr.CampusId == campusId.Value );
-                }
-
-                var statusCounts = connectionRequestQuery
-                    .GroupBy( cr => new { cr.ConnectionStatus.Id, cr.ConnectionStatus.Name, cr.ConnectionStatus.HighlightColor } )
-                    .Select( sci => new StatusCountInfo
-                    {
-                        Id = sci.Key.Id,
-                        Name = sci.Key.Name,
-                        HighlightColor = sci.Key.HighlightColor ?? ConnectionStatus.DefaultHighlightColor,
-                        Count = sci.Count()
-                    } )
-                    .ToList();
-
-                return statusCounts;
-            }
         }
 
         /// <summary>
