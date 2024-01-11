@@ -5,6 +5,7 @@
                     :disabled="disabled"
                     :editorHeight="editorHeight > 0 ? editorHeight : undefined"
                     :mergeFields="mergeFields"
+                    toolbar="full"
                     :startInCodeEditorMode="false" />
 
         <template #settings>
