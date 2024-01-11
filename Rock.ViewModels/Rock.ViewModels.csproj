@@ -79,6 +79,7 @@
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveResponseBag.cs" />
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerDownloadItemBag.cs" />
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerValidationResultsBag.cs" />
+    <Compile Include="Blocks\Core\AssetStorageProviderList\AssetStorageProviderListOptionsBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
