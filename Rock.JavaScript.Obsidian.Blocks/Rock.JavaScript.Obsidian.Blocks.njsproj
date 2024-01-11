@@ -67,6 +67,7 @@
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\binaryFileList.obs" />
     <Content Include="src\Core\binaryFileTypeDetail.obs" />
     <Content Include="src\Core\BinaryFileTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileTypeDetail\viewPanel.partial.obs" />
@@ -352,6 +353,7 @@
     <Folder Include="src\Core\AssetStorageProviderList\" />
     <Folder Include="src\Core\AttributeMatrixTemplateDetail\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
+    <Folder Include="src\Core\BinaryFileList\" />
     <Folder Include="src\Core\BinaryFileTypeDetail\" />
     <Folder Include="src\Core\BinaryFileTypeList\" />
     <Folder Include="src\Core\CampusDetail\" />
@@ -520,6 +522,7 @@
     <TypeScriptCompile Include="src\Core\AttributeMatrixTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\BinaryFileList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />

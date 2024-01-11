@@ -85,6 +85,7 @@
     <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\BinaryFileList\BinaryFileListOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeDetail\BinaryFileTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileTypeList\BinaryFileTypeListOptionsBag.cs" />

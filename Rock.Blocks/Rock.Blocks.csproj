@@ -105,6 +105,7 @@
     <Compile Include="Core\AssetStorageProviderList.cs" />
     <Compile Include="Core\AttributeMatrixTemplateDetail.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
+    <Compile Include="Core\BinaryFileList.cs" />
     <Compile Include="Core\BinaryFileTypeDetail.cs" />
     <Compile Include="Core\BinaryFileTypeList.cs" />
     <Compile Include="Core\CampusList.cs" />
