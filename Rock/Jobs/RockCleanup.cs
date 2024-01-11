@@ -273,6 +273,8 @@ namespace Rock.Jobs
             // Search for and delete group memberships duplicates (same person, group, and role)
             RunCleanupTask( "group membership", () => GroupMembershipCleanup() );
 
+            RunCleanupTask( "primary family", () => UpdateMissingPrimaryFamily() );
+
             RunCleanupTask( "attendance label data", () => AttendanceDataCleanup() );
 
             // Search for locations with no country and assign USA or Canada if it match any of the country's states
@@ -2996,7 +2998,7 @@ BEGIN
 		ELSE A.[Age] 
 		END,
 	P.[AgeBracket] = CASE
-        WHEN A.[AgeBracket] IS NULL THEN -1
+        WHEN A.[AgeBracket] IS NULL THEN 0
         ELSE A.[AgeBracket]
         END        
 	FROM Person P
@@ -3154,6 +3156,50 @@ END
                 rockContext.Database.CommandTimeout = commandTimeout;
                 int result = rockContext.Database.ExecuteSqlCommand( removePersistedDataViewValueSql );
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Updates the PrimaryFamily for persons without a PrimaryFamily.
+        /// </summary>
+        /// <returns></returns>
+        private int UpdateMissingPrimaryFamily()
+       {
+            using ( var rockContext = new RockContext() )
+            {
+                var personService = new PersonService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupService = new GroupService( rockContext );
+                var persons = personService.Queryable().Where( p => !p.PrimaryFamilyId.HasValue ).Select( p => new { p.Id, p.LastName } ).ToList();
+                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+
+                foreach ( var person in persons )
+                {
+                    var groupMember = groupMemberService.Queryable().FirstOrDefault( gm => gm.PersonId == person.Id && gm.GroupTypeId == familyGroupType.Id );
+
+                    if ( groupMember == null )
+                    {
+                        var group = new Group
+                        {
+                            Name = person.LastName,
+                            GroupTypeId = familyGroupType.Id
+                        };
+                        groupService.Add( group );
+
+                        groupMember = new GroupMember
+                        {
+                            PersonId = person.Id,
+                            GroupRoleId = familyGroupType.DefaultGroupRoleId.Value
+                        };
+                        group.Members.Add( groupMember );
+
+                        rockContext.SaveChanges();
+                    }
+
+                    PersonService.UpdatePrimaryFamily( person.Id, rockContext );
+                }
+
+                return persons.Count;
             }
         }
 
