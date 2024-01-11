@@ -42,10 +42,10 @@
             fieldFormat: 2
         },
         {
-            id: 1588433595,
-            key: "SomeAttr",
-            value: "{{ item | Attribute:'SomeAttr' }}",
-            fieldName: "SomeAttr",
+            id: 1588433594,
+            key: "CustomAttribute",
+            value: "{{ item | Attribute:'CustomAttribute' }}",
+            fieldName: "CustomAttribute",
             fieldSource: 1,
             attributeFormat: 0,
             fieldFormat: 0
@@ -163,7 +163,7 @@
 
     const availableAttributes = [
         { text: "CustomAttribute", value: "CustomAttribute" },
-        { text: "Something", value: "Something" },
+        { text: "SomeAttr", value: "SomeAttr" },
         { text: "Romans", value: "Romans" }
     ];
 

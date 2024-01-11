@@ -11,17 +11,33 @@
         </Grid>
 
         <RockForm v-if="mode == 'add' || mode == 'edit'" @submit="onSubmit" novalidate>
+            <NotificationBox v-if="error" alertType="danger" dismissible @dismiss="error = ''">{{ error }}</NotificationBox>
             <RadioButtonList label="Field Source"
                              :items="fieldSourceOptions"
                              horizontal
                              :modelValue="`${currentFieldSetting.fieldSource}`"
-                             @update:modelValue="currentFieldSetting.fieldSource = (+$event as FieldSource)" />
+                             @update:modelValue="onChangeFieldSource" />
 
             <div v-if="currentFieldSetting.fieldSource == FieldSource.Property">
-                <DropDownList label="Property" :items="availableProperties" v-model="(currentFieldSetting.fieldName as string)" />
+                <DropDownList label="Property"
+                              :items="availableProperties"
+                              :modelValue="`${currentFieldSetting.fieldName}`"
+                              @update:modelValue="onChangeProperty" />
             </div>
-            <div v-else-if="currentFieldSetting.fieldSource == FieldSource.Attribute">
-                Attribute
+            <div v-else-if="currentFieldSetting.fieldSource == FieldSource.Attribute" class="row">
+                <div class="col-md-6">
+                    <DropDownList label="Attribute"
+                                  :items="availableAttributes"
+                                  :modelValue="`${currentFieldSetting.fieldName}`"
+                                  @update:modelValue="onChangeAttribute" />
+                </div>
+                <div class="col-md-6">
+                    <RadioButtonList label="Format Type"
+                                     :items="attributeFormatOptions"
+                                     horizontal
+                                     :modelValue="`${currentFieldSetting.attributeFormat}`"
+                                     @update:modelValue="onChangeAttributeFormat" />
+                </div>
             </div>
             <div v-else>
                 Lava
@@ -42,6 +58,7 @@
     import RockFormField from "./rockFormField.obs";
     import RadioButtonList from "./radioButtonList.obs";
     import DropDownList from "./dropDownList.obs";
+    import NotificationBox from "./notificationBox.obs";
     import Grid, { DeleteColumn, EditColumn, TextColumn } from "./grid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -79,8 +96,9 @@
     const fieldProps = useStandardRockFormFieldProps(props);
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
-
     const mode = ref<"grid" | "edit" | "add">("grid");
+    const error = ref("");
+    const currentEditIndex = ref(-1);
 
     const currentFieldSetting = reactive<FieldSettingBag>({
         get id() {
@@ -116,17 +134,17 @@
      *
      */
     function onAddButtonClick(): void {
-        // TODO
         resetCurrentFieldSetting();
         mode.value = "add";
     }
 
     function onEditButtonClick(id: string): void {
-        // TODO
-        mode.value = "edit";
-        const fs = internalValue.value.find(x => x.id == +id);
-        if (fs) {
-            setCurrentFieldSetting(fs);
+        const index = internalValue.value.findIndex(x => x.id == +id);
+
+        if (index >= 0) {
+            currentEditIndex.value = index;
+            mode.value = "edit";
+            setCurrentFieldSetting(internalValue.value[index]);
         }
     }
 
@@ -135,14 +153,84 @@
         internalValue.value.splice(i, 1);
     }
 
-    function onSubmit() {
+    /**
+     * Respond to radio button list changing the fieldSource. Set the fieldSource
+     * and reset other default values on the currentFieldSetting according to the
+     * chosen source.
+     */
+    function onChangeFieldSource(source: string): void {
+        // Convert string to FieldSource enum
+        const fieldSource = +source as FieldSource;
+
+        resetCurrentFieldSetting(fieldSource);
+    }
+
+    function onChangeProperty(property: string | string[]): void {
+        if (Array.isArray(property)) {
+            property = property[0];
+        }
+
+        console.info("TODO: Get the format type for this property");
+        // TODO: Get the format type for this property
+
+        currentFieldSetting.key = property;
+        currentFieldSetting.fieldName = property;
+        currentFieldSetting.value = `{{ item.${property} }}`;
+    }
+
+    function onChangeAttribute(attribute: string | string[]): void {
+        if (Array.isArray(attribute)) {
+            attribute = attribute[0];
+        }
+
+        let postfix = "";
+
+        if (currentFieldSetting.attributeFormat == AttributeFormat.RawValue) {
+            postfix = ",'RawValue'";
+        }
+
+        currentFieldSetting.fieldName = attribute;
+        currentFieldSetting.key = attribute;
+        currentFieldSetting.value = `{{ item | Attribute:'${attribute}'${postfix} }}`;
+    }
+
+    function onChangeAttributeFormat(format: string): void {
+        // Convert string to AttributeFormat enum
+        const attributeFormat = +format as AttributeFormat;
+
+        let postfix = "";
+
+        if (attributeFormat == AttributeFormat.RawValue) {
+            postfix = ",'RawValue'";
+        }
+
+        currentFieldSetting.value = `{{ item | Attribute:'${currentFieldSetting.key}'${postfix} }}`;
+        currentFieldSetting.attributeFormat = attributeFormat;
+    }
+
+    function onSubmit(): void {
         // TODO
-        console.log("SUBMIT", mode.value, currentFieldSetting);
+        if (mode.value == "add") {
+            console.log("ADD", internalValue.value.some(x => x.key == currentFieldSetting.key));
+
+            if (internalValue.value.some(x => x.key == currentFieldSetting.key)) {
+                console.error("DUPLICATE KEY");
+                error.value = "Unable to add item. An item with the same key already exists.";
+                return;
+            }
+
+            internalValue.value.push({ ...currentFieldSetting });
+        }
+        else if (mode.value == "edit") {
+            // TODO
+            // use currentEditIndex
+        }
+
         mode.value = "grid";
         resetCurrentFieldSetting();
     }
 
-    function onCancel() {
+    function onCancel(): void {
         mode.value = "grid";
         resetCurrentFieldSetting();
     }
@@ -151,7 +239,7 @@
      * Copy the values from the source FieldSettingBag to currentFieldSetting.
      */
     function setCurrentFieldSetting(source: FieldSettingBag): void {
-        console.log("Copying this to currentFieldSetting", source);
+        console.log("Copying this to currentFieldSetting", JSON.stringify(source, null, 4));
         Object.entries(source).forEach(([key, value]) => {
             // Don't copy the id, since it's a getter based on key
             if (key != "id") {
@@ -163,25 +251,33 @@
     /**
      * Reset currentFieldSetting to its base/default values.
      */
-    function resetCurrentFieldSetting(): void {
+    function resetCurrentFieldSetting(source: FieldSource = FieldSource.Property): void {
         console.log("Resetting currentFieldSetting");
-        currentFieldSetting.key = "";
-        currentFieldSetting.value = "";
-        currentFieldSetting.fieldName = props.availableProperties[0]?.value ?? "";
-        currentFieldSetting.fieldSource = FieldSource.Property;
-        currentFieldSetting.attributeFormat = AttributeFormat.FriendlyValue;
-        currentFieldSetting.fieldFormat = FieldFormat.String;
-    }
-
-    watch(() => currentFieldSetting.fieldSource, () => {
-        if (currentFieldSetting.fieldSource == FieldSource.Property) {
-            currentFieldSetting.fieldName = props.availableProperties[0]?.value ?? "";
+        if (source == FieldSource.Property) {
+            const prop = props.availableProperties[0]?.value ?? "";
+            currentFieldSetting.key = prop;
+            currentFieldSetting.value = `{{ item.${prop} }}`;
+            currentFieldSetting.fieldName = prop;
+            currentFieldSetting.fieldSource = FieldSource.Property;
+            currentFieldSetting.attributeFormat = AttributeFormat.FriendlyValue;
+            currentFieldSetting.fieldFormat = FieldFormat.String;
         }
-        else if (currentFieldSetting.fieldSource == FieldSource.Attribute) {
-            currentFieldSetting.fieldName = props.availableAttributes[0]?.value ?? "";
+        else if (source == FieldSource.Attribute) {
+            const attr = props.availableAttributes[0]?.value ?? "";
+            currentFieldSetting.key = attr;
+            currentFieldSetting.value = `{{ item | Attribute:'${attr}' }}`;
+            currentFieldSetting.fieldName = attr;
+            currentFieldSetting.fieldSource = FieldSource.Attribute;
+            currentFieldSetting.attributeFormat = AttributeFormat.FriendlyValue;
+            currentFieldSetting.fieldFormat = FieldFormat.String;
         }
-        else {
+        else if (source == FieldSource.LavaExpression) {
+            currentFieldSetting.key = "";
+            currentFieldSetting.value = "{{ item | Attribute:'AttributeKey' }}";
             currentFieldSetting.fieldName = "";
+            currentFieldSetting.fieldSource = FieldSource.LavaExpression;
+            currentFieldSetting.attributeFormat = AttributeFormat.FriendlyValue;
+            currentFieldSetting.fieldFormat = FieldFormat.String;
         }
-    });
+    }
 </script>
