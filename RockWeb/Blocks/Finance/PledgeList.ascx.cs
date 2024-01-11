@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -36,22 +35,126 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Generic list of all pledges in the system." )]
 
-    [LinkedPage( "Detail Page", "", false )]
-    [BooleanField( "Show Account Column", "Allows the account column to be hidden.", true, "", 1 )]
-    [BooleanField( "Show Last Modified Date Column", "Allows the Last Modified Date column to be hidden.", true, "", 2 )]
-    [BooleanField( "Show Group Column", "Allows the group column to be hidden.", false, "", 3 )]
-    [BooleanField( "Limit Pledges To Current Person", "Limit the results to pledges for the current person.", false, "", 4 )]
-    [BooleanField( "Show Account Summary", "Should the account summary be displayed at the bottom of the list?", false, order: 5 )]
-    [AccountsField( "Accounts", "Limit the results to pledges that match the selected accounts.", false, "", "", 5 )]
-    [BooleanField( "Show Person Filter", "Allows person filter to be hidden.", true, "Display Filters", 0 )]
-    [BooleanField( "Show Account Filter", "Allows account filter to be hidden.", true, "Display Filters", 1 )]
-    [BooleanField( "Show Date Range Filter", "Allows date range filter to be hidden.", true, "Display Filters", 2 )]
-    [BooleanField( "Show Last Modified Filter", "Allows last modified filter to be hidden.", true, "Display Filters", 3 )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Description = "",
+        IsRequired = false )]
+
+    [BooleanField( "Show Account Column",
+        Key = AttributeKey.ShowAccountColumn,
+        Description = "Allows the account column to be hidden.",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 1 )]
+
+    [BooleanField( "Show Last Modified Date Column",
+        Key = AttributeKey.ShowLastModifiedDateColumn,
+        Description = "Allows the Last Modified Date column to be hidden.",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 2 )]
+
+    [BooleanField( "Show Group Column",
+        Key = AttributeKey.ShowGroupColumn,
+        Description = "Allows the group column to be hidden.",
+        DefaultBooleanValue = false,
+        Category = "",
+        Order = 3 )]
+
+    [BooleanField( "Limit Pledges To Current Person",
+        Key = AttributeKey.LimitPledgesToCurrentPerson,
+        Description = "Limit the results to pledges for the current person.",
+        DefaultBooleanValue = false,
+        Category = "",
+        Order = 4 )]
+
+    [BooleanField( "Show Account Summary",
+        Key = AttributeKey.ShowAccountSummary,
+        Description = "Should the account summary be displayed at the bottom of the list?",
+        DefaultBooleanValue = false,
+        Order = 5 )]
+
+    [AccountsField( "Accounts",
+        Key = AttributeKey.Accounts,
+        Description = "Limit the results to pledges that match the selected accounts.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 5 )]
+
+    [BooleanField( "Hide Amount",
+        Key = AttributeKey.HideAmount,
+        Description = "Allows the amount column to be hidden.",
+        DefaultBooleanValue = false,
+        Category = "",
+        Order = 6 )]
+
+    [BooleanField( "Show Person Filter",
+        Key = AttributeKey.ShowPersonFilter,
+        Description = "Allows person filter to be hidden.",
+        DefaultBooleanValue = true,
+        Category = "Display Filters",
+        Order = 0 )]
+
+    [BooleanField( "Show Account Filter",
+        Key = AttributeKey.ShowAccountFilter,
+        Description = "Allows account filter to be hidden.",
+        DefaultBooleanValue = true,
+        Category = "Display Filters",
+        Order = 1 )]
+
+    [BooleanField( "Show Date Range Filter",
+        Key = AttributeKey.ShowDateRangeFilter,
+        Description = "Allows date range filter to be hidden.",
+        DefaultBooleanValue = true,
+        Category = "Display Filters",
+        Order = 2 )]
+
+    [BooleanField( "Show Last Modified Filter",
+        Key = AttributeKey.ShowLastModifiedFilter,
+        Description = "Allows last modified filter to be hidden.",
+        DefaultBooleanValue = true,
+        Category = "Display Filters",
+        Order = 3 )]
 
     [ContextAware]
     [Rock.SystemGuid.BlockTypeGuid( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D" )]
     public partial class PledgeList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        #region Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string ShowAccountColumn = "ShowAccountColumn";
+            public const string ShowLastModifiedDateColumn = "ShowLastModifiedDateColumn";
+            public const string ShowGroupColumn = "ShowGroupColumn";
+            public const string LimitPledgesToCurrentPerson = "LimitPledgesToCurrentPerson";
+            public const string ShowAccountSummary = "ShowAccountSummary";
+            public const string Accounts = "Accounts";
+            public const string HideAmount = "HideAmount";
+            public const string ShowPersonFilter = "ShowPersonFilter";
+            public const string ShowAccountFilter = "ShowAccountFilter";
+            public const string ShowDateRangeFilter = "ShowDateRangeFilter";
+            public const string ShowLastModifiedFilter = "ShowLastModifiedFilter";
+        }
+
+        private static class UserPreferenceKey
+        {
+            public const string DateRange = "Date Range";
+            public const string LastModified = "Last Modified";
+            public const string Person = "Person";
+            public const string Accounts = "Accounts";
+            public const string ActiveOnly = "Active Only";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string Accounts = "Accounts";
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -77,7 +180,7 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
             gPledges.DataKeyNames = new[] { "id" };
             gPledges.RowDataBound += GPledges_RowDataBound;
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DetailPage" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.DetailPage ) ) )
             {
                 gPledges.Actions.AddClick += gPledges_Add;
                 gPledges.RowSelected += gPledges_Edit;
@@ -87,10 +190,10 @@ namespace RockWeb.Blocks.Finance
             gfPledges.DisplayFilterValue += gfPledges_DisplayFilterValue;
 
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-            gPledges.Actions.ShowAdd = canAddEditDelete && !string.IsNullOrWhiteSpace( GetAttributeValue( "DetailPage" ) );
+            gPledges.Actions.ShowAdd = canAddEditDelete && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.DetailPage ) );
             gPledges.IsDeleteEnabled = canAddEditDelete;
 
-            if ( GetAttributeValue( "LimitPledgesToCurrentPerson" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.LimitPledgesToCurrentPerson ).AsBoolean() )
             {
                 TargetPerson = this.CurrentPerson;
             }
@@ -114,21 +217,28 @@ namespace RockWeb.Blocks.Finance
             if ( forField != null )
             {
                 // show/hide the group column
-                forField.Visible = GetAttributeValue( "ShowGroupColumn" ).AsBoolean();
+                forField.Visible = GetAttributeValue( AttributeKey.ShowGroupColumn ).AsBoolean();
             }
 
             var accountField = gPledges.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Account" );
             if ( accountField != null )
             {
                 // show/hide the account column
-                accountField.Visible = GetAttributeValue( "ShowAccountColumn" ).AsBoolean();
+                accountField.Visible = GetAttributeValue( AttributeKey.ShowAccountColumn ).AsBoolean();
             }
 
             var modifiedDateField = gPledges.ColumnsOfType<DateField>().FirstOrDefault( a => a.DataField == "ModifiedDateTime" );
             if ( modifiedDateField != null )
             {
                 // show/hide the last modified date column
-                modifiedDateField.Visible = GetAttributeValue( "ShowLastModifiedDateColumn" ).AsBoolean();
+                modifiedDateField.Visible = GetAttributeValue( AttributeKey.ShowLastModifiedDateColumn ).AsBoolean();
+            }
+
+            var amountField = gPledges.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Total Amount" );
+            if ( amountField != null )
+            {
+                // show/hide the amount column
+                amountField.Visible = !GetAttributeValue( AttributeKey.HideAmount ).AsBoolean();
             }
         }
 
@@ -140,7 +250,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( !Page.IsPostBack )
             {
-                if ( GetAttributeValue( "LimitPledgesToCurrentPerson" ).AsBoolean() && this.CurrentPerson == null )
+                if ( GetAttributeValue( AttributeKey.LimitPledgesToCurrentPerson ).AsBoolean() && this.CurrentPerson == null )
                 {
                     this.Visible = false;
                 }
@@ -222,7 +332,7 @@ namespace RockWeb.Blocks.Finance
         private void BindFilter()
         {
             // only show the Person filter if context is not set to a specific person
-            if ( TargetPerson == null && GetAttributeValue( "ShowPersonFilter" ).AsBoolean() )
+            if ( TargetPerson == null && GetAttributeValue( AttributeKey.ShowPersonFilter ).AsBoolean() )
             {
                 ppFilterPerson.Visible = true;
                 ppFilterPerson.SetValue( new PersonService( new RockContext() ).Get( gfPledges.GetFilterPreference( "Person" ).AsInteger() ) );
@@ -233,9 +343,9 @@ namespace RockWeb.Blocks.Finance
             }
 
             // show/hide filters
-            apFilterAccount.Visible = GetAttributeValue( "ShowAccountFilter" ).AsBoolean() && string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) );
-            drpDates.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
-            drpLastModifiedDates.Visible = GetAttributeValue( "ShowLastModifiedFilter" ).AsBoolean();
+            apFilterAccount.Visible = GetAttributeValue( AttributeKey.ShowAccountFilter ).AsBoolean() && string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.Accounts ) );
+            drpDates.Visible = GetAttributeValue( AttributeKey.ShowDateRangeFilter ).AsBoolean();
+            drpLastModifiedDates.Visible = GetAttributeValue( AttributeKey.ShowLastModifiedFilter ).AsBoolean();
 
             // hide the filter dropdown if there aren't any filters
             if ( !ppFilterPerson.Visible && !apFilterAccount.Visible && !drpDates.Visible && !drpLastModifiedDates.Visible )
@@ -247,10 +357,10 @@ namespace RockWeb.Blocks.Finance
                 gfPledges.Visible = true;
             }
 
-            drpDates.DelimitedValues = gfPledges.GetFilterPreference( "Date Range" );
-            drpLastModifiedDates.DelimitedValues = gfPledges.GetFilterPreference( "Last Modified" );
-            apFilterAccount.SetValues( gfPledges.GetFilterPreference( "Accounts" ).Split( ',' ).AsIntegerList() );
-           
+            drpDates.DelimitedValues = gfPledges.GetFilterPreference( UserPreferenceKey.DateRange );
+            drpLastModifiedDates.DelimitedValues = gfPledges.GetFilterPreference( UserPreferenceKey.LastModified );
+            apFilterAccount.SetValues( gfPledges.GetFilterPreference( UserPreferenceKey.Accounts ).Split( ',' ).AsIntegerList() );
+            cbFilterActiveOnly.Checked = gfPledges.GetFilterPreference( UserPreferenceKey.ActiveOnly ).AsBoolean();
         }
 
         /// <summary>
@@ -270,7 +380,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gPledges_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "PledgeId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "PledgeId", 0 );
         }
 
         /// <summary>
@@ -280,7 +390,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPledges_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "PledgeId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "PledgeId", e.RowKeyId );
         }
 
         /// <summary>
@@ -340,7 +450,7 @@ namespace RockWeb.Blocks.Finance
 
             switch ( e.Key )
             {
-                case "Date Range":
+                case UserPreferenceKey.DateRange:
                     if ( drpDates.Visible )
                     {
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
@@ -351,7 +461,7 @@ namespace RockWeb.Blocks.Finance
                     }
                     break;
 
-                case "Last Modified":
+                case UserPreferenceKey.LastModified:
                     if ( drpLastModifiedDates.Visible )
                     {
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
@@ -362,7 +472,7 @@ namespace RockWeb.Blocks.Finance
                     }
                     break;
 
-                case "Person":
+                case UserPreferenceKey.Person:
                     int? personId = e.Value.AsIntegerOrNull();
                     if ( personId != null && ppFilterPerson.Visible )
                     {
@@ -382,7 +492,7 @@ namespace RockWeb.Blocks.Finance
                     }
                     break;
 
-                case "Accounts":
+                case UserPreferenceKey.Accounts:
 
                     var accountIdList = e.Value.Split( ',' ).AsIntegerList();
                     if ( accountIdList.Any() && apFilterAccount.Visible )
@@ -405,6 +515,9 @@ namespace RockWeb.Blocks.Finance
 
                     break;
 
+                case UserPreferenceKey.ActiveOnly:
+                    break;
+
                 default:
                     e.Value = string.Empty;
                     break;
@@ -418,10 +531,11 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfPledges_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfPledges.SetFilterPreference( "Date Range", drpDates.DelimitedValues );
-            gfPledges.SetFilterPreference( "Last Modified", drpLastModifiedDates.DelimitedValues );
-            gfPledges.SetFilterPreference( "Person", ppFilterPerson.PersonId.ToString() );
-            gfPledges.SetFilterPreference( "Accounts", apFilterAccount.SelectedValues.ToList().AsDelimited(",") );
+            gfPledges.SetFilterPreference( UserPreferenceKey.DateRange, drpDates.DelimitedValues );
+            gfPledges.SetFilterPreference( UserPreferenceKey.LastModified, drpLastModifiedDates.DelimitedValues );
+            gfPledges.SetFilterPreference( UserPreferenceKey.Person, ppFilterPerson.PersonId.ToString() );
+            gfPledges.SetFilterPreference( UserPreferenceKey.Accounts, apFilterAccount.SelectedValues.ToList().AsDelimited(",") );
+            gfPledges.SetFilterPreference( UserPreferenceKey.ActiveOnly, cbFilterActiveOnly.Checked ? cbFilterActiveOnly.Checked.ToString() : string.Empty );
             if ( AvailableAttributes != null )
             {
                 foreach ( var attribute in AvailableAttributes )
@@ -461,7 +575,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                int? personId = gfPledges.GetFilterPreference( "Person" ).AsIntegerOrNull();
+                int? personId = gfPledges.GetFilterPreference( UserPreferenceKey.Person ).AsIntegerOrNull();
                 if ( personId.HasValue && ppFilterPerson.Visible )
                 {
                     person = new PersonService( rockContext ).Get( personId.Value );
@@ -475,14 +589,27 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Filter by configured limit accounts if specified.
-            var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+            var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
             if ( accountGuids.Any() )
             {
                 pledges = pledges.Where( p => accountGuids.Contains( p.Account.Guid ) );
             }
 
             // get the accounts and make sure they still exist by checking the database
-            var accountIds = gfPledges.GetFilterPreference( "Accounts" ).Split( ',' ).AsIntegerList();
+            var accountIds = gfPledges.GetFilterPreference( AttributeKey.Accounts ).Split( ',' ).AsIntegerList();
+            foreach ( var accountIdentifier in PageParameter( PageParameterKey.Accounts ).Split( ',' ) )
+            {
+                var accountId = accountIdentifier.AsIntegerOrNull();
+                if ( !accountId.HasValue )
+                {
+                    accountId = FinancialAccountCache.GetByIdKey( accountIdentifier )?.Id;
+                }
+
+                if ( accountId.HasValue )
+                {
+                    accountIds.Add( accountId.Value );
+                }
+            }
             accountIds = new FinancialAccountService( rockContext ).GetByIds( accountIds ).Select( a => a.Id ).ToList();
 
             if ( accountIds.Any() && apFilterAccount.Visible )
@@ -491,7 +618,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Date Range
-            DateRange filterDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( gfPledges.GetFilterPreference( "Date Range" ) );
+            DateRange filterDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( gfPledges.GetFilterPreference( UserPreferenceKey.DateRange ) );
             var filterStartDate = filterDateRange.Start ?? DateTime.MinValue;
             var filterEndDate = filterDateRange.End ?? DateTime.MaxValue;
 
@@ -520,6 +647,13 @@ namespace RockWeb.Blocks.Finance
                 pledges = pledges.Where( p => !( p.StartDate > filterEndDate ) && !( p.EndDate < filterStartDate ) );
             }
 
+            // exclude inactive pledges if specified.
+            var activeOnly = gfPledges.GetFilterPreference( UserPreferenceKey.ActiveOnly ).AsBoolean();
+            if ( activeOnly )
+            {
+                pledges = pledges.Where( p => p.StartDate <= RockDateTime.Now && p.EndDate >= RockDateTime.Now );
+            }
+
             // Filter query by any configured attribute filters
             if ( AvailableAttributes != null && AvailableAttributes.Any() )
             {
@@ -531,7 +665,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Last Modified
-            DateRange filterModifiedDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( gfPledges.GetFilterPreference( "Last Modified" ) );
+            DateRange filterModifiedDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( gfPledges.GetFilterPreference( UserPreferenceKey.LastModified ) );
             var filterModifiedStartDate = filterModifiedDateRange.Start ?? DateTime.MinValue;
             var filterModifiedEndDate = filterModifiedDateRange.End ?? DateTime.MaxValue;
 
@@ -543,7 +677,7 @@ namespace RockWeb.Blocks.Finance
             gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.AccountId ).ToList();
             gPledges.DataBind();
 
-            var showAccountSummary = this.GetAttributeValue( "ShowAccountSummary" ).AsBoolean();
+            var showAccountSummary = this.GetAttributeValue( AttributeKey.ShowAccountSummary ).AsBoolean();
             if ( showAccountSummary || TargetPerson == null )
             {
                 pnlSummary.Visible = true;
