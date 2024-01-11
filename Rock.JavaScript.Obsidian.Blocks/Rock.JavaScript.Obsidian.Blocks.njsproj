@@ -158,6 +158,7 @@
     <Content Include="src\Finance\financialAccountDetail.obs" />
     <Content Include="src\Finance\FinancialAccountDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialAccountDetail\viewPanel.partial.obs" />
+    <Content Include="src\Finance\financialAccountList.obs" />
     <Content Include="src\Finance\financialBatchDetail.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\editPanel.partial.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\viewPanel.partial.vue" />
@@ -395,6 +396,7 @@
     <Folder Include="src\Finance\BenevolenceTypeDetail\" />
     <Folder Include="src\Finance\BusinessDetail\" />
     <Folder Include="src\Finance\FinancialAccountDetail\" />
+    <Folder Include="src\Finance\FinancialAccountList\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialBatchList\" />
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
@@ -578,6 +580,7 @@
     <TypeScriptCompile Include="src\Finance\BenevolenceTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialAccountDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\FinancialAccountList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayList\types.partial.ts" />

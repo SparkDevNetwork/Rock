@@ -217,7 +217,7 @@ namespace Rock.Blocks.Finance
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.ImageUrl = RequestContext.ResolveRockUrl( $"~/GetImage.ashx?id={entity.ImageBinaryFileId}" );
+            bag.ImageUrl = entity.ImageBinaryFileId.HasValue ? RequestContext.ResolveRockUrl( $"~/GetImage.ashx?id={entity.ImageBinaryFileId}" ) : string.Empty;
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;
