@@ -101,6 +101,7 @@
     import PasteAsPlainTextPlugin from "./HtmlEditor/pasteAsPlainTextPlugin.partial.obs";
     import { tinymce, Editor, EditorEvent, Events } from "@Obsidian/Libs/tinymce";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { scopeStyleSheets, unscopeStyleSheets } from "./HtmlEditor/utils.partial";
 
     type ToolbarConfig = "light" | "full";
 
@@ -342,6 +343,13 @@
                 // Only include the plugins that are needed to keep TinyMCE leaner.
                 plugins: "image link lists media searchreplace table help",
 
+                // Enable the use of <style> tags.
+                // "+" means "add this to the existing list of valid elements".
+                // "div[style]" means "allow <style> elements as child elements of <div> elements".
+                // Since this is an inline editor (not in an iframe), we need to use `+div[style]` instead of `+body[style]`.
+                // https://www.tiny.cloud/docs/tinymce/latest/content-filtering/#valid_children
+                valid_children: "+div[style]",
+
                 // Set the toolbar buttons.
                 toolbar: toolbarConfigs[props.toolbar],
 
@@ -503,10 +511,25 @@
                     // https://www.tiny.cloud/docs/tinymce/6/events/
                     editor.on("change redo undo", (_e: EditorEvent<Events.ChangeEvent>): void => {
                         const newValue = editor.getContent();
+
                         if (tinyMceValue.value !== newValue) {
                             tinyMceValue.value = newValue;
                             internalValue.value = newValue;
                         }
+                    });
+
+                    // Since the editor is inline (not in an iframe), <style> elements
+                    // added to the code editor can leak CSS styles to the rest of the page.
+                    // To prevent this, scope the style sheets before setting the editor content,
+                    // and unscope when retrieving the content.
+                    // The "scoped" behavior is very similar to the SFC `scoped` directive; i.e. `<style scoped>`
+                    // in that this will add run-time specificity to the style rule selectors so the styles
+                    // are only isolated to this HTML Editor control instance.
+                    editor.on("BeforeSetContent", (e: EditorEvent<Events.BeforeSetContentEvent>) => {
+                        e.content = scopeStyleSheets(e.content, `#${editorId.value}`);
+                    });
+                    editor.on("GetContent", (e: EditorEvent<Events.GetContentEvent>) => {
+                        e.content = unscopeStyleSheets(e.content, `#${editorId.value}`);
                     });
                 }
             });
