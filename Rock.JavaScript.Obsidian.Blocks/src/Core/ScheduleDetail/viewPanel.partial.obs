@@ -101,11 +101,11 @@
             valueBuilder.addTextValue("Category", props.modelValue?.category?.text ?? "");
         }
 
-        if(props.modelValue?.checkInStartOffsetMinutes != null) {
+        if(props.modelValue?.checkInStartOffsetMinutes !== null && props.modelValue?.checkInStartOffsetMinutes !== undefined) {
             valueBuilder.addTextValue("Check-in Starts", `${props.modelValue?.checkInStartOffsetMinutes} minutes before start of schedule`);
         }
 
-        if(props.modelValue?.checkInEndOffsetMinutes != null) {
+        if(props.modelValue?.checkInEndOffsetMinutes !== null && props.modelValue?.checkInEndOffsetMinutes !== undefined) {
             valueBuilder.addTextValue("Check-in Ends", `${props.modelValue?.checkInEndOffsetMinutes} minutes after start of schedule`);
         }
         return valueBuilder.build();

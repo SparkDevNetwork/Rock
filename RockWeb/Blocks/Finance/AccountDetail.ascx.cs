@@ -110,18 +110,6 @@ namespace RockWeb.Blocks.Finance
             {
                 ShowDetail( accountId );
             }
-
-            // Add any attribute controls. 
-            // This must be done here regardless of whether it is a postback so that the attribute values will get saved.
-            var account = new FinancialAccountService( new RockContext() ).Get( accountId );
-            if ( account == null )
-            {
-                account = new FinancialAccount();
-            }
-
-            account.LoadAttributes();
-            phAttributes.Controls.Clear();
-            Helper.AddEditControls( account, phAttributes, true, BlockValidationGroup );
         }
 
         #endregion
@@ -174,8 +162,15 @@ namespace RockWeb.Blocks.Finance
             account.ModifiedDateTime = RockDateTime.Now;
             account.ModifiedByPersonAliasId = CurrentPersonAliasId;
 
+            int? oldImageId = null;
+            if ( account.ImageBinaryFileId != imgBinaryFile.BinaryFileId )
+            {
+                oldImageId = account.ImageBinaryFileId;
+                account.ImageBinaryFileId = imgBinaryFile.BinaryFileId;
+            }
+
             account.LoadAttributes( rockContext );
-            Rock.Attribute.Helper.GetEditValues( phAttributes, account );
+            avcAttributes.GetEditValues( account );
 
             // if the account IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of account didn't pass.
             // So, make sure a message is displayed in the validation summary
@@ -205,8 +200,38 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            rockContext.SaveChanges();
-            account.SaveAttributeValues( rockContext );
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                account.SaveAttributeValues( rockContext );
+
+                if ( oldImageId.HasValue || account.ImageBinaryFileId.HasValue )
+                {
+                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                    if ( oldImageId.HasValue )
+                    {
+                        var binaryFile = binaryFileService.Get( oldImageId.Value );
+                        if ( binaryFile != null )
+                        {
+                            // marked the old image as IsTemporary so it gets cleaned up later.
+                            binaryFile.IsTemporary = true;
+                        }
+                    }
+
+                    if ( account.ImageBinaryFileId.HasValue )
+                    {
+                        var binaryFile = binaryFileService.Get( account.ImageBinaryFileId.Value );
+                        if ( binaryFile != null )
+                        {
+                            // mark the new image as not Temporary so it doesn't get cleaned up later.
+                            binaryFile.IsTemporary = false;
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                }
+            } );
+
 
             var qryParams = new Dictionary<string, string>();
             qryParams["AccountId"] = account.Id.ToString();
@@ -417,7 +442,12 @@ namespace RockWeb.Blocks.Finance
 
             this.AccountParticipantState = GetAccountParticipantStateFromDatabase();
 
+            imgBinaryFile.BinaryFileId = account.ImageBinaryFileId;
+
             BindAccountParticipantsGrid();
+
+            account.LoadAttributes();
+            avcAttributes.AddEditControls( account, Rock.Security.Authorization.EDIT, CurrentPerson );
         }
 
         /// <summary>
@@ -438,6 +468,14 @@ namespace RockWeb.Blocks.Finance
             leftDescription.Add( "Campus", account.Campus != null ? account.Campus.Name : string.Empty );
             leftDescription.Add( "GLCode", account.GlCode );
             leftDescription.Add( "Is Tax Deductible", account.IsTaxDeductible );
+
+            if ( account.ImageBinaryFileId.HasValue )
+            {
+                string imageUrl = ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", account.ImageBinaryFileId.Value ) );
+                string imgTag = GetImageTag( account.ImageBinaryFileId, 150, 150, false, true );
+                leftDescription.Add( "Image", $"<a href='{imageUrl}'>{imgTag}</a>" );
+            }
+
             lLeftDetails.Text = leftDescription.Html;
 
             var followingsFromDatabase = GetAccountParticipantStateFromDatabase().OrderBy( a => a.PersonFullName ).ToList();
