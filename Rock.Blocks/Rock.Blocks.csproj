@@ -100,6 +100,7 @@
     <Compile Include="Cms\PageShortLinkList.cs" />
     <Compile Include="Cms\BlockList.cs" />
     <Compile Include="Cms\LayoutList.cs" />
+    <Compile Include="Cms\PersonalLinkList.cs" />
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Core\AssetStorageProviderList.cs" />

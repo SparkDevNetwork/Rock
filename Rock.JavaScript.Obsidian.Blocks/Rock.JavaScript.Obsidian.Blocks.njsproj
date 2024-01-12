@@ -58,6 +58,7 @@
     <Content Include="src\Cms\LibraryViewer\itemPreview.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
     <Content Include="src\Core\assetStorageProviderList.obs" />
+    <Content Include="src\Cms\personalLinkList.obs" />
     <Content Include="src\Core\attributeMatrixTemplateDetail.obs" />
     <Content Include="src\Core\AttributeMatrixTemplateDetail\editPanel.partial.obs" />
     <Content Include="src\Core\AttributeMatrixTemplateDetail\viewPanel.partial.obs" />
@@ -342,6 +343,7 @@
     <Folder Include="src\Cms\PageShortLinkDetail\" />
     <Folder Include="src\Cms\PageRouteDetail\" />
     <Folder Include="src\Cms\PersistedDatasetDetail\" />
+    <Folder Include="src\Cms\PersonalLinkList\" />
     <Folder Include="src\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="src\Cms\PersonalLinkSectionList\" />
     <Folder Include="src\Cms\SiteDetail\" />
@@ -504,6 +506,7 @@
     <TypeScriptCompile Include="src\Cms\PersistedDatasetDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PersistedDatasetDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PersistedDatasetDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\PersonalLinkList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\personalLinkSectionDetail.ts" />
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\types.partial.ts" />

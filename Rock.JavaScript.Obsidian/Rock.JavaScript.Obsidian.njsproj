@@ -321,6 +321,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\PageShortLinkDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PageRouteDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\PersonalLinkList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\SiteDetail\" />
@@ -820,6 +821,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PageRouteDetail\pageRouteDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\persistedDatasetBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\persistedDatasetDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkList\personalLinkListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkList\savePersonalLinkRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\personalLinkSectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\personalLinkSectionDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionList\personalLinkSectionListOptionsBag.d.ts" />
