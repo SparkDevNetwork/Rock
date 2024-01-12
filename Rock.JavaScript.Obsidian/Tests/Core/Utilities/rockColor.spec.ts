@@ -21,7 +21,7 @@ function stringToExpectedRgb(str: string, expectedRed: number, expectedGreen: nu
     expect(color.r).toStrictEqual(expectedRed);
     expect(color.g).toStrictEqual(expectedGreen);
     expect(color.b).toStrictEqual(expectedBlue);
-    expect(color.alpha).toStrictEqual(1);
+    expect(color.alpha).toStrictEqual(0);
 }
 
 function stringToExpectedBlack(str: string): void {
