@@ -189,6 +189,11 @@ namespace Rock.SystemGuid
         public const string CONNECTION_REQUEST = "73A4B6C6-502B-4E5B-BAA0-A85B7CCEC544";
 
         /// <summary>
+        /// Connection Request Activity field type
+        /// </summary>
+        public const string CONNECTION_REQUEST_ACTIVITY = "10842787-7C17-413A-A562-9CA19E6FCE52";
+
+        /// <summary>
         /// Connection State field type
         /// </summary>
         public const string CONNECTION_STATE = "B0FB7AFB-B43C-4E2B-8502-293F07BB465A";

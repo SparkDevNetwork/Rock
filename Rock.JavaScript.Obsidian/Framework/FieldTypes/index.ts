@@ -125,6 +125,9 @@ registerFieldType(FieldTypeGuids.ConnectionActivityType, new ConnectionActivityT
 import { ConnectionRequestFieldType } from "./connectionRequestField.partial";
 registerFieldType(FieldTypeGuids.ConnectionRequest, new ConnectionRequestFieldType());
 
+import { ConnectionRequestActivityFieldType } from "./connectionRequestActivityField.partial";
+registerFieldType(FieldTypeGuids.ConnectionRequestActivity, new ConnectionRequestActivityFieldType());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
