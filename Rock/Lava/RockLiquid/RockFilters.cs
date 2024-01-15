@@ -6302,25 +6302,7 @@ namespace Rock.Lava
         /// <returns>An <see cref="IEntity"/> object or the original <paramref name="input"/>.</returns>
         public static string ToIdHash( object input )
         {
-            int? entityId = null;
-
-            if ( input is int )
-            {
-                entityId = Convert.ToInt32( input );
-            }
-
-            if ( input is IEntity )
-            {
-                IEntity entity = input as IEntity;
-                entityId = entity.Id;
-            }
-
-            if ( !entityId.HasValue )
-            {
-                return null;
-            }
-
-            return IdHasher.Instance.GetHash( entityId.Value );
+            return LavaFilters.ToIdHash( input );
         }
 
         /// <summary>
@@ -6330,12 +6312,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static int? FromIdHash( string input )
         {
-            if ( string.IsNullOrWhiteSpace( input ) )
-            {
-                return null;
-            }
-
-            return IdHasher.Instance.GetId( input );
+            return LavaFilters.FromIdHash( input );
         }
 
         /// <summary>
