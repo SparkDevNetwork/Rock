@@ -931,21 +931,6 @@ namespace Rock.Lava
         #endregion
 
         /// <summary>
-        /// Decrypts an encrypted string
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns></returns>
-        public static string Decrypt( string input )
-        {
-            if ( input == null )
-            {
-                return input;
-            }
-
-            return Rock.Security.Encryption.DecryptString( input );
-        }
-
-        /// <summary>
         /// Parse the input string as a URL and then return a specific part of the URL.
         /// </summary>
         /// <param name="input">The string to be parsed as a URL.</param>
