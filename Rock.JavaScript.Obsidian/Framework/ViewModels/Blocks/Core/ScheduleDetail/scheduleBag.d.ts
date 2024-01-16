@@ -50,7 +50,7 @@ export type ScheduleBag = {
     checkInEndOffsetMinutes?: number | null;
 
     /**
-     * Gets or sets the number of minutes prior to the Schedule's start time  that Check-in should be active. 0 represents that Check-in 
+     * Gets or sets the number of minutes prior to the Schedule's start time  that Check-in should be active. 0 represents that Check-in
      * will not be available to the beginning of the event.
      */
     checkInStartOffsetMinutes?: number | null;
@@ -82,10 +82,6 @@ export type ScheduleBag = {
     /** Gets or sets the Name of the Schedule. This property is required. */
     name?: string | null;
 
-    /**
-     * Gets or sets the order.
-     * Use List&lt;Schedule&gt;().OrderByOrderAndNextScheduledDateTime
-     * to get the schedules in the desired order.
-     */
-    order: number;
+    /** Gets or sets the next occurrence. */
+    nextOccurrence?: string | null;
 };

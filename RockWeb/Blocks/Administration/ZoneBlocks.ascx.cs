@@ -689,7 +689,7 @@ namespace RockWeb.Blocks.Administration
                 // Add any unregistered blocks
                 try
                 {
-                    BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+                    BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ) );
                 }
                 catch ( Exception ex )
                 {

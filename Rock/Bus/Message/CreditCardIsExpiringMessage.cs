@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Queue;
 using Rock.Logging;
 using Rock.Model;
@@ -261,6 +263,8 @@ namespace Rock.Bus.Message
         /// <param name="financialScheduledTransactions"></param>
         public static void Publish( Person person, FinancialPaymentDetail financialPaymentDetail, List<int> financialScheduledTransactions)
         {
+            var logger = RockLogger.LoggerFactory.CreateLogger<CreditCardIsExpiringMessage>();
+
             if ( !RockMessageBus.IsRockStarted )
             {
                 // Don't publish events until Rock is all the way started
@@ -270,12 +274,12 @@ namespace Rock.Bus.Message
 
                 if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
-                    ExceptionLogService.LogException( new BusException(logMessage ) );
+                    logger.LogError( logMessage );
+                    ExceptionLogService.LogException( new BusException( logMessage ) );
                 }
                 else
                 {
-                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                    logger.LogDebug( logMessage );
                 }
 
                 return;
@@ -311,7 +315,7 @@ namespace Rock.Bus.Message
 
             _ = RockMessageBus.PublishAsync<ExpiringCardEventQueue, CreditCardIsExpiringMessage>( message );
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, "Published 'Credit Card Is Expiring Message' message." );
+            logger.LogDebug( "Published 'Credit Card Is Expiring Message' message." );
         }
 
         /// <summary>

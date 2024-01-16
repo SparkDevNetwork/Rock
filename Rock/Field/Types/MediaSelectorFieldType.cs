@@ -113,20 +113,17 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            // Don't truncate the value.
             return GetTextValue( privateValue, privateConfigurationValues );
         }
-
 
         /// <inheritdoc/>
         public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            // Don't truncate the value.
             return GetHtmlValue( privateValue, privateConfigurationValues );
         }
 
         /// <summary>
-        /// Formats the value extended.
+        /// URLs the link.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>

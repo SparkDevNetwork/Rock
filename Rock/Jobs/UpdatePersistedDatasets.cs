@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using Rock.Data;
@@ -47,73 +48,95 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-                        StringBuilder results = new StringBuilder();
+            StringBuilder results = new StringBuilder();
             int updatedDatasetCount = 0;
-            int updatedDatasetTotalCount;
             var errors = new List<string>();
             List<Exception> exceptions = new List<Exception>();
+            List<PersistedDataset> datasetsToBeUpdated;
+            int totalDatasetCount = 0;
 
             using ( var rockContext = new RockContext() )
             {
                 var currentDateTime = RockDateTime.Now;
 
-                var persistedDatasetQuery = new PersistedDatasetService( rockContext ).Queryable();
-                updatedDatasetTotalCount = persistedDatasetQuery.Count();
+                // Count of all persisted datasets in the system
+                totalDatasetCount = new PersistedDatasetService( rockContext ).Queryable().Count();
 
-                // exclude datasets that are no longer active
-                persistedDatasetQuery = persistedDatasetQuery.Where( a => a.IsActive && ( a.ExpireDateTime == null || a.ExpireDateTime > currentDateTime ) );
+                // Fetch datasets that are active, not expired, and include their associated schedules
+                var persistedDatasetQuery = new PersistedDatasetService( rockContext )
+                    .Queryable( "PersistedSchedule" )
+                    .Where( a => a.IsActive &&
+                          ( a.ExpireDateTime == null || a.ExpireDateTime > currentDateTime ) &&
+                          ( !a.RefreshIntervalMinutes.HasValue || a.LastRefreshDateTime == null || DbFunctions.AddMinutes( a.LastRefreshDateTime.Value, a.RefreshIntervalMinutes.Value ) < currentDateTime ) );
 
-                // exclude datasets that are already up-to-date based on the Refresh Interval and LastRefreshTime
-                persistedDatasetQuery = persistedDatasetQuery
-                    .Where( a =>
-                        a.LastRefreshDateTime == null
-                        || ( System.Data.Entity.SqlServer.SqlFunctions.DateAdd( "mi", a.RefreshIntervalMinutes.Value, a.LastRefreshDateTime.Value ) < currentDateTime ) );
+                datasetsToBeUpdated = persistedDatasetQuery.ToList()
+                    .Where( dataset =>
+                    {
+                        // Apply schedule-based logic only if the dataset is associated with a schedule
+                        if ( dataset.PersistedScheduleId.HasValue )
+                        {
+                            var schedule = new ScheduleService( rockContext ).Get( dataset.PersistedScheduleId.Value );
+                            var beginDateTime = dataset.LastRefreshDateTime ?? schedule.GetFirstStartDateTime();
+                            if ( !beginDateTime.HasValue )
+                            {
+                                return false;
+                            }
 
-                var expiredPersistedDatasetsList = persistedDatasetQuery.ToList();
-                foreach ( var persistedDataset in expiredPersistedDatasetsList )
+                            var nextStartDateTimes = schedule.GetScheduledStartTimes( beginDateTime.Value, currentDateTime );
+                            return nextStartDateTimes.Any() && nextStartDateTimes.First() <= currentDateTime;
+                        }
+
+                        // If not associated with a schedule, it's already included in the initial query
+                        return true;
+                    } )
+                    .ToList();
+
+                foreach ( var persistedDataset in datasetsToBeUpdated )
                 {
                     var name = persistedDataset.Name;
                     try
                     {
-                        this.UpdateLastStatusMessage( $"Updating {persistedDataset.Name}" );
+                        this.UpdateLastStatusMessage( $"Updating {name}" );
                         persistedDataset.UpdateResultData();
                         rockContext.SaveChanges();
                         updatedDatasetCount++;
                     }
                     catch ( Exception ex )
                     {
-                        // Capture and log the exception because we're not going to fail this job
-                        // unless all the data views fail.
                         var errorMessage = $"An error occurred while trying to update persisted dataset '{name}' so it was skipped. Error: {ex.Message}";
-                        errors.Add( string.Format( @"{0} failed", name ) );
-                        var ex2 = new Exception( errorMessage, ex );
-                        exceptions.Add( ex2 );
-                        ExceptionLogService.LogException( ex2, null );
-                        continue;
+                        errors.Add( errorMessage );
+                        exceptions.Add( new Exception( errorMessage, ex ) );
+                        ExceptionLogService.LogException( ex, null );
                     }
                 }
             }
 
-            int notUpdatedCount = updatedDatasetTotalCount - updatedDatasetCount;
-
             // Format the result message
-            results.AppendLine( $"<i class='fa fa-circle text-success'></i> Updated {updatedDatasetCount} {"persisted dataset".PluralizeIf( updatedDatasetCount != 1 )}" );
+            FormatResultMessage( results, updatedDatasetCount, datasetsToBeUpdated.Count, totalDatasetCount, errors );
+
+            if ( exceptions.Any() )
+            {
+                throw new RockJobWarningException( "UpdatePersistedDatasets completed with warnings", new AggregateException( exceptions ) );
+            }
+        }
+
+        private void FormatResultMessage( StringBuilder results, int updatedCount, int eligibleToUpdateCount, int totalCount, List<string> errors )
+        {
+            results.AppendLine( $"<i class='fa fa-circle text-success'></i> Updated {updatedCount} {"persisted dataset".PluralizeIf( updatedCount != 1 )}" );
+            int notUpdatedCount = eligibleToUpdateCount - updatedCount;
             if ( notUpdatedCount > 0 )
             {
-                results.AppendLine( $"<i class='fa fa-circle text-success'></i> Skipped {notUpdatedCount} {"up-to-date/inactive dataset".PluralizeIf( updatedDatasetCount != 1 )}" );
+                results.AppendLine( $"<i class='fa fa-circle text-warning'></i> Skipped {notUpdatedCount} {"up-to-date/inactive dataset".PluralizeIf( notUpdatedCount != 1 )}" );
             }
+
+            results.AppendLine( $"<i class='fa fa-circle text-info'></i> Total datasets in system: {totalCount}" );
+
             foreach ( var error in errors )
             {
                 results.AppendLine( $"<i class='fa fa-circle text-danger'></i> {error}" );
             }
 
-            this.Result = results.ToString();
-
-            if ( exceptions.Any() )
-            {
-                var exceptionList = new AggregateException( "One or more exceptions occurred in UpdatePersistedDatasets.", exceptions );
-                throw new RockJobWarningException( "UpdatePersistedDatasets completed with warnings", exceptionList );
-            }
+            results.ToString();
         }
     }
 }

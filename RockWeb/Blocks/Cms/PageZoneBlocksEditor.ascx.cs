@@ -741,7 +741,7 @@ namespace RockWeb.Blocks.Cms
             {
                 try
                 {
-                    BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+                    BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ) );
                 }
                 catch
                 {

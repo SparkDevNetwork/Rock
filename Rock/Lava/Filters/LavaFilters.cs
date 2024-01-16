@@ -33,6 +33,9 @@ using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;
 using ImageResizer;
+
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
@@ -66,6 +69,13 @@ namespace Rock.Lava
     internal static partial class LavaFilters
     {
         static Random _randomNumberGenerator = new Random();
+
+        /// <summary>
+        /// The logger to use for the static methods of this class.
+        /// This is not normal initialization, but we have to do it this way
+        /// since we are in a static class.
+        /// </summary>
+        private static readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger( "Rock.Lava.LavaFilters" );
 
         #region String Filters
 
@@ -2581,7 +2591,7 @@ namespace Rock.Lava
                 }
                 catch ( Exception ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Lava, ex, $"Unable to return object(s) from Cache (input = '{input}', cacheType = '{cacheType}')." );
+                    _logger.LogError( ex, $"Unable to return object(s) from Cache (input = '{input}', cacheType = '{cacheType}')." );
 
                     return null;
                 }
@@ -3989,7 +3999,7 @@ namespace Rock.Lava
 
                 if ( !inputString.AsGuidOrNull().HasValue )
                 {
-                    RockLogger.Log.Information( RockLogDomains.Lava, $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
+                    _logger.LogInformation( $"The input value provided ('{inputString ?? "null"}') is neither an integer nor a Guid." );
                     useFallbackUrl = true;
                 }
             }

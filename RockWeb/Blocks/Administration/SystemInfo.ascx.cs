@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Administration
             FieldTypeService.RegisterFieldTypes();
 
             BlockTypeService.FlushRegistrationCache();
-            BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
+            BlockTypeService.RegisterBlockTypes( webAppPath, false );
 
             msgs.Add( "EntityTypes, FieldTypes, BlockTypes have been re-registered" );
 

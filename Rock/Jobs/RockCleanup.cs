@@ -27,6 +27,8 @@ using System.Text;
 
 using Humanizer;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Core;
 using Rock.Data;
@@ -34,7 +36,6 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Observability;
 using Rock.Web.Cache;
-using WebGrease.Css.Extensions;
 
 namespace Rock.Jobs
 {
@@ -137,6 +138,7 @@ namespace Rock.Jobs
         Order = 9,
         Key = AttributeKey.StaleAnonymousVisitorRecordRetentionPeriodInDays )]
 
+    [RockLoggingCategory]
     public class RockCleanup : RockJob
     {
         /// <summary>
@@ -270,6 +272,8 @@ namespace Rock.Jobs
 
             // Search for and delete group memberships duplicates (same person, group, and role)
             RunCleanupTask( "group membership", () => GroupMembershipCleanup() );
+
+            RunCleanupTask( "primary family", () => UpdateMissingPrimaryFamily() );
 
             RunCleanupTask( "attendance label data", () => AttendanceDataCleanup() );
 
@@ -2604,7 +2608,7 @@ SELECT @@ROWCOUNT
                                     innerEx = innerEx.InnerException;
                                 }
 
-                                Log( RockLogLevel.Warning, $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
+                                Logger.LogWarning( $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
 
                                 // The context we used to attempt the deletion is no
                                 // good to use now since it is in a bad state. Create
@@ -2994,7 +2998,7 @@ BEGIN
 		ELSE A.[Age] 
 		END,
 	P.[AgeBracket] = CASE
-        WHEN A.[AgeBracket] IS NULL THEN -1
+        WHEN A.[AgeBracket] IS NULL THEN 0
         ELSE A.[AgeBracket]
         END        
 	FROM Person P
@@ -3152,6 +3156,50 @@ END
                 rockContext.Database.CommandTimeout = commandTimeout;
                 int result = rockContext.Database.ExecuteSqlCommand( removePersistedDataViewValueSql );
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Updates the PrimaryFamily for persons without a PrimaryFamily.
+        /// </summary>
+        /// <returns></returns>
+        private int UpdateMissingPrimaryFamily()
+       {
+            using ( var rockContext = new RockContext() )
+            {
+                var personService = new PersonService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupService = new GroupService( rockContext );
+                var persons = personService.Queryable().Where( p => !p.PrimaryFamilyId.HasValue ).Select( p => new { p.Id, p.LastName } ).ToList();
+                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+
+                foreach ( var person in persons )
+                {
+                    var groupMember = groupMemberService.Queryable().FirstOrDefault( gm => gm.PersonId == person.Id && gm.GroupTypeId == familyGroupType.Id );
+
+                    if ( groupMember == null )
+                    {
+                        var group = new Group
+                        {
+                            Name = person.LastName,
+                            GroupTypeId = familyGroupType.Id
+                        };
+                        groupService.Add( group );
+
+                        groupMember = new GroupMember
+                        {
+                            PersonId = person.Id,
+                            GroupRoleId = familyGroupType.DefaultGroupRoleId.Value
+                        };
+                        group.Members.Add( groupMember );
+
+                        rockContext.SaveChanges();
+                    }
+
+                    PersonService.UpdatePrimaryFamily( person.Id, rockContext );
+                }
+
+                return persons.Count;
             }
         }
 

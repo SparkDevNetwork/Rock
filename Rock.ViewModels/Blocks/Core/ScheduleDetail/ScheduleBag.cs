@@ -95,10 +95,8 @@ namespace Rock.ViewModels.Blocks.Core.ScheduleDetail
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the order.
-        /// Use List&lt;Schedule&gt;().OrderByOrderAndNextScheduledDateTime
-        /// to get the schedules in the desired order.
+        /// Gets the next occurrence date to be displayed on the remote device.
         /// </summary>
-        public int Order { get; set; }
+        public string NextOccurrence { get; set; }
     }
 }

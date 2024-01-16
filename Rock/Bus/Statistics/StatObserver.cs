@@ -17,7 +17,11 @@
 
 using System;
 using System.Threading.Tasks;
+
 using MassTransit;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Message;
 using Rock.Logging;
 using Rock.Model;
@@ -30,6 +34,11 @@ namespace Rock.Bus.Statistics
     public sealed class StatObserver : IConsumeObserver
     {
         /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger( "Rock.Bus.Statistics.StatObserver" );
+
+        /// <summary>
         /// Called after the message has been dispatched to all consumers when one or more exceptions have occurred
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -40,7 +49,7 @@ namespace Rock.Bus.Statistics
         public Task ConsumeFault<T>( ConsumeContext<T> context, Exception exception ) where T : class
         {
             ExceptionLogService.LogException( new BusException( $"A Consume Fault occurred. Original Message: {context?.Message}", exception ) );
-            RockLogger.Log.Error( RockLogDomains.Core, "A Consume Fault occurred Original Message: @originalMessage Exception: @exception", context.Message, exception );
+            _logger.LogError( "A Consume Fault occurred Original Message: @originalMessage Exception: @exception", context.Message, exception );
             return RockMessageBus.GetCompletedTask();
         }
 

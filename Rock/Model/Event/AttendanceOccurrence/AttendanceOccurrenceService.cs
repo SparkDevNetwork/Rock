@@ -26,6 +26,8 @@ using Rock.RealTime;
 using Rock.ViewModels.Event;
 using Rock.Web.Cache;
 using System.Threading.Tasks;
+using Rock.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Rock.Model
 {
@@ -748,7 +750,8 @@ namespace Rock.Model
                     }
                     catch ( Exception ex )
                     {
-                        Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                        RockLogger.LoggerFactory.CreateLogger<AttendanceOccurrenceService>()
+                            .LogError( ex, ex.Message );
                     }
                 }
             }
@@ -791,7 +794,8 @@ namespace Rock.Model
             }
             catch ( Exception ex )
             {
-                Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                RockLogger.LoggerFactory.CreateLogger<AttendanceOccurrenceService>()
+                    .LogError( ex, ex.Message );
             }
         }
 

@@ -22,6 +22,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -358,7 +361,7 @@ namespace Rock.Jobs
                        || RockInstanceConfig.Database.Edition.Contains( "Enterprise" ) ) )
             {
                 // Online index rebuild is only available for Azure SQL or SQL Enterprise.
-                Log( RockLogLevel.Info, "Online Index Rebuild option is selected but not available for the current database platform." );
+                Logger.LogInformation( "Online Index Rebuild option is selected but not available for the current database platform." );
 
                 useONLINEIndexRebuild = false;
             }

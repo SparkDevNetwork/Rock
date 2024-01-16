@@ -20,6 +20,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Logging;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
@@ -37,6 +40,11 @@ namespace Rock.Data
 
         private DbContext _context;
         internal DbSet<T> _objectSet;
+
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private ILogger _logger;
 
         #endregion
 
@@ -73,6 +81,23 @@ namespace Rock.Data
             get
             {
                 return Expression.Parameter( typeof( T ), "p" );
+            }
+        }
+
+        /// <summary>
+        /// Gets the logger for this instance.
+        /// </summary>
+        /// <value>The logger for this instance.</value>
+        protected ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
             }
         }
 

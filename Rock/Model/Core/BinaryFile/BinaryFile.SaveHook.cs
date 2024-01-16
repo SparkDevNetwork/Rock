@@ -21,8 +21,9 @@ using System.IO;
 
 using ImageResizer;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
-using Rock.Logging;
 
 namespace Rock.Model
 {
@@ -141,7 +142,7 @@ namespace Rock.Model
                         }
                         catch ( Exception ex )
                         {
-                            RockLogger.Log.Error( RockLogDomains.Core, ex, "Error trying to resize the file {0}.", Entity?.FileName );
+                            Logger.LogError( ex, "Error trying to resize the file {0}.", Entity?.FileName );
                         }
                     }
 

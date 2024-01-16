@@ -18,8 +18,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Core.Campus.Options;
@@ -1371,7 +1373,7 @@ namespace Rock.Blocks.Crm
                             }
                             catch ( Exception ex )
                             {
-                                RockLogger.Log.Error( RockLogDomains.Crm, ex, ex.Message );
+                                Logger.LogError( ex, ex.Message );
                             }
                         }
                     }
@@ -1394,7 +1396,7 @@ namespace Rock.Blocks.Crm
                             }
                             catch ( Exception ex )
                             {
-                                RockLogger.Log.Error( RockLogDomains.Crm, ex, ex.Message );
+                                Logger.LogError( ex, ex.Message );
                             }
                         }
                     }

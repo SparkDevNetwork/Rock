@@ -15,11 +15,11 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -109,10 +109,7 @@ namespace Rock.Blocks.Core
         /// <returns>The options that provide additional details to the block.</returns>
         private ScheduleDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext, Schedule entity )
         {
-            var options = new ScheduleDetailOptionsBag
-            {
-                NextOccurrence = entity.GetNextStartDateTime( RockDateTime.Now )
-            };
+            var options = new ScheduleDetailOptionsBag();
 
             options.HasScheduleWarning = entity.HasScheduleWarning();
 
@@ -121,7 +118,7 @@ namespace Rock.Blocks.Core
 
             options.HasAttendance = entity.Id > 0 && new AttendanceService( rockContext )
                 .Queryable()
-                .Where( a => a.Occurrence.ScheduleId.HasValue && a.Occurrence.ScheduleId == entity.Id )
+                .Where( a => a.Occurrence != null && a.Occurrence.ScheduleId.HasValue && a.Occurrence.ScheduleId == entity.Id )
                 .Any();
 
             options.HelpText = ScheduleService.CreatePreviewHTML( entity );
@@ -160,7 +157,18 @@ namespace Rock.Blocks.Core
         /// <returns><c>true</c> if the Schedule is valid, <c>false</c> otherwise.</returns>
         private bool ValidateSchedule( Schedule schedule, RockContext rockContext, out string errorMessage )
         {
-            errorMessage = null;
+            errorMessage = string.Empty;
+
+            if ( schedule.CategoryId == 0 )
+            {
+                errorMessage = "Category is invalid";
+                return false;
+            }
+
+            if ( !schedule.IsValid )
+            {
+                return false;
+            }
 
             return true;
         }
@@ -240,7 +248,7 @@ namespace Rock.Blocks.Core
                 IsActive = entity.IsActive,
                 IsPublic = entity.IsPublic,
                 Name = entity.Name,
-                Order = entity.Order
+                NextOccurrence = entity.GetNextStartDateTime( RockDateTime.Now )?.ToString( "g" ) ?? string.Empty
             };
         }
 
@@ -303,7 +311,7 @@ namespace Rock.Blocks.Core
                 () => entity.AutoInactivateWhenComplete = box.Entity.AutoInactivateWhenComplete );
 
             box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
+                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ).ToIntSafe() );
 
             box.IfValidProperty( nameof( box.Entity.CheckInEndOffsetMinutes ),
                 () => entity.CheckInEndOffsetMinutes = box.Entity.CheckInEndOffsetMinutes );
@@ -331,9 +339,6 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
-
-            box.IfValidProperty( nameof( box.Entity.Order ),
-                () => entity.Order = box.Entity.Order );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -584,7 +589,7 @@ namespace Rock.Blocks.Core
 
                 qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
-                return ActionOk( (new Rock.Web.PageReference( this.PageCache.Guid.ToString(), qryParams )).BuildUrl() );
+                return ActionOk( ( new Rock.Web.PageReference( this.PageCache.Guid.ToString(), qryParams ) ).BuildUrl() );
             }
         }
 

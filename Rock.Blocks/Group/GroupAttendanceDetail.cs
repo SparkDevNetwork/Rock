@@ -20,6 +20,9 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Blocks.Group.GroupAttendanceDetail;
@@ -644,7 +647,7 @@ namespace Rock.Blocks.Group
 
                 if ( mergeTemplate == null )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Group, new Exception( "Error printing Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." ) );
+                    Logger.LogError("Error printing Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." );
                     return ActionBadRequest( "Unable to print Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." );
                 }
 
@@ -652,7 +655,7 @@ namespace Rock.Blocks.Group
 
                 if ( mergeTemplateType == null )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Group, new Exception( "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." ) );
+                    Logger.LogError( "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." );
                     return ActionBadRequest( $"Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." );
                 }
 
@@ -664,15 +667,17 @@ namespace Rock.Blocks.Group
                 {
                     if ( mergeTemplateType.Exceptions.Count == 1 )
                     {
-                        RockLogger.Log.Error( RockLogDomains.Group, mergeTemplateType.Exceptions[0] );
+                        Logger.LogError( mergeTemplateType.Exceptions[0], mergeTemplateType.Exceptions[0].Message );
                     }
                     else if ( mergeTemplateType.Exceptions.Count > 50 )
                     {
-                        RockLogger.Log.Error( RockLogDomains.Group, new AggregateException( $"Exceptions merging template {mergeTemplate.Name}. See InnerExceptions for top 50.", mergeTemplateType.Exceptions.Take( 50 ).ToList() ) );
+                        var aggException = new AggregateException( $"Exceptions merging template {mergeTemplate.Name}. See InnerExceptions for top 50.", mergeTemplateType.Exceptions.Take( 50 ).ToList() );
+                        Logger.LogError( aggException, aggException.Message );
                     }
                     else
                     {
-                        RockLogger.Log.Error( RockLogDomains.Group, new AggregateException( $"Exceptions merging template {mergeTemplate.Name}. See InnerExceptions", mergeTemplateType.Exceptions.ToList() ) );
+                        var aggException = new AggregateException( $"Exceptions merging template {mergeTemplate.Name}. See InnerExceptions", mergeTemplateType.Exceptions.ToList() );
+                        Logger.LogError( aggException, aggException.Message );
                     }
                 }
 

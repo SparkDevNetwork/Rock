@@ -121,20 +121,22 @@
             return valueBuilder.build();
         }
 
-        var accountsTotalTable = `<table class="grid-table table table-auto">
-                <tbody>
-                    ${props.options.accounts?.map(a =>
-                        "<tr> <td align='left'>" + a.name + (a.glCode && a.glCode.length > 0 ? " <small>(" + a.glCode + ")</small>" : "") + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
-                </tbody>
-            </table>`;
+        if (!props.options.isAccountTotalsHidden) {
+            var accountsTotalTable = `<table class="grid-table table table-auto">
+                    <tbody>
+                        ${props.options.accounts?.map(a =>
+                            "<tr> <td align='left'>" + a.name + (a.glCode && a.glCode.length > 0 ? " <small>(" + a.glCode + ")</small>" : "") + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
+                    </tbody>
+                </table>`;
+
+            valueBuilder.addHtmlValue("Account Totals", props.options.accounts?.length == 0 ? "No Accounts Found" : accountsTotalTable);
+        }
 
         var currencyTotalTable = `<table class="grid-table table table-auto">
-            <tbody>
-                ${props.options.currencyTypes?.map(a => "<tr> <td align='left'>" + a.name + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
-            </tbody>
-        </table>`;
-
-        valueBuilder.addHtmlValue("Account Totals", props.options.accounts?.length == 0 ? "No Accounts Found" : accountsTotalTable);
+                <tbody>
+                    ${props.options.currencyTypes?.map(a => "<tr> <td align='left'>" + a.name + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
+                </tbody>
+            </table>`;
 
         valueBuilder.addHtmlValue("Currency Totals", props.options.accounts?.length == 0 ? "No CurrencyTypes Found" : currencyTotalTable);
 

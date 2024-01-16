@@ -24,11 +24,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.BulkImport;
 using Rock.Chart;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Logging;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
 using Rock.Utility;
@@ -3175,7 +3178,8 @@ namespace Rock.Model
                     }
                     catch ( Exception ex )
                     {
-                        Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                        RockLogger.LoggerFactory.CreateLogger<AttendanceService>()
+                            .LogError( ex, ex.Message );
                     }
                 }
             }
@@ -3221,7 +3225,8 @@ namespace Rock.Model
             }
             catch ( Exception ex )
             {
-                Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                RockLogger.LoggerFactory.CreateLogger<AttendanceService>()
+                    .LogError( ex, ex.Message );
             }
         }
 
