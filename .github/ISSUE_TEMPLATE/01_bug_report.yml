@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        > Before opening your first issue we highly recommend reading [this blog post](https://www.snoyman.com/blog/2017/10/effective-ways-help-from-maintainers)
+        > Before opening your first issue we highly recommend reading [this blog post](https://www.snoyman.com/blog/2017/10/effective-ways-help-from-maintainers). Also, please ensure your Github account has is configured with your name, organization and a profile photo. This helps us to build community and communicate.  con
   - type: textarea
     id: summary
     attributes:
