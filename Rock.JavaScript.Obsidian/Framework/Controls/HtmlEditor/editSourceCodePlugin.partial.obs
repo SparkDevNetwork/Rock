@@ -107,9 +107,14 @@
             onAction: (api: Ui.Toolbar.ToolbarToggleButtonInstanceApi): void => {
                 doIfEnabled(() => {
                     // Make sure the value is up-to-date before showing the code editor.
-                    const editorContent = editor.getContent();
-                    if (editorContent !== internalValue.value) {
-                        internalValue.value = editorContent;
+                    // internalIsShown.value is the old value before the toolbar button is clicked.
+                    const isAboutToShowEditor = !internalIsShown.value;
+
+                    if (isAboutToShowEditor) {
+                        const editorContent = editor.getContent();
+                        if (editorContent !== internalValue.value) {
+                            internalValue.value = editorContent;
+                        }
                     }
 
                     // Show/hide the editor.

@@ -245,7 +245,7 @@
 
     // Update the editor content when the model value changes externally.
     watchEffect(() => {
-        if (tinyMceInstance.value && tinyMceValue.value !== internalValue.value) {
+        if (tinyMceInstance.value && !isEditorShown.value && tinyMceValue.value !== internalValue.value) {
             tinyMceInstance.value.setContent(internalValue.value);
 
             // Get the new content from the editor after setting it

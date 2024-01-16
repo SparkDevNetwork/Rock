@@ -39,7 +39,7 @@ export function setEditorEnabled(editor: Editor, isEnabled: boolean): void {
 
 /** Extracts <style> elements from an HTML string. */
 function getStyleSheetStrings(html: string): string[] {
-    return html.match(/<style>((?!<\/style>).)*<\/style>/sg) ??  [];
+    return html.match(/<style.*>((?!<\/style>).)*<\/style>/sg) ??  [];
 }
 
 /** Scopes CSS style rules by adding a prefix to each rule selector. */
@@ -114,7 +114,8 @@ export function scopeStyleSheets(html: string, scopeIdentifier: string): string 
     styleSheetStrings.forEach((styleSheetString: string) => {
         // Convert the <style> HTML string to a CSSStyleSheet object.
         const cssStyleSheet = document.createElement("style");
-        cssStyleSheet.innerHTML = styleSheetString.replace("<style>", "").replace("</style>", "").replace(/\n\s+/g, "\n");
+        const openingTag = styleSheetString.match(/^<style.*>/)?.[0] ?? "<style>";
+        cssStyleSheet.innerHTML = styleSheetString.replace(openingTag, "").replace("</style>", "").replace(/\n\s+/g, "\n");
         document.body.appendChild(cssStyleSheet);
         const {sheet} = cssStyleSheet;
         document.body.removeChild(cssStyleSheet);
@@ -124,7 +125,7 @@ export function scopeStyleSheets(html: string, scopeIdentifier: string): string 
             const rulesCssText = scopeCSSRules(sheet.cssRules, scopeIdentifier);
 
             // Replace the <style> tag with the new stylesheet.
-            html = html.replace(styleSheetString, `<style>\n${rulesCssText.join("\n")}\n</style>`);
+            html = html.replace(styleSheetString, `${openingTag}\n${rulesCssText.join("\n")}\n</style>`);
         }
     });
 
