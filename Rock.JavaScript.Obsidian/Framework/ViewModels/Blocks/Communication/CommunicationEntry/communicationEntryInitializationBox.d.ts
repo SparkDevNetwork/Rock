@@ -114,9 +114,6 @@ export type CommunicationEntryInitializationBox = {
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
 
-    /** Gets or sets the communication templates that can be selected. */
-    templates?: ListItemBag[] | null;
-
     /** Gets or sets the title. */
     title?: string | null;
 

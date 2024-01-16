@@ -22,6 +22,7 @@
 //
 
 import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Bag containing basic information about a communication medium. */
 export type CommunicationEntryMediumOptionsBaseBag = {
@@ -30,4 +31,7 @@ export type CommunicationEntryMediumOptionsBaseBag = {
 
     /** Gets the type of the medium. */
     mediumType: MediumType;
+
+    /** Gets or sets the communication templates that can be selected. */
+    templates?: ListItemBag[] | null;
 };

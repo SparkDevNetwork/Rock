@@ -45,14 +45,6 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         public List<ListItemBag> Mediums { get; set; }
 
         /// <summary>
-        /// Gets or sets the communication templates that can be selected.
-        /// </summary>
-        /// <value>
-        /// The communication templates that can be selected.
-        /// </value>
-        public List<ListItemBag> Templates { get; set; }
-
-        /// <summary>
         /// Gets or sets the authorization details for the block.
         /// </summary>
         /// <value>

@@ -139,7 +139,7 @@ You can view an online version of this email here:
         /// <returns><see langword="true"/> if the bulk email threshold has been exceeded; otherwise, <see langword="false"/>.</returns>
         public bool IsBulkEmailThresholdExceeded( int recipientCount )
         {
-            var threshold = GetAttributeValue( AttributeKey.BulkEmailThreshold ).AsIntegerOrNull();
+            var threshold = GetBulkEmailThreshold();
 
             if ( !threshold.HasValue )
             {
@@ -148,6 +148,16 @@ You can view an online version of this email here:
             }
 
             return recipientCount > threshold.Value;
+        }
+
+        /// <summary>
+        /// Gets the number of recipients that need to be exceeded to automatically consider the email a bulk email.
+        /// </summary>
+        /// <returns>The bulk email threshold.</returns>
+        [RockInternal( "1.17" )]
+        internal int? GetBulkEmailThreshold()
+        {
+            return GetAttributeValue( AttributeKey.BulkEmailThreshold ).AsIntegerOrNull();
         }
     }
 }

@@ -1,19 +1,22 @@
 <template>
-    <Panel type="block" title="New Communication" titleIconCssClass="fa fa-comment-o">
-        <template #headerActions>
-            <HighlightLabel v-if="statusLabel">{{ statusLabel }}</HighlightLabel>
+    <Panel v-if="!config.isHidden"
+           :title="config.title ?? 'New Communication'"
+           titleIconCssClass="fa fa-comment-o"
+           type="block">
+        <template v-if="statusLabel" #subheaderRight>
+            <HighlightLabel labelType="default">{{ statusLabel }}</HighlightLabel>
         </template>
 
         <template #default>
-            <div ID="pnlEdit">
+            <div ID="pnlEdit" v-if="!areResultsShown">
                 <PanelNavigationBar v-model="selectedMediumEntityTypeGuid"
                                     :isFirstSelectedByDefault="true"
                                     :items="mediums" />
 
-                <!-- <NotificationBox v-if="validationSummaryMessage"
-                                id="ValidationSummary"
-                                heading="Please correct the following:"
-                                alertType="validation">{{ validationSummaryMessage }}</NotificationBox> -->
+                <NotificationBox v-if="validationSummaryMessage"
+                                 id="ValidationSummary"
+                                 heading="Please correct the following:"
+                                 alertType="validation">{{ validationSummaryMessage }}</NotificationBox>
 
                 <NotificationBox v-if="false"
                                  id="nbInvalidTransport"
@@ -21,15 +24,19 @@
                                  :dismissible="true"
                                  heading="Warning" />
 
-                <CommunicationMedium :isFullMode="isFullMode"
+                <CommunicationMedium :communication="config.communication"
+                                     :isFullMode="isFullMode"
                                      :mediumEntityTypeGuid="selectedMediumEntityTypeGuid"
-                                     ref="communicationMedium" />
+                                     :mediumOptions="config.mediumOptions"
+                                     ref="communicationMedium"
+                                     @error="error => validationSummaryMessage = error"
+                                     @success="onSuccess" />
             </div>
 
             <div ref="resultsDiv" v-if="areResultsShown" id="pnlResult" class="js-pnl-result">
-                <NotificationBox id="nbResult" alertType="success" />
+                <NotificationBox alertType="success">{{ resultMessage }}</NotificationBox>
                 <br />
-                <a id="hlViewCommunication">View Communication</a>
+                <a :href="viewCommunicationUrl">View Communication</a>
             </div>
         </template>
 
@@ -37,19 +44,19 @@
             <RockButton id="btnSubmit"
                         class="btn btn-primary"
                         type="button"
-                        @click="communicationMedium.send()">Send</RockButton>
+                        @click="onSend">Send</RockButton>
 
             <RockButton v-if="isFullMode"
                         id="btnTest"
                         class="btn btn-link"
                         type="button"
-                        @click="communicationMedium.sendTest()">Send Test</RockButton>
+                        @click="onSendTest">Send Test</RockButton>
 
             <RockButton v-if="isFullMode"
                         id="btnSave"
                         class="btn btn-link"
                         type="button"
-                        @click="communicationMedium.saveDraft()">Save as Draft</RockButton>
+                        @click="onSave">Save as Draft</RockButton>
 
             <RockButton id="btnCancel"
                         class="btn btn-link"
@@ -71,6 +78,8 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { Nullable } from "./CommunicationEntry/types.partial";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
+    import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
+    import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     defineProps();
@@ -79,12 +88,15 @@
 
     const areResultsShown = ref<boolean>(false);
     const isFullMode = ref<boolean>(config.isFullMode);
-    const statusLabel = ref<Nullable<string>>("Draft");
+    const statusLabel = ref<Nullable<string>>(config.communication ? getStatusLabel(config.communication.status) : null);
     const resultsDiv = ref<HTMLElement | undefined>();
-    const validationSummaryMessage = ref<Nullable<string>>();
     const communicationMedium = ref<InstanceType<typeof CommunicationMedium>>();
     const mediums = computed<ListItemBag[]>(() => config.mediums ?? []);
     const selectedMediumEntityTypeGuid = ref<Nullable<string>>("");
+    const resultMessage = ref<Nullable<string>>("");
+    const viewCommunicationUrl = ref<string>(window.location.href);
+    const validationSummaryMessage = ref<Nullable<string>>();
+
     //#endregion
 
     //#region Functions
@@ -105,9 +117,57 @@
         });
     }
 
+    function getStatusLabel(status: CommunicationStatus): string {
+        if (status === CommunicationStatus.Transient) {
+            return "Draft";
+        }
+        else {
+            return CommunicationStatusDescription[status];
+        }
+    }
+
     //#endregion
 
     //#region Event Handlers
+
+    /** Sends the communication. */
+    function onSend(): void {
+        // Clear the error message.
+        validationSummaryMessage.value = null;
+
+        communicationMedium.value?.send();
+    }
+
+    /** Sends a test communication. */
+    function onSendTest(): void {
+        // Clear the error message.
+        validationSummaryMessage.value = null;
+
+        communicationMedium.value?.sendTest();
+    }
+
+    /** Saves the communication. */
+    function onSave(): void {
+        // Clear the error message.
+        validationSummaryMessage.value = null;
+
+        communicationMedium.value?.save();
+    }
+
+    function onSuccess(value: CommunicationEntrySendResponseBag): void {
+        statusLabel.value = getStatusLabel(value.communicationStatus ?? CommunicationStatus.Draft);
+        resultMessage.value = value.message;
+
+        if (value.redirectToViewMode) {
+            const url = new URL(window.location.href);
+            const queryParams = url.searchParams;
+
+            queryParams.set("CommunicationId", (value.communicationId ?? "") + "");
+            viewCommunicationUrl.value = url.href;
+        }
+
+        showResults();
+    }
 
     //#endregion
 

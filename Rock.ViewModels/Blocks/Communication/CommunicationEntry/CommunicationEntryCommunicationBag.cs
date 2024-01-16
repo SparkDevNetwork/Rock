@@ -193,7 +193,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// <value>
         /// The email attachment binary file ids.
         /// </value>
-        public List<int> EmailAttachmentBinaryFileIds { get; set; }
+        public List<Guid> EmailAttachmentBinaryFileGuids { get; set; }
 
         /// <summary>
         /// Gets or sets the future send date time.

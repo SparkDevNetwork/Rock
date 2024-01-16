@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock;
@@ -26,17 +27,11 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
-using System.Data.Entity;
+using Rock.Enums.Blocks.Communication.CommunicationEntry;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.ViewModels.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationEntry;
-using System.Runtime.CompilerServices;
-using Rock.Utility;
-using System.CodeDom;
-using Rock.ViewModels.Blocks.Crm.FamilyPreRegistration;
-using Rock.Address;
-using Rock.ViewModels.Communication;
-using Rock.Enums.Blocks.Communication.CommunicationEntry;
 
 namespace Rock.Blocks.Communication
 {
@@ -330,7 +325,6 @@ namespace Rock.Blocks.Communication
             {
                 if ( mediums.Any() )
                 {
-                    box.Templates = GetCommunicationTemplates( mediums.First().Medium, rockContext ).ToListItemBagList();
                     box.Mediums = mediums
                         .Select( medium => new ListItemBag
                         {
@@ -362,7 +356,8 @@ namespace Rock.Blocks.Communication
                         CreatedByPersonAlias = currentPerson.PrimaryAlias,
                         CreatedByPersonAliasId = currentPerson.PrimaryAliasId,
                         SenderPersonAlias = currentPerson.PrimaryAlias,
-                        SenderPersonAliasId = currentPerson.PrimaryAliasId
+                        SenderPersonAliasId = currentPerson.PrimaryAliasId,
+                        Guid = Guid.Empty
                     };
                 }
 
@@ -392,9 +387,6 @@ namespace Rock.Blocks.Communication
                     {
                         // Communication is either new or ok to edit.
                         SetCommunicationData( box, communication, currentPerson, rockContext );
-
-                        // Get medium options.
-                        box.MediumOptions = GetMediumOptions( box.Communication.MediumEntityTypeGuid, currentPerson );
 
                         box.IsHidden = false;
                     }
@@ -465,16 +457,21 @@ namespace Rock.Blocks.Communication
 
             if ( medium is Rock.Communication.Medium.Email emailMedium )
             {
-                return new CommunicationEntryEmailMediumOptionsBag
+                using ( var rockContext = new RockContext() )
                 {
-                    BinaryFileTypeGuid = GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid(),
-                    DocumentFolderRoot = GetAttributeValue( AttributeKey.DocumentRootFolder ),
-                    FromName = sender?.FullName,
-                    FromAddress = sender?.Email,
-                    ImageFolderRoot = GetAttributeValue( AttributeKey.ImageRootFolder ),
-                    IsAttachmentUploaderShown = GetAttributeValue( AttributeKey.ShowAttachmentUploader ).AsBoolean(),
-                    IsUserSpecificRoot = GetAttributeValue( AttributeKey.UserSpecificFolders ).AsBoolean(),
-                };
+                    return new CommunicationEntryEmailMediumOptionsBag
+                    {
+                        BinaryFileTypeGuid = GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid(),
+                        BulkEmailThreshold = emailMedium.GetBulkEmailThreshold(),
+                        DocumentFolderRoot = GetAttributeValue( AttributeKey.DocumentRootFolder ),
+                        FromName = sender?.FullName,
+                        FromAddress = sender?.Email,
+                        ImageFolderRoot = GetAttributeValue( AttributeKey.ImageRootFolder ),
+                        IsAttachmentUploaderShown = GetAttributeValue( AttributeKey.ShowAttachmentUploader ).AsBoolean(),
+                        IsUserSpecificRoot = GetAttributeValue( AttributeKey.UserSpecificFolders ).AsBoolean(),
+                        Templates = GetCommunicationTemplates( emailMedium, rockContext ).ToListItemBagList(),
+                    };
+                }
             }
             else if ( medium is Rock.Communication.Medium.Sms smsMedium )
             {
@@ -748,12 +745,12 @@ namespace Rock.Blocks.Communication
         //}
 
         /// <summary>
-        /// Sends a test communication to the current person.
+        /// Tests the communication by sending it to the current person.
         /// </summary>
-        [BlockAction( "SendTest" )]
-        public BlockActionResult SendTest( CommunicationEntrySendTestRequestBag bag )
+        [BlockAction( "Test" )]
+        public BlockActionResult Test( CommunicationEntryCommunicationBag bag )
         {
-            var validationResults = Validate( bag?.Communication );
+            var validationResults = Validate( bag );
 
             if ( validationResults.IsError )
             {
@@ -770,7 +767,7 @@ namespace Rock.Blocks.Communication
             
             // Get existing or new communication record.
             // Use a separate context so that changes in UpdateCommunication() are not persisted.
-            var communication = UpdateCommunication( new RockContext(), bag.Communication );
+            var communication = UpdateCommunication( new RockContext(), bag );
 
             using ( var rockContext = new RockContext() )
             {
@@ -814,7 +811,7 @@ namespace Rock.Blocks.Communication
 
                 testRecipient.Status = CommunicationRecipientStatus.Pending;
                 testRecipient.PersonAliasId = primaryAliasId.Value;
-                testRecipient.MediumEntityTypeId = EntityTypeCache.GetId( bag.Communication.MediumEntityTypeGuid );
+                testRecipient.MediumEntityTypeId = EntityTypeCache.GetId( bag.MediumEntityTypeGuid );
                 testCommunication.Recipients.Add( testRecipient );
 
                 var communicationService = new CommunicationService( rockContext );
@@ -831,7 +828,7 @@ namespace Rock.Blocks.Communication
                     .Where( r => r.CommunicationId == testCommunication.Id )
                     .FirstOrDefault();
 
-                var response = new CommunicationEntrySendTestResponseBag();
+                var response = new CommunicationEntryTestResponseBag();
                 if ( testRecipient != null && testRecipient.Status == CommunicationRecipientStatus.Failed && testRecipient.PersonAlias != null && testRecipient.PersonAlias.Person != null )
                 {
                     response.MessageType = "danger";
@@ -932,9 +929,9 @@ namespace Rock.Blocks.Communication
         /// Sends the communication.
         /// </summary>
         [BlockAction( "Send" )]
-        public BlockActionResult Send( CommunicationEntrySendRequestBag bag )
+        public BlockActionResult Send( CommunicationEntryCommunicationBag bag )
         {
-            var results = Validate( bag?.Communication );
+            var results = Validate( bag );
 
             if ( results.IsError )
             {
@@ -943,7 +940,7 @@ namespace Rock.Blocks.Communication
 
             using ( var rockContext = new RockContext() )
             {
-                var communication = UpdateCommunication( rockContext, bag.Communication );
+                var communication = UpdateCommunication( rockContext, bag );
 
                 if ( communication == null )
                 {
@@ -951,10 +948,10 @@ namespace Rock.Blocks.Communication
                     return ActionBadRequest( "Communication failed to save. Please try again." );
                 }
 
-                var mediumBehavior = GetMediumDataService( bag.Communication.MediumEntityTypeGuid );
+                var mediumBehavior = GetMediumDataService( bag.MediumEntityTypeGuid );
                 if ( mediumBehavior != null )
                 {
-                    mediumBehavior.OnCommunicationSave( rockContext, bag.Communication );
+                    mediumBehavior.OnCommunicationSave( rockContext, bag );
                 }
 
                 var authorization = GetAuthorizationBag();
@@ -1048,12 +1045,13 @@ namespace Rock.Blocks.Communication
             public void OnCommunicationSave( RockContext rockContext, CommunicationEntryCommunicationBag communication )
             {
                 // On saving the email communication, mark all the file attachments as not temporary.
-                var binaryFileIds = communication.EmailAttachmentBinaryFileIds.ToList();
+                var binaryFileIds = communication.EmailAttachmentBinaryFileGuids.ToList();
                 if ( binaryFileIds.Any() )
                 {
-                    var binaryFileService = new BinaryFileService( rockContext );
-                    foreach( var binaryFile in binaryFileService.Queryable()
-                        .Where( f => binaryFileIds.Contains( f.Id ) ) )
+                    var binaryFilesQuery = new BinaryFileService( rockContext )
+                        .Queryable()
+                        .Where( f => binaryFileIds.Contains( f.Guid ) );
+                    foreach( var binaryFile in binaryFilesQuery )
                     {
                         binaryFile.IsTemporary = false;
                     }
@@ -1087,66 +1085,85 @@ namespace Rock.Blocks.Communication
             return new NullMediumDataService();
         }
 
-        ///// <summary>
-        ///// Handles the Click event of the btnSave control.
-        ///// </summary>
-        ///// <param name="sender">The source of the event.</param>
-        ///// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        //[BlockAction( "SaveDraft" )]
-        //public BlockActionResult SaveDraft( CommunicationEntrySendRequestBag bag )
-        //{
-        //    var validationResults = Validate( bag.Communication );
+        /// <summary>
+        /// Saves the communication.
+        /// </summary>
+        [BlockAction( "Save" )]
+        public BlockActionResult Save( CommunicationEntryCommunicationBag bag )
+        {
+            var validationResults = Validate( bag );
 
-        //    if ( validationResults.IsError )
-        //    {
-        //        return validationResults.BlockActionResult;
-        //    }
+            if ( validationResults.IsError )
+            {
+                return validationResults.BlockActionResult;
+            }
 
-        //    using ( var rockContext = new RockContext() )
-        //    {
-        //        var communication = UpdateCommunication( rockContext, bag.Communication );
+            using ( var rockContext = new RockContext() )
+            {
+                var communication = UpdateCommunication( rockContext, bag );
 
-        //        if ( communication != null )
-        //        {
-        //            var mediumControl = GetMediumDataService( bag.Communication.MediumEntityTypeGuid );
-        //            if ( mediumControl != null )
-        //            {
-        //                mediumControl.OnCommunicationSave( rockContext, bag.Communication );
-        //            }
+                if ( communication == null )
+                {
+                    // TODO JMH This is not parity. Is there something else we should do in this case?
+                    return ActionBadRequest( "An error occurred while saving. Please try again." );
+                }
+                else
+                {
+                    var mediumControl = GetMediumDataService( bag.MediumEntityTypeGuid );
+                    if ( mediumControl != null )
+                    {
+                        mediumControl.OnCommunicationSave( rockContext, bag );
+                    }
 
-        //            communication.Status = CommunicationStatus.Draft;
-        //            rockContext.SaveChanges();
+                    communication.Status = CommunicationStatus.Draft;
+                    rockContext.SaveChanges();
 
+                    // TODO JMH Implement the status and label in the Obsidian code.
+                    //var status = communication != null ? communication.Status : CommunicationStatus.Draft;
+                    //switch ( status )
+                    //{
+                    //    case CommunicationStatus.Transient:
+                    //    case CommunicationStatus.Draft:
+                    //        {
+                    //            hlStatus.Text = "Draft";
+                    //            hlStatus.LabelType = LabelType.Default;
+                    //            break;
+                    //        }
+                    //    case CommunicationStatus.PendingApproval:
+                    //        {
+                    //            hlStatus.Text = "Pending Approval";
+                    //            hlStatus.LabelType = LabelType.Warning;
+                    //            break;
+                    //        }
+                    //    case CommunicationStatus.Approved:
+                    //        {
+                    //            hlStatus.Text = "Approved";
+                    //            hlStatus.LabelType = LabelType.Success;
+                    //            break;
+                    //        }
+                    //    case CommunicationStatus.Denied:
+                    //        {
+                    //            hlStatus.Text = "Denied";
+                    //            hlStatus.LabelType = LabelType.Danger;
+                    //            break;
+                    //        }
+                    //}
 
-        //            void ShowResult( string message )
-        //            {
+                    var responseBag = new CommunicationEntrySendResponseBag
+                    {
+                        CommunicationGuid = communication.Guid,
+                        CommunicationStatus = communication.Status,
+                        CommunicationId = communication.Id,
+                        HasDetailBlockOnCurrentPage = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() ),
+                        Message = "The communication has been saved",
+                        RedirectToViewMode = true,
+                    };
 
-        //                ShowStatus( communication );
-
-        //                pnlEdit.Visible = false;
-
-        //                nbResult.Text = message;
-
-        //                CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, communication.Id.ToString() );
-        //                hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
-
-        //                // only show the Link if there is a CommunicationDetail block type on this page
-        //                hlViewCommunication.Visible = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
-
-        //                pnlResult.Visible = true;
-
-        //                ScriptManager.RegisterStartupScript(
-        //                    Page,
-        //                    GetType(),
-        //                    "scrollToResults",
-        //                    "scrollToResults();",
-        //                    true );
-        //            }
-
-        //            ShowResult( "The communication has been saved", communication );
-        //        }
-        //    }
-        //}
+                    // TODO JMH Auto-scroll to results in Obsidian code.
+                    return ActionOk( responseBag );
+                } 
+            }
+        }
 
         //protected void btnCancel_Click( object sender, EventArgs e )
         //{
@@ -1435,7 +1452,7 @@ namespace Rock.Blocks.Communication
             {
                 mediumGuid = box.Mediums.FirstOrDefault()?.Value.AsGuid();
             }
-
+            
             box.Communication = new CommunicationEntryCommunicationBag
             {
                 CommunicationGuid = communication.Guid,
@@ -1449,30 +1466,48 @@ namespace Rock.Blocks.Communication
             };
 
             // Copy the rest of the communication details.
-            CommunicationDetails.Copy( communication, new CommunicationDetailsWrapper( box.Communication ) );
+            var communicationCopyTarget = new CommunicationDetailsWrapper( box.Communication, rockContext );
+            CommunicationDetails.Copy( communication, communicationCopyTarget );
+
+            // Get medium options.
+            box.MediumOptions = GetMediumOptions( box.Communication.MediumEntityTypeGuid, sender );
 
             // If the communication is transient, then override communication data from the template.
             if ( communication.Status == CommunicationStatus.Transient && template != null )
             {
                 // Only override if the template is one of the available templates.
-                if ( box.Templates.Any( t => t.Value.AsGuid() == template.Guid ) )
+                if ( box.MediumOptions?.Templates?.Any( t => t.Value.AsGuid() == template.Guid ) == true )
                 {
-                    var templateFromName = template.FromName.ResolveMergeFields( RequestContext.GetCommonMergeFields() );
-                    if ( templateFromName.IsNotNullOrWhiteSpace() )
+                    // Save what was entered for FromEmail and FromName in case the template blanks it out.
+                    var enteredFromEmail = box.Communication.FromEmail;
+                    var enteredFromName = box.Communication.FromName;
+                    
+                    CommunicationDetails.Copy( template, communicationCopyTarget );
+                    communication.FromName = template.FromName.ResolveMergeFields( RequestContext.GetCommonMergeFields() );
+                    communication.FromEmail = template.FromEmail.ResolveMergeFields( RequestContext.GetCommonMergeFields() );
+                    
+                    // if the FromName was cleared by the template, use the one that was there before the template was changed (similar logic to CommunicationEntryWizard)
+                    // Otherwise, if the template does have a FromName, we want to template's FromName to overwrite it (which CommunicationDetails.Copy already did)
+                    if ( box.Communication.FromName.IsNullOrWhiteSpace() )
                     {
-                        box.Communication.FromName = templateFromName;
+                        box.Communication.FromName = enteredFromName;
                     }
 
-                    var templateFromEmail = template.FromEmail.ResolveMergeFields( RequestContext.GetCommonMergeFields() );
-                    if ( templateFromEmail.IsNotNullOrWhiteSpace() )
+                    // if the FromEmail was cleared by the template, use the one that was there before the template was changed (similar logic to CommunicationEntryWizard)
+                    // Otherwise, if the template does have a FromEmail, we want to template's fromemail to overwrite it (which CommunicationDetails.Copy already did)
+                    if ( box.Communication.FromEmail.IsNullOrWhiteSpace() )
                     {
-                        box.Communication.FromEmail = templateFromEmail;
+                        box.Communication.FromEmail = enteredFromEmail;
                     }
 
                     var templateEmailAttachmentBinaryFileIds = template.EmailAttachmentBinaryFileIds?.ToList();
                     if ( templateEmailAttachmentBinaryFileIds?.Any() == true )
                     {
-                        box.Communication.EmailAttachmentBinaryFileIds = templateEmailAttachmentBinaryFileIds;
+                        box.Communication.EmailAttachmentBinaryFileGuids = new BinaryFileService( rockContext )
+                            .Queryable()
+                            .Where( bf => templateEmailAttachmentBinaryFileIds.Contains( bf.Id ) )
+                            .Select( bf => bf.Guid )
+                            .ToList();
                     }
                 }
             }
@@ -1838,10 +1873,12 @@ namespace Rock.Blocks.Communication
         public class CommunicationDetailsWrapper : ICommunicationDetails
         {
             private readonly CommunicationEntryCommunicationBag _bag;
+            private readonly RockContext _rockContext;
 
-            public CommunicationDetailsWrapper( CommunicationEntryCommunicationBag bag )
+            public CommunicationDetailsWrapper( CommunicationEntryCommunicationBag bag, RockContext rockContext )
             {
                 _bag = bag ?? throw new ArgumentNullException( nameof( bag ) );
+                _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
             }
 
             public Guid CommunicationGuid { get => _bag.CommunicationGuid; set => _bag.CommunicationGuid = value; }
@@ -1879,7 +1916,22 @@ namespace Rock.Blocks.Communication
             public string PushOpenMessage { get => _bag.PushOpenMessage; set => _bag.PushOpenMessage = value; }
             public int? SmsFromSystemPhoneNumberId { get => _bag.SmsFromSystemPhoneNumberId; set => _bag.SmsFromSystemPhoneNumberId = value; }
             public string SMSMessage { get => _bag.SMSMessage; set => _bag.SMSMessage = value; }
-            public IEnumerable<int> EmailAttachmentBinaryFileIds { get => _bag.EmailAttachmentBinaryFileIds; set => _bag.EmailAttachmentBinaryFileIds = value?.ToList(); }
+
+            private List<int> _emailAttachmentBinaryFileIds { get; set; }
+            public IEnumerable<int> EmailAttachmentBinaryFileIds
+            {
+                get => _emailAttachmentBinaryFileIds;
+                set
+                {
+                    _emailAttachmentBinaryFileIds = value?.ToList();
+                    // Update the BinaryFile Guids whenever the IDs are updated.
+                    _bag.EmailAttachmentBinaryFileGuids = new BinaryFileService( _rockContext )
+                        .Queryable()
+                        .Where( bf => _emailAttachmentBinaryFileIds.Contains( bf.Id ) )
+                        .Select( bf => bf.Guid )
+                        .ToList();
+                }
+            }
             public DateTimeOffset? FutureSendDateTime { get => _bag.FutureSendDateTime; set => _bag.FutureSendDateTime = value; }
             public int? SMSFromDefinedValueId { get => _bag.SMSFromDefinedValueId; set => _bag.SMSFromDefinedValueId = value; }
             public IEnumerable<int> SMSAttachmentBinaryFileIds { get => _bag.SMSAttachmentBinaryFileIds; set => _bag.SMSAttachmentBinaryFileIds = value?.ToList(); }
@@ -1986,11 +2038,11 @@ namespace Rock.Blocks.Communication
             }
 
             // Copy the communication data in the request to the Communication object.
-            CommunicationDetails.Copy( new CommunicationDetailsWrapper( bag ), communication );
+            CommunicationDetails.Copy( new CommunicationDetailsWrapper( bag, rockContext ), communication );
 
             // delete any attachments that are no longer included
             // TODO JMH Does the bag have Guids? If so, we need to map the Communication ids to Guids or vice-versa.
-            foreach ( var attachment in communication.Attachments.Where( a => !bag.EmailAttachmentBinaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
+            foreach ( var attachment in communication.Attachments.Where( a => !bag.EmailAttachmentBinaryFileGuids.Contains( a.BinaryFile.Guid ) ).ToList() )
             {
                 communication.Attachments.Remove( attachment );
                 communicationAttachmentService.Delete( attachment );
@@ -1998,7 +2050,7 @@ namespace Rock.Blocks.Communication
 
             // add any new attachments that were added
             // TODO JMH Does the bag have Guids? If so, we need to map the Communication ids to Guids or vice-versa.
-            foreach ( var attachmentBinaryFileId in bag.EmailAttachmentBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
+            foreach ( var attachmentBinaryFileId in bag.EmailAttachmentBinaryFileGuids.Select( a => communication.Attachments.FirstOrDefault( x => x.BinaryFile.Guid == a ) ).Where( a => a != null ).Select( a => a.Id ) )
             {
                 communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId }, CommunicationType.Email );
             }
@@ -2027,59 +2079,6 @@ namespace Rock.Blocks.Communication
 
             return communication;
         }
-
-        //private void ValidateFutureDelayDateTime()
-        //{
-        //    DateTime? futureSendDate = dtpFutureSend.SelectedDateTime;
-        //    TimeSpan? futureTime = dtpFutureSend.SelectedTime;
-
-        //    if ( ( futureTime.HasValue && !futureSendDate.HasValue ) || ( !futureTime.HasValue && futureSendDate.HasValue ) )
-        //    {
-        //        cvDelayDateTime.IsValid = false;
-        //        cvDelayDateTime.ErrorMessage = "The Delay Send Until value requires a future date and time.";
-        //        return;
-        //    }
-
-        //    if ( futureSendDate.HasValue && futureSendDate.Value.CompareTo( RockDateTime.Now ) < 0 )
-        //    {
-        //        cvDelayDateTime.IsValid = false;
-        //        cvDelayDateTime.ErrorMessage = "The Delay Send Until value must be a future date/time";
-        //        return;
-        //    }
-        //}
-
-        //private void ShowStatus( Rock.Model.Communication communication )
-        //{
-        //    var status = communication != null ? communication.Status : CommunicationStatus.Draft;
-        //    switch ( status )
-        //    {
-        //        case CommunicationStatus.Transient:
-        //        case CommunicationStatus.Draft:
-        //            {
-        //                hlStatus.Text = "Draft";
-        //                hlStatus.LabelType = LabelType.Default;
-        //                break;
-        //            }
-        //        case CommunicationStatus.PendingApproval:
-        //            {
-        //                hlStatus.Text = "Pending Approval";
-        //                hlStatus.LabelType = LabelType.Warning;
-        //                break;
-        //            }
-        //        case CommunicationStatus.Approved:
-        //            {
-        //                hlStatus.Text = "Approved";
-        //                hlStatus.LabelType = LabelType.Success;
-        //                break;
-        //            }
-        //        case CommunicationStatus.Denied:
-        //            {
-        //                hlStatus.Text = "Denied";
-        //                hlStatus.LabelType = LabelType.Danger;
-        //                break;
-        //            }
-        //    }
-        //}
 
         ///// <summary>
         ///// Shows the result.

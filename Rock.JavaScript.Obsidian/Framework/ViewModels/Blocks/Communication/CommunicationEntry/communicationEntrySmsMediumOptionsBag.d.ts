@@ -34,4 +34,7 @@ export type CommunicationEntrySmsMediumOptionsBag = {
 
     /** Gets or sets the SMS from numbers. */
     smsFromNumbers?: ListItemBag[] | null;
+
+    /** Gets or sets the communication templates that can be selected. */
+    templates?: ListItemBag[] | null;
 };

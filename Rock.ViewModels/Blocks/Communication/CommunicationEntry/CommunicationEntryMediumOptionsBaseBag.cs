@@ -15,7 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.Enums.Blocks.Communication.CommunicationEntry;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
 {
@@ -36,6 +39,14 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// Helper property that can be used when the communication medium type is unknown.
         /// </summary>
         public static readonly CommunicationEntryMediumOptionsBaseBag Unknown = new CommunicationEntryUnknownMediumOptionsBag();
+
+        /// <summary>
+        /// Gets or sets the communication templates that can be selected.
+        /// </summary>
+        /// <value>
+        /// The communication templates that can be selected.
+        /// </value>
+        public List<ListItemBag> Templates { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this communication medium is unknown.

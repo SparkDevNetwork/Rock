@@ -16,8 +16,10 @@
 //
 
 using System;
+using System.Collections.Generic;
 
 using Rock.Enums.Blocks.Communication.CommunicationEntry;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
 {
@@ -90,5 +92,13 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// The address of the sender.
         /// </value>
         public string FromAddress { get; set; }
+
+        /// <summary>
+        /// Gets or sets the recipient threshold that, once exceeded, will automatically mark the communication as a bulk email.
+        /// </summary>
+        /// <value>
+        /// The bulk email threshold.
+        /// </value>
+        public int? BulkEmailThreshold { get; set; }
     }
 }

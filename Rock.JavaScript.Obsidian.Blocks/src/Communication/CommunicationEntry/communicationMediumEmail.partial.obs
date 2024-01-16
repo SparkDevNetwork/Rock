@@ -9,7 +9,7 @@
                              :getLabelTypeRef="getLabelTypeRef"
                              :getTooltipRef="personAliasGuid => getEmailTooltipRef(getRecipient(personAliasGuid))"
                              label="Recipients"
-                             rules="required"
+                             :rules="recipientsRules"
                              validationTitle="At least one recipient"
                              @openPopup="isRecipientModalOpen = true">
                     <template #itemImage="{ label, value, closable, disabled }">
@@ -28,9 +28,10 @@
             <div class="col-sm-6">
                 <DropDownList v-model="templateGuid"
                               :disabled="internalDisabled"
+                              :items="mediumOptions?.templates ?? undefined"
                               label="Template" />
             </div>
-            <div class="col-sm-6 align-self-center">
+            <div v-if="!isBulkEmailThresholdExceeded" class="col-sm-6 align-self-center">
                 <div class="float-right">
                     <Switch v-model="isBulkCommunication"
                             :disabled="internalDisabled"
@@ -145,7 +146,7 @@
                     :disabled="internalDisabled"
                     :editorHeight="600"
                     label="Message"
-                    mergeFields="GlobalAttribute,Rock.Model.Person,Communication.Subject|Subject,Communication.FromName|From Name,Communication.FromEmail|From Address,Communication.ReplyToEmail|Reply To,UnsubscribeOption" />
+                    :mergeFields="['GlobalAttribute', 'Rock.Model.Person', 'Communication.Subject|Subject', 'Communication.FromName|From Name', 'Communication.FromEmail|From Address', 'Communication.ReplyToEmail|Reply To', 'UnsubscribeOption']" />
 
         <NotificationBox v-if="testResult"
                          v-html="testResult"
@@ -165,9 +166,11 @@
     import { PropType, Ref, computed, nextTick, onMounted, ref, watchEffect } from "vue";
     import PopupPicker from "./popupPicker.partial.obs";
     import RecipientModal from "./recipientModal.partial.obs";
+    import { Nullable } from "./types.partial";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -176,24 +179,22 @@
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import VerticalTransitionCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { splitCamelCase } from "@Obsidian/Utility/stringUtils";
     import { CommunicationEntryGetRecipientsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetRecipientsRequestBag";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
-    import { CommunicationEntrySendRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendRequestBag";
-    import { CommunicationEntrySendTestRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendTestRequestBag";
+    import { CommunicationEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveResponseBag";
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
-    import { CommunicationEntrySendTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendTestResponseBag";
-    import { Nullable } from "./types.partial";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
     import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
     import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
-    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
@@ -208,13 +209,25 @@
         mediumEntityTypeGuid: {
             type: String as PropType<Nullable<string>>,
             required: false
-        }
+        },
+
+        /** The communication info from which to load the initial control data. */
+        communication: {
+            type: Object as PropType<Nullable<CommunicationEntryCommunicationBag>>,
+            required: false
+        },
+        mediumOptions: {
+            type: Object as PropType<Nullable<CommunicationEntryEmailMediumOptionsBag>>,
+            required: false
+        },
     });
     const emit = defineEmits<{
-        (e: "update:disabled", value: boolean): void
+        (e: "error", value: string): void,
+        (e: "update:disabled", value: boolean): void,
+        (e: "success", value: CommunicationEntrySendResponseBag): void
     }>();
     defineExpose({
-        saveDraft,
+        save,
         send,
         sendTest
     });
@@ -224,36 +237,63 @@
     //#region Values
 
     const internalDisabled = useVModelPassthrough(props, "disabled", emit);
-    const recipients = ref<CommunicationEntryRecipientBag[]>([]);
-    const attachments = ref<ListItemBag[]>([]);
-    const isBulkCommunication = ref<boolean>(false);
-    const templateGuid = ref<string>("");
-    const fromName = ref<string>("");
-    const fromAddress = ref<string>("");
-    const replyToAddress = ref<string>("");
-    const isCcShown = ref<boolean>(true);
+    const recipients = ref<CommunicationEntryRecipientBag[]>(props.communication?.recipients ?? []);
+    const attachments = ref<ListItemBag[]>(/* TODO JMH props.communication?.emailAttachmentBinaryFileIds */[]);
+    const internalIsBulkCommunication = ref<boolean>(!!props.communication?.isBulkCommunication);
+    const templateGuid = ref<string>(props.communication?.communicationTemplateGuid ?? "");
+    const fromName = ref<string>(props.communication?.fromName ?? "");
+    const fromAddress = ref<string>(props.communication?.fromEmail ?? "");
+    const replyToAddress = ref<string>(props.communication?.replyToEmail ?? "");
     const isLavaAllowed = ref<boolean>(true);
-    const ccAddresses = ref<string>("");
-    const bccAddresses = ref<string>("");
-    const subject = ref<string>("");
+    const ccAddresses = ref<string>(props.communication?.ccEmails ?? "");
+    const bccAddresses = ref<string>(props.communication?.bccEmails ?? "");
+    // Should CC and BCC fields if the loaded communication has either value.
+    const isCcShown = ref<boolean>(!!(ccAddresses.value || bccAddresses));
+    const subject = ref<string>(props.communication?.subject ?? "");
+
     const areAttachmentsShown = ref<boolean>(false);
     const isRecipientModalOpen = ref<boolean>(false);
-    const isScheduled = ref<boolean>(false);
+    const scheduleSendDateTime = ref<string>(props.communication?.futureSendDateTime ?? "");
+    const tempScheduleSendDateTime = ref<string>(props.communication?.futureSendDateTime ?? "");
+    const isScheduled = ref<boolean>(!!scheduleSendDateTime.value);
     const isScheduleSendModalOpen = ref<boolean>(false);
-    const scheduleSendDateTime = ref<string>("");
-    const tempScheduleSendDateTime = ref<string>("");
     const fileInputWrapper = ref<HTMLInputElement | undefined>();
-    const body = ref<string>("");
-    const communicationGuid = ref<Nullable<string>>();
-    const options = ref<CommunicationEntryEmailMediumOptionsBag | undefined>();
+    const body = ref<string>(props.communication?.message ?? "");
+    const communicationGuid = ref<Nullable<string>>(props.communication?.communicationGuid);
+    const options = ref<Nullable<CommunicationEntryEmailMediumOptionsBag>>(props.mediumOptions);
     const isFormSubmitted = ref<boolean>(false);
-    const pendingAction = ref<() => Promise<void>>();
+    const pendingAction = ref<() => PromiseLike<void>>();
     const testResult = ref<Nullable<string>>();
     const testResultType = ref<Nullable<string>>();
+    const isRecipientRequired = ref<boolean>(false);
 
     //#endregion
 
     //#region Computed Values
+
+    const isBulkCommunication = computed<boolean>({
+        get(): boolean {
+            return internalIsBulkCommunication.value || isBulkEmailThresholdExceeded.value;
+        },
+        set(value: boolean): void {
+            internalIsBulkCommunication.value = value;
+        }
+    });
+
+    const isBulkEmailThresholdExceeded = computed<boolean>(() => {
+        const threshold = props.mediumOptions?.bulkEmailThreshold;
+        return !!(threshold ?? "undefined" !== "undefined")
+            && recipients.value.length > threshold!;
+    });
+
+    const recipientsRules = computed<string>(() => {
+        if (isRecipientRequired.value) {
+            return "required";
+        }
+        else {
+            return "";
+        }
+    });
 
     const recipientListItems = computed<ListItemBag[]>({
         get() {
@@ -435,13 +475,24 @@
     }
 
     /**
-     * Saves the communication as a draft.
+     * Saves the communication.
      * If this is renamed, it must also be renamed in the other medium components.
      */
-    function saveDraft(): Promise<void> {
-        pendingAction.value = doSaveDraft;
-        triggerFormSubmission();
-        return Promise.resolve();
+    function save(): Promise<void> {
+        // Recipients are not required when saving.
+        if (!isRecipientRequired.value) {
+            // If validation is already turned off,
+            // then trigger "save" immediately.
+            triggerFormSubmission(doSave);
+            return Promise.resolve();
+        }
+        else {
+            // If validation needs to be turned off,
+            // then trigger "save" on the next tick
+            // so the form has a chance to update the validation UI.
+            isRecipientRequired.value = false;
+            return nextTick(() => triggerFormSubmission(doSave));
+        }
     }
 
     /**
@@ -449,9 +500,20 @@
      * If this is renamed, it must also be renamed in the other medium components.
      */
     function send(): Promise<void> {
-        pendingAction.value = doSend;
-        triggerFormSubmission();
-        return Promise.resolve();
+        // Recipients are required when sending.
+        if (isRecipientRequired.value) {
+            // If validation is already turned on,
+            // then trigger "send" immediately.
+            triggerFormSubmission(doSend);
+            return Promise.resolve();
+        }
+        else {
+            // If validation needs to be turned on,
+            // then trigger "send" on the next tick
+            // so the form has a chance to update the validation UI.
+            isRecipientRequired.value = true;
+            return nextTick(() => triggerFormSubmission(doSend));
+        }
     }
 
     /**
@@ -459,9 +521,20 @@
      * If this is renamed, it must also be renamed in the other medium components.
      */
     function sendTest(): Promise<void> {
-        pendingAction.value = doSendTest;
-        triggerFormSubmission();
-        return Promise.resolve();
+        // Recipients are not required when sending a test.
+        if (!isRecipientRequired.value) {
+            // If validation is already turned off,
+            // then trigger "sendTest" immediately.
+            triggerFormSubmission(doSendTest);
+            return Promise.resolve();
+        }
+        else {
+            // If validation needs to be turned off,
+            // then trigger "sendTest" on the next tick
+            // so the form has a chance to update the validation UI.
+            isRecipientRequired.value = false;
+            return nextTick(() => triggerFormSubmission(doSendTest));
+        }
     }
 
     /**
@@ -469,12 +542,13 @@
      * This is needed because the button elements are outside
      * of the form element we want to submit.
      */
-    function triggerFormSubmission(): void {
+    function triggerFormSubmission(action: () => PromiseLike<void>): void {
+        pendingAction.value = action;
         if (!isFormSubmitted.value) {
             isFormSubmitted.value = true;
         }
         else {
-            // Form is already submitted so resubmit it.
+            // Form is already submitted so resubmit it on the next tick.
             isFormSubmitted.value = false;
             nextTick(() => isFormSubmitted.value = true);
         }
@@ -492,38 +566,35 @@
         await action();
     }
 
-    /** Saves the communication as a draft. */
-    async function doSaveDraft(): Promise<void> {
+    /** Saves the communication. */
+    async function doSave(): Promise<void> {
         try {
             internalDisabled.value = true;
-
-            const bag: CommunicationEntrySendRequestBag = {
-                communication: {
-                    isBulkCommunication: isBulkCommunication.value,
-                    bccEmails: bccAddresses.value,
-                    ccEmails: ccAddresses.value,
-                    status: CommunicationStatus.Transient,
-                    communicationTemplateGuid: templateGuid.value,
-                    emailAttachmentBinaryFileIds: attachments.value?.map(a => +(a.value ?? 0)),
-                    fromEmail: fromAddress.value,
-                    fromName: fromName.value,
-                    futureSendDateTime: scheduleSendDateTime.value,
-                    mediumEntityTypeGuid: props.mediumEntityTypeGuid,
-                    message: body.value,
-                    recipients: recipients.value,
-                    replyToEmail: replyToAddress.value,
-                    subject: subject.value,
-                    communicationGuid: communicationGuid.value
-                }
+            const bag: CommunicationEntryCommunicationBag = {
+                isBulkCommunication: isBulkCommunication.value,
+                bccEmails: bccAddresses.value,
+                ccEmails: ccAddresses.value,
+                status: CommunicationStatus.Transient,
+                communicationTemplateGuid: templateGuid.value,
+                emailAttachmentBinaryFileGuids: attachments.value?.filter(a => !!a.value).map(a => a.value!),
+                fromEmail: fromAddress.value,
+                fromName: fromName.value,
+                futureSendDateTime: scheduleSendDateTime.value,
+                mediumEntityTypeGuid: props.mediumEntityTypeGuid,
+                message: body.value,
+                recipients: recipients.value,
+                replyToEmail: replyToAddress.value,
+                subject: subject.value,
+                communicationGuid: communicationGuid.value
             };
 
-            const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("SaveDraft", { bag });
+            const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });
 
             if (result.isError || !result.data) {
-                debugger;
+                emit("error", result.errorMessage || "An error occurred while saving. Please try again.");
             }
             else {
-                communicationGuid.value = result.data.communicationGuid;
+                emit("success", result.data);
             }
 
         }
@@ -537,30 +608,28 @@
         try {
             internalDisabled.value = true;
 
-            const bag: CommunicationEntrySendRequestBag = {
-                communication: {
-                    isBulkCommunication: isBulkCommunication.value,
-                    bccEmails: bccAddresses.value,
-                    ccEmails: ccAddresses.value,
-                    status: CommunicationStatus.Transient,
-                    communicationTemplateGuid: templateGuid.value,
-                    emailAttachmentBinaryFileIds: attachments.value?.map(a => +(a.value ?? 0)),
-                    fromEmail: fromAddress.value,
-                    fromName: fromName.value,
-                    futureSendDateTime: scheduleSendDateTime.value,
-                    mediumEntityTypeGuid: props.mediumEntityTypeGuid,
-                    message: body.value,
-                    recipients: recipients.value,
-                    replyToEmail: replyToAddress.value,
-                    subject: subject.value,
-                    communicationGuid: communicationGuid.value
-                }
+            const bag: CommunicationEntryCommunicationBag = {
+                isBulkCommunication: isBulkCommunication.value,
+                bccEmails: bccAddresses.value,
+                ccEmails: ccAddresses.value,
+                status: CommunicationStatus.Transient,
+                communicationTemplateGuid: templateGuid.value,
+                emailAttachmentBinaryFileGuids: attachments.value?.filter(a => !!a.value).map(a => a.value!),
+                fromEmail: fromAddress.value,
+                fromName: fromName.value,
+                futureSendDateTime: scheduleSendDateTime.value,
+                mediumEntityTypeGuid: props.mediumEntityTypeGuid,
+                message: body.value,
+                recipients: recipients.value,
+                replyToEmail: replyToAddress.value,
+                subject: subject.value,
+                communicationGuid: communicationGuid.value,
             };
 
             const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
 
             if (result.isError || !result.data) {
-                debugger;
+                emit("error", result.errorMessage || "An error occurred while sending. Please try again.");
             }
             else {
                 communicationGuid.value = result.data.communicationGuid;
@@ -579,30 +648,28 @@
             testResultType.value = null;
             internalDisabled.value = true;
 
-            const bag: CommunicationEntrySendTestRequestBag = {
-                communication: {
-                    isBulkCommunication: isBulkCommunication.value,
-                    bccEmails: bccAddresses.value,
-                    ccEmails: ccAddresses.value,
-                    status: CommunicationStatus.Transient,
-                    communicationTemplateGuid: templateGuid.value,
-                    emailAttachmentBinaryFileIds: attachments.value?.map(a => +(a.value ?? 0)),
-                    fromEmail: fromAddress.value,
-                    fromName: fromName.value,
-                    futureSendDateTime: scheduleSendDateTime.value,
-                    mediumEntityTypeGuid: props.mediumEntityTypeGuid,
-                    message: body.value,
-                    recipients: recipients.value,
-                    replyToEmail: replyToAddress.value,
-                    subject: subject.value,
-                    communicationGuid: communicationGuid.value
-                }
+            const bag: CommunicationEntryCommunicationBag = {
+                isBulkCommunication: isBulkCommunication.value,
+                bccEmails: bccAddresses.value,
+                ccEmails: ccAddresses.value,
+                status: CommunicationStatus.Transient,
+                communicationTemplateGuid: templateGuid.value,
+                emailAttachmentBinaryFileGuids: attachments.value?.filter(a => !!a.value).map(a => a.value!),
+                fromEmail: fromAddress.value,
+                fromName: fromName.value,
+                futureSendDateTime: scheduleSendDateTime.value,
+                mediumEntityTypeGuid: props.mediumEntityTypeGuid,
+                message: body.value,
+                recipients: recipients.value,
+                replyToEmail: replyToAddress.value,
+                subject: subject.value,
+                communicationGuid: communicationGuid.value
             };
 
-            const result = await invokeBlockAction<CommunicationEntrySendTestResponseBag>("SendTest", { bag });
+            const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });
 
             if (result.isError || !result.data) {
-                debugger;
+                emit("error", result.errorMessage || "An error occurred while sending a test communication. Please try again.");
             }
             else {
                 testResult.value = result.data.message;
@@ -620,7 +687,9 @@
 
     watchEffect(() => {
         if (isScheduled.value) {
-            isScheduleSendModalOpen.value = true;
+            if (!scheduleSendDateTime.value) {
+                isScheduleSendModalOpen.value = true;
+            }
         }
         else {
             // When isScheduled is marked as false,
@@ -630,6 +699,9 @@
             // Leave the temporary value alone so it is already selected
             // if the end-user decides to schedule again.
         }
+    }, {
+        // Start watching after the UI is rendered.
+        flush: "post"
     });
 
     /** Load the options if they haven't been loaded yet. */
@@ -645,7 +717,7 @@
         const response = await invokeBlockAction<CommunicationEntryEmailMediumOptionsBag>("GetMediumOptions", { bag });
 
         if (!response?.data || response.isError) {
-            debugger;
+            emit("error", response.errorMessage ?? "An error occurred while loading the communication. Please try again.");
             return;
         }
 

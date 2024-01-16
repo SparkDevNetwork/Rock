@@ -21,10 +21,26 @@
 // </copyright>
 //
 
-import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
+import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
+import { Guid } from "@Obsidian/Types";
 
-/** Bag containing the information required to send a communication via the Communication Entry block. */
-export type CommunicationEntrySendRequestBag = {
-    /** Gets or sets the communication information. */
-    communication?: CommunicationEntryCommunicationBag | null;
+/** Bag containing the response information after saving a communication via the Communication Entry block. */
+export type CommunicationEntrySaveResponseBag = {
+    /** Gets the communication unique identifier. */
+    communicationGuid?: Guid | null;
+
+    /** Gets the communication identifier. */
+    communicationId: number;
+
+    /** Gets or sets the communication status. */
+    communicationStatus?: CommunicationStatus | null;
+
+    /** Gets a value indicating whether the page has a detail block for viewing the communication details. */
+    hasDetailBlockOnCurrentPage: boolean;
+
+    /** Gets or sets the response message. */
+    message?: string | null;
+
+    /** Gets or sets a value indicating whether to redirect view mode. */
+    redirectToViewMode: boolean;
 };

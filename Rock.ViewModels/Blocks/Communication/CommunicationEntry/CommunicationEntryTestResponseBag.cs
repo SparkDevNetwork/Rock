@@ -18,16 +18,24 @@
 namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
 {
     /// <summary>
-    /// Bag containing the information required to send a communication via the Communication Entry block.
+    /// Bag containing the response information after testing a communication via the Communication Entry block.
     /// </summary>
-    public class CommunicationEntrySendRequestBag
+    public class CommunicationEntryTestResponseBag
     {
         /// <summary>
-        /// Gets or sets the communication information.
+        /// Gets or sets the response message.
         /// </summary>
         /// <value>
-        /// The communication.
+        /// The response message.
         /// </value>
-        public CommunicationEntryCommunicationBag Communication { get; set; }
+        public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the message.
+        /// </summary>
+        /// <value>
+        /// The type of the message.
+        /// </value>
+        public string MessageType { get; set; }
     }
 }

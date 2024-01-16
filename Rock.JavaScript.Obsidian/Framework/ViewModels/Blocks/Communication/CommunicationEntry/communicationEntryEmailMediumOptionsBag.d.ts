@@ -23,11 +23,15 @@
 
 import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
 import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Bag containing the Email Medium options for the Communication Entry block. */
 export type CommunicationEntryEmailMediumOptionsBag = {
     /** Gets or sets the binary file type unique identifier. */
     binaryFileTypeGuid?: Guid | null;
+
+    /** Gets or sets the recipient threshold that, once exceeded, will automatically mark the communication as a bulk email. */
+    bulkEmailThreshold?: number | null;
 
     /** Gets or sets the document folder root. */
     documentFolderRoot?: string | null;
@@ -52,4 +56,7 @@ export type CommunicationEntryEmailMediumOptionsBag = {
 
     /** Gets the type of the medium. */
     mediumType: MediumType;
+
+    /** Gets or sets the communication templates that can be selected. */
+    templates?: ListItemBag[] | null;
 };

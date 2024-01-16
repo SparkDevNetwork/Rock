@@ -2,10 +2,14 @@
 <template>
     <KeepAlive>
         <Email v-if="isGuid(mediumEntityTypeGuid, EntityType.CommunicationMediumEmail)"
+               :communication="communication"
                :isFullMode="isFullMode"
                :key="EntityType.CommunicationMediumEmail"
                :mediumEntityTypeGuid="mediumEntityTypeGuid"
-               ref="mediumComponent" />
+               :mediumOptions="(mediumOptions as CommunicationEntryEmailMediumOptionsBag)"
+               ref="mediumComponent"
+               @error="v => emit('error', v)"
+               @success="v => emit('success', v)" />
         <Sms v-else-if="isGuid(mediumEntityTypeGuid, EntityType.CommunicationMediumSms)"
              :isFullMode="isFullMode"
              :mediumEntityTypeGuid="mediumEntityTypeGuid"
@@ -33,7 +37,10 @@
     import PushNotification from "./communicationMediumPushNotification.partial.obs";
     import { Nullable } from "./types.partial";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
     import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
+    import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
+    import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
 
     const props = defineProps({
         isFullMode: {
@@ -47,14 +54,27 @@
         initialOptions: {
             type: Object as PropType<Nullable<CommunicationEntryMediumOptionsBaseBag>>,
             required: false
-        }
+        },
+        communication: {
+            type: Object as PropType<Nullable<CommunicationEntryCommunicationBag>>,
+            required: false
+        },
+        mediumOptions: {
+            type: Object as PropType<Nullable<CommunicationEntryMediumOptionsBaseBag>>,
+            required: false
+        },
     });
     defineExpose({
         cancel,
-        saveDraft,
+        save: saveDraft,
         send,
         sendTest,
     });
+
+    const emit = defineEmits<{
+        (e: "error", value: string): void,
+        (e: "success", value: CommunicationEntrySendResponseBag): void
+    }>();
 
     //#region Values
 
@@ -80,10 +100,10 @@
     }
 
     /**
-     * Saves the communication as a draft.
+     * Saves the communication.
      */
     async function saveDraft(): Promise<void> {
-        await mediumComponent.value?.saveDraft();
+        await mediumComponent.value?.save();
     }
 
     /**

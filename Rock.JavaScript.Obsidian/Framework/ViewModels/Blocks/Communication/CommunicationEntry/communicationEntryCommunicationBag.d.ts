@@ -41,7 +41,7 @@ export type CommunicationEntryCommunicationBag = {
     communicationTemplateGuid?: Guid | null;
 
     /** Gets or sets the email attachment binary file ids. */
-    emailAttachmentBinaryFileIds?: number[] | null;
+    emailAttachmentBinaryFileGuids?: Guid[] | null;
 
     /** Gets or sets from email. */
     fromEmail?: string | null;
