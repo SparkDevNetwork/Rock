@@ -281,11 +281,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
             // build the connector view model
             var connectorList = connectorGroupService.Queryable()
                 .Where( a => a.ConnectionOpportunityId == connectionOpportunityId
-                    && ( !campusGuid.HasValue || a.ConnectorGroup.Campus.Guid == campusGuid ) )
+                    && ( !campusGuid.HasValue || ( a.ConnectorGroup.Campus != null && a.ConnectorGroup.Campus.Guid == campusGuid ) ) )
                 .AsEnumerable()
 
                 // First select the members along with the connector group CampusId.
-                .SelectMany( a => a.ConnectorGroup.Members.Select( m => new { Member = m, CampusIdKey = a.ConnectorGroup.Campus.IdKey } ) )
+                .SelectMany( a => a.ConnectorGroup.Members.Select( m => new { Member = m, CampusIdKey = a.ConnectorGroup.Campus?.IdKey } ) )
                 .Where( m => m.Member.GroupMemberStatus == GroupMemberStatus.Active )
                 .AsEnumerable()
                 .Select( m => new ConnectorBag
