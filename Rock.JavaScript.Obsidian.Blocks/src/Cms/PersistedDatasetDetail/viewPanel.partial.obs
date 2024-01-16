@@ -50,39 +50,8 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.name) {
-            valueBuilder.addTextValue("Name", props.modelValue.name);
-        }
-
-        if (props.modelValue.accessKey) {
-            valueBuilder.addTextValue("Access Key", props.modelValue.accessKey);
-        }
-
         if (props.modelValue.description) {
-            valueBuilder.addTextValue("Description", props.modelValue.description);
-        }
-
-        if (props.modelValue.enabledLavaCommands) {
-            valueBuilder.addTextValue("Enabled Lava Commands", props.modelValue.enabledLavaCommands.map(c => c.text).join(", "));
-        }
-
-        if (props.modelValue.refreshIntervalHours) {
-            valueBuilder.addTextValue("Refresh Interval", `${props.modelValue.refreshIntervalHours} hour(s)`);
-        }
-
-        if (props.modelValue.memoryCacheDurationHours) {
-            valueBuilder.addTextValue("Memory Cache", `${props.modelValue.memoryCacheDurationHours} hour(s)`);
-        }
-
-        if (props.modelValue.expireDateTime) {
-            const date = RockDateTime.parseISO(props.modelValue.expireDateTime);
-            if (date) {
-                valueBuilder.addTextValue("Expires On", date.toString());
-            }
-        }
-
-        if (props.modelValue.entityType?.text) {
-            valueBuilder.addTextValue("Entity Type", props.modelValue.entityType.text);
+            valueBuilder.addTextValue("", props.modelValue.description);
         }
 
         return valueBuilder.build();
@@ -96,6 +65,26 @@
             return valueBuilder.build();
         }
 
+        if (props.modelValue.name) {
+            valueBuilder.addTextValue("Dataset Name", props.modelValue.name);
+        }
+
+        if (props.modelValue.accessKey) {
+            valueBuilder.addTextValue("Access Key", props.modelValue.accessKey);
+        }
+
+        if (props.modelValue.enabledLavaCommands) {
+            valueBuilder.addTextValue("Enabled Lava Commands", props.modelValue.enabledLavaCommands.map(c => c.text).join(", "));
+        }
+
+        if (props.modelValue.refreshIntervalHours && !props.modelValue.refreshInterval) {
+            valueBuilder.addTextValue("Refresh Interval", `${props.modelValue.refreshIntervalHours} hour(s)`);
+        }
+
+        if (props.modelValue.memoryCacheDurationHours) {
+            valueBuilder.addTextValue("Memory Cache", `${props.modelValue.memoryCacheDurationHours} hour(s)`);
+        }
+
         return valueBuilder.build();
     });
 
@@ -105,6 +94,42 @@
 
         if (!props.modelValue) {
             return valueBuilder.build();
+        }
+
+
+        if (props.modelValue.expireDateTime) {
+            const date = RockDateTime.parseISO(props.modelValue.expireDateTime);
+            if (date) {
+                valueBuilder.addTextValue("Expires On", date.toString());
+            }
+        }
+
+        if (props.modelValue.entityType?.text) {
+            valueBuilder.addTextValue("Entity Type", props.modelValue.entityType.text);
+        }
+
+        if (props.modelValue.persistedScheduleId) {
+            valueBuilder.addTextValue("Schedule ID", props.modelValue.persistedScheduleId.toString());
+        }
+
+        if (props.modelValue.persistedSchedule) {
+            valueBuilder.addTextValue("Persisted Schedule", props.modelValue.friendlyScheduleText ?? "Schedule not available");
+        }
+
+        if (props.modelValue.refreshInterval) {
+            let intervalValue = props.modelValue.refreshInterval;
+            let intervalType = props.modelValue.persistedScheduleIntervalType;
+
+            if (intervalValue >= 1440) { // Days
+                intervalType = "Days";
+                intervalValue /= 1440;
+            }
+            else if (intervalValue >= 60) { // Hours
+                intervalType = "Hours";
+                intervalValue /= 60;
+            }
+
+            valueBuilder.addTextValue("Persistence Interval", `Every ${intervalValue} ${intervalType}`);
         }
 
         return valueBuilder.build();
