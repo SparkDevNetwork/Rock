@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="x-field">
-        <Grid v-show="mode == 'grid'" :data="gridData" itemTerm="Item" keyField="id" liveUpdates light @addItem="onAddButtonClick">
-            <TextColumn name="Name?" field="fieldSource" title="Source" />
-            <TextColumn name="Name?" field="key" title="Key" />
-            <TextColumn name="Name?" field="value" title="Expression" />
-            <TextColumn name="Name?" field="fieldFormat" title="Format" />
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="json-fields-builder">
+        <Grid v-show="mode == 'grid'" :data="gridData" itemTerm="Field Setting" keyField="id" liveUpdates light @addItem="onAddButtonClick">
+            <TextColumn name="fieldSource" field="fieldSource" title="Source" />
+            <TextColumn name="key" field="key" title="Key" />
+            <TextColumn name="value" field="value" title="Expression" />
+            <TextColumn name="fieldFormat" field="fieldFormat" title="Format" />
             <EditColumn @click="onEditButtonClick" />
             <DeleteColumn @click="onDeleteButtonClick" />
         </Grid>
