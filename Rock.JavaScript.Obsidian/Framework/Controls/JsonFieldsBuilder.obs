@@ -39,8 +39,26 @@
                                      @update:modelValue="onChangeAttributeFormat" />
                 </div>
             </div>
-            <div v-else>
-                Lava
+            <div v-else class="row">
+                <div class="col-md-6">
+                    <TextBox help="This will become the property name in the returned JSON."
+                             label="Key"
+                             rules="required"
+                             v-model="currentFieldSetting.key" />
+                </div>
+                <div class="col-md-6">
+                    <RadioButtonList label="Field Format"
+                                     :items="fieldFormatOptions"
+                                     horizontal
+                                     :modelValue="`${currentFieldSetting.fieldFormat}`"
+                                     @update:modelValue="onChangeFieldFormat" />
+                </div>
+                <div class="col-xs-12">
+                    <CodeEditor label="Lava Expression"
+                                help="Lava expression to use to get the value for the field. Note: The use of entity commands, SQL commands, etc. are not recommended for performance reasons."
+                                mode="lava"
+                                v-model="currentFieldSetting.value" />
+                </div>
             </div>
 
             <RockButton type="submit" btnSize="xs" btnType="primary" autoDisable>Apply</RockButton>
@@ -52,17 +70,20 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, reactive, ref, watch } from "vue";
+    import { PropType, computed, reactive, ref } from "vue";
     import RockForm from "./rockForm.obs";
     import RockButton from "./rockButton.obs";
     import RockFormField from "./rockFormField.obs";
     import RadioButtonList from "./radioButtonList.obs";
     import DropDownList from "./dropDownList.obs";
+    import TextBox from "./textBox.obs";
+    import CodeEditor from "./codeEditor.obs";
     import NotificationBox from "./notificationBox.obs";
     import Grid, { DeleteColumn, EditColumn, TextColumn } from "./grid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldSettingBag } from "@Obsidian/ViewModels/Controls/fieldSettingBag";
+    import { FieldPropertyItemBag } from "@Obsidian/ViewModels/Controls/fieldPropertyItemBag";
     import { FieldSource, FieldSourceDescription } from "@Obsidian/Enums/Controls/fieldSource";
     import { FieldFormat, FieldFormatDescription } from "@Obsidian/Enums/Controls/fieldFormat";
     import { AttributeFormat, AttributeFormatDescription } from "@Obsidian/Enums/Controls/attributeFormat";
@@ -70,9 +91,13 @@
     import { createHash } from "@Obsidian/Utility/stringUtils";
     import { toListItemBagList } from "@Obsidian/Utility/objectUtils";
 
+    type FullFieldSettingBag = Required<{
+        [Property in keyof FieldSettingBag]: NonNullable<FieldSettingBag[Property]>
+    }>;
+
     const props = defineProps({
         modelValue: {
-            type: Array as PropType<FieldSettingBag[]>,
+            type: Array as PropType<FullFieldSettingBag[]>,
             required: true
         },
 
@@ -82,7 +107,7 @@
         },
 
         availableProperties: {
-            type: Array as PropType<ListItemBag[]>,
+            type: Array as PropType<FieldPropertyItemBag[]>,
             required: true
         },
 
@@ -100,7 +125,7 @@
     const error = ref("");
     const currentEditIndex = ref(-1);
 
-    const currentFieldSetting = reactive<FieldSettingBag>({
+    const currentFieldSetting = reactive<FullFieldSettingBag>({
         get id() {
             return createHash(this.key ?? " ");
         },
@@ -130,9 +155,6 @@
         };
     });
 
-    /**
-     *
-     */
     function onAddButtonClick(): void {
         resetCurrentFieldSetting();
         mode.value = "add";
@@ -143,8 +165,8 @@
 
         if (index >= 0) {
             currentEditIndex.value = index;
-            mode.value = "edit";
             setCurrentFieldSetting(internalValue.value[index]);
+            mode.value = "edit";
         }
     }
 
@@ -170,9 +192,14 @@
             property = property[0];
         }
 
-        console.info("TODO: Get the format type for this property");
-        // TODO: Get the format type for this property
+        // Get the original property item
+        const propertyItem = props.availableProperties.find(x => x.value == property);
 
+        if (!propertyItem) {
+            return;
+        }
+
+        currentFieldSetting.fieldFormat = propertyItem.fieldFormat;
         currentFieldSetting.key = property;
         currentFieldSetting.fieldName = property;
         currentFieldSetting.value = `{{ item.${property} }}`;
@@ -208,11 +235,15 @@
         currentFieldSetting.attributeFormat = attributeFormat;
     }
 
-    function onSubmit(): void {
-        // TODO
-        if (mode.value == "add") {
-            console.log("ADD", internalValue.value.some(x => x.key == currentFieldSetting.key));
+    function onChangeFieldFormat(format: string): void {
+        // Convert string to FieldFormat enum
+        const fieldFormat = +format as FieldFormat;
 
+        currentFieldSetting.fieldFormat = fieldFormat;
+    }
+
+    function onSubmit(): void {
+        if (mode.value == "add") {
             if (internalValue.value.some(x => x.key == currentFieldSetting.key)) {
                 console.error("DUPLICATE KEY");
                 error.value = "Unable to add item. An item with the same key already exists.";
@@ -222,10 +253,17 @@
             internalValue.value.push({ ...currentFieldSetting });
         }
         else if (mode.value == "edit") {
-            // TODO
-            // use currentEditIndex
+            if (internalValue.value.some((x, i) => x.key == currentFieldSetting.key && i != currentEditIndex.value)) {
+                console.error("DUPLICATE KEY");
+                error.value = "Unable to apply changes. An item with the same key already exists.";
+                return;
+            }
+
+            internalValue.value[currentEditIndex.value] = { ...currentFieldSetting };
+            currentEditIndex.value = -1;
         }
 
+        error.value = "";
         mode.value = "grid";
         resetCurrentFieldSetting();
     }

@@ -1193,6 +1193,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\campusPickerItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\datePartsPickerValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\electronicSignatureValue.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldPropertyItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldSettingBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorGetAvailableFieldTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationOptionsBag.d.ts" />
