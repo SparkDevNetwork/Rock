@@ -64,8 +64,6 @@
             <RockButton type="submit" btnSize="xs" btnType="primary" autoDisable>Apply</RockButton>
             <RockButton btnSize="xs" btnType="link" @click="onCancel" autoDisable>Cancel</RockButton>
         </RockForm>
-
-        <pre class="my-5">{{ currentFieldSetting }}</pre>
     </RockFormField>
 </template>
 

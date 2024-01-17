@@ -1,16 +1,24 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode"
+                      :value="{ value, availableAttributes, availableProperties }" hasMultipleValues
+                      enableReflection>
 
         <JsonFieldsBuilder v-model="value"
                            :availableProperties="availableProperties"
                            :availableAttributes="availableAttributes" />
 
         <template #settings>
-            <div class="row">
-                <div class="col-md-3">
-                </div>
-            </div>
+            <p>
+                You must provide a list of attributes and properties to choose from, which will need to be
+                generated on the back end. See the C# version of this control to see how this is done.
+                The <code>availableAttributes</code> prop takes a list of standard <code>ListItemBags</code>, but
+                <code>availableProperties</code> needs something a little extra: <code>FieldPropertyItemBag</code>
+                (import from <code>"@Obsidian/ViewModels/Controls/fieldPropertyItemBag"</code>). This adds a
+                <code>fieldFormat</code> property to the <code>ListItemBag</code> that can be used to determine
+                the format of the property.
+            </p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
         </template>
     </GalleryAndResult>
 </template>
@@ -82,6 +90,6 @@
 
     const importCode = getSfcControlImportPath("jsonFieldsBuilder");
     const exampleCode = computed(() => {
-        return `<JsonFieldsBuilder v-model="value" />`;
+        return `<JsonFieldsBuilder v-model="value" :availableProperties="availableProperties" :availableAttributes="availableAttributes" />`;
     });
 </script>
