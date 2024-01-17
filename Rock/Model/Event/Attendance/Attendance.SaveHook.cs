@@ -18,6 +18,7 @@ using System;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Enums.Event;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -84,8 +85,28 @@ namespace Rock.Model
 
                 var attendance = this.Entity;
 
-                if ( State == EntityContextState.Modified )
+                if ( State == EntityContextState.Added )
                 {
+                    if ( attendance.CheckInStatus != CheckInStatus.Unknown )
+                    {
+                        UpdateCheckInDatesFromCheckInStatus();
+                    }
+                    else
+                    {
+                        UpdateCheckInStatusFromCheckInDates();
+                    }
+                }
+                else if ( State == EntityContextState.Modified )
+                {
+                    if ( IsCheckInStatusModified() )
+                    {
+                        UpdateCheckInDatesFromCheckInStatus();
+                    }
+                    else if ( AreCheckInDatesModified() )
+                    {
+                        UpdateCheckInStatusFromCheckInDates();
+                    }
+
                     preSavePersonAliasId = attendance.PersonAliasId;
                     var originalOccurrenceId = ( int? ) OriginalValues[nameof( attendance.OccurrenceId )];
                     if ( originalOccurrenceId.HasValue && attendance.OccurrenceId != originalOccurrenceId.Value )
@@ -242,6 +263,81 @@ namespace Rock.Model
                 }
 
                 return false;
+            }
+
+            /// <summary>
+            /// Determines whether CheckInStatus property has been modified.
+            /// </summary>
+            /// <returns><c>true</c> if the property was modified; otherwise, <c>false</c>.</returns>
+            private bool IsCheckInStatusModified()
+            {
+                var originalCheckInStatus = ( CheckInStatus ) OriginalValues[nameof( Entity.CheckInStatus )];
+
+                return originalCheckInStatus != Entity.CheckInStatus;
+            }
+
+            /// <summary>
+            /// Determines whether any of the check-in DateTime properties
+            /// have been modified.
+            /// </summary>
+            /// <returns><c>true</c> if any properties were modified, <c>false</c> otherwise.</returns>
+            private bool AreCheckInDatesModified()
+            {
+                var originalStartDateTime = ( DateTime ) OriginalValues[nameof( Entity.StartDateTime )];
+                var originalEndDateTime = ( DateTime? ) OriginalValues[nameof( Entity.EndDateTime )];
+                var originalPresentDateTime = ( DateTime? ) OriginalValues[nameof( Entity.PresentDateTime )];
+
+                return originalStartDateTime != Entity.StartDateTime
+                    || originalEndDateTime != Entity.EndDateTime
+                    || originalPresentDateTime != Entity.PresentDateTime;
+            }
+
+            /// <summary>
+            /// Updates the check in dates from the CheckInStatus property. This
+            /// is called when the CheckInStatus has been modified.
+            /// </summary>
+            private void UpdateCheckInDatesFromCheckInStatus()
+            {
+                if ( Entity.CheckInStatus == CheckInStatus.CheckedOut )
+                {
+                    Entity.EndDateTime = Entity.EndDateTime ?? RockDateTime.Now;
+                }
+                else if ( Entity.CheckInStatus == CheckInStatus.Present )
+                {
+                    Entity.PresentDateTime = Entity.PresentDateTime ?? RockDateTime.Now;
+                    Entity.EndDateTime = null;
+                }
+                else if ( Entity.CheckInStatus == CheckInStatus.NotPresent )
+                {
+                    Entity.PresentDateTime = null;
+                    Entity.EndDateTime = null;
+                }
+                else if ( Entity.CheckInStatus == CheckInStatus.Pending )
+                {
+                    Entity.PresentDateTime = null;
+                    Entity.EndDateTime = null;
+                }
+            }
+
+            /// <summary>
+            /// Updates the CheckInStatus property from the check in dates. This
+            /// is called if the CheckInStatus property has not changed but one
+            /// of the date values has.
+            /// </summary>
+            private void UpdateCheckInStatusFromCheckInDates()
+            {
+                if ( Entity.EndDateTime.HasValue )
+                {
+                    Entity.CheckInStatus = CheckInStatus.CheckedOut;
+                }
+                else if ( Entity.PresentDateTime.HasValue )
+                {
+                    Entity.CheckInStatus = CheckInStatus.Present;
+                }
+                else
+                {
+                    Entity.CheckInStatus = CheckInStatus.NotPresent;
+                }
             }
 
             private LaunchMemberAttendedGroupWorkflow.Message GetLaunchMemberAttendedGroupWorkflowMessage()

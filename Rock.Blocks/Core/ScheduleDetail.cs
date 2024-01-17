@@ -86,6 +86,11 @@ namespace Rock.Blocks.Core
                 }
 
                 SetBoxInitialEntityState( box, rockContext, entity );
+                if ( box.Entity == null )
+                {
+                    return box;
+                }
+
                 var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
                 if ( categoryId.HasValue )
                 {
@@ -462,7 +467,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Schedule.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Schedule.FriendlyTypeName}." );
                 return false;
             }
 
@@ -472,6 +477,30 @@ namespace Rock.Blocks.Core
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Copy the Schedule to create a new Schedule
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult Copy( string key )
+        {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( $"Not authorized to copy {Schedule.FriendlyTypeName}." );
+            }
+
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return ActionNotFound();
+            }
+
+            var copiedEntity = new ScheduleService( new RockContext() ).Copy( key );
+
+            return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+            {
+                [PageParameterKey.ScheduleId] = copiedEntity.IdKey
+            } ) );
+        }
 
         /// <summary>
         /// Gets the box that will contain all the information needed to begin
@@ -577,17 +606,16 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( errorMessage );
                 }
 
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
                 // reload page, selecting the deleted data view's parent
                 var qryParams = new Dictionary<string, string>();
                 if ( entity.CategoryId != null )
                 {
                     qryParams["CategoryId"] = entity.CategoryId.ToString();
                 }
-
                 qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
+                entityService.Delete( entity );
+                rockContext.SaveChanges();
 
                 return ActionOk( ( new Rock.Web.PageReference( this.PageCache.Guid.ToString(), qryParams ) ).BuildUrl() );
             }
