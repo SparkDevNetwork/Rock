@@ -90,12 +90,6 @@ namespace RockWeb.Blocks.Examples
                     example.Controls.AddAt( 0, new LiteralControl( string.Format( "<a name='{0}' class='anchor rollover-item' href='#{0}'><i class='fa fa-link rlink icon-link'></i></a>", BuildAnchorForHref( ( HtmlGenericControl ) example ) ) ) );
                 }
             }
-
-            jfb.SourceType = typeof( GroupMember );
-            var availableAttrs = AttributeCache.AllForEntityType<GroupMember>()
-                .Where( a => a.EntityTypeQualifierColumn.IsNullOrWhiteSpace() && a.EntityTypeQualifierValue.IsNullOrWhiteSpace() )
-                .ToList();
-            jfb.AvailableAttributes = availableAttrs;
         }
 
         private string BuildAnchorForHref( HtmlGenericControl item )
@@ -228,8 +222,6 @@ namespace RockWeb.Blocks.Examples
                 TagLiteral4.Text = "TagLiteral4: This text is set via code.";
                 BindGrid();
             }
-
-            jfbText.Text = jfb.FieldSettings.ToJson();
         }
 
         /// <summary>

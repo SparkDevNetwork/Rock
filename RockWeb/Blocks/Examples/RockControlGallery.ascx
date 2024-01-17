@@ -51,14 +51,6 @@
 
                     <h1 runat="server">General Information</h1>
 
-                    <Rock:JsonFieldsBuilder Label="JSON Fields Builder" ID="jfb" runat="server" />
-
-                    <br />
-                    <br />
-                    <br />
-
-                    <Rock:RockTextBox ID="jfbText" runat="server" TextMode="MultiLine" Rows="15" />
-
                     <h2 id="input-sizing">Input Sizing Rules</h2>
 
                     <div class="alert alert-warning">
