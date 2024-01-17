@@ -25,7 +25,7 @@ using Rock.Model;
 namespace Rock.Search
 {
     /// <summary>
-    ///
+    /// The base class for search components.
     /// </summary>
     [TextField( "Search Label", "The text to display in the search type dropdown", false, "Search" )]
     [TextField( "Result URL", "The URL to redirect user to after they have entered search text.  (use '{0}' for the search text)" )]
