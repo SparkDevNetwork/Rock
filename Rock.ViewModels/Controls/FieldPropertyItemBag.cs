@@ -14,34 +14,25 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Mobile.JsonFields
+
+using Rock.Enums.Controls;
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Controls
 {
     /// <summary>
-    /// Determines the field's format. This will be used to properly format the Json sent to the client.
-    /// This is copied to Rock.Enums/Controls/FieldFormat.cs. If any changes are made here,
+    /// POCO to store the settings for the fields.
+    /// This is copied from Rock/Mobile/JsonFields/FieldSetting.cs. If any changes are made here,
     /// they may need to be copied there as well.
     /// </summary>
-    public enum FieldFormat
+    public class FieldPropertyItemBag : ListItemBag
     {
         /// <summary>
-        /// The value will be formatted as a string.
+        /// Gets or sets the field source.
         /// </summary>
-        String = 0,
-
-        /// <summary>
-        /// The value will be formatted as a number.
-        /// </summary>
-        Number = 1,
-
-        /// <summary>
-        /// The value will be formatted as a datetime.
-        /// </summary>
-        Date = 2,
-
-        /// <summary>
-        /// The value will be formatted as a boolean.
-        /// </summary>
-        Boolean = 3
+        /// <value>
+        /// The field source.
+        /// </value>
+        public FieldFormat FieldFormat { get; set; }
     }
-
 }

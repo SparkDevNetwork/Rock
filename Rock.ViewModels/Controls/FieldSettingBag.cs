@@ -14,14 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Mobile.JsonFields
+
+using Rock.Enums.Controls;
+
+namespace Rock.ViewModels.Controls
 {
     /// <summary>
     /// POCO to store the settings for the fields.
-    /// This is copied to Rock.ViewModels/Controls/FieldSettingBag.cs. If any changes are made here,
+    /// This is copied from Rock/Mobile/JsonFields/FieldSetting.cs. If any changes are made here,
     /// they may need to be copied there as well.
     /// </summary>
-    public class FieldSetting
+    public class FieldSettingBag
     {
         /// <summary>
         /// Creates an identifier based off the key. This is used for grid operations.

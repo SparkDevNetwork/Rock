@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Mobile.JsonFields
+namespace Rock.Enums.Controls
 {
     /// <summary>
     /// Determines the field's format. This will be used to properly format the Json sent to the client.
-    /// This is copied to Rock.Enums/Controls/FieldFormat.cs. If any changes are made here,
+    /// This is copied from Rock/Mobile/JsonFields/FieldFormat.cs. If any changes are made here,
     /// they may need to be copied there as well.
     /// </summary>
     public enum FieldFormat
