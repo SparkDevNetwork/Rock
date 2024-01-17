@@ -360,6 +360,7 @@ namespace Rock.SystemKey
         /// </summary>
         public const string BIBLE_STRICT_SPOUSE = "core_BibleStrictSpouse";
 
+        /// <summary>
         /// The start date for the analytics calendar dimension.
         /// </summary>
         public const string ANALYTICS_CALENDAR_DIMENSION_START_DATE = "core_AnalyticsCalendarDimensionStartDate";

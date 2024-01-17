@@ -394,8 +394,6 @@
     <Compile Include="Rest\Controls\CaptchaControlValidateTokenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlTokenValidateTokenResultBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\TimeIntervalBag.cs" />
-    <Compile Include="Rest\Controls\CaptchaControlValidateTokenOptionsBag.cs" />
-    <Compile Include="Rest\Controls\CaptchaControlTokenValidateTokenResultBag.cs" />
     <Compile Include="Core\Grid\CustomActionBag.cs" />
     <Compile Include="Core\Grid\CustomColumnDefinitionBag.cs" />
     <Compile Include="Core\Grid\GridCommunicationBag.cs" />
