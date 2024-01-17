@@ -57,8 +57,16 @@ namespace Rock.RealTime.AspNet
         /// <param name="app">The application.</param>
         public static void Configure( IAppBuilder app )
         {
+            // Suppress SignalR "The remote host closed the connection" errors
+            // that make it to the global hub pipeline.
+            // This is unlikely to happen but adding just in case.
             GlobalHost.HubPipeline.AddModule( new SignalRErrorModule() );
-            app.MapSignalR();
+            
+            // Suppress SignalR "The remote host closed the connection" errors in the legacy SignalR pipeline.
+            var legacySignalRHubConfig = new HubConfiguration();
+            legacySignalRHubConfig.Resolver?.Resolve<IHubPipeline>()?.AddModule( new SignalRErrorModule() );
+
+            app.MapSignalR( legacySignalRHubConfig );
 
             /* 02/18/2022 MDP
              By default, Signal R will use reflection to find classes that inherit from Microsoft.AspNet.SignalR.
@@ -76,6 +84,9 @@ namespace Rock.RealTime.AspNet
             };
             rtHubConfiguration.Resolver.Register( typeof( IHubDescriptorProvider ), () => new RealTimeHubDescriptorProvider() );
             rtHubConfiguration.Resolver.Register( typeof( JsonSerializer ), () => CreateRealTimeSerializer() );
+            
+            // Suppress SignalR "The remote host closed the connection" errors in the Rock RealTime pipeline.
+            rtHubConfiguration.Resolver?.Resolve<IHubPipeline>()?.AddModule( new SignalRErrorModule() );
 
             var azureEndpoint = System.Configuration.ConfigurationManager.AppSettings["AzureSignalREndpoint"];
             var azureAccessKey = System.Configuration.ConfigurationManager.AppSettings["AzureSignalRAccessKey"];
