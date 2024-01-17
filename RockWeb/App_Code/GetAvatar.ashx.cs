@@ -154,6 +154,7 @@ namespace RockWeb
                 if ( ex.Message.IsNotNullOrWhiteSpace() && ex.Message.Contains( "The remote host closed the connection." ) )
                 {
                     // Ignore the exception
+                    context.ClearError();
                 }
                 else
                 {
