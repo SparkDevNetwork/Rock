@@ -80,7 +80,7 @@
     import Grid, { DeleteColumn, EditColumn, TextColumn } from "./grid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { FieldSettingBag } from "@Obsidian/ViewModels/Controls/fieldSettingBag";
+    import { FullFieldSettingBag } from "@Obsidian/ViewModels/Controls/fullFieldSettingBag";
     import { FieldPropertyItemBag } from "@Obsidian/ViewModels/Controls/fieldPropertyItemBag";
     import { FieldSource, FieldSourceDescription } from "@Obsidian/Enums/Controls/fieldSource";
     import { FieldFormat, FieldFormatDescription } from "@Obsidian/Enums/Controls/fieldFormat";
@@ -88,10 +88,6 @@
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { createHash } from "@Obsidian/Utility/stringUtils";
     import { toListItemBagList } from "@Obsidian/Utility/objectUtils";
-
-    type FullFieldSettingBag = Required<{
-        [Property in keyof FieldSettingBag]: NonNullable<FieldSettingBag[Property]>
-    }>;
 
     const props = defineProps({
         modelValue: {
@@ -274,7 +270,7 @@
     /**
      * Copy the values from the source FieldSettingBag to currentFieldSetting.
      */
-    function setCurrentFieldSetting(source: FieldSettingBag): void {
+    function setCurrentFieldSetting(source: FullFieldSettingBag): void {
         console.log("Copying this to currentFieldSetting", JSON.stringify(source, null, 4));
         Object.entries(source).forEach(([key, value]) => {
             // Don't copy the id, since it's a getter based on key

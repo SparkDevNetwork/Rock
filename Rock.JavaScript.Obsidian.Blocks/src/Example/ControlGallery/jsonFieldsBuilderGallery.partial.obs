@@ -28,9 +28,10 @@
     import GalleryAndResult from "./galleryAndResult.partial.obs";
     import JsonFieldsBuilder from "@Obsidian/Controls/jsonFieldsBuilder.obs";
     import { getSfcControlImportPath } from "./utils.partial";
-    import { FieldSettingBag } from "@Obsidian/ViewModels/Controls/fieldSettingBag";
+    import { FullFieldSettingBag } from "@Obsidian/ViewModels/Controls/fullFieldSettingBag";
+    import { FieldPropertyItemBag } from "@Obsidian/ViewModels/Controls/fieldPropertyItemBag";
 
-    const value = ref<FieldSettingBag[]>([
+    const value = ref<FullFieldSettingBag[]>([
         {
             id: 483800935,
             key: "Name",
@@ -69,7 +70,7 @@
         }
     ]);
 
-    const availableProperties = [
+    const availableProperties: FieldPropertyItemBag[] = [
         { text: "ArchivedByPersonAlias", value: "ArchivedByPersonAlias", fieldFormat: 0 },
         { text: "Attributes", value: "Attributes", fieldFormat: 0 },
         { text: "CreatedByPersonId", value: "CreatedByPersonId", fieldFormat: 1 },
