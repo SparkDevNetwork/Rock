@@ -1,13 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <li :class="listItemClass">
-        <i v-if="isFolder" :class="folderClass" @click.prevent.stop="onExpand"></i>
+        <i v-if="hasChildren" :class="folderClass" @click.prevent.stop="onExpand"></i>
         <span :class="itemNameClass" :title="itemName" @click.prevent.stop="onSelect">
             <i :class="itemIconClass"></i>
             {{ itemName }}
             <span class="label label-tree" v-if="showChildCount && item.childCount">{{ item.childCount }}</span>
         </span>
-        <ul v-if="hasChildren" v-show="showChildren" class="rocktree-children" v-for="child in children">
+        <ul v-if="hasChildrenLoaded" v-show="showChildren" class="rocktree-children" v-for="child in children">
             <treeListItem :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" />
         </ul>
     </li>
@@ -60,14 +60,17 @@
         (e: "treeitem-expanded", value: TreeItemBag): void;
     }>();
 
+    if (props.item.isFolder && !props.item.hasChildren)
+        console.log("Childless folder", props.item);
+
     /** The list of child items to this item. */
     const children = computed((): TreeItemBag[] => props.item.children ?? []);
 
-    /** Determines if we currently have any children to display. */
-    const hasChildren = computed((): boolean => children.value.length > 0);
+    /** Determines if we currently have any children loaded to display. */
+    const hasChildrenLoaded = computed((): boolean => children.value.length > 0);
 
-    /** Determines if this item is a folder that can contain children. */
-    const isFolder = computed((): boolean => props.item.isFolder && props.item.hasChildren);
+    /** Determines if this item has children, whether they're loaded or not. */
+    const hasChildren = computed((): boolean => props.item.hasChildren);
 
     /** The display name of the current item. */
     const itemName = computed((): string => props.item.text ?? "");
@@ -77,7 +80,7 @@
 
     /** The CSS class value to use for the list-item element. */
     const listItemClass = computed((): string => {
-        return isFolder.value ? "rocktree-item rocktree-folder" : "rocktree-item rocktree-leaf";
+        return hasChildren.value ? "rocktree-item rocktree-folder" : "rocktree-item rocktree-leaf";
     });
 
     /** The CSS class value to use for the folder icon. */
@@ -109,7 +112,7 @@
 
     // Automatically expand to show selected value deep in the tree
     watch(() => [props.item, props.modelValue], () => {
-        if (!props.autoExpand || hasChildren.value == false) {
+        if (!props.autoExpand || hasChildrenLoaded.value == false) {
             return;
         }
 
@@ -162,8 +165,8 @@
      * If something changes to make existing children no longer exist in the list,
      * unexpand this item
      */
-    watch(hasChildren, () => {
-        if (!hasChildren.value && showChildren.value) {
+    watch(hasChildrenLoaded, () => {
+        if (!hasChildrenLoaded.value && showChildren.value) {
             onExpand();
         }
     });
@@ -181,7 +184,7 @@
      * Event handler for when this item is selected or deselected.
      */
     function onSelect(): void {
-        if (isFolder.value && props.disableFolderSelection) {
+        if (props.item.isFolder && props.disableFolderSelection) {
             return;
         }
 
