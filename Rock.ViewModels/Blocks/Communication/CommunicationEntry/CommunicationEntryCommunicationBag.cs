@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Rock.Enums.Blocks.Communication.CommunicationEntry;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
 {
@@ -188,12 +189,12 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         public string SMSMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the email attachment binary file ids.
+        /// Gets or sets the email attachment binary files.
         /// </summary>
         /// <value>
-        /// The email attachment binary file ids.
+        /// The email attachment binary files.
         /// </value>
-        public List<Guid> EmailAttachmentBinaryFileGuids { get; set; }
+        public List<ListItemBag> EmailAttachmentBinaryFiles { get; set; }
 
         /// <summary>
         /// Gets or sets the future send date time.

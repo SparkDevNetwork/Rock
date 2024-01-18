@@ -32,6 +32,7 @@ using Rock.Tasks;
 using Rock.Utility;
 using Rock.ViewModels.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationEntry;
+using Rock.Net;
 
 namespace Rock.Blocks.Communication
 {
@@ -356,10 +357,14 @@ namespace Rock.Blocks.Communication
                         CreatedByPersonAlias = currentPerson.PrimaryAlias,
                         CreatedByPersonAliasId = currentPerson.PrimaryAliasId,
                         SenderPersonAlias = currentPerson.PrimaryAlias,
-                        SenderPersonAliasId = currentPerson.PrimaryAliasId,
-                        Guid = Guid.Empty
+                        SenderPersonAliasId = currentPerson.PrimaryAliasId
                     };
                 }
+                else
+                {
+                    // Load the communication attachments.
+                    communication.GetAttachments( communication.CommunicationType );
+                } 
 
                 // If viewing a new, transient, draft, or are the approver of a pending-approval communication, then use this block;
                 // otherwise, set this block visible=false and if there is a communication detail block on this page, it'll be shown instead.
@@ -548,6 +553,20 @@ namespace Rock.Blocks.Communication
         #endregion
 
         #region Events
+
+        [BlockAction( "GetTemplate" )]
+        public BlockActionResult GetTemplate( Guid templateGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var template = new CommunicationTemplateService( rockContext ).Get( templateGuid );
+                var bag = new CommunicationEntryCommunicationBag();
+                var copyTarget = new CommunicationDetailsAdapter( bag, rockContext );
+                CommunicationEntryHelper.CopyTemplate( template, copyTarget, this.RequestContext );
+
+                return ActionOk( bag );
+            }
+        }
 
         //protected void ddlTemplate_SelectedIndexChanged( object sender, EventArgs e )
         //{
@@ -1045,12 +1064,12 @@ namespace Rock.Blocks.Communication
             public void OnCommunicationSave( RockContext rockContext, CommunicationEntryCommunicationBag communication )
             {
                 // On saving the email communication, mark all the file attachments as not temporary.
-                var binaryFileIds = communication.EmailAttachmentBinaryFileGuids.ToList();
-                if ( binaryFileIds.Any() )
+                var binaryFileGuids = communication.EmailAttachmentBinaryFiles.Select( bf => bf.Value.AsGuid() ).Where( g => !g.IsEmpty() ).ToList();
+                if ( binaryFileGuids.Any() )
                 {
                     var binaryFilesQuery = new BinaryFileService( rockContext )
                         .Queryable()
-                        .Where( f => binaryFileIds.Contains( f.Guid ) );
+                        .Where( f => binaryFileGuids.Contains( f.Guid ) );
                     foreach( var binaryFile in binaryFilesQuery )
                     {
                         binaryFile.IsTemporary = false;
@@ -1258,7 +1277,7 @@ namespace Rock.Blocks.Communication
             return ConvertToBags( GetRecipientQuery( rockContext, options ) );
         }
 
-        private IQueryable<CommunicationEntryRecipientData> GetRecipientQuery( RockContext rockContext, RecipientQueryOptions options )
+        private IQueryable<CommunicationEntryRecipientDto> GetRecipientQuery( RockContext rockContext, RecipientQueryOptions options )
         {
             var mobilePhoneDefinedValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             var personalDeviceQuery = new PersonalDeviceService( rockContext ).Queryable().AsNoTracking();
@@ -1291,7 +1310,7 @@ namespace Rock.Blocks.Communication
                     personAlias.Person,
                     MobilePhone = personAlias.Person.PhoneNumbers.FirstOrDefault( phoneNumber => phoneNumber.NumberTypeValueId.HasValue && phoneNumber.NumberTypeValueId.Value == mobilePhoneDefinedValueId ),
                 } )
-                .Select( personAlias => new CommunicationEntryRecipientData
+                .Select( personAlias => new CommunicationEntryRecipientDto
                 {
                     MobilePhone = personAlias.MobilePhone,
                     Person = personAlias.Person,
@@ -1314,9 +1333,9 @@ namespace Rock.Blocks.Communication
                 } );
         }
 
-        private List<CommunicationEntryRecipientBag> ConvertToBags( IEnumerable<CommunicationEntryRecipientData> dataEntries )
+        private List<CommunicationEntryRecipientBag> ConvertToBags( IEnumerable<CommunicationEntryRecipientDto> dataEntries )
         {
-            CommunicationEntryRecipientBag ConvertToBag( CommunicationEntryRecipientData data )
+            CommunicationEntryRecipientBag ConvertToBag( CommunicationEntryRecipientDto data )
             {
                 var recipient = data.Recipient;
                 var person = data.Person;
@@ -1341,15 +1360,6 @@ namespace Rock.Blocks.Communication
             }
 
             return ConvertAll().ToList();
-        }
-
-        private class CommunicationEntryRecipientData
-        {
-            public Person Person { get; set; }
-
-            public CommunicationEntryRecipientBag Recipient { get; set; }
-
-            public PhoneNumber MobilePhone { get; set; }
         }
 
         /// <summary>
@@ -1466,8 +1476,8 @@ namespace Rock.Blocks.Communication
             };
 
             // Copy the rest of the communication details.
-            var communicationCopyTarget = new CommunicationDetailsWrapper( box.Communication, rockContext );
-            CommunicationDetails.Copy( communication, communicationCopyTarget );
+            var communicationCopyTarget = new CommunicationDetailsAdapter( box.Communication, rockContext );
+            CommunicationEntryHelper.Copy( communication, communicationCopyTarget );
 
             // Get medium options.
             box.MediumOptions = GetMediumOptions( box.Communication.MediumEntityTypeGuid, sender );
@@ -1478,37 +1488,7 @@ namespace Rock.Blocks.Communication
                 // Only override if the template is one of the available templates.
                 if ( box.MediumOptions?.Templates?.Any( t => t.Value.AsGuid() == template.Guid ) == true )
                 {
-                    // Save what was entered for FromEmail and FromName in case the template blanks it out.
-                    var enteredFromEmail = box.Communication.FromEmail;
-                    var enteredFromName = box.Communication.FromName;
-                    
-                    CommunicationDetails.Copy( template, communicationCopyTarget );
-                    communication.FromName = template.FromName.ResolveMergeFields( RequestContext.GetCommonMergeFields() );
-                    communication.FromEmail = template.FromEmail.ResolveMergeFields( RequestContext.GetCommonMergeFields() );
-                    
-                    // if the FromName was cleared by the template, use the one that was there before the template was changed (similar logic to CommunicationEntryWizard)
-                    // Otherwise, if the template does have a FromName, we want to template's FromName to overwrite it (which CommunicationDetails.Copy already did)
-                    if ( box.Communication.FromName.IsNullOrWhiteSpace() )
-                    {
-                        box.Communication.FromName = enteredFromName;
-                    }
-
-                    // if the FromEmail was cleared by the template, use the one that was there before the template was changed (similar logic to CommunicationEntryWizard)
-                    // Otherwise, if the template does have a FromEmail, we want to template's fromemail to overwrite it (which CommunicationDetails.Copy already did)
-                    if ( box.Communication.FromEmail.IsNullOrWhiteSpace() )
-                    {
-                        box.Communication.FromEmail = enteredFromEmail;
-                    }
-
-                    var templateEmailAttachmentBinaryFileIds = template.EmailAttachmentBinaryFileIds?.ToList();
-                    if ( templateEmailAttachmentBinaryFileIds?.Any() == true )
-                    {
-                        box.Communication.EmailAttachmentBinaryFileGuids = new BinaryFileService( rockContext )
-                            .Queryable()
-                            .Where( bf => templateEmailAttachmentBinaryFileIds.Contains( bf.Id ) )
-                            .Select( bf => bf.Guid )
-                            .ToList();
-                    }
+                    CommunicationEntryHelper.CopyTemplate( template, communicationCopyTarget, this.RequestContext );
                 }
             }
         }
@@ -1870,74 +1850,6 @@ namespace Rock.Blocks.Communication
         //    return approvalRequired;
         //}
 
-        public class CommunicationDetailsWrapper : ICommunicationDetails
-        {
-            private readonly CommunicationEntryCommunicationBag _bag;
-            private readonly RockContext _rockContext;
-
-            public CommunicationDetailsWrapper( CommunicationEntryCommunicationBag bag, RockContext rockContext )
-            {
-                _bag = bag ?? throw new ArgumentNullException( nameof( bag ) );
-                _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
-            }
-
-            public Guid CommunicationGuid { get => _bag.CommunicationGuid; set => _bag.CommunicationGuid = value; }
-            public Guid MediumEntityTypeGuid { get => _bag.MediumEntityTypeGuid; set => _bag.MediumEntityTypeGuid = value; }
-            public Guid? CommunicationTemplateGuid { get => _bag.CommunicationTemplateGuid; set => _bag.CommunicationTemplateGuid = value; }
-            public bool IsBulkCommunication { get => _bag.IsBulkCommunication; set => _bag.IsBulkCommunication = value; }
-            public string FromName { get => _bag.FromName; set => _bag.FromName = value; }
-            public string FromEmail { get => _bag.FromEmail; set => _bag.FromEmail = value; }
-            public string ReplyToEmail { get => _bag.ReplyToEmail; set => _bag.ReplyToEmail = value; }
-            public string CCEmails { get => _bag.CCEmails; set => _bag.CCEmails = value; }
-            public string BCCEmails { get => _bag.BCCEmails; set => _bag.BCCEmails = value; }
-            public string Subject { get => _bag.Subject; set => _bag.Subject = value; }
-            public string Message { get => _bag.Message; set => _bag.Message = value; }
-            public string MessageMetaData { get => _bag.MessageMetaData; set => _bag.MessageMetaData = value; }
-            public string PushTitle { get => _bag.PushTitle; set => _bag.PushTitle = value; }
-            public string PushMessage { get => _bag.PushMessage; set => _bag.PushMessage = value; }
-            public string PushSound { get => _bag.PushSound; set => _bag.PushSound = value; }
-            public string PushData { get => _bag.PushData; set => _bag.PushData = value; }
-            public int? PushImageBinaryFileId { get => _bag.PushImageBinaryFileId; set => _bag.PushImageBinaryFileId = value; }
-            public PushOpenAction? PushOpenAction
-            {
-                get
-                {
-                    return _bag.PushOpenAction.HasValue
-                        ? ( PushOpenAction ) ( int ) _bag.PushOpenAction.Value
-                        : ( PushOpenAction? ) null;
-                }
-                set
-                {
-                    _bag.PushOpenAction = value.HasValue
-                        ? ( PushOpenActionType ) ( int ) value.Value
-                        : ( PushOpenActionType? ) null;
-                }
-            }
-            public string PushOpenMessage { get => _bag.PushOpenMessage; set => _bag.PushOpenMessage = value; }
-            public int? SmsFromSystemPhoneNumberId { get => _bag.SmsFromSystemPhoneNumberId; set => _bag.SmsFromSystemPhoneNumberId = value; }
-            public string SMSMessage { get => _bag.SMSMessage; set => _bag.SMSMessage = value; }
-
-            private List<int> _emailAttachmentBinaryFileIds { get; set; }
-            public IEnumerable<int> EmailAttachmentBinaryFileIds
-            {
-                get => _emailAttachmentBinaryFileIds;
-                set
-                {
-                    _emailAttachmentBinaryFileIds = value?.ToList();
-                    // Update the BinaryFile Guids whenever the IDs are updated.
-                    _bag.EmailAttachmentBinaryFileGuids = new BinaryFileService( _rockContext )
-                        .Queryable()
-                        .Where( bf => _emailAttachmentBinaryFileIds.Contains( bf.Id ) )
-                        .Select( bf => bf.Guid )
-                        .ToList();
-                }
-            }
-            public DateTimeOffset? FutureSendDateTime { get => _bag.FutureSendDateTime; set => _bag.FutureSendDateTime = value; }
-            public int? SMSFromDefinedValueId { get => _bag.SMSFromDefinedValueId; set => _bag.SMSFromDefinedValueId = value; }
-            public IEnumerable<int> SMSAttachmentBinaryFileIds { get => _bag.SMSAttachmentBinaryFileIds; set => _bag.SMSAttachmentBinaryFileIds = value?.ToList(); }
-            public CommunicationStatus Status { get => _bag.Status; set => _bag.Status = value; }
-        }
-
         private Lazy<T> CreateLazy<T>( Func<T> lazyInitializer )
         {
             return new Lazy<T>( lazyInitializer );
@@ -1989,6 +1901,8 @@ namespace Rock.Blocks.Communication
             }
             else
             {
+                communication.GetAttachments( communication.CommunicationType );
+
                 // Remove any deleted recipients.                
                 foreach ( var currentRecipient in currentRecipients.Value )
                 {
@@ -2038,11 +1952,11 @@ namespace Rock.Blocks.Communication
             }
 
             // Copy the communication data in the request to the Communication object.
-            CommunicationDetails.Copy( new CommunicationDetailsWrapper( bag, rockContext ), communication );
+            CommunicationDetails.Copy( new CommunicationDetailsAdapter( bag, rockContext ), communication );
 
             // delete any attachments that are no longer included
             // TODO JMH Does the bag have Guids? If so, we need to map the Communication ids to Guids or vice-versa.
-            foreach ( var attachment in communication.Attachments.Where( a => !bag.EmailAttachmentBinaryFileGuids.Contains( a.BinaryFile.Guid ) ).ToList() )
+            foreach ( var attachment in communication.Attachments.Where( a => !bag.EmailAttachmentBinaryFiles.Any( bagFile => bagFile.Value.AsGuid() == a.BinaryFile.Guid ) ).ToList() )
             {
                 communication.Attachments.Remove( attachment );
                 communicationAttachmentService.Delete( attachment );
@@ -2050,9 +1964,25 @@ namespace Rock.Blocks.Communication
 
             // add any new attachments that were added
             // TODO JMH Does the bag have Guids? If so, we need to map the Communication ids to Guids or vice-versa.
-            foreach ( var attachmentBinaryFileId in bag.EmailAttachmentBinaryFileGuids.Select( a => communication.Attachments.FirstOrDefault( x => x.BinaryFile.Guid == a ) ).Where( a => a != null ).Select( a => a.Id ) )
+            if ( bag.EmailAttachmentBinaryFiles?.Any() == true )
             {
-                communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId }, CommunicationType.Email );
+                var guids = bag.EmailAttachmentBinaryFiles.Select( bf => bf.Value.AsGuid() ).Where( g => !g.IsEmpty() ).ToList();
+                var attachmentIdMap = new BinaryFileService( rockContext )
+                    .Queryable()
+                    .Where( b => guids.Contains( b.Guid ) )
+                    .Select( b => new
+                    {
+                        b.Id,
+                        b.Guid
+                    } )
+                    .ToDictionary( a => a.Guid, a => a.Id );
+                foreach ( var attachmentBinaryFileId in attachmentIdMap )
+                {
+                    if ( !communication.Attachments.Any( x => x.BinaryFileId == attachmentBinaryFileId.Value ) )
+                    {
+                        communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId.Value }, CommunicationType.Email );
+                    }
+                }
             }
 
             var futureSendDate = bag.FutureSendDateTime;
@@ -2109,6 +2039,205 @@ namespace Rock.Blocks.Communication
         //        true );
 
         //}
+
+        #endregion
+
+        #region Helper Classes
+
+        private interface ICommunicationAttachments
+        {
+            IEnumerable<AttachmentDto> Attachments { get; set; }
+
+            void SetAttachments( IEnumerable<int> binaryFileIds );
+        }
+
+        private static class CommunicationEntryHelper
+        {
+            public static void Copy( ICommunicationDetails source, ICommunicationDetails target )
+            {
+                CommunicationDetails.Copy( source, target );
+
+                if ( target is ICommunicationAttachments attachmentsTarget )
+                {
+                    attachmentsTarget.SetAttachments( source.EmailAttachmentBinaryFileIds );
+                }
+            }
+
+            // TODO JMH Is this needed?? Do we only need a method that converts a CommunicationTemplate to a CommunicationEntryCommunicationBag?
+            public static void CopyTemplate( CommunicationTemplate source, ICommunicationDetails target, RockRequestContext requestContext )
+            {
+                // Save what was entered for FromEmail and FromName in case the template blanks it out.
+                var originalFromEmail = target.FromEmail;
+                var originalFromName = target.FromName;
+                
+                Copy( source, target );
+
+                // Resolve lava-enabled fields from the template.
+                target.FromName = source.FromName.ResolveMergeFields( requestContext.GetCommonMergeFields() );
+                target.FromEmail = source.FromEmail.ResolveMergeFields( requestContext.GetCommonMergeFields() );
+                    
+                // If FromName was cleared by the template,
+                // then use the original value (similar logic to CommunicationEntryWizard).
+                if ( target.FromName.IsNullOrWhiteSpace() )
+                {
+                    target.FromName = originalFromName;
+                }
+
+                // If FromEmail was cleared by the template,
+                // then use the original value (similar logic to CommunicationEntryWizard).
+                if ( target.FromEmail.IsNullOrWhiteSpace() )
+                {
+                    target.FromEmail = originalFromEmail;
+                }
+            }
+        }
+
+        private static class AttachmentHelper
+        {
+            public static List<AttachmentDto> GetAttachments( RockContext rockContext, IEnumerable<int> binaryFileIds )
+            {
+                var query = new BinaryFileService( rockContext )
+                    .Queryable()
+                    .Where( bf => binaryFileIds.Contains( bf.Id ) );
+
+                return GetAttachments( query );
+            }
+
+            public static List<AttachmentDto> GetAttachments( RockContext rockContext, IEnumerable<Guid> binaryFileGuids )
+            {
+                var query = new BinaryFileService( rockContext )
+                   .Queryable()
+                   .Where( bf => binaryFileGuids.Contains( bf.Guid ) );
+
+                return GetAttachments( query );
+            }
+
+            public static List<AttachmentDto> GetAttachments( IQueryable<BinaryFile> binaryFileQuery )
+            {
+                return binaryFileQuery?
+                    .Select( bf => new AttachmentDto
+                    {
+                        Id = bf.Id,
+                        Guid = bf.Guid,
+                        FileName = bf.FileName
+                    } )
+                    .ToList();
+            }
+
+            public static List<ListItemBag> ToListItemBags( IEnumerable<AttachmentDto> attachmentDtos )
+            {
+                return attachmentDtos?.Select( s => new ListItemBag
+                    {
+                        Text = s.FileName,
+                        Value = s.Guid.ToString()
+                    } )
+                    .ToList();
+            }
+        }
+
+        private class AttachmentDto
+        {
+            public int Id { get; set; }
+
+            public Guid Guid { get; set; }
+
+            public string FileName { get; set; }
+
+            public ListItemBag ToListItemBag()
+            {
+                return new ListItemBag
+                {
+                    Text = FileName,
+                    Value = Guid.ToString()
+                };
+            }
+        }
+
+        private class CommunicationEntryRecipientDto
+        {
+            public Person Person { get; set; }
+
+            public CommunicationEntryRecipientBag Recipient { get; set; }
+
+            public PhoneNumber MobilePhone { get; set; }
+        }
+
+        /// <summary>
+        /// Adapts a communication bag to an ICommunicationDetails instance.
+        /// </summary>
+        /// <seealso cref="Rock.Communication.ICommunicationDetails" />
+        private class CommunicationDetailsAdapter : ICommunicationDetails, ICommunicationAttachments
+        {
+            private readonly CommunicationEntryCommunicationBag _bag;
+            private readonly RockContext _rockContext;
+
+            public CommunicationDetailsAdapter( CommunicationEntryCommunicationBag bag, RockContext rockContext )
+            {
+                _bag = bag ?? throw new ArgumentNullException( nameof( bag ) );
+                _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
+            }
+
+            public Guid CommunicationGuid { get => _bag.CommunicationGuid; set => _bag.CommunicationGuid = value; }
+            public Guid MediumEntityTypeGuid { get => _bag.MediumEntityTypeGuid; set => _bag.MediumEntityTypeGuid = value; }
+            public Guid? CommunicationTemplateGuid { get => _bag.CommunicationTemplateGuid; set => _bag.CommunicationTemplateGuid = value; }
+            public bool IsBulkCommunication { get => _bag.IsBulkCommunication; set => _bag.IsBulkCommunication = value; }
+            public string FromName { get => _bag.FromName; set => _bag.FromName = value; }
+            public string FromEmail { get => _bag.FromEmail; set => _bag.FromEmail = value; }
+            public string ReplyToEmail { get => _bag.ReplyToEmail; set => _bag.ReplyToEmail = value; }
+            public string CCEmails { get => _bag.CCEmails; set => _bag.CCEmails = value; }
+            public string BCCEmails { get => _bag.BCCEmails; set => _bag.BCCEmails = value; }
+            public string Subject { get => _bag.Subject; set => _bag.Subject = value; }
+            public string Message { get => _bag.Message; set => _bag.Message = value; }
+            public string MessageMetaData { get => _bag.MessageMetaData; set => _bag.MessageMetaData = value; }
+            public string PushTitle { get => _bag.PushTitle; set => _bag.PushTitle = value; }
+            public string PushMessage { get => _bag.PushMessage; set => _bag.PushMessage = value; }
+            public string PushSound { get => _bag.PushSound; set => _bag.PushSound = value; }
+            public string PushData { get => _bag.PushData; set => _bag.PushData = value; }
+            public int? PushImageBinaryFileId { get => _bag.PushImageBinaryFileId; set => _bag.PushImageBinaryFileId = value; }
+            public PushOpenAction? PushOpenAction
+            {
+                get
+                {
+                    return _bag.PushOpenAction.HasValue
+                        ? ( PushOpenAction ) ( int ) _bag.PushOpenAction.Value
+                        : ( PushOpenAction? ) null;
+                }
+                set
+                {
+                    _bag.PushOpenAction = value.HasValue
+                        ? ( PushOpenActionType ) ( int ) value.Value
+                        : ( PushOpenActionType? ) null;
+                }
+            }
+            public string PushOpenMessage { get => _bag.PushOpenMessage; set => _bag.PushOpenMessage = value; }
+            public int? SmsFromSystemPhoneNumberId { get => _bag.SmsFromSystemPhoneNumberId; set => _bag.SmsFromSystemPhoneNumberId = value; }
+            public string SMSMessage { get => _bag.SMSMessage; set => _bag.SMSMessage = value; }
+
+            public IEnumerable<AttachmentDto> Attachments
+            {
+                get
+                {
+                    // Convert the bag data to attachments.
+                    return AttachmentHelper.GetAttachments( _rockContext, _bag.EmailAttachmentBinaryFiles?.Select( b => b.Value.AsGuid() ).Where( g => !g.IsEmpty() ) );
+                }
+                set
+                {
+                    // Update the binary files in the bag from the attachments.
+                    _bag.EmailAttachmentBinaryFiles = AttachmentHelper.ToListItemBags( value );
+                }
+            }
+            public IEnumerable<int> EmailAttachmentBinaryFileIds { get => this.Attachments?.Select( a => a.Id ); }
+            public DateTimeOffset? FutureSendDateTime { get => _bag.FutureSendDateTime; set => _bag.FutureSendDateTime = value; }
+            public int? SMSFromDefinedValueId { get => _bag.SMSFromDefinedValueId; set => _bag.SMSFromDefinedValueId = value; }
+            public IEnumerable<int> SMSAttachmentBinaryFileIds { get => _bag.SMSAttachmentBinaryFileIds; set => _bag.SMSAttachmentBinaryFileIds = value?.ToList(); }
+            public CommunicationStatus Status { get => _bag.Status; set => _bag.Status = value; }
+
+            /// <inheritdoc/>
+            public void SetAttachments( IEnumerable<int> binaryFileIds )
+            {
+                this.Attachments = AttachmentHelper.GetAttachments( _rockContext, binaryFileIds );
+            }
+        }
 
         #endregion
     }

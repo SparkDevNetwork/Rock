@@ -238,7 +238,7 @@
 
     const internalDisabled = useVModelPassthrough(props, "disabled", emit);
     const recipients = ref<CommunicationEntryRecipientBag[]>(props.communication?.recipients ?? []);
-    const attachments = ref<ListItemBag[]>(/* TODO JMH props.communication?.emailAttachmentBinaryFileIds */[]);
+    const attachments = ref<ListItemBag[]>(props.communication?.emailAttachmentBinaryFiles ?? []);
     const internalIsBulkCommunication = ref<boolean>(!!props.communication?.isBulkCommunication);
     const templateGuid = ref<string>(props.communication?.communicationTemplateGuid ?? "");
     const fromName = ref<string>(props.communication?.fromName ?? "");
@@ -704,6 +704,26 @@
         flush: "post"
     });
 
+    // Populate fields whenever the template is changed.
+    watchEffect(async () => {
+        if (templateGuid.value) {
+            console.log(`Template changed: ${templateGuid.value}`);
+
+            const result = await invokeBlockAction<CommunicationEntryCommunicationBag>("GetTemplate", { templateGuid: templateGuid.value });
+
+            if (result.isError || !result.data) {
+                emit("error", result.errorMessage || "An error occurred while getting the template.");
+            }
+            else {
+                debugger;
+            }
+        }
+    }, {
+        flush: "post"
+    });
+
+    //#endregion
+
     /** Load the options if they haven't been loaded yet. */
     onMounted(async () => {
         if (options.value) {
@@ -729,6 +749,4 @@
             fromName.value = options.value.fromName ?? "";
         }
     });
-
-    //#endregion
 </script>

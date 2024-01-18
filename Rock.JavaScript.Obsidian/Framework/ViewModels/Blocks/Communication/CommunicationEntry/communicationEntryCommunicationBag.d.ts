@@ -25,6 +25,7 @@ import { PushOpenActionType } from "@Obsidian/Enums/Blocks/Communication/Communi
 import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
 import { Guid } from "@Obsidian/Types";
 import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Bag containing the communication information for the Communication Entry block. */
 export type CommunicationEntryCommunicationBag = {
@@ -40,8 +41,8 @@ export type CommunicationEntryCommunicationBag = {
     /** Gets or sets the communication template unique identifier. */
     communicationTemplateGuid?: Guid | null;
 
-    /** Gets or sets the email attachment binary file ids. */
-    emailAttachmentBinaryFileGuids?: Guid[] | null;
+    /** Gets or sets the email attachment binary files. */
+    emailAttachmentBinaryFiles?: ListItemBag[] | null;
 
     /** Gets or sets from email. */
     fromEmail?: string | null;
