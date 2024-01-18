@@ -37,6 +37,9 @@ export type FinancialBatchDetailOptionsBag = {
     /** The message to be displayed if the batch is not editable. */
     editModeMessage?: string | null;
 
+    /** Whether the Account Totals section is configured to be hidden. */
+    isAccountTotalsHidden: boolean;
+
     /**
      * Motive: a user who does not have the ReopenBatch permission should not be able to open a batch
      * once closed even if they themselves were the ones who closed it.
@@ -52,7 +55,4 @@ export type FinancialBatchDetailOptionsBag = {
 
     /** Gets or sets the transaction item count. */
     transactionItemCount: number;
-
-    /** Gets or sets the value of the flag for whether the account totals section is hidden or not.*/
-    isAccountTotalsHidden: boolean;
 };
