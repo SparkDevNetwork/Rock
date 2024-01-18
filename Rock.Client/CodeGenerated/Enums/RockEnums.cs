@@ -1181,6 +1181,102 @@ namespace Rock.Client.Enums.Event
 
 }
 
+namespace Rock.Client.Enums.Controls
+{
+    /// <summary>
+    /// </summary>
+    public enum AttributeFormat
+    {
+        FriendlyValue = 0x0,
+        RawValue = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum DayOfWeek
+    {
+        Sunday = 0x0,
+        Monday = 0x1,
+        Tuesday = 0x2,
+        Wednesday = 0x3,
+        Thursday = 0x4,
+        Friday = 0x5,
+        Saturday = 0x6,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum FieldFormat
+    {
+        String = 0x0,
+        Number = 0x1,
+        Date = 0x2,
+        Boolean = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum FieldSource
+    {
+        Property = 0x0,
+        Attribute = 0x1,
+        LavaExpression = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MediaSelectorMode
+    {
+        Image = 0x0,
+        Audio = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MergeTemplateOwnership
+    {
+        Global = 0x0,
+        Personal = 0x1,
+        PersonalAndGlobal = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum RequirementLevel
+    {
+        Unspecified = 0x0,
+        Optional = 0x1,
+        Required = 0x2,
+        Unavailable = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    [Flags]
+    public enum SlidingDateRangeType
+    {
+        Last = 0x0,
+        Current = 0x1,
+        DateRange = 0x2,
+        Previous = 0x4,
+        Next = 0x8,
+        Upcoming = 0x10,
+        All = -1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum TimeUnitType
+    {
+        Hour = 0x0,
+        Day = 0x1,
+        Week = 0x2,
+        Month = 0x3,
+        Year = 0x4,
+    }
+
+}
+
 namespace Rock.Client.Enums.Core.Grid
 {
     /// <summary>
@@ -1423,75 +1519,6 @@ namespace Rock.Client.Enums.Net
     {
         Header = 0x0,
         Footer = 0x1,
-    }
-
-}
-
-namespace Rock.Client.Enums.Controls
-{
-    /// <summary>
-    /// </summary>
-    public enum DayOfWeek
-    {
-        Sunday = 0x0,
-        Monday = 0x1,
-        Tuesday = 0x2,
-        Wednesday = 0x3,
-        Thursday = 0x4,
-        Friday = 0x5,
-        Saturday = 0x6,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum MediaSelectorMode
-    {
-        Image = 0x0,
-        Audio = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum MergeTemplateOwnership
-    {
-        Global = 0x0,
-        Personal = 0x1,
-        PersonalAndGlobal = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum RequirementLevel
-    {
-        Unspecified = 0x0,
-        Optional = 0x1,
-        Required = 0x2,
-        Unavailable = 0x3,
-    }
-
-    /// <summary>
-    /// </summary>
-    [Flags]
-    public enum SlidingDateRangeType
-    {
-        Last = 0x0,
-        Current = 0x1,
-        DateRange = 0x2,
-        Previous = 0x4,
-        Next = 0x8,
-        Upcoming = 0x10,
-        All = -1,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum TimeUnitType
-    {
-        Hour = 0x0,
-        Day = 0x1,
-        Week = 0x2,
-        Month = 0x3,
-        Year = 0x4,
     }
 
 }
