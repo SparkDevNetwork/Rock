@@ -551,6 +551,7 @@
     <TypeScriptCompile Include="Framework\Enums\Engagement\streakStructureType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\attendanceGraphBy.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\attendanceStatus.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Event\checkInStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperienceApprovalStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperienceCampusBehavior.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperiencePushNotificationType.ts" />

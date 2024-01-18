@@ -773,7 +773,9 @@ namespace Rock.Web.Cache
             AllowIndexing = page.AllowIndexing;
             BodyCssClass = page.BodyCssClass;
             IconBinaryFileId = page.IconBinaryFileId;
+#pragma warning disable CS0618
             AdditionalSettings = page.AdditionalSettings;
+#pragma warning restore CS0618
             MedianPageLoadTimeDurationSeconds = page.MedianPageLoadTimeDurationSeconds;
             RateLimitPeriod = page.RateLimitPeriod;
             RateLimitRequestPerPeriod = page.RateLimitRequestPerPeriod;

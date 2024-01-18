@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Rest.Controls
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class CaptchaControlValidateTokenOptionsBag
     {
         /// <summary>
