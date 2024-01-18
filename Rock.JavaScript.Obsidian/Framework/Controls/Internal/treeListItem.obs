@@ -60,9 +60,6 @@
         (e: "treeitem-expanded", value: TreeItemBag): void;
     }>();
 
-    if (props.item.isFolder && !props.item.hasChildren)
-        console.log("Childless folder", props.item);
-
     /** The list of child items to this item. */
     const children = computed((): TreeItemBag[] => props.item.children ?? []);
 
