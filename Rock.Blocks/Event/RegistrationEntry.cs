@@ -4601,7 +4601,7 @@ namespace Rock.Blocks.Event
 
             public Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
-            public Dictionary<string, string> AttributeValueDefaults => throw new NotImplementedException();
+            public Dictionary<string, string> AttributeValueDefaults => null;
 
             public string GetAttributeValue( string key )
             {
