@@ -20,7 +20,7 @@ namespace Rock.Plugin.HotFixes
     /// Plug-in migration
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 193, "1.16.3" )]
+    [MigrationNumber( 194, "1.16.3" )]
     public class MigratoinRollupForV17_0_3 : Migration
     {
         /// <summary>
