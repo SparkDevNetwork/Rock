@@ -119,13 +119,6 @@ namespace RockWeb.Blocks.Finance
         {
             Person targetPerson = CurrentPerson;
 
-            if ( targetPerson == null )
-            {
-                Response.StatusCode = ( int ) HttpStatusCode.BadRequest;
-                Response.Write( "Invalid Person" );
-                Response.End();
-            }
-
             RockContext rockContext = new RockContext();
                         
             var statementYear = PageParameter( PageParameterKey.StatementYear ).AsIntegerOrNull() ?? RockDateTime.Now.Year;
@@ -156,6 +149,13 @@ namespace RockWeb.Blocks.Finance
                         targetPerson = person;
                     }
                 }
+            }
+
+            if ( targetPerson == null )
+            {
+                Response.StatusCode = ( int ) HttpStatusCode.BadRequest;
+                Response.Write( "Invalid Person" );
+                Response.End();
             }
 
             FinancialStatementGeneratorOptions financialStatementGeneratorOptions = new FinancialStatementGeneratorOptions();

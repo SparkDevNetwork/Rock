@@ -1143,6 +1143,17 @@ namespace Rock.Client.Enums.Event
 
     /// <summary>
     /// </summary>
+    public enum CheckInStatus
+    {
+        Unknown = 0x0,
+        Pending = 0x1,
+        NotPresent = 0x2,
+        Present = 0x3,
+        CheckedOut = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum InteractiveExperienceApprovalStatus
     {
         Pending = 0x0,
@@ -1650,6 +1661,7 @@ namespace Rock.Client.Enums.Blocks.Security.ForgotUserName
         InstructionsSent = 0x0,
         EmailInvalid = 0x1,
         ChangePasswordNotSupported = 0x2,
+        CaptchaInvalid = 0x3,
     }
 
 }
