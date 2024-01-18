@@ -123,7 +123,7 @@ namespace Rock.Observability
         /// Configures the observability TraceProvider and passes back a reference to it.
         /// </summary>
         /// <returns></returns>
-        public static void ConfigureObservability( bool isRockStartup = false )
+        public static TracerProvider ConfigureObservability( bool isRockStartup = false )
         {
             // Configure the trace provider
             ConfigureTraceProvider();
@@ -138,13 +138,15 @@ namespace Rock.Observability
             }
 
             ConfigureLogExporter();
+
+            return _currentTracerProvider;
         }
 
         /// <summary>
         /// Configures the trace provider.
         /// </summary>
         /// <returns></returns>
-        public static void ConfigureTraceProvider()
+        public static TracerProvider ConfigureTraceProvider()
         {
             // Determine if a trace provider is already configured.
             var traceProviderPreviouslyConfigured = _currentTracerProvider != null;
@@ -187,13 +189,14 @@ namespace Rock.Observability
                     RockActivitySource.RefreshActivitySource();
                 }
             }
+            return _currentTracerProvider;
         }
 
         /// <summary>
         /// Configures and returns a meter provider
         /// </summary>
         /// <returns></returns>
-        public static void ConfigureMeterProvider()
+        public static MeterProvider ConfigureMeterProvider()
         {
             // Clear out the current trace provider
             _currentMeterProvider?.Dispose();
@@ -236,6 +239,7 @@ namespace Rock.Observability
                     )
                     .Build();
             }
+            return _currentMeterProvider;
         }
 
         /// <summary>
