@@ -95,6 +95,7 @@ namespace Rock.Model
         /// The code.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string DiscountCode { get; set; }
 
         /// <summary>
@@ -131,6 +132,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if this instance is temporary; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsTemporary { get; set; }
 
         /// <summary>

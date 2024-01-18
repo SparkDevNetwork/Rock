@@ -20,7 +20,10 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
+using Rock.Logging;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
 using Rock.ViewModels.Engagement;
@@ -220,7 +223,8 @@ namespace Rock.Model
                     }
                     catch ( Exception ex )
                     {
-                        Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                        RockLogger.LoggerFactory.CreateLogger<AchievementAttemptService>()
+                            .LogError( ex, ex.Message );
                     }
                 }
             }
@@ -264,7 +268,8 @@ namespace Rock.Model
             }
             catch ( Exception ex )
             {
-                Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                RockLogger.LoggerFactory.CreateLogger<AchievementAttemptService>()
+                    .LogError( ex, ex.Message );
             }
         }
 

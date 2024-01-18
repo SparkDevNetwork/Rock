@@ -26,6 +26,7 @@ using System.Web.UI;
 using System.Xml.Linq;
 
 using Microsoft.AspNet.SignalR;
+using Microsoft.Extensions.Logging;
 
 using Rock;
 using Rock.Attribute;
@@ -307,18 +308,14 @@ namespace RockWeb.Blocks.Examples
         private SampleDataManager GetConfiguredSampleDataManager()
         {
             // Configure a log device for the SampleDataManager.
-            var configuration = new RockLoggerInMemoryConfiguration();
+            LogLevel logLevel = LogLevel.Information;
 
             if ( GetAttributeValue( AttributeKey.EnableStopwatch ).AsBoolean() )
             {
-                configuration.LogLevel = RockLogLevel.All;
-            }
-            else
-            {
-                configuration.LogLevel = RockLogLevel.Info;
+                logLevel = LogLevel.Trace;
             }
 
-            _logger = new RockLoggerMemoryBuffer( configuration );
+            _logger = new RockLoggerMemoryBuffer( logLevel );
             _logger.EventLogged += EventLoggedHandler;
 
             var manager = new SampleDataManager( _logger );

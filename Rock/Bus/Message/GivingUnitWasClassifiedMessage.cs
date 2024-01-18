@@ -16,6 +16,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Queue;
 using Rock.Logging;
 using Rock.Model;
@@ -50,6 +52,7 @@ namespace Rock.Bus.Message
         /// <param name="personIds">The person ids.</param>
         public static void Publish( IEnumerable<int> personIds )
         {
+            var logger = RockLogger.LoggerFactory.CreateLogger<GivingUnitWasClassifiedMessage>();
             var list = personIds?.ToList();
 
             if ( list?.Any() != true )
@@ -67,12 +70,12 @@ namespace Rock.Bus.Message
 
                 if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
+                    logger.LogError( logMessage );
                     ExceptionLogService.LogException( new BusException( logMessage ) );
                 }
                 else
                 {
-                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                    logger.LogDebug( logMessage );
                 }
 
                 return;
@@ -85,7 +88,7 @@ namespace Rock.Bus.Message
 
             _ = RockMessageBus.PublishAsync<GivingEventQueue, GivingUnitWasClassifiedMessage>( message );
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Published 'Giving Unit Was Classified' message." );
+            logger.LogDebug( "Published 'Giving Unit Was Classified' message." );
         }
     }
 }

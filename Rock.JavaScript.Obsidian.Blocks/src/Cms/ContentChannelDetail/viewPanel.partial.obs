@@ -82,7 +82,7 @@
 
         valueBuilder.addTextValue("Items Require Approval", asYesNoOrNull(props.modelValue.requiresApproval) ?? "No");
 
-        if (props.options.isIndexEnabled == true) {
+        if (props.options.isIndexEnabled === true) {
             valueBuilder.addTextValue("Is Indexed", asYesNoOrNull(props.modelValue.isIndexEnabled) ?? "No");
         }
 

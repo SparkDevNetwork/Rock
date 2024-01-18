@@ -125,6 +125,9 @@ registerFieldType(FieldTypeGuids.ConnectionActivityType, new ConnectionActivityT
 import { ConnectionRequestFieldType } from "./connectionRequestField.partial";
 registerFieldType(FieldTypeGuids.ConnectionRequest, new ConnectionRequestFieldType());
 
+import { ConnectionRequestActivityFieldType } from "./connectionRequestActivityField.partial";
+registerFieldType(FieldTypeGuids.ConnectionRequestActivity, new ConnectionRequestActivityFieldType());
+
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
@@ -346,6 +349,9 @@ registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());
 
 import { SchedulesFieldType } from "./schedulesField.partial";
 registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
+
+import { SecurityRoleFieldType } from "./securityRoleField.partial";
+registerFieldType(FieldTypeGuids.SecurityRole, new SecurityRoleFieldType());
 
 import { SingleSelectFieldType } from "./singleSelectField.partial";
 registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());

@@ -22,6 +22,7 @@ using System.Net;
 
 using Rock.Attribute;
 using Rock.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Rock.Utility.ContentLibraryApi
 {
@@ -31,6 +32,12 @@ namespace Rock.Utility.ContentLibraryApi
     [RockInternal( "1.16" )]
     public class ContentLibraryApi : IContentLibraryApi
     {
+        /// <summary>
+        /// Gets the logger for this instance.
+        /// </summary>
+        /// <value>The logger for this instance.</value>
+        private ILogger Logger { get; } = RockLogger.LoggerFactory.CreateLogger<ContentLibraryApi>();
+
         /// <inheritdoc/>
         public ContentLibraryApiResult<ContentLibraryApiMetadataBox> GetMetadata()
         {
@@ -45,7 +52,7 @@ namespace Rock.Utility.ContentLibraryApi
             }
 
             // Log the error response.
-            RockLogger.Log.Error( RockLogDomains.Cms, "Received {Error} and {StatusCode} when getting metadata from Content Library.", response.Content, response.StatusCode );
+            Logger.LogError( "Received {Error} and {StatusCode} when getting metadata from Content Library.", response.Content, response.StatusCode );
 
             if ( response.StatusCode == HttpStatusCode.BadRequest )
             {
@@ -72,7 +79,7 @@ namespace Rock.Utility.ContentLibraryApi
             }
 
             // Log the error response.
-            RockLogger.Log.Error( RockLogDomains.Cms, "Received {Error} and {StatusCode} when getting {ContentLibraryItemGuid} from Content Library.", response.Content, response.StatusCode, contentLibraryItemGuid );
+            Logger.LogError( "Received {Error} and {StatusCode} when getting {ContentLibraryItemGuid} from Content Library.", response.Content, response.StatusCode, contentLibraryItemGuid );
 
             if ( response.StatusCode == HttpStatusCode.BadRequest )
             {
@@ -104,7 +111,7 @@ namespace Rock.Utility.ContentLibraryApi
             }
 
             // Log the error response.
-            RockLogger.Log.Error( RockLogDomains.Cms, "Received {Error} and {StatusCode} when downloading {ContentLibraryItemGuid} from Content Library.", response.Content, response.StatusCode, contentLibraryItemGuid );
+            Logger.LogError( "Received {Error} and {StatusCode} when downloading {ContentLibraryItemGuid} from Content Library.", response.Content, response.StatusCode, contentLibraryItemGuid );
 
             if ( response.StatusCode == HttpStatusCode.BadRequest )
             {
@@ -136,7 +143,7 @@ namespace Rock.Utility.ContentLibraryApi
             }
 
             // Log the error response.
-            RockLogger.Log.Error( RockLogDomains.Cms, "Received {Error} and {StatusCode} when uploading {ContentChannelItemGuid} to Content Library.", response.Content, response.StatusCode, contentLibraryItemUploadBag.SourceIdentifier );
+            Logger.LogError( "Received {Error} and {StatusCode} when uploading {ContentChannelItemGuid} to Content Library.", response.Content, response.StatusCode, contentLibraryItemUploadBag.SourceIdentifier );
 
             if ( response.StatusCode == HttpStatusCode.BadRequest )
             {

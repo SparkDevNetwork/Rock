@@ -27,6 +27,8 @@ using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Chart;
@@ -1601,8 +1603,8 @@ var headerText = dp.label;
             {
                 taskLogMessage += $"Task Name: {info.name}, Time To Run: {info.TimeToRun()}. ";
             }
-            RockLogger.Log.Information( RockLogDomains.Reporting, "Attendance Analytics Task Times: " + taskLogMessage );
-            RockLogger.Log.Information( RockLogDomains.Reporting, "Attendance Analytics Parameters: " +
+            Logger.LogInformation( "Attendance Analytics Task Times: " + taskLogMessage );
+            Logger.LogInformation( "Attendance Analytics Parameters: " +
                 "groupTypeIdList: {@groupTypeIdList}, groupIdList: {@groupIdList}, start: {@start}, end: {@end}, " +
                 "campusIdList: {@campusIdList}, includeNullCampus: {@includeNullCampus}, scheduleIdList: {@scheduleIdList}",
                 groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList );

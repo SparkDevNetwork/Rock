@@ -68,7 +68,7 @@ namespace Rock.Tests.Integration.Performance.Crm.Groups
                 var logger = new RockLoggerMemoryBuffer();
                 logger.EventLogged += ( s, e ) =>
                 {
-                    TestHelper.Log( $"<{e.Event.Domain}> {e.Event.Message}" );
+                    TestHelper.Log( e.Event.Message );
                 };
 
                 var job = new CalculateGroupRequirements();

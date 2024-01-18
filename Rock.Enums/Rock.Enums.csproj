@@ -77,6 +77,9 @@
     <Compile Include="Communication\CommunicationMessageFilter.cs" />
     <Compile Include="Communication\CommunicationRecipientStatus.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />
+    <Compile Include="Controls\FieldSource.cs" />
+    <Compile Include="Controls\AttributeFormat.cs" />
+    <Compile Include="Controls\FieldFormat.cs" />
     <Compile Include="Controls\DayOfWeek.cs" />
     <Compile Include="Communication\NotificationClassification.cs" />
     <Compile Include="Communication\SegmentCriteria.cs" />
@@ -133,6 +136,7 @@
     <Compile Include="EnumDomainAttribute.cs" />
     <Compile Include="Event\AttendanceGraphBy.cs" />
     <Compile Include="Event\AttendanceStatus.cs" />
+    <Compile Include="Event\CheckInStatus.cs" />
     <Compile Include="Event\InteractiveExperienceApprovalStatus.cs" />
     <Compile Include="Event\InteractiveExperienceCampusBehavior.cs" />
     <Compile Include="Event\InteractiveExperiencePushNotificationType.cs" />

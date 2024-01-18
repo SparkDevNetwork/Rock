@@ -13,14 +13,14 @@
 
     <RockForm v-if="mode == 'add'" class="well" @submit="onSubmitAddItem" novalidate>
         <AttributeValuesContainer v-model="newValue" :attributes="attributes" isEditMode />
-        <NotificationBox v-if="error == 'add'" alertType="danger" dismissible @dismiss="error = null" />
+        <NotificationBox v-if="error == 'add'" alertType="danger" dismissible @dismiss="error = null">Error adding this item: {{ errorMessage }}</NotificationBox>
         <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Add</RockButton>
         <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
     </RockForm>
 
     <RockForm v-if="mode == 'edit'" class="well" @submit="onSubmitEditItem" novalidate>
         <AttributeValuesContainer v-model="editValue" :attributes="attributes" isEditMode />
-        <NotificationBox v-if="error == 'add'" alertType="danger" dismissible @dismiss="error = null" />
+        <NotificationBox v-if="error == 'edit'" alertType="danger" dismissible @dismiss="error = null">Error saving changes to this item: {{ errorMessage }}</NotificationBox>
         <RockButton type="submit" btnSize="sm" btnType="primary" autoDisable :isLoading="isLoading">Save</RockButton>
         <RockButton btnType="link" @click="onCancelAddOrEditItem" autoDisable :isLoading="isLoading">Cancel</RockButton>
     </RockForm>
@@ -129,6 +129,7 @@
     const editKey = ref("");
     const isLoading = ref(false);
     const error = ref<"add" | "edit" | null>(null);
+    const errorMessage = ref<string>("");
     const keySeparator = "##";
 
     const maxRowNotificationDismissed = ref(false);
@@ -385,6 +386,7 @@
         }
         else {
             console.error("Error adding item.", response.errorMessage);
+            errorMessage.value = response.errorMessage ?? "";
             return false;
         }
     }

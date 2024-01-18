@@ -57,12 +57,6 @@ namespace Rock.Tests.Integration.Performance.Reporting
 
             TestHelper.ExecuteWithTimer( "Create EntitySet from DataView", () =>
             {
-                var logger = new RockLoggerMemoryBuffer();
-                logger.EventLogged += ( s, e ) =>
-                {
-                    TestHelper.Log( $"<{e.Event.Domain}> {e.Event.Message}" );
-                };
-
                 var entitySetService = new EntitySetService( rockContext );
 
                 var entitySetArgs = new EntitySetService.CreateEntitySetFromDataViewActionArgs

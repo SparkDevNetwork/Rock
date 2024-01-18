@@ -490,16 +490,15 @@ namespace Rock.Model
 
         #region Obsolete Methods
         /*
-         * Jonathan Robson - 11/22/2023
-         * 
-         * The RegisterBlockTypes method is being deprecated in its current form to align with the evolving architecture of our application, 
-         * specifically the transition from Web Forms to a more modern, modular framework. The dependency on System.Web.UI.Page is no longer 
-         * relevant in this context. 
-         * 
-         * As a result, we are introducing an overloaded version of RegisterBlockTypes that omits the System.Web.UI.Page parameter. This new method
-         * provides the same functionality but it's designed to be more straightforward and not reliant on legacy technologies.
-         * 
-         */
+            11/22/2023 - JR
+
+            The RegisterBlockTypes method is being deprecated in its current form to align with the evolving architecture of our application, 
+            specifically the transition from Web Forms to a more modern, modular framework. The dependency on System.Web.UI.Page is no longer 
+            relevant in this context.
+
+            Reason: Introducing an overloaded version of RegisterBlockTypes that omits the System.Web.UI.Page parameter. This new method
+            provides the same functionality but is designed to be more straightforward and not reliant on legacy technologies.
+        */
 
         /// <summary>
         /// Registers any block types that are not currently registered in Rock.
@@ -507,7 +506,7 @@ namespace Rock.Model
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
-        [RockObsolete("17.1")]
+        [RockObsolete("1.17.1")]
         [Obsolete("This method is deprecated and will be removed in a future version. Please use the overload without the System.Web.UI.Page parameter.")]
         public static void RegisterBlockTypes(string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false)
         {

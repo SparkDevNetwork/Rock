@@ -686,9 +686,9 @@ namespace RockWeb.Blocks.Event
 
                     // Only fetch what we actually need for each registration *instance* placement group.
                     var placementGroups = placementGroupsQry
-                        .Select( g => new { g.Id, g.Name, g.CampusId, g.GroupCapacity } )
+                        .Select( g => new { g.Id, g.Name, g.CampusId, g.GroupCapacity, g.GroupTypeId } )
                         .ToList()
-                        .Select( g => new Group { Id = g.Id, Name = g.Name, CampusId = g.CampusId, GroupCapacity = g.GroupCapacity } );
+                        .Select( g => new Group { Id = g.Id, Name = g.Name, CampusId = g.CampusId, GroupCapacity = g.GroupCapacity, GroupTypeId = g.GroupTypeId } );
 
                     foreach ( var placementGroup in placementGroups )
                     {
@@ -711,9 +711,9 @@ namespace RockWeb.Blocks.Event
 
             // Only fetch what we actually need for each registration *template* placement group.
             var registrationTemplatePlacementGroupList = registrationTemplatePlacementGroupQuery
-                .Select( g => new { g.Id, g.Name, g.CampusId, g.GroupCapacity } )
+                .Select( g => new { g.Id, g.Name, g.CampusId, g.GroupCapacity, g.GroupTypeId } )
                 .ToList()
-                .Select( g => new Group { Id = g.Id, Name = g.Name, CampusId = g.CampusId, GroupCapacity = g.GroupCapacity } );
+                .Select( g => new Group { Id = g.Id, Name = g.Name, CampusId = g.CampusId, GroupCapacity = g.GroupCapacity, GroupTypeId = g.GroupTypeId } );
 
             _registrationTemplatePlacementGroupIds = registrationTemplatePlacementGroupList.Select( a => a.Id ).ToList();
             var placementGroupList = new List<Group>();

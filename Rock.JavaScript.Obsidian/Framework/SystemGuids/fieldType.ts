@@ -89,6 +89,8 @@ export const FieldType = {
     ConnectionOpportunity: "B188B729-FE6D-498B-8871-65AB8FD1E11E",
     /** Connection Request field type */
     ConnectionRequest: "73A4B6C6-502B-4E5B-BAA0-A85B7CCEC544",
+    /** Connection Request Activity field type */
+    ConnectionRequestActivity: "10842787-7C17-413A-A562-9CA19E6FCE52",
     /** Connection State field type */
     ConnectionState: "B0FB7AFB-B43C-4E2B-8502-293F07BB465A",
     /** Connection Status field type */

@@ -379,7 +379,7 @@ namespace Rock.Model
                         .AsNoTracking()
                         .ToList();
 
-                    activity?.AddTag( "rock-communication-recipients-to-add-count", newMemberInList.Count );
+                    bulkInsertActivity?.AddTag( "rock-communication-recipients-to-add-count", newMemberInList.Count );
 
                     var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
                     var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );

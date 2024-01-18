@@ -40,7 +40,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./FinancialBatchDetail/editPanel.partial.obs";
     import ViewPanel from "./FinancialBatchDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { NavigationUrlKey } from "./FinancialBatchDetail/types.partial";
@@ -147,6 +147,7 @@
     const options = computed((): FinancialBatchDetailOptionsBag => {
         return config.options ?? {
             isReopenAuthorized: false,
+            isAccountTotalsHidden: false,
             isStatusChangeDisabled: true,
             transactionAmount: 0,
             transactionItemCount: 0
@@ -318,4 +319,6 @@
     if (panelMode.value === DetailPanelMode.View && config.entity?.name) {
         addQuickReturn(config.entity.name, "Batches", 50);
     }
+
+    onConfigurationValuesChanged(useReloadBlock());
 </script>

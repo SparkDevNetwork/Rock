@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
 export function fromEntries(entries: Iterable<[PropertyKey, string]>): Record<string, unknown> {
     const res = {};
     for (const entry of entries) {
@@ -28,4 +30,22 @@ export function fromEntries(entries: Iterable<[PropertyKey, string]>): Record<st
  */
 export function clone<T>(obj:T) : T {
     return JSON.parse(JSON.stringify(obj));
+}
+
+/**
+ * Take an object and convert it to a list of ListItemBag objects.
+ * Each property is a ListItemBag where the key becomes the text property
+ * and the value becomes the value property.
+ *
+ * @param obj The object to convert. Each property value should be able to be converted to a string.
+ *
+ * @return A list of ListItemBags.
+ */
+export function toListItemBagList (obj: Record<string, unknown>): ListItemBag[] {
+    return Object.entries(obj).map(([key, value]) => {
+        return {
+            text: key,
+            value: `${value}`,
+        } as ListItemBag;
+    });
 }

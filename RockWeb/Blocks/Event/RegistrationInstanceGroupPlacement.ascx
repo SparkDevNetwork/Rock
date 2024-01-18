@@ -376,7 +376,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockListBox ID="cblDisplayedGroupAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedGroupAttributes_SelectedIndexChanged" />
-                                <Rock:RockListBox ID="cblDisplayedGroupMemberAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Member Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedGroupMemberAttributes_SelectedIndexChanged" />
+                                <Rock:RockListBox ID="cblDisplayedGroupMemberAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Member Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedGroupMemberAttributes_SelectedIndexChanged" Help="Only group member attributes that are defined on the Group Type are currently supported." />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbHideFullGroups" runat="server" Label="Hide Full Groups" Help="Enable this to hide placement groups that are at the group capacity." />

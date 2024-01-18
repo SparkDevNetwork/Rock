@@ -1048,11 +1048,11 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "col-sm-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _ddlCountry.RenderControl( writer );
-                writer.RenderEndTag();  // div.form-group
+                writer.RenderEndTag();
 
                 writer.AddAttribute( "class", "col-sm-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.RenderEndTag();  // div.form-group
+                writer.RenderEndTag();
 
                 writer.RenderEndTag();  // div.form-row
 

@@ -20,6 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Blocks.Engagement.SignUp;
@@ -1270,7 +1273,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
                 if ( !groupRoleId.HasValue )
                 {
-                    RockLogger.Log.Warning( RockLogDomains.Group, "Unable to register {@registrantsToRegister} to {Project} sign-up project as no group roles could be found.", registrantsToRegister, registrationData.Project.Name );
+                    Logger.LogWarning( $"Unable to register {registrantsToRegister} to {registrationData.Project.Name} sign-up project as no group roles could be found." );
 
                     errorMessage = $"{UnableToRegisterPrefix}.";
                     return null;

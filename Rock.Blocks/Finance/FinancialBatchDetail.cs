@@ -44,10 +44,12 @@ namespace Rock.Blocks.Finance
     #region Block Attributes
     [LinkedPage( "Transaction Matching Page",
         Description = "Page used to match transactions for a batch.",
+        Key = AttributeKey.TransactionMatchingPage,
         Order = 1 )]
 
     [LinkedPage( "Audit Page",
         Description = "Page used to display the history of changes to a batch.",
+        Key = AttributeKey.AuditPage,
         Order = 2 )]
 
     [DefinedTypeField( "Batch Names",
@@ -56,6 +58,13 @@ namespace Rock.Blocks.Finance
         DefaultValue = "",
         Category = "",
         Order = 3 )]
+
+    [BooleanField(
+        "Hide Account Totals Section",
+        Description = "When enabled the Account Totals section of the Financial Batch Detail block will be hidden.",
+        Key = AttributeKey.IsAccountTotalsHidden,
+        Order = 4
+        )]
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b5976e12-a3e4-4faf-95b5-3d54f25405da" )]
@@ -78,6 +87,12 @@ namespace Rock.Blocks.Finance
             public const string AuditLogs = "AuditLogs";
         }
 
+        private static class AttributeKey
+        {
+            public const string TransactionMatchingPage = "TransactionMatchingPage";
+            public const string AuditPage = "AuditPage";
+            public const string IsAccountTotalsHidden = "IsAccountTotalsHidden";
+        }
         #endregion Keys
 
         #region Block State
@@ -177,6 +192,8 @@ namespace Rock.Blocks.Finance
             options.IsStatusChangeDisabled = entity.IsAutomated && entity.Status == BatchStatus.Pending || IsReopenDisabled;
 
             options.IsReopenAuthorized = IsReopenAuthorized;
+
+            options.IsAccountTotalsHidden = GetAttributeValue( AttributeKey.IsAccountTotalsHidden ).AsBoolean();
 
             return options;
         }
@@ -404,9 +421,9 @@ namespace Rock.Blocks.Finance
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [NavigationUrlKey.MatchTransactions] = this.GetLinkedPageUrl( "TransactionMatchingPage",
+                [NavigationUrlKey.MatchTransactions] = this.GetLinkedPageUrl( AttributeKey.TransactionMatchingPage,
                     new Dictionary<string, string>() { { "BatchId", $"{id}" } } ),
-                [NavigationUrlKey.AuditLogs] = this.GetLinkedPageUrl( "AuditPage",
+                [NavigationUrlKey.AuditLogs] = this.GetLinkedPageUrl( AttributeKey.AuditPage,
                     new Dictionary<string, string>() { { "BatchId", $"{id}" } } )
             };
         }

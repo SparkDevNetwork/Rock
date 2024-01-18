@@ -45,6 +45,8 @@
     <Content Include="src\Cms\contentChannelDetail.obs" />
     <Content Include="src\Cms\ContentChannelDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\ContentChannelDetail\viewPanel.partial.obs" />
+    <Content Include="src\Cms\contentChannelList.obs" />
+    <Content Include="src\Cms\contentChannelTypeList.obs" />
     <Content Include="src\Cms\lavaShortcodeDetail.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\viewPanel.partial.obs" />
@@ -56,6 +58,8 @@
     <Content Include="src\Cms\LibraryViewer\itemListSort.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemPreview.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
+    <Content Include="src\Core\assetStorageProviderList.obs" />
+    <Content Include="src\Cms\personalLinkList.obs" />
     <Content Include="src\Core\attributeMatrixTemplateDetail.obs" />
     <Content Include="src\Core\AttributeMatrixTemplateDetail\editPanel.partial.obs" />
     <Content Include="src\Core\AttributeMatrixTemplateDetail\viewPanel.partial.obs" />
@@ -65,6 +69,7 @@
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\binaryFileList.obs" />
     <Content Include="src\Core\binaryFileTypeDetail.obs" />
     <Content Include="src\Core\BinaryFileTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileTypeDetail\viewPanel.partial.obs" />
@@ -155,6 +160,7 @@
     <Content Include="src\Finance\financialAccountDetail.obs" />
     <Content Include="src\Finance\FinancialAccountDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialAccountDetail\viewPanel.partial.obs" />
+    <Content Include="src\Finance\financialAccountList.obs" />
     <Content Include="src\Finance\financialBatchDetail.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\editPanel.partial.vue" />
     <Content Include="src\Finance\FinancialBatchDetail\viewPanel.partial.vue" />
@@ -325,6 +331,8 @@
     <Folder Include="src\Cms\AdaptiveMessageList\" />
     <Folder Include="src\Cms\BlockTypeDetail\" />
     <Folder Include="src\Cms\ContentChannelDetail\" />
+    <Folder Include="src\Cms\ContentChannelList\" />
+    <Folder Include="src\Cms\ContentChannelTypeList\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
     <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\LavaShortcodeDetail\" />
@@ -337,6 +345,7 @@
     <Folder Include="src\Cms\PageShortLinkDetail\" />
     <Folder Include="src\Cms\PageRouteDetail\" />
     <Folder Include="src\Cms\PersistedDatasetDetail\" />
+    <Folder Include="src\Cms\PersonalLinkList\" />
     <Folder Include="src\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="src\Cms\PersonalLinkSectionList\" />
     <Folder Include="src\Cms\SiteDetail\" />
@@ -346,8 +355,10 @@
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
+    <Folder Include="src\Core\AssetStorageProviderList\" />
     <Folder Include="src\Core\AttributeMatrixTemplateDetail\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
+    <Folder Include="src\Core\BinaryFileList\" />
     <Folder Include="src\Core\BinaryFileTypeDetail\" />
     <Folder Include="src\Core\BinaryFileTypeList\" />
     <Folder Include="src\Core\CampusDetail\" />
@@ -389,6 +400,7 @@
     <Folder Include="src\Finance\BenevolenceTypeDetail\" />
     <Folder Include="src\Finance\BusinessDetail\" />
     <Folder Include="src\Finance\FinancialAccountDetail\" />
+    <Folder Include="src\Finance\FinancialAccountList\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialBatchList\" />
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
@@ -453,6 +465,8 @@
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentChannelDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentChannelList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentChannelTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\contentCollectionDetail.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\attributeSearchFilter.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\contentSources.partial.ts" />
@@ -495,6 +509,7 @@
     <TypeScriptCompile Include="src\Cms\PersistedDatasetDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PersistedDatasetDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PersistedDatasetDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\PersonalLinkList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\personalLinkSectionDetail.ts" />
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\types.partial.ts" />
@@ -511,9 +526,11 @@
     <TypeScriptCompile Include="src\Communication\SnippetDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\AssetStorageProviderList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AttributeMatrixTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\BinaryFileList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
@@ -569,6 +586,7 @@
     <TypeScriptCompile Include="src\Finance\BenevolenceTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialAccountDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\FinancialAccountList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayList\types.partial.ts" />

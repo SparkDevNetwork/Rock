@@ -271,7 +271,24 @@ export function defaultControlCompareValue(value: string, itemValue: string): bo
     return value === itemValue;
 }
 
+/**
+ * Create a 32-bit integer hash representation of a string.
+ *
+ * @param str The string to be hashed
+ *
+ * @returns The 32-bit integer hash representation of the string.
+ */
+export function createHash(str: string): number {
+    let hash = 0;
 
+    for (let i = 0; i < str.length; i++) {
+        const chr = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0; // Convert to 32bit integer
+    }
+
+    return hash;
+}
 
 export default {
     asCommaAnd,
@@ -281,8 +298,11 @@ export default {
     isWhiteSpace,
     isEmpty,
     toTitleCase,
+    upperCaseFirstCharacter,
+    pluralize,
     pluralConditional,
     padLeft,
     padRight,
-    truncate
+    truncate,
+    createHash
 };
