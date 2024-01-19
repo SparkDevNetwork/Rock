@@ -99,6 +99,11 @@ namespace Rock.SystemGuid
         public const string BINARY_FILE_TYPES = "A5365133-FF87-48B3-BCA3-AF6D871F8895";
 
         /// <summary>
+        /// Block Template field type
+        /// </summary>
+        public const string BLOCK_TEMPLATE = "CCD73456-C83B-4D6E-BD69-8133D2EB996D";
+
+        /// <summary>
         /// Boolean field type
         /// </summary>
         public const string BOOLEAN = "1EDAFDED-DFE6-4334-B019-6EECBA89E05A";

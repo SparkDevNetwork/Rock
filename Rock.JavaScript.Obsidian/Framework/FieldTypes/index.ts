@@ -59,6 +59,9 @@ registerFieldType(FieldTypeGuids.BinaryFileType, new BinaryFileTypeFieldType());
 import { BinaryFileTypesFieldType } from "./binaryFileTypesField.partial";
 registerFieldType(FieldTypeGuids.BinaryFileTypes, new BinaryFileTypesFieldType());
 
+import { BlockTemplateFieldType } from "./blockTemplateField.partial";
+registerFieldType(FieldTypeGuids.BlockTemplate, new BlockTemplateFieldType());
+
 import { BooleanFieldType } from "./booleanField.partial";
 registerFieldType(FieldTypeGuids.Boolean, new BooleanFieldType());
 

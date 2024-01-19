@@ -53,6 +53,8 @@ export const FieldType = {
     BinaryFileType: "09EC7F0D-3505-4090-B010-ABA68CB9B904",
     /** Binary File Types field type */
     BinaryFileTypes: "A5365133-FF87-48B3-BCA3-AF6D871F8895",
+    /** Block Template field type */
+    BlockTemplate: "CCD73456-C83B-4D6E-BD69-8133D2EB996D",
     /** Boolean field type */
     Boolean: "1EDAFDED-DFE6-4334-B019-6EECBA89E05A",
     /** Campus field type */
