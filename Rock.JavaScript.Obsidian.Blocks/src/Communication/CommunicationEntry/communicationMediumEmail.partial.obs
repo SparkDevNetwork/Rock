@@ -142,7 +142,7 @@
                           :binaryFileTypeGuid="BinaryFiletype.CommunicationAttachment" />
         </div>
 
-        <HtmlEditor v-model="body"
+        <HtmlEditor v-model="message"
                     :disabled="internalDisabled"
                     :editorHeight="600"
                     label="Message"
@@ -258,7 +258,7 @@
     const isScheduled = ref<boolean>(!!scheduleSendDateTime.value);
     const isScheduleSendModalOpen = ref<boolean>(false);
     const fileInputWrapper = ref<HTMLInputElement | undefined>();
-    const body = ref<string>(props.communication?.message ?? "");
+    const message = ref<string>(props.communication?.message ?? "");
     const communicationGuid = ref<Nullable<string>>(props.communication?.communicationGuid);
     const options = ref<Nullable<CommunicationEntryEmailMediumOptionsBag>>(props.mediumOptions);
     const isFormSubmitted = ref<boolean>(false);
@@ -576,12 +576,12 @@
                 ccEmails: ccAddresses.value,
                 status: CommunicationStatus.Transient,
                 communicationTemplateGuid: templateGuid.value,
-                emailAttachmentBinaryFileGuids: attachments.value?.filter(a => !!a.value).map(a => a.value!),
+                emailAttachmentBinaryFiles: attachments.value ?? [],
                 fromEmail: fromAddress.value,
                 fromName: fromName.value,
                 futureSendDateTime: scheduleSendDateTime.value,
                 mediumEntityTypeGuid: props.mediumEntityTypeGuid,
-                message: body.value,
+                message: message.value,
                 recipients: recipients.value,
                 replyToEmail: replyToAddress.value,
                 subject: subject.value,
@@ -614,12 +614,12 @@
                 ccEmails: ccAddresses.value,
                 status: CommunicationStatus.Transient,
                 communicationTemplateGuid: templateGuid.value,
-                emailAttachmentBinaryFileGuids: attachments.value?.filter(a => !!a.value).map(a => a.value!),
+                emailAttachmentBinaryFiles: attachments.value,
                 fromEmail: fromAddress.value,
                 fromName: fromName.value,
                 futureSendDateTime: scheduleSendDateTime.value,
                 mediumEntityTypeGuid: props.mediumEntityTypeGuid,
-                message: body.value,
+                message: message.value,
                 recipients: recipients.value,
                 replyToEmail: replyToAddress.value,
                 subject: subject.value,
@@ -654,12 +654,12 @@
                 ccEmails: ccAddresses.value,
                 status: CommunicationStatus.Transient,
                 communicationTemplateGuid: templateGuid.value,
-                emailAttachmentBinaryFileGuids: attachments.value?.filter(a => !!a.value).map(a => a.value!),
+                emailAttachmentBinaryFiles: attachments.value ?? [],
                 fromEmail: fromAddress.value,
                 fromName: fromName.value,
                 futureSendDateTime: scheduleSendDateTime.value,
                 mediumEntityTypeGuid: props.mediumEntityTypeGuid,
-                message: body.value,
+                message: message.value,
                 recipients: recipients.value,
                 replyToEmail: replyToAddress.value,
                 subject: subject.value,
@@ -715,7 +715,22 @@
                 emit("error", result.errorMessage || "An error occurred while getting the template.");
             }
             else {
-                debugger;
+                const template = result.data;
+
+                // Only overwrite the from name and email.
+                if (template.fromName) {
+                    fromName.value = template.fromName;
+                }
+                if (template.fromEmail) {
+                    fromAddress.value = template.fromEmail;
+                }
+
+                replyToAddress.value = template.replyToEmail ?? "";
+                ccAddresses.value = template.ccEmails ?? "";
+                bccAddresses.value = template.bccEmails ?? "";
+                subject.value = template.subject ?? "";
+                attachments.value = template.emailAttachmentBinaryFiles ?? [];
+                message.value = template.message ?? "";
             }
         }
     }, {

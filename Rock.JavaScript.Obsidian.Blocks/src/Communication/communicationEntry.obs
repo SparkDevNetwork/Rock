@@ -74,7 +74,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { Nullable } from "./CommunicationEntry/types.partial";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
@@ -82,6 +82,8 @@
     import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
+    const reloadBlock = useReloadBlock();
+
     defineProps();
 
     //#region Values
@@ -174,5 +176,7 @@
     //#region Watchers
 
     //#endregion
+
+    onConfigurationValuesChanged(reloadBlock);
 
 </script>

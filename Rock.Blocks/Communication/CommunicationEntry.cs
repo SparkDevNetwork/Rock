@@ -33,6 +33,9 @@ using Rock.Utility;
 using Rock.ViewModels.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationEntry;
 using Rock.Net;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
+using System.ComponentModel.DataAnnotations;
 
 namespace Rock.Blocks.Communication
 {
@@ -306,7 +309,7 @@ namespace Rock.Blocks.Communication
             {
                 IsFullMode = IsFullMode,
             };
-            
+
             // "Simple" mode will prevent users from searching/adding new people to communication.
 
             var displayedMediumGuids = GetAttributeValue( AttributeKey.Mediums ).SplitDelimitedValues().AsGuidList();
@@ -318,7 +321,7 @@ namespace Rock.Blocks.Communication
                      && mediumComponent.IsActive
                      && mediumComponent.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
-                    mediums.Add( ( item.Metadata.ComponentName, mediumComponent ) );
+                    mediums.Add( (item.Metadata.ComponentName, mediumComponent) );
                 }
             }
 
@@ -364,7 +367,7 @@ namespace Rock.Blocks.Communication
                 {
                     // Load the communication attachments.
                     communication.GetAttachments( communication.CommunicationType );
-                } 
+                }
 
                 // If viewing a new, transient, draft, or are the approver of a pending-approval communication, then use this block;
                 // otherwise, set this block visible=false and if there is a communication detail block on this page, it'll be shown instead.
@@ -427,9 +430,9 @@ namespace Rock.Blocks.Communication
             };
         }
 
-        private ( string ComponentName, MediumComponent Medium ) GetMediumComponent( Guid mediumGuid )
+        private (string ComponentName, MediumComponent Medium) GetMediumComponent( Guid mediumGuid )
         {
-            var mediumData = MediumContainer.Instance.Components.Where( kvp => kvp.Value.Value.TypeGuid == mediumGuid ).Select( kvp => ( kvp.Value.Metadata.ComponentName, kvp.Value.Value ) ).FirstOrDefault();
+            var mediumData = MediumContainer.Instance.Components.Where( kvp => kvp.Value.Value.TypeGuid == mediumGuid ).Select( kvp => (kvp.Value.Metadata.ComponentName, kvp.Value.Value) ).FirstOrDefault();
 
             if ( mediumData == default )
             {
@@ -453,7 +456,7 @@ namespace Rock.Blocks.Communication
                 return CommunicationEntryMediumOptionsBaseBag.Unknown;
             }
 
-            var ( _, medium ) = GetMediumComponent( mediumGuid );
+            var (_, medium) = GetMediumComponent( mediumGuid );
 
             if ( medium == null )
             {
@@ -769,11 +772,12 @@ namespace Rock.Blocks.Communication
         [BlockAction( "Test" )]
         public BlockActionResult Test( CommunicationEntryCommunicationBag bag )
         {
-            var validationResults = Validate( bag );
+            var validator = new TestCommunicationValidator();
+            var validationResult = validator.Validate( bag );
 
-            if ( validationResults.IsError )
+            if ( validator.IsError( validationResult ) )
             {
-                return validationResults.BlockActionResult;
+                return ActionBadRequest( validationResult.ErrorMessage );
             }
 
             var currentPerson = GetCurrentPerson();
@@ -783,7 +787,7 @@ namespace Rock.Blocks.Communication
             {
                 return ActionBadRequest( "You must be authenticated to send a test communication" );
             }
-            
+
             // Get existing or new communication record.
             // Use a separate context so that changes in UpdateCommunication() are not persisted.
             var communication = UpdateCommunication( new RockContext(), bag );
@@ -880,57 +884,6 @@ namespace Rock.Blocks.Communication
             }
         }
 
-        public class ValidationResults
-        {
-            public bool IsError { get; set; }
-            public BlockActionResult BlockActionResult { get; set; }
-        }
-
-        private ValidationResults Validate( CommunicationEntryCommunicationBag bag )
-        {
-            if ( bag == null )
-            {
-                return new ValidationResults
-                {
-                    IsError = true,
-                    // TODO JMH Fix error message.
-                    BlockActionResult = ActionBadRequest( "Information to send communication is missing" )
-                };
-            }
-
-            // Validate future delay time.
-            var futureSendDateTime = bag.FutureSendDateTime;
-
-            if ( futureSendDateTime.HasValue && futureSendDateTime.Value.CompareTo( RockDateTime.Now ) < 0 )
-            {
-                return new ValidationResults
-                {
-                    IsError = true,
-                    BlockActionResult = ActionBadRequest( "The Delay Send Until value must be a future date/time" )
-                };
-            }
-
-            if ( bag.MediumEntityTypeGuid.IsEmpty() )
-            {
-                return new ValidationResults
-                {
-                    IsError = true,
-                    BlockActionResult = ActionBadRequest( "The medium type is required" )
-                };
-            }
-
-            if ( bag.Recipients?.Any() != true )
-            {
-                return new ValidationResults
-                {
-                    IsError = true,
-                    BlockActionResult = ActionBadRequest( "At least one recipient is required." )
-                };
-            }
-
-            return new ValidationResults();
-        }
-        
         /// <summary>
         /// Determines whether approval is required, and sets the submit button text appropriately
         /// </summary>
@@ -950,11 +903,12 @@ namespace Rock.Blocks.Communication
         [BlockAction( "Send" )]
         public BlockActionResult Send( CommunicationEntryCommunicationBag bag )
         {
-            var results = Validate( bag );
+            var validator = new SendCommunicationValidator();
+            var validationResult = validator.Validate( bag );
 
-            if ( results.IsError )
+            if ( validator.IsError( validationResult ) )
             {
-                return results.BlockActionResult;
+                return ActionBadRequest( validationResult.ErrorMessage );
             }
 
             using ( var rockContext = new RockContext() )
@@ -974,7 +928,7 @@ namespace Rock.Blocks.Communication
                 }
 
                 var authorization = GetAuthorizationBag();
-                if ( communication.Status == CommunicationStatus.PendingApproval && authorization.CanApproveCommunication  )
+                if ( communication.Status == CommunicationStatus.PendingApproval && authorization.CanApproveCommunication )
                 {
                     rockContext.SaveChanges();
 
@@ -1070,7 +1024,7 @@ namespace Rock.Blocks.Communication
                     var binaryFilesQuery = new BinaryFileService( rockContext )
                         .Queryable()
                         .Where( f => binaryFileGuids.Contains( f.Guid ) );
-                    foreach( var binaryFile in binaryFilesQuery )
+                    foreach ( var binaryFile in binaryFilesQuery )
                     {
                         binaryFile.IsTemporary = false;
                     }
@@ -1088,7 +1042,7 @@ namespace Rock.Blocks.Communication
 
         private IMediumDataService GetMediumDataService( Guid mediumEntityTypeGuid )
         {
-            var ( _, medium ) = GetMediumComponent( mediumEntityTypeGuid );
+            var (_, medium) = GetMediumComponent( mediumEntityTypeGuid );
 
             if ( medium == null )
             {
@@ -1110,11 +1064,12 @@ namespace Rock.Blocks.Communication
         [BlockAction( "Save" )]
         public BlockActionResult Save( CommunicationEntryCommunicationBag bag )
         {
-            var validationResults = Validate( bag );
+            var validator = new SaveCommunicationValidator();
+            var validationResult = validator.Validate( bag );
 
-            if ( validationResults.IsError )
+            if ( validator.IsError( validationResult ) )
             {
-                return validationResults.BlockActionResult;
+                return ActionBadRequest( validationResult.ErrorMessage );
             }
 
             using ( var rockContext = new RockContext() )
@@ -1180,7 +1135,7 @@ namespace Rock.Blocks.Communication
 
                     // TODO JMH Auto-scroll to results in Obsidian code.
                     return ActionOk( responseBag );
-                } 
+                }
             }
         }
 
@@ -1286,9 +1241,9 @@ namespace Rock.Blocks.Communication
             if ( options?.CommunicationId.HasValue == true )
             {
                 // Get the person aliases from existing communication recipients.
-                 personAliasQuery = new CommunicationRecipientService( rockContext ).Queryable().AsNoTracking()
-                    .Where( communicationRecipient => communicationRecipient.CommunicationId == options.CommunicationId.Value )
-                    .Select( communicationRecipient => communicationRecipient.PersonAlias );
+                personAliasQuery = new CommunicationRecipientService( rockContext ).Queryable().AsNoTracking()
+                   .Where( communicationRecipient => communicationRecipient.CommunicationId == options.CommunicationId.Value )
+                   .Select( communicationRecipient => communicationRecipient.PersonAlias );
             }
             else
             {
@@ -1415,7 +1370,7 @@ namespace Rock.Blocks.Communication
             // Override bulk communication if not full mode.
             if ( !box.IsFullMode )
             {
-                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.SendSimpleAsBulk ).AsBoolean(); 
+                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.SendSimpleAsBulk ).AsBoolean();
             }
 
             var template = communication.CommunicationTemplate;
@@ -1462,7 +1417,7 @@ namespace Rock.Blocks.Communication
             {
                 mediumGuid = box.Mediums.FirstOrDefault()?.Value.AsGuid();
             }
-            
+
             box.Communication = new CommunicationEntryCommunicationBag
             {
                 CommunicationGuid = communication.Guid,
@@ -1895,7 +1850,7 @@ namespace Rock.Blocks.Communication
                 communication = new Rock.Model.Communication
                 {
                     Status = CommunicationStatus.Transient,
-                    SenderPersonAliasId =  currentPersonAliasId
+                    SenderPersonAliasId = currentPersonAliasId
                 };
                 communicationService.Add( communication );
             }
@@ -1934,7 +1889,7 @@ namespace Rock.Blocks.Communication
             communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
             communication.IsBulkCommunication = bag.IsBulkCommunication;
 
-            var ( _, medium ) = GetMediumComponent( bag.MediumEntityTypeGuid );
+            var (_, medium) = GetMediumComponent( bag.MediumEntityTypeGuid );
             if ( medium != null )
             {
                 communication.CommunicationType = medium.CommunicationType;
@@ -2043,6 +1998,348 @@ namespace Rock.Blocks.Communication
         #endregion
 
         #region Helper Classes
+
+        private interface IValidate<T>
+        {
+            ValidationResult Validate( T value, [CallerMemberName] string argumentName = null );
+        }
+
+        private interface IValidationRule<T>
+        {
+            ValidationResult Validate( T value, [CallerMemberName] string argumentName = null );
+        }
+
+        private class RequiredRule : IValidationRule<object>, IValidationRule<Guid>, IValidationRule<int>, IValidationRule<string>
+        {
+            private string GetErrorMessage( string argumentName )
+            {
+                return $"{argumentName} is required";
+            }
+
+            public ValidationResult Validate( object value, [CallerMemberName] string argumentName = null )
+            {
+                if ( value == null )
+                {
+                    return new ValidationResult( GetErrorMessage( argumentName ) );
+                }
+
+                return ValidationResult.Success;
+            }
+
+            public ValidationResult Validate( Guid value, [CallerMemberName] string argumentName = null )
+            {
+                if ( value == null )
+                {
+                    return new ValidationResult( GetErrorMessage( argumentName ) );
+                }
+
+                return ValidationResult.Success;
+            }
+
+            public ValidationResult Validate( int value, [CallerMemberName] string argumentName = null )
+            {
+                if ( value == 0 )
+                {
+                    return new ValidationResult( GetErrorMessage( argumentName ) );
+                }
+
+                return ValidationResult.Success;
+            }
+
+            public ValidationResult Validate( string value, [CallerMemberName] string argumentName = null )
+            {
+                if ( value.IsNullOrWhiteSpace() )
+                {
+                    return new ValidationResult( GetErrorMessage( argumentName ) );
+                }
+
+                return ValidationResult.Success;
+            }
+        }
+
+        private class ObjectRuleBuilder<T, TProp> where TProp : class
+        {
+            private readonly List<IValidate<T>> _rules;
+            private readonly Expression<Func<T, TProp>> _propSelectorExpression;
+            private readonly Func<T, TProp> _propSelector;
+            private readonly string _propertyName;
+
+            public ObjectRuleBuilder( List<IValidate<T>> rules, Expression<Func<T, TProp>> propSelectorExpression )
+            {
+                _rules = rules;
+                _propSelectorExpression = propSelectorExpression;
+                _propSelector = _propSelectorExpression.Compile();
+                _propertyName = ( ( MemberExpression )_propSelectorExpression.Body ).Member.Name;
+            }
+
+            public void Required()
+            {
+                var requiredRule = new RequiredRule();
+                _rules.Add( new DelegatingRule<T, TProp>( ( t, tName ) => requiredRule.Validate( _propSelector( t ), _propertyName ) ) );
+            }
+        }
+
+        private class GuidRuleBuilder<T>
+        {
+            private readonly List<IValidate<T>> _rules;
+            private readonly Expression<Func<T, Guid>> _propSelectorExpression;
+            private readonly Func<T, Guid> _propSelector;
+            private readonly string _propertyName;
+
+            public GuidRuleBuilder( List<IValidate<T>> rules, Expression<Func<T, Guid>> propSelectorExpression )
+            {
+                _rules = rules;
+                _propSelectorExpression = propSelectorExpression;
+                _propSelector = _propSelectorExpression.Compile();
+                _propertyName = ( ( MemberExpression )_propSelectorExpression.Body ).Member.Name;
+            }
+
+            public void Required()
+            {
+                var requiredRule = new RequiredRule();
+                _rules.Add( new DelegatingRule<T, Guid>( ( t, tName ) => requiredRule.Validate( _propSelector( t ), _propertyName ) ) );
+            }
+        }
+
+        private class StringRuleBuilder<T>
+        {
+            private readonly List<IValidate<T>> _rules;
+            private readonly Expression<Func<T, string>> _propSelectorExpression;
+            private readonly Func<T, string> _propSelector;
+            private readonly string _propertyName;
+
+            public StringRuleBuilder( List<IValidate<T>> rules, Expression<Func<T, string>> propSelectorExpression )
+            {
+                _rules = rules;
+                _propSelectorExpression = propSelectorExpression;
+                _propSelector = _propSelectorExpression.Compile();
+                _propertyName = ( ( MemberExpression )_propSelectorExpression.Body ).Member.Name;
+            }
+
+            public void Required()
+            {
+                var requiredRule = new RequiredRule();
+                _rules.Add( new DelegatingRule<T, Guid>( ( t, tName ) => requiredRule.Validate( _propSelector( t ), _propertyName ) ) );
+            }
+        }
+
+        private class DelegatingRule<T, TProp> : IValidate<T>
+        {
+            private readonly Func<T, string, ValidationResult> _validator;
+
+            public DelegatingRule( Func<T, string, ValidationResult> validator )
+            {
+                _validator = validator;
+            }
+
+            public ValidationResult Validate( T value, [CallerMemberName] string argumentName = null )
+            {
+                return _validator( value, argumentName );
+            }
+        }
+
+        private abstract class CommunicationValidator : IValidate<CommunicationEntryCommunicationBag>
+        {
+            private List<IValidate<CommunicationEntryCommunicationBag>> _rules = new List<IValidate<CommunicationEntryCommunicationBag>>();
+
+            private ObjectRuleBuilder<CommunicationEntryCommunicationBag, TProp> RuleFor<TProp>( Expression<Func<CommunicationEntryCommunicationBag, TProp>> propSelectorExpression ) where TProp : class
+            {
+                return new ObjectRuleBuilder<CommunicationEntryCommunicationBag, TProp>( _rules, propSelectorExpression );
+            }
+
+            private StringRuleBuilder<CommunicationEntryCommunicationBag> RuleFor( Expression<Func<CommunicationEntryCommunicationBag, string>> propSelectorExpression )
+            {
+                return new StringRuleBuilder<CommunicationEntryCommunicationBag>( _rules, propSelectorExpression );
+            }
+
+            private GuidRuleBuilder<CommunicationEntryCommunicationBag> RuleFor( Expression<Func<CommunicationEntryCommunicationBag, Guid>> propSelectorExpression )
+            {
+                return new GuidRuleBuilder<CommunicationEntryCommunicationBag>( _rules, propSelectorExpression );
+            }
+
+            public abstract ValidationResult Validate( CommunicationEntryCommunicationBag bag, [CallerMemberName] string argumentName = null );
+
+            public bool IsError( ValidationResult validationResult )
+            {
+                var validator = new SendValidator();
+                var result = validator.Validate();
+
+                // In SendValidator ctor
+                RuleFor( b => b ).Required();
+
+                // In RuleBuilder<T, TProp>
+                IValidator<T> Required( Expression<Func<T, TProp>> propSelector )
+                {
+                    return new DelegatingRule<T, TProp>( ( b ) => new RequiredRule().Validate( propSelector.Compile()( b ) ) );
+                }
+                // In DelegatingRule<T, TProp> ctor
+                DelegatingRule<T, TProp>( Func<T, ValidationResult>)
+                {
+
+                }
+                
+                RuleFor( b => b.MediumEntityTypeGuid ).Required();
+
+                return validationResult?.ErrorMessage.IsNotNullOrWhiteSpace() == true;
+            }
+            
+            protected bool IsCommunicationNotNull( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
+            {
+                if ( bag == null )
+                {
+                    validationResult = new ValidationResult( "Communication information is required" );
+                    return false;
+                }
+                else
+                {
+                    validationResult = null;
+                    return true;
+                }
+            }
+
+            protected bool IsMediumEntityTypeValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
+            {
+                if ( bag.MediumEntityTypeGuid.IsEmpty() )
+                {
+                    // TODO JMH Should we validate the Guid is associated with a valid medium?
+                    validationResult = new ValidationResult( "The medium type is required" );
+                    return false;
+                }
+                else
+                {
+                    validationResult = null;
+                    return true;
+                }
+            }
+
+            protected bool IsDelaySendUntilValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
+            {
+                var futureSendDateTime = bag.FutureSendDateTime;
+
+                if ( futureSendDateTime.HasValue && futureSendDateTime.Value.CompareTo( RockDateTime.Now ) < 0 )
+                {
+                    validationResult = new ValidationResult( "The Delay Send Until value must be a future date/time" );
+                    return false;
+                }
+                else
+                {
+                    validationResult = null;
+                    return true;
+                }
+            }
+
+            protected bool IsRecipientsValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
+            {
+                if ( bag.Recipients?.Any() != true )
+                {
+                    validationResult = new ValidationResult( "At least one recipient is required" );
+                    return false;
+                }
+                else
+                {
+                    validationResult = null;
+                    return true;
+                }
+            }
+        }
+
+        private class TestCommunicationValidator : CommunicationValidator
+        {
+            public override ValidationResult Validate( CommunicationEntryCommunicationBag bag )
+            {
+                ValidationResult validationResult;
+
+                var requiredRule = new RequiredRule();
+                requiredRule.Validate( bag );
+
+                if ( !IsCommunicationNotNull( bag, out validationResult ) )
+                {
+                    return validationResult;
+                }
+
+                if ( !IsMediumEntityTypeValid( bag, out validationResult ) )
+                {
+                    return validationResult;
+                }
+
+                if ( !IsDelaySendUntilValid( bag, out validationResult ) )
+                {
+                    return validationResult;
+                }
+
+                // Recipients are not required to test the communication.
+
+                // If this line is reached, then all validation passed.
+                // Return a successful validation result.
+                return ValidationResult.Success;
+            }
+        }
+
+        private class SaveCommunicationValidator : CommunicationValidator
+        {
+            public override ValidationResult Validate( CommunicationEntryCommunicationBag bag )
+            {
+                ValidationResult validationResult;
+
+                if ( !IsCommunicationNotNull( bag, out validationResult ) )
+                {
+                    return validationResult;
+                }
+
+                if ( !IsMediumEntityTypeValid( bag, out validationResult ) )
+                {
+                    return validationResult;
+                }
+
+                if ( !IsDelaySendUntilValid( bag, out validationResult ) )
+                {
+                    return validationResult;
+                }
+
+                // Recipients are not required to save the communication.
+
+                // If this line is reached, then all validation passed.
+                // Return a successful validation result.
+                return ValidationResult.Success;
+            }
+        }
+
+        private class ValidationRule
+        {
+
+        }
+
+        private class SendCommunicationValidator : CommunicationValidator
+        {
+            public override ValidationResult Validate( CommunicationEntryCommunicationBag bag )
+            {
+                ValidationResult validationResult;
+
+                if ( IsCommunicationNotNull( bag, out validationResult ) )
+                {
+                    return validationResult;
+                }
+
+                if ( !IsMediumEntityTypeValid( bag, out validationResult ) )
+                {
+                    return validationResult;
+                }
+
+                if ( !IsDelaySendUntilValid( bag, out validationResult ) )
+                {
+                    return validationResult;
+                }
+
+                if ( !IsRecipientsValid( bag, out validationResult ) )
+                {
+                    return validationResult;
+                }
+
+                // If this line is reached, then all validation passed.
+                // Return a successful validation result.
+                return ValidationResult.Success;
+            }
+        }
 
         private interface ICommunicationAttachments
         {
