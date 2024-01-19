@@ -197,6 +197,20 @@ namespace Rock.Model
         [DataMember]
         public int? PersistedScheduleId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon CSS class for entities returned by this DataView.
+        /// </summary>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the highlight color for the Icon Css Class.
+        /// </summary>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string HighlightColor { get; set; }
+
         #endregion
 
         #region Navigation Properties

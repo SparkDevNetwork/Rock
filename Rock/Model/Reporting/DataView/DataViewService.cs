@@ -294,6 +294,35 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a List of <seealso cref="Rock.Model.DataViewPersistedValue"/> matching the specified list of EntityIds and (optionally) DataViewIds.
+        /// </summary>
+        /// <param name="entityIds">The list of EntityIds to filter to.</param>
+        /// <param name="dataViewIds">The (optional) list of DataViewIds to filter to.</param>
+        /// <returns>A List of <seealso cref="Rock.Model.DataViewPersistedValue"/></returns>
+        public List<DataViewPersistedValue> GetDataViewPersistedValuesForIds( IEnumerable<int> entityIds, IEnumerable<int> dataViewIds = null )
+        {
+
+            var entityIdsParam = entityIds.ConvertToEntityIdList( "@EntityIds" );
+            var sql = $@"
+                SELECT [DataViewId]
+                    , [EntityId]
+                FROM [DataViewPersistedValue] [dv]
+                JOIN @EntityIds [e] ON [dv].EntityId = [e].Id";
+
+            if ( dataViewIds != null && dataViewIds.Any() )
+            {
+                // If there's also a filter condition for dataViewIds add the condition and return the result.
+                var dataViewIdsParam = dataViewIds.ConvertToEntityIdList( "@DataViewIds" );
+                sql += @"
+                JOIN @DataViewIds [d] ON [dv].[DataViewId] = [d].Id";
+                return this.Context.Database.SqlQuery<DataViewPersistedValue>( sql, entityIdsParam, dataViewIdsParam ).ToList();
+            }
+
+            // Return the list based solely on EntityIds filtering.
+            return this.Context.Database.SqlQuery<DataViewPersistedValue>( sql, entityIdsParam ).ToList();
+        }
+
+        /// <summary>
         /// Updates the data view's <see cref="DataViewPersistedValue"/>s in the database.
         /// </summary>
         /// <param name="dataViewId">The identifier of the data view whose values should be updated.</param>

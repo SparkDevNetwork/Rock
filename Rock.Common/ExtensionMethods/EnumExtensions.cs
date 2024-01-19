@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace Rock
@@ -195,6 +197,29 @@ namespace Rock
                     yield return value;
                 }
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="intEnumerable"></param>
+        /// <param name="parameterName"></param>
+        /// <returns></returns>
+        public static SqlParameter ConvertToEntityIdList(this IEnumerable<int> intEnumerable, string parameterName = "@EntityIds")
+        {
+            var dataTable = new DataTable();
+            dataTable.Columns.Add( "EntityId", typeof( int ) );
+
+            foreach (var value in intEnumerable)
+            {
+                dataTable.Rows.Add( value );
+            }
+
+            return new SqlParameter( parameterName, SqlDbType.Structured )
+            {
+                TypeName = "dbo.EntityIdList",
+                Value = dataTable
+            };
         }
 
         #endregion Enum Extensions

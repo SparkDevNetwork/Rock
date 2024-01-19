@@ -17,9 +17,16 @@
             <Rock:Grid ID="gPeople" runat="server" EmptyDataText="No People Found" AllowSorting="true" OnRowSelected="gPeople_RowSelected">
                 <Columns>
                     <Rock:SelectField />
-                    <Rock:RockTemplateField HeaderText="Person" SortExpression="LastName,FirstName" ExcelExportBehavior="NeverInclude">
+                    <Rock:RockTemplateField HeaderText="Person" SortExpression="LastName,FirstName" ExcelExportBehavior="AlwaysInclude">
                         <ItemTemplate>
                             <asp:Literal ID="lPerson" runat="server" />
+                        </ItemTemplate>
+                    </Rock:RockTemplateField>
+                    <Rock:RockTemplateField HeaderText="" SortExpression="" ExcelExportBehavior="NeverInclude" ItemStyle-CssClass="flex-column">
+                        <ItemTemplate>
+                            <div class="d-flex align-items-end">
+                                <asp:Literal ID="lIcons" runat="server" />
+                            </div>
                         </ItemTemplate>
                     </Rock:RockTemplateField>
                     <Rock:DateField 
