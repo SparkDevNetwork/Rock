@@ -74,7 +74,11 @@ namespace Rock.Jobs
 
             var rockContext = new RockContext();
             var transactionService = new FinancialTransactionService( rockContext );
-            var futureTransactions = transactionService.GetFutureTransactions().Where( ft => ft.FutureProcessingDateTime <= RockDateTime.Now ).ToList();
+            var futureTransactions = transactionService.GetFutureTransactions()
+                .Where( ft => ft.FutureProcessingDateTime <= RockDateTime.Now
+                            && ft.Status != "ChargeFailed" ) // ignore transactions that failed when sent to the gateway.
+                .ToList();
+
             var errors = new List<string>();
             var successCount = 0;
 
@@ -85,6 +89,11 @@ namespace Rock.Jobs
 
                 if ( !string.IsNullOrEmpty( errorMessage ) )
                 {
+                    // If the charge attempt fails, flag the transaction so we don't attempt to send it back to the gateway next time the job runs.
+                    futureTransaction.Status = "ChargeFailed";
+                    futureTransaction.StatusMessage = errorMessage;
+                    rockContext.SaveChanges();
+
                     errors.Add( errorMessage );
                 }
                 else
