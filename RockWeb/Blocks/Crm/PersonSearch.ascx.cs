@@ -32,8 +32,6 @@ using Rock.Web.Cache;
 using System.Diagnostics;
 using System.Data.Entity.Core.Objects;
 using System.Text;
-using Lucene.Net.Support;
-using OpenXmlPowerTools;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -1078,6 +1076,11 @@ namespace RockWeb.Blocks.Crm
         /// Gets or sets the name of the DataView where the Icon and Highlight Color come from.
         /// </summary>
         public string DataViewName { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format( IconCssClass.Length > 0 ? IconCssClass : string.Empty );
+        }
     }
     #endregion
 

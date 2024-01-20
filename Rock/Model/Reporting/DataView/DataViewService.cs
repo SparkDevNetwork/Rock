@@ -301,7 +301,6 @@ namespace Rock.Model
         /// <returns>A List of <seealso cref="Rock.Model.DataViewPersistedValue"/></returns>
         public List<DataViewPersistedValue> GetDataViewPersistedValuesForIds( IEnumerable<int> entityIds, IEnumerable<int> dataViewIds = null )
         {
-
             var entityIdsParam = entityIds.ConvertToEntityIdList( "@EntityIds" );
             var sql = $@"
                 SELECT [DataViewId]
