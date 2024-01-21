@@ -2410,6 +2410,14 @@ namespace Rock.Data
         /// </value>
         public DbSet<SnippetType> SnippetTypes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the analytics source zip codes.
+        /// </summary>
+        /// <value>
+        /// The analytics source zip codes.
+        /// </value>
+        public DbSet<AnalyticsSourceZipCode> AnalyticsSourceZipCodes { get; set; }
+
         #endregion
 
         /// <summary>
