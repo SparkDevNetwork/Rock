@@ -1049,6 +1049,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV15DataMigrationsReplaceTransactionEntryBlocksWithUtilityPaymentBlock.cs" />
     <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
+    <Compile Include="Jobs\UpdateAnalyticsSourceZipCode.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Blocks\AdaptiveMessageBlock.cs" />
     <Compile Include="Lava\Blocks\ObserveBlock.cs" />
@@ -1160,6 +1161,9 @@
     <Compile Include="Model\Group\GroupSync\GroupSyncInfo.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSyncResult.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceZipCode\AnalyticsSourceZipCode.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceZipCode\AnalyticsSourceZipCode.Logic.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceZipCode\ZipCodeBoundary.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
     <Compile Include="Net\BrowserCookie.cs" />
